@@ -1,0 +1,106 @@
+store fixed error in data
+store fixed reml ll in data
+  log(det(U%*%U)) not included in ctmm.loglike (precompute in ctmm.fit for fixed U)
+  This really needs to be in ctmm.loglike if you expect people to use this function -- feed it through like mean.vec
+ctmm.fit PARS==0 REML=TRUE
+don't delete mean off of IOU and BM... need that to Krige I think
+IOU with drift not setup correctly
+
+effect of errors on variogram, variogram.fit ?
+
+summary on z-axis ctmm.fit might be buggy
+
+stray points in occurrence when correlation < cor.min
+
+sort.ctmm
+sort.list
+name.ctmm
+name.generic
+
+zoom.telemetry x,y offset clicker
+
+global variable for units of current plot?
+
+proj4: email about making north up
+plot N vector in corner
+
+dogleg splines
+  degree = 1,2?
+  migration = times?
+  settlement = times?
+
+generalize Gaussian area?
+  UDs for both mean and population
+  homerange(method=normal)
+time/tube plot 
+periodic plot.ctmm
+
+periodic simulate.telemetry (not pure ctmm)
+periodic smoother (velocity vector--check)
+periodic akde...
+
+periodic vignette: periodogram, ctmm.select
+
+model option vignette
+IID, OU, OUF, (an)isotropic table in vignette
+
+fixed circulation option?
+Fixed period parameters during fitting?
+
+3d periodogram, ctmm.fit, krige, kde
+
+simulate nsim in both unconditioned and conditionedb by storing all objects
+multiple conditional simulations loop
+More efficient sampler/smoother: 
+store propagator results for all time-lags
+store forecast/concurrent estimates
+call vectorized RNG
+
+Include telemetry errors in unconditional simulation?
+krige -> predict
+
+cross variogram
+
+Newton-Raphson iteration at end of ctmm.fit for solution check on optim
+
+AKDE vignette: DOF.H, DOF.mu
+
+plot options: cex, type, abrv
+
+AKDE with errors, weights
+akde with user-specified grid (and projection)
+
+residual acf versus data acf with correct confidence intervals for no autocorrelation null hypothesis
+
+multi-scale variogram bias correction
+variogram & periodogram: coarsening window method to avoid all bias
+
+population fitting without correlation
+population fit of list
+population akde of lists
+
+optional columns with NAs are being discarded
+or maybe report if NAs are discarded?
+
+Lapack GE solve -> Lapack PO/SY solve.
+
+as.telemetry option: minimal columns, maximum columns, specified columns to keep
+
+plot.UD without telemetry (generalize)
+plot.telemetry error transparency
+
+overload: print, str
+
+MoveStack import to list of telemetry objects
+
+profile CIs
+
+contour labels in plot ctmm
+
+Email ks author about inaccuracy
+
+Repeated times in variograms -- account for as error -- fix cap
+
+dplyr, rolling for loops
+
+fixed mean parameter for boundary issues

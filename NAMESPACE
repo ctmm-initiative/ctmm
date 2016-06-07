@@ -1,0 +1,68 @@
+#IMPORTED GENERIC FUNCTIONS TO OVERLOAD
+importFrom("graphics",plot)
+importFrom("methods",new)
+importFrom("raster",raster,zoom)
+importFrom("stats",simulate)
+
+# non-base generics to export
+export(plot,simulate)
+export(raster,zoom)
+#export(SpatialPoints,SpatialPolygonsDataFrame)
+#S3method(SpatialPoints,matrix)
+#S3method(SpatialPoints,data.frame)
+#S3method(SpatialPolygonsDataFrame,SpatialPolygons)
+
+#GENERAL FUNCTIONS
+S3method(det,numeric)
+S3method(mean,list)
+S3method(plot,list)
+S3method(summary,list)
+#export(setUnits,"%#%")
+
+#TELEMETRY FUNCTIONS
+export(as.telemetry,SpatialPoints.telemetry)
+S3method(as.telemetry,character)
+S3method(as.telemetry,data.frame)
+S3method(as.telemetry,Move)
+S3method(plot,telemetry)
+S3method(subset,telemetry)
+S3method(summary,telemetry)
+S3method(`[`,telemetry)
+
+#VARIOGRAM FUNCTIONS
+export(variogram,variogram.fit)
+S3method(mean,variogram)
+S3method(plot,variogram)
+S3method(subset,variogram)
+S3method(`[`,variogram)
+
+#PERIODOGRAM FUNCTIONS
+export(periodogram)
+S3method(plot,periodogram)
+S3method(subset,periodogram)
+S3method(`[`,periodogram)
+
+#LIKELIHOOD/MODEL FUNCTIONS
+export(ctmm,ctmm.guess,ctmm.fit,ctmm.loglike,ctmm.select)
+S3method(residuals,ctmm)
+S3method(simulate,ctmm)
+S3method(summary,ctmm)
+
+#MEAN FUNCTIONS
+
+#AKDE FUNCTIONS
+export(akde,akde.bandwidth,homerange,writeShapefile,SpatialPolygonsDataFrame.UD)
+S3method(plot,UD)
+S3method(summary,UD)
+S3method(writeShapefile,UD)
+
+#KRIGE FUNCTIONS
+export(occurrence)
+
+#UERE FUNCTIONS
+export(uere)
+
+#OVERLAP FUNCTIONS
+export(overlap)
+S3method(overlap,ctmm)
+S3method(overlap,telemetry)

@@ -1,0 +1,74 @@
+\name{akde}
+\alias{akde}
+%- Also NEED an '\alias' for EACH other topic documented here.
+\title{
+Calculate an autocorrelated kernel density estimate
+}
+\description{
+This function calculates autocorrelated kernel density estimates of different confidence levels from \code{telemetry} data and a continuous-time movement model.
+}
+\usage{
+akde(data,CTMM,debias=TRUE,error=0.001,res=10,grid=NULL,...)
+}
+%- maybe also 'usage' for other objects documented here.
+\arguments{
+  \item{data}{ 2D timeseries telemetry data represented as a \code{telemetry} object. }
+  \item{CTMM}{A \code{ctmm} movement model from the output of \code{ctmm.fit}.}
+  \item{debias}{Debias the distribution for area estimation.}
+  \item{error}{Target error for kernel truncation.}
+  \item{res}{Number of grid points along each axis, relative to the bandwidth.}
+  \item{grid}{Optional grid specification with columns labeled \code{x} and \code{y}. Not yet supported.}
+  \item{...}{Arguments passed to all instances of \code{\link{akde.bandwidth}}.}
+}
+
+%\details{}
+
+\value{Returns a \code{UD} object: a list with the sampled grid line locations \code{x} and \code{y}, the area of each grid cell \code{dA}, the probability density and cumulative distribution functions evaluated on the sampled grid locations \code{PDF} & \code{CDF}, the optimal bandwidth matrix \code{H}, and the effective sample size of the data in \code{DOF.H}.
+}
+
+\references{
+C. H. Fleming and W. F. Fagan and T. Mueller and K. A. Olson and P. Leimgruber and J. M. Calabrese (2015).
+Rigorous home-range estimation with movement data: A new autocorrelated kernel-density estimator.
+\href{http://www.esajournals.org/doi/abs/10.1890/14-2010.1}{Ecology, 96(5), 1182-1188}.
+
+%D. Marcotte. (1996). Fast variogram computation with FFT. \emph{Computers and Geosciences} 22(10), 1175-1186.
+}
+
+\author{ C. H. Fleming. }
+
+\note{ In the case of coarse grids, the value of \code{PDF} in a grid cell corresponds to the average probability density over the entire rectangular cell.
+
+Prior to \code{ctmm} v0.3.2, the default AKDE method was the autocorrelated Gaussian reference function bandwidth.
+Starting in v0.3.2, the default AKDE method is the autocorrelated Gaussian reference function bandwidth with debiased area.
+
+Prior to \code{ctmm} v0.3.1, AKDEs included only errors due to autocorrelation uncertainty, which are insignificant in cases such as IID data.
+Starting in v0.3.1, \code{akde} calculated an effective sample size \code{DOF.H} and used this to estimate area uncertainty under a Gaussian reference function approxmation.
+In v0.3.2, this method was further improved to use \code{DOF.area} from the Gaussian reference function approximation.
+}
+
+%% ~Make other sections like Warning with \section{Warning }{....} ~
+
+\seealso{ \code{\link{akde.bandwidth}}, \code{\link{raster,UD-method}} }
+
+\examples{\donttest{
+# Load package and data
+library(ctmm)
+data(buffalo)
+cilla <- buffalo[[1]]
+
+# Fit a continuous-velocity model with tau ~ c(10 days, 1 hour)
+# see help(variogram.fit)
+GUESS <- ctmm(tau=c(10*24*60^2,60^2))
+FIT <- ctmm.fit(cilla,GUESS)
+
+# Compute akde object
+UD <- akde(cilla,FIT)
+
+# Plot data with AKDE contours
+plot(cilla,UD=UD)
+}}
+
+% Add one or more standard keywords, see file 'KEYWORDS' in the
+% R documentation directory.
+%\keyword{ ~kwd1 }
+%\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
