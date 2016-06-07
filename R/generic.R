@@ -169,6 +169,17 @@ PDsolve <- function(M)
   return(M)
 }
 
+# sqrtm fails on 1x1 matrix
+# I cannot figure out how to make this "Note" go away!
+# x <- Matrix::Matrix(x,sparse=FALSE,doDiag=FALSE)
+sqrtm <- function(x)
+{
+  DIM <- dim(x)
+  if(all(DIM==c(1,1)))
+  { return ( sqrt(x) ) }
+  else
+  { return( expm::sqrtm(x) ) }
+}
 
 # generalized covariance from likelihood derivatives
 cov.loglike <- function(hess,grad)

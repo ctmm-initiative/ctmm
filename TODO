@@ -1,3 +1,9 @@
+axes: plot
+
+variogram.fit: error check box, error svf additive
+
+predict: uncertainty, veloctiy, ...
+
 store fixed error in data
 store fixed reml ll in data
   log(det(U%*%U)) not included in ctmm.loglike (precompute in ctmm.fit for fixed U)
@@ -57,7 +63,6 @@ store forecast/concurrent estimates
 call vectorized RNG
 
 Include telemetry errors in unconditional simulation?
-krige -> predict
 
 cross variogram
 

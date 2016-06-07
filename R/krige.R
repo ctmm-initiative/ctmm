@@ -4,6 +4,7 @@
 smoother <- function(DATA,CTMM,...)
 {
   CTMM <- ctmm.prepare(DATA,CTMM)
+  AXES <- length(CTMM$axes)
   
   t <- DATA$t
   
@@ -15,8 +16,16 @@ smoother <- function(DATA,CTMM,...)
   isotropic <- CTMM$isotropic
   sigma <- CTMM$sigma
   area <- sigma@par[1]
-  ecc <- sigma@par[2]
-  theta <- sigma@par[3]
+  if(AXES > 1)
+  {
+    ecc <- sigma@par[2]
+    theta <- sigma@par[3]
+  }
+  else
+  {
+    ecc <- 0
+    theta <- 0
+  }
 
   K <- length(CTMM$tau)
   
@@ -24,12 +33,12 @@ smoother <- function(DATA,CTMM,...)
   if(circle) { circle <- 2*pi/circle }
   if(abs(circle) == Inf) { circle <- FALSE }
   
-  R <- cbind(DATA$x,DATA$y)
+  R <- get.telemetry(DATA,CTMM$axes)
   # stationary mean function
   u <- array(1,n)
   
-  V <- array(0,dim=c(n,2))
-  COV <- array(0,dim=c(n,2,2))
+  V <- array(0,dim=c(n,AXES))
+  COV <- array(0,dim=c(n,AXES,AXES))
   
   # do we need to orient the data along the major an minor axes of sigma
   ROTATE <- !isotropic && (CTMM$error || circle)
@@ -90,8 +99,13 @@ smoother <- function(DATA,CTMM,...)
     KALMAN <- kalman(R,u,dt=dt,CTMM=CTMM,error=DATA$error,...)
     
     R <- KALMAN$Z[,"position",]
-    if(K>1) { V <- KALMAN$Z[,"velocity",] }
-    COV <- KALMAN$S[,"position","position"] %o% covm(c(1,ecc,theta),isotropic)
+    R <- cbind(R) # R drops dimension-1
+    if(K>1)
+    {
+      V <- KALMAN$Z[,"velocity",]
+      V <- cbind(V) # R drops dimension-1
+    }
+    COV <- KALMAN$S[,"position","position"] %o% covm(c(1,ecc,theta),isotropic,axes=CTMM$axes)
   }
   else
   {
@@ -131,6 +145,7 @@ smoother <- function(DATA,CTMM,...)
     V <- t(M %*% t(V))
   }
   
+  colnames(R) <- CTMM$axes
   RETURN <- list(t=t,R=R,COV=COV)
   if(K>1) { RETURN$V <- V }
   
@@ -311,7 +326,9 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
   if(!is.null(seed)){ set.seed(seed) }
   
   info <- attr(object,"info")
-
+  axes <- object$axes
+  AXES <- length(axes)
+  
   # Gaussian simulation not conditioned off of any data
   if(is.null(data))
   {
@@ -322,13 +339,11 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
     K <- length(tau)
     
     mu <- object$mu
-    if(is.null(mu)) { mu <- array(0,c(1,2)) }
+    if(is.null(mu)) { mu <- array(0,c(1,AXES)) }
     sigma <- object$sigma
-    if(is.null(sigma)) { sigma <- diag(1,2) }
+    if(is.null(sigma)) { sigma <- diag(1,AXES) }
     
-    # I cannot figure out how to make this "Note" go away!
-    # sigma <- Matrix::Matrix(sigma,sparse=FALSE,doDiag=FALSE)
-    suppressWarnings(Lambda <- expm::sqrtm(sigma))
+    Lambda <- sqrtm(sigma)
     
     K <- length(tau)
     
@@ -336,13 +351,11 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
     dt <- c(Inf,diff(t)) # time lags
     
     # where we will store the data
-    x <- rep(0,times=n)
-    y <- rep(0,times=n)
-    
+    z <- array(0,c(n,AXES))
+
     # initial hidden state, for standardized process
-    Hx <- rep(0,times=K)
-    Hy <- rep(0,times=K)
-    
+    H <- array(0,c(K,AXES))
+
     object$sigma <- 1
     for(i in 1:n)
     {
@@ -354,33 +367,36 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
         Sigma <- Langevin$Sigma
       }
       
-      # standardized process
-      Hx <- MASS::mvrnorm(n=1,mu=as.vector(Green %*% Hx),Sigma=Sigma)
-      Hy <- MASS::mvrnorm(n=1,mu=as.vector(Green %*% Hy),Sigma=Sigma)
-      
-      x[i] <- Hx[1]
-      y[i] <- Hy[1]
+      # generate standardized process
+      # R drops dimensions ... so this code has to be a little weird
+      H <- lapply(1:AXES,function(X){ MASS::mvrnorm(n=1,mu=as.vector(Green %*% H[,X]),Sigma=Sigma) })
+      H <- do.call(cbind,H)
+      # pull out location from hidden state
+      z[i,] <- H[1,]
     }
     
     # rotate process if necessary
     circle <- object$circle
     if(circle)
     {
+      z <- z[,1] + 1i*z[,2]
+      
       circle <- 2*pi/circle
-      r <- exp(1i*circle*(t-t[1]))
-      r <- r * (x + 1i*y)
-      x <- Re(r)
-      y <- Im(r)
+      R <- exp(1i*circle*(t-t[1]))
+      z <- R * z
+
+      z <- cbind(Re(z),Im(z))
     }
     
-    r <- cbind(x,y)
-    r <- r %*% Lambda
+    z <- z %*% Lambda
     
     # calculate mean function
     mu <- object$mean.vec %*% mu
-    r <- r + mu
+    z <- z + mu
+    colnames(z) <- axes
     
-    data <- data.frame(t=t,x=r[,1],y=r[,2])
+    data <- data.frame(z)
+    data$t <- t
   }
   else # condition off of the data
   {
@@ -388,10 +404,48 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
     data <- fill.data(data,CTMM=object,t=t,dt=dt,res=res)
     object$error <- TRUE # avoids unit variance algorithm
     data <- smoother(data,object,sample=TRUE)
-    data <- data.frame(t=data$t,x=data$R[,1],y=data$R[,2])
+    data <- cbind(t=data$t,data$R)
+    data <- data.frame(data)
   }
   
   data <- new.telemetry(data,info=info)
   return(data)
 }
 #methods::setMethod("simulate",signature(object="ctmm"), function(object,...) simulate.ctmm(object,...))
+
+##########################
+# predict locations at certaint times
+##########################
+predict.ctmm <- function(object,data=NULL,t=NULL,dt=NULL,res=1,...)
+{
+  info <- attr(object,"info")
+  axes <- object$axes
+  
+  # Gaussian simulation not conditioned off of any data
+  if(is.null(data))
+  {
+    object <- ctmm.prepare(list(t=t),object)
+
+    mu <- object$mu
+    if(is.null(mu)) { mu <- array(0,c(1,length(axes))) }
+
+    # calculate mean function
+    r <- object$mean.vec %*% mu
+    colnames(r) <- axes
+    
+    data <- data.frame(r)
+    data$t <- t
+  }
+  else # condition off of the data
+  {
+    object <- ctmm.prepare(data,object)
+    data <- fill.data(data,CTMM=object,t=t,dt=dt,res=res)
+    object$error <- TRUE # avoids unit variance algorithm
+    data <- smoother(data,object,smooth=TRUE)
+    data <- cbind(t=data$t,data$R)
+    data <- data.frame(data)
+  }
+  
+  data <- new.telemetry(data,info=info)
+  return(data)
+}

@@ -484,7 +484,14 @@ Gauss <- function(X,Y,sigma=NULL,sigma.inv=solve(sigma),sigma.GM=sqrt(det(sigma)
 CI.UD <- function(object,level.UD=0.95,level=0.95,P=FALSE)
 {
   # point estimate
-  area <- sum(object$CDF <= level.UD) * object$dA
+  if(is.na(level.UD))
+  {
+    # calculate mean area
+    area <- sort(object$PDF,decreasing=TRUE,method="quick")
+    area <- sum(area * (1:length(area))) * object$dA
+  }
+  else
+  { area <- sum(object$CDF <= level.UD) * object$dA }
   
   # chi square approximation of uncertainty
   area <- chisq.ci(area,DOF=2*object$DOF.area,alpha=1-level)
@@ -495,7 +502,8 @@ CI.UD <- function(object,level.UD=0.95,level=0.95,P=FALSE)
   P <- round(area / object$dA)
   P <- sort(object$CDF,method="quick")[P]
 
-  P[2] <- level.UD
+  # recorrect point estimate level
+  if(!is.na(level.UD)) { P[2] <- level.UD }
   
   return(P)
 }

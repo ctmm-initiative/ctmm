@@ -73,8 +73,10 @@ summary.ctmm <- function(object,level=0.95,level.UD=0.95,...)
 # Summarize results
 summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, ...)
 {
+  if(is.na(level.UD)) { level.UD <- 1-exp(-1) } # normal mean area
+  
   alpha <- 1-level
-  alpha.UD <- 1-level
+  alpha.UD <- 1-level.UD
   
   drift <- get(object$mean)
   
