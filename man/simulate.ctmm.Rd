@@ -1,14 +1,20 @@
 \name{simulate.ctmm}
+\alias{predict}
+\alias{predict.ctmm}
 \alias{simulate}
 \alias{simulate.ctmm}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Simulate a continuous-time movement model
+Predict or simulate from a continuous-time movement model
 }
 \description{
-This function generates an \eqn{O(n)} hidden-Markov simulation of continuous-time movement models described in Fleming et al (2014) and Fleming et al (2015).
+This function generates an \eqn{O(n)} hidden-Markov Krige or simulation of continuous-time movement models described in Fleming et al (2014) and Fleming et al (2015). I.e., locations of missing or erroneous data can be efficiently predicted or simulated.
 }
 \usage{
+predict(object,...)
+
+\S3method{predict}{ctmm}(object,data=NULL,t=NULL,dt=NULL,res=1,...)
+
 simulate(object,nsim=1,seed=NULL,...)
 
 \S3method{simulate}{ctmm}(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1,...)
@@ -16,16 +22,16 @@ simulate(object,nsim=1,seed=NULL,...)
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{object}{ A \code{ctmm} movement-model in the same format as the output of \code{\link{ctmm.fit}} or \code{\link{variogram.fit}}.}
+  \item{data}{Optional \code{telemetry} object on which the prediction or simulation will be conditioned.}
+  \item{t}{Array of numeric time values over which the process will be predicted or simulated.}
+  \item{dt}{Timestep to space the prediction or simulation over if \code{data} is specified.}
+  \item{res}{Average number of locations to predict or simulate per \code{data} time.}
   \item{nsim}{Not yet supported.}
   \item{seed}{Optional random seed to fix.}
-  \item{data}{Optional \code{telemetry} object on which the simulation will be conditioned.}
-  \item{t}{Array of numeric time values over which the process will be simulated.}
-  \item{dt}{Timestep to run simulation over if \code{data} is specified.}
-  \item{res}{Average number of locations to simulate per \code{data} time.}
   \item{...}{Unused options.}
 }
 \details{
-The simulation can be conditioned off of \code{data}, if specified. Otherwise, the simulation will be Gaussian. 
+The prediction or simulation can be conditioned off of \code{data}, if specified. Otherwise, the simulation will be purely Gaussian. 
 Details of the movement model parameters can be found in \code{\link{ctmm.fit}}.
 }
 

@@ -23,6 +23,7 @@ get.telemetry <- function(data,axes)
 {
   z <- "[.data.frame"(data,axes)
   z <- as.matrix(z)
+  colnames(z) <- axes
   return(z)
 }
 
@@ -284,6 +285,7 @@ zoom.telemetry <- function(x,fraction=1,...)
 methods::setMethod("zoom",signature(x="telemetry"), function(x,fraction=1,...) zoom.telemetry(x,fraction=fraction,...))
 methods::setMethod("zoom",signature(x="UD"), function(x,fraction=1,...) zoom.telemetry(x,fraction=fraction,...))
 
+##############
 new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,...)
 {
   alpha.UD <- 1-level.UD
@@ -325,6 +327,7 @@ new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,fracti
     # bounding locations from Gaussian CTMM
     if(!is.null(CTMM))
     {
+      if(is.na(alpha.UD)) { alpha.UD <- exp(-1) } # mean area
       z <- sqrt(-2*log(alpha.UD))
       
       for(i in 1:length(CTMM))
@@ -397,8 +400,9 @@ new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,fracti
 #######################################
 plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF",col="red",col.level="black",col.DF="blue",col.grid="grey",fraction=1,add=FALSE,xlim=NULL,ylim=NULL,cex=1,lwd=1,...)
 {
-  alpha.UD <- 1-level.UD
   alpha <- 1-level
+  alpha.UD <- 1-level.UD
+  if(is.na(alpha.UD)) { alpha.UD <- exp(-1) } # mean area
   
   # listify everything for generality
   if(class(x)=="telemetry" || class(x)=="data.frame") { x <- list(x)  }
@@ -549,6 +553,7 @@ plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",col.level="black",col.DF
     if(!is.na(col.level[[i]]))
     {
       # make sure that correct style is used for low,ML,high even in absence of lows and highs
+      if(is.na(level.UD)) { level.UD <- CI.UD(x[[i]],level.UD,level,P=TRUE)[2] } # ugly/redundant code for now!!!
       plot.kde(x[[i]],level=level.UD,col=scales::alpha(col.level[[i]],1),lwd=lwd,...)
       
       if(!is.null(x[[i]]$DOF.H))

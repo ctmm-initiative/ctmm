@@ -169,6 +169,18 @@ PDsolve <- function(M)
   return(M)
 }
 
+# sqrtm fails on 1x1 matrix
+# I cannot figure out how to make this "Note" go away!
+# x <- Matrix::Matrix(x,sparse=FALSE,doDiag=FALSE)
+sqrtm <- function(x)
+{
+  DIM <- dim(x)
+  if(all(DIM==c(1,1)))
+  { return ( sqrt(x) ) }
+  else
+  { return( expm::sqrtm(x) ) }
+}
+
 
 # generalized covariance from likelihood derivatives
 cov.loglike <- function(hess,grad)
@@ -458,6 +470,7 @@ unit.ctmm <- function(CTMM,length=1,time=1)
   drift <- get(CTMM$mean)
   CTMM <- drift@scale(CTMM,time)
   
+  CTMM$error <- CTMM$error/length
   CTMM$sigma <- CTMM$sigma/length^2
   CTMM$sigma@par["area"] <- CTMM$sigma@par["area"]/length^2
   

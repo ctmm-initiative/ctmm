@@ -5,6 +5,7 @@ new.variogram <- methods::setClass("variogram",representation("data.frame",info=
 subset.variogram <- function(x,...)
 {
   info <- attr(x,"info")
+  error <- attr(x,"error")
   x <- subset.data.frame(x,...)
   x < - droplevels(x)
   new.variogram(x,info=info)
@@ -13,41 +14,51 @@ subset.variogram <- function(x,...)
 `[.variogram` <- function(x,...)
 {
   info <- attr(x,"info")
+  error <- attr(x,"error")
   x <- utils::getS3method("[","data.frame")(x,...)
   if(class(x)=="data.frame") { x <- new.variogram(x,info=info) }
   return(x)
 }
 
-
+#########################
 # variogram funcion wrapper
 variogram <- function(data,dt=NULL,fast=TRUE,CI="Markov",axes=c("x","y"))
 {
-  if(length(dt)<2) { return(variogram.dt(data,dt=dt,fast=fast,CI=CI,axes=axes)) }
-  
-  # calculate a variograms at each dt
-  vars <- lapply(dt, function(DT) { variogram.dt(data,dt=DT,fast=fast,CI=CI,axes=axes) } )
-  
-  # subset each variogram to relevant range of lags
-  dt <- c(dt,Inf)
-  lag <- vars[[1]]$lag
-  vars[[1]] <- vars[[1]][lag<=dt[2],]
-  for(i in 1:(length(dt)-1))
+  if(length(dt)<2)
+  { var <- variogram.dt(data,dt=dt,fast=fast,CI=CI,axes=axes) }
+  else
   {
-    lag <- vars[[i]]$lag
-    vars[[i]] <- vars[[i]][(dt[i]<lag)&(lag<=dt[i+1]),]
+    # calculate a variograms at each dt
+    vars <- lapply(dt, function(DT) { variogram.dt(data,dt=DT,fast=fast,CI=CI,axes=axes) } )
+    
+    # subset each variogram to relevant range of lags
+    dt <- c(dt,Inf)
+    lag <- vars[[1]]$lag
+    vars[[1]] <- vars[[1]][lag<=dt[2],]
+    for(i in 1:(length(dt)-1))
+    {
+      lag <- vars[[i]]$lag
+      vars[[i]] <- vars[[i]][(dt[i]<lag)&(lag<=dt[i+1]),]
+    }
+    
+    # coalate
+    var <- vars[[1]]
+    for(i in 2:(length(dt)-1)) { var <- rbind(var,vars[[i]]) }
   }
   
-  # coalate
-  var <- vars[[1]]
-  for(i in 2:(length(dt)-1)) { var <- rbind(var,vars[[i]]) }
-
-  var <- new.variogram(var,info=attr(data,"info"))
-  attr(var,"info")$axes <- axes
+  # average error when UERE=1
+  error <- get.error(data,ctmm(error=TRUE,axes=axes))
+  error <- mean(error)
   
+  info=attr(data,"info")
+  info$axes <- axes
+  info$error <- error
+  
+  var <- new.variogram(var,info=info)
   return(var)
 } 
   
-
+################################
 # wrapper for fast and slow variogram codes, for a specified dt
 variogram.dt <- function(data,dt=NULL,fast=NULL,CI="Markov",axes=c("x","y"))
 {
@@ -66,8 +77,6 @@ variogram.dt <- function(data,dt=NULL,fast=NULL,CI="Markov",axes=c("x","y"))
   # skip missing data
   SVF <- SVF[where(SVF$DOF>0),]
   SVF <- stats::na.omit(SVF)
-  SVF <- new.variogram(SVF,info=attr(data,"info"))
-  attr(SVF,"info")$axes <- axes
   return(SVF)
 }
 
@@ -228,6 +237,13 @@ variogram.fast <- function(data,dt=NULL,fast=fast,CI="Markov",axes=c("x","y"),SL
   
   result <- data.frame(SVF=SVF,DOF=DOF,lag=lag)
   if(SLP) { result$SLP <- slp }
+  
+  # contribution to SVF from telemetry error when UERE=1
+  #error <- get.error(data,ctmm(axes=axes,error=1))
+  #error <- mean(error)
+  #result$error <- error
+  #result$error[1] <- 0
+  
   return(result)
 }
 
@@ -236,6 +252,7 @@ variogram.fast <- function(data,dt=NULL,fast=fast,CI="Markov",axes=c("x","y"),SL
 variogram.slow <- function(data,dt=NULL,CI="Markov",axes=c("x","y"))
 {
   t <- data$t
+  error <- get.error(data,ctmm(axes=axes,error=1)) # telemetry error when UERE=1
   z <- get.telemetry(data,axes)
   COL <- ncol(z)
   
@@ -252,8 +269,18 @@ variogram.slow <- function(data,dt=NULL,CI="Markov",axes=c("x","y"))
   # where we will store stuff
   lag <- seq(0,ceiling((t[n]-t[1])/dt))*dt
   SVF <- numeric(length(lag))
+  #ERR <- numeric(length(lag))
   DOF <- numeric(length(lag))
   DOF2 <- numeric(length(lag))
+  
+  # accumulate
+  accumulate <- function(K,W,svf)
+  {
+    SVF[K] <<- SVF[K] + W*svf
+    #ERR[K] <<- ERR[K] + W*err
+    DOF[K] <<- DOF[K] + W
+    DOF2[K] <<- DOF2[K] + W^2
+  }
   
   pb <- utils::txtProgressBar(style=3)
   for(i in 1:n)
@@ -261,7 +288,8 @@ variogram.slow <- function(data,dt=NULL,CI="Markov",axes=c("x","y"))
     for(j in i:n)
     {
       tau <- t[j] - t[i]
-      var <- mean((z[j,]-z[i,])^2)/2
+      svf <- mean((z[j,]-z[i,])^2)/2
+      #err <- (error[i]+error[j])/2 # telemetry error when UERE=1
 
       # gap weight
       if(tau==0) { w <- 1 }
@@ -269,17 +297,15 @@ variogram.slow <- function(data,dt=NULL,CI="Markov",axes=c("x","y"))
       
       # fractional index
       k <- tau/dt + 1
-      
+
       if(floor(k)==ceiling(k))
       { # even sampling
         # lag index
         K <- round(k)
         # total weight
         W <- w
-        # accumulate
-        SVF[K] <- SVF[K] + W*var
-        DOF[K] <- DOF[K] + W
-        DOF2[K] <- DOF2[K] + W^2
+        # accumulate        
+        accumulate(K,W,svf)
       }
       else
       { # account for drift by distributing semi-variance
@@ -289,18 +315,14 @@ variogram.slow <- function(data,dt=NULL,CI="Markov",axes=c("x","y"))
         # left weight
         W <- w*(1-(k-K))
         # accumulate left portion
-        SVF[K] <- SVF[K] + W*var
-        DOF[K] <- DOF[K] + W
-        DOF2[K] <- DOF2[K] + W^2
+        accumulate(K,W,svf)
         
         # right index
         K <- ceiling(k)
         # right weight
         W <- w*(1-(K-k))
         # accumulate right portion
-        SVF[K] <- SVF[K] + W*var
-        DOF[K] <- DOF[K] + W
-        DOF2[K] <- DOF2[K] + W^2
+        accumulate(K,W,svf)
       }
     }
     utils::setTxtProgressBar(pb,(i*(2*n-i))/(n^2))
@@ -312,22 +334,24 @@ variogram.slow <- function(data,dt=NULL,CI="Markov",axes=c("x","y"))
   lag <- SVF$lag
   DOF <- SVF$DOF
   DOF2 <- SVF$DOF2
+  #error <- SVF$error
   SVF <- SVF$SVF
   
   # normalize SVF
   SVF <- SVF/DOF
+  #error <- error/DOF
   # effective DOF from weights, one for x and y
-  DOF <- 2*DOF^2/DOF2
+  DOF <- COL*DOF^2/DOF2
   
   # only count non-overlapping lags... still not perfect
   if(CI=="Markov")
   {
-    dof <- 2*length(t)
+    dof <- COL*length(t)
     if(dof<DOF[1]) { DOF[1] <- dof  }
     
     for(i in 2:length(lag))
     { # large gaps are missing data
-      dof <- 2*sum(DT[DT<=lag[i]])/lag[i]
+      dof <- COL*sum(DT[DT<=lag[i]])/lag[i]
       if(dof<DOF[i]) { DOF[i] <- dof }
       
       utils::setTxtProgressBar(pb,i/length(lag))
@@ -335,14 +359,91 @@ variogram.slow <- function(data,dt=NULL,CI="Markov",axes=c("x","y"))
   }
   else if(CI=="IID") # fix initial and total DOF
   {
-    DOF[1] <- 2*length(t)
-    DOF[-1] <- DOF[-1]/sum(DOF[-1])*(length(t)^2-length(t))
+    DOF[1] <- COL*length(t)
+    DOF[-1] <- DOF[-1]/sum(DOF[-1])*(length(t)^2-length(t))*COL/2
   }
   
   close(pb)
   
   result <- data.frame(SVF=SVF,DOF=DOF,lag=lag)
   return(result)
+}
+
+########################
+# AVERAGE VARIOGRAMS
+mean.variogram <- function(x,...)
+{
+  x <- c(x,list(...))
+  IDS <- length(x)
+  
+  # assemble observed lag range
+  lag.min <- numeric(IDS) # this will be dt
+  lag.max <- numeric(IDS)
+  for(id in 1:IDS)
+  { 
+    n <- length(x[[id]]$lag)
+    lag.max[id] <- x[[id]]$lag[n]
+    lag.min[id] <- x[[id]]$lag[2]
+  }
+  lag.max <- max(lag.max)
+  lag.min <- min(lag.min)
+  lag <- seq(0,ceiling(lag.max/lag.min))*lag.min
+  
+  # where we will store everything
+  n <- length(lag)
+  SVF <- numeric(n)
+  DOF <- numeric(n)
+  
+  # accumulate semivariance
+  for(id in 1:IDS)
+  {
+    for(i in 1:length(x[[id]]$lag))
+    {
+      # lag index
+      j <- 1 + round(x[[id]]$lag[i]/lag.min)
+      # number weighted accumulation
+      DOF[j] <- DOF[j] + x[[id]]$DOF[i]
+      SVF[j] <- SVF[j] + x[[id]]$DOF[i]*x[[id]]$SVF[i]
+    }
+  }
+  
+  # delete missing lags
+  variogram <- data.frame(SVF=SVF,DOF=DOF,lag=lag)
+  variogram <- subset(variogram,DOF>0)
+  
+  # normalize SVF
+  variogram$SVF <- variogram$SVF / variogram$DOF
+  
+  # drop unused levels
+  variogram <- droplevels(variogram)
+  
+  # average average errors
+  DOF <- sapply(1:length(x),function(i){ x[[i]]$DOF[1] })
+  error <- sapply(1:length(x),function(i){ attr(x[[i]],"error") })
+  error <- sum(DOF * error)/sum(DOF)
+  
+  info <- mean.info(x)
+  info$error <- error
+    
+  variogram <- new.variogram(variogram,info=info)
+  return(variogram)
+}
+#methods::setMethod("mean",signature(x="variogram"), function(x,...) mean.variogram(x,...))
+
+
+#################
+# consolodate info attributes from multiple datasets
+mean.info <- function(x)
+{
+  # mean identity
+  identity <- sapply(x , function(v) { attr(v,"info")$identity } )
+  identity <- unique(identity) # why did I do this?
+  identity <- paste(identity,collapse=" ")
+  
+  info=attr(x[[1]],"info")
+  info$identity <- identity
+  
+  return(info)
 }
 
 
@@ -443,14 +544,18 @@ svf.func <- function(CTMM,moment=FALSE)
 
 
 ##########
-plot.svf <- function(lag,CTMM,alpha=0.05,col="red",type="l",...)
+plot.svf <- function(lag,CTMM,error=0,alpha=0.05,col="red",type="l",...)
 {
   SVF <- svf.func(CTMM,moment=TRUE)
   svf <- SVF$svf
   DOF <- SVF$DOF
-  
+
+  # telemetry error svf
+  error <- CTMM$error^2 * error
+  errf <- function(t){ if(t==0) {0} else {error} }
+    
   # point estimate plot
-  SVF <- Vectorize(svf)
+  SVF <- Vectorize(function(t) { svf(t)+errf(t) })
   graphics::curve(SVF,from=0,to=lag,n=1000,add=TRUE,col=col,type=type,...)
   
   # confidence intervals if COV provided
@@ -460,8 +565,8 @@ plot.svf <- function(lag,CTMM,alpha=0.05,col="red",type="l",...)
     
     for(j in 1:length(alpha))
     {
-      svf.lower <- Vectorize(function(t){ svf(t) * CI.lower(DOF(t),alpha[j]) })
-      svf.upper <- Vectorize(function(t){ svf(t) * CI.upper(DOF(t),alpha[j]) })
+      svf.lower <- Vectorize(function(t){ svf(t) * CI.lower(DOF(t),alpha[j]) + errf(t) })
+      svf.upper <- Vectorize(function(t){ svf(t) * CI.upper(DOF(t),alpha[j]) + errf(t) })
       
       graphics::polygon(c(Lags,rev(Lags)),c(svf.lower(Lags),rev(svf.upper(Lags))),col=scales::alpha(col,0.1/length(alpha)),border=NA,...)
     }
@@ -483,7 +588,6 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", 
   # default single comparison model
   if(is.null(CTMM) && n==1 && !is.null(attr(x[[1]],"info")$CTMM)) { CTMM <- attr(x[[1]],"info")$CTMM }
   
-    
   # maximum lag in data
   max.lag <- sapply(x, function(v){ last(v$lag) } )
   max.lag <- max(max.lag)
@@ -554,7 +658,20 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", 
       # units conversion
       CTMM[[i]] <- unit.ctmm(CTMM[[i]],sqrt(SVF.scale),lag.scale)
 
-      plot.svf(max.lag/lag.scale,CTMM[[i]],alpha=alpha,type=type,col=col[[i]])
+      # include errors in svf plot
+      error <- FALSE
+      if(CTMM[[i]]$error)
+      {
+        j <- FALSE
+        # choose relevant data
+        if(length(x)==1) { j <- 1 }
+        else if(length(x)==n) { j <- i }
+        else warning("Ambiguity in who's error to plot.")
+
+        if(j) { error <- attr(x[[j]],"info")$error }
+      }
+      
+      plot.svf(max.lag/lag.scale,CTMM[[i]],error=error,alpha=alpha,type=type,col=col[[i]])
     }
   }
   
@@ -677,6 +794,7 @@ variogram.fit <- function(variogram,CTMM=ctmm(),name="GUESS",fraction=0.5,intera
   z <- NULL
   tau1 <- 1
   tau2 <- 0
+  error <- CTMM$error
   store <- NULL ; rm(store)
   
   m <- 2 # slider length relative to point guestimate
@@ -736,6 +854,7 @@ variogram.fit <- function(variogram,CTMM=ctmm(),name="GUESS",fraction=0.5,intera
     manlist <- c(manlist, list(tau2 = manipulate::slider(0,m*tau[2],initial=tau[2],label=label)))
   }
   
+  # circulation
   circle <- CTMM$circle
   if(circle)
   {
@@ -747,6 +866,11 @@ variogram.fit <- function(variogram,CTMM=ctmm(),name="GUESS",fraction=0.5,intera
     manlist <- c(manlist, list(circle = manipulate::slider(c1,c2,initial=circle,label=label)))
   }
   
+  # error
+  e2 <- max(100,2*error)
+  manlist <- c(manlist, list(error = manipulate::slider(0,e2,initial=as.numeric(error),step=0.1,label="error (m)")))
+  
+  # storage button
   manlist <- c(manlist, list(store = manipulate::button(paste("Save to",name))))
   
   if(!range)
@@ -769,6 +893,7 @@ variogram.fit <- function(variogram,CTMM=ctmm(),name="GUESS",fraction=0.5,intera
       
       CTMM$tau <- c(tau1*tau1.unit$scale, tau2*tau2.unit$scale)
       if(circle) { CTMM$circle <- circle * circle.unit$scale }
+      CTMM$error <- error
       
       CTMM <- as.list(CTMM)
       CTMM$info <- attr(variogram,"info")
@@ -780,72 +905,3 @@ variogram.fit <- function(variogram,CTMM=ctmm(),name="GUESS",fraction=0.5,intera
     manlist
   )
 }
-
-
-# AVERAGE VARIOGRAMS
-mean.variogram <- function(x,...)
-{
-  x <- c(x,list(...))
-  IDS <- length(x)
-  
-  # assemble observed lag range
-  lag.min <- numeric(IDS) # this will be dt
-  lag.max <- numeric(IDS)
-  for(id in 1:IDS)
-  { 
-    n <- length(x[[id]]$lag)
-    lag.max[id] <- x[[id]]$lag[n]
-    lag.min[id] <- x[[id]]$lag[2]
-  }
-  lag.max <- max(lag.max)
-  lag.min <- min(lag.min)
-  lag <- seq(0,ceiling(lag.max/lag.min))*lag.min
-  
-  # where we will store everything
-  n <- length(lag)
-  SVF <- numeric(n)
-  DOF <- numeric(n)
-  
-  # accumulate semivariance
-  for(id in 1:IDS)
-  {
-   for(i in 1:length(x[[id]]$lag))
-   {
-    # lag index
-    j <- 1 + round(x[[id]]$lag[i]/lag.min)
-    # number weighted accumulation
-    DOF[j] <- DOF[j] + x[[id]]$DOF[i]
-    SVF[j] <- SVF[j] + x[[id]]$DOF[i]*x[[id]]$SVF[i]
-   }
-  }
-  
-  # delete missing lags
-  variogram <- data.frame(SVF=SVF,DOF=DOF,lag=lag)
-  variogram <- subset(variogram,DOF>0)
-
-  # normalize SVF
-  variogram$SVF <- variogram$SVF / variogram$DOF
-  
-  # drop unused levels
-  variogram <- droplevels(variogram)
-  
-  variogram <- new.variogram(variogram, info=mean.info(x))
-
-  return(variogram)
-}
-#methods::setMethod("mean",signature(x="variogram"), function(x,...) mean.variogram(x,...))
-
-
-# consolodate info attributes from multiple datasets
-mean.info <- function(x)
-{
-  # mean identity
-  identity <- sapply(x , function(v) { attr(v,"info")$identity } )
-  identity <- unique(identity) # why did I do this?
-  identity <- paste(identity,collapse=" ")
-  
-  info=attr(x[[1]],"info")
-  info$identity <- identity
-  
-  return(info)
-  }

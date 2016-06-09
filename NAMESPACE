@@ -58,6 +58,7 @@ S3method(writeShapefile,UD)
 
 #KRIGE FUNCTIONS
 export(occurrence)
+S3method(predict,ctmm)
 
 #UERE FUNCTIONS
 export(uere)

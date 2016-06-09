@@ -1,3 +1,5 @@
+mean.variogram error average by DOF
+
 store fixed error in data
 store fixed reml ll in data
   log(det(U%*%U)) not included in ctmm.loglike (precompute in ctmm.fit for fixed U)
