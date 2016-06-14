@@ -127,8 +127,11 @@ homerange <- function(data,CTMM,method="AKDE",...)
 
 #######################################
 # wrap the kde function for our telemetry data format and CIs.
-akde <- function(data,CTMM,debias=TRUE,error=0.001,res=10,grid=NULL,...)
+akde <- function(data,CTMM,debias=TRUE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
 {
+  # smooth out errors
+  if(CTMM$error && smooth) { data <- predict(CTMM,data=data,t=data$t) }
+  
   # calculate optimal bandwidth and some other information
   KDE <- akde.bandwidth(data=data,CTMM=CTMM,verbose=TRUE,...)
   if(debias) { debias <- KDE$bias }

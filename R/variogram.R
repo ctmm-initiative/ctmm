@@ -90,16 +90,6 @@ grid.init <- function(t,dt=stats::median(diff(t)),W=array(1,length(t)))
   COS <- W %*% cos(theta)
   t0 <- -dt/(2*pi)*atan(SIN/COS)
   
-  # OLD METHOD
-  # cost <- function(t0)
-  # { 
-  #   grid <- (t-t0)/dt
-  #   return( sum(W*(grid-round(grid))^2) )
-  # }
-  # 
-  # #t0 <- stats::optimize(cost,t[1]+c(-1,1)*dt/2)$minimum
-  # t0 <- stats::nlm(cost,p=t[1],stepmax=dt/4,iterlim=.Machine$integer.max)$estimate
-  
   return(t0)   
 }
 
@@ -250,7 +240,7 @@ variogram.fast <- function(data,dt=NULL,fast=fast,CI="Markov",axes=c("x","y"),SL
 variogram.slow <- function(data,dt=NULL,CI="Markov",axes=c("x","y"))
 {
   t <- data$t
-  error <- get.error(data,ctmm(axes=axes,error=1)) # telemetry error when UERE=1
+  #error <- get.error(data,ctmm(axes=axes,error=1)) # telemetry error when UERE=1
   z <- get.telemetry(data,axes)
   COL <- ncol(z)
   

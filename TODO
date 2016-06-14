@@ -1,4 +1,5 @@
-Apply predict in akde when error=TRUE
+predict.telemetry
+simulate.telemetry
 
 store fixed error in data
 store fixed reml ll in data

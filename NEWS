@@ -1,6 +1,8 @@
-0.3.3 2016-06-24
+0.3.3 2016-06-14
 
   * New method predict for ctmm objects
+  
+  * akde now supports smoothing errors
 
   * variogram.fit and plot.variogram now support telemetry error
 

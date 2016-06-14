@@ -8,13 +8,14 @@ Calculate an autocorrelated kernel density estimate
 This function calculates autocorrelated kernel density estimates of different confidence levels from \code{telemetry} data and a continuous-time movement model.
 }
 \usage{
-akde(data,CTMM,debias=TRUE,error=0.001,res=10,grid=NULL,...)
+akde(data,CTMM,debias=TRUE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{data}{ 2D timeseries telemetry data represented as a \code{telemetry} object. }
   \item{CTMM}{A \code{ctmm} movement model from the output of \code{ctmm.fit}.}
   \item{debias}{Debias the distribution for area estimation.}
+  \item{smooth}{"Smooth" out errors from the data.}
   \item{error}{Target error for kernel truncation.}
   \item{res}{Number of grid points along each axis, relative to the bandwidth.}
   \item{grid}{Optional grid specification with columns labeled \code{x} and \code{y}. Not yet supported.}
