@@ -1,4 +1,5 @@
 .git
+.gitignore
 .Rhistory
 ^.*\.Rproj$
 ^\.Rproj\.user$
