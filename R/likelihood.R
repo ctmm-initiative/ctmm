@@ -365,7 +365,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,verbose=FALSE)
         sigma <- covm(c(area,ecc,theta),isotropic=isotropic,axes=CTMM$axes)
         
         # convert from error ratio to absolute error
-        CTMM$error <- area * CTMM$error
+        CTMM$error <- sqrt(area) * CTMM$error
       }
       
       COV.mu <- solve(KALMAN$W/area)
@@ -450,7 +450,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,verbose=FALSE)
       sigma <- covm(area,isotropic=isotropic,axes=CTMM$axes)
       
       # convert from error ratio to absolute error
-      CTMM$error <- area * CTMM$error
+      CTMM$error <- sqrt(area) * CTMM$error
     }
     
     mu <- KALMAN$mu

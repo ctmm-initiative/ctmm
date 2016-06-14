@@ -1,12 +1,14 @@
-0.3.3 2016-05-24
+0.3.3 2016-06-24
 
   * New method predict for ctmm objects
 
+  * variogram.fit and plot.variogram now support telemetry error
+
   * UERE fitting now possible simultaneous with tracking data
-  
+
   * tag.local.identifier now used as backup to individual.local.identifier in as.telemetry
   
-  * multiple bug fixes in function uere
+  * multiple bug fixes in uere
   
   * res.space fixed in occurrence
 

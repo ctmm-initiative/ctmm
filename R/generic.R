@@ -181,6 +181,7 @@ sqrtm <- function(x)
   { return( expm::sqrtm(x) ) }
 }
 
+
 # generalized covariance from likelihood derivatives
 cov.loglike <- function(hess,grad)
 {
@@ -469,6 +470,7 @@ unit.ctmm <- function(CTMM,length=1,time=1)
   drift <- get(CTMM$mean)
   CTMM <- drift@scale(CTMM,time)
   
+  CTMM$error <- CTMM$error/length
   CTMM$sigma <- CTMM$sigma/length^2
   CTMM$sigma@par["area"] <- CTMM$sigma@par["area"]/length^2
   

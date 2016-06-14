@@ -1,8 +1,4 @@
-axes: plot
-
-variogram.fit: error check box, error svf additive
-
-predict: uncertainty, veloctiy, ...
+Apply predict in akde when error=TRUE
 
 store fixed error in data
 store fixed reml ll in data
@@ -63,6 +59,7 @@ store forecast/concurrent estimates
 call vectorized RNG
 
 Include telemetry errors in unconditional simulation?
+krige -> predict
 
 cross variogram
 
