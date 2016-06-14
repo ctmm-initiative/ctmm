@@ -1,4 +1,5 @@
-mean.variogram error average by DOF
+predict.telemetry
+simulate.telemetry
 
 store fixed error in data
 store fixed reml ll in data
