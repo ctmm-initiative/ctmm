@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-mean.variogram error average by DOF
-=======
 Apply predict in akde when error=TRUE
->>>>>>> refs/remotes/origin/Chris
 
 store fixed error in data
 store fixed reml ll in data
