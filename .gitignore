@@ -1,4 +1,10 @@
+<<<<<<< HEAD
 .git
 .Rproj.user
 .Rbuildignore
 ctmm.Rproj
+=======
+.Rproj.user
+.Rhistory
+inst
+>>>>>>> refs/remotes/origin/Chris

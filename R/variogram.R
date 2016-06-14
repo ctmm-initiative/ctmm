@@ -92,16 +92,6 @@ grid.init <- function(t,dt=stats::median(diff(t)),W=array(1,length(t)))
   COS <- W %*% cos(theta)
   t0 <- -dt/(2*pi)*atan(SIN/COS)
   
-  # OLD METHOD
-  # cost <- function(t0)
-  # { 
-  #   grid <- (t-t0)/dt
-  #   return( sum(W*(grid-round(grid))^2) )
-  # }
-  # 
-  # #t0 <- stats::optimize(cost,t[1]+c(-1,1)*dt/2)$minimum
-  # t0 <- stats::nlm(cost,p=t[1],stepmax=dt/4,iterlim=.Machine$integer.max)$estimate
-  
   return(t0)   
 }
 
@@ -238,12 +228,15 @@ variogram.fast <- function(data,dt=NULL,fast=fast,CI="Markov",axes=c("x","y"),SL
   result <- data.frame(SVF=SVF,DOF=DOF,lag=lag)
   if(SLP) { result$SLP <- slp }
   
+<<<<<<< HEAD
   # contribution to SVF from telemetry error when UERE=1
   #error <- get.error(data,ctmm(axes=axes,error=1))
   #error <- mean(error)
   #result$error <- error
   #result$error[1] <- 0
   
+=======
+>>>>>>> refs/remotes/origin/Chris
   return(result)
 }
 
@@ -252,7 +245,11 @@ variogram.fast <- function(data,dt=NULL,fast=fast,CI="Markov",axes=c("x","y"),SL
 variogram.slow <- function(data,dt=NULL,CI="Markov",axes=c("x","y"))
 {
   t <- data$t
+<<<<<<< HEAD
   error <- get.error(data,ctmm(axes=axes,error=1)) # telemetry error when UERE=1
+=======
+  #error <- get.error(data,ctmm(axes=axes,error=1)) # telemetry error when UERE=1
+>>>>>>> refs/remotes/origin/Chris
   z <- get.telemetry(data,axes)
   COL <- ncol(z)
   
@@ -419,7 +416,11 @@ mean.variogram <- function(x,...)
   
   # average average errors
   DOF <- sapply(1:length(x),function(i){ x[[i]]$DOF[1] })
+<<<<<<< HEAD
   error <- sapply(1:length(x),function(i){ attr(x[[i]],"error") })
+=======
+  error <- sapply(1:length(x),function(i){ attr(x[[i]],"info")$error })
+>>>>>>> refs/remotes/origin/Chris
   error <- sum(DOF * error)/sum(DOF)
   
   info <- mean.info(x)
