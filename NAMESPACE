@@ -45,7 +45,6 @@ S3method(`[`,periodogram)
 #LIKELIHOOD/MODEL FUNCTIONS
 export(ctmm,ctmm.guess,ctmm.fit,ctmm.loglike,ctmm.select)
 S3method(residuals,ctmm)
-S3method(simulate,ctmm)
 S3method(summary,ctmm)
 
 #MEAN FUNCTIONS
@@ -59,6 +58,9 @@ S3method(writeShapefile,UD)
 #KRIGE FUNCTIONS
 export(occurrence)
 S3method(predict,ctmm)
+S3method(predict,telemetry)
+S3method(simulate,ctmm)
+S3method(simulate,telemetry)
 
 #UERE FUNCTIONS
 export(uere)

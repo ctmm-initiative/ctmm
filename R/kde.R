@@ -65,6 +65,9 @@ akde.bandwidth <- function(data,CTMM,fast=NULL,dt=NULL,verbose=FALSE)
   DOF <- lag.DOF$DOF
   lag <- lag.DOF$lag
   
+  # is CTMM a list of H,V models or an H model?
+  # generic function to delineate an H&V list
+  
   sigma <- methods::getDataPart(CTMM$sigma)
   # standardized SVF
   CTMM$sigma <- covm(diag(1,2))

@@ -1,5 +1,4 @@
-predict.telemetry
-simulate.telemetry
+3D bandwidth
 
 store fixed error in data
 store fixed reml ll in data
@@ -12,8 +11,6 @@ IOU with drift not setup correctly
 effect of errors on variogram, variogram.fit ?
 
 summary on z-axis ctmm.fit might be buggy
-
-stray points in occurrence when correlation < cor.min
 
 sort.ctmm
 sort.list

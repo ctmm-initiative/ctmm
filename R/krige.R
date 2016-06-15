@@ -413,6 +413,9 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
 }
 #methods::setMethod("simulate",signature(object="ctmm"), function(object,...) simulate.ctmm(object,...))
 
+simulate.telemetry <- function(object,nsim=1,seed=NULL,CTMM=NULL,t=NULL,dt=NULL,res=1,...)
+{ simulate.ctmm(CTMM,nsim=nsim,seed=seed,data=object,t=t,dt=dt,res=res,...) }
+    
 ##########################
 # predict locations at certaint times
 ##########################
@@ -449,3 +452,6 @@ predict.ctmm <- function(object,data=NULL,t=NULL,dt=NULL,res=1,...)
   data <- new.telemetry(data,info=info)
   return(data)
 }
+
+predict.telemetry <- function(object,CTMM=NULL,t=NULL,dt=NULL,res=1,...)
+{ predict.ctmm(CTMM,data=object,t=t,dt=dt,res=res,...) }

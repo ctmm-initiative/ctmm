@@ -15,23 +15,29 @@ predict(object,...)
 
 \S3method{predict}{ctmm}(object,data=NULL,t=NULL,dt=NULL,res=1,...)
 
+\S3method{predict}{telemetry}(object,CTMM=NULL,t=NULL,dt=NULL,res=1,...)
+
 simulate(object,nsim=1,seed=NULL,...)
 
 \S3method{simulate}{ctmm}(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1,...)
+
+\S3method{simulate}{telemetry}(object,nsim=1,seed=NULL,CTMM=NULL,t=NULL,dt=NULL,res=1,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{object}{ A \code{ctmm} movement-model in the same format as the output of \code{\link{ctmm.fit}} or \code{\link{variogram.fit}}.}
+  \item{object}{A \code{ctmm} movement-model or \code{telemetry} object, which requires an additional \code{CTMM} argument.}
   \item{data}{Optional \code{telemetry} object on which the prediction or simulation will be conditioned.}
   \item{t}{Array of numeric time values over which the process will be predicted or simulated.}
   \item{dt}{Timestep to space the prediction or simulation over if \code{data} is specified.}
   \item{res}{Average number of locations to predict or simulate per \code{data} time.}
+  \item{CTMM}{A \code{ctmm} movement-model in the same format as the output of \code{\link{ctmm.fit}} or \code{\link{variogram.fit}}.}
   \item{nsim}{Not yet supported.}
   \item{seed}{Optional random seed to fix.}
   \item{...}{Unused options.}
 }
 \details{
-The prediction or simulation can be conditioned off of \code{data}, if specified. Otherwise, the simulation will be purely Gaussian. 
+The prediction or simulation necessarily requires a \code{ctmm} model object and optionally can be conditioned off of \code{data}, if specified.
+If no data is provided, the simulation will be purely Gaussian. 
 Details of the movement model parameters can be found in \code{\link{ctmm.fit}}.
 }
 
