@@ -1,4 +1,7 @@
 .git
 .Rproj.user
 .Rbuildignore
+.Rhistory
 ctmm.Rproj
+inst
+vignettes
