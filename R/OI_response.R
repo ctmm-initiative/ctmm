@@ -18,7 +18,7 @@ OI.response <- function(UD.list,
 			                                           (UD.list[[j.instance]]$CDF < trunc.vec[j.trunc])
 
 			        OI[i.instance, j.instance, i.trunc, j.trunc] <- 
-			           OverlapDiscrete(UD.list[[i.instance]]$PDF.trunc,
+			           overlapdiscrete(UD.list[[i.instance]]$PDF.trunc,
 			                           UD.list[[j.instance]]$PDF.trunc,
 			                           method = OI.method,
 			                           dA = UD.list[[i.instance]]$dA) #all UDs should have the same dA
