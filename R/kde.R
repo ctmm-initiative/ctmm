@@ -57,7 +57,7 @@ tab.lag.DOF <- function(data,fast=NULL,dt=NULL,w=NULL)
 ##################################
 # Bandwidth optimizer
 #lag.DOF is an unsupported option for end users
-akde.bandwidth <- function(data,CTMM,fast=NULL,dt=NULL,verbose=FALSE)
+akde.bandwidth <- function(data,CTMM,VMM=NULL,fast=NULL,dt=NULL,verbose=FALSE)
 {
   
   lag.DOF <- tab.lag.DOF(data,fast=fast,dt=dt)
@@ -76,32 +76,69 @@ akde.bandwidth <- function(data,CTMM,fast=NULL,dt=NULL,verbose=FALSE)
   
   n <- length(data$t)
   
-  # Mean Integrated Square Error modulo a constant
-  MISE <- function(h)
+  if(is.null(VMM))
   {
-    if(h<=0) {Inf}
-    else { (1/n^2)*sum(DOF/(2*g(lag)+2*h^2)) - 2/(2+h^2) + 1/2 }
-  }
-  
-  h <- 1/n^(1/6) # User Silverman's rule of thumb to place lower bound
-  h <- stats::optimize(f=MISE,interval=c(h/2,2))$minimum
-  
-  H <- h^2
-  
-  DOF.H <- ( 1/(2*H)^2 - 1/(2+2*H)^2 ) / ( 1/(2+H)^2 - 1/(2+2*H)^2 )
-  
-  H <- H*sigma
-  
-  rownames(H) <- c("x","y")
-  colnames(H) <- c("x","y")
-
-  CTMM$sigma <- covm(sigma)
-  bias <- akde.bias(CTMM,H=H,lag=lag,DOF=DOF)
-  
-  if(verbose)
-  { return(list(H=H,DOF.H=DOF.H,bias=bias,DOF.area=DOF.area(CTMM))) }
+    # Mean Integrated Square Error modulo a constant
+    MISE <- function(h)
+    {
+      if(h<=0) {Inf}
+      else { (1/n^2)*sum(DOF/(2*g(lag)+2*h^2)) - 2/(2+h^2) + 1/2 }
+    }
+    
+    h <- 1/n^(1/6) # User Silverman's rule of thumb to place lower bound
+    h <- stats::optimize(f=MISE,interval=c(h/2,2))$minimum
+    
+    H <- h^2
+    
+    # THIS FORMULA IS DIFFERENT FROM THE MANUSCRIPT, FIX ONE
+    DOF.H <- ( 1/(2*H)^2 - 1/(2+2*H)^2 ) / ( 1/(2+H)^2 - 1/(2+2*H)^2 )
+    
+    H <- H*sigma
+    
+    rownames(H) <- CTMM$axes
+    colnames(H) <- CTMM$axes
+    
+    CTMM$sigma <- covm(sigma,axes=CTMM$axes,isotropic=CTMM$isotropic)
+    bias <- akde.bias(CTMM,H=H,lag=lag,DOF=DOF)
+    
+    if(verbose)
+    { return(list(H=H,DOF.H=DOF.H,bias=bias,DOF.area=DOF.area(CTMM))) }
+    else
+    { return(H) }
+    
+  }  
   else
-  { return(H) }
+  {
+    sigmaz <- methods::getDataPart(VMM$sigma)
+    # standardized SVF
+    VMM$sigma <- covm(1,axes=VMM$axes,isotropic=VMM$isotropic)
+    svfz <- svf.func(VMM,moment=FALSE)$svf
+    gz <- Vectorize(svfz)
+    
+    # Mean Integrated Square Error modulo a constant
+    MISE <- function(h,hz)
+    {
+      if(h<=0 || hz<=0) {Inf}
+      else { (1/n^2)*sum(DOF/(2*g(lag)+2*h^2)/sqrt(2*gz(lag)+2*hz^2)) - 2/(2+h^2)/sqrt(2+hz^2) + 1/2^(3/2) }
+    }
+    
+    h <- 4/5/n^(1/7) # User Silverman's rule of thumb to place lower bound
+    h <- stats::optim(par=c(h,h),fn=MISE,control=list(maxit=.Machine$integer.max))$par
+    
+    H <- h^2
+    
+    # horizontal DOF
+    DOF.H <- ( 1/(2*H[1])^2/sqrt(2*H[2]) - 1/(2+2*H[1])^2/sqrt(2+2*H[2]) ) / ( 1/(2+H[1])^2/sqrt(2+H[2]) - 1/(2+2*H[1])^2/sqrt(2+2*H[2]) )
+    # vertical DOF
+    DOF.H[2] <- ( 1/(2*H[1])/(2*H[2])^(3/2) - 1/(2+2*H[1])/(2+2*H[2])^(3/2) ) / ( 1/(2+H[1])/sqrt(2+H[2])^(3/2) - 1/(2+2*H[1])/sqrt(2+2*H[2])^(3/2) )
+    
+    # UNFINISHED !!!
+    
+    
+    
+    # UNFINISHED !!!
+  }
+    
 }
 
 # bias of Gaussian Reference function AKDE
