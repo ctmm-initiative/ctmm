@@ -34,7 +34,7 @@ as.telemetry(CSV,timezone="GMT",projection=NULL,UERE=NULL,...)
 
 \details{
 If no projection argument is specified, a two-point equidistant projection is calculated that should be good for most range resident and migratory species.
-Global migrations that are not relatively geodesic (locally straight) will probably suffer distortion.
+Global migrations that are not along one geodesic (locally straight line) will probably suffer distortion.
 
 The necessary MoveBank columns are \code{individual.local.identifier} (or \code{tag.local.identifier}), \code{timestamp}, \code{location.long} and \code{location.lat}, while the optional Movebank columns are \code{eobs.horizontal.accuracy.estimate} and \code{GPS.HDOP}.
 In the future, we will be supporting more GPS and ARGOS columns, including speed, heading, further error classifications, etc.
