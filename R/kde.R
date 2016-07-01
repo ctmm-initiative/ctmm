@@ -90,7 +90,6 @@ akde.bandwidth <- function(data,CTMM,VMM=NULL,fast=NULL,dt=NULL,verbose=FALSE)
     
     H <- h^2
     
-    # THIS FORMULA IS DIFFERENT FROM THE MANUSCRIPT, FIX ONE
     DOF.H <- ( 1/(2*H)^2 - 1/(2+2*H)^2 ) / ( 1/(2+H)^2 - 1/(2+2*H)^2 )
     
     H <- H*sigma
@@ -116,10 +115,10 @@ akde.bandwidth <- function(data,CTMM,VMM=NULL,fast=NULL,dt=NULL,verbose=FALSE)
     gz <- Vectorize(svfz)
     
     # Mean Integrated Square Error modulo a constant
-    MISE <- function(h,hz)
+    MISE <- function(h)
     {
-      if(h<=0 || hz<=0) {Inf}
-      else { (1/n^2)*sum(DOF/(2*g(lag)+2*h^2)/sqrt(2*gz(lag)+2*hz^2)) - 2/(2+h^2)/sqrt(2+hz^2) + 1/2^(3/2) }
+      if(any(h==0)) {Inf}
+      else { (1/n^2)*sum(DOF/(2*g(lag)+2*h[1]^2)/sqrt(2*gz(lag)+2*h[2]^2)) - 2/(2+h[1]^2)/sqrt(2+h[2]^2) + 1/2^(3/2) }
     }
     
     h <- 4/5/n^(1/7) # User Silverman's rule of thumb to place lower bound
@@ -134,7 +133,7 @@ akde.bandwidth <- function(data,CTMM,VMM=NULL,fast=NULL,dt=NULL,verbose=FALSE)
     
     # UNFINISHED !!!
     
-    
+    return(H)
     
     # UNFINISHED !!!
   }
