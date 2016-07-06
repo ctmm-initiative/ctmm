@@ -13,7 +13,8 @@ export(raster,zoom)
 #S3method(SpatialPolygonsDataFrame,SpatialPolygons)
 
 #GENERAL FUNCTIONS
-S3method(det,numeric)
+#S3method(det,numeric)
+#S3method(determinant,numeric) # can't get these to work???
 S3method(mean,list)
 S3method(plot,list)
 S3method(summary,list)

@@ -72,7 +72,19 @@ composite <- function(n) { 2^ceiling(log(n,2)) }
 
 ##### det shouldn't fail because R dropped indices
 det.numeric <- function(x,...) { x }
-#determinant.numeric <- function(x,logarithm=TRUE,...) { x }
+determinant.numeric <- function(x,logarithm=TRUE,...)
+{
+  SIGN <- sign(x)
+  if(logarithm)
+  { x <- log(abs(x)) }
+  
+  RESULT <- list(modulus=x,sign=SIGN)
+  attr(RESULT$modulus,"logarithm") <- logarithm
+
+  class(RESULT) <- "det"
+  
+  return(det)
+}
 
 # forwarding function for list of a particular datatype
 zoom.list <- function(x,...)
