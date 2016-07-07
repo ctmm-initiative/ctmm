@@ -338,7 +338,8 @@ kde <- function(data,H,bias=FALSE,W=rep(1,length(data$x)),alpha=0.001,res=NULL,d
   cdf <- cdf$cdf
   
   # just using minimum bias for now... not ideal in 3D
-  bias <- min(bias)
+  vbias <- min(bias) # bias in variance along least biased axis
+  vbias <- sqrt(vbias)^length(dr) # convert to volume bias
   # areas are biased to be estimated as debias*area
   if(bias) 
   {
@@ -346,14 +347,16 @@ kde <- function(data,H,bias=FALSE,W=rep(1,length(data$x)),alpha=0.001,res=NULL,d
     AREA <- 1:length(cdf)
 
     # evaluate the debiased cdf on the original area grid
-    cdf <- stats::approx(x=AREA/bias,y=cdf,xout=AREA,yleft=0,yright=1)$y
+    cdf <- stats::approx(x=AREA/vbias,y=cdf,xout=AREA,yleft=0,yright=1)$y
     
     # recalculate pdf
     pdf <- diff(c(0,cdf))/dA
     pdf[IND] <- pdf
     pdf <- array(pdf,DIM)
   }
-
+  # residual biases
+  bias <- bias/min(bias)
+  
   cdf[IND] <- cdf # back in spatial order
   cdf <- array(cdf,DIM) # back in table form
   
