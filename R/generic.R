@@ -289,7 +289,7 @@ lognorm.ci <- function(MLE,COV,alpha=0.05)
 
 # last element of array
 last <- function(vec) { vec[length(vec)] }
-
+first <- function(vec) { vec[1] }
 
 # CLAMP A NUMBER
 clamp <- Vectorize(function(num,min=0,max=1) { if(num<min) {min} else if(num<max) {num} else {max} })
@@ -530,10 +530,9 @@ unit.ctmm <- function(CTMM,length=1,time=1)
 ######################
 unit.UD <- function(UD,length=1)
 {
-  UD$x <- UD$x / length
-  UD$y <- UD$y / length
+  UD$r <- lapply(UD$r,function(x){ x/length })
   UD$PDF <- UD$PDF * length^2
-  UD$dA <- UD$dA / length^2
+  UD$dr <- UD$dr / length
   UD$H <- UD$H / length^2
   
   return(UD)

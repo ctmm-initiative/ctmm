@@ -313,12 +313,12 @@ new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,fracti
       for(i in 1:length(UD))
       {
         EXT <- rowSums(UD[[i]]$PDF) > 0
-        EXT <- UD[[i]]$x[EXT]
+        EXT <- UD[[i]]$r$x[EXT]
         EXT <- c(EXT[1],last(EXT))
         ext.x <- range(ext.x,EXT)
         
         EXT <- colSums(UD[[i]]$PDF) > 0
-        EXT <- UD[[i]]$y[EXT]
+        EXT <- UD[[i]]$r$y[EXT]
         EXT <- c(EXT[1],last(EXT))
         ext.y <- range(ext.y,EXT)
       }
@@ -574,8 +574,8 @@ plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",col.level="black",col.DF
       ecc <- H@par["eccentricity"]
       sigma <- H@par["area"]
       
-      X <- x[[i]]$x
-      Y <- x[[i]]$y
+      X <- x[[i]]$r$x
+      Y <- x[[i]]$r$y
       
       COS <- cos(theta)
       SIN <- sin(theta)
@@ -637,7 +637,7 @@ plot.df <- function(kde,DF="CDF",col="blue",...)
     kde$CDF <- 1 - kde$CDF
   }
 
-  graphics::image(kde$x,kde$y,kde[[DF]],useRaster=TRUE,zlim=zlim,col=col,add=TRUE,...)
+  graphics::image(kde$r,z=kde[[DF]],useRaster=TRUE,zlim=zlim,col=col,add=TRUE,...)
 }
 
 
@@ -650,7 +650,7 @@ plot.kde <- function(kde,level=0.95,labels=round(level*100),col="black",...)
 
   # do something that works
   options(max.contour.segments=.Machine$integer.max)
-  graphics::contour(x=kde$x,y=kde$y,z=kde$CDF,levels=level,labels=labels,labelcex=1,col=col,add=TRUE,...)
+  graphics::contour(kde$r,z=kde$CDF,levels=level,labels=labels,labelcex=1,col=col,add=TRUE,...)
   
   # reinstate initial option (or default if was NULL--can't set back to NULL???)
   # if(is.null(MAX)) { MAX <- 25000 }

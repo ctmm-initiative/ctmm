@@ -1,6 +1,7 @@
-Fix 2D AKDE from new code
+Fix 2D AKDE from new code - summary, plot, help
 Fix 2D Krige from new code
 Fix 3D AKDE from new code
+
 
 level.UD of summary UD/ctmm return Inf
   test p-value against sample size
