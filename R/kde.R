@@ -129,6 +129,8 @@ akde.bandwidth <- function(data,CTMM,VMM=NULL,fast=NULL,dt=NULL,verbose=FALSE)
     DOF.H <- ( 1/(2*H[1])^2/sqrt(2*H[2]) - 1/(2+2*H[1])^2/sqrt(2+2*H[2]) ) / ( 1/(2+H[1])^2/sqrt(2+H[2]) - 1/(2+2*H[1])^2/sqrt(2+2*H[2]) )
     # vertical DOF
     DOF.H[2] <- ( 1/(2*H[1])/(2*H[2])^(3/2) - 1/(2+2*H[1])/(2+2*H[2])^(3/2) ) / ( 1/(2+H[1])/sqrt(2+H[2])^(3/2) - 1/(2+2*H[1])/sqrt(2+2*H[2])^(3/2) )
+    # Above are bad
+    DOF.H <- c(NA,NA)
     
     VH <- H[2]*sigmaz
     HH <- H[1]*sigma
@@ -149,6 +151,7 @@ akde.bandwidth <- function(data,CTMM,VMM=NULL,fast=NULL,dt=NULL,verbose=FALSE)
       
       bias <- akde.bias(CTMM,H=HH,lag=lag,DOF=DOF)
       bias[3] <- akde.bias(VMM,H=VH,lag=lag,DOF=DOF)
+      names(bias) <- axes
       
       DOF.area <- c(DOF.area(CTMM),DOF.area(VMM))
       
@@ -197,12 +200,15 @@ homerange <- function(data,CTMM,method="AKDE",...)
 # wrap the kde function for our telemetry data format and CIs.
 akde <- function(data,CTMM,VMM=NULL,debias=TRUE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
 {
+  axes <- CTMM$axes
+  
   # smooth out errors
   z <- NULL
   if(!is.null(VMM))
   {
     axis <- VMM$axes
     if(VMM$error && smooth) { z <- predict(VMM,data=data,t=data$t)[,axis] }
+    axes <- c(axes,axis)
   }
   if(CTMM$error && smooth) { data <- predict(CTMM,data=data,t=data$t) }
   # copy back
@@ -217,7 +223,7 @@ akde <- function(data,CTMM,VMM=NULL,debias=TRUE,smooth=TRUE,error=0.001,res=10,g
   # absolute resolution
   dr <- sqrt(diag(KDE$H))/res
 
-  KDE <- c(KDE,kde(data,KDE$H,bias=debias,alpha=error,dr=dr,grid=grid))
+  KDE <- c(KDE,kde(data,KDE$H,axes=axes,bias=debias,alpha=error,dr=dr,grid=grid))
 
   KDE <- new.UD(KDE,info=attr(data,"info"))
   
@@ -242,9 +248,8 @@ prepare.H <- function(H,n)
 
 ############################################
 # construct a grid for the density function
-kde.grid <- function(data,H,alpha=0.001,res=1,dr=NULL)
+kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=1,dr=NULL)
 {
-  axes <- rownames(H) # (dim)
   R <- get.telemetry(data,axes) # (times,dim)
   n <- nrow(R) # (times)
   
@@ -253,7 +258,7 @@ kde.grid <- function(data,H,alpha=0.001,res=1,dr=NULL)
   # how far to extend range from data as to ensure alpha significance in total probability
   z <- sqrt(-2*log(alpha))
   dH <- z * apply(H,1,function(h){sqrt(diag(h))}) # (dim,times)
-  dH <- t(DH) # (times,dim)
+  dH <- t(dH) # (times,dim)
 
   # now to find the necessary extent of our grid
   EXT <- rbind( apply(R-dH,2,min) , apply(R+dH,2,max) ) # (ext,dim)
@@ -263,22 +268,16 @@ kde.grid <- function(data,H,alpha=0.001,res=1,dr=NULL)
   mu <- apply(EXT,2,mean)
   
   if(is.null(dr)) # one res
-  {
-    # grid resolution
-    dr <- dEXT/res
-
-    # grid locations
-    res <- res/2+1 # half resolution
-    R <- (dr %o% (-res):(res)) + mu # (dim,grid)
-    R <- t(R) # (grid,dim)
-  }
+  { dr <- dEXT/res }
   else # multiple res
-  {
-    res <- dEXT/dr
-    res <- ceiling(res/2+1)
-    
-    R <- apply(1:length(res),1,function(i){ (-res[i]:res[i])*dr[i] + mu[i] } ) # (grid,dim)
-  }
+  { res <- dEXT/dr }
+
+  # half resolution
+  res <- ceiling(res/2+1)
+  
+  # grid locations
+  R <- lapply(1:length(res),function(i){ (-res[i]:res[i])*dr[i] + mu[i] } ) # (grid,dim)
+  names(R) <- axes
   
   grid <- list(R=R,dH=dH,dr=dr,EXT=EXT,dEXT=dEXT)
   return(grid)
@@ -289,9 +288,8 @@ kde.grid <- function(data,H,alpha=0.001,res=1,dr=NULL)
 # construct my own kde objects
 # was using ks-package but it has some bugs
 # alpha is the error goal in my total probability
-kde <- function(data,H,bias=FALSE,W=rep(1,length(data$x)),alpha=0.001,res=NULL,dr=NULL,grid=NULL)
+kde <- function(data,H,axes=c("x","y"),bias=FALSE,W=rep(1,length(data$x)),alpha=0.001,res=NULL,dr=NULL,grid=NULL)
 {
-  axes <- dimnames(H)[[1]]
   r <- get.telemetry(data,axes)
   n <- nrow(r)
   
@@ -308,29 +306,32 @@ kde <- function(data,H,bias=FALSE,W=rep(1,length(data$x)),alpha=0.001,res=NULL,d
   dH <- grid$dH
   dr <- grid$dr
 
-  cdf <- array(0,dim(R))
+  R0 <- sapply(R,first)
+  # corner origin to minimize arithmetic later
+  #r <- t(t(r) - R0)
+  #R <- lapply(1:length(R0),function(i){ R[[i]] - R0[i] })
+  
+  cdf <- array(0,sapply(R,length))
   for(i in 1:n)
   {
     # sub-grid lower/upper bound indices
-    i1 <- floor((r[i,]-dH[i,]-R[i,])/dr) + 1
-    i2 <- ceiling((r[i,]+dH[i,]-R[i,])/dr) + 1
+    i1 <- floor((r[i,]-dH[i,]-R0)/dr) + 1
+    i2 <- ceiling((r[i,]+dH[i,]-R0)/dr) + 1
     
     SUB <- lapply(1:length(i1),function(d){ i1[d]:i2[d] })
     
     # I can't figure out how to do this in one line
     if(length(SUB)==1)
-    { cdf[SUB[[1]]] <- cdf[SUB[[1]]] + W[i]*pnorm1(R[SUB[[1]],1]-r[i,1],H[i,,],dr,alpha) }
+    { cdf[SUB[[1]]] <- cdf[SUB[[1]]] + W[i]*pnorm1(R[[1]][SUB[[1]]]-r[i,1],H[i,,],dr,alpha) }
     else if(length(SUB)==2)
-    { cdf[SUB[[1]],SUB[[2]]] <- cdf[SUB[[1]],SUB[[2]]] + W[i]*pnorm2(R[SUB[[1]],1]-r[i,1],R[SUB[[2]],2]-r[i,2],H[i,,],dr,alpha) }
+    { cdf[SUB[[1]],SUB[[2]]] <- cdf[SUB[[1]],SUB[[2]]] + W[i]*pnorm2(R[[1]][SUB[[1]]]-r[i,1],R[[2]][SUB[[2]]]-r[i,2],H[i,,],dr,alpha) }
     else if(length(SUB)==3)
-    { cdf[SUB[[1]],SUB[[2]],SUB[[3]]] <- cdf[SUB[[1]],SUB[[2]],SUB[[3]]] + W[i]*pnorm3(R[SUB[[1]],1]-r[i,1],R[SUB[[2]],2]-r[i,2],R[SUB[[3]],3]-r[i,3],H[i,,],dr,alpha) }
+    { cdf[SUB[[1]],SUB[[2]],SUB[[3]]] <- cdf[SUB[[1]],SUB[[2]],SUB[[3]]] + W[i]*pnorm3(R[[1]][SUB[[1]]]-r[i,1],R[[2]][SUB[[2]]]-r[i,2],R[[3]][SUB[[3]]]-r[i,3],H[i,,],dr,alpha) }
   }
 
   dV <- prod(dr)
-  if(!bias) { pdf <- cdf/dV }
+  if(!sum(bias)) { pdf <- cdf/dV }
 
-  #!!! UNFINISHED BELOW !!!#
-  
   # cdf: cell probability -> probability included in contour
   cdf <- pdf2cdf(cdf,finish=FALSE)
   DIM <- cdf$DIM
@@ -341,21 +342,21 @@ kde <- function(data,H,bias=FALSE,W=rep(1,length(data$x)),alpha=0.001,res=NULL,d
   vbias <- min(bias) # bias in variance along least biased axis
   vbias <- sqrt(vbias)^length(dr) # convert to volume bias
   # areas are biased to be estimated as debias*area
-  if(bias) 
+  if(vbias) 
   {
-    # counting area by dV ( this is really volume )
-    AREA <- 1:length(cdf)
+    # counting volume by dV
+    VOL <- 1:length(cdf)
 
     # evaluate the debiased cdf on the original area grid
-    cdf <- stats::approx(x=AREA/vbias,y=cdf,xout=AREA,yleft=0,yright=1)$y
+    cdf <- stats::approx(x=VOL/vbias,y=cdf,xout=VOL,yleft=0,yright=1)$y
     
     # recalculate pdf
-    pdf <- diff(c(0,cdf))/dA
+    pdf <- diff(c(0,cdf))/dV
     pdf[IND] <- pdf
     pdf <- array(pdf,DIM)
   }
   # residual biases
-  bias <- bias/min(bias)
+  # bias <- bias/min(bias)
   
   cdf[IND] <- cdf # back in spatial order
   cdf <- array(cdf,DIM) # back in table form
@@ -590,15 +591,17 @@ Gauss3 <- function(X,Y,z,sigma=NULL,sigma.inv=solve(sigma[1:2,1:2]),sigma.GM=sqr
 # AKDE CIs
 CI.UD <- function(object,level.UD=0.95,level=0.95,P=FALSE)
 {
+  dV <- prod(object$dr)
+  
   # point estimate
   if(is.na(level.UD))
   {
     # calculate mean area
     area <- sort(object$PDF,decreasing=TRUE,method="quick")
-    area <- sum(area * (1:length(area))) * object$dA
+    area <- sum(area * (1:length(area))) * dV
   }
   else
-  { area <- sum(object$CDF <= level.UD) * object$dA }
+  { area <- sum(object$CDF <= level.UD) * dV }
   
   # chi square approximation of uncertainty
   area <- chisq.ci(area,DOF=2*object$DOF.area,alpha=1-level)
@@ -606,7 +609,7 @@ CI.UD <- function(object,level.UD=0.95,level=0.95,P=FALSE)
   if(!P) { return(area) }
   
   # probabilities associated with these areas
-  P <- round(area / object$dA)
+  P <- round(area / dV)
   P <- sort(object$CDF,method="quick")[P]
 
   # recorrect point estimate level
@@ -649,14 +652,14 @@ raster.UD <- function(x,DF="CDF",...)
 {
   UD <- x
   
-  dx <- UD$x[2]-UD$x[1]
-  dy <- UD$y[2]-UD$y[1]
+  dx <- UD$dr[1]
+  dy <- UD$dr[2]
   
-  xmn <- UD$x[1]-dx/2
-  xmx <- last(UD$x)+dx/2
+  xmn <- UD$r$x[1]-dx/2
+  xmx <- last(UD$r$x)+dx/2
   
-  ymn <- UD$y[1]-dy/2
-  ymx <- last(UD$y)+dy/2
+  ymn <- UD$r$y[1]-dy/2
+  ymx <- last(UD$r$y)+dy/2
   
   Raster <- raster::raster(t(UD[[DF]][,dim(UD[[DF]])[2]:1]),xmn=xmn,xmx=xmx,ymn=ymn,ymx=ymx,crs=attr(UD,"info")$projection)
   
@@ -687,7 +690,7 @@ SpatialPolygonsDataFrame.UD <- function(object,level.UD=0.95,level=0.95,...)
   polygons <- list()
   for(i in 1:length(P))
   {
-    CL <- grDevices::contourLines(x=UD$x,y=UD$y,z=UD$CDF,levels=P[i])
+    CL <- grDevices::contourLines(UD$r,z=UD$CDF,levels=P[i])
     
     # create contour heirarchy matrix (half of it)
     H <- array(0,c(1,1)*length(CL))    
