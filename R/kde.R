@@ -214,8 +214,6 @@ akde <- function(data,CTMM,VMM=NULL,debias=TRUE,smooth=TRUE,error=0.001,res=10,g
   # copy back
   if(!is.null(VMM)) { data[,axis] <- z }
   
-  # !!! UNFINISHED BELOW !!!
-  
   # calculate optimal bandwidth and some other information
   KDE <- akde.bandwidth(data=data,CTMM=CTMM,VMM=VMM,verbose=TRUE,...)
   if(debias) { debias <- KDE$bias }
@@ -267,10 +265,9 @@ kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=1,dr=NULL)
   # grid center
   mu <- apply(EXT,2,mean)
   
-  if(is.null(dr)) # one res
-  { dr <- dEXT/res }
-  else # multiple res
-  { res <- dEXT/dr }
+  if(is.null(dr)) { dr <- dEXT/res }
+
+  res <- dEXT/dr
 
   # half resolution
   res <- ceiling(res/2+1)
@@ -531,6 +528,8 @@ pnorm3 <- function(X,Y,Z,sigma,dr,alpha=0.001)
   return(cdf)
 }
 
+# UNFINISHED
+pnorm1 <- function(X,sigma,dr,alpha=0.001) { 0 }
 
 #################
 # Newton-Cotes integrators

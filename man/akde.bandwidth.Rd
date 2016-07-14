@@ -8,12 +8,13 @@ Calculate the optimal bandwidth matrix of movement data
 This function calculates the optimal bandwidth matrix (kernel covariance) for a two-dimensional animal tracking dataset, given an autocorrelated movement model (Fleming et al, 2015). This optimal bandwidth can fully take into account all autocorrelation in the data, assuming it is captured by the movement model.
 }
 \usage{
-akde.bandwidth(data,CTMM,fast=NULL,dt=NULL,verbose=FALSE)
+akde.bandwidth(data,CTMM,VMM=NULL,fast=NULL,dt=NULL,verbose=FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{data}{ 2D timeseries telemetry data represented as a \code{telemetry} object. }
   \item{CTMM}{A \code{ctmm} movement model as from the output of \code{ctmm.fit}.}
+  \item{VMM}{An optional vertical \code{ctmm} object for 3D bandwidth calculation.}
   \item{fast}{ Use the direct algorithm if \code{FALSE} or the FFT algorithm if \code{TRUE}. The default behavior switches from slow to fast at \code{length(data$t)==100}.}
   \item{dt}{ Optional lag bin width for the FFT algorithm.}
   \item{verbose}{ Optionally return the effective sample size \code{DOF.H} along with the bandwidth matrix \code{H}.}

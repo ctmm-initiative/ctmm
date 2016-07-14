@@ -8,12 +8,13 @@ Calculate an autocorrelated kernel density estimate
 This function calculates autocorrelated kernel density estimates of different confidence levels from \code{telemetry} data and a continuous-time movement model.
 }
 \usage{
-akde(data,CTMM,debias=TRUE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
+akde(data,CTMM,VMM=NULL,debias=TRUE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{data}{ 2D timeseries telemetry data represented as a \code{telemetry} object. }
   \item{CTMM}{A \code{ctmm} movement model from the output of \code{ctmm.fit}.}
+  \item{VMM}{An optional vertical \code{ctmm} object for 3D home-range calculation.}
   \item{debias}{Debias the distribution for area estimation.}
   \item{smooth}{"Smooth" out errors from the data.}
   \item{error}{Target error for kernel truncation.}
@@ -24,7 +25,7 @@ akde(data,CTMM,debias=TRUE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
 
 %\details{}
 
-\value{Returns a \code{UD} object: a list with the sampled grid line locations \code{x} and \code{y}, the area of each grid cell \code{dA}, the probability density and cumulative distribution functions evaluated on the sampled grid locations \code{PDF} & \code{CDF}, the optimal bandwidth matrix \code{H}, and the effective sample size of the data in \code{DOF.H}.
+\value{Returns a \code{UD} object: a list with the sampled grid line locations \code{r$x} and \code{r$y}, the extent of each grid cell \code{dr}, the probability density and cumulative distribution functions evaluated on the sampled grid locations \code{PDF} & \code{CDF}, the optimal bandwidth matrix \code{H}, and the effective sample size of the data in \code{DOF.H}.
 }
 
 \references{

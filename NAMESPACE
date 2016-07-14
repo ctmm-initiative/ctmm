@@ -2,10 +2,10 @@
 importFrom("graphics",plot)
 importFrom("methods",new)
 importFrom("raster",raster,zoom)
-importFrom("stats",simulate)
+importFrom("stats",simulate,predict)
 
 # non-base generics to export
-export(plot,simulate)
+export(plot,simulate,predict)
 export(raster,zoom)
 #export(SpatialPoints,SpatialPolygonsDataFrame)
 #S3method(SpatialPoints,matrix)

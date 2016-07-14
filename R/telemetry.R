@@ -19,7 +19,7 @@ subset.telemetry <- function(x,...)
   return(x)
 }
 
-get.telemetry <- function(data,axes)
+get.telemetry <- function(data,axes=c("x","y"))
 {
   z <- "[.data.frame"(data,axes)
   z <- as.matrix(z)
@@ -434,7 +434,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
       CTMM[[i]] <- unit.ctmm(CTMM[[i]],dist$scale)
       
       # plot denisty function lazily reusing KDE code
-      pdf <- kde(list(x=CTMM[[i]]$mu[1,1],y=CTMM[[i]]$mu[1,2]),H=methods::getDataPart(CTMM[[i]]$sigma),res=500)
+      pdf <- kde(data.frame(CTMM[[i]]$mu[1,,drop=FALSE]),H=methods::getDataPart(CTMM[[i]]$sigma),axes=c("x","y"),res=500)
       plot.df(pdf,DF=DF,col=col.DF[[i]],...)
       
       # plot ML estimate, regular style

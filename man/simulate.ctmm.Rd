@@ -1,8 +1,10 @@
 \name{simulate.ctmm}
 \alias{predict}
 \alias{predict.ctmm}
+\alias{predict.telemetry}
 \alias{simulate}
 \alias{simulate.ctmm}
+\alias{simulate.telemetry}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Predict or simulate from a continuous-time movement model
