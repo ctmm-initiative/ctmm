@@ -344,7 +344,7 @@ kde <- function(data,H,axes=c("x","y"),bias=FALSE,W=rep(1,length(data$x)),alpha=
     # counting volume by dV
     VOL <- 1:length(cdf)
 
-    # evaluate the debiased cdf on the original area grid
+    # evaluate the debiased cdf on the original volume grid
     cdf <- stats::approx(x=VOL/vbias,y=cdf,xout=VOL,yleft=0,yright=1)$y
     
     # recalculate pdf
@@ -352,11 +352,36 @@ kde <- function(data,H,axes=c("x","y"),bias=FALSE,W=rep(1,length(data$x)),alpha=
     pdf[IND] <- pdf
     pdf <- array(pdf,DIM)
   }
-  # residual biases
-  # bias <- bias/min(bias)
   
-  cdf[IND] <- cdf # back in spatial order
-  cdf <- array(cdf,DIM) # back in table form
+  # back in spatial order # back in table form
+  cdf <- array(cdf[IND],DIM) 
+
+  # residual biases
+  bias <- bias/min(bias)
+  abias <- min(bias[1:2])
+  # fix any remaining horizontal bias in 3D estimate
+  if(abias>1)
+  {
+    DIM <- DIM[1:2]
+    VOL <- 1:prod(DIM)
+    
+    for(i in 1:DIM[3])
+    {
+      # 2D slice information
+      CDF <- pdf2cdf(cdf[,,i],finish=FALSE,PDF=FALSE)
+      IND <- CDF$IND
+      CDF <- CDF$cdf
+      
+      # evaluate the debiased cdf on the original area grid
+      CDF <- stats::approx(x=VOL/abias,y=CDF,xout=VOL,yleft=0,yright=1)$y
+      
+      # back in spatial order # back in table form
+      cdf[,,i] <- array(CDF[IND],DIM) 
+    }
+  }
+  
+  # residual bias
+  # bias <- bias/abias
   
   result <- list(PDF=pdf,CDF=cdf,r=R,dr=dr)
   
@@ -365,20 +390,25 @@ kde <- function(data,H,axes=c("x","y"),bias=FALSE,W=rep(1,length(data$x)),alpha=
 
 ########################
 # cdf: cell probability -> probability included in contour
-pdf2cdf <- function(cdf,finish=TRUE)
+pdf2cdf <- function(cdf,finish=TRUE,PDF=TRUE)
 {
   #cdf <- pdf * dV
   DIM <- dim(cdf)
   cdf <- c(cdf) # flatten table
-  cdf <- sort(cdf,decreasing=TRUE,method="quick",index.return=TRUE)
+  
+  if(PDF) { decreasing <- TRUE }
+  else { decreasing <- FALSE }
+  cdf <- sort(cdf,decreasing=decreasing,method="quick",index.return=TRUE)
+  
   IND <- cdf[[2]] # sorted indices
   cdf <- cdf[[1]]
-  cdf <- cumsum(cdf)
+  
+  if(PDF) { cdf <- cumsum(cdf) }
 
   if(finish)
   {
-    cdf[IND] <- cdf # back in spatial order
-    cdf <- array(cdf,DIM) # back in table form
+    # back in spatial order # back in table form
+    cdf <- array(cdf[IND],DIM) 
     return(cdf)
   }
   else

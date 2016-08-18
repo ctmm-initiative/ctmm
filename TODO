@@ -1,3 +1,15 @@
+periodic simulate.telemetry (not pure ctmm)
+periodic smoother (velocity vector--check)
+periodic akde...
+periodic plot ctmm
+periodic vignette: periodogram, ctmm.select
+
+generalize Gaussian area?
+  UDs for both mean and population
+  homerange(method=normal)
+time/tube plot 
+periodic plot.ctmm
+
 level.UD of summary UD/ctmm return Inf
   test p-value against sample size
 
@@ -29,18 +41,6 @@ dogleg splines
   degree = 1,2?
   migration = times?
   settlement = times?
-
-generalize Gaussian area?
-  UDs for both mean and population
-  homerange(method=normal)
-time/tube plot 
-periodic plot.ctmm
-
-periodic simulate.telemetry (not pure ctmm)
-periodic smoother (velocity vector--check)
-periodic akde...
-
-periodic vignette: periodogram, ctmm.select
 
 model option vignette
 IID, OU, OUF, (an)isotropic table in vignette

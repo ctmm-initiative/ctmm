@@ -17,7 +17,7 @@ akde(data,CTMM,VMM=NULL,debias=TRUE,smooth=TRUE,error=0.001,res=10,grid=NULL,...
   \item{VMM}{An optional vertical \code{ctmm} object for 3D home-range calculation.}
   \item{debias}{Debias the distribution for area estimation.}
   \item{smooth}{"Smooth" out errors from the data.}
-  \item{error}{Target error for kernel truncation.}
+  \item{error}{Target probability error.}
   \item{res}{Number of grid points along each axis, relative to the bandwidth.}
   \item{grid}{Optional grid specification with columns labeled \code{x} and \code{y}. Not yet supported.}
   \item{...}{Arguments passed to all instances of \code{\link{akde.bandwidth}}.}

@@ -37,7 +37,7 @@ D. Marcotte. (1996). Fast variogram computation with FFT. \emph{Computers and Ge
 
 \author{ C. H. Fleming. }
 
-\note{ To obtain a bandwidth scalar representing the variance of each kernel, a \code{ctmm} object with \code{isotropic=TRUE} is required.  In this case, \code{akde.bandwidth} will return bandwidth matrix with identical variances along its diagonal. Note that this will provide an inaccurate estimate for very eccentric distributions}
+\note{ To obtain a bandwidth scalar representing the variance of each kernel, a \code{ctmm} object with \code{isotropic=TRUE} is required.  In this case, \code{akde.bandwidth} will return bandwidth matrix with identical variances along its diagonal. Note that this will provide an inaccurate estimate for very eccentric distributions.}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 

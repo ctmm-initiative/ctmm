@@ -327,7 +327,7 @@ new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,fracti
     # bounding locations from Gaussian CTMM
     if(!is.null(CTMM))
     {
-      if(is.na(alpha.UD)) { alpha.UD <- exp(-1) } # mean area
+      if(is.na(alpha.UD[1])) { alpha.UD <- exp(-1) } # mean area
       z <- sqrt(-2*log(alpha.UD))
       
       for(i in 1:length(CTMM))

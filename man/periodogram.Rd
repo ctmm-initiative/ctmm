@@ -48,7 +48,7 @@ Returns a periodogram object (class \code{periodogram}) which is a dataframe con
 \references{
 J. D. Scargle. (1952). Studies in astronomical time-series analysis. II. Statistical aspects of spectral analysis of unevenly-sampled data. The Astrophysical Journal, 263, 835-853.
 
-G. Péron, C. H. Fleming, J. M. Calabrese. (2016).
+G. Péron, C. H. Fleming,  R. C. de Paula, J. M. Calabrese. (2016). Uncovering periodic patterns of space use in animal tracking data with periodograms, including a new algorithm for the Lomb-Scargle periodogram and improved randomization tests. \href{https://movementecologyjournal.biomedcentral.com/articles/10.1186/s40462-016-0084-7}{Movement Ecology, 4:19, DOI:10.1186/s40462-016-0084-7}.
 }
 
 \author{ C. H. Fleming and G. Péron }

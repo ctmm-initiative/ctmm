@@ -21,29 +21,39 @@ m2 <- ctmm(tau=c(6*24,1)*60^2) # ~ 6 day and 1 hour autocorrelation timescales
 M2 <- ctmm.fit(cilla,m2) 
 ```
 
-`M0` is the innapropriate, uncorrelated model, which will result in a conventional kernel-density estimate, while `M2` is the vastly superior, continuous-velocity model. Now we can calculate an `akde` object for each model.
+`M0` is the innapropriate, IID model, which will result in a conventional kernel-density estimate, while `M2` is the vastly superior, continuous-velocity OUF model. Now we can calculate an `akde` object for each model.
 
 ```{r,  fig.show='hold', results = "hide"}
+UD0b <- akde(cilla,M0,debias=FALSE)
 UD0 <- akde(cilla,M0)
+UD2b <- akde(cilla,M2,debias=FALSE)
 UD2 <- akde(cilla,M2)
 ```
 
+We calculated UDs with and with out accounting for autocorrelation (`M2` versus `M0`), with and without bias correction in the area esitmates (`debias`).
+The best estimate is `UD2`, while the others are included for comparison.
 Now let us plot the results.
 
 ```{r,  fig.show='hold'}
+plot(cilla,UD=UD0b,ylim=c(-14,12)*1000)
+title("IID KDE")
+plot(cilla,UD=UD2b,ylim=c(-14,12)*1000)
+title("OUF AKDE")
 plot(cilla,UD=UD0,ylim=c(-14,12)*1000)
-title("M0")
+title(expression("IID KDE"["C"]))
 plot(cilla,UD=UD2,ylim=c(-14,12)*1000)
-title("M2")
+title(expression("OUF AKDE"["C"]))
 ```
 
 A more useful function for plotting in R-studio is `zoom(cilla,UD=UD2)`, which adds a zoom slider.
 
 By default both the density function and its 95% contours are plotted along with the location data. The middle contour represent the maximum likelihood area where the animal spends 95% of its time. This percentage can be changed with the `level.UD` option (see `help(plot.telemetry)`). The inner and outer contours correspond to confidence intervals on the magnitude of the area, which can be adjusted with the `level` option.
 
-The optimal bandwidth determines the "resolution" of the kernel density estimate. By default we plot grid lines with dimensions matching the standard deviations of the individual kernels. This gives a rough guideline as to what spatial details are and are not important in the density estimate. One can see that the conventional, uncorrelated estimate fits tightly to the data and reports many significant details in the buffalo's home range, including a hole near the coordinate `(45,5)` km. The autocorrelated estimate predicts future space use more accurately, based on its diffusion model, and yields a more honest account of its uncertainties. In particular, the AKDE home-range area appears larger and the presence of a hole near `(45,5)` cannot be resolved because its resolution is (appropriately) insufficient.
+The optimal bandwidth determines the "resolution" of the kernel density estimate. By default we plot grid lines with dimensions matching the standard deviations of the individual kernels. This gives a rough guideline as to what spatial details are and are not important in the density estimate. One can see that the IID KDE \& KDE<sub>C</sub> estimates fit tightly to the data and report many significant details in the buffalo's home range, including a hole near the coordinate `(45,5)` km. The autocorrelated estimates predict future space use more accurately, based on the diffusion model, and yield a more honest account of their uncertainties. In particular, the AKDE \& AKDE<sub>C</sub> home-range areas appears larger and the presence of a hole near `(45,5)` cannot be resolved because the resolution is (appropriately) insufficient.
 
-Finally, we can compare the area estimates.
+The area correction in the KDE<sub>C</sub> and AKDE<sub>C</sub> methods correct for the small sample-size biases inherent in the KDE and AKDE methods. In the case of the IID KDE, there is almost no correction made by KDE<sub>C</sub> because the effective sample size is perceived to be very large (see below) and so the bias is expected to be very small. In the case of the OUF AKDE, there is a modest correction made by AKDE<sub>C</sub> because the effective sample size is more accurately judged to be rather small (see below).
+
+Finally, we can compare the area estimates and effective sample sizes.
 
 ```{r,  fig.show='hold'}
 summary(UD0)
