@@ -1,6 +1,4 @@
 LOW HANGING FRUIT
-* store info in UDs
-* fixed weights -> followup email with Peter
 * move stack import with split
 * variogram.list <- mean-lapply-variogram
 * simulate.UD
