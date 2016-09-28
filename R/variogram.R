@@ -95,7 +95,7 @@ grid.init <- function(t,dt=stats::median(diff(t)),W=array(1,length(t)))
 
 ############################
 # smear data across a uniform grid
-gridder <- function(t,z,dt=NULL)
+gridder <- function(t,z,dt=NULL,finish=TRUE)
 {
   n <- length(t)
   COL <- ncol(z)
@@ -153,15 +153,17 @@ gridder <- function(t,z,dt=NULL)
     }
   }
   
-  # normalize distributed information
-  POS <- (W.grid>0)
-  Z.grid[POS,] <- Z.grid[POS,]/W.grid[POS]
-  
-  
-  # continuous weights eff up the FFT numerics so discretize weights
-  W <- sum(W) # now total DOF
-  W.grid <- sign(W.grid) # discrete weights
-  
+  if(finish)
+  {
+    # normalize distributed information
+    POS <- (W.grid>0)
+    Z.grid[POS,] <- Z.grid[POS,]/W.grid[POS]
+    
+    # continuous weights eff up the FFT numerics so discretize weights
+    W <- sum(W) # now total DOF
+    W.grid <- sign(W.grid) # discrete weights
+  }
+    
   return(list(w=W.grid,z=Z.grid,lag=lag,dt=dt))
 }
 
@@ -209,18 +211,17 @@ variogram.fast <- function(data,dt=NULL,fast=fast,CI="Markov",axes=c("x","y"),SL
   # only count non-overlapping lags... not perfect
   if(CI=="Markov")
   {
-    dof <- 2*(last(t)-t[1])/lag
-    dof[1] <- 2*length(t)
+    # number of lags in the data
+    dof <- COL*(last(t)-t[1])/lag
+    dof[1] <- COL*length(t)
   
-    for(i in 1:length(lag))
-    {
-      if(dof[i]<DOF[i]) {DOF[i] <- dof[i] }
-    }
+    # be conservative
+    for(i in 1:length(lag)) { if(dof[i]<DOF[i]) {DOF[i] <- dof[i]} }
   }
   else if(CI=="IID") # fix initial and total DOF
   {
-    DOF[1] <- 2*length(t)
-    DOF[-1] <- DOF[-1]/sum(DOF[-1])*(length(t)^2-length(t))
+    DOF[1] <- COL*length(t)
+    DOF[-1] <- DOF[-1]*(1/sum(DOF[-1])*COL*(length(t)^2-length(t))/2)
   }
   
   result <- data.frame(SVF=SVF,DOF=DOF,lag=lag)
@@ -458,7 +459,7 @@ svf.func <- function(CTMM,moment=FALSE)
   if(is.null(COV))
   { COV <- diag(0,1+K+(if(circle){1}else{0})) }
   else
-  { COV <- area2var(CTMM) }
+  { COV <- area2var(CTMM,MEAN=TRUE) }
     
   # FIRST CONSTRUCT STANDARD ACF AND ITS PARAMTER GRADIENTS
   if(CPF) # Central place foraging

@@ -1,10 +1,28 @@
-0.3.4 2016-08-17
+0.3.4 2016-09-28
 
-  * Nothing yet
+  * weighted AKDE implemented
 
-0.3.3 2016-08-14
+  * predict now returns covariance estimates
+  
+  * occurrence distributions now exportable
 
-  * Preliminary 3D AKDE support
+  * AKDE overlap bugfixes
+  
+  * summary.ctmm now returns correct RMS speed
+  
+  * bugfix for eccentricity errors
+
+  * variogram CIs fixed for odd dimensions
+  
+  * periodogram rare index bugfix
+  
+  * as.telemetry column identification more robust
+
+0.3.3 2016-09-05
+
+  * Improved import of 'move' objects
+
+  * Preliminary 3D AKDE support, debiased
 
   * New method predict for ctmm objects
   

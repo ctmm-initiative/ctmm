@@ -445,8 +445,20 @@ predict.ctmm <- function(object,data=NULL,t=NULL,dt=NULL,res=1,...)
     data <- fill.data(data,CTMM=object,t=t,dt=dt,res=res)
     object$error <- TRUE # avoids unit variance algorithm
     data <- smoother(data,object,smooth=TRUE)
+    NAMES <- colnames(data$R)
+    COV <- data$COV
     data <- cbind(t=data$t,data$R)
     data <- data.frame(data)
+    
+    # flatten covariance matrix and include in data.frame
+    for(i in 1:length(NAMES))
+    {
+      for(j in i:length(NAMES))
+      {
+        NAME <- paste("cov.",NAMES[i],".",NAMES[j],sep="")
+        data[,NAME] <- COV[,i,j]
+      }
+    }
   }
   
   data <- new.telemetry(data,info=info)

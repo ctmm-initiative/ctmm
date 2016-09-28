@@ -901,8 +901,8 @@ newton.ctmm <- function(data,CTMM,REML=REML)
   return(ctmm(tau=tau,info=attr(data,"info")))
 }
 
-####### calculate variance and variance-covaraince from acrea and eccentricity information
-area2var <- function(CTMM)
+####### calculate variance and variance-covaraince from area and eccentricity information
+area2var <- function(CTMM,MEAN=TRUE)
 {
   VAR <- mean(diag(CTMM$sigma))
   COV <- CTMM$COV
@@ -913,8 +913,9 @@ area2var <- function(CTMM)
     ecc <- CTMM$sigma@par["eccentricity"]
     
     # convert area, eccentricity uncertainty into mean variance uncertainty
-    grad <- array( c(cosh(ecc),area*sinh(ecc),0) , c(1,3) )
-
+    grad <- rbind( c(cosh(ecc/2),area*sinh(ecc/2)/2,0) )
+    if(!MEAN) { grad <- 2*grad } # total x-y variance or average x-y variance
+    
     P <- nrow(COV)
     if(P>3)
     {

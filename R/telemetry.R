@@ -29,75 +29,108 @@ get.telemetry <- function(data,axes=c("x","y"))
 
 #######################
 # Generic import function
-as.telemetry <- function(CSV,timezone="GMT",projection=NULL,UERE=NULL,...) UseMethod("as.telemetry")
+as.telemetry <- function(object,timezone="GMT",projection=NULL,UERE=NULL,...) UseMethod("as.telemetry")
 
 # Move object
-as.telemetry.Move <- function(CSV,timezone="GMT",projection=NULL,UERE=NULL,...)
+as.telemetry.Move <- function(object,timezone="GMT",projection=NULL,UERE=NULL,...)
 {
-  # clean this up to just dump idData into columns
-  DATA <- data.frame(timestamp=CSV$timestamp,
-                    location.long=CSV@coords[,1],
-                    location.lat=CSV@coords[,2]
-                    )
+  DATA <- data.frame(timestamp=move::timestamps(object))
+  if(raster::isLonLat(object))
+  { DATA[,c('location.long','location.lat')] <- sp::coordinates(object) }
+  else
+  { DATA[,c('location.long','location.lat')] <- sp::coordinates(sp::spTransform(object,sp::CRS("+proj=longlat +datum=WGS84"))) }
   
-  # possibly empty columns
-  DATA$individual.local.identifier <- CSV@idData$individual.local.identifier
-  DATA$tag.local.identifier <- CSV@idData$tag.local.identifier
-  DATA$eobs.horizontal.accuracy.estimate <- CSV$eobs.horizontal.accuracy.estimate
-  DATA$GPS.HDOP <- CSV$GPS.HDOP
-  DATA$height.above.ellipsoid <- CSV$height.above.ellipsoid
-  DATA$GPS.VDOP <- CSV$GPS.VDOP
+  # break Move object up into data.frame and idData
+  idData <- move::idData(object)
+  object <- as.data.frame(object)
   
+  # add data.frame columns to data
+  DATA <- cbind(DATA,object)
+  
+  # add idData to data
+  # DATA[,names(idData)] <- t(array(idData,c(length(idData),nrow(DATA))))
+  for(i in 1:length(idData)) { DATA[,names(idData)[i]] <- idData[i] }
+  
+  # can now treat this as a MoveBank object
   DATA <- as.telemetry.data.frame(DATA,timezone=timezone,projection=projection,UERE=UERE)
   return(DATA)
 }
-  
-# this assumes a MoveBank data.frame
-as.telemetry.data.frame <- function(CSV,timezone="GMT",projection=NULL,UERE=NULL,...)
-{
-  # choose id strings from what's present
-  id <- as.factor(CSV$individual.local.identifier)
-  if(length(id)==0) { id <- as.factor(CSV$tag.local.identifier) }
-  
-  DATA <- data.frame(id=id,
-                    timestamp=as.POSIXct(CSV$timestamp,tz=timezone),
-                    longitude=as.numeric(CSV$location.long),
-                    latitude=as.numeric(CSV$location.lat)
-                    )
 
+# pull out a column with different possible names
+pull.column <- function(object,NAMES,FUNC=as.numeric)
+{
+  # consider alternative spellings of NAMES
+  NAMES <- c(NAMES,gsub("[.]","_",NAMES))
+  NAMES <- c(NAMES,tolower(NAMES))
+  
+  NAMES <- intersect(NAMES,names(object))
+  if(length(NAMES))
+  { return( FUNC(object[,NAMES[1]]) ) }
+  else
+  { return(NULL) }
+}
+
+# this assumes a MoveBank data.frame
+as.telemetry.data.frame <- function(object,timezone="GMT",projection=NULL,UERE=NULL,...)
+{
+  DATA <- data.frame(timestamp=as.POSIXct(object$timestamp,tz=timezone))
+  
+  COL <- c("animal.ID","individual.local.identifier","deployment.ID","tag.local.identifier","tag.ID")
+  COL <- pull.column(object,COL,as.factor)
+  if(length(COL)==0)
+  {
+    warning("No MoveBank identification found. Assuming data corresponds to one indiviudal.")
+    COL <- factor(rep('unknown',nrow(object)))
+  }
+  DATA$id <- COL
+  
+  COL <- c("location.long","longitude","long")
+  COL <- pull.column(object,COL)
+  DATA$longitude <- COL
+  
+  COL <- c("location.lat","latitude","lat")
+  COL <- pull.column(object,COL)
+  DATA$latitude <- COL
+    
   # Import and use HDOP if available
-  HDOP <- CSV$GPS.HDOP
-  if(!is.null(HDOP))
-  { 
+  COL <- c("GPS.HDOP","HDOP","DOP")
+  COL <- pull.column(object,COL)
+  if(length(COL))
+  {
     if(is.null(UERE))
     {
       warning("HDOP values found but UERE not specified. See help(\"uere\").")
-      DATA$HDOP <- HDOP
+      DATA$HDOP <- COL
     }
     else
-    { DATA$HERE <- (HDOP*UERE) }
+    { DATA$HERE <- (COL*UERE) }
   }
   
   # Import and use e-obs accuracy if available
-  HSTD <- CSV$eobs.horizontal.accuracy.estimate
-  if(!is.null(HSTD)) { DATA$HERE <- sqrt(2)*HSTD }
+  COL <- "eobs.horizontal.accuracy.estimate"
+  COL <- pull.column(object,COL)
+  if(length(COL)) { DATA$HERE <- sqrt(2)*COL }
   # I emailed them, but they didn't know if there needed to be a sqrt(2) factor here
   # Do I assume this is a sigma_H ?
   # Do I assume this is an x-y standard deviation?
   # Scott's calibration data is more like the latter
     
   # Import third axis if available
-  DATA$z <- CSV$height.above.ellipsoid
-  VDOP <- CSV$GPS.VDOP
-  if(!is.null(VDOP))
-  { 
+  COL <- "height.above.ellipsoid"
+  COL <- pull.column(object,COL)
+  DATA$z <- COL
+  
+  COL <- c("GPS.VDOP","VDOP")
+  COL <- pull.column(object,COL)
+  if(length(COL))
+  {
     if(is.null(UERE))
     {
       warning("VDOP values found but UERE not specified. See help(\"uere\").")
-      DATA$VDOP <- VDOP
+      DATA$VDOP <- COL
     }
     else
-    { DATA$VERE <- (VDOP*UERE) }
+    { DATA$VERE <- (COL*UERE) }
   }
   # need to know where the ground is too
   
@@ -139,10 +172,10 @@ as.telemetry.data.frame <- function(CSV,timezone="GMT",projection=NULL,UERE=NULL
   else { return(telist[[1]]) }
 }
 
-# read in a MoveBank CSV file
-as.telemetry.character <- function(CSV,timezone="GMT",projection=NULL,UERE=NULL,...)
+# read in a MoveBank object file
+as.telemetry.character <- function(object,timezone="GMT",projection=NULL,UERE=NULL,...)
 {
-  data <- utils::read.csv(CSV,...)
+  data <- utils::read.csv(object,...)
   data <- as.telemetry.data.frame(data,timezone=timezone,projection=projection,UERE=UERE)
   return(data)
 }
@@ -162,7 +195,7 @@ telemetry.clean <- function(data,id)
   if(ORDER != length(data$t)) { warning("Duplicate data in ",id," removed") }
   
   # exit with warning on duplicate times
-  if(anyDuplicated(data$t)) { stop("Duplicate times in ",id) }
+  if(anyDuplicated(data$t)) { warning("Duplicate times in ",id) }
   
   # remove old level information
   data <- droplevels(data)

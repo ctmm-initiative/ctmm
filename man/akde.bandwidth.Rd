@@ -8,21 +8,22 @@ Calculate the optimal bandwidth matrix of movement data
 This function calculates the optimal bandwidth matrix (kernel covariance) for a two-dimensional animal tracking dataset, given an autocorrelated movement model (Fleming et al, 2015). This optimal bandwidth can fully take into account all autocorrelation in the data, assuming it is captured by the movement model.
 }
 \usage{
-akde.bandwidth(data,CTMM,VMM=NULL,fast=NULL,dt=NULL,verbose=FALSE)
+akde.bandwidth(data,CTMM,VMM=NULL,weights=NULL,dt=NULL,verbose=FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{data}{ 2D timeseries telemetry data represented as a \code{telemetry} object. }
   \item{CTMM}{A \code{ctmm} movement model as from the output of \code{ctmm.fit}.}
   \item{VMM}{An optional vertical \code{ctmm} object for 3D bandwidth calculation.}
-  \item{fast}{ Use the direct algorithm if \code{FALSE} or the FFT algorithm if \code{TRUE}. The default behavior switches from slow to fast at \code{length(data$t)==100}.}
+  \item{weights}{By default, the weights are taken to be uniform. \code{weights=TRUE} will optimize the weights exactly, a \code{factor} array will optimize its levels, and a \code{numeric} array will fix the weights.}
   \item{dt}{ Optional lag bin width for the FFT algorithm.}
-  \item{verbose}{ Optionally return the effective sample size \code{DOF.H} along with the bandwidth matrix \code{H}.}
+  \item{verbose}{ Optionally return the effective sample size \code{DOF.H} and other information along with the bandwidth matrix \code{H}.}
 }
 \details{
-One of two algorithms is used to count the time lags. The direct method is always exact but comes at an \eqn{O(n^2)} computational cost. The fast \eqn{O(n \log n)} algorithm is based upon the FFT method of Marcotte (1996). This FFT method is exact for evenly scheduled data, and can account for missing observations.
+The \code{weights} argument can be used to correct fixed sampling bias with a prescribed \code{numeric} array or to correct temporal sampling bias caused by autocorrelation with \code{weights=TRUE} or a \code{factor} array. \code{weights=TRUE} will optimize the weights exactly, but with an \eqn{O(n^2)} computational cost. If the optimal weights are expected to conform to a particular structure, with a small number of unique weights, then a \code{factor} array will optimize the weights under this approximation at a reduced \eqn{O(n \log n)} cost. In this case, the levels will correspond to the unknown weights to be optimized.
 
-If no \code{dt} is specified, the median sampling interval is used if \code{fast=TRUE}. This is typically a good assumption for most data, even when there are gaps. By decreasing \code{dt}, the FFT method can be made arbitrarily precise with no ill effects.
+One of two algorithms is used to count the time lags. The direct method used with \code{weights=TRUE} is exact but comes at an \eqn{O(n^2)} computational cost. The fast \eqn{O(n \log n)} algorithm is based upon the FFT method of Marcotte (1996). This FFT method is exact for evenly scheduled data, and can account for missing observations.
+If no \code{dt} is specified, the median sampling interval is used. This is typically a good assumption for most data, even when there are gaps. By decreasing \code{dt}, the FFT method can be made arbitrarily precise.
 }
 
 \value{Returns a bandwidth \code{matrix} object, which is to be the optimal covariance matrix of the individual kernels of the kernel density estimate.}

@@ -3,67 +3,82 @@
 new.UD <- methods::setClass("UD", representation("list",info="list"))
 
 
-# Slow lag counter
-tab.lag.DOF <- function(data,fast=NULL,dt=NULL,w=NULL)
+# fast lag counter
+tab.lag.DOF <- function(data,dt=NULL,weights=NULL)
 {
   t <- data$t
   # intelligently select algorithm
   n <- length(t)
 
-  # uniform weights
-  # if(is.null(w)) { w <- rep(1,n)/n }
-  # finish this....
+  if(is.null(weights)) # uniform weights
+  { weights <- rep(1,n)/n }
+  else if(class(weights)=='numeric' || class(weights)=='integer') # fixed weights
+  { weights <- weights/sum(weights) }
+  else if(class(weights)=='factor') # sparse weights
+  { weights <- sapply(levels(weights),function(l){weights==l}) }
+
+  weights <- cbind(weights)
+  COL <- ncol(weights)
   
-  if(is.null(fast))
-  {
-    if(n<100) { fast <- FALSE }
-    else { fast <- TRUE }
-  }
+  # smear the data over an evenly spaced time grid
+  GRID <- gridder(t,weights,dt,finish=FALSE)
+  weights <- GRID$z
+  lag <- GRID$lag
+  rm(GRID)
   
-  # calculate lag,n(lag) vectors
-  if(fast)
+  n <- length(lag)
+  N <- composite(2*n)
+  
+  weights <- FFT(rpad(weights,N))
+  
+  if(COL==1)
   {
-    lag.DOF <- variogram.fast(data,dt=dt,CI="IID",axes="t") # count all lag pairs
-    lag.DOF$SVF <- NULL
-    
-    # lag==0 should not be doubled
-    lag.DOF$DOF[1] <- lag.DOF$DOF[1]/2 
+    weights <- c(weights)
+    DOF <- abs(weights)^2
+    # include only positive lags
+    DOF <- Re(IFFT(DOF)[1:n])
+    # add positive and negative lags
+    DOF[-1] <- 2*DOF[-1]
+    # correct numerical error
+    DOF <- DOF/sum(DOF)
   }
   else
   {
-    lag <- outer(t,t,FUN="-")
-    lag <- abs(lag) # may have to change far in the future
-    lag <- c(lag) # collapse to 1D array
-    
-    # can we think of a faster sorter?
-    r <- lag # to be the remainder
-    lag <- NULL
-    DOF <- NULL
-    while(length(r)>0)
-    {
-      n <- length(r)
-      lag <- c(lag,r[1])
-      r <- r[r!=r[1]]
-      DOF <- c(DOF,n-length(r))
-    }
-    
-    lag.DOF <- list(lag=lag,DOF=DOF)
+    DOF <- vapply(1:N,function(i){ outer(weights[i,],Conj(weights[i,])) },diag(1i,COL))
+    DOF <- array(DOF,c(COL^2,N))
+    DOF <- t(DOF)
+    # include only positive lags
+    DOF <- Re(IFFT(DOF)[1:n,])
+    DOF <- array(DOF,c(n,COL,COL))
+    # add positive and negative lags
+    DOF[-1,,] <- DOF[-1,,] + aperm(DOF[-1,,],c(1,3,2))
+    # correct numerical error
+    DOF <- DOF/sum(DOF)*length(data$t)^2
   }
   
-  return(lag.DOF)
+  return(list(DOF=DOF,lag=lag))
 }
 
 
 ##################################
 # Bandwidth optimizer
 #lag.DOF is an unsupported option for end users
-akde.bandwidth <- function(data,CTMM,VMM=NULL,fast=NULL,dt=NULL,verbose=FALSE)
+akde.bandwidth <- function(data,CTMM,VMM=NULL,weights=NULL,dt=NULL,verbose=FALSE)
 {
-  
-  lag.DOF <- tab.lag.DOF(data,fast=fast,dt=dt)
-  # Extract lag data
-  DOF <- lag.DOF$DOF
-  lag <- lag.DOF$lag
+  if(is.null(weights) || class(weights)=='factor' || class(weights)=='numeric' || class(weights)=='integer') # uniform weight lag information
+  {
+    lag.DOF <- tab.lag.DOF(data,dt=dt,weights=weights)
+    # Extract lag data
+    DOF <- lag.DOF$DOF
+    lag <- lag.DOF$lag
+    rm(lag.DOF)
+  }
+  else if(weights) # optimal weight lag information
+  {
+    DOF <- NULL
+    lag <- outer(data$t,data$t,'-')
+    lag <- abs(lag) # SVF not defined correctly for negative lags yet
+  }
   
   # is CTMM a list of H,V models or an H model?
   # generic function to delineate an H&V list
@@ -76,17 +91,61 @@ akde.bandwidth <- function(data,CTMM,VMM=NULL,fast=NULL,dt=NULL,verbose=FALSE)
   
   n <- length(data$t)
   
+  # 2D AKDE #
   if(is.null(VMM))
   {
     # Mean Integrated Square Error modulo a constant
-    MISE <- function(h)
+    if(is.null(DOF)) # constrained, unstructured weights
     {
-      if(h<=0) {Inf}
-      else { (1/n^2)*sum(DOF/(2*g(lag)+2*h^2)) - 2/(2+h^2) + 1/2 }
+      MISE <- function(h)
+      {
+        if(h<=0) { return(Inf) }
+        
+        # MISE matrix
+        G <- lag #copy structure
+        G[] <- 1/(2*g(lag)+2*h^2) # preserve structure... why is this necessary here?
+        
+        dvec <- rep(0,n)
+        AmaT <- cbind(rep(1,n),diag(n))
+        bvec <- c(1,rep(0,n))
+        weights <<- quadprog::solve.QP(G,dvec,AmaT,bvec,meq=1)$solution
+        return( (weights %*% G %*% weights) - 2/(2+h^2) + 1/2 )
+      }
+    }
+    else if(is.null(dim(DOF))) # fixed weights
+    {
+      MISE <- function(h)
+      {
+        if(h<=0) {Inf}
+        
+        sum(DOF/(2*g(lag)+2*h^2)) - 2/(2+h^2) + 1/2
+      }
+    }
+    else # constrained, structured weights
+    {
+      LEVELS <- levels(weights)
+      COUNTS <- sapply(LEVELS,function(w){sum(weights==w)})
+      m <- length(LEVELS)
+      dvec <- rep(0,m)
+      AmaT <- cbind(COUNTS,diag(m))
+      bvec <- c(1,rep(0,m))
+      MISE <- function(h)
+      {
+        if(h<=0) { return(Inf) }
+        
+        # MISE matrix
+        G <- lapply(1:length(lag),function(i){DOF[i,,]/(2*g(lag[i])+2*h^2)})
+        G <- Reduce('+',G)
+        
+        LEVELS <<- quadprog::solve.QP(G,dvec,AmaT,bvec,meq=1)$solution
+        return( (LEVELS %*% G %*% LEVELS) - 2/(2+h^2) + 1/2 )
+      }
     }
     
     h <- 1/n^(1/6) # User Silverman's rule of thumb to place lower bound
-    h <- stats::optimize(f=MISE,interval=c(h/2,2))$minimum
+    MISE <- stats::optimize(f=MISE,interval=c(h/2,2))
+    h <- MISE$minimum
+    MISE <- MISE$objective / sqrt(det(2*pi*sigma)) # constant
     
     H <- h^2
     
@@ -99,13 +158,28 @@ akde.bandwidth <- function(data,CTMM,VMM=NULL,fast=NULL,dt=NULL,verbose=FALSE)
     
     if(verbose)
     {
-      CTMM$sigma <- covm(sigma,axes=CTMM$axes,isotropic=CTMM$isotropic)
-      bias <- akde.bias(CTMM,H=H,lag=lag,DOF=DOF)
+      # set structured weights
+      if(class(weights)=='factor')
+      {
+        n <- length(lag)
+        DOF <- array(DOF,c(n*m,m))
+        DOF <- DOF %*% LEVELS
+        DOF <- array(DOF,c(n,m))
+        DOF <- DOF %*% LEVELS
+        
+        weights <- LEVELS[weights]
+      }
       
-      return(list(H=H,DOF.H=DOF.H,bias=bias,DOF.area=DOF.area(CTMM)))
+      CTMM$sigma <- covm(sigma,axes=CTMM$axes,isotropic=CTMM$isotropic)
+      bias <- akde.bias(CTMM,H=H,lag=lag,DOF=DOF,weights=weights)
+     
+      h <- c(h,h)
+      names(h) <- CTMM$axes
+       
+      return(list(H=H,h=h,DOF.H=DOF.H,bias=bias,DOF.area=DOF.area(CTMM),weights=weights,MISE=MISE))
     }
   }  
-  else
+  else # 3D AKDE #
   {
     sigmaz <- methods::getDataPart(VMM$sigma)
     # standardized SVF
@@ -114,24 +188,66 @@ akde.bandwidth <- function(data,CTMM,VMM=NULL,fast=NULL,dt=NULL,verbose=FALSE)
     gz <- Vectorize(svfz)
     
     # Mean Integrated Square Error modulo a constant
-    MISE <- function(h)
+    if(is.null(DOF)) # constrained, unstructured weights
     {
-      if(any(h==0)) {Inf}
-      else { (1/n^2)*sum(DOF/(2*g(lag)+2*h[1]^2)/sqrt(2*gz(lag)+2*h[2]^2)) - 2/(2+h[1]^2)/sqrt(2+h[2]^2) + 1/2^(3/2) }
+      MISE <- function(h)
+      {
+        if(any(h<=0)) { return(Inf) }
+        
+        # MISE matrix
+        G <- lag #copy structure
+        G[] <- 1/(2*g(lag)+2*h[1]^2)/sqrt(2*gz(lag)+2*h[2]^2) # keep structure
+        
+        dvec <- rep(0,n)
+        AmaT <- cbind(rep(1,n),diag(n))
+        bvec <- c(1,rep(0,n))
+        weights <<- quadprog::solve.QP(G,dvec,AmaT,bvec,meq=1)$solution
+        return( (weights %*% G %*% weights) - 2/(2+h[1]^2)/sqrt(2+h[2]^2) + 1/2^(3/2) )
+      }
+    }
+    else if(is.null(dim(DOF))) # fixed weights
+    {
+      MISE <- function(h)
+      {
+        if(any(h<=0)) { return(Inf) }
+        
+        sum(DOF/(2*g(lag)+2*h[1]^2)/sqrt(2*gz(lag)+2*h[2]^2)) - 2/(2+h[1]^2)/sqrt(2+h[2]^2) + 1/2^(3/2)
+      }
+    }
+    else # constrained, structured weights
+    {
+      LEVELS <- levels(weights)
+      COUNTS <- sapply(LEVELS,function(w){sum(weights==w)})
+      m <- length(LEVELS)
+      dvec <- rep(0,m)
+      AmaT <- cbind(COUNTS,diag(m))
+      bvec <- c(1,rep(0,m))
+      MISE <- function(h)
+      {
+        if(any(h<=0)) { return(Inf) }
+        
+        # MISE matrix
+        G <- lapply(1:length(lag),function(i){DOF[i,,]/(2*g(lag[i])+2*h[1]^2)/sqrt(2*gz(lag[i])+2*h[2]^2)})
+        G <- Reduce('+',G)
+        
+        LEVELS <<- quadprog::solve.QP(G,dvec,AmaT,bvec,meq=1)$solution
+        return( (LEVELS %*% G %*% LEVELS) - 2/(2+h[1]^2)/sqrt(2+h[2]^2) + 1/2^(3/2) )
+      }
     }
     
-    h <- 4/5/n^(1/7) # User Silverman's rule of thumb to place lower bound
-    h <- stats::optim(par=c(h,h),fn=MISE,control=list(maxit=.Machine$integer.max))$par
+    h <- 4/5/n^(1/7) # User Silverman's rule of thumb as initial guess
+    MISE <- stats::optim(par=c(h,h),fn=MISE,control=list(maxit=.Machine$integer.max))
+    h <- MISE$par
+    MISE <- MISE$value
+    MISE <- MISE / sqrt(det(2*pi*sigma)) / sqrt(2*pi*sigmaz) # constant
     
     H <- h^2
     
-    # horizontal DOF
-    DOF.H <- ( 1/(2*H[1])^2/sqrt(2*H[2]) - 1/(2+2*H[1])^2/sqrt(2+2*H[2]) ) / ( 1/(2+H[1])^2/sqrt(2+H[2]) - 1/(2+2*H[1])^2/sqrt(2+2*H[2]) )
-    # vertical DOF
-    DOF.H[2] <- ( 1/(2*H[1])/(2*H[2])^(3/2) - 1/(2+2*H[1])/(2+2*H[2])^(3/2) ) / ( 1/(2+H[1])/sqrt(2+H[2])^(3/2) - 1/(2+2*H[1])/sqrt(2+2*H[2])^(3/2) )
-    # Above are bad
-    DOF.H <- c(NA,NA)
-    
+    # numerator
+    DOF.H <- ( 1/(2*H[1])^2/sqrt(2*H[2]) + 1/(2*H[1])/(2*H[2])^(3/2) - 1/(2+2*H[1])^2/sqrt(2+2*H[2]) - 1/(2+2*H[1])/(2+2*H[2])^(3/2) )
+    # denominator
+    DOF.H <- DOF.H / ( 1/(2+H[1])^2/sqrt(2+H[2]) + 1/(2+H[1])/sqrt(2+H[2])^(3/2) - 1/(2+2*H[1])^2/sqrt(2+2*H[2]) - 1/(2+2*H[1])/sqrt(2+2*H[2])^(3/2) )
+
     VH <- H[2]*sigmaz
     HH <- H[1]*sigma
     
@@ -146,20 +262,34 @@ akde.bandwidth <- function(data,CTMM,VMM=NULL,fast=NULL,dt=NULL,verbose=FALSE)
     
     if(verbose)
     {
+      # set structured weights
+      if(class(weights)=='factor')
+      {
+        n <- length(lag)
+        DOF <- array(DOF,c(n*m,m))
+        DOF <- DOF %*% LEVELS
+        DOF <- array(DOF,c(n,m))
+        DOF <- DOF %*% LEVELS
+        
+        weights <- LEVELS[weights]
+      }
+      
       CTMM$sigma <- covm(sigma,axes=CTMM$axes,isotropic=CTMM$isotropic)
       VMM$sigma <- covm(sigmaz,axes=VMM$axes,isotropic=TRUE)
       
-      bias <- akde.bias(CTMM,H=HH,lag=lag,DOF=DOF)
-      bias[3] <- akde.bias(VMM,H=VH,lag=lag,DOF=DOF)
+      bias <- akde.bias(CTMM,H=HH,lag=lag,DOF=DOF,weights=weights)
+      bias[3] <- akde.bias(VMM,H=VH,lag=lag,DOF=DOF,weights=weights)
       names(bias) <- axes
       
       DOF.area <- c(DOF.area(CTMM),DOF.area(VMM))
       
+      h <- c(h[1],h[1],h[2])
+      names(h) <- axes
+      
       axes <- c("Horizontal","Vertical")
       names(DOF.area) <- axes
-      names(DOF.H) <- axes
-      
-      return(list(H=H,DOF.H=DOF.H,bias=bias,DOF.area=DOF.area))
+
+      return(list(H=H,h=h,DOF.H=DOF.H,bias=bias,DOF.area=DOF.area,weights=weights,MISE=MISE))
     }
     
   }
@@ -169,13 +299,20 @@ akde.bandwidth <- function(data,CTMM,VMM=NULL,fast=NULL,dt=NULL,verbose=FALSE)
 
 # bias of Gaussian Reference function AKDE
 # generalize to non-stationary mean
-akde.bias <- function(CTMM,H,lag,DOF)
+akde.bias <- function(CTMM,H,lag,DOF,weights)
 {
   sigma <- methods::getDataPart(CTMM$sigma)
   
   # weighted correlation
   ACF <- Vectorize( svf.func(CTMM,moment=FALSE)$ACF )
-  COV <- sum(ACF(lag)*DOF)/DOF[1]^2
+  if(is.null(DOF))
+  {
+    COV <- lag # copy structure
+    COV[] <- ACF(lag) # preserve structure... why do I have to do it this way?
+    COV <- c(weights %*% COV %*% weights)
+  }
+  else
+  { COV <- sum(DOF*ACF(lag)) }
   
   # variance inflation factor
   bias <- ( det(cbind((1-COV)*sigma + H))/det(cbind(sigma)) )^(1/length(CTMM$axes))
@@ -221,7 +358,7 @@ akde <- function(data,CTMM,VMM=NULL,debias=TRUE,smooth=TRUE,error=0.001,res=10,g
   # absolute resolution
   dr <- sqrt(diag(KDE$H))/res
 
-  KDE <- c(KDE,kde(data,KDE$H,axes=axes,bias=debias,alpha=error,dr=dr,grid=grid))
+  KDE <- c(KDE,kde(data,KDE$H,axes=axes,bias=debias,W=KDE$weights,alpha=error,dr=dr,grid=grid))
 
   KDE <- new.UD(KDE,info=attr(data,"info"))
   
@@ -285,12 +422,13 @@ kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=1,dr=NULL)
 # construct my own kde objects
 # was using ks-package but it has some bugs
 # alpha is the error goal in my total probability
-kde <- function(data,H,axes=c("x","y"),bias=FALSE,W=rep(1,length(data$x)),alpha=0.001,res=NULL,dr=NULL,grid=NULL)
+kde <- function(data,H,axes=c("x","y"),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr=NULL,grid=NULL)
 {
   r <- get.telemetry(data,axes)
   n <- nrow(r)
   
   # normalize weights
+  if(is.null(W)) { W <- rep(1,length(data$x)) }
   W <- W/sum(W)
   
   # format bandwidth matrix
@@ -307,8 +445,9 @@ kde <- function(data,H,axes=c("x","y"),bias=FALSE,W=rep(1,length(data$x)),alpha=
   # corner origin to minimize arithmetic later
   #r <- t(t(r) - R0)
   #R <- lapply(1:length(R0),function(i){ R[[i]] - R0[i] })
-  
-  cdf <- array(0,sapply(R,length))
+
+  # probability mass function
+  PMF <- array(0,sapply(R,length))
   for(i in 1:n)
   {
     # sub-grid lower/upper bound indices
@@ -319,101 +458,152 @@ kde <- function(data,H,axes=c("x","y"),bias=FALSE,W=rep(1,length(data$x)),alpha=
     
     # I can't figure out how to do this in one line
     if(length(SUB)==1)
-    { cdf[SUB[[1]]] <- cdf[SUB[[1]]] + W[i]*pnorm1(R[[1]][SUB[[1]]]-r[i,1],H[i,,],dr,alpha) }
+    { PMF[SUB[[1]]] <- PMF[SUB[[1]]] + W[i]*pnorm1(R[[1]][SUB[[1]]]-r[i,1],H[i,,],dr,alpha) }
     else if(length(SUB)==2)
-    { cdf[SUB[[1]],SUB[[2]]] <- cdf[SUB[[1]],SUB[[2]]] + W[i]*pnorm2(R[[1]][SUB[[1]]]-r[i,1],R[[2]][SUB[[2]]]-r[i,2],H[i,,],dr,alpha) }
+    { PMF[SUB[[1]],SUB[[2]]] <- PMF[SUB[[1]],SUB[[2]]] + W[i]*pnorm2(R[[1]][SUB[[1]]]-r[i,1],R[[2]][SUB[[2]]]-r[i,2],H[i,,],dr,alpha) }
     else if(length(SUB)==3)
-    { cdf[SUB[[1]],SUB[[2]],SUB[[3]]] <- cdf[SUB[[1]],SUB[[2]],SUB[[3]]] + W[i]*pnorm3(R[[1]][SUB[[1]]]-r[i,1],R[[2]][SUB[[2]]]-r[i,2],R[[3]][SUB[[3]]]-r[i,3],H[i,,],dr,alpha) }
+    { PMF[SUB[[1]],SUB[[2]],SUB[[3]]] <- PMF[SUB[[1]],SUB[[2]],SUB[[3]]] + W[i]*pnorm3(R[[1]][SUB[[1]]]-r[i,1],R[[2]][SUB[[2]]]-r[i,2],R[[3]][SUB[[3]]]-r[i,3],H[i,,],dr,alpha) }
   }
 
-  dV <- prod(dr)
-  if(!sum(bias)) { pdf <- cdf/dV }
-
-  # cdf: cell probability -> probability included in contour
-  cdf <- pdf2cdf(cdf,finish=FALSE)
-  DIM <- cdf$DIM
-  IND <- cdf$IND
-  cdf <- cdf$cdf
-  
-  # just using minimum bias for now... not ideal in 3D
-  vbias <- min(bias) # bias in variance along least biased axis
-  vbias <- sqrt(vbias)^length(dr) # convert to volume bias
-  # areas are biased to be estimated as debias*area
-  if(vbias) 
+  if(sum(bias)) # debias area/volume
   {
-    # counting volume by dV
-    VOL <- 1:length(cdf)
+    if(length(dr)==2) # AREA debias
+    {
+      # debias the area
+      PMF <- debias.volume(PMF,bias=min(bias))
+      CDF <- PMF$CDF
+      PMF <- PMF$PMF
+    }
+    else if(length(dr)==3) # VOLUME debias
+    {
+      # I'm assuming z-bias is smallest
+      vbias <- min(bias)
+      abias <- min(bias[1:2])/min(bias)
+      
+      # volume then area correction
+      PMF2 <- debias.volume(PMF,bias=vbias)$PMF
+      PMF2 <- debias.area(PMF2,bias=abias)$PMF
 
-    # evaluate the debiased cdf on the original volume grid
-    cdf <- stats::approx(x=VOL/vbias,y=cdf,xout=VOL,yleft=0,yright=1)$y
-    
-    # recalculate pdf
-    pdf <- diff(c(0,cdf))/dV
-    pdf[IND] <- pdf
-    pdf <- array(pdf,DIM)
+      # area then volumen correction
+      PMF <- debias.area(PMF,bias=abias)$PMF
+      PMF <- debias.volume(PMF,bias=vbias)$PMF
+
+      # average the two orders to cancel lowest-order errors
+      PMF <- (PMF+PMF2)/2
+      rm(PMF2)
+
+      # retabulate the cdf
+      CDF <- pmf2cdf(PMF)
+    }
   }
+  else # finish off PDF
+  { CDF <- pmf2cdf(PMF) }
+  
+  dV <- prod(dr)
+  result <- list(PDF=PMF/dV,CDF=CDF,r=R,dr=dr)
+  return(result)
+}
+
+################################
+# debias the entire volume of the PDF
+debias.volume <- function(PMF,bias=1)
+{
+  # cdf: cell probability -> probability included in contour
+  CDF <- pmf2cdf(PMF,finish=FALSE)
+  DIM <- CDF$DIM
+  IND <- CDF$IND
+  CDF <- CDF$CDF
+  
+  # convert from variance bias to volume bias
+  bias <- sqrt(bias)^length(DIM)
+  
+  # counting volume by dV
+  VOL <- 1:length(CDF)
+  
+  # evaluate the debiased cdf on the original volume grid
+  CDF <- stats::approx(x=VOL/bias,y=CDF,xout=VOL,yleft=0,yright=1)$y
+  
+  # recalculate pdf
+  PMF <- cdf2pmf(CDF)
   
   # back in spatial order # back in table form
-  cdf <- array(cdf[IND],DIM) 
+  PMF[IND] <- PMF
+  PMF <- array(PMF,DIM)
+  
+  CDF[IND] <- CDF
+  CDF <- array(CDF,DIM) 
+  
+  return(list(PMF=PMF,CDF=CDF))
+}
 
-  # residual biases
-  bias <- bias/min(bias)
-  abias <- min(bias[1:2])
-  # fix any remaining horizontal bias in 3D estimate
-  if(abias>1)
+#####################################
+# this is really a foliation debias of 2D slice area in 3D space
+debias.area <- function(PMF,bias=1)
+{
+  DIM <- dim(PMF)
+  
+  # debias the CDF areas slice by slice
+  for(i in 1:DIM[3])
   {
-    DIM <- DIM[1:2]
-    VOL <- 1:prod(DIM)
-    
-    for(i in 1:DIM[3])
+    # slice probability mass
+    dP <- sum(PMF[,,i])
+    if(dP) # only do this if there is some probability to shape
     {
-      # 2D slice information
-      CDF <- pdf2cdf(cdf[,,i],finish=FALSE,PDF=FALSE)
-      IND <- CDF$IND
-      CDF <- CDF$cdf
+      # normalize slice
+      PMF[,,i] <- PMF[,,i]/dP
       
-      # evaluate the debiased cdf on the original area grid
-      CDF <- stats::approx(x=VOL/abias,y=CDF,xout=VOL,yleft=0,yright=1)$y
+      # debias slice areas (equiprobability ok)
+      PMF[,,i] <- debias.volume(PMF[,,i],bias=bias)$PMF
       
-      # back in spatial order # back in table form
-      cdf[,,i] <- array(CDF[IND],DIM) 
+      # un-normalize slice
+      PMF[,,i] <- PMF[,,i]*dP
     }
   }
   
-  # residual bias
-  # bias <- bias/abias
+  # not using this ATM
+  # CDF <- pmf2cdf(PMF)
   
-  result <- list(PDF=pdf,CDF=cdf,r=R,dr=dr)
-  
-  return(result)
+  return(list(PMF=PMF,CDF=NULL))
 }
 
 ########################
 # cdf: cell probability -> probability included in contour
-pdf2cdf <- function(cdf,finish=TRUE,PDF=TRUE)
+pmf2cdf <- function(PMF,finish=TRUE)
 {
   #cdf <- pdf * dV
-  DIM <- dim(cdf)
-  cdf <- c(cdf) # flatten table
+  DIM <- dim(PMF)
+  PMF <- c(PMF) # flatten table
   
-  if(PDF) { decreasing <- TRUE }
-  else { decreasing <- FALSE }
-  cdf <- sort(cdf,decreasing=decreasing,method="quick",index.return=TRUE)
+  PMF <- sort(PMF,decreasing=TRUE,method="quick",index.return=TRUE)
   
-  IND <- cdf[[2]] # sorted indices
-  cdf <- cdf[[1]]
+  IND <- PMF[[2]] # sorted indices
+  PMF <- PMF[[1]]
   
-  if(PDF) { cdf <- cumsum(cdf) }
+  PMF <- cumsum(PMF)
 
   if(finish)
   {
     # back in spatial order # back in table form
-    cdf <- array(cdf[IND],DIM) 
-    return(cdf)
+    PMF[IND] <- PMF
+    PMF <- array(PMF,DIM) 
+    return(PMF)
   }
-  else
-  { return(list(cdf=cdf,IND=IND,DIM=DIM)) }
+  else { return(list(CDF=PMF,IND=IND,DIM=DIM)) }
 }
+
+
+###################
+# assume already sorted, return sorted
+cdf2pmf <- function(CDF)
+{
+  # this method has some numerical noise from discretization/aliasing
+  PMF <- diff(c(0,CDF))
+
+  # what's a good alternative that doesn't distort the estimates???
+    
+  return(PMF)
+}
+  
 
 #######################
 # robust bi-variate CDF (mean zero assumed)
@@ -620,20 +810,24 @@ Gauss3 <- function(X,Y,Z,sigma=NULL,sigma.inv=solve(sigma[1:2,1:2]),sigma.GM=sqr
 # AKDE CIs
 CI.UD <- function(object,level.UD=0.95,level=0.95,P=FALSE)
 {
+  if(is.null(object$DOF.area) && P)
+  { 
+    names(level.UD) <- "ML"
+    return(level.UD)
+  }
+  
   dV <- prod(object$dr)
   
   # point estimate
-  if(is.na(level.UD))
-  {
-    # calculate mean area
-    area <- sort(object$PDF,decreasing=TRUE,method="quick")
-    area <- sum(area * (1:length(area))) * dV
-  }
-  else
-  { area <- sum(object$CDF <= level.UD) * dV }
+  area <- sum(object$CDF <= level.UD) * dV
+  names(area) <- "ML"
   
   # chi square approximation of uncertainty
-  area <- chisq.ci(area,DOF=2*object$DOF.area,alpha=1-level)
+  if(!is.null(object$DOF.area))
+  {
+    area <- chisq.ci(area,DOF=2*object$DOF.area,alpha=1-level)
+    names(area) <- c("low","ML","high")
+  }
   
   if(!P) { return(area) }
   
@@ -642,8 +836,9 @@ CI.UD <- function(object,level.UD=0.95,level=0.95,P=FALSE)
   P <- sort(object$CDF,method="quick")[P]
 
   # recorrect point estimate level
-  if(!is.na(level.UD)) { P[2] <- level.UD }
-  
+  P[2] <- level.UD
+
+  names(P) <- c("low","ML","high")
   return(P)
 }
 
@@ -712,7 +907,7 @@ SpatialPolygonsDataFrame.UD <- function(object,level.UD=0.95,level=0.95,...)
   UD <- object
   
   P <- CI.UD(UD,level.UD,level,P=TRUE)
-  NAMES <- c("low","ML","high")
+  NAMES <- names(P)
   
   ID <- paste(UD@info$identity," ",round(100*level.UD),"% ",NAMES,sep="")
 

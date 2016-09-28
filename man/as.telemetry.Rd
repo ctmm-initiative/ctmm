@@ -12,24 +12,23 @@ Import, coerce, and summarize MoveBank data
 \description{Functions to import MoveBank csv files, \code{data.frame}, and \code{Move} objects, coerce them into \code{telemetry} objects, and summarize them.}
 
 \usage{
-as.telemetry(CSV,timezone="GMT",projection=NULL,UERE=NULL,...)
+as.telemetry(object,timezone="GMT",projection=NULL,UERE=NULL,...)
 
-\S3method{as.telemetry}{character}(CSV,timezone="GMT",projection=NULL,UERE=NULL,...)
+\S3method{as.telemetry}{character}(object,timezone="GMT",projection=NULL,UERE=NULL,...)
 
-\S3method{as.telemetry}{data.frame}(CSV,timezone="GMT",projection=NULL,UERE=NULL,...)
+\S3method{as.telemetry}{data.frame}(object,timezone="GMT",projection=NULL,UERE=NULL,...)
 
-\S3method{as.telemetry}{Move}(CSV,timezone="GMT",projection=NULL,UERE=NULL,...)
+\S3method{as.telemetry}{Move}(object,timezone="GMT",projection=NULL,UERE=NULL,...)
 
 \S3method{summary}{telemetry}(object,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{CSV}{The file name of the MoveBank csv file, \code{data.frame} object from a MoveBank data CSV, or \code{Move} object.}
+  \item{object}{A MoveBank CSV filename, MoveBank \code{data.frame} object, or \code{Move} object to coarce, or a \code{telemetry} object to summarize.}
   \item{timezone}{Timezone argument for \code{\link{as.POSIXct}}.}
   \item{projection}{Optional PROJ.4 projection argument to be fed to \code{\link[rgdal]{project}}.}
   \item{UERE}{"User equivalent range errors" needed to translate DOP values into location uncertainty.}
   \item{...}{Optional arguments to be fed to \code{\link{read.csv}}.}
-  \item{object}{\code{telemetry} object to summarize.}
 }
 
 \details{
@@ -46,7 +45,7 @@ The \code{GPS.HDOP} value requires the device's \code{UERE} value to be translat
 
 %\references{}
 
-\author{C. H. Fleming, G. Péron, and K. Safi.}
+\author{C. H. Fleming, B. Kranstauber, G. Péron, and K. Safi.}
 
 %\note{}
 

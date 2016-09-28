@@ -34,7 +34,7 @@ J. M. Calabrese and C. H. Fleming
 
 \seealso{ \code{\link{plot.variogram}}, \code{\link{variogram}}. }
 
-\examples{
+\examples{\donttest{
 # Load package and data
 library(ctmm)
 data(buffalo)
@@ -49,7 +49,7 @@ SVF <- mean(SVFS)
 
 # Plot the mean variogram
 plot(SVF)
-}
+}}
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

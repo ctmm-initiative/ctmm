@@ -123,7 +123,7 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, ...)
   # can we estimate speed?
   if(continuity(object)>1)
   {
-    COV <- area2var(object)
+    COV <- area2var(object,MEAN=TRUE)
     
     # RMS velocity
     if(CPF)
@@ -147,8 +147,8 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, ...)
     
     # contribution from sigma
     # GM.sigma <- cosh(ecc)*AM.sigma
-    ms <- AM.sigma*(Omega2+omega2)
-    grad <- c(Omega2+omega2, AM.sigma*grad)
+    ms <- (2*AM.sigma)*(Omega2+omega2)
+    grad <- 2*c(Omega2+omega2, AM.sigma*grad)
     var.ms <- (grad) %*% COV %*% (grad)
     
     # include mean
@@ -163,7 +163,8 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, ...)
     name <- c(name,unit.list$name)
     scale <- c(scale,unit.list$scale)
     
-    rms <- sqrt(norm.ci(ms,var.ms,alpha=alpha))
+    rms <- sqrt(chisq.ci(ms,COV=var.ms,alpha=alpha))
+    # rms <- sqrt(norm.ci(ms,var.ms,alpha=alpha))
     
     par <- rbind(par,rms)
     rownames(par)[P+1] <- "speed"

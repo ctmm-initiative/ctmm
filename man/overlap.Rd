@@ -6,7 +6,7 @@
 
 \title{Calculate the overlap between two stationary distributions}
 
-\description{This function calculates a useful measure of similarity between distributions known as the \emph{Bhattacharyya coefficient} in statistics and simply the \emph{fidelity} or \emph{overlap} in quantum and statistical mechanics. It is roughly speaking the ratio of the intersection area to the average individual area. When applied to \code{ctmm} objects, this function returns the overlap of the two Gaussian distributions. When applied to \code{telemetry} objects, this function returns the overlap of their kernel density estimates.}
+\description{This function calculates a useful measure of similarity between distributions known as the \emph{Bhattacharyya coefficient} in statistics and simply the \emph{fidelity} or \emph{overlap} in quantum and statistical mechanics. It is roughly speaking the ratio of the intersection area to the average individual area. When applied to \code{ctmm} objects, this function returns the overlap of the two Gaussian distributions. When applied to \code{telemetry} objects with corresponding movement models, this function returns the overlap of their (autocorrelated) kernel density estimates.}
 
 \usage{
 overlap(object1,object2,...)
@@ -53,4 +53,7 @@ FIT2 <- ctmm.fit(buffalo[[2]],GUESS)
 
 # Gaussian overlap between these two buffalo
 overlap(FIT1,FIT2)
+
+# AKDE overlap between these two buffalo
+overlap(buffalo[[1]],buffalo[[2]],FIT1,FIT2)
 }}

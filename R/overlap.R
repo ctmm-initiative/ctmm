@@ -69,10 +69,12 @@ overlay <- function(data1,data2,CTMM1,CTMM2,debias=TRUE,error=0.001,res=10,grid=
 {
   HP1 <- akde.bandwidth(data=data1,CTMM=CTMM1,verbose=TRUE)
   HP2 <- akde.bandwidth(data=data2,CTMM=CTMM2,verbose=TRUE)
+  w1 <- HP1$weights
+  w2 <- HP2$weights
   
   # concatenate bandwidth arrays
-  H1 <- prepare.H(data1,HP1$H)
-  H2 <- prepare.H(data2,HP2$H)
+  H1 <- prepare.H(HP1$H,length(data1$t))
+  H2 <- prepare.H(HP2$H,length(data2$t))
   
   n1 <- length(data1$x)
   n2 <- length(data2$x)
@@ -93,19 +95,16 @@ overlay <- function(data1,data2,CTMM1,CTMM2,debias=TRUE,error=0.001,res=10,grid=
   
   # construct joint grid
   grid <- kde.grid(data,H,alpha=error,dr=dr)
-  DX <- grid$DX
-  DY <- grid$DY
-  
-  # calcualte individual density esitmates
-  grid$DX <- utils::head(DX,n=n1)
-  grid$DY <- utils::head(DY,n=n1)
-  if(debias) { debias <- HP1$bias }
-  UD1 <- kde(data1,H=H1,grid=grid,alpha=error,bias=debias)
+  dH <- grid$dH
 
-  grid$DX <- utils::tail(DX,n=n2)
-  grid$DY <- utils::tail(DY,n=n2)
-  if(debias) { debias <- HP2$bias }
-  UD2 <- kde(data2,H=H2,grid=grid,alpha=error,bias=debias)
+  # calcualte individual density esitmates
+  grid$dH <- dH[1:n1,]
+  if(sum(debias)) { debias <- HP1$bias }
+  UD1 <- kde(data1,H=H1,grid=grid,alpha=error,bias=debias,W=w1)
+
+  grid$dH <- dH[n1+1:n2,]
+  if(sum(debias)) { debias <- HP2$bias }
+  UD2 <- kde(data2,H=H2,grid=grid,alpha=error,bias=debias,W=w2)
 
   PDF <- sqrt(UD1$PDF * UD2$PDF)
   dA <- prod(dr)
@@ -119,7 +118,7 @@ overlay <- function(data1,data2,CTMM1,CTMM2,debias=TRUE,error=0.001,res=10,grid=
   PDF <- PDF/OVER
   
   # create CDF for plotting
-  CDF <- pdf2cdf(PDF*dA)
+  CDF <- pmf2cdf(PDF*dA)
   
   # choose largest bandwidth for grid.....
   H <- diag(c(max(HP1$H[1,1],HP2$H[1,1]),max(HP1$H[2,2],HP2$H[2,2])),2)

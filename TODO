@@ -1,8 +1,24 @@
-periodic simulate.telemetry (not pure ctmm)
-periodic smoother (velocity vector--check)
-periodic akde...
-periodic plot ctmm
-periodic vignette: periodogram, ctmm.select
+LOW HANGING FRUIT
+* store info in UDs
+* fixed weights -> followup email with Peter
+* move stack import with split
+* variogram.list <- mean-lapply-variogram
+* simulate.UD
+* krige velocities, activity plot
+* put overlap in vignette after publication
+* Take Kevin's code, feed in a list of data and fits, spit out a list of UDs and table of overlaps
+* predict plot with transparency proportional to uncertainty (Google Earth?)
+* mean.ctmm: list -> iid
+
+PERIODIC
+* simulate.telemetry (not pure ctmm)
+* smoother (velocity vector--check)
+* akde... ?
+* plot ctmm
+* vignette: periodogram, ctmm.select
+* maned wolf data: individually projected subset in reserve with largest daily periodicities and no weekly periodicity
+  + submit to Rogerio first to check over, ask about MoveBank DOI
+  + get MoveBank DOI
 
 generalize Gaussian area?
   UDs for both mean and population
