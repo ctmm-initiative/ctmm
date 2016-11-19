@@ -29,10 +29,30 @@ get.telemetry <- function(data,axes=c("x","y"))
 
 #######################
 # Generic import function
-as.telemetry <- function(object,timezone="GMT",projection=NULL,UERE=NULL,...) UseMethod("as.telemetry")
+as.telemetry <- function(object,timeformat="",timezone="GMT",projection=NULL,UERE=NULL,...) UseMethod("as.telemetry")
+
+# MoveStack object
+as.telemetry.MoveStack <- function(object,timeformat="",timezone="GMT",projection=NULL,UERE=NULL,...)
+{
+  # need to first conglomerate to MoveBank format, then run as.telemetry
+  object <- move::split(object)
+  DATA <- lapply(object,function(mv){ Move2CSV(mv,timeformat=timeformat,timezone=timezone,projection=projection,UERE=UERE) })
+  DATA <- do.call(rbind,DATA)
+  DATA <- as.telemetry.data.frame(DATA,timeformat=timeformat,timezone=timezone,projection=projection,UERE=UERE)
+  return(DATA)
+}
 
 # Move object
-as.telemetry.Move <- function(object,timezone="GMT",projection=NULL,UERE=NULL,...)
+as.telemetry.Move <- function(object,timeformat="",timezone="GMT",projection=NULL,UERE=NULL,...)
+{
+  DATA <- Move2CSV(object,timeformat=timeformat,timezone=timezone,projection=projection,UERE=UERE)
+  # can now treat this as a MoveBank object
+  DATA <- as.telemetry.data.frame(DATA,timeformat=timeformat,timezone=timezone,projection=projection,UERE=UERE)
+  return(DATA)
+}
+
+# convert Move object back to MoveBank CSV
+Move2CSV <- function(object,timeformat="",timezone="GMT",projection=NULL,UERE=NULL,...)
 {
   DATA <- data.frame(timestamp=move::timestamps(object))
   if(raster::isLonLat(object))
@@ -51,8 +71,6 @@ as.telemetry.Move <- function(object,timezone="GMT",projection=NULL,UERE=NULL,..
   # DATA[,names(idData)] <- t(array(idData,c(length(idData),nrow(DATA))))
   for(i in 1:length(idData)) { DATA[,names(idData)[i]] <- idData[i] }
   
-  # can now treat this as a MoveBank object
-  DATA <- as.telemetry.data.frame(DATA,timezone=timezone,projection=projection,UERE=UERE)
   return(DATA)
 }
 
@@ -71,9 +89,12 @@ pull.column <- function(object,NAMES,FUNC=as.numeric)
 }
 
 # this assumes a MoveBank data.frame
-as.telemetry.data.frame <- function(object,timezone="GMT",projection=NULL,UERE=NULL,...)
+as.telemetry.data.frame <- function(object,timeformat="",timezone="GMT",projection=NULL,UERE=NULL,...)
 {
-  DATA <- data.frame(timestamp=as.POSIXct(object$timestamp,tz=timezone))
+  # as.POSIXct is effed up, so work around
+  if(timeformat=="") { DATA <- as.POSIXct(object$timestamp,tz=timezone) }
+  else { DATA <- as.POSIXct(object$timestamp,tz=timezone,format=timeformat) }
+  DATA <- data.frame(timestamp=DATA)
   
   COL <- c("animal.ID","individual.local.identifier","deployment.ID","tag.local.identifier","tag.ID")
   COL <- pull.column(object,COL,as.factor)
@@ -84,11 +105,11 @@ as.telemetry.data.frame <- function(object,timezone="GMT",projection=NULL,UERE=N
   }
   DATA$id <- COL
   
-  COL <- c("location.long","longitude","long")
+  COL <- c("location.long","Longitude","long")
   COL <- pull.column(object,COL)
   DATA$longitude <- COL
   
-  COL <- c("location.lat","latitude","lat")
+  COL <- c("location.lat","Latitude","lat")
   COL <- pull.column(object,COL)
   DATA$latitude <- COL
     
@@ -140,6 +161,7 @@ as.telemetry.data.frame <- function(object,timezone="GMT",projection=NULL,UERE=N
   xy <- cbind(DATA$longitude,DATA$latitude)
   colnames(xy) <- c("x","y")
   
+  if(class(projection)=="CRS") { projection <- as.character(projection) }
   if(is.null(projection)) { projection <- suggest.projection(DATA) }
   else { validate.projection(projection) }
   xy <- rgdal::project(xy,projection)
@@ -173,10 +195,10 @@ as.telemetry.data.frame <- function(object,timezone="GMT",projection=NULL,UERE=N
 }
 
 # read in a MoveBank object file
-as.telemetry.character <- function(object,timezone="GMT",projection=NULL,UERE=NULL,...)
+as.telemetry.character <- function(object,timeformat="",timezone="GMT",projection=NULL,UERE=NULL,...)
 {
   data <- utils::read.csv(object,...)
-  data <- as.telemetry.data.frame(data,timezone=timezone,projection=projection,UERE=UERE)
+  data <- as.telemetry.data.frame(data,timeformat=timeformat,timezone=timezone,projection=projection,UERE=UERE)
   return(data)
 }
 
@@ -356,7 +378,7 @@ new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,fracti
         ext.y <- range(ext.y,EXT)
       }
     }
-    
+
     # bounding locations from Gaussian CTMM
     if(!is.null(CTMM))
     {
@@ -566,7 +588,11 @@ plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",col.level="black",col.DF
   dist <- new.plot(UD=x,fraction=fraction,add=add,xlim=xlim,ylim=ylim,...)
   
   # contours colour
-  col.level <- array(col.level,length(x))
+  if(length(col.level)==length(level.UD) && length(col.level) != length(x))
+  { col.level <- t(array(col.level,c(length(level.UD),length(x)))) }
+  else 
+  { col.level <- array(col.level,c(length(x),length(level.UD))) }
+  
   col.DF <- array(col.DF,length(x))
   col.grid <- array(col.grid,length(x))
   
@@ -583,16 +609,15 @@ plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",col.level="black",col.DF
   # CONTOURS
   for(i in 1:length(x))
   {
-    if(!is.na(col.level[[i]]))
+    if(!any(is.na(col.level[i,])))
     {
       # make sure that correct style is used for low,ML,high even in absence of lows and highs
-      if(is.na(level.UD)) { level.UD <- CI.UD(x[[i]],level.UD,level,P=TRUE)[2] } # ugly/redundant code for now!!!
-      plot.kde(x[[i]],level=level.UD,col=scales::alpha(col.level[[i]],1),lwd=lwd,...)
+      plot.kde(x[[i]],level=level.UD,col=scales::alpha(col.level[i,],1),lwd=lwd,...)
       
-      if(!is.null(x[[i]]$DOF.H))
+      if(!is.na(level) & !is.null(x[[i]]$DOF.area))
       {
         P <- CI.UD(x[[i]],level.UD,level,P=TRUE)
-        plot.kde(x[[i]],level=P[-2],labels=round(100*P[2]),col=scales::alpha(col.level[[i]],0.5),lwd=lwd/2,...)
+        plot.kde(x[[i]],level=P[-2],labels=round(100*P[2]),col=scales::alpha(col.level[i,],0.5),lwd=lwd/2,...)
       }
     }
   }
@@ -600,7 +625,7 @@ plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",col.level="black",col.DF
   # plot grid
   for(i in 1:length(x))
   {
-    if(!is.null(x[[i]]$DOF.H))
+    if(sum(diag(x[[i]]$H)>0))
     {    
       H <- covm(x[[i]]$H)
       theta <- H@par["angle"]

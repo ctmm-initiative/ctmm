@@ -33,7 +33,7 @@ variogram <- function(data,dt=NULL,fast=TRUE,CI="Markov",axes=c("x","y"))
     dt <- c(dt,Inf)
     lag <- vars[[1]]$lag
     vars[[1]] <- vars[[1]][lag<=dt[2],]
-    for(i in 1:(length(dt)-1))
+    for(i in 2:(length(dt)-1))
     {
       lag <- vars[[i]]$lag
       vars[[i]] <- vars[[i]][(dt[i]<lag)&(lag<=dt[i+1]),]
@@ -80,8 +80,10 @@ variogram.dt <- function(data,dt=NULL,fast=NULL,CI="Markov",axes=c("x","y"))
 
 ############################
 # best initial time for a uniform grid
-grid.init <- function(t,dt=stats::median(diff(t)),W=array(1,length(t)))
+grid.init <- function(t,dt=stats::median(diff(t)),W=NULL)
 {
+  if(is.null(W)) { W <- array(1,length(t)) }
+  
   # simple analytic periodic cost function
   # COST = sum_t w(t) sin^2(pi(t-t0)/dt)
   # maximized anaytically
@@ -94,8 +96,38 @@ grid.init <- function(t,dt=stats::median(diff(t)),W=array(1,length(t)))
 }
 
 ############################
+# preliminary objects to smear data across a uniform grid
+pregridder <- function(t,dt=NULL,W=NULL)
+{
+  n <- length(t)
+  
+  # default time step
+  if(is.null(dt)) { dt <- stats::median(diff(t)) }
+  
+  # choose best grid alignment
+  t <- t - grid.init(t,dt=dt,W=W)
+  
+  # fractional grid index -- starts at >=1
+  index <- t/dt
+  index <- index - round(index[1])
+  
+  while(index[1]<1) { index <- index + 1 }
+  while(index[1]>=2) { index <- index - 1 }
+  
+  # data is smeared onto p at floor(index) and (1-p) at ceiling(index)
+  FLOOR <- floor(index)
+  p <- 1-(index-FLOOR)
+  
+  # uniform lag grid
+  n <- ceiling(last(index)) + 1
+  lag <- seq(0,n-1)*dt
+  
+  return(list(FLOOR=FLOOR,p=p,lag=lag))
+}
+
+############################
 # smear data across a uniform grid
-gridder <- function(t,z,dt=NULL,finish=TRUE)
+gridder <- function(t,z,dt=NULL,W=NULL,lag=NULL,p=NULL,FLOOR=NULL,finish=TRUE)
 {
   n <- length(t)
   COL <- ncol(z)
@@ -106,52 +138,40 @@ gridder <- function(t,z,dt=NULL,finish=TRUE)
   # default time step
   if(is.null(dt)) { dt <- stats::median(DT) }
   
-  # gap weights to prevent oversampling with coarse dt
-  W <- clamp(c(DT[1],DT)/dt) # left weights
-  W <- W + clamp(c(DT,DT[n-1])/dt) # + right weights
-  W <- W/2 # average left and right
+  # setup grid transformation
+  if(is.null(lag))
+  {
+    # gap weights to prevent oversampling with coarse dt
+    if(is.null(W))
+    {
+      W <- clamp(c(DT[1],DT)/dt) # left weights
+      W <- W + clamp(c(DT,DT[n-1])/dt) # + right weights
+      W <- W/2 # average left and right
+    }
+    else if(!W)
+    { W <- rep(1,length(t)) }
+    
+    FLOOR <- pregridder(t,dt=dt,W=W)
+    p <- FLOOR$p
+    lag <- FLOOR$lag
+    FLOOR <- FLOOR$FLOOR
+  }
+  else if(!W)
+  { W <- rep(1,length(t)) }
   
-  # choose best grid alignment
-  t <- t - grid.init(t,dt,W)
-  
-  # fractional grid index -- starts at >=1
-  index <- t/dt
-  while(index[1]<1) { index <- index + 1 }
-  while(index[1]>=2) { index <- index - 1 }
-  
-  # uniform lag grid
-  n <- ceiling(max(index))
-  lag <- seq(0,n-1)*dt
-  
+  n <- length(lag)
   # continuously distribute times over uniform grid
   W.grid <- numeric(n) # DONT USE ARRAY HERE :(
   Z.grid <- array(0,c(n,COL))
-  for(i in 1:length(t))
-  {
-    j <- index[i]
-    
-    if(floor(j)==ceiling(j))
-    { # trivial case
-      J <- round(j)
-      w <- W[i] # total weight
-      W.grid[J] <- W.grid[J] + w
-      Z.grid[J,] <- Z.grid[J,] + w*z[i,]
-    }
-    else
-    { # distribution information between adjacent grids
-      # left grid portion
-      J <- floor(j)
-      w <- W[i]*(1-(j-J))
-      W.grid[J] <- W.grid[J] + w
-      Z.grid[J,] <- Z.grid[J,] + w*z[i,]
-
-      # right grid portion
-      J <- ceiling(j)
-      w <- W[i]*(1-(J-j))
-      W.grid[J] <- W.grid[J] + w
-      Z.grid[J,] <- Z.grid[J,] + w*z[i,]
-    }
-  }
+  # lower time spread
+  P <- p*W
+  W.grid[FLOOR] <- W.grid[FLOOR] + P
+  Z.grid[FLOOR,] <- Z.grid[FLOOR,] + P*z
+  # upper time spread
+  FLOOR <- FLOOR+1
+  P <- (1-p)*W
+  W.grid[FLOOR] <- W.grid[FLOOR] + P
+  Z.grid[FLOOR,] <- Z.grid[FLOOR,] + P*z
   
   if(finish)
   {
@@ -177,11 +197,11 @@ variogram.fast <- function(data,dt=NULL,fast=fast,CI="Markov",axes=c("x","y"),SL
   COL <- ncol(z)
 
   # smear the data over an evenly spaced time grid
-  GRID <- gridder(t,z,dt)
+  GRID <- gridder(t,z,dt=dt)
   W.grid <- GRID$w
   Z.grid <- GRID$z
   lag <- GRID$lag
-  
+
   n <- length(lag)
   #N <- 2*n
   N <- composite(2*n)
@@ -705,64 +725,62 @@ methods::setMethod("zoom",signature(x="variogram"), function(x,fraction=0.5,...)
 variogram.guess <- function(variogram,CTMM=ctmm())
 {
   # guess at some missing parameters
-  if(is.null(CTMM$tau) || is.null(CTMM$sigma))
+  n <- length(variogram$lag)
+  
+  # variance estimate
+  sigma <- mean(variogram$SVF[2:n])
+  
+  # peak curvature estimate
+  # should occur at short lags
+  v2 <- 2*max((variogram$SVF/variogram$lag^2)[2:n])
+  
+  # free frequency
+  Omega2 <- v2/sigma
+  Omega <- sqrt(Omega2)
+  
+  # peak diffusion rate estimate
+  # should occur at intermediate lags
+  # diffusion parameters
+  D <- (variogram$SVF/variogram$lag)[2:n]
+  # index of max diffusion
+  tauD <- which.max(D)
+  # max diffusion
+  D <- D[tauD]
+  # time lag of max diffusion
+  tauD <- variogram$lag[tauD]
+  
+  # average f-rate
+  f <- -log(D/(sigma*Omega))/tauD
+  
+  CPF <- CTMM$CPF
+  if(CPF) # frequency, rate esitmate
   {
-    n <- length(variogram$lag)
-    
-    # variance estimate
-    sigma <- mean(variogram$SVF[2:n])
-    
-    # peak curvature estimate
-    # should occur at short lags
-    v2 <- 2*max((variogram$SVF/variogram$lag^2)[2:n])
-    
-    # free frequency
-    Omega2 <- v2/sigma
-    Omega <- sqrt(Omega2)
-    
-    # peak diffusion rate estimate
-    # should occur at intermediate lags
-    # diffusion parameters
-    D <- (variogram$SVF/variogram$lag)[2:n]
-    # index of max diffusion
-    tauD <- which.max(D)
-    # max diffusion
-    D <- D[tauD]
-    # time lag of max diffusion
-    tauD <- variogram$lag[tauD]
-    
-    # average f-rate
-    f <- -log(D/(sigma*Omega))/tauD
-    
-    CPF <- CTMM$CPF
-    if(CPF) # frequency, rate esitmate
+    omega2 <- Omega2 - f^2
+    if(f>0 && omega2>0)
+    { tau <- c(2*pi/sqrt(omega2),1/f) }
+    else # bad backup estimate
     {
-      omega2 <- Omega2 - f^2
-      if(f>0 && omega2>0)
-      { tau <- c(2*pi/sqrt(omega2),1/f) }
-      else # bad backup estimate
-      {
-        tau <- sqrt(2)/Omega   
-        tau <- c(2*pi*tau , tau)
-      }
-    }
-    else # position, velocity timescale estimate
-    { tau <- c(sigma/D,D/v2)}
-    
-    if(!CTMM$range) { sigma <- D ; tau[1] <- Inf }
-    
-    if(length(CTMM$tau)==0) { CTMM$tau <- tau }
-    
-    # preserve orientation and eccentricity if available/necessary
-    if(is.null(CTMM$sigma) || length(CTMM$axes)==1)
-    { CTMM$sigma <- sigma }
-    else
-    {
-      CTMM$sigma <- CTMM$sigma@par
-      CTMM$sigma[1] <- sigma / cosh(CTMM$sigma[2]/2)
+      tau <- sqrt(2)/Omega   
+      tau <- c(2*pi*tau , tau)
     }
   }
-
+  else # position, velocity timescale estimate
+  { tau <- c(sigma/D,D/v2)}
+  
+  if(!CTMM$range) { sigma <- D ; tau[1] <- Inf }
+  
+  if(length(CTMM$tau)==0) { CTMM$tau <- tau }
+  #else if(length(CTMM$tau)==1) { CTMM$tau[2] <- tau[2] }
+  
+  # preserve orientation and eccentricity if available/necessary
+  if(is.null(CTMM$sigma) || length(CTMM$axes)==1)
+  { CTMM$sigma <- sigma }
+  else
+  {
+    CTMM$sigma <- CTMM$sigma@par
+    CTMM$sigma[1] <- sigma / cosh(CTMM$sigma[2]/2)
+  }
+  
   # don't overwrite or lose ctmm parameters not considered here
   model <- as.list(CTMM) # getDataPart deletes names()
   model$info <- attr(variogram,"info")
@@ -801,6 +819,9 @@ variogram.fit <- function(variogram,CTMM=ctmm(),name="GUESS",fraction=0.5,intera
   # manipulation controls
   manlist <- list(z = manipulate::slider(1+log(min.step,b),1,initial=1+log(fraction,b),label="zoom"))
 
+  K <- length(CTMM$tau)
+  if(K==1) { CTMM$tau[2] <- 0 }
+  
   range <- CTMM$range
   sigma <- mean(diag(CTMM$sigma))
   if(range)
@@ -866,6 +887,12 @@ variogram.fit <- function(variogram,CTMM=ctmm(),name="GUESS",fraction=0.5,intera
   {
     manlist$tau1 <- NULL
     tau1 <- Inf
+  }
+  
+  if(K==1)
+  {
+    manlist$tau2 <- NULL
+    tau2 <- 0
   }
   
   # non-destructive parameter overwrite

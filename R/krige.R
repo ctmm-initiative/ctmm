@@ -1,3 +1,5 @@
+# occurrence <- function(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=0.5,dt.max=NULL) UseMethod("overlap") #S3 generic
+
 ################################
 # Return hidden state estimates or simulations
 ################################
@@ -226,7 +228,7 @@ fill.data <- function(data,CTMM=ctmm(tau=Inf),verbose=FALSE,t=NULL,dt=NULL,res=1
   return(data)
 }
 
-                      
+
 #################################
 # Kriged Kernel Density Estimate
 # H is your additional smoothing bandwidth matrix (zero by default)

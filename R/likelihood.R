@@ -160,14 +160,17 @@ kalman <- function(z,u,dt,CTMM,error=rep(0,nrow(z)),smooth=FALSE,sample=FALSE,we
   # return residuals of Kalman filter only
   if(residual) { return(zRes[,1,]/sqrt(sRes[,1,1])) }
   
-  # general quadratic form, tracing over times
-  # hard-code weights for location observation only
-  M <- Adj(zRes[,1,]) %*% (zRes[,1,]/sRes[,1,1])
-
-  # estimate mean parameter
-  W <- as.matrix(M[MEAN,MEAN])
-  mu <- solve(W) %*% M[MEAN,DATA]
-
+  if(!weight)
+  {
+    # general quadratic form, tracing over times
+    # hard-code weights for location observation only
+    M <- Adj(zRes[,1,]) %*% (zRes[,1,]/sRes[,1,1])
+    
+    # estimate mean parameter
+    W <- as.matrix(M[MEAN,MEAN])
+    mu <- solve(W) %*% M[MEAN,DATA]
+  }
+  
   # returned profiled mean
   if(!smooth && !sample && !weight)
   {
@@ -191,7 +194,7 @@ kalman <- function(z,u,dt,CTMM,error=rep(0,nrow(z)),smooth=FALSE,sample=FALSE,we
     # forecast estimates for zero-mean, unit-variance filters
     zFor <- array(0,c(n,K,VEC))
 
-    # run Kalman filter loop but residual -> data instead of data -> residual
+    # run Kalman filter loop in reverse but residual -> data instead of data -> residual
     for(i in 1:n)
     {
       # forcast residuals -> fake data
@@ -203,12 +206,12 @@ kalman <- function(z,u,dt,CTMM,error=rep(0,nrow(z)),smooth=FALSE,sample=FALSE,we
       
       # concurrent estimates
       zCon[i,,] <- zFor[i,,] + (Gain %*% zRes[i,,])
-
+      
       # update forcast estimates for next iteration
       if(i<n) { zFor[i+1,,] <- Green[i+1,,] %*% zCon[i,,] }
     }
     
-    return(list(mu=mu,z=z))
+    return(z)
   }
   
   # delete residuals

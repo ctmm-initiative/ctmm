@@ -1,9 +1,47 @@
-overlap <- function(object1,object2,...) UseMethod("overlap") #S3 generic
+# overlap <- function(object,...) UseMethod("overlap") #S3 generic
 
-overlap.ctmm <- function(object1,object2,level=0.95,...)
+# forwarding function for list of a particular datatype
+overlap <- function(object,CTMM=NULL,level=0.95,...)
 {
-  CTMM1 <- object1
-  CTMM2 <- object2
+  CLASS <- class(object[[1]])
+  
+  if(CLASS=="ctmm")
+  { OverlapFun <- overlap.ctmm }
+  else if(CLASS=="telemetry")
+  {
+    # Generate aligned UDs
+    object <- akde(object,CTMM=CTMM,...)
+    OverlapFun <- overlap.UD
+  }
+  else if(CLASS=="UD")
+  { OverlapFun <- overlap.UD }
+  
+  n <- length(object)
+  OVER <- array(0,c(n,n,3))
+  # tabulate overlaps
+  for(i in 1:n)
+  {
+    for(j in (i+1):n)
+    { if(j<=n) { OVER[i,j,] <- OverlapFun(object[c(i,j)],CTMM=CTMM[c(i,j)],level=level,...) } }
+  }
+  
+  # symmetrize matrix
+  OVER <- OVER + aperm(OVER,c(2,1,3))
+  
+  # fix diagonals
+  diag(OVER[,,1]) <- diag(OVER[,,2]) <- diag(OVER[,,3]) <- 1
+  
+  dimnames(OVER) <- list(names(object),names(object),c("low","ML","high"))
+  
+  return(OVER)
+  # utils::getS3method("overlap",CLASS)(object,...)
+}
+
+
+overlap.ctmm <- function(object,CTMM,level=0.95,...)
+{
+  CTMM1 <- object[[1]]
+  CTMM2 <- object[[2]]
   
   # ML parameters
   par <- NULL
@@ -65,86 +103,139 @@ BhattacharyyaD <- function(CTMM1,CTMM2)
 }
 
 #overlap density function
-overlay <- function(data1,data2,CTMM1,CTMM2,debias=TRUE,error=0.001,res=10,grid=NULL)
+overlap.UD <- function(object,CTMM,level=0.95,...)
 {
-  HP1 <- akde.bandwidth(data=data1,CTMM=CTMM1,verbose=TRUE)
-  HP2 <- akde.bandwidth(data=data2,CTMM=CTMM2,verbose=TRUE)
-  w1 <- HP1$weights
-  w2 <- HP2$weights
-  
-  # concatenate bandwidth arrays
-  H1 <- prepare.H(HP1$H,length(data1$t))
-  H2 <- prepare.H(HP2$H,length(data2$t))
-  
-  n1 <- length(data1$x)
-  n2 <- length(data2$x)
-  
-  H1 <- array(H1,c(n1,2*2))
-  H2 <- array(H2,c(n2,2*2))
-
-  H <- rbind(H1,H2)
-  H <- array(H,c(n1+n2,2,2))
-  H1 <- array(H1,c(n1,2,2))
-  H2 <- array(H2,c(n2,2,2))
-  
-  # concatenate data
-  data <- rbind(data1,data2)
-  
-  # highest resolution
-  dr <- sapply( 1:2 , function(i) { sqrt(min(HP1$H[i,i],HP2$H[i,i])) } )/res
-  
-  # construct joint grid
-  grid <- kde.grid(data,H,alpha=error,dr=dr)
-  dH <- grid$dH
-
-  # calcualte individual density esitmates
-  grid$dH <- dH[1:n1,]
-  if(sum(debias)) { debias <- HP1$bias }
-  UD1 <- kde(data1,H=H1,grid=grid,alpha=error,bias=debias,W=w1)
-
-  grid$dH <- dH[n1+1:n2,]
-  if(sum(debias)) { debias <- HP2$bias }
-  UD2 <- kde(data2,H=H2,grid=grid,alpha=error,bias=debias,W=w2)
-
-  PDF <- sqrt(UD1$PDF * UD2$PDF)
+  dr <- object[[1]]$dr
   dA <- prod(dr)
+  
+  OVER <- sqrt(object[[1]]$PDF * object[[2]]$PDF)
 
   # overlap point estimate
-  OVER <- sum(PDF)*dA
-  # calculate Gaussian overlap distance^2 variance
-  CI <- overlap(CTMM1,CTMM2,level=FALSE)
+  OVER <- sum(OVER)*dA
+  
+  if(!is.null(CTMM))
+  {
+    # calculate Gaussian overlap distance^2 variance
+    CI <- overlap.ctmm(CTMM,level=FALSE)
 
-  # normalize the denisty function for plotting
-  PDF <- PDF/OVER
+    # Bhattacharyya distances    
+    D <- -log(OVER)
+    COV.D <- CI$VAR
+    
+    # calculate new distance^2 with KDE point estimate
+    CI <- chisq.ci(D,COV=COV.D,alpha=1-level)
+    
+    # transform from (square) distance to overlap measure
+    OVER <- exp(-rev(CI))
+    
+  }
+  else
+  { OVER <- c(NA,OVER,NA) }
   
-  # create CDF for plotting
-  CDF <- pmf2cdf(PDF*dA)
-  
-  # choose largest bandwidth for grid.....
-  H <- diag(c(max(HP1$H[1,1],HP2$H[1,1]),max(HP1$H[2,2],HP2$H[2,2])),2)
-  
-  UD <- list(PDF=PDF,CDF=CDF,x=grid$x,y=grid$y,dA=dA,H=H)
-  UD$D <- -log(OVER)
-  UD$COV.D <- CI$VAR
-  
-  UD <- new.UD(UD,info=mean.info(list(data1,data2)))
-  return(UD)
+  names(OVER) <- c("low","ML","high")
+  return(OVER)
 }
 
-# overlap quantity
-overlap.telemetry <- function(object1,object2,CTMM1,CTMM2,level=0.95,...)
+
+# CALCULATE A BUNCH OF AKDE UDs ON THE SAME GRID
+# (C) Kevin Winner & C.H. Fleming (2016)
+akde.list <- function(data,CTMM,VMM=NULL,debias=TRUE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
 {
-  data1 <- object1
-  data2 <- object2
+  n.instances <- length(data)
   
-  OVER = overlay(data1,data2,CTMM1,CTMM2,...)
+  #initialize per-instance vars that need to be tracked
+  HP.list   <- vector("list", n.instances)
+  H.list    <- vector("list", n.instances)
+  UD.list   <- vector("list", n.instances)
+  n.samples.total <- 0
   
-  # calculate new distance^2 with KDE point estimate
-  CI <- chisq.ci(OVER$D,COV=OVER$COV.D,alpha=1-level)
+  #step 1: compute the optimal bandwidths for each instance
+  # if (!silent)
+  #  cat("Computing optimal bandwidths\n")
+  for (i.instance in 1:n.instances)
+  {
+    #alias for readability
+    instance <- data[[i.instance]]
+    n.samples <- length(instance$x)
+    n.samples.total <- n.samples.total + n.samples
+    
+    ## START BACK HERE ##
+    
+    #bandwidth calculations for this instance
+    HP.list[[i.instance]] <- bandwidth(data = instance, CTMM = CTMM[[i.instance]], VMM=VMM[[i.instance]], verbose = TRUE,...)
+    COL <- length(HP.list[[1]]$h)
+    H.list[[i.instance]]  <- prepare.H(HP.list[[i.instance]]$H,length(instance$t))
+    #reshape H
+    H.list[[i.instance]]  <- array(H.list[[i.instance]], c(n.samples, COL * COL)) #TODO: magic numbers
+  }
   
-  # transform from (square) distance to overlap measure
-  CI <- exp(-rev(CI))
-  names(CI) <- c("low","ML","high")
+  #step 2: compute a grid for all UDs
+  # if (!silent)
+  #  cat("Computing the grid\n")
+  H.all <- do.call("rbind", H.list)
+  H.all <- array(H.all, c(n.samples.total, COL, COL))
+  data.all <- do.call("rbind", data)
+  dr <- vector("numeric", COL)
+  dr[1] <- sqrt(min(sapply(HP.list, function(i) { i$H[1,1] })))
+  dr[2] <- sqrt(min(sapply(HP.list, function(i) { i$H[2,2] })))
+  if(COL==3) { dr[3] <- sqrt(min(sapply(HP.list, function(i) { i$H[3,3] }))) }
+  dr    <- dr / res
   
-  return(CI)
+  grid    <- kde.grid(data.all, H.all, alpha = error, dr = dr)
+  dH.orig <- grid$dH
+  
+  #now align all UDs to the grid
+  sample.position <- 1 #track position of next sample to read out
+  for (i.instance in 1:n.instances)
+  {
+    # if (!silent)
+    #  cat(sprintf("Aligning UD for instance %d/%d\n", i.instance, n.instances))
+    
+    #repeated work, but cheap and more readable than storing from step 1
+    instance <- data[[i.instance]]
+    n.samples <- length(instance$x)
+    
+    #remember when we reshaped H? yeah undo that
+    H.list[[i.instance]] <- array(H.list[[i.instance]], c(n.samples, COL, COL))
+    
+    grid$dH <- dH.orig[sample.position:(sample.position + n.samples - 1),]
+    
+    UD.list[[i.instance]] <- akde(data[[i.instance]],CTMM=HP.list[[i.instance]],debias=debias,smooth=smooth,error=error,res=res,grid=grid,...)
+    
+    sample.position <- sample.position + n.samples
+  }
+  
+  names(UD.list) <- names(data)
+  return(UD.list)
+}
+
+###################
+# average aligned UDs
+mean.UD <- function(x,...)
+{
+  info <- mean.info(x)
+  dV <- prod(x[[1]]$dr)
+  n <- length(x)
+  N <- sum(sapply(x,function(y){ y$DOF.area }))
+  
+  M <- lapply(x,function(ud){ ud$PDF })
+  M <- Reduce('+',M)
+  M <- M/n # now the average PDF
+  
+  x <- x[[1]]
+  x$PDF <- M
+  attr(x,"info") <- info
+  x$DOF.area <- 0*x$DOF.area + N
+  
+  x$H <- NULL
+  x$h <- NULL
+  x$DOF.H <- NA
+  x$bias <- NULL
+  x$weights <- NULL
+  x$MISE <- NULL
+  
+  M <- M*dV # now the average cell PMF
+  x$CDF <- pmf2cdf(M)
+  
+  return(x)
 }
