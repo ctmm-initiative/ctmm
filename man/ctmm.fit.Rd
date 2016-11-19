@@ -48,9 +48,8 @@ If \code{length(tau)==0}, then an IID bi-variate Gaussian model is fit to the da
 If \code{length(tau)==1}, then an Ornstein-Uhlenbeck (OU) model (Brownian motion restricted to a finite home range) is fit the data, where \code{tau} is the position autocorrelation timescale. \code{tau=Inf} then yields Brownian motion (BM).
 If \code{length(tau)==2}, then the OUF model (continuous-velocity motion restricted to a finite home range) is fit to the data, where \code{tau[1]} is again the position autocorrelation timescale and \code{tau[2]} is the velocity autocorrelation timescale. \code{tau[1]=Inf} then yields integrated Ornstein-Uhlenbeck (IOU) motion, which is a spatially unrestricted continuous-velocity process.
 
-Model selection in \code{ctmm.select} proceeds by first fitting the initial model guess, and then attempting to simplify the autocorrelation model and complexify the deterministic (mean) model until the information criteria fails to improve. The intent of working in this direction is to avoid fitting trends to autocorrelation.
-
-%If \code{CPF=TRUE}, then an oscillatory central place foraging model is assumed. In this case \code{tau} must be an length-2 array containaing the foraging period in \code{tau[1]} (e.g., 1 day \code{24*60^2} seconds) and the characteristic timescale overwhich similarity between foraging excursions persists in \code{tau[2]}.
+Model selection in \code{ctmm.select} proceeds by first fitting the initial model guess, and then attempting to simplify the autocorrelation model and complexify the deterministic (mean) model until the information criteria fails to improve. The intent of working in these directions is to avoid fitting trends to autocorrelation.
+Note that simpler models in a nested hierarchy will only be attempted if they appear credible, which can be adjusted with the \code{level} argument. \code{level=1} will, therefore, always attempt a simpler model.
 }
 
 \value{

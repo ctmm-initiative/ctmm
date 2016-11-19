@@ -1,3 +1,5 @@
+# occurrence <- function(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=0.5,dt.max=NULL) UseMethod("overlap") #S3 generic
+
 ################################
 # Return hidden state estimates or simulations
 ################################
@@ -226,7 +228,7 @@ fill.data <- function(data,CTMM=ctmm(tau=Inf),verbose=FALSE,t=NULL,dt=NULL,res=1
   return(data)
 }
 
-                      
+
 #################################
 # Kriged Kernel Density Estimate
 # H is your additional smoothing bandwidth matrix (zero by default)
@@ -445,8 +447,20 @@ predict.ctmm <- function(object,data=NULL,t=NULL,dt=NULL,res=1,...)
     data <- fill.data(data,CTMM=object,t=t,dt=dt,res=res)
     object$error <- TRUE # avoids unit variance algorithm
     data <- smoother(data,object,smooth=TRUE)
+    NAMES <- colnames(data$R)
+    COV <- data$COV
     data <- cbind(t=data$t,data$R)
     data <- data.frame(data)
+    
+    # flatten covariance matrix and include in data.frame
+    for(i in 1:length(NAMES))
+    {
+      for(j in i:length(NAMES))
+      {
+        NAME <- paste("cov.",NAMES[i],".",NAMES[j],sep="")
+        data[,NAME] <- COV[,i,j]
+      }
+    }
   }
   
   data <- new.telemetry(data,info=info)

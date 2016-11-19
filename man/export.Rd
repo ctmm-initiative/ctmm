@@ -25,7 +25,7 @@ writeShapefile(object,...)
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{ \code{UD} object. }
-  \item{DF}{Rasterize the probability density function \code{"PDF"} or cumulative distribution function \code{"CDF"}.}
+  \item{DF}{Rasterize the probability density function \code{"PDF"}, probability mass function \code{"PMF"}, or cumulative distribution function \code{"CDF"}.}
   \item{object}{ \code{telemetry} or \code{UD} object. }
   \item{level.UD}{ Confidence level of the UD area. I.e., the 50\% core home range would be given by \code{level.UD=0.50}. }
   \item{level}{ Confidence level for the magnitude of the above area. I.e., the 95\% CI of the core home range area. }
@@ -36,7 +36,10 @@ writeShapefile(object,...)
 
 \details{\code{writeShapefile.UD} writes a shapefile to disk, with polygons corresponding to the low, ML, and high home-range area estimates.}
 
-\value{\code{raster.UD} returns a \code{raster} of the maximum likelihood (ML) probability density function.
+\value{\code{raster.UD} returns a \code{raster} of the maximum likelihood (ML) distribution function \code{DF}.
+\code{DF=PDF} gives the average probability density per cell,
+\code{DF=PMF} gives the total probability per cell,
+and \code{DF=CDF} gives the cumulative probability.
 
 \code{SpatialPoints.telemetry} returns a \code{spatialPoints} object for the \code{x}-\code{y} locations.
 

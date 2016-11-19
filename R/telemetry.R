@@ -19,7 +19,7 @@ subset.telemetry <- function(x,...)
   return(x)
 }
 
-get.telemetry <- function(data,axes)
+get.telemetry <- function(data,axes=c("x","y"))
 {
   z <- "[.data.frame"(data,axes)
   z <- as.matrix(z)
@@ -29,75 +29,129 @@ get.telemetry <- function(data,axes)
 
 #######################
 # Generic import function
-as.telemetry <- function(CSV,timezone="GMT",projection=NULL,UERE=NULL,...) UseMethod("as.telemetry")
+as.telemetry <- function(object,timeformat="",timezone="GMT",projection=NULL,UERE=NULL,...) UseMethod("as.telemetry")
 
-# Move object
-as.telemetry.Move <- function(CSV,timezone="GMT",projection=NULL,UERE=NULL,...)
+# MoveStack object
+as.telemetry.MoveStack <- function(object,timeformat="",timezone="GMT",projection=NULL,UERE=NULL,...)
 {
-  # clean this up to just dump idData into columns
-  DATA <- data.frame(timestamp=CSV$timestamp,
-                    location.long=CSV@coords[,1],
-                    location.lat=CSV@coords[,2]
-                    )
-  
-  # possibly empty columns
-  DATA$individual.local.identifier <- CSV@idData$individual.local.identifier
-  DATA$tag.local.identifier <- CSV@idData$tag.local.identifier
-  DATA$eobs.horizontal.accuracy.estimate <- CSV$eobs.horizontal.accuracy.estimate
-  DATA$GPS.HDOP <- CSV$GPS.HDOP
-  DATA$height.above.ellipsoid <- CSV$height.above.ellipsoid
-  DATA$GPS.VDOP <- CSV$GPS.VDOP
-  
-  DATA <- as.telemetry.data.frame(DATA,timezone=timezone,projection=projection,UERE=UERE)
+  # need to first conglomerate to MoveBank format, then run as.telemetry
+  object <- move::split(object)
+  DATA <- lapply(object,function(mv){ Move2CSV(mv,timeformat=timeformat,timezone=timezone,projection=projection,UERE=UERE) })
+  DATA <- do.call(rbind,DATA)
+  DATA <- as.telemetry.data.frame(DATA,timeformat=timeformat,timezone=timezone,projection=projection,UERE=UERE)
   return(DATA)
 }
-  
-# this assumes a MoveBank data.frame
-as.telemetry.data.frame <- function(CSV,timezone="GMT",projection=NULL,UERE=NULL,...)
-{
-  # choose id strings from what's present
-  id <- as.factor(CSV$individual.local.identifier)
-  if(length(id)==0) { id <- as.factor(CSV$tag.local.identifier) }
-  
-  DATA <- data.frame(id=id,
-                    timestamp=as.POSIXct(CSV$timestamp,tz=timezone),
-                    longitude=as.numeric(CSV$location.long),
-                    latitude=as.numeric(CSV$location.lat)
-                    )
 
+# Move object
+as.telemetry.Move <- function(object,timeformat="",timezone="GMT",projection=NULL,UERE=NULL,...)
+{
+  DATA <- Move2CSV(object,timeformat=timeformat,timezone=timezone,projection=projection,UERE=UERE)
+  # can now treat this as a MoveBank object
+  DATA <- as.telemetry.data.frame(DATA,timeformat=timeformat,timezone=timezone,projection=projection,UERE=UERE)
+  return(DATA)
+}
+
+# convert Move object back to MoveBank CSV
+Move2CSV <- function(object,timeformat="",timezone="GMT",projection=NULL,UERE=NULL,...)
+{
+  DATA <- data.frame(timestamp=move::timestamps(object))
+  if(raster::isLonLat(object))
+  { DATA[,c('location.long','location.lat')] <- sp::coordinates(object) }
+  else
+  { DATA[,c('location.long','location.lat')] <- sp::coordinates(sp::spTransform(object,sp::CRS("+proj=longlat +datum=WGS84"))) }
+  
+  # break Move object up into data.frame and idData
+  idData <- move::idData(object)
+  object <- as.data.frame(object)
+  
+  # add data.frame columns to data
+  DATA <- cbind(DATA,object)
+  
+  # add idData to data
+  # DATA[,names(idData)] <- t(array(idData,c(length(idData),nrow(DATA))))
+  for(i in 1:length(idData)) { DATA[,names(idData)[i]] <- idData[i] }
+  
+  return(DATA)
+}
+
+# pull out a column with different possible names
+pull.column <- function(object,NAMES,FUNC=as.numeric)
+{
+  # consider alternative spellings of NAMES
+  NAMES <- c(NAMES,gsub("[.]","_",NAMES))
+  NAMES <- c(NAMES,tolower(NAMES))
+  
+  NAMES <- intersect(NAMES,names(object))
+  if(length(NAMES))
+  { return( FUNC(object[,NAMES[1]]) ) }
+  else
+  { return(NULL) }
+}
+
+# this assumes a MoveBank data.frame
+as.telemetry.data.frame <- function(object,timeformat="",timezone="GMT",projection=NULL,UERE=NULL,...)
+{
+  # as.POSIXct is effed up, so work around
+  if(timeformat=="") { DATA <- as.POSIXct(object$timestamp,tz=timezone) }
+  else { DATA <- as.POSIXct(object$timestamp,tz=timezone,format=timeformat) }
+  DATA <- data.frame(timestamp=DATA)
+  
+  COL <- c("animal.ID","individual.local.identifier","deployment.ID","tag.local.identifier","tag.ID")
+  COL <- pull.column(object,COL,as.factor)
+  if(length(COL)==0)
+  {
+    warning("No MoveBank identification found. Assuming data corresponds to one indiviudal.")
+    COL <- factor(rep('unknown',nrow(object)))
+  }
+  DATA$id <- COL
+  
+  COL <- c("location.long","Longitude","long")
+  COL <- pull.column(object,COL)
+  DATA$longitude <- COL
+  
+  COL <- c("location.lat","Latitude","lat")
+  COL <- pull.column(object,COL)
+  DATA$latitude <- COL
+    
   # Import and use HDOP if available
-  HDOP <- CSV$GPS.HDOP
-  if(!is.null(HDOP))
-  { 
+  COL <- c("GPS.HDOP","HDOP","DOP")
+  COL <- pull.column(object,COL)
+  if(length(COL))
+  {
     if(is.null(UERE))
     {
       warning("HDOP values found but UERE not specified. See help(\"uere\").")
-      DATA$HDOP <- HDOP
+      DATA$HDOP <- COL
     }
     else
-    { DATA$HERE <- (HDOP*UERE) }
+    { DATA$HERE <- (COL*UERE) }
   }
   
   # Import and use e-obs accuracy if available
-  HSTD <- CSV$eobs.horizontal.accuracy.estimate
-  if(!is.null(HSTD)) { DATA$HERE <- sqrt(2)*HSTD }
+  COL <- "eobs.horizontal.accuracy.estimate"
+  COL <- pull.column(object,COL)
+  if(length(COL)) { DATA$HERE <- sqrt(2)*COL }
   # I emailed them, but they didn't know if there needed to be a sqrt(2) factor here
   # Do I assume this is a sigma_H ?
   # Do I assume this is an x-y standard deviation?
   # Scott's calibration data is more like the latter
     
   # Import third axis if available
-  DATA$z <- CSV$height.above.ellipsoid
-  VDOP <- CSV$GPS.VDOP
-  if(!is.null(VDOP))
-  { 
+  COL <- "height.above.ellipsoid"
+  COL <- pull.column(object,COL)
+  DATA$z <- COL
+  
+  COL <- c("GPS.VDOP","VDOP")
+  COL <- pull.column(object,COL)
+  if(length(COL))
+  {
     if(is.null(UERE))
     {
       warning("VDOP values found but UERE not specified. See help(\"uere\").")
-      DATA$VDOP <- VDOP
+      DATA$VDOP <- COL
     }
     else
-    { DATA$VERE <- (VDOP*UERE) }
+    { DATA$VERE <- (COL*UERE) }
   }
   # need to know where the ground is too
   
@@ -107,6 +161,7 @@ as.telemetry.data.frame <- function(CSV,timezone="GMT",projection=NULL,UERE=NULL
   xy <- cbind(DATA$longitude,DATA$latitude)
   colnames(xy) <- c("x","y")
   
+  if(class(projection)=="CRS") { projection <- as.character(projection) }
   if(is.null(projection)) { projection <- suggest.projection(DATA) }
   else { validate.projection(projection) }
   xy <- rgdal::project(xy,projection)
@@ -139,11 +194,11 @@ as.telemetry.data.frame <- function(CSV,timezone="GMT",projection=NULL,UERE=NULL
   else { return(telist[[1]]) }
 }
 
-# read in a MoveBank CSV file
-as.telemetry.character <- function(CSV,timezone="GMT",projection=NULL,UERE=NULL,...)
+# read in a MoveBank object file
+as.telemetry.character <- function(object,timeformat="",timezone="GMT",projection=NULL,UERE=NULL,...)
 {
-  data <- utils::read.csv(CSV,...)
-  data <- as.telemetry.data.frame(data,timezone=timezone,projection=projection,UERE=UERE)
+  data <- utils::read.csv(object,...)
+  data <- as.telemetry.data.frame(data,timeformat=timeformat,timezone=timezone,projection=projection,UERE=UERE)
   return(data)
 }
 
@@ -162,7 +217,7 @@ telemetry.clean <- function(data,id)
   if(ORDER != length(data$t)) { warning("Duplicate data in ",id," removed") }
   
   # exit with warning on duplicate times
-  if(anyDuplicated(data$t)) { stop("Duplicate times in ",id) }
+  if(anyDuplicated(data$t)) { warning("Duplicate times in ",id) }
   
   # remove old level information
   data <- droplevels(data)
@@ -313,21 +368,21 @@ new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,fracti
       for(i in 1:length(UD))
       {
         EXT <- rowSums(UD[[i]]$PDF) > 0
-        EXT <- UD[[i]]$x[EXT]
+        EXT <- UD[[i]]$r$x[EXT]
         EXT <- c(EXT[1],last(EXT))
         ext.x <- range(ext.x,EXT)
         
         EXT <- colSums(UD[[i]]$PDF) > 0
-        EXT <- UD[[i]]$y[EXT]
+        EXT <- UD[[i]]$r$y[EXT]
         EXT <- c(EXT[1],last(EXT))
         ext.y <- range(ext.y,EXT)
       }
     }
-    
+
     # bounding locations from Gaussian CTMM
     if(!is.null(CTMM))
     {
-      if(is.na(alpha.UD)) { alpha.UD <- exp(-1) } # mean area
+      if(is.na(alpha.UD[1])) { alpha.UD <- exp(-1) } # mean area
       z <- sqrt(-2*log(alpha.UD))
       
       for(i in 1:length(CTMM))
@@ -434,7 +489,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
       CTMM[[i]] <- unit.ctmm(CTMM[[i]],dist$scale)
       
       # plot denisty function lazily reusing KDE code
-      pdf <- kde(list(x=CTMM[[i]]$mu[1,1],y=CTMM[[i]]$mu[1,2]),H=methods::getDataPart(CTMM[[i]]$sigma),res=500)
+      pdf <- kde(data.frame(CTMM[[i]]$mu[1,,drop=FALSE]),H=methods::getDataPart(CTMM[[i]]$sigma),axes=c("x","y"),res=500)
       plot.df(pdf,DF=DF,col=col.DF[[i]],...)
       
       # plot ML estimate, regular style
@@ -533,7 +588,11 @@ plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",col.level="black",col.DF
   dist <- new.plot(UD=x,fraction=fraction,add=add,xlim=xlim,ylim=ylim,...)
   
   # contours colour
-  col.level <- array(col.level,length(x))
+  if(length(col.level)==length(level.UD) && length(col.level) != length(x))
+  { col.level <- t(array(col.level,c(length(level.UD),length(x)))) }
+  else 
+  { col.level <- array(col.level,c(length(x),length(level.UD))) }
+  
   col.DF <- array(col.DF,length(x))
   col.grid <- array(col.grid,length(x))
   
@@ -550,16 +609,15 @@ plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",col.level="black",col.DF
   # CONTOURS
   for(i in 1:length(x))
   {
-    if(!is.na(col.level[[i]]))
+    if(!any(is.na(col.level[i,])))
     {
       # make sure that correct style is used for low,ML,high even in absence of lows and highs
-      if(is.na(level.UD)) { level.UD <- CI.UD(x[[i]],level.UD,level,P=TRUE)[2] } # ugly/redundant code for now!!!
-      plot.kde(x[[i]],level=level.UD,col=scales::alpha(col.level[[i]],1),lwd=lwd,...)
+      plot.kde(x[[i]],level=level.UD,col=scales::alpha(col.level[i,],1),lwd=lwd,...)
       
-      if(!is.null(x[[i]]$DOF.H))
+      if(!is.na(level) & !is.null(x[[i]]$DOF.area))
       {
         P <- CI.UD(x[[i]],level.UD,level,P=TRUE)
-        plot.kde(x[[i]],level=P[-2],labels=round(100*P[2]),col=scales::alpha(col.level[[i]],0.5),lwd=lwd/2,...)
+        plot.kde(x[[i]],level=P[-2],labels=round(100*P[2]),col=scales::alpha(col.level[i,],0.5),lwd=lwd/2,...)
       }
     }
   }
@@ -567,15 +625,15 @@ plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",col.level="black",col.DF
   # plot grid
   for(i in 1:length(x))
   {
-    if(!is.null(x[[i]]$DOF.H))
+    if(sum(diag(x[[i]]$H)>0))
     {    
       H <- covm(x[[i]]$H)
       theta <- H@par["angle"]
       ecc <- H@par["eccentricity"]
       sigma <- H@par["area"]
       
-      X <- x[[i]]$x
-      Y <- x[[i]]$y
+      X <- x[[i]]$r$x
+      Y <- x[[i]]$r$y
       
       COS <- cos(theta)
       SIN <- sin(theta)
@@ -637,7 +695,7 @@ plot.df <- function(kde,DF="CDF",col="blue",...)
     kde$CDF <- 1 - kde$CDF
   }
 
-  graphics::image(kde$x,kde$y,kde[[DF]],useRaster=TRUE,zlim=zlim,col=col,add=TRUE,...)
+  graphics::image(kde$r,z=kde[[DF]],useRaster=TRUE,zlim=zlim,col=col,add=TRUE,...)
 }
 
 
@@ -650,7 +708,7 @@ plot.kde <- function(kde,level=0.95,labels=round(level*100),col="black",...)
 
   # do something that works
   options(max.contour.segments=.Machine$integer.max)
-  graphics::contour(x=kde$x,y=kde$y,z=kde$CDF,levels=level,labels=labels,labelcex=1,col=col,add=TRUE,...)
+  graphics::contour(kde$r,z=kde$CDF,levels=level,labels=labels,labelcex=1,col=col,add=TRUE,...)
   
   # reinstate initial option (or default if was NULL--can't set back to NULL???)
   # if(is.null(MAX)) { MAX <- 25000 }

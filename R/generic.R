@@ -26,7 +26,7 @@ is.installed <- function(pkg) is.element(pkg, utils::installed.packages()[,1])
 # generic FFT functions
 FFT <- function(X,inverse=FALSE)
 {
-  if(is.null(ncol(X)))
+  if(is.null(ncol(X)) || is.na(ncol(X)))
   { 
     if(!inverse) { X <- stats::fft(X) }
     else { X <- stats::fft(X,inverse=TRUE)/length(X) }
@@ -43,7 +43,7 @@ FFT <- function(X,inverse=FALSE)
 # fastest FFT functions... don't use on integers
 FFTW <- function(X,inverse=FALSE)
 {
-  if(is.null(ncol(X)))
+  if(is.null(ncol(X)) || is.na(ncol(X)))
   { 
     if(!inverse) { X <- fftw::FFT(X) }
     else { X <- fftw::IFFT(X) }
@@ -72,7 +72,19 @@ composite <- function(n) { 2^ceiling(log(n,2)) }
 
 ##### det shouldn't fail because R dropped indices
 det.numeric <- function(x,...) { x }
-#determinant.numeric <- function(x,logarithm=TRUE,...) { x }
+determinant.numeric <- function(x,logarithm=TRUE,...)
+{
+  SIGN <- sign(x)
+  if(logarithm)
+  { x <- log(abs(x)) }
+  
+  RESULT <- list(modulus=x,sign=SIGN)
+  attr(RESULT$modulus,"logarithm") <- logarithm
+
+  class(RESULT) <- "det"
+  
+  return(det)
+}
 
 # forwarding function for list of a particular datatype
 zoom.list <- function(x,...)
@@ -100,7 +112,6 @@ plot.list <- function(x,...)
   utils::getS3method("plot",CLASS)(x,...)
 }
 #methods::setMethod("plot",signature(x="list"), function(x,...) plot.list(x,...))
-
 
 # forwarding function for list of a particular datatype
 summary.list <- function(object,...)
@@ -148,7 +159,7 @@ Adj <- function(M) { t(Conj(M)) }
 He <- function(M) { (M + Adj(M))/2 }
 
 # Positive definite solver
-PDsolve <- function(M)
+PDsolve <- function(M,pseudo=FALSE)
 {
   # symmetrize
   M <- He(M)
@@ -160,13 +171,34 @@ PDsolve <- function(M)
   
   # now a correlation matrix that is easy to invert
   M <- M/W
-  M <- qr.solve(M)
+  if(!pseudo)
+  { M <- qr.solve(M) }
+  else
+  {
+    M <- eigen(M)
+    V <- M$vectors
+    M <- M$values
+    INDEX <- (abs(M) >= length(M)*.Machine$double.eps) # conventional tolerance
+    M[INDEX] <- 1/M[INDEX]
+    INDEX <- !INDEX
+    M[INDEX] <- 0
+    M <- lapply(1:length(M),function(i) M[i]*(V[,i] %o% Conj(V[,i])) )
+    M <- Reduce('+',M)
+  }
   M <- M/W
 
   # symmetrize
   M <- He(M)
 
   return(M)
+}
+
+# condition number
+conditionNumber <- function(M)
+{
+  M <- eigen(M)$values
+  M <- range(M)
+  return(M[2]/M[1])
 }
 
 # sqrtm fails on 1x1 matrix
@@ -277,7 +309,7 @@ lognorm.ci <- function(MLE,COV,alpha=0.05)
 
 # last element of array
 last <- function(vec) { vec[length(vec)] }
-
+first <- function(vec) { vec[1] }
 
 # CLAMP A NUMBER
 clamp <- Vectorize(function(num,min=0,max=1) { if(num<min) {min} else if(num<max) {num} else {max} })
@@ -518,10 +550,9 @@ unit.ctmm <- function(CTMM,length=1,time=1)
 ######################
 unit.UD <- function(UD,length=1)
 {
-  UD$x <- UD$x / length
-  UD$y <- UD$y / length
+  UD$r <- lapply(UD$r,function(x){ x/length })
   UD$PDF <- UD$PDF * length^2
-  UD$dA <- UD$dA / length^2
+  UD$dr <- UD$dr / length
   UD$H <- UD$H / length^2
   
   return(UD)

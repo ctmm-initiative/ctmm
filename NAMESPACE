@@ -2,10 +2,10 @@
 importFrom("graphics",plot)
 importFrom("methods",new)
 importFrom("raster",raster,zoom)
-importFrom("stats",simulate)
+importFrom("stats",simulate,predict)
 
 # non-base generics to export
-export(plot,simulate)
+export(plot,simulate,predict)
 export(raster,zoom)
 #export(SpatialPoints,SpatialPolygonsDataFrame)
 #S3method(SpatialPoints,matrix)
@@ -13,7 +13,8 @@ export(raster,zoom)
 #S3method(SpatialPolygonsDataFrame,SpatialPolygons)
 
 #GENERAL FUNCTIONS
-S3method(det,numeric)
+#S3method(det,numeric)
+#S3method(determinant,numeric) # can't get these to work???
 S3method(mean,list)
 S3method(plot,list)
 S3method(summary,list)
@@ -24,6 +25,7 @@ export(as.telemetry,SpatialPoints.telemetry)
 S3method(as.telemetry,character)
 S3method(as.telemetry,data.frame)
 S3method(as.telemetry,Move)
+S3method(as.telemetry,MoveStack)
 S3method(plot,telemetry)
 S3method(subset,telemetry)
 S3method(summary,telemetry)
@@ -50,7 +52,10 @@ S3method(summary,ctmm)
 #MEAN FUNCTIONS
 
 #AKDE FUNCTIONS
-export(akde,akde.bandwidth,homerange,writeShapefile,SpatialPolygonsDataFrame.UD)
+export(akde,bandwidth,homerange,writeShapefile,SpatialPolygonsDataFrame.UD)
+S3method(akde,list)
+S3method(akde,telemetry)
+S3method(mean,UD)
 S3method(plot,UD)
 S3method(summary,UD)
 S3method(writeShapefile,UD)
@@ -67,5 +72,7 @@ export(uere)
 
 #OVERLAP FUNCTIONS
 export(overlap)
-S3method(overlap,ctmm)
-S3method(overlap,telemetry)
+#S3method(overlap,list)
+#S3method(overlap,ctmm)
+#S3method(overlap,telemetry)
+#S3method(overlap,UD)

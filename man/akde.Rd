@@ -1,30 +1,46 @@
 \name{akde}
 \alias{akde}
+\alias{akde.telemetry}
+\alias{akde.list}
+\alias{mean.UD}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Calculate an autocorrelated kernel density estimate
 }
 \description{
-This function calculates autocorrelated kernel density estimates of different confidence levels from \code{telemetry} data and a continuous-time movement model.
+This function calculates autocorrelated kernel density home-range estimates from \code{telemetry} data and a corresponding continuous-time movement model.
 }
 \usage{
-akde(data,CTMM,debias=TRUE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
+akde(data,CTMM,VMM=NULL,debias=TRUE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
+
+\S3method{akde}{telemetry}(data,CTMM,VMM=NULL,debias=TRUE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
+
+\S3method{akde}{list}(data,CTMM,VMM=NULL,debias=TRUE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
+
+\S3method{mean}{UD}(x,...)
+
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{data}{ 2D timeseries telemetry data represented as a \code{telemetry} object. }
-  \item{CTMM}{A \code{ctmm} movement model from the output of \code{ctmm.fit}.}
-  \item{debias}{Debias the distribution for area estimation.}
+  \item{data}{ 2D timeseries telemetry data represented as a \code{telemetry} object or list of objects. }
+  \item{CTMM}{A \code{ctmm} movement model from the output of \code{ctmm.fit} or list of objects.}
+  \item{VMM}{An optional vertical \code{ctmm} object for 3D home-range calculation.}
+  \item{debias}{Debias the distribution for area estimation (AKDEc).}
   \item{smooth}{"Smooth" out errors from the data.}
-  \item{error}{Target error for kernel truncation.}
+  \item{error}{Target probability error.}
   \item{res}{Number of grid points along each axis, relative to the bandwidth.}
   \item{grid}{Optional grid specification with columns labeled \code{x} and \code{y}. Not yet supported.}
-  \item{...}{Arguments passed to all instances of \code{\link{akde.bandwidth}}.}
+  \item{...}{Arguments passed to all instances of \code{\link{bandwidth}}, such as \code{weights}.}
+  \item{x}{A list of \code{UD}s calculated on the same grid.}
 }
 
 %\details{}
 
-\value{Returns a \code{UD} object: a list with the sampled grid line locations \code{x} and \code{y}, the area of each grid cell \code{dA}, the probability density and cumulative distribution functions evaluated on the sampled grid locations \code{PDF} & \code{CDF}, the optimal bandwidth matrix \code{H}, and the effective sample size of the data in \code{DOF.H}.
+\value{Returns a \code{UD} object: a list with the sampled grid line locations \code{r$x} and \code{r$y}, the extent of each grid cell \code{dr}, the probability density and cumulative distribution functions evaluated on the sampled grid locations \code{PDF} & \code{CDF}, the optimal bandwidth matrix \code{H}, and the effective sample size of the data in \code{DOF.H}.
+
+For weighted AKDE, please note additional \code{...} arguments passed to \code{\link{bandwidth}} and the \code{weights=TRUE} argument, specifically.
+
+When feeding in lists of \code{telemetry} and \code{ctmm} objects, all UDs will be calculated on the same grid. These UDs can be averaged with the \code{mean} command, however this is not an optimal way to calculate population ranges.
 }
 
 \references{
@@ -35,7 +51,7 @@ Rigorous home-range estimation with movement data: A new autocorrelated kernel-d
 %D. Marcotte. (1996). Fast variogram computation with FFT. \emph{Computers and Geosciences} 22(10), 1175-1186.
 }
 
-\author{ C. H. Fleming. }
+\author{ C. H. Fleming and K. Winner. }
 
 \note{ In the case of coarse grids, the value of \code{PDF} in a grid cell corresponds to the average probability density over the entire rectangular cell.
 
@@ -49,7 +65,7 @@ In v0.3.2, this method was further improved to use \code{DOF.area} from the Gaus
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
-\seealso{ \code{\link{akde.bandwidth}}, \code{\link{raster,UD-method}} }
+\seealso{ \code{\link{bandwidth}}, \code{\link{raster,UD-method}} }
 
 \examples{\donttest{
 # Load package and data

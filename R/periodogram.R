@@ -69,7 +69,7 @@ periodogram <- function(data,CTMM=NULL,dt=NULL,res.freq=1,res.time=1,fast=NULL,a
     data <- lapply(data, function(d) { d$t <- d$t - d$t[1] ; d$t <- (d$t - grid.init(d$t,dt/res.time))/(dt/res.time) ; if(d$t[1]<0) {d$t <- d$t + 1} ; return(d) } )
 
     # all encompassing grid size, including interpolation buffer
-    n <- max(sapply(data,function(d) { last(d$t) })) + 2*res.time - 1
+    n <- max(sapply(data,function(d) { last(d$t) })) + 2*res.time
     n <- ceiling(n*res.freq)
     
     if(fast==2) { n <- composite(n) }
@@ -92,7 +92,7 @@ periodogram <- function(data,CTMM=NULL,dt=NULL,res.freq=1,res.time=1,fast=NULL,a
   { SUM <- n-1 }
   else
   {
-    LOW <- f < 1/(2*dt)
+    LOW <- (f < 1/(2*dt))
     SUM <- sum(LOW)
   }
   DOF <- (dts/dt)*2*(sapply(data,function(d){length(data$t)})-1)/SUM
@@ -115,7 +115,7 @@ periodogram <- function(data,CTMM=NULL,dt=NULL,res.freq=1,res.time=1,fast=NULL,a
     result <- result[LOW,]
     
     # check for leakage from Lagrange interpolation high-frequency garbage
-    if(any(result$LSP<0)|| any(result$SSP<0))
+    if(any(is.nan(result$LSP)) || any(is.nan(result$SSP)) || any(result$LSP<0)|| any(result$SSP<0))
     { stop("Lagrange interpolation failed. Try a different value of res.time.") }
   }
   
@@ -269,8 +269,10 @@ max.periodogram <- function(LSP,df=stats::median(diff(LSP$f)))
 # plot periodograms
 plot.periodogram <- function(x,max=FALSE,diagnostic=FALSE,col="black",transparency=0.25,grid=TRUE,...)
 {
-  # frequency in 1/days
-  f <- x$f*24*60^2
+  DAY <- 24*60^2
+  
+  # frequency in 1/seconds
+  f <- x$f
   
   LSP <- data.frame(f=f,P=log(x$LSP))
   if(max) { LSP <- max.periodogram(LSP) }
@@ -294,13 +296,13 @@ plot.periodogram <- function(x,max=FALSE,diagnostic=FALSE,col="black",transparen
   }
   
   # yearly periods
-  ticker(365.24,11,"year")
+  ticker(365.24*DAY,11,"year")
   
   # lunar periods
-  ticker(29.53059,29,"month")
+  ticker(29.53059*DAY,29,"month")
   
   # diurnal periods
-  ticker(1,24,"day")  
+  ticker(DAY,24,"day")
 
   col <- scales::alpha(col,alpha=((f[1]/f)^transparency))
   plot(1/LSP$f,LSP$P,log="x",xaxt="n",xlab="Period",ylab="Log Spectral Density",col=col,...)

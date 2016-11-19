@@ -63,7 +63,7 @@ Non-Markovian maximum likelihood estimation of autocorrelated movement processes
 
 C. H. Fleming and W. F. Fagan and T. Mueller and K. A. Olson and P. Leimgruber and J. M. Calabrese (2015).
 Rigorous home-range estimation with movement data: A new autocorrelated kernel-density estimator.
-\href{http://www.esajournals.org/doi/abs/10.1890/14-2010.1}{Ecology, doi:10.1890/14-2010.1}.
+\href{http://www.esajournals.org/doi/abs/10.1890/14-2010.1}{Ecology, DOI:10.1890/14-2010.1}.
 }
 
 \author{C. H. Fleming.}

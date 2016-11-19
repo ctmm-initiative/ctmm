@@ -21,8 +21,9 @@ Compute a number-weighted average of variogram objects
 Returns a \code{variogram} object which is a dataframe containing the lag, the semi-variance estimate at that lag, and the approximate degrees of freedom associated with the semi-variance estimate.
 }
 \references{
-C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, and W. F. Fagan.
-2014. From fine-scale foraging to home ranges: A semi-variance approach to identifying movement modes across spatiotemporal scales. \emph{The American Naturalist}, 183(5):E154-E167.
+C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, and W. F. Fagan. (2014).
+From fine-scale foraging to home ranges: A semi-variance approach to identifying movement modes across spatiotemporal scales.
+\href{http://www.jstor.org/discover/10.1086/675504}{The American Naturalist, 183(5), E154-E167}.
 }
 \author{
 J. M. Calabrese and C. H. Fleming
@@ -33,7 +34,7 @@ J. M. Calabrese and C. H. Fleming
 
 \seealso{ \code{\link{plot.variogram}}, \code{\link{variogram}}. }
 
-\examples{
+\examples{\donttest{
 # Load package and data
 library(ctmm)
 data(buffalo)
@@ -48,7 +49,7 @@ SVF <- mean(SVFS)
 
 # Plot the mean variogram
 plot(SVF)
-}
+}}
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

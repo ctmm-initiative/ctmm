@@ -33,7 +33,10 @@ If summary is called on a list of \code{ctmm} objects output from \code{\link{ct
 
 \author{ C. H. Fleming. }
 
-\note{ Confidence intervals on the autocorrelation timescales assume they are sufficiently greater than zero and less than infinity.  }
+\note{ Confidence intervals on the autocorrelation timescales assume they are sufficiently greater than zero and less than infinity.
+
+In \code{ctmm} v0.3.4 the speed estimate was fixed to be the RMS velocity and not \eqn{1/\sqrt{2}} times the RMS velocity.
+}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
