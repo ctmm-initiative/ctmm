@@ -1,8 +1,8 @@
 Package: ctmm
 Version: 0.3.4
-Date: 2016-11-18
+Date: 2016-11-28
 Title: Continuous-Time Movement Modeling
-Author: Chris H. Fleming and J. M. Calabrese
+Author: Christen H. Fleming and J. M. Calabrese
 Maintainer: C. H. Fleming <flemingc@si.edu>
 Depends: R (>= 3.3.2)
 Imports: expm, graphics, grDevices, manipulate, MASS, methods, numDeriv, pbivnorm, raster, rgdal, scales, stats, utils

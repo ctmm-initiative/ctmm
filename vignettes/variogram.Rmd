@@ -15,8 +15,8 @@ In this vignette, we walk through data preparation, variogram analysis, and maxi
 # Data Preparation
 
 We highly recommend that you get your data onto [Movebank](http://www.movebank.org/).
-This will help ensure that your data are of the correct format for `ctmm`, and you can keep your data completely private if you wish.
-`ctmm` requires that your dataframe conforms to Movebank naming conventions (see `help(as.telemetry)`).
+This will help ensure that your data are of the correct format for `ctmm`, help you identify outliers, and you can keep your data completely private if you wish.
+`ctmm` requires that your dataframe conforms to [Movebank naming conventions](http://rstudio.com) (see `help(as.telemetry)`).
 The next step is then to import your MoveBank csv file:
 ```
 yourAnimals <- as.telemetry("yourAnimalsMoveBank.csv")
@@ -69,7 +69,16 @@ You can do this on the fly with `zoom(cilla)` in R-studio. The variogram represe
 
 For the long range behavior we can see that the variogram flattens (asymptotes) at approximately 20 days. This is, roughly, how coarse you need to make the timeseries so that methods assuming independence (no autocorrelation) can be valid. This includes, conventional kernel density estimation (KDE), minimum convex polygon (MCP), conventional species distribution modeling (SDM), and a host of other analyses.
 
-The asymptote of our variogram is around 23 square km, and the fact that it takes roughly 20 days for the variogram to asymptote is indicative of the fact that the buffalo's location appears continuous at this timescale. This is also, roughly, the time it takes for the buffalo to cross its home range. We can guesstimate some continuous-time models for this behavior with the commands
+The asymptote of our variogram is around 23 square km, and the fact that it takes roughly 20 days for the variogram to asymptote is indicative of the fact that the buffalo's location appears continuous at this timescale. This is also, roughly, the time it takes for the buffalo to cross its home range.
+
+In the next sectios we will "fit" models the the variograms.
+This is not a rigorous statistical fitting, but a good way of choosing candidate movement models and guessing at their parameters.
+The variogram-fit parameter guestimates will then be fed into maximum likelihood estimation, which requires good initial guesses for non-linear optimization.
+
+## Variogram Fitting the Hard Way
+
+For pedagogical reasons we first "fit" models to the variogram by hand, while later we will use a much easier method.
+we can manually guesstimate some continuous-time models for the aforementioned behavior with the commands
 
 ```{r,  fig.show='hold'}
 m0 <- ctmm(sigma=23*1000^2) # 23 km^2 in m^2
@@ -105,7 +114,9 @@ The Ornstein-Uhlenbeck-F (OUF) model `m2` introduces an additional autocorrelati
 
 The linear regime of the variogram (regular diffusion) is just as important as the asymptotic regime. In the linear regime it is reasonable to assume a Markovian model as with step selection functions (SSF) and Brownian bridges (BB). Therefore, the variogram has informed us as to how much we need to coarsen our data for it to be appropriate in many common analyses that neglect various aspects of movement.
 
-Finally, the R-studio function `variogram.fit(SVF)` is much easier to use than guestimating the model parameters by hand as we did above. `variogram.fit` gives you sliders to choose the most visually appropriate parameters and save them to a global variable (`GUESS` by default).
+## Variogram Fitting the Easy Way
+
+The R-studio function `variogram.fit(SVF)` is much easier to use than guestimating the model parameters by hand as we did above. `variogram.fit` gives you sliders to choose the most visually appropriate parameters and save them to a global variable (`GUESS` by default).
 
 ### Variogram Error is Autocorrelated
 
@@ -139,6 +150,8 @@ plot(SVF3,fraction=0.85,level=c(0.5,0.95))
 title("Multi method")
 ```
 
+With small amounts of highly irregular data, you may also want to try `fast=FALSE`.
+
 ### Pooling Variograms
 
 If multiple individuals exhibit similar movement behaviors, then we can pool their individual variograms to create a more precise population variogram. You should be careful though, if the individual movement behaviors and sampling schedules are not identical, then there will be discontinuities at lags where one timeseries runs out of data.
@@ -156,6 +169,8 @@ title("Population variogram")
 ### Non-Stationarity in Stationary Variograms
 
 Non-stationary behaviors, like a seasonal change in variance, is averaged over in the variogram. Moreover, if we fit a stationary model to non-stationary data, we are estimating an average effect. For instance, if an animal rests at night and diffuses at some rate `D` during the day, then without modeling the rest behavior we estimate an average of zero and `D`. Its not terribly detrimental to average over frequently repeated non-stationarity, but if an animal migrates once in a dataset then this behavior really needs to be in the model. These kinds of models will be included in future versions of `ctmm`.
+
+Alternatively, you can also break up the data by hand into multiple behaviors and fit each behavior individually. This is highly recommended for migratory species, at present.
 
 ## More Models
 
@@ -200,9 +215,13 @@ summary(FITS)
 
 ### Repeated Migrations
 
-# Model Fitting
+# Maximum Likelihood
 
-Now let us fit each of our proposed models `m0`, `m1`, `m2`, store the corresponding best-fit result in `M0`, `M1`, `M2`, and then compare some of their outputs.
+## Maximum Likelihood Fitting the Hard Way 
+
+Here we take our guestimates from variogram fitting the hard way and perform model selection manually.
+Later we will finish everything off the easy way.
+First let us fit each of our proposed models `m0`, `m1`, `m2`, store the corresponding best-fit result in `M0`, `M1`, `M2`, and then compare some of their outputs.
 
 ```{r,  fig.show='hold'}
 M0 <- ctmm.fit(cilla,m0)
@@ -230,7 +249,9 @@ summary(FITS)
 
 The fit parameter `DOF[mean]` is the number of degrees of freedom worth of data we have to estimate the stationary mean parameter, assuming that the model is correct. Notice that the IID model perceives thousands of independent data points, while the autocorrelated OU and OUF models only see a handful of independent data points. This is why the IID model produced tiny confidence intervals on the predicted (Gaussian) area.
 
-If you have a hypothetical model in mind, say the OUF `m2`, then you can perform model selection in a more convenient way with the `ctmm.select` function. `ctmm.select` considers the initial guess (hypothesis) and then iterates this model to select the best model based upon an information criteria.
+## Maximum Likelihood Fitting the Easy Way
+
+If you have a complex, hypothetical model in mind, say the OUF `m2` as you would get from variogram fitting the easy way, then you can perform model selection more conveniently with the `ctmm.select` function. `ctmm.select` considers the initial guess (hypothesis) and then iterates this model to select the best model based upon an information criteria.
 
 ```{r}
 FITZ <- ctmm.select(cilla,m2,verbose=TRUE,level=1)
@@ -245,7 +266,7 @@ and the independent and identically distributed (IID) model has no autocorrelati
 The IID model was never considered here by `ctmm.select` because it first requires selecting OU over OUF in the nested model hierarchy.
 See `help("ctmm")` for more options.
 
-## Back to the Variogram
+## Variograms as a Disgnostic for Maximum Likelihood
 
 Now its time to make sure that our selected model is explaining the most significant features of the animal's movement. Let us plot the variogram again with our fit models
 
@@ -257,3 +278,5 @@ title("zoomed in")
 ```
 
 Notice that the purple OU model `M1` is significantly biased downward and is underestimating diffusion. This is because the continuous-velocity behavior at short time lags, which `M1` does not account for, is throwing off the estimate. The IID model `M0` is ignoring autocorrelation completely, while the OU model `M1` is ignoring autocorrelation in the buffalo's velocity.
+
+While the OUF `M2` is the selected model among all candidates, `M2` looks slightly biased upwards in comparison to the variogram fit `m2`. This could be due to not accounting for telemetry error, which is unfortunately not annotated in this data.

@@ -36,7 +36,8 @@ as.telemetry(object,timeformat="",timezone="GMT",projection=NULL,UERE=NULL,...)
 If no projection argument is specified, a two-point equidistant projection is calculated that should be good for most range resident and migratory species.
 Global migrations that are not along one geodesic (locally straight line) will probably suffer distortion.
 
-The necessary MoveBank columns are \code{individual.local.identifier} (or \code{tag.local.identifier}), \code{timestamp}, \code{location.long} and \code{location.lat}, while the optional Movebank columns are \code{eobs.horizontal.accuracy.estimate} and \code{GPS.HDOP}.
+\code{as.telemetry} assumes \href{http://rstudio.com}{Movebank naming conventions}.
+Sufficient MoveBank columns include \code{individual.local.identifier} (or \code{tag.local.identifier}), \code{timestamp}, \code{location.long} and \code{location.lat}, while the optional Movebank columns are \code{eobs.horizontal.accuracy.estimate} and \code{GPS.HDOP}.
 In the future, we will be supporting more GPS and ARGOS columns, including speed, heading, further error classifications, etc.
 
 The \code{GPS.HDOP} value requires the device's \code{UERE} value to be translated into telemetry errors. The \code{UERE} represents the RMS error given ideal satellite conditions. Therefore, if your device is purported to have an accuracy of 2-10 meters, then the \code{UERE} is likely around 2 meters. Consult your device manual and manufacturer for a specific value or see \code{\link{uere}} for UERE calibration.
