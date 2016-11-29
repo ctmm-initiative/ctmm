@@ -1,6 +1,6 @@
-0.3.4 2016-11-18
+0.3.4 2016-11-28
 
-  * weighted AKDE implemented & fast
+  * weighted AKDE implemented, fast option, covered in vignette
 
   * overlap arguments & ouput changed/generalized
 

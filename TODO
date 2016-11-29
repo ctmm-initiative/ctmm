@@ -1,10 +1,3 @@
-clarify documentation on predict and simulate
-clarify timing of predict/simulate output
-
-CRAZY ELEPHANT
-  steps are low, but KKT inequality changes can be high
-  maybe IID finisher if this is from PC noise?... test slow method to check first
-
 Make Kalman filter updates manifestly positive definite
   Joseph form covariance update
 

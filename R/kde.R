@@ -12,6 +12,10 @@ lag.DOF <- function(data,dt=NULL,weights=NULL,lag=NULL,FLOOR=NULL,p=NULL)
   # intelligently select algorithm
   n <- length(t)
 
+  # important infor for later
+  w2 <- sum(weights^2)
+  # otherwise this gets corrupted by gridding/smearing
+  
   # smear the weights over an evenly spaced time grid
   lag <- gridder(t,z=cbind(weights),W=F,dt=dt,lag=lag,FLOOR=FLOOR,p=p,finish=FALSE)
   weights <- lag$z
@@ -20,15 +24,19 @@ lag.DOF <- function(data,dt=NULL,weights=NULL,lag=NULL,FLOOR=NULL,p=NULL)
   n <- length(lag)
   N <- composite(2*n)
   
-  weights <- FFT(pad(weights,N))
-  
-  DOF <- abs(weights)^2
+  DOF <- FFT(pad(weights,N))
+  DOF <- abs(DOF)^2
   # include only positive lags
   DOF <- Re(IFFT(DOF)[1:n])
+  
+  # fix initial and total DOF
+  DOF[1] <- w2
+  DOF[-1] <- DOF[-1]*((1-DOF[1])/sum(DOF[-1]))
+  
   # add positive and negative lags
-  DOF[-1] <- 2*DOF[-1]
-  # correct numerical error
-  DOF <- DOF/sum(DOF)
+  # DOF[-1] <- 2*DOF[-1]
+  # correct numerical error / normalize to weight sum
+  # DOF <- DOF/sum(DOF)
   
   return(list(DOF=DOF,lag=lag))
 }
@@ -175,7 +183,7 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,precisi
       
       SOLVE <- PQP.solve(G,FLOOR=FLOOR,p=p,lag=lag,error=error,PC=PC,IG=IG,MARKOV=MARKOV)
       weights <<- SOLVE$P
-      message(SOLVE$CHANGES," feasibility assessments @ ",round(SOLVE$STEPS/SOLVE$CHANGES,digits=1)," conjugate gradient steps/assessment")
+      # message(SOLVE$CHANGES," feasibility assessments @ ",round(SOLVE$STEPS/SOLVE$CHANGES,digits=1)," conjugate gradient steps/assessment")
       if(is.null(VMM)) # 2D
       { return( SOLVE$MISE - 2/(2+h^2) + 1/2 ) }
       else # 3D
@@ -199,14 +207,14 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,precisi
   if(is.null(VMM)) # 2D
   {
     h <- 1/n^(1/6) # User Silverman's rule of thumb to place lower bound
-    MISE <- stats::optimize(f=MISE,interval=c(h/2,2))
+    MISE <- stats::optimize(f=MISE,interval=c(h/2,2),tol=error)
     h <- MISE$minimum
     MISE <- MISE$objective / sqrt(det(2*pi*sigma)) # constant
   }
   else # 3D
   {
     h <- 4/5/n^(1/7) # User Silverman's rule of thumb as initial guess
-    MISE <- stats::optim(par=c(h,h),fn=MISE,control=list(maxit=.Machine$integer.max))
+    MISE <- stats::optim(par=c(h,h),fn=MISE,control=list(maxit=.Machine$integer.max,reltol=error))
     h <- MISE$par
     MISE <- MISE$value
     MISE <- MISE / sqrt(det(2*pi*sigma)) / sqrt(2*pi*sigmaz) # constant
@@ -832,7 +840,7 @@ CI.UD <- function(object,level.UD=0.95,level=0.95,P=FALSE)
   # chi square approximation of uncertainty
   if(!is.null(object$DOF.area))
   {
-    area <- chisq.ci(area,DOF=2*object$DOF.area,alpha=1-level)
+    area <- chisq.ci(area,DOF=2*object$DOF.area[1],alpha=1-level)
     names(area) <- c("low","ML","high")
   }
   
@@ -867,7 +875,7 @@ summary.UD <- function(object,level.UD=0.95,level=0.95,...)
 
   SUM <- list()
   
-  SUM$DOF <- c(object$DOF.area,object$DOF.H)
+  SUM$DOF <- c(object$DOF.area[1],object$DOF.H)
   names(SUM$DOF) <- c("area","bandwidth")
   
   SUM$CI <- area
