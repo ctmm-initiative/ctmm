@@ -471,11 +471,11 @@ PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC=
         if(dL>=0) { if(!silent) { message("PCCG stopped converging") } ; break }
         
         P <- P + dP
-        dRES <- -A*G.CONJ # need this for Polak–Ribière formula
+        dRES <- -A*G.CONJ # need this for Polak-Ribiere formula
         RES <- RES + dRES
         Z <- PC.VEC(RES)
         RES2 -> OLD
-        RES2 <- c(Z %*% dRES) # Polak–Ribière formula
+        RES2 <- c(Z %*% dRES) # Polak-Ribiere formula
         if(abs(RES2)<=.Machine$double.eps) { if(!silent) { message("PCCG divergence in beta") } ; break }
         B <- RES2 / OLD
         CONJ <- Z + B*CONJ
