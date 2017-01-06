@@ -243,6 +243,7 @@ occurrence <- function(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=
   if(length(H)==1) { H <- diag(H,2) }
   
   info <- attr(data,"info")
+  SIGMA <- CTMM$sigma # diffusion matrix for later
   CTMM <- ctmm.prepare(data,CTMM)
   error <- get.error(data,CTMM)
   MIN.ERR <- min(error)
@@ -295,7 +296,7 @@ occurrence <- function(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=
   # there is probably a faster way to do that
   
   # estimate size of data blob
-  dr <- diag(CTMM$sigma)
+  dr <- diag(SIGMA)
   if(CTMM$range)
   {
     if(length(CTMM$tau)==1) #OU

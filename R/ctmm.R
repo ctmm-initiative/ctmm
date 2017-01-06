@@ -251,10 +251,10 @@ pars.tauv <- function(tau)
 ############################
 # coarce infinite parameters into finite parameters appropriate for numerics
 ###########################
-ctmm.prepare <- function(data,CTMM)
+ctmm.prepare <- function(data,CTMM,REML=FALSE)
 {
   K <- length(CTMM$tau)  # dimension of hidden state per spatial dimension
-  
+  axes <- CTMM$axes
   range <- TRUE
   
   if(K>0)
@@ -287,7 +287,14 @@ ctmm.prepare <- function(data,CTMM)
   if(is.null(CTMM$mean.vec))
   {
     drift <- get(CTMM$mean)
-    CTMM$mean.vec <- drift(data$t,CTMM)
+    U <- drift(data$t,CTMM)
+    CTMM$mean.vec <- U
+
+    if(REML)
+    {
+      UU <- t(U) %*% U
+      CTMM$REML.loglike <- (length(axes)/2)*(log(det(UU)) + ncol(U)*log(2*pi))
+    }
   }
   
   return(CTMM)

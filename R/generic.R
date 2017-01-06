@@ -19,7 +19,6 @@ methods::setGeneric("zoom", getGeneric("zoom", package="raster"))
 # new S3 generic functions
 writeShapefile <- function(object,...) UseMethod("writeShapefile")
 
-
 # is a package installed?
 is.installed <- function(pkg) is.element(pkg, utils::installed.packages()[,1]) 
 
@@ -69,6 +68,23 @@ FFTW <- function(X,inverse=FALSE)
 IFFT <- function(X,plan=NULL) { FFT(X,inverse=TRUE) }
 
 composite <- function(n) { 2^ceiling(log(n,2)) }
+
+# sinc functions
+sinc <- Vectorize( function(x)
+{
+  if(x==0)
+  { return(1) }
+  else
+  { return(sin(x)/x) }
+} )
+
+sinch <- Vectorize( function(x)
+{
+  if(x==0)
+  { return(1) }
+  else
+  { return(sinh(x)/x) }
+} )
 
 ##### det shouldn't fail because R dropped indices
 det.numeric <- function(x,...) { x }
@@ -214,8 +230,8 @@ sqrtm <- function(x)
 }
 
 
-# generalized covariance from likelihood derivatives
-cov.loglike <- function(hess,grad)
+# generalized covariance from -likelihood derivatives
+cov.loglike <- function(hess,grad=rep(0,nrow(hess)))
 {
   # if hessian is likely to be positive definite
   if(all(diag(hess)>0))

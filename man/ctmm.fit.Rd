@@ -16,7 +16,7 @@ ctmm(tau=NULL,isotropic=FALSE,range=TRUE,circle=FALSE,error=FALSE,axes=c("x","y"
 
 ctmm.loglike(data,CTMM,REML=FALSE,verbose=FALSE)
 
-ctmm.fit(data,CTMM=ctmm(),REML=FALSE,control=list(maxit=.Machine$integer.max),...)
+ctmm.fit(data,CTMM=ctmm(),method="ML",control=list(maxit=.Machine$integer.max),...)
 
 ctmm.select(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",...)
 }
@@ -27,12 +27,13 @@ ctmm.select(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",...)
   \item{range}{A Boolean denoting whether or not the movement model has a finite range.}
   \item{circle}{The period it takes the animal to stochastically circle its mean location.}
 %  \item{CPF}{A Boolean denoting whether to consider an oscillatory CPF model.}
-  \item{error}{A Boolean denoting whether or not to use annotated telemetry error estimates or an estimate of the error's variance if the data are not annotated with error estimates.}
+  \item{error}{A Boolean denoting whether or not to use annotated telemetry error estimates or an estimate of the error's standard deviation if the data are not annotated with error estimates or when \eqn{HDOP=1}.}
   \item{axes}{Spatial dimensions of the movement model.}
   \item{data}{ Timeseries data represented as a \code{telemetry} object. }
   \item{CTMM}{ A \code{ctmm} movement-model object containing the initial parameter guesses conforming to the basic structure of the model hypothesis. \code{ctmm.select} can accept a list of such objects.}
   \item{REML}{Use residual maximum likelihood if \code{TRUE}. Not recommended.}
   \item{verbose}{Return additional information. See "Value" below.}
+  \item{method}{Use residual maximum likelihood if \code{"REML"}. Not recommended.}
   \item{control}{An optional argument to be passed to \code{\link{optim}}, but with \code{parscale} overwritten with reasonable defaults.}
   \item{...}{Further arguments passed to \code{ctmm.fit} or \code{\link{optim}}.}
   \item{level}{Attempt to simplify a model if a feature's non-existence falls within this level of confidence interval.}

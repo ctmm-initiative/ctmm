@@ -1,19 +1,21 @@
-Make Kalman filter updates manifestly positive definite
-  Joseph form covariance update
+pREML
+* test precision update
+* fix covariance update
+* test pREML error fitting with precision
+* ctmm.fit PARS==0 : MLE, pREML, REML consistency
 
+Aligned Krige UDs
 pregridder composite dimension?
   I don't remember what this note means... :(
 
-pREML
-store fixed error in data
-store fixed reml ll in data
-  log(det(U%*%U)) not included in ctmm.loglike (precompute in ctmm.fit for fixed U)
-  This really needs to be in ctmm.loglike if you expect people to use this function -- feed it through like mean.vec
-ctmm.fit PARS==0 REML=TRUE
-don't delete mean off of IOU and BM... need that to Krige I think
-IOU with drift not setup correctly
-
-LOW HANGING FRUIT
+LOW HANGING FRUIT & Nagging issues
+* links between vignettes and FAQ
+* error correlation in SVF plot
+* don't delete mean off of IOU and BM... need that to Krige I think...
+* IOU with drift not setup correctly
+* points methods units environment
+* UERE priors from calibration
+* store fixed error in data
 * 1-point azimuthal equidistant projection quick option
 * have summary return a warning on occurrence distributions
 * variogram.list <- mean-lapply-variogram

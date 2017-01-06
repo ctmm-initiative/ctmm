@@ -16,7 +16,8 @@ uere(data,diagnostic=FALSE)
 }
 
 \details{Often times GPS animal tracking devices return HDOP values but do not specifiy the device's UERE necessary to transform the HDOP values into absolute errors.
-This function allows users to estimate the UERE from calibration data, where the device was left fixed over a period of time.}
+This function allows users to estimate the UERE from calibration data, where the device was left fixed over a period of time.
+Otherwise, when \code{error=TRUE} in \code{\link{ctmm}}, \code{\link{ctmm.fit}} will estimate the UERE simultaneously with the movement model, which is less reliable than using calibration data.}
 
 \value{The UERE estimate.}
 
