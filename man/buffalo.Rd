@@ -4,7 +4,7 @@
 
 \title{African buffalo GPS dataset from Kruger National Park, South Africa.}
 
-\description{GPS data on six African buffalo, provided for demonstration purposes only! Contact data owner Paul Cross if you wish to do more with the data.}
+\description{GPS data on six African buffalo. When using this dataset, please cite the original article by Getz et al (2007) and the Movebank data package (Cross et al, 2016).}
 
 \usage{data("buffalo")}
 
@@ -17,9 +17,13 @@
 %%  ~~ reference to a publication or URL from which the data were obtained ~~
 %}
 \references{
-Cross, P., Heisey, D., Bowers, J., Hay, C., Wolhuter, J., Buss, P., Hofmeyr, M., Michel, A., Bengis, R., Bird, T. et al (2009).
-Disease, predation and demography: assessing the impacts of bovine tuberculosis on African buffalo by monitoring at individual and population levels.
-Journal of Applied Ecology, 46, 467-475. 
+Getz W. M., Fortmann-Roe S., Cross P. C., Lyons A. J., Ryan S. J., Wilmers C. C. (2007).
+LoCoH: Nonparameteric kernel methods for constructing home ranges and utilization distributions.
+PLoS ONE 2(2): e207. DOI:10.1371/journal.pone.0000207
+
+Cross P. C., Bowers J. A., Hay C. T., Wolhuter J., Buss P., Hofmeyr M., du Toit J. T., Getz W. M. (2016).
+Data from: Nonparameteric kernel methods for constructing home ranges and utilization distributions.
+Movebank Data Repository. DOI:10.5441/001/1.j900f88t
 }
 
 \note{In \code{ctmm} v0.3.2 the erroneous location fix \code{606} was removed from \code{buffalo[[4]]} "Pepper".}

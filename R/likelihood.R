@@ -22,23 +22,26 @@ langevin <- function(dt,CTMM)
   {
     f <- 1/tau
     
-    if(CPF)
+    DAMP <- FALSE
+    if(!CPF) # overdamped to critically damped
+    {
+      Omega2 <- prod(f)
+      
+      nu <- diff(f)/2
+      # should we use the exponential or hyperbolic representation?
+      if(dt<Inf & (nu*dt)>0.8813736) # exponential
+      { DAMP <- TRUE }
+      else # hyperbolic
+      { f <- mean(f) }
+    }
+    else if(CPF) # underdamped
     {
       nu <- 2*pi*f[1]
       f <- f[2]
       Omega2 <- f^2 + nu^2
     }
-    else if(tau[1] != tau[2])
-    { Omega2 <- 1/prod(tau) }
-    else # equal timescale case
-    {
-      CPF <- TRUE
-      nu <- 0
-      f <- mean(f)
-      Omega2 <- f^2
-    }
-    
-    T <- 2*mean(f)/Omega2
+
+    TT <- 2*mean(f)/Omega2
     
     if(dt==Inf) # make this numerically relative in future
     {
@@ -47,26 +50,35 @@ langevin <- function(dt,CTMM)
     }
     else
     {
-      if(CPF)
-      {
-        Exp <- exp(-f*dt)
-        SinE <- sin(nu*dt)*Exp
-        CosE <- cos(nu*dt)*Exp
-        
-        c0 <- CosE + (f/nu)*SinE
-        c1 <- -(Omega2/nu)*SinE
-        c2 <- -Omega2*(CosE - (f/nu)*SinE)
-      }
-      else
+      if(DAMP) # very overdamped
       {
         Exp <- exp(-dt/tau)/diff(tau)
         c0 <- diff(Exp*tau)
         c1 <- -diff(Exp)
         c2 <- diff(Exp/tau)
       }
-      
+      else # mildly overdamped to underdamped
+      {
+        Exp <- exp(-f*dt)
+        
+        if(!CPF) # overdamped
+        {
+          SincE <- sinch(nu*dt)*Exp
+          CosE <- cosh(nu*dt)*Exp
+        }
+        else # underdamped
+        {
+          SincE <- sinc(nu*dt)*Exp
+          CosE <- cos(nu*dt)*Exp
+        }
+        
+        c0 <- CosE + (f*dt)*SincE
+        c1 <- -(Omega2*dt)*SincE
+        c2 <- -Omega2*(CosE - (f*dt)*SincE)
+      }
+
       Green <- rbind( c(c0,-c1/Omega2) , c(c1,-c2/Omega2) )
-      Sigma <- -T*c1^2  #off-diagonal term
+      Sigma <- -TT*c1^2  #off-diagonal term
       Sigma <- rbind( c(1,0)-c(c0^2+c1^2/Omega2,Sigma) , c(0,Omega2)-c(Sigma,c1^2+c2^2/Omega2) )
     }
   }
@@ -96,7 +108,9 @@ kalman <- function(z,u,dt,CTMM,error=rep(0,nrow(z)),smooth=FALSE,sample=FALSE,we
 
   # observed dimensions
   OBS <- 1
+  
   Id <- diag(OBS)
+  IdH <- diag(K)
   
   # observable state projection operator (will eventially upgrade to use velocity telemetry)
   P <- array(0,c(K,OBS))
@@ -129,6 +143,8 @@ kalman <- function(z,u,dt,CTMM,error=rep(0,nrow(z)),smooth=FALSE,sample=FALSE,we
     Sigma[i,,] <- Langevin$Sigma
   }
   
+  # DEBUG <<- list(dt=dt,CTMM=CTMM)
+  
   # first zForcast is properly zeroed
   sFor[1,,] <- Sigma[1,,]
   
@@ -136,7 +152,8 @@ kalman <- function(z,u,dt,CTMM,error=rep(0,nrow(z)),smooth=FALSE,sample=FALSE,we
   {
     # residual covariance
     sForP <- sFor[i,,] %*% P # why do I need this?
-    sRes[i,,] <- ((t(P) %*% sForP) + error[i]*Id)
+    ERROR <- error[i]*Id
+    sRes[i,,] <- ((t(P) %*% sForP) + ERROR)
     
     # forcast residuals
     zRes[i,,] <- z[i,] - (t(P) %*% zFor[i,,])
@@ -146,8 +163,14 @@ kalman <- function(z,u,dt,CTMM,error=rep(0,nrow(z)),smooth=FALSE,sample=FALSE,we
     
     # concurrent estimates
     zCon[i,,] <- zFor[i,,] + (Gain %*% zRes[i,,])
-    sCon[i,,] <- (sFor[i,,] - (Gain %*% t(sForP)))
-    
+    # manifestly symmetric form
+    # sCon[i,,] <- (sFor[i,,] - (Gain %*% t(sForP)))
+    # manifestly positive-definite form (Joseph)
+    JOSEPH <- IdH - (Gain %*% t(P))
+    sCon[i,,] <- (JOSEPH %*% sFor[i,,] %*% t(JOSEPH))
+    if(error[i]<Inf & error[i]>0) { sCon[i,,] <- sCon[i,,] + (Gain %*% ERROR %*% t(Gain)) } # otherwise Gain==0
+    # this is supposed to be more stable numerically
+      
     # update forcast estimates for next iteration
     if(i<n)
     {
@@ -255,8 +278,13 @@ kalman <- function(z,u,dt,CTMM,error=rep(0,nrow(z)),smooth=FALSE,sample=FALSE,we
     L <- sCon[i,,] %*% t(Green[i+1,,]) %*% solve(sFor[i+1,,])
     
     # overwrite concurrent estimate with smoothed estimate
+    # RTS smoother
     zCon[i,,] <- zCon[i,,] + L %*% (zCon[i+1,,]-zFor[i+1,,])
-    sCon[i,,] <- sCon[i,,] + L %*% (sCon[i+1,,]-sFor[i+1,,]) %*% t(L)
+    # manifestly symmetric backsolver
+    # sCon[i,,] <- sCon[i,,] + L %*% (sCon[i+1,,]-sFor[i+1,,]) %*% t(L)
+    # manifestly PSD backsolver
+    JOSEPH <- IdH - (L %*% Green[i+1,,])
+    sCon[i,,] <- (JOSEPH %*% sCon[i,,] %*% t(JOSEPH)) + (L %*% (sCon[i+1,,]+Sigma[i+1,,]) %*% t(L))
     
     #################
     # RANDOM SAMPLER
@@ -293,7 +321,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,verbose=FALSE)
   AXES <- length(CTMM$axes)
   
   # prepare model for numerics
-  CTMM <- ctmm.prepare(data,CTMM)
+  CTMM <- ctmm.prepare(data,CTMM,REML=REML)
   
   range <- CTMM$range
   isotropic <- CTMM$isotropic
@@ -542,6 +570,10 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,verbose=FALSE)
   # isotropic reduction if possible
   if(length(dim(DOF.mu))==2 && AXES==2) { if(DOF.mu[1,1]==DOF.mu[2,2] && DOF.mu[1,2]==0) { DOF.mu <- mean(diag(DOF.mu)) } }
   
+  # mean structure terms
+  if(REML) { loglike <- loglike + CTMM$REML.loglike }
+  CTMM$REML.loglike <- NULL
+  
   if(verbose)
   {
     # assign variables
@@ -567,10 +599,13 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,verbose=FALSE)
 
 ###########################################################
 # FIT MODEL WITH LIKELIHOOD FUNCTION (convenience wrapper to optim)
-ctmm.fit <- function(data,CTMM=ctmm(),REML=FALSE,control=list(maxit=.Machine$integer.max),...)
+ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(maxit=.Machine$integer.max),...)
 {
   # clean/validate
   CTMM <- ctmm.ctmm(CTMM)
+  
+  if(method=="REML") { REML <- TRUE }
+  else { REML <- FALSE }
   
   # basic info
   n <- length(data$t)
@@ -598,6 +633,9 @@ ctmm.fit <- function(data,CTMM=ctmm(),REML=FALSE,control=list(maxit=.Machine$int
     drift <- get(CTMM$mean)
     U <- drift(data$t,CTMM)
     CTMM$mean.vec <- U
+    
+    UU <- t(U) %*% U
+    CTMM$REML.loglike <- (length(axes)/2)*(log(det(UU)) + ncol(U)*log(2*pi))
   }
   
   # CAVEATS
@@ -634,6 +672,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),REML=FALSE,control=list(maxit=.Machine$int
   NAMES <- NULL
   TAU <- NULL
   CIRCLE <- NULL
+  ERROR <- NULL
   calPARS <- function()
   {
     if(length(SIGMA)==1) { NAMES <<- "area" }
@@ -652,16 +691,16 @@ ctmm.fit <- function(data,CTMM=ctmm(),REML=FALSE,control=list(maxit=.Machine$int
       NAMES <<- c(NAMES,"circle")
       CIRCLE <<- length(SIGMA) + length(TAU) + 1 
     }
+    
+    # If error is an error estimate rather than TRUE, and if there is no error annotated, then we will fit error
+    if(error & UERE<3)
+    {
+      NAMES <<- c(NAMES,"error")
+      ERROR <<- length(SIGMA) + length(TAU) + length(CIRCLE) + 1
+    }
   }
   calPARS()
 
-  # PARAMETERS THAT WE WILL NOT DIFFERENTIATE WRT
-  # If error is an error estimate rather than TRUE, and if there is no error annotated, then we will fit error
-  if(error && UERE<3)
-  { ERROR <- length(SIGMA) + length(TAU) + length(CIRCLE) + 1 }
-  else
-  { ERROR <- NULL }
-  
   # numerically fit parameters
   PARS <- length(SIGMA) + length(TAU) + length(CIRCLE) + length(ERROR)
   # degrees of freedom, including the mean, variance/covariance, tau, and error model
@@ -704,24 +743,56 @@ ctmm.fit <- function(data,CTMM=ctmm(),REML=FALSE,control=list(maxit=.Machine$int
     if(length(ERROR))
     {
       # fitting the error/variance ratio and not absolute error
+      # in this case, one overall variance of motion + error is fit analytically
       if(isotropic)
       {
         pars <<- c(pars,error/sqrt(sigma[1]))
         parscale <<- c(parscale,error/sqrt(sigma[1]))
       }
-      else
+      else # regular error fitting
       {
         pars <<- c(pars,error)
         parscale <<- c(parscale,error)
       }
     }
+    # names(pars) <<- NAMES
   }
   calpars()
+  
+  cleanpars <- function(p)
+  {
+    if(length(SIGMA))
+    {
+      # enforce positivity
+      if(isotropic)
+      { p[SIGMA] <- abs(p[SIGMA]) }
+      else
+      { p[SIGMA][-3] <- abs(p[SIGMA][-3]) }
+    }
+    
+    if(length(TAU))
+    {
+      # enforce positivity
+      p[TAU] <- abs(p[TAU])
+      
+      if(!CPF) { p[TAU] <- sort(p[TAU],decreasing=TRUE) }
+    }
+    
+    if(length(ERROR))
+    {
+      # enforce positivity
+      p[ERROR] <- abs(p[ERROR])
+    }
+    
+    return(p)
+  }
   
   # OPTIMIZATION FUNCTION (fn)
   # optional argument lengths: TAU, TAU+1, TAU+SIGMA
   fn <- function(p)
   {
+    p <- cleanpars(p)
+    
     # Fix sigma if provided, up to degree provided
     if(length(SIGMA)==0)
     { sigma <- NULL }
@@ -729,9 +800,6 @@ ctmm.fit <- function(data,CTMM=ctmm(),REML=FALSE,control=list(maxit=.Machine$int
     {
       # write over inherited sigma with any specified parameters
       sigma[SIGMAV] <- p[SIGMA]
-      
-      # enforce positivity
-      if(!isotropic) { sigma[-3] <- abs(sigma[-3]) }
       
       # for some reason optim jumps to crazy big parameters
       if(!isotropic && !is.na(sigma[1]) && sigma[1]*exp(abs(sigma[2])/2)==Inf) { return(Inf) }
@@ -747,32 +815,23 @@ ctmm.fit <- function(data,CTMM=ctmm(),REML=FALSE,control=list(maxit=.Machine$int
     {
       tau <- p[TAU]
       
-      # enforce positivity
-      tau <- abs(tau)
-      
-      if(!CPF) { tau <- sort(tau,decreasing=TRUE) }
-      
       if(!range) { tau <- c(Inf,tau) }
     }
     
     # fix circulation from par
-    if(length(CIRCLE)>0) { circle <- 1/p[CIRCLE] }
+    if(length(CIRCLE))
+    { circle <- 1/p[CIRCLE] }
 
     # fix error from par
-    if(length(ERROR)>0)
-    {
-      error <- p[ERROR]
-      
-      # enforce positivity
-      error <- abs(error)
-    }
+    if(length(ERROR))
+    { error <- p[ERROR] }
 
     # overwrite modified parameters inside this function's environment only
     CTMM$tau <- tau
     CTMM$circle <- circle
     CTMM$sigma <- covm(sigma,isotropic=isotropic,axes=axes)
     CTMM$error <- error
-    
+
     return(-ctmm.loglike(data,CTMM,REML=REML))
   }
   
@@ -809,48 +868,57 @@ ctmm.fit <- function(data,CTMM=ctmm(),REML=FALSE,control=list(maxit=.Machine$int
       pars <- stats::optim(par=pars,fn=fn,control=control,...)$par
     }
     
+    # fix par positivity
+    pars[TAU] <- abs(pars[TAU])
+    if(length(SIGMA) & !isotropic) { pars[SIGMA[-3]] <- abs(pars[SIGMA[-3]]) }
+    if(length(ERROR)) { pars[ERROR] <- abs(pars[ERROR]) }
+    
     # write best estimates over initial guess
-    tau <- abs(pars[TAU])
-    if(!range){ tau <- c(Inf,tau) }
-    
-    # save circulation if numerically optimized
-    if(circle)
+    store.pars <- function(pars)
     {
-      if(pars[CIRCLE])
-      { circle <- 1/pars[CIRCLE] }
+      pars <- cleanpars(pars)
+      
+      tau <<- pars[TAU]
+      if(!range){ tau <<- c(Inf,tau) }
+      
+      # save circulation if numerically optimized
+      if(circle)
+      {
+        if(pars[CIRCLE])
+        { circle <<- 1/pars[CIRCLE] }
+        else
+        { circle <<- FALSE }
+        # In case ML circulation is zero, deactivate it in the model
+      }
+      
+      # save sigma if numerically optimized
+      if(length(SIGMA))
+      { sigma[SIGMAV] <<- pars[SIGMA] }
       else
-      { circle <- FALSE }
-      # In case ML circulation is zero, deactivate it in the model
+      { sigma <<- NULL }
+      
+      # save error magnitude if modeled
+      if(length(ERROR)) { error <<- pars[ERROR] }
+      
+      CTMM$tau <<- tau
+      CTMM$circle <<- circle
+      CTMM$sigma <<- covm(sigma,isotropic=isotropic,axes=axes)
+      CTMM$error <<- error
+      
+      # verbose ML information
+      CTMM <<- ctmm.loglike(data,CTMM,REML=REML,verbose=TRUE)
     }
+    store.pars(pars)
     
-    # save sigma if numerically optimized
-    if(length(SIGMA))
-    {
-      sigma[SIGMAV] <- pars[SIGMA]
-      # enforce positivity
-      if(!isotropic) { sigma[-3] <- abs(sigma[-3]) }
-    }
-    else
-    { sigma <- NULL }
-    
-    # save error magnitude if modeled
-    if(length(ERROR)) { error <- abs(pars[ERROR]) }
-    # if that was just the relative error ... when do I fix that !!!
-
-    CTMM$tau <- tau
-    CTMM$circle <- circle
-    CTMM$sigma <- covm(sigma,isotropic=isotropic,axes=axes)
-    CTMM$error <- error
-    
-    # verbose ML information
-    CTMM <- ctmm.loglike(data,CTMM,REML=REML,verbose=TRUE)
-    
-    # calculate full sigma-tau uncertainty numerically
+    # need to differentiate, no longer solve sigma analytically
     sigma <- CTMM$sigma@par
     SIGMA <- 1:(if(isotropic){1}else{3})
     SIGMAV <- 1:(if(isotropic){1}else{3})
     calPARS()
-    ERROR <- NULL
+    # if error was just the relative error, then convert back
+    if(length(ERROR) & isotropic) { error <- error * sqrt(sigma[1]) }
+    # ERROR <- NULL # now necessary to include for REML
+    
     calpars()
     
     hess <- numDeriv::hessian(fn,pars)
@@ -859,6 +927,86 @@ ctmm.fit <- function(data,CTMM=ctmm(),REML=FALSE,control=list(maxit=.Machine$int
     grad <- numDeriv::grad(fn,pars,side=side)
     # robust covariance calculation
     CTMM$COV <- cov.loglike(hess,grad)
+    names(CTMM$COV) <- list(NAMES,NAMES)
+    
+    # perturbative correction
+    if(grepl("pREML",method))
+    {
+      COV <- CTMM$COV
+      pNAMES <- names(pars)
+      
+      # parameter correction
+      REML <- TRUE
+      grad <- numDeriv::grad(fn,pars,side=side) # fn is -loglike
+      d.pars <- -c(COV %*% grad) # COV is -1/Hessian, grad is of -loglike
+
+      # gradient transformations
+      # Jacobian
+      J <- diag(length(pars))
+      dimnames(J) <- list(pNAMES,pNAMES)
+      if(method=="pREML2")
+      {
+        # precision transformation
+        J["area","area"] <- -1/pars["area"]^2
+      }
+      else if(method=="pREML3")
+      {
+        # logarithmic transformation
+        J["area","area"] <- 1/pars["area"]
+      }
+      
+      # final perturbation
+      d.pars <- c(J %*% d.pars)
+      
+      # coordinate transformations
+      if(method=="pREML2")
+      {
+        # variance-precision transformation
+        pars["area"] <- 1/pars["area"]
+      }
+      else if(method=="pREML3")
+      {
+        # logarithmic transformation
+        pars["area"] <- log(pars["area"])
+      }
+      
+      # increment transformed parameters
+      pars <- pars + d.pars
+      
+      # transform back
+      names(pars) <- pNAMES
+      if(method=="pREML2")
+      {
+        # precision-variance transformation
+        pars["area"] <- 1/pars["area"]
+      }
+      else if(method=="pREML3")
+      {
+        # logarithmic transformation
+        pars["area"] <- exp(pars["area"])
+      }
+      
+      # store parameter correction
+      store.pars(pars)
+      
+      # covariance correction
+      # quadratic term
+      REML <- TRUE
+      hess <- numDeriv::hessian(fn,pars)
+      
+      CTMM$COV <- 2*COV - (COV %*% hess %*% COV)
+
+      # cubic term, if evaluation is at MLE and not pREMLE
+      # REML <- FALSE
+      # P <- nrow(COV)
+      # hess <- function(x) { array( numDeriv::hessian(fn,pars+d.pars*x) , P^2 ) }
+      # grad <- array( numDeriv::jacobian(hess,0) , c(P,P) )
+      # CTMM$COV <- CTMM$COV - (COV %*% grad %*% COV)
+      # 
+      # store parameter correction
+      # store.pars(pars+d.pars) # fn is -loglike
+    }
+    
     # convert from circulation frequency to circulation period
     if(circle)
     { 
@@ -866,16 +1014,10 @@ ctmm.fit <- function(data,CTMM=ctmm(),REML=FALSE,control=list(maxit=.Machine$int
       CTMM$COV[CIRCLE,] <- g*CTMM$COV[CIRCLE,]
       CTMM$COV[,CIRCLE] <- g*CTMM$COV[,CIRCLE]
     }
+    
     dimnames(CTMM$COV) <- list(NAMES,NAMES)
   }
   
-  # these fixed terms were not included in ctmm.loglike!!!
-  if(REML)
-  {
-    UU <- t(U) %*% U
-    CTMM$loglike <- CTMM$loglike + (length(axes)/2)*(log(det(UU)) + ncol(U)*log(2*pi))
-  }
-
   CTMM$AICc <- (2*k-2*CTMM$loglike) + 2*k*(k+1)/(n-k-1)
 
   return(CTMM)

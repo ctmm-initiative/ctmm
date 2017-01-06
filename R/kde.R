@@ -51,8 +51,11 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,precisi
   error <- 2^(log(.Machine$double.eps,2)*precision)
   
   if(fast & is.null(dt))
-  { dt <- min(diff(data$t)) } # safe choice
-  #{ dt <- stats::median(diff(data$t)) }
+  {
+    dt <- min(diff(data$t))
+    UNITS <- unit(dt,"time")
+    message("Default grid size of ",dt/UNITS$scale," ",UNITS$name," chosen for bandwidth(...,fast=TRUE).")
+  }
   
   if(class(weights)=='numeric' || class(weights)=='integer' || !weights) # fixed weight lag information
   {

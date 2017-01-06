@@ -29,7 +29,7 @@ and then edit the data frame before converting it into a `telemetry` object for 
 ```
 yourAnimals <- as.telemetry(yourAnimalsDF)
 ```
-`as.telemetry` also works on `Move` objects, which can be useful as the `move` package interfaces directly with MoveBank through `R`.
+`as.telemetry` also works on `Move` objects, which can be useful as the `move` package interfaces directly with MoveBank through `R` (see `help(move::getMovebankData)`).
 
 For most species, the default two-point equidistant projection will be fine, however you can provide any PROJ.4 formatted projection with the `projection` argument (see `help(as.telemetry)`). A single fixed projection should be used if you are going to plot groups of individuals that span multiple MoveBank files. This is done by default if multiple individuals are included in a single data frame.
 
@@ -208,6 +208,8 @@ FITS$ERROR <- ctmm.fit(DATA,GUESS)
 # model improvement
 summary(FITS)
 ```
+
+Also, see `help(uere)` if you have the benefit of calibration data.
 
 ### Cycles and Periodicities
 

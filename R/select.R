@@ -73,8 +73,6 @@ summary.ctmm <- function(object,level=0.95,level.UD=0.95,...)
 # Summarize results
 summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, ...)
 {
-  if(is.na(level.UD)) { level.UD <- 1-exp(-1) } # normal mean area
-  
   alpha <- 1-level
   alpha.UD <- 1-level.UD
   
@@ -124,6 +122,7 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, ...)
   if(continuity(object)>1)
   {
     COV <- area2var(object,MEAN=TRUE)
+    COV <- rm.name(COV,"error")
     
     # RMS velocity
     if(CPF)
@@ -167,7 +166,27 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, ...)
     # rms <- sqrt(norm.ci(ms,var.ms,alpha=alpha))
     
     par <- rbind(par,rms)
-    rownames(par)[P+1] <- "speed"
+    rownames(par)[nrow(par)] <- "speed"
+  }
+  
+  # did we estimate errors?
+  if("error" %in% rownames(object$COV))
+  {
+    error <- object$error
+    VAR <- object$COV["error","error"]
+    # convert to chi^2
+    VAR <- (2*error)^2 * VAR
+    error <- error^2
+    # CIs
+    error <- chisq.ci(error,COV=VAR,alpha=alpha)
+    # back to meters/distance
+    error <- sqrt(error)
+    unit.list <- unit(error,"length")
+    name <- c(name,unit.list$name)
+    scale <- c(scale,unit.list$scale)
+    
+    par <- rbind(par,error)
+    rownames(par)[nrow(par)] <- "error"
   }
   
   # Fix unit choice
