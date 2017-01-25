@@ -12,6 +12,7 @@
 \item{Do not save workspaces between sessions. They can become corrupted.}
 \item{Upgrade \code{R} to the latest version and update all of your packages.}
 \item{Check the \href{http://www2.physics.umd.edu/~hfleming/}{\code{ctmm} website} to see if there is a beta release that fixes any bugs.}
+\item{Check the \href{https://groups.google.com/forum/#!forum/ctmm-r}{user's group \code{ctmm}}.}
 }
 \bold{Specific issues:}
 \describe{
@@ -20,7 +21,7 @@
 \item{The \code{manipulate} panel does not popup in \code{\link{variogram.fit}} or \code{\link{zoom}}}{Click the gear icon in the upper-left corner of the plot window.}
 \item{There is no save button in \code{\link{variogram.fit}}}{Maximize the plot window and/or increase your screen resolution.}
 \item{\code{plot} complains about the datatype or has weird errors}{Namespace collision sometimes occurs from \code{raster} or \code{sp} against \code{move} and \code{ctmm}. Restart \code{R} and only load the \code{ctmm} package.}
-\item{Infinite recursion error}{\code{ctmm} has no recursive functions, so I am not exactly sure what causes this error, but it only occurs with certain versions of \code{R} on certain computer architectures. There are several solutions that have worked for people, including restarting \code{R} in a fresh session and updating their software:
+\item{Infinite recursion error}{\code{ctmm} has no recursive functions, so I am not exactly sure what causes this error, but it only occurs with certain versions of \code{R} on certain computer architectures. There are several solutions that have worked for people, including restarting \code{R} in a fresh session and updating their software. Alternatively:
 \enumerate{
 \item{Reboot your computer.}
 \item{Increase the allowed number of nested expressions within \code{R} via \code{options(expressions=10000)} or some other large number.}

@@ -927,7 +927,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(maxit=.Machine$in
     grad <- numDeriv::grad(fn,pars,side=side)
     # robust covariance calculation
     CTMM$COV <- cov.loglike(hess,grad)
-    names(CTMM$COV) <- list(NAMES,NAMES)
+    dimnames(CTMM$COV) <- list(NAMES,NAMES)
     
     # perturbative correction
     if(grepl("pREML",method))

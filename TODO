@@ -1,7 +1,6 @@
 pREML
 * test precision update
 * fix covariance update
-* test pREML error fitting with precision
 * ctmm.fit PARS==0 : MLE, pREML, REML consistency
 
 Aligned Krige UDs
@@ -9,6 +8,7 @@ pregridder composite dimension?
   I don't remember what this note means... :(
 
 LOW HANGING FRUIT & Nagging issues
+* trace feature in ctmm.select and bandwidth
 * links between vignettes and FAQ
 * error correlation in SVF plot
 * don't delete mean off of IOU and BM... need that to Krige I think...
