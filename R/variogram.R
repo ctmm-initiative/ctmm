@@ -477,7 +477,7 @@ svf.func <- function(CTMM,moment=FALSE)
   # no error considered if missing
   COV <- CTMM$COV
   if(is.null(COV))
-  { COV <- diag(0,1+K+(if(circle){1}else{0})) }
+  { COV <- diag(0,1+K+(if(circle){1}else{0})+(if(CTMM$error){1}else{0})) }
   else
   { COV <- area2var(CTMM,MEAN=TRUE) }
     
@@ -530,18 +530,30 @@ svf.func <- function(CTMM,moment=FALSE)
     grad <- function(t) { c(svf(t)/sigma, -sigma*cos(f*t)*acf.grad(t), -(f/circle)*sigma*t*sin(f*t)*acf(t)) }
   }
   
+  # add error term
+  if(CTMM$error)
+  {
+    err.svf <- function(t) { (if(t==0) {0} else {CTMM$error^2}) }
+    GRAD <- function(t) { c(grad(t) , (if(t==0) {0} else {2*CTMM$error}) ) }
+  }
+  else
+  {
+    err.svf <- function(t) { 0 }
+    GRAD <- grad
+  }
+  
   if(moment)
   { drift <- get(CTMM$mean) }
   else
   { drift <- stationary }
   MEAN <- drift@svf(CTMM)
   
-  SVF <- function(t) { svf(t) + MEAN$EST(t) }
+  SVF <- function(t) { svf(t) + err.svf(t) + MEAN$EST(t) }
   
   # variance of SVF
   VAR <- function(t)
   {
-    g <- grad(t)
+    g <- GRAD(t)
     return( (g %*% COV %*% g) + MEAN$VAR(t) )
   }
   
@@ -555,16 +567,26 @@ svf.func <- function(CTMM,moment=FALSE)
 ##########
 plot.svf <- function(lag,CTMM,error=0,alpha=0.05,col="red",type="l",...)
 {
+  # adjust model error to incorporate data HDOP average
+  if(CTMM$error)
+  {
+    if(error==0) { error <- 1 } # default HDOP=1
+    error <- sqrt(error)
+    CTMM$error <- CTMM$error * error
+    
+    if(!is.null(CTMM$COV))
+    {
+      CTMM$COV["error",] <- CTMM$COV["error",] * error
+      CTMM$COV[,"error"] <- CTMM$COV[,"error"] * error
+    }
+  }
+  
   SVF <- svf.func(CTMM,moment=TRUE)
   svf <- SVF$svf
   DOF <- SVF$DOF
-
-  # telemetry error svf
-  error <- CTMM$error^2 * error
-  errf <- function(t){ if(t==0) {0} else {error} }
     
   # point estimate plot
-  SVF <- Vectorize(function(t) { svf(t)+errf(t) })
+  SVF <- Vectorize(function(t) { svf(t) })
   graphics::curve(SVF,from=0,to=lag,n=1000,add=TRUE,col=col,type=type,...)
   
   # confidence intervals if COV provided
@@ -574,8 +596,8 @@ plot.svf <- function(lag,CTMM,error=0,alpha=0.05,col="red",type="l",...)
     
     for(j in 1:length(alpha))
     {
-      svf.lower <- Vectorize(function(t){ svf(t) * CI.lower(DOF(t),alpha[j]) + errf(t) })
-      svf.upper <- Vectorize(function(t){ svf(t) * CI.upper(DOF(t),alpha[j]) + errf(t) })
+      svf.lower <- Vectorize(function(t){ svf(t) * CI.lower(DOF(t),alpha[j]) })
+      svf.upper <- Vectorize(function(t){ svf(t) * CI.upper(DOF(t),alpha[j]) })
       
       graphics::polygon(c(Lags,rev(Lags)),c(svf.lower(Lags),rev(svf.upper(Lags))),col=scales::alpha(col,0.1/length(alpha)),border=NA,...)
     }

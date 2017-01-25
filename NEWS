@@ -1,8 +1,10 @@
-0.3.5 2017-01-04
+0.3.5 2017-01-24
 
   * Added a FAQ page to the documentation help("ctmm-FAQ")
 
   * Bugfix in occurrence method for BM & IOU models
+  
+  * Improved telemetry error support in summary.ctmm and plot.variogram
   
   * as.telemetry more robust to alternative column label capitalizations
   

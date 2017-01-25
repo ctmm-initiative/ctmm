@@ -79,13 +79,16 @@ pull.column <- function(object,NAMES,FUNC=as.numeric)
 {
   # consider alternative spellings of NAMES
   NAMES <- c(NAMES,gsub("[.]","_",NAMES))
-  NAMES <- c(NAMES,tolower(NAMES))
+  NAMES <- tolower(NAMES)
   
-  NAMES <- intersect(NAMES,names(object))
-  if(length(NAMES))
-  { return( FUNC(object[,NAMES[1]]) ) }
-  else
-  { return(NULL) }
+  COLS <- names(object)
+  for(COL in COLS)
+  {
+    if(tolower(COL) %in% NAMES)
+    { return( FUNC(object[,COL]) ) }
+  }
+  # nothing matched
+  return(NULL)
 }
 
 # this assumes a MoveBank data.frame
@@ -120,7 +123,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="GMT",projecti
   {
     if(is.null(UERE))
     {
-      warning("HDOP values found but UERE not specified. See help(\"uere\").")
+      warning("HDOP values found but UERE not specified and will have to be fit. See help(\"uere\").")
       DATA$HDOP <- COL
     }
     else
