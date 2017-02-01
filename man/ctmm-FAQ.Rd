@@ -11,8 +11,9 @@
 \enumerate{
 \item{Do not save workspaces between sessions. They can become corrupted.}
 \item{Upgrade \code{R} to the latest version and update all of your packages.}
+\item{Work through the vignettes \code{vignette("variogram")} and \code{vignette("akde")}.}
 \item{Check the \href{http://www2.physics.umd.edu/~hfleming/}{\code{ctmm} website} to see if there is a beta release that fixes any bugs.}
-\item{Check the \href{https://groups.google.com/forum/#!forum/ctmm-r}{user's group \code{ctmm}}.}
+\item{Check the \href{https://groups.google.com/forum/#!forum/ctmm-user}{\code{ctmm} user's group}.}
 }
 \bold{Specific issues:}
 \describe{
@@ -31,4 +32,4 @@
 }
 }
 
-\author{Chris H. Fleming}
+\author{C. H. Fleming}

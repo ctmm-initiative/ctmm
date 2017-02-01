@@ -6,20 +6,21 @@ Summarize a continuous-time movement model
 }
 \description{ This function returns a list of biologically interesting parameters in human readable format, as derived from a continuous-time movement model.}
 \usage{
-\S3method{summary}{ctmm}(object,level=0.95,level.UD=0.95,...)
+\S3method{summary}{ctmm}(object,level=0.95,level.UD=0.95,units=TRUE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{object}{ A \code{ctmm} movement-model object from the output of \code{ctmm.fit}. }
   \item{level}{ Confidence level for parameter estimates. }
   \item{level.UD}{ Confidence level for the Gaussian home-range area. }
+  \item{units}{Convert result to natural units.}
   \item{...}{Unused options.}
 }
 
 %\details{}
 
 \value{
-If summary is called with a single \code{ctmm} object output from \code{\link{ctmm.fit}}, then a table is returned with low, maximum likelihood, and high estimates for the following possible parameters:
+If summary is called with a single \code{ctmm} object output from \code{\link{ctmm.fit}}, then a list is returned with effective sample size array \code{DOF} and parameter estimate table \code{CI}, with low, maximum likelihood, and high estimates for the following possible parameters:
 \describe{
 \item{\code{tau}}{The autocorrelation timescales.}
 \item{\code{area}}{The Gaussian home-range area, where the point estimate has a significance level of \code{level.UD}. I.e., the core home range is where the animal is located 50\% of the time with \code{level.UD=0.50}.

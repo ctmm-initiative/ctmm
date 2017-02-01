@@ -1,8 +1,12 @@
-0.3.5 2017-01-24
+0.3.5 2017-01-31
 
   * Added a FAQ page to the documentation help("ctmm-FAQ")
 
   * Bugfix in occurrence method for BM & IOU models
+  
+  * unit conversion can now be disabled in summary with units=FALSE argument
+  
+  * added trace option to ctmm.select & bandwidth/akde
   
   * Improved telemetry error support in summary.ctmm and plot.variogram
   

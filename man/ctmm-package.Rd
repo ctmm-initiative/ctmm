@@ -12,15 +12,25 @@ The package is described in Calabrese & Fleming (2016) and its methods are based
 Package: \tab ctmm\cr
 Type: \tab Package\cr
 Version: \tab 0.3.5 \cr
-Date: \tab 2015-01-24 \cr
+Date: \tab 2017-01-31 \cr
 License: \tab GPL-3 \cr
 }
+
+\itemize{
+\item{ \link{ctmm-FAQ} }
+\item{ \href{http://biology.umd.edu/movement.html}{Core team} }
+\item{ \href{http://www2.physics.umd.edu/~hfleming/}{β packages} }
+\item{ \href{https://github.com/chfleming/ctmm}{Github project} }
+\item{ \href{https://cran.r-project.org/web/packages/ctmm/index.html}{CRAN package} }
+\item{ \href{https://groups.google.com/forum/#!forum/ctmm-user}{Google group} }
+}
+
 }
 
 \author{
-Chris H. Fleming and Justin M. Calabrese
+Christen H. Fleming and Justin M. Calabrese
 
-Maintainer: Chris H. Fleming <flemingc@si.edu>
+Maintainer: Christen H. Fleming <flemingc@si.edu>
 }
 \references{
 J. M. Calabrese, C. H. Fleming. (2016). ctmm: an r package for analyzing animal relocation data as a continuous-time stochastic process. \href{http://onlinelibrary.wiley.com/wol1/doi/10.1111/2041-210X.12559/abstract}{Methods in Ecology and Evolution, DOI:10.1111/2041-210X.12559}.
@@ -46,6 +56,8 @@ Estimating where and how animals travel: An optimal framework for path reconstru
 \href{http://onlinelibrary.wiley.com/doi/10.1890/15-1607/full}{Ecology, DOI:10.1890/15-1607}.
 
 G. Péron, C. H. Fleming,  R. C. de Paula, J. M. Calabrese. (2016). Uncovering periodic patterns of space use in animal tracking data with periodograms, including a new algorithm for the Lomb-Scargle periodogram and improved randomization tests. \href{https://movementecologyjournal.biomedcentral.com/articles/10.1186/s40462-016-0084-7}{Movement Ecology, 4:19, DOI:10.1186/s40462-016-0084-7}.
+
+C. H. Fleming, J. M. Calabrese, A new kernel-density estimator for accurate home-range and species-range area estimation, \href{http://onlinelibrary.wiley.com/wol1/doi/10.1111/2041-210X.12673/abstract}{Methods in Ecology and Evolution, DOI:10.1111/2041-210X.12673 (2016)}.
 }
 
 %~~ Optionally other standard keywords, one per line, from file KEYWORDS in ~~

@@ -45,7 +45,7 @@ lag.DOF <- function(data,dt=NULL,weights=NULL,lag=NULL,FLOOR=NULL,p=NULL)
 ##################################
 # Bandwidth optimizer
 #lag.DOF is an unsupported option for end users
-bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,precision=1/2,PC="Markov",verbose=FALSE)
+bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,precision=1/2,PC="Markov",verbose=FALSE,trace=FALSE)
 {
   n <- length(data$t)
   error <- 2^(log(.Machine$double.eps,2)*precision)
@@ -53,8 +53,11 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,precisi
   if(fast & is.null(dt))
   {
     dt <- min(diff(data$t))
-    UNITS <- unit(dt,"time")
-    message("Default grid size of ",dt/UNITS$scale," ",UNITS$name," chosen for bandwidth(...,fast=TRUE).")
+    if(trace)
+    {
+      UNITS <- unit(dt,"time")
+      message("Default grid size of ",dt/UNITS$scale," ",UNITS$name," chosen for bandwidth(...,fast=TRUE).")
+    }
   }
   
   if(class(weights)=='numeric' || class(weights)=='integer' || !weights) # fixed weight lag information
@@ -186,7 +189,7 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,precisi
       
       SOLVE <- PQP.solve(G,FLOOR=FLOOR,p=p,lag=lag,error=error,PC=PC,IG=IG,MARKOV=MARKOV)
       weights <<- SOLVE$P
-      # message(SOLVE$CHANGES," feasibility assessments @ ",round(SOLVE$STEPS/SOLVE$CHANGES,digits=1)," conjugate gradient steps/assessment")
+      if(trace){ message(SOLVE$CHANGES," feasibility assessments @ ",round(SOLVE$STEPS/SOLVE$CHANGES,digits=1)," conjugate gradient steps/assessment") }
       if(is.null(VMM)) # 2D
       { return( SOLVE$MISE - 2/(2+h^2) + 1/2 ) }
       else # 3D
@@ -862,12 +865,15 @@ CI.UD <- function(object,level.UD=0.95,level=0.95,P=FALSE)
 
 #######################
 # summarize details of akde object
-summary.UD <- function(object,level.UD=0.95,level=0.95,...)
+summary.UD <- function(object,level.UD=0.95,level=0.95,units=TRUE,...)
 {
+  # do we convert base units?
+  if(units) { thresh <- 1 } else { thresh <- Inf }
+  
   area <- CI.UD(object,level.UD,level)
   
   # pretty units
-  unit.info <- unit(area[2],"area")
+  unit.info <- unit(area[2],"area",thresh=thresh)
   name <- unit.info$name
   scale <- unit.info$scale
   

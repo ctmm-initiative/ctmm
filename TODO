@@ -1,14 +1,15 @@
-pREML
-* test precision update
-* fix covariance update
+UPDATE [pREML] TODO
 * ctmm.fit PARS==0 : MLE, pREML, REML consistency
+* document pREML
 
 Aligned Krige UDs
 pregridder composite dimension?
-  I don't remember what this note means... :(
 
 LOW HANGING FRUIT & Nagging issues
-* trace feature in ctmm.select and bandwidth
+* individualized projections
+* 1-point azimuthal equidistant projection quick option
+* plot.telemetry with HDOP & UERE
+* str.ctmm, str.telemetry (print too?)
 * links between vignettes and FAQ
 * error correlation in SVF plot
 * don't delete mean off of IOU and BM... need that to Krige I think...
@@ -16,7 +17,6 @@ LOW HANGING FRUIT & Nagging issues
 * points methods units environment
 * UERE priors from calibration
 * store fixed error in data
-* 1-point azimuthal equidistant projection quick option
 * have summary return a warning on occurrence distributions
 * variogram.list <- mean-lapply-variogram
 * occurrence.list
@@ -24,12 +24,13 @@ LOW HANGING FRUIT & Nagging issues
   + weight by period of data?
 * mean.UD on occurrence objects; +1 DOF
 * simulate.UD
+* Bayesian simulate.ctmm models (not data)
 * krige velocities, activity plot
 * put overlap in vignette after publication
 * predict plot with transparency proportional to uncertainty (Google Earth?)
 * mean.ctmm: list -> iid
 
-PERIODIC
+PERIODIC 0.4.0
 * simulate.telemetry (not pure ctmm)
 * smoother (velocity vector--check)
 * akde... slow exact and fast approximation or block toeplitz matrix
@@ -47,8 +48,6 @@ periodic plot.ctmm
 
 level.UD of summary UD/ctmm return Inf
   test p-value against sample size
-
-effect of errors on variogram, variogram.fit ?
 
 summary on z-axis ctmm.fit might be buggy
 
@@ -113,13 +112,6 @@ or maybe report if NAs are discarded?
 Lapack GE solve -> Lapack PO/SY solve.
 
 as.telemetry option: minimal columns, maximum columns, specified columns to keep
-
-plot.UD without telemetry (generalize)
-plot.telemetry error transparency
-
-overload: print, str
-
-MoveStack import to list of telemetry objects
 
 profile CIs
 
