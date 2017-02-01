@@ -9,7 +9,7 @@ This function calculates the optimal bandwidth matrix (kernel covariance) for a 
 }
 \usage{
 bandwidth(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,
-   dt=NULL,precision=1/2,PC="Markov",verbose=FALSE)
+  dt=NULL,precision=1/2,PC="Markov",verbose=FALSE,trace=FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -22,6 +22,7 @@ bandwidth(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,
   \item{precision}{Fraction of maximum possible digits of precision to target in weight optimization. \code{precision=1/2} results in about 7 decimal digits of precision if the preconditioner is stable.}
   \item{PC}{Preconditioner to use: can be "Markov", "circulant", "IID", or "direct".}
   \item{verbose}{ Optionally return the optimal \code{weights}, effective sample size \code{DOF.H}, and other information along with the bandwidth matrix \code{H}.}
+  \item{trace}{Produce tracing information on the progress of weight optimization.}
 }
 \details{
 The \code{weights} argument can be used to correct fixed sampling bias with a prescribed \code{numeric} array or to correct temporal sampling bias caused by autocorrelation with \code{weights=TRUE}.
@@ -30,7 +31,7 @@ These algorithms have a few options that should be considered if the data are ve
 
 \code{FFT=TRUE} grids the data with grid width \code{dt} and applies FFT algorithms, for a computational cost as low as \eqn{O(n \log n)} with only \eqn{O(n)} function evaluations.
 If no \code{dt} is specified, the minimum sampling interval is used, but \strong{if the data are very irregular, then \code{dt} may need to be several times smaller} to avoid slow down.
-A \code{dt} Insufficient to resolve the details of the sampling schedule will cause an excessive, \eqn{O(n)} number of feasibility assessments.
+A \code{dt} Insufficient to resolve the details of the sampling schedule will cause an excessive, \eqn{O(n)} number of feasibility assessments, which you can check with the \code{trace=TRUE} argument.
 %With the sub-optimal \code{PC="IID"} preconditioner, \code{dt} can be relaxed to the median value, but the computational cost is then increased to \eqn{O(n^2 \log n)}.
 
 \code{FFT=FALSE} uses exact times and has a computational cost as low as \eqn{O(n^2)}, including \eqn{O(n^2)} function evaluations. With \code{PC="direct"} this method will produce a result that is exact to within machine precision, but with a computational cost of \eqn{O(n^3)}.

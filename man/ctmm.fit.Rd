@@ -18,7 +18,7 @@ ctmm.loglike(data,CTMM,REML=FALSE,verbose=FALSE)
 
 ctmm.fit(data,CTMM=ctmm(),method="ML",control=list(maxit=.Machine$integer.max),...)
 
-ctmm.select(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",...)
+ctmm.select(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -38,6 +38,7 @@ ctmm.select(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",...)
   \item{...}{Further arguments passed to \code{ctmm.fit} or \code{\link{optim}}.}
   \item{level}{Attempt to simplify a model if a feature's non-existence falls within this level of confidence interval.}
   \item{IC}{Information criteria used. Only \code{"AICc"} is currently supported.}
+  \item{trace}{Produce tracing information on the progress of model selection.}
 }
 
 \details{
