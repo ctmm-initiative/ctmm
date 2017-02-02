@@ -12,7 +12,7 @@ The package is described in Calabrese & Fleming (2016) and its methods are based
 Package: \tab ctmm\cr
 Type: \tab Package\cr
 Version: \tab 0.3.5 \cr
-Date: \tab 2017-01-31 \cr
+Date: \tab 2017-02-01 \cr
 License: \tab GPL-3 \cr
 }
 
@@ -21,7 +21,7 @@ License: \tab GPL-3 \cr
 \item{ \href{http://biology.umd.edu/movement.html}{Core team} }
 \item{ \href{http://www2.physics.umd.edu/~hfleming/}{β packages} }
 \item{ \href{https://github.com/chfleming/ctmm}{Github project} }
-\item{ \href{https://cran.r-project.org/web/packages/ctmm/index.html}{CRAN package} }
+\item{ \href{ https://CRAN.R-project.org/package=ctmm}{CRAN package} }
 \item{ \href{https://groups.google.com/forum/#!forum/ctmm-user}{Google group} }
 }
 
@@ -33,7 +33,7 @@ Christen H. Fleming and Justin M. Calabrese
 Maintainer: Christen H. Fleming <flemingc@si.edu>
 }
 \references{
-J. M. Calabrese, C. H. Fleming. (2016). ctmm: an r package for analyzing animal relocation data as a continuous-time stochastic process. \href{http://onlinelibrary.wiley.com/wol1/doi/10.1111/2041-210X.12559/abstract}{Methods in Ecology and Evolution, DOI:10.1111/2041-210X.12559}.
+J. M. Calabrese, C. H. Fleming. (2016). ctmm: an R package for analyzing animal relocation data as a continuous-time stochastic process. \href{http://onlinelibrary.wiley.com/wol1/doi/10.1111/2041-210X.12559/abstract}{Methods in Ecology and Evolution, DOI:10.1111/2041-210X.12559}.
 
 C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, and W. F. Fagan. (2014).
 From fine-scale foraging to home ranges: A semi-variance approach to identifying movement modes across spatiotemporal scales.

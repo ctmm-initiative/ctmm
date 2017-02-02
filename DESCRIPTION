@@ -1,9 +1,17 @@
 Encoding: UTF-8
 Package: ctmm
 Version: 0.3.5
-Date: 2017-01-31
+Date: 2017-02-01
 Title: Continuous-Time Movement Modeling
-Authors@R: as.person(c("Christen H. Fleming <flemingc@si.edu> [aut, cre]","Justin M. Calabrese <calabresej@si.edu> [aut]","Kevin Winner [ctb]","Guillaume Péron [ctb]","Bart Kranstauber [ctb]","Eliezer Gurarie [ctb]","Kamran Safi [ctb]","Paul C. Cross [dtc]","Thomas Mueller [dtc]"))
+Authors@R: c(person(c("Christen","H."),"Fleming",email="flemingc@si.edu",role=c("aut","cre")),
+             person(c("Justin","M."),"Calabrese",email="calabresej@si.edu",role="aut"),
+             person("Kevin","Winner",role="ctb"),
+             person("Guillaume","Péron",role="ctb"),
+             person("Bart","Kranstauber",role="ctb"),
+             person("Eliezer","Gurarie",role="ctb"),
+             person("Kamran","Safi",role="ctb"),
+             person(c("Paul","C."),"Cross",role="dtc"),
+             person("Thomas","Mueller",role="dtc"))
 URL: http://www2.physics.umd.edu/~hfleming/
 Depends: R (>= 3.3.0)
 Imports: expm, graphics, grDevices, manipulate, MASS, methods, numDeriv, pbivnorm, raster, rgdal, scales, stats, utils

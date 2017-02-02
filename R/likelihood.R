@@ -944,48 +944,16 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(maxit=.Machine$in
       # Jacobian
       J <- diag(length(pars))
       dimnames(J) <- list(pNAMES,pNAMES)
-      if(method=="pREML2")
-      {
-        # precision transformation
-        J["area","area"] <- -1/pars["area"]^2
-      }
-      else if(method=="pREML3")
-      {
-        # logarithmic transformation
-        J["area","area"] <- 1/pars["area"]
-      }
-      
+
       # final perturbation
       d.pars <- c(J %*% d.pars)
-      
-      # coordinate transformations
-      if(method=="pREML2")
-      {
-        # variance-precision transformation
-        pars["area"] <- 1/pars["area"]
-      }
-      else if(method=="pREML3")
-      {
-        # logarithmic transformation
-        pars["area"] <- log(pars["area"])
-      }
       
       # increment transformed parameters
       pars <- pars + d.pars
       
       # transform back
       names(pars) <- pNAMES
-      if(method=="pREML2")
-      {
-        # precision-variance transformation
-        pars["area"] <- 1/pars["area"]
-      }
-      else if(method=="pREML3")
-      {
-        # logarithmic transformation
-        pars["area"] <- exp(pars["area"])
-      }
-      
+
       # store parameter correction
       store.pars(pars)
       
@@ -995,16 +963,6 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(maxit=.Machine$in
       hess <- numDeriv::hessian(fn,pars)
       
       CTMM$COV <- 2*COV - (COV %*% hess %*% COV)
-
-      # cubic term, if evaluation is at MLE and not pREMLE
-      # REML <- FALSE
-      # P <- nrow(COV)
-      # hess <- function(x) { array( numDeriv::hessian(fn,pars+d.pars*x) , P^2 ) }
-      # grad <- array( numDeriv::jacobian(hess,0) , c(P,P) )
-      # CTMM$COV <- CTMM$COV - (COV %*% grad %*% COV)
-      # 
-      # store parameter correction
-      # store.pars(pars+d.pars) # fn is -loglike
     }
     
     # convert from circulation frequency to circulation period
