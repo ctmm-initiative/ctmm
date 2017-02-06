@@ -1,5 +1,5 @@
 UPDATE [pREML] TODO
-* make ctmm.select robust to use MLE guesses
+* make ctmm.select robust to use MLE guesses (through R environments?)
 * ctmm.fit PARS==0 : MLE, pREML, REML consistency
 * document pREML
 
@@ -7,6 +7,8 @@ Aligned Krige UDs
 pregridder composite dimension?
 
 LOW HANGING FRUIT & Nagging issues
+* basic trace option for ctmm.fit
+* parallelize ctmm.select
 * individualized projections
 * 1-point azimuthal equidistant projection quick option
 * plot.telemetry with HDOP & UERE

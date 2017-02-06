@@ -77,15 +77,18 @@ Move2CSV <- function(object,timeformat="",timezone="GMT",projection=NULL,UERE=NU
 # pull out a column with different possible names
 pull.column <- function(object,NAMES,FUNC=as.numeric)
 {
-  # consider alternative spellings of NAMES
-  NAMES <- c(NAMES,gsub("[.]","_",NAMES))
-  NAMES <- tolower(NAMES)
+  # consider alternative spellings of NAMES, but preserve order (preference) of NAMES
+  COPY <- NULL
+  for(NAME in NAMES)
+  { COPY <- c(COPY,unique(c(NAME,gsub("[.]","_",NAME)))) }
+  NAMES <- tolower(COPY) # all lower case
   
-  COLS <- names(object)
-  for(COL in COLS)
+  COLS <- names(object) # already lower case
+  
+  for(NAME in NAMES)
   {
-    if(tolower(COL) %in% NAMES)
-    { return( FUNC(object[,COL]) ) }
+    if(NAME %in% COLS)
+    { return( FUNC(object[,NAME]) ) }
   }
   # nothing matched
   return(NULL)
@@ -94,6 +97,9 @@ pull.column <- function(object,NAMES,FUNC=as.numeric)
 # this assumes a MoveBank data.frame
 as.telemetry.data.frame <- function(object,timeformat="",timezone="GMT",projection=NULL,UERE=NULL,...)
 {
+  # make column names canonicalish
+  names(object) <- tolower(names(object))
+  
   # as.POSIXct is effed up, so work around
   if(timeformat=="") { DATA <- as.POSIXct(object$timestamp,tz=timezone) }
   else { DATA <- as.POSIXct(object$timestamp,tz=timezone,format=timeformat) }
