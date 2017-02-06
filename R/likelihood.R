@@ -937,6 +937,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(maxit=.Machine$in
       
       # parameter correction
       REML <- TRUE
+      #ML.grad <- grad # save old ML gradient
       grad <- numDeriv::grad(fn,pars,side=side) # fn is -loglike
       d.pars <- -c(COV %*% grad) # COV is -1/Hessian, grad is of -loglike
 
@@ -962,7 +963,9 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(maxit=.Machine$in
       REML <- TRUE
       hess <- numDeriv::hessian(fn,pars)
       
-      CTMM$COV <- 2*COV - (COV %*% hess %*% COV)
+      # should I use ML.grad here?
+      CTMM$COV <- cov.loglike(hess,grad)
+      #CTMM$COV <- 2*COV - (COV %*% hess %*% COV)
     }
     
     # convert from circulation frequency to circulation period

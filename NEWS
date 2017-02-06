@@ -1,14 +1,20 @@
+0.3.6 2017-02-06
+
+  * Reinstated column name preferences in as.telemetry
+  
+  * more robust CIs for pREML
+
 0.3.5 2017-02-01
 
-  * Added a FAQ page to the documentation help("ctmm-FAQ")
+  * added a FAQ page to the documentation help("ctmm-FAQ")
 
-  * Bugfix in occurrence method for BM & IOU models
+  * bugfix in occurrence method for BM & IOU models
   
   * unit conversion can now be disabled in summary with units=FALSE argument
   
   * added trace option to ctmm.select & bandwidth/akde
   
-  * Improved telemetry error support in summary.ctmm and plot.variogram
+  * improved telemetry error support in summary.ctmm and plot.variogram
   
   * as.telemetry more robust to alternative column label capitalizations
   
@@ -48,11 +54,11 @@
 
 0.3.3 2016-09-05
 
-  * Improved import of 'move' objects
+  * improved import of 'move' objects
 
-  * Preliminary 3D AKDE support, debiased
+  * preliminary 3D AKDE support, debiased
 
-  * New method predict for ctmm objects
+  * new method predict for ctmm objects
   
   * akde now supports smoothing errors
 
@@ -68,9 +74,9 @@
 
 0.3.2 2016-05-12
 
-  * New function overlap for stationary Gaussian distributions and KDEs
+  * new function overlap for stationary Gaussian distributions and KDEs
 
-  * New function uere calculates UERE from calibration data
+  * new function uere calculates UERE from calibration data
   
   * akde debias argument removes most bias from area estimtes, now default
   
@@ -80,15 +86,15 @@
   
   * periodic mean function option for ctmm, ctmm.fit, ctmm.select, plot.variogram, summary (not yet documented)
   
-  * New method residuals for ctmm objects
+  * new method residuals for ctmm objects
 
   * ctmm.select now only considers likely model modifications
   
   * DOFs now returned in summary
 
-  * New methods [.telemetry, [.variogram, [.periodogram, subset.periodogram
+  * new methods [.telemetry, [.variogram, [.periodogram, subset.periodogram
   
-  * Methods for zoom, raster, writeShapefile now properly assigned to generics
+  * methods for zoom, raster, writeShapefile now properly assigned to generics
 
   * new plot.periodogram option max
   
@@ -130,7 +136,7 @@
   
 0.3.0 2015-11-26
 
-  * New function "occurrence" to estimate occurrence distributions
+  * new function "occurrence" to estimate occurrence distributions
   
   * "akde" & "occurrence" class objects generalized to "UD" class
 
@@ -138,13 +144,13 @@
 
   * AKDE= and *.HR= arguments generalized to UD= and *.UD=
 
-  * New basic telemetry error functionality in ctmm, ctmm.fit
+  * new basic telemetry error functionality in ctmm, ctmm.fit
 
-  * New function ctmm.select
+  * new function ctmm.select
 
-  * New methods subset.telemetry and subset.variogram
+  * new methods subset.telemetry and subset.variogram
 
-  * Fixed a bug in the uncertainty report of uncorrelated processes
+  * fixed a bug in the uncertainty report of uncorrelated processes
   
   * ctmm.fit is now much faster by specifying a reasonable parscale for optim 
 
@@ -152,11 +158,11 @@
 
 0.2.9 2015-10-13
 
-  * Fixed a rare condition in ctmm.fit where solve would fail on correlated errors
+  * fixed a rare condition in ctmm.fit where solve would fail on correlated errors
 
-  * Multiscale variogram and mean variogram example in vignette
+  * multiscale variogram and mean variogram example in vignette
 
-  * New data example Mongolian gazelle
+  * new data example Mongolian gazelle
 
   * new fast option for periodogram
   
@@ -182,13 +188,13 @@
 
   * CRAN check compliance achieved.
   
-  * All methods (plot, mean, summary, simulate) can and must be run without class extensions.
+  * all methods (plot, mean, summary, simulate) can and must be run without class extensions
   
-  * Argument names no longer clash with function names and are more explicit about their object class.
+  * argument names no longer clash with function names and are more explicit about their object class
 
 0.2.6 2015-07-17
 
-  * Export bugfixes
+  * export bugfixes
 
 0.2.5 2015-07-14
 
@@ -196,41 +202,41 @@
   
 0.2.4 2015-06-28
 
-  * Cleaned up and labeled tau parameter arrays
+  * cleaned up and labeled tau parameter arrays
 
-  * Implemented Workaround for when subset demotes S4 objects to S3 objects
+  * implemented Workaround for when subset demotes S4 objects to S3 objects
 
   * plot.telemetry now enforces asp=1 even with xlim/ylim arguments
 
 0.2.3 2015-06-19
 
-  * New function summary.telemetry
+  * new function summary.telemetry
 
-  * Bugfix in as.telemetry for data$t
+  * bugfix in as.telemetry for data$t
   
-  * Bugfix in ctmm.loglike for some cases with numeric underflow
+  * bugfix in ctmm.loglike for some cases with numeric underflow
 
   * periodogram and plot.periodogram can now check for spurious periodicities
   
-  * Minimal support for BM and IOU motion
+  * minimal support for BM and IOU motion
 
 0.2.2 2015-05-21
 
-  * New functions periodogram, plot.periodogram
+  * new functions periodogram, plot.periodogram
 
 0.2.1 2015-05-08
 
-  * New function SpatialPoints.telemetry returns SpatialPoints object from telemetry data
+  * new function SpatialPoints.telemetry returns SpatialPoints object from telemetry data
 
-  * New function SpatialPolygonsDataFrame.akde returns akde home-range contour SpatialPolygons objects from akde object
+  * new function SpatialPolygonsDataFrame.akde returns akde home-range contour SpatialPolygons objects from akde object
 
-  * New function writeShapefile.akde writes akde home-range contours to ESRI shapefile
+  * new function writeShapefile.akde writes akde home-range contours to ESRI shapefile
 
-  * New function raster.akde returns akde pdf raster object
+  * new function raster.akde returns akde pdf raster object
 
-  * New function summary.akde returns HR area of AKDE
+  * new function summary.akde returns HR area of AKDE
 
-  * Fixed bad CI in plot.telemetry model option
+  * fixed bad CI in plot.telemetry model option
 
   * as.telemetry now takes a timezone argument for as.POSIXct and defaults to UTC
 
@@ -238,11 +244,11 @@
 
 0.2.0 2015-04-27
   
-  * Vignettes "variogram" and "akde"
+  * vignettes "variogram" and "akde"
 
-  * New function as.telemetry imports MoveBank formatted csv data and returns telemetry objects
+  * new function as.telemetry imports MoveBank formatted csv data and returns telemetry objects
 
-  * New function variogram.zoom plots a variogram with zoom slider
+  * new function variogram.zoom plots a variogram with zoom slider
 
   * variogram.fit and variogram.zoom default to a logarithmic-scale zoom slider, which requires much less fiddling
 
