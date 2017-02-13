@@ -200,7 +200,7 @@ fill.data <- function(data,CTMM=ctmm(tau=Inf),verbose=FALSE,t=NULL,dt=NULL,res=1
     
     # half weight repeated endpoints in grid
     w.grid <- dt.grid
-    REPEAT <- where(diff(t.grid)==0)
+    REPEAT <- which(diff(t.grid)==0)
     w.grid[REPEAT] <- w.grid[REPEAT]/2
     w.grid[REPEAT+1] <- w.grid[REPEAT+1]/2
   }
@@ -258,7 +258,7 @@ occurrence <- function(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=
   state <- smoother(data,CTMM,smooth=TRUE)
 
   # evenly sampled subset: data points (bridge ends) may be counted twice and weighted half
-  GRID <- c( where(data$t %in% t.grid) , where(data$t %in% t.grid[where(diff(t.grid)==0)]) )
+  GRID <- c( which(data$t %in% t.grid) , which(data$t %in% t.grid[which(diff(t.grid)==0)]) )
   GRID <- sort.int(GRID,method="quick")
 
   # GRID <- data$t %in% t.grid

@@ -1,12 +1,12 @@
 #IMPORTED GENERIC FUNCTIONS TO OVERLOAD
 importFrom("graphics",plot)
 importFrom("methods",new)
-importFrom("raster",raster,zoom)
+importFrom("raster",extent,raster,zoom)
 importFrom("stats",simulate,predict)
 
 # non-base generics to export
 export(plot,simulate,predict)
-export(raster,zoom)
+export(extent,raster,zoom)
 #export(SpatialPoints,SpatialPolygonsDataFrame)
 #S3method(SpatialPoints,matrix)
 #S3method(SpatialPoints,data.frame)
@@ -19,6 +19,11 @@ S3method(mean,list)
 S3method(plot,list)
 S3method(summary,list)
 #export(setUnits,"%#%")
+
+S3method(extent,list)
+S3method(extent,telemetry)
+S3method(extent,ctmm)
+S3method(extent,UD)
 
 #TELEMETRY FUNCTIONS
 export(as.telemetry,SpatialPoints.telemetry)

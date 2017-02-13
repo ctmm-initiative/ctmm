@@ -1,4 +1,6 @@
-0.3.6 2017-02-06
+0.3.6 2017-02-12
+
+  * Better UD plot boxes with new extent methods
 
   * Reinstated column name preferences in as.telemetry
   

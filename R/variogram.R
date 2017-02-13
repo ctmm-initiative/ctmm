@@ -73,7 +73,7 @@ variogram.dt <- function(data,dt=NULL,fast=NULL,CI="Markov",axes=c("x","y"))
   { SVF <- variogram.slow(data=data,dt=dt,CI=CI,axes=axes) }
   
   # skip missing data
-  SVF <- SVF[where(SVF$DOF>0),]
+  SVF <- SVF[which(SVF$DOF>0),]
   SVF <- stats::na.omit(SVF)
   return(SVF)
 }

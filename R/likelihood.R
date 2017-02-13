@@ -199,10 +199,10 @@ kalman <- function(z,u,dt,CTMM,error=rep(0,nrow(z)),smooth=FALSE,sample=FALSE,we
   {
     # hard coded for position observations
     sigma <- (M[DATA,DATA] - (Adj(mu) %*% W %*% mu))/n
-
+    
     # log det autocorrelation matrix == trace log autocorrelation matrix
     logdet <- sum(log(sRes))
-    
+
     return(list(mu=mu,W=W,sigma=sigma,logdet=logdet))
   }
   
@@ -440,7 +440,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,verbose=FALSE)
     COV.mu <- t(R * t(COV.mu))
     COV.mu <- array(COV.mu,c(M,M,2,2))
   }
-  else if(!CTMM$error) # ONE KALMAN FILTER WITH UNKNOWN VARIANCE AND NO ERROR
+  else if(!CTMM$error) # ONE KALMAN FILTER WITH UNKNOWN COVARIANCE AND NO ERROR
   {
     CTMM$sigma <- 1
     KALMAN <- kalman(z,u,dt=dt,CTMM=CTMM,error=error)
@@ -461,7 +461,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,verbose=FALSE)
     DOF.mu <- KALMAN$W %o% diag(AXES)
     
     loglike <- -(AXES/2)*KALMAN$logdet -(n/2)*log(det(2*pi*sigma)) - (n/2)*sum(diag(ML.sigma %*% solve(sigma)))
-    
+
     # tensor product rule for determinants
     if(REML) { loglike <- loglike - (1/2)*log(det(KALMAN$W)^AXES/det(sigma)^M) }
   }
@@ -980,6 +980,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(maxit=.Machine$in
   }
   
   CTMM$AICc <- (2*k-2*CTMM$loglike) + 2*k*(k+1)/(n-k-1)
+  CTMM$BIC <- k*log(n)-2*CTMM$loglike
 
   return(CTMM)
 }

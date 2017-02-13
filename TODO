@@ -7,14 +7,16 @@ Aligned Krige UDs
 pregridder composite dimension?
 
 LOW HANGING FRUIT & Nagging issues
+* compass plot
+* summary.telemetry.list like Dong's
+* unit Environment on plots for points()
 * basic trace option for ctmm.fit
 * parallelize ctmm.select
 * individualized projections
 * 1-point azimuthal equidistant projection quick option
+* overload covm * / to apply to area & matrix
 * plot.telemetry with HDOP & UERE
 * str.ctmm, str.telemetry (print too?)
-* links between vignettes and FAQ
-* error correlation in SVF plot
 * don't delete mean off of IOU and BM... need that to Krige I think...
 * IOU with drift not setup correctly
 * points methods units environment

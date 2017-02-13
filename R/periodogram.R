@@ -247,7 +247,7 @@ max.periodogram <- function(LSP,df=stats::median(diff(LSP$f)))
   dP.right <- dP[2:n]
   
   # first index of 3-index sequence containing a local maximum
-  START <- where((dP.left>=0) & (dP.right<=0))
+  START <- which((dP.left>=0) & (dP.right<=0))
 
   # local maximum in periodogram (quadratic approximation)
   dP.left <- dP[START]/df
