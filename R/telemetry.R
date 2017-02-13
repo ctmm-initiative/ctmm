@@ -328,6 +328,7 @@ suggest.projection <- function(data,datum="WGS84")
   proj <- paste(proj," +towgs84=0,0,0,0,0,",tan(theta),",",cos(theta),sep="")
 }
 
+
 validate.projection <- function(projection)
 {
   if(grepl("latlong",projection,fixed=TRUE) || grepl("latlong",projection,fixed=TRUE))
@@ -337,8 +338,10 @@ validate.projection <- function(projection)
   { stop("Units of distance other than meters not supported.") }
 }
 
+
 ################################
 # ZOOM INTO TELEMETRY DATA
+# this needs some work
 zoom.telemetry <- function(x,fraction=1,...)
 {
   manipulate::manipulate(
@@ -352,80 +355,38 @@ methods::setMethod("zoom",signature(x="UD"), function(x,fraction=1,...) zoom.tel
 ##############
 new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,...)
 {
-  alpha.UD <- 1-level.UD
-  alpha <- 1-level
-  
   dist <- list()
   dist$name <- "meters"
   dist$scale <- 1
 
   if(!add)
   {
-    ext.x <- NULL
-    ext.y <- NULL
+    ext <- NULL
     
     # bounding locations from data
     if(!is.null(data))
-    {
-      ext.x <- range(sapply(data, function(d){ range(d$x) } ))
-      ext.y <- range(sapply(data, function(d){ range(d$y) } ))
-    }
+    { ext <- rbind(ext,extent(data)) }
     
     # bounding locations from UDs
     if(!is.null(UD))
-    {
-      for(i in 1:length(UD))
-      {
-        EXT <- rowSums(UD[[i]]$PDF) > 0
-        EXT <- UD[[i]]$r$x[EXT]
-        EXT <- c(EXT[1],last(EXT))
-        ext.x <- range(ext.x,EXT)
-        
-        EXT <- colSums(UD[[i]]$PDF) > 0
-        EXT <- UD[[i]]$r$y[EXT]
-        EXT <- c(EXT[1],last(EXT))
-        ext.y <- range(ext.y,EXT)
-      }
-    }
+    { ext <- rbind(ext,extent(UD,level=level,level.UD=level.UD)) }
 
     # bounding locations from Gaussian CTMM
     if(!is.null(CTMM) & !is.na(level.UD))
-    {
-      z <- sqrt(-2*log(alpha.UD))
-      
-      for(i in 1:length(CTMM))
-      {
-        # proportionality constants for outer CIs
-        sigma <- CTMM[[i]]$sigma
-        
-        # capture outer contour if present
-        const <- 1
-        if(is.na(level)) { alpha <- 1 } # will use ML contour
-        if(!is.null(CTMM[[i]]$COV))
-        {
-          K <- length(CTMM[[i]]$tau)
-          const <- confint.ctmm(CTMM[[i]],alpha)[1,3]/sqrt(det(sigma))
-        }
-        
-        buff <- z*sqrt(const*diag(sigma))
-        
-        ext.x[1] <- min(ext.x[1], CTMM[[i]]$mu[1] - buff[1])
-        ext.x[2] <- max(ext.x[2], CTMM[[i]]$mu[1] + buff[1])
-        
-        ext.y[1] <- min(ext.y[1], CTMM[[i]]$mu[2] - buff[2])
-        ext.y[2] <- max(ext.y[2], CTMM[[i]]$mu[2] + buff[2])
-      }
-    }
+    { ext <- rbind(ext,extent(CTMM,level=level,level.UD=level.UD)) }
+    
+    # combine ranges
+    ext <- extent.telemetry(ext)
     
     # bounding box
-    mu <- c(mean(ext.x),mean(ext.y))
-    buff <- c(diff(ext.x),diff(ext.y))/2
+    mu <- c(mean(ext$x),mean(ext$y))
+    buff <- c(diff(ext$x),diff(ext$y))/2
     
     # now zoom in/out to some fraction of the grid
     buff <- fraction*buff
     
-    ext.x <- mu[1] + buff[1]*c(-1,1)
-    ext.y <- mu[2] + buff[2]*c(-1,1)
+    ext$x <- mu[1] + buff[1]*c(-1,1)
+    ext$y <- mu[2] + buff[2]*c(-1,1)
     
     # try to obey xlim/ylim if provided
     if(!is.null(xlim) || !is.null(ylim))
@@ -437,23 +398,20 @@ new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,fracti
       else if(is.null(xlim))
       { xlim <- mu[1] + max.diff }
       
-      ext.x <- xlim
-      ext.y <- ylim
+      ext$x <- xlim
+      ext$y <- ylim
     }
     
     # Get best unit scale
-    dist <- unit(abs(c(ext.x,ext.y)),"length")
+    dist <- unit(unlist(ext),"length")
 
     xlab <- paste("x ", "(", dist$name, ")", sep="")
     ylab <- paste("y ", "(", dist$name, ")", sep="")
     
-    mu <- mu/dist$scale
-    
-    ext.x <- ext.x/dist$scale
-    ext.y <- ext.y/dist$scale
-    
+    ext <- ext/dist$scale
+
     # empty base layer plot
-    plot(ext.x,ext.y, xlab=xlab, ylab=ylab, col=grDevices::rgb(1,1,1,0), asp=1, ...)
+    plot(ext, xlab=xlab, ylab=ylab, col=grDevices::rgb(1,1,1,0), asp=1, ...)
   }
   
   return(dist)

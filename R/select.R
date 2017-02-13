@@ -60,13 +60,13 @@ ci.tau <- function(tau,COV,alpha=0.05,min=0,max=Inf)
 }
 
 ###
-summary.ctmm <- function(object,level=0.95,level.UD=0.95,units=TRUE,...)
+summary.ctmm <- function(object,level=0.95,level.UD=0.95,units=TRUE,IC="AICc",...)
 {
   CLASS <- class(object)
   if(CLASS=="ctmm")
   { return(summary.ctmm.single(object,level=level,level.UD=level.UD,units=units)) }
   else if(CLASS=="list")
-  { return(summary.ctmm.list(object,level=level,level.UD=level.UD)) }
+  { return(summary.ctmm.list(object,level=level,level.UD=level.UD,IC=IC)) }
 }
 
 ######################################################
@@ -256,12 +256,24 @@ DOF.mean <- function(CTMM)
 summary.ctmm.list <- function(object, IC="AICc", ...)
 {
   object <- sort.ctmm(object,IC=IC)
-  DOF <- sapply(object,DOF.mean)
   ICS <- sapply(object,function(m){m[[IC]]})
   ICS <- ICS - ICS[[1]]
-  ICS <- cbind(ICS,DOF)
+  ICS <- cbind(ICS)
   rownames(ICS) <- names(object)
-  colnames(ICS) <- c(paste("d",IC,sep=""),"DOF[mean]")
+  
+  CNAME <- paste("d",IC,sep="")
+  # quick fix for is.resident
+  #if(IC=="AICc")
+  {
+    DOF <- sapply(object,DOF.mean)
+    ICS <- cbind(ICS,DOF)
+    colnames(ICS) <- c(CNAME,"DOF[mean]")
+  }
+  #else
+  #{
+  #  colnames(ICS) <- CNAME
+  #}
+  
   return(ICS)
 }
 
