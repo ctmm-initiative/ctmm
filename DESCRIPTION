@@ -1,7 +1,7 @@
 Encoding: UTF-8
 Package: ctmm
 Version: 0.3.6
-Date: 2017-02-12
+Date: 2017-02-17
 Title: Continuous-Time Movement Modeling
 Authors@R: c(person(c("Christen","H."),"Fleming",email="flemingc@si.edu",role=c("aut","cre")),
              person(c("Justin","M."),"Calabrese",email="calabresej@si.edu",role="aut"),
@@ -12,7 +12,7 @@ Authors@R: c(person(c("Christen","H."),"Fleming",email="flemingc@si.edu",role=c(
              person("Kamran","Safi",role="ctb"),
              person(c("Paul","C."),"Cross",role="dtc"),
              person("Thomas","Mueller",role="dtc"))
-URL: http://www2.physics.umd.edu/~hfleming/
+URL: http://biology.umd.edu/movement.html
 Depends: R (>= 3.3.0)
 Imports: expm, graphics, grDevices, manipulate, MASS, methods, numDeriv, pbivnorm, raster, rgdal, scales, stats, utils
 Suggests: fftw, knitr, move, sp
