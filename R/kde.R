@@ -854,6 +854,13 @@ CI.UD <- function(object,level.UD=0.95,level=0.95,P=FALSE)
   
   # probabilities associated with these areas
   P <- round(area / dV)
+  
+  # fix lower bound
+  P[1] <- max(1,P[1])
+  # fix upper bound to not overflow
+  P[3] <- min(length(object$CDF),P[3])
+  if(P[3]==length(object$CDF)) { warning("Outer contour extends beyond raster.") }
+  
   P <- sort(object$CDF,method="quick")[P]
 
   # recorrect point estimate level
@@ -947,8 +954,11 @@ SpatialPolygonsDataFrame.UD <- function(object,level.UD=0.95,level=0.95,...)
   {
     CL <- grDevices::contourLines(UD$r,z=UD$CDF,levels=P[i])
     
+    if(length(CL)==0) # nuge sp to make a contour
+    { CL <- grDevices::contourLines(UD$r,z=UD$CDF,levels=P[i]*(1+.Machine$double.eps)) }
+    
     # create contour heirarchy matrix (half of it)
-    H <- array(0,c(1,1)*length(CL))    
+    H <- array(0,c(1,1)*length(CL))
     for(row in 1:length(CL))
     {
       for(col in row:length(CL))
@@ -969,13 +979,13 @@ SpatialPolygonsDataFrame.UD <- function(object,level.UD=0.95,level=0.95,...)
     {
       polygons[[i]][[j]] <- sp::Polygon( cbind( CL[[j]]$x , CL[[j]]$y ) , hole=hole[j] )
     }
-
+    
     # polygonS
     polygons[[i]] <- sp::Polygons(polygons[[i]],ID=ID[i])
   }
   names(polygons) <- ID
 
-    # spatial polygons
+  # spatial polygons
   polygons <- sp::SpatialPolygons(polygons, proj4string=sp::CRS(attr(UD,"info")$projection))
 
   # spatial polygons data frame  
