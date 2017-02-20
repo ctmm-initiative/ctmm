@@ -29,10 +29,10 @@ get.telemetry <- function(data,axes=c("x","y"))
 
 #######################
 # Generic import function
-as.telemetry <- function(object,timeformat="",timezone="GMT",projection=NULL,UERE=NULL,...) UseMethod("as.telemetry")
+as.telemetry <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,...) UseMethod("as.telemetry")
 
 # MoveStack object
-as.telemetry.MoveStack <- function(object,timeformat="",timezone="GMT",projection=NULL,UERE=NULL,...)
+as.telemetry.MoveStack <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,...)
 {
   # need to first conglomerate to MoveBank format, then run as.telemetry
   object <- move::split(object)
@@ -43,7 +43,7 @@ as.telemetry.MoveStack <- function(object,timeformat="",timezone="GMT",projectio
 }
 
 # Move object
-as.telemetry.Move <- function(object,timeformat="",timezone="GMT",projection=NULL,UERE=NULL,...)
+as.telemetry.Move <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,...)
 {
   DATA <- Move2CSV(object,timeformat=timeformat,timezone=timezone,projection=projection,UERE=UERE)
   # can now treat this as a MoveBank object
@@ -52,7 +52,7 @@ as.telemetry.Move <- function(object,timeformat="",timezone="GMT",projection=NUL
 }
 
 # convert Move object back to MoveBank CSV
-Move2CSV <- function(object,timeformat="",timezone="GMT",projection=NULL,UERE=NULL,...)
+Move2CSV <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,...)
 {
   DATA <- data.frame(timestamp=move::timestamps(object))
   if(raster::isLonLat(object))
@@ -95,7 +95,7 @@ pull.column <- function(object,NAMES,FUNC=as.numeric)
 }
 
 # this assumes a MoveBank data.frame
-as.telemetry.data.frame <- function(object,timeformat="",timezone="GMT",projection=NULL,UERE=NULL,...)
+as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,...)
 {
   # make column names canonicalish
   names(object) <- tolower(names(object))
@@ -204,7 +204,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="GMT",projecti
 }
 
 # read in a MoveBank object file
-as.telemetry.character <- function(object,timeformat="",timezone="GMT",projection=NULL,UERE=NULL,...)
+as.telemetry.character <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,...)
 {
   data <- utils::read.csv(object,...)
   data <- as.telemetry.data.frame(data,timeformat=timeformat,timezone=timezone,projection=projection,UERE=UERE)
