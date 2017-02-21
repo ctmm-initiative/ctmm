@@ -276,24 +276,36 @@ cov.loglike <- function(hess,grad=rep(0,nrow(hess)))
 }
 
 # confidence interval functions
-CI.upper <- Vectorize(function(k,Alpha){qchisq(Alpha/2,k,lower.tail=FALSE)/k})
-CI.lower <- Vectorize(function(k,Alpha){qchisq(Alpha/2,k,lower.tail=TRUE)/k})
+CI.upper <- Vectorize(function(k,Alpha){stats::qchisq(Alpha/2,k,lower.tail=FALSE)/k})
+CI.lower <- Vectorize(function(k,Alpha){stats::qchisq(Alpha/2,k,lower.tail=TRUE)/k})
 
 
 # calculate chi^2 confidence intervals from MLE and COV estimates
 chisq.ci <- function(MLE,COV=NULL,alpha=0.05,DOF=2*MLE^2/COV)
 {
-  if(MLE==0) { return( c(0,0,0) ) }
-  
-  CI <- MLE * c(CI.lower(DOF,alpha),1,CI.upper(DOF,alpha))
-  
-  # qchisq upper.tail is too small when DOF<<1
-  # probably an R bug that no regular use of chi-square/gamma would come across
-  if(is.null(COV)) { COV <- 2*MLE^2/DOF }
-  # Normal backup for upper.tail
-  UPPER <- norm.ci(MLE,COV,alpha=alpha)[3]
-  if(CI[3]<UPPER) { CI[3] <- UPPER }
+  # try to do something reasonable on failure cases
+  if(MLE==0)
+  { CI <- c(0,0,0) }
+  else if(!is.null(COV) && COV<0) # try an exponential distribution?
+  {
+    warning("VAR[Area] = ",COV," < 0")
+    CI <- c(1,1,1)*MLE
+    CI[1] <- stats::qexp(alpha/2,rate=1/min(sqrt(-COV),MLE))
+    CI[3] <- stats::qexp(1-alpha/2,rate=1/max(sqrt(-COV),MLE))
+  }
+  else     # regular estimate
+  {
+    CI <- MLE * c(CI.lower(DOF,alpha),1,CI.upper(DOF,alpha))
     
+    # qchisq upper.tail is too small when DOF<<1
+    # probably an R bug that no regular use of chi-square/gamma would come across
+    if(is.null(COV)) { COV <- 2*MLE^2/DOF }
+    # Normal backup for upper.tail
+    UPPER <- norm.ci(MLE,COV,alpha=alpha)[3]
+    if(CI[3]<UPPER) { CI[3] <- UPPER }
+  }
+    
+  names(CI) <- c("low","ML","high")
   return(CI)
 }
 

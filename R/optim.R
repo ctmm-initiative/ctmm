@@ -1,15 +1,21 @@
 #################################
-# quasi-Newton parallel optimizer for multiple CPU cores
-mcoptim <- function(par,fn,gr=NULL,lower=-Inf,upper=Inf,control=list(COV=NULL,mc.cores=parallel::detectCores()))
+# Nelder-Mead parallel optimizer for multiple CPU cores
+mcoptim.NM <- function(par,fn,control=list())
 {
-  # CRAN DOESN'T LIKE ATTACH
-  #attach(control)
+  if(is.null(control$mc.cores)) { mc.cores <- parallel::detectCores() }
+  if(is.null(control$alpha)) { alpha <- 1 }
+  if(is.null(control$alpha)) { beta <- 2 }
+  if(is.null(control$alpha)) { gamma <- 1/2 }
+  if(is.null(control$alpha)) { sigma <- 1/2 }
+  
+  
   
   DIM <- length(par)
   lower <- rep(lower,DIM)
   upper <- rep(upper,DIM)
   
   # default COV initialization
+  COV <- control$COV
   if(is.null(COV))
   {
     COV <- pmax(par-lower,upper-par)
