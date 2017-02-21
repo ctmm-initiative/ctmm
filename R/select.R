@@ -225,7 +225,7 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
 #methods::setMethod("summary",signature(object="ctmm"), function(object,...) summary.ctmm(object,...))
 
 #DOF of area
-DOF.area <- function(CTMM) { CTMM$sigma@par["area"]^2/CTMM$COV["area","area"] }
+DOF.area <- function(CTMM) { CTMM$sigma@par["area"]^2/abs(CTMM$COV["area","area"]) }
 
 ########
 sort.ctmm <- function(x, decreasing=FALSE, IC="AICc", ...)

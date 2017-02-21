@@ -1,10 +1,12 @@
-0.3.6 2017-02-12
+0.3.6 2017-02-20
 
   * Better UD plot boxes with new extent methods
 
   * Reinstated column name preferences in as.telemetry
   
-  * more robust CIs for pREML
+  * more robust CIs for pREML, REML
+  
+  * chi-square CIs (area, semi-variance, etc.) more robust for DOF<1
 
 0.3.5 2017-02-01
 

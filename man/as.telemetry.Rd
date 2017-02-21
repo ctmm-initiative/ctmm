@@ -12,13 +12,13 @@ Import, coerce, and summarize MoveBank data
 \description{Functions to import MoveBank csv files, \code{data.frame}, and \code{Move} objects, coerce them into \code{telemetry} objects, and summarize them.}
 
 \usage{
-as.telemetry(object,timeformat="",timezone="GMT",projection=NULL,UERE=NULL,...)
+as.telemetry(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,...)
 
-\S3method{as.telemetry}{character}(object,timeformat="",timezone="GMT",projection=NULL,UERE=NULL,...)
+\S3method{as.telemetry}{character}(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,...)
 
-\S3method{as.telemetry}{data.frame}(object,timeformat="",timezone="GMT",projection=NULL,UERE=NULL,...)
+\S3method{as.telemetry}{data.frame}(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,...)
 
-\S3method{as.telemetry}{Move}(object,timeformat="",timezone="GMT",projection=NULL,UERE=NULL,...)
+\S3method{as.telemetry}{Move}(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,...)
 
 \S3method{summary}{telemetry}(object,...)
 }
