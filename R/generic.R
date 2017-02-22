@@ -213,15 +213,17 @@ conditionNumber <- function(M)
 }
 
 # sqrtm fails on 1x1 matrix
-# I cannot figure out how to make this "Note" go away!
-# x <- Matrix::Matrix(x,sparse=FALSE,doDiag=FALSE)
+# it also gives annoying notes if I don't cast it right
 sqrtm <- function(x)
 {
   DIM <- dim(x)
   if(all(DIM==c(1,1)))
   { return ( sqrt(x) ) }
   else
-  { return( expm::sqrtm(x) ) }
+  {
+    x <- Matrix::Matrix(x,sparse=FALSE,doDiag=FALSE)
+    return( expm::sqrtm(x) )
+  }
 }
 
 
