@@ -4,6 +4,8 @@
 
   * Reinstated column name preferences in as.telemetry
   
+  * as.telemetry faster with fread & fastPOSIXct
+  
   * more robust CIs for pREML, REML
   
   * chi-square CIs (area, semi-variance, etc.) more robust for DOF<1
