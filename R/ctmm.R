@@ -236,13 +236,13 @@ pars.covm <- function(COVM)
 }
 
 # returns the canonical parameters of a tau vector
-pars.tauv <- function(tau)
+pars.tauv <- function(tau,tauc=tau)
 {
-  if(length(tau)==0)
-  { return(tau) }
-  else if(tau[1] < Inf)
-  { return(tau) }
-  else if(length(tau)==1)
+  if(length(tauc)==0)
+  { return(NULL) }
+  else if(tauc[1] < Inf)
+  { return(tau[1:length(tauc)]) }
+  else if(length(tauc)==1)
   { return(NULL) }
   else
   { return(tau[-1]) }

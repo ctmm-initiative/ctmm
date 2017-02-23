@@ -100,6 +100,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   # make column names canonicalish
   names(object) <- tolower(names(object))
   
+  # fastPOSIXct doesn't have a timeformat argument and as.POSIXct doesn't accept this argument if empty/NA/NULL
   if(class(object$timestamp)=="character" && timeformat=="") { DATA <- fasttime::fastPOSIXct(object$timestamp,tz=timezone) }
   else if(timeformat=="") { DATA <- as.POSIXct(object$timestamp,tz=timezone) }
   else { DATA <- as.POSIXct(object$timestamp,tz=timezone,format=timeformat) }
@@ -206,8 +207,9 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
 # read in a MoveBank object file
 as.telemetry.character <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,...)
 {
-  # data <- utils::read.csv(object,...)
-  data <- data.table::fread(object, data.table = FALSE, check.names = TRUE, ...)
+  data <- utils::read.csv(object,...)
+  # fread doesn't work on compressed files yet
+  # data <- data.table::fread(object, data.table = FALSE, check.names = TRUE, ...)
   data <- as.telemetry.data.frame(data,timeformat=timeformat,timezone=timezone,projection=projection,UERE=UERE)
   return(data)
 }

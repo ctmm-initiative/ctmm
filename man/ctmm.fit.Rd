@@ -16,7 +16,8 @@ ctmm(tau=NULL,isotropic=FALSE,range=TRUE,circle=FALSE,error=FALSE,axes=c("x","y"
 
 ctmm.loglike(data,CTMM,REML=FALSE,verbose=FALSE)
 
-ctmm.fit(data,CTMM=ctmm(),method="ML",control=list(maxit=.Machine$integer.max),...)
+ctmm.fit(data,CTMM=ctmm(),method="ML",control=list(maxit=.Machine$integer.max),
+trace=FALSE,...)
 
 ctmm.select(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE,...)
 }
@@ -35,10 +36,10 @@ ctmm.select(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE,...)
   \item{verbose}{Return additional information. See "Value" below.}
   \item{method}{Use residual maximum likelihood if \code{"REML"}. Not recommended.}
   \item{control}{An optional argument to be passed to \code{\link{optim}}, but with \code{parscale} overwritten with reasonable defaults.}
+  \item{trace}{Report progress updates.}
   \item{...}{Further arguments passed to \code{ctmm.fit} or \code{\link{optim}}.}
   \item{level}{Attempt to simplify a model if a feature's non-existence falls within this level of confidence interval.}
   \item{IC}{Information criteria used. Only \code{"AICc"} is currently supported.}
-  \item{trace}{Produce tracing information on the progress of model selection.}
 }
 
 \details{

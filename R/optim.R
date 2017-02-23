@@ -1,7 +1,7 @@
 
 #################################
 # Nelder-Mead-ish & quasi-Newton parallel optimizer for multiple CPU cores
-optim_pNMBFGS <- function(par,fn,lower=-Inf,upper=Inf,control=list(),hessian=FALSE)
+optim_ppN <- function(par,fn,gr=NULL,lower=-Inf,upper=Inf,control=list(),hessian=FALSE)
 {
   # CRAN DOES NOT LIKE ATTACH :(
   if(length(control))
@@ -13,36 +13,47 @@ optim_pNMBFGS <- function(par,fn,lower=-Inf,upper=Inf,control=list(),hessian=FAL
   if(is.null(control$fnscale)) { fnscale <- 1 }
   if(is.null(control$parscale)) { parscale <- abs(par) }
   if(any(parscale==0)) { parscale[parscale==0] <- 1 }
-  if(is.null(control$maxit)) { maxit <- 500 }
+  if(is.null(control$ndeps)) { ndeps <- 1e-3 } # relative to standard error NOT parscale
+  if(is.null(control$maxit)) { maxit <- 100 }
   if(is.null(control$abstol)) { abstol <- 0 }
   if(is.null(control$reltol)) { reltol <- sqrt(.Machine$double.eps) }
-  if(is.null(control$alpha)) { alpha <- 1 }
-  if(is.null(control$gamma)) { gamma <- 2 }
-  if(is.null(control$rho)) { rho <- 1/2 }
-  if(is.null(control$sigma)) { sigma <- 1/2 }
   if(is.null(control$trace)) { trace <- FALSE }
   if(is.null(control$mc.cores)) { mc.cores <- parallel::detectCores() }
   
-  DIM <- length(par)
-  lower <- array(lower,DIM)
-  upper <- array(upper,DIM)
-  parscale <- array(parscale,DIM)
+  # what we will actually be evaluating
+  par <- par/parscale
+  func <- function(par) { fn(parscale*par)/fnscale }
   
-  # apply box constraints to parameters
-  boxer <- function(par)
+  DIM <- length(par)
+  parscale <- array(parscale,DIM)
+  lower <- array(lower,DIM)/parscale
+  upper <- array(upper,DIM)/parscale
+  
+  # apply box constraints to parameter par when traveling in a straight line from parameter p0
+  line.boxer <- function(par,p0)
   {
+    dp <- par-p0
+    
+    UP <- (par > upper)
+    LO <- (par < lower)
+    
+    # distance traveled until we hit a boundary
+    if(any(UP)) { t.up <- (upper-p0)[UP]/dp[UP] } else { t.up <- 1 }
+    if(any(LO)) { t.lo <- (lower-p0)[LO]/dp[LO] } else { t.lo <- 1 }
+    t <- min(t.lo,t.up)
+    
     par <- pmax(lower,par)
     par <- pmin(upper,par)
     return(par)
   }
   
-  # invent some initial points surrounding the initial guess
+  # invent some initial points surrounding the initial guess (inferred from parscale)
   P1 <- lapply(1:DIM,function(i){par})
   P2 <- P1
   for(i in 1:DIM)
   {
-    P1[[i]][i] <- P1[[i]][i] - parscale[i]/2
-    P2[[i]][i] <- P2[[i]][i] + parscale[i]/2
+    P1[[i]][i] <- P1[[i]][i] - 1
+    P2[[i]][i] <- P2[[i]][i] + 1
   }
   # apply box constraints
   P1 <- lapply(P1,function(par){boxer(par)})
@@ -51,14 +62,14 @@ optim_pNMBFGS <- function(par,fn,lower=-Inf,upper=Inf,control=list(),hessian=FAL
   # cat all points to evaluate
   P <- c(list(par),P1,P2)
   # mc evaluate
-  FN <- unlist(parallelsugar::mclapply(P,fn,mc.cores=mc.cores))/fnscale
+  FN <- unlist(parallelsugar::mclapply(P,fn,mc.cores=mc.cores))
   # separate into parts
   F1 <- FN[2:(DIM+1)]
   F2 <- FN[(DIM+2):(1+2*DIM)]
   
   # estimate initial Hessian matrix from this sample (diagonal)
-  HESS <- diag(1,nrow=DIM)
-  for(i in 1:DIM) { HESS[i,i] <- (F2[i]-2*FN[1]+F1[i])/(parscale[i]/2)^2 }
+  HESS <- diag(DIM)
+  diag(HESS) <- (F2-2*FN[1]+F1)
 
   # take best points avoiding degeneracy
   P <- P[1:(DIM+1)]
