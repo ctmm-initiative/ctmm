@@ -287,7 +287,7 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE
   
     # fit the intital guess
   if(trace) { message("Fitting models ",name.ctmm(CTMM)) }
-  CTMM <- ctmm.fit(data,CTMM,...)
+  CTMM <- ctmm.fit(data,CTMM,trace=trace,...)
   OLD <- ctmm()
   MODELS <- list(CTMM)
   # while progress is being made, keep going, keep going, ...
@@ -345,7 +345,7 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE
     
     # fit every model
     if(trace) { message("Fitting models ",paste(sapply(GUESS,name.ctmm),collapse=", ")) }
-    GUESS <- lapply(GUESS,function(g){ctmm.fit(data,g,...)})
+    GUESS <- lapply(GUESS,function(g){ctmm.fit(data,g,trace=trace,...)})
     MODELS <- c(MODELS,GUESS)
     
     # what is the new best model?

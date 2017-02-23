@@ -137,6 +137,39 @@ summary.list <- function(object,...)
 }
 
 
+# replace NA elements
+na.replace <- function(x,rep)
+{
+  REP <- is.na(x)
+  x[REP] <- rep[REP]
+  return(x)
+}
+
+# convenience wrapper for numDeriv::genD on scalar functions
+genD <- function(func,x,...)
+{
+  n <- length(x)
+  D <- numDeriv::genD(func,x,...)$D
+  grad <- D[1:n]
+  D <- D[-(1:n)]
+  
+  # Bates and Watts ordering is not R ordering
+  hess <- lower.tri(diag(n),diag=TRUE)
+  SUM <- 0
+  for(i in 1:3)
+  {
+    for(j in 1:3)
+    {
+      SUM <- SUM + hess[i,j]
+      hess[i,j] <- hess[i,j]*SUM
+    }
+  }
+  hess[upper.tri(hess)] <- t(hess[lower.tri(hess)])
+  hess <- array(D[hess],c(n,n))
+  
+  return(list(grad=grad,hess=hess))
+}
+
 # parity tests
 is.even <- Vectorize(function(x) {x %% 2 == 0})
 
@@ -213,15 +246,17 @@ conditionNumber <- function(M)
 }
 
 # sqrtm fails on 1x1 matrix
-# I cannot figure out how to make this "Note" go away!
-# x <- Matrix::Matrix(x,sparse=FALSE,doDiag=FALSE)
+# it also gives annoying notes if I don't cast it right
 sqrtm <- function(x)
 {
   DIM <- dim(x)
   if(all(DIM==c(1,1)))
   { return ( sqrt(x) ) }
   else
-  { return( expm::sqrtm(x) ) }
+  {
+    x <- Matrix::Matrix(x,sparse=FALSE,doDiag=FALSE)
+    return( expm::sqrtm(x) )
+  }
 }
 
 

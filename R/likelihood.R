@@ -599,7 +599,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,verbose=FALSE)
 
 ###########################################################
 # FIT MODEL WITH LIKELIHOOD FUNCTION (convenience wrapper to optim)
-ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(maxit=.Machine$integer.max),...)
+ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(maxit=.Machine$integer.max),trace=FALSE,...)
 {
   # clean/validate
   CTMM <- ctmm.ctmm(CTMM)
@@ -622,6 +622,10 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(maxit=.Machine$in
   range <- CTMM$range
   axes <- CTMM$axes
   
+  # will use standard deviation for parscale if present
+  STD <- CTMM$COV
+  if(!is.null(STD)) { STD <- sqrt(diag(STD)) }
+  else { STD <- NA }
   # erase previous fitting info if present
   CTMM$COV <- NULL
   CTMM$COV.mu <- NULL
@@ -721,7 +725,8 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(maxit=.Machine$in
       # need some initial guess...
       if(is.null(sigma)) { sigma <<- drift@init(data,CTMM)$sigma@par }
       pars <<- sigma[SIGMAV]
-      parscale <<- c(sigma[1],1,pi/4)[SIGMAV]
+      PS <- na.replace(STD[c("area","eccentricity","angle")],c(sigma[1],1,pi/4))
+      parscale <<- PS[SIGMAV]
       
       # can we profile the variance, if so delete the guess
       if(!is.element(1,SIGMAV)) { sigma[1] <<- NA }
@@ -729,15 +734,18 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(maxit=.Machine$in
     
     if(length(TAU))
     {
-      pars <<- c(pars,pars.tauv(tau))
-      parscale <<- c(parscale,pars[TAU])
+      pars <<- c(pars,pars.tauv(tau)) # pull out relevant tau elements
+      PS <- na.replace(STD[c("tau position","tau velocity")],tau[c("position","velocity")])
+      PS <- pars.tauv(PS,tau) # pull out relevant parscale elements for relevant tau elements
+      parscale <<- c(parscale,PS)
     }
 
     # use 1/T as circulation parameter
     if(length(CIRCLE))
     {
       pars <<- c(pars,1/circle)
-      parscale <<- c(parscale,1/abs(circle))
+      PS <- na.replace(STD["circle"]/circle^2,1/abs(circle))
+      parscale <<- c(parscale,PS)
     }
     
     if(length(ERROR))
@@ -747,12 +755,14 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(maxit=.Machine$in
       if(isotropic)
       {
         pars <<- c(pars,error/sqrt(sigma[1]))
-        parscale <<- c(parscale,error/sqrt(sigma[1]))
+        PS <- na.replace(STD["error"],error)/sqrt(sigma[1])
+        parscale <<- c(parscale,PS)
       }
       else # regular error fitting
       {
         pars <<- c(pars,error)
-        parscale <<- c(parscale,error)
+        PS <- na.replace(STD["error"],error)
+        parscale <<- c(parscale,PS)
       }
     }
     # names(pars) <<- NAMES
@@ -853,9 +863,11 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(maxit=.Machine$in
     {
       RESULT <- NULL
       # direct attempt that can caputure zero boundary
+      if(trace) { message("Optimizing with optimize.") }
       ATTEMPT <- stats::optim(par=pars,fn=fn,method="Brent",lower=0,upper=10*pars)
       RESULT <- rbind(RESULT,c(ATTEMPT$par,ATTEMPT$value))
       # log scale backup that can't capture zero boundary
+      if(trace) { message("Optimizing with nlm.") }
       ATTEMPT <- stats::nlm(function(p){f=fn(pars*exp(p))},p=0,stepmax=log(10),iterlim=control$maxit)
       RESULT <- rbind(RESULT,c(pars*exp(ATTEMPT$estimate),ATTEMPT$minimum))
       # choose the better estimate
@@ -864,6 +876,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(maxit=.Machine$in
     }
     else # Nelder-Mead is generally the safest and is default
     {
+      if(trace) { message("Optimizing with optim.") }
       control$parscale <- parscale
       pars <- stats::optim(par=pars,fn=fn,control=control,...)$par
     }
@@ -921,9 +934,11 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(maxit=.Machine$in
     
     calpars()
     
+    if(trace) { message("Calculating Hessian.") }
     hess <- numDeriv::hessian(fn,pars)
     side <- sign(pars)
     side[side==0] <- NA
+    if(trace) { message("Calculating gradient.") }
     grad <- numDeriv::grad(fn,pars,side=side)
     # robust covariance calculation
     CTMM$COV <- cov.loglike(hess,grad)
@@ -938,6 +953,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(maxit=.Machine$in
       # parameter correction
       REML <- TRUE
       #ML.grad <- grad # save old ML gradient
+      if(trace) { message("Calculating REML gradient.") }
       grad <- numDeriv::grad(fn,pars,side=side) # fn is -loglike
       d.pars <- -c(COV %*% grad) # COV is -1/Hessian, grad is of -loglike
 
@@ -960,6 +976,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(maxit=.Machine$in
       
       # covariance correction
       # quadratic term
+      if(trace) { message("Calculating REML Hessian.") }
       REML <- TRUE
       hess <- numDeriv::hessian(fn,pars)
       

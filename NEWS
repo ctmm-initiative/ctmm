@@ -1,8 +1,12 @@
-0.3.6 2017-02-20
+0.3.6 2017-02-22
 
   * Better UD plot boxes with new extent methods
 
   * Reinstated column name preferences in as.telemetry
+  
+  * as.telemetry faster with fastPOSIXct
+  
+  * new trace option for ctmm.fit
   
   * more robust CIs for pREML, REML
   

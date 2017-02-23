@@ -100,8 +100,9 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   # make column names canonicalish
   names(object) <- tolower(names(object))
   
-  # as.POSIXct is effed up, so work around
-  if(timeformat=="") { DATA <- as.POSIXct(object$timestamp,tz=timezone) }
+  # fastPOSIXct doesn't have a timeformat argument and as.POSIXct doesn't accept this argument if empty/NA/NULL
+  if(class(object$timestamp)=="character" && timeformat=="") { DATA <- fasttime::fastPOSIXct(object$timestamp,tz=timezone) }
+  else if(timeformat=="") { DATA <- as.POSIXct(object$timestamp,tz=timezone) }
   else { DATA <- as.POSIXct(object$timestamp,tz=timezone,format=timeformat) }
   DATA <- data.frame(timestamp=DATA)
   
@@ -207,6 +208,8 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
 as.telemetry.character <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,...)
 {
   data <- utils::read.csv(object,...)
+  # fread doesn't work on compressed files yet
+  # data <- data.table::fread(object, data.table = FALSE, check.names = TRUE, ...)
   data <- as.telemetry.data.frame(data,timeformat=timeformat,timezone=timezone,projection=projection,UERE=UERE)
   return(data)
 }
@@ -236,7 +239,8 @@ telemetry.clean <- function(data,id)
   v <- max(v)
   message("Maximum speed of ",v," m/s observed in ",id)
   dt <- min(dt)
-  message("Minimum sampling interval of ",dt," s in ",id)
+  units <- unit(dt,dimension='time')
+  message("Minimum sampling interval of ",dt/units$scale," ",units$name," in ",id)
   
   return(data)
 }
@@ -420,7 +424,7 @@ new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,fracti
 #######################################
 # PLOT TELEMETRY DATA
 #######################################
-plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF",col="red",col.level="black",col.DF="blue",col.grid="grey",fraction=1,add=FALSE,xlim=NULL,ylim=NULL,cex=1,lwd=1,...)
+plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF",col="red",col.level="black",col.DF="blue",col.grid="grey",pch=1,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,cex=1,lwd=1,...)
 {
   alpha <- 1-level
   alpha.UD <- 1-level.UD
@@ -490,14 +494,21 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
   #########################
   # PLOT TELEMETRY DATA
   
-  # color array for plots
-  if(!is.list(col))
+  # prepare point characteristics
+  prepare.p <- function(pchar)
   {
-    if(length(x)>1)
-    { col <- array(col,length(x)) }
-    else
-    { col <- list(array(col,length(x[[1]]$t))) }
+    if(!is.list(pchar))
+    {
+      if(length(x)>1)
+      { pchar <- array(pchar,length(x)) }
+      else
+      { pchar <- list(array(pchar,length(x[[1]]$t))) }
+    }
+    return(pchar)
   }
+  
+  col <- prepare.p(col)
+  pch <- prepare.p(pch)
   
   # automagic the plot point size
   p <- sum(sapply(x, function(d) { length(d$t) } ))
@@ -518,7 +529,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
     
     if(is.null(x[[i]]$HERE))
     {
-      graphics::points(r, cex=cex, col=col[[i]],...)
+      graphics::points(r, cex=cex, col=col[[i]], pch=pch[[i]],...)
     }
     else 
     {
