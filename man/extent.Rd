@@ -4,9 +4,7 @@
 \alias{extent.ctmm}
 \alias{extent.UD}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{
-Extent
-}
+\title{Extent}
 \description{Functions to calculate the \eqn{(x,y)} plotting extent (or bounding box) of various ctmm objects, for use when plotting multiple ctmm objects.}
 
 \usage{

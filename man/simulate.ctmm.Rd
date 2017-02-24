@@ -6,9 +6,7 @@
 \alias{simulate.ctmm}
 \alias{simulate.telemetry}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{
-Predict or simulate from a continuous-time movement model
-}
+\title{Predict or simulate from a continuous-time movement model}
 \description{
 Given a \code{ctmm} movement model (and optional \code{telemetry} data to condition upon) these functions predict or simulate animal locations over a prescribed set of times.
 }
@@ -39,7 +37,7 @@ simulate(object,nsim=1,seed=NULL,...)
 }
 \details{
 The prediction or simulation necessarily requires a \code{ctmm} model object and optionally can be conditioned off of \code{telemetry} data, if specified.
-If no data is provided, the simulation will be purely Gaussian. 
+If no data is provided, the simulation will be purely Gaussian.
 Details of the movement model parameters can be found in \code{\link{ctmm.fit}}.
 
 The \code{t} argument fixes the output times to a specific array of times.

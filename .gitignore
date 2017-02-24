@@ -1,6 +1,9 @@
 .git
+.gitignore
+..Rcheck
 .Rproj.user
 .Rbuildignore
 .Rhistory
 ctmm.Rproj
 inst
+docs

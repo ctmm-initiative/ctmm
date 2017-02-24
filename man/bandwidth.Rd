@@ -1,12 +1,8 @@
 \name{bandwidth}
 \alias{bandwidth}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{
-Calculate the optimal bandwidth matrix of movement data
-}
-\description{
-This function calculates the optimal bandwidth matrix (kernel covariance) for a two-dimensional animal tracking dataset, given an autocorrelated movement model (Fleming et al, 2015). This optimal bandwidth can fully take into account all autocorrelation in the data, assuming it is captured by the movement model.
-}
+\title{Calculate the optimal bandwidth matrix of movement data}
+\description{This function calculates the optimal bandwidth matrix (kernel covariance) for a two-dimensional animal tracking dataset, given an autocorrelated movement model (Fleming et al, 2015). This optimal bandwidth can fully take into account all autocorrelation in the data, assuming it is captured by the movement model.}
 \usage{
 bandwidth(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,
   dt=NULL,precision=1/2,PC="Markov",verbose=FALSE,trace=FALSE)
