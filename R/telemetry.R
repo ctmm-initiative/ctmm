@@ -221,15 +221,15 @@ telemetry.clean <- function(data,id)
   # sort in time
   ORDER <- sort.list(data$t,na.last=NA,method="quick")
   data <- data[ORDER,]
-  if(any(ORDER != 1:length(ORDER))) { warning("Times out of order in ",id," sorted") }
+  if(any(ORDER != 1:length(ORDER))) { warning("Times might be out of order or duplicated in ",id,". Make sure that timeformat and timezone are correctly specified.") }
   
   # remove duplicate observations
   ORDER <- length(data$t)
   data <- unique(data)
-  if(ORDER != length(data$t)) { warning("Duplicate data in ",id," removed") }
+  if(ORDER != length(data$t)) { warning("Duplicate data in ",id," removed.") }
   
   # exit with warning on duplicate times
-  if(anyDuplicated(data$t)) { warning("Duplicate times in ",id) }
+  if(anyDuplicated(data$t)) { warning("Duplicate times in ",id,". Data cannot be fit without an error model.") }
   
   # remove old level information
   data <- droplevels(data)

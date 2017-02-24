@@ -601,6 +601,8 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,verbose=FALSE)
 # FIT MODEL WITH LIKELIHOOD FUNCTION (convenience wrapper to optim)
 ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(maxit=.Machine$integer.max),trace=FALSE,...)
 {
+  method <- match.arg(method,c("ML","pREML","REML"))
+  
   # clean/validate
   CTMM <- ctmm.ctmm(CTMM)
   
@@ -945,7 +947,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(maxit=.Machine$in
     dimnames(CTMM$COV) <- list(NAMES,NAMES)
     
     # perturbative correction
-    if(grepl("pREML",method))
+    if(method=="pREML")
     {
       COV <- CTMM$COV
       pNAMES <- names(pars)
