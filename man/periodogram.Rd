@@ -3,8 +3,7 @@
 \alias{plot.periodogram}
 \encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{
-Calculate the Lomb-Scargle periodogram of animal-tracking data
+\title{Calculate the Lomb-Scargle periodogram of animal-tracking data
 }
 \description{
 This function calculates isotropic Lomb-Scargle periodogram (LSP, Scargle, 1982) from a telemetry object. One of two algorithms is used. The slow \eqn{O(n^2)} algorithm vectorizes the exact relations of Scargle (1982), while the fast \eqn{O(n \log n)} algorithm uses the FFT method described in Péron et al (2016). The latter method is exact if the data are evenly scheduled, permitting gaps, and otherwise it can be made arbitrarily precise via the \code{res.time} option.
@@ -33,7 +32,7 @@ periodogram(data,CTMM=NULL,dt=NULL,res.freq=1,res.time=1,fast=NULL,axes=c("x","y
 }
 \details{
 If no \code{dt} is specified, the median sampling interval is used. This is typically a good assumption for most data, even when there are gaps and this choice corresponds to the discrete Fourier transform (DFT) periodogram for evenly-sampled data.
-%If no \code{T} is specified, the full sampling period is used. 
+%If no \code{T} is specified, the full sampling period is used.
 
 At default resolution the frequency grid interval is given by \code{1/(2*(range(data$t)+dt))} and the frequency cutoff is given by \code{1/(2*dt)}, both in accordance with the DFT periodogram. Increasing \code{res.freq} beyond \code{res.freq=1} will make for a smooth periodogram, but sequential frequencies will be highly correlated. The \code{max=TRUE} option to \code{plot.periodogram} may be useful for \code{res.freq>1}. Increasing \code{res.time} beyond \code{res.time=1} is helpful if there is variability in the sampling rate and \code{fast>0}.
 

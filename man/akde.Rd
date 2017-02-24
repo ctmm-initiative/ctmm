@@ -4,9 +4,7 @@
 \alias{akde.list}
 \alias{mean.UD}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{
-Calculate an autocorrelated kernel density estimate
-}
+\title{Calculate an autocorrelated kernel density estimate}
 \description{
 This function calculates autocorrelated kernel density home-range estimates from \code{telemetry} data and a corresponding continuous-time movement model.
 }

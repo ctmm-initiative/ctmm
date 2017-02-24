@@ -4,3 +4,5 @@
 .Rhistory
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^NEWS\.md$
+^docs/$

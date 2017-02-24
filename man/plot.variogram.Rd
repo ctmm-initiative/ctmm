@@ -2,8 +2,7 @@
 \alias{plot.variogram}
 \alias{zoom,variogram-method}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{
-Plotting methods for variogram objects.
+\title{Plotting methods for variogram objects.
 }
 \description{
 Produces simple plots of \code{varigram} objects (semi-variance vs. time lag) and model semi-variance functions, with approximate confidence intervals around the semi-variance estimates.

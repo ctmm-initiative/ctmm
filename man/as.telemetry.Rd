@@ -6,8 +6,7 @@
 \alias{summary.telemetry}
 \encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{
-Import, coerce, and summarize MoveBank data
+\title{Import, coerce, and summarize MoveBank data
 }
 \description{Functions to import MoveBank csv files, \code{data.frame}, and \code{Move} objects, coerce them into \code{telemetry} objects, and summarize them.}
 

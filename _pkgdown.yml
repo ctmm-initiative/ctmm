@@ -1,0 +1,17 @@
+templates:
+  params:
+    bootswatch: yeti
+
+navbar:
+  title: ~
+  type: default
+  left:
+  - text: News
+    href: news/index.html
+  - text: Reference
+    href: reference/index.html
+  - text: Vignette - Variograms
+    href: https://cran.r-project.org/web/packages/ctmm/vignettes/variogram.html
+  - text: Vignette - akde
+    href: https://cran.r-project.org/web/packages/ctmm/vignettes/akde.html
+  right: []

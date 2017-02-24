@@ -5,8 +5,7 @@
 \alias{zoom,telemetry-method}
 \alias{zoom,UD-method}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{
-Plotting methods for telemetry objects.
+\title{Plotting methods for telemetry objects.
 }
 \description{
 Produces simple plots of \code{telemetry} objects, possibly overlayed with a Gaussian \code{ctmm} movement model or a \code{UD} utilization distribution.
