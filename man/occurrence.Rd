@@ -1,9 +1,7 @@
 \name{occurrence}
 \alias{occurrence}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{
-Calculate a Kriged occurrence disribution estimate
-}
+\title{Calculate a Kriged occurrence disribution estimate}
 \description{
 This function calculates an occurrence distribution from \code{telemetry} data and a continuous-time movement model.
 }

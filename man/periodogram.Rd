@@ -3,9 +3,7 @@
 \alias{plot.periodogram}
 \encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{
-Calculate the Lomb-Scargle periodogram of animal-tracking data
-}
+\title{Calculate the Lomb-Scargle periodogram of animal-tracking data}
 \description{
 This function calculates isotropic Lomb-Scargle periodogram (LSP, Scargle, 1982) from a telemetry object. One of two algorithms is used. The slow \eqn{O(n^2)} algorithm vectorizes the exact relations of Scargle (1982), while the fast \eqn{O(n \log n)} algorithm uses the FFT method described in Péron et al (2016). The latter method is exact if the data are evenly scheduled, permitting gaps, and otherwise it can be made arbitrarily precise via the \code{res.time} option.
 }

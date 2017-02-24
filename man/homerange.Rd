@@ -1,9 +1,7 @@
 \name{homerange}
 \alias{homerange}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{
-Calculate a range distribution estimate
-}
+\title{Calculate a range distribution estimate}
 \description{
 This function estimates the range distribution from \code{telemetry} data and a continuous-time movement model.
 }

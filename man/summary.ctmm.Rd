@@ -1,9 +1,7 @@
 \name{summary.ctmm}
 \alias{summary.ctmm}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{
-Summarize a continuous-time movement model
-}
+\title{Summarize a continuous-time movement model}
 \description{ This function returns a list of biologically interesting parameters in human readable format, as derived from a continuous-time movement model.}
 \usage{
 \S3method{summary}{ctmm}(object,level=0.95,level.UD=0.95,units=TRUE,IC="AICc",...)

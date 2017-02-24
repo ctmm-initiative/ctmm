@@ -6,9 +6,7 @@
 \alias{simulate.ctmm}
 \alias{simulate.telemetry}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{
-Predict or simulate from a continuous-time movement model
-}
+\title{Predict or simulate from a continuous-time movement model}
 \description{
 Given a \code{ctmm} movement model (and optional \code{telemetry} data to condition upon) these functions predict or simulate animal locations over a prescribed set of times.
 }

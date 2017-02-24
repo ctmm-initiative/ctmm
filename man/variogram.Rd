@@ -1,9 +1,7 @@
 \name{variogram}
 \alias{variogram}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{
-Calculate an empirical variogram from movement data
-}
+\title{Calculate an empirical variogram from movement data}
 \description{
 This function calculates the isotropic empirical variogram of two-dimensional tracking data for visualizing stationary (time-averaged) autocorrelation structure.
 One of two algorithms is used. The slow \eqn{O(n^2)} algorithm is based upon the lag-weighted variogram of Fleming et al (2014).
