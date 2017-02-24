@@ -14,4 +14,6 @@ navbar:
     href: https://cran.r-project.org/web/packages/ctmm/vignettes/variogram.html
   - text: Vignette - akde
     href: https://cran.r-project.org/web/packages/ctmm/vignettes/akde.html
-  right: []
+  right:
+    - icon: fa-github fa-2x
+      href: https://github.com/ctmm-initiative/ctmm
