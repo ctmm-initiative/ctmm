@@ -2,6 +2,7 @@
 .gitattributes
 .gitignore
 .Rhistory
+..Rcheck
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^NEWS\.md$
