@@ -13,7 +13,7 @@ Authors@R: c(person(c("Christen","H."),"Fleming",email="flemingc@si.edu",role=c(
              person("Kamran","Safi",role="ctb"),
              person(c("Paul","C."),"Cross",role="dtc"),
              person("Thomas","Mueller",role="dtc"))
-URL: http://biology.umd.edu/movement.html
+URL: https://github.com/ctmm-initiative/ctmm, http://biology.umd.edu/movement.html
 Depends: R (>= 3.3.0)
 Imports: expm, fasttime, graphics, grDevices, manipulate, MASS, Matrix, methods, numDeriv, pbivnorm, raster, rgdal, scales, stats, utils
 Suggests: fftw, knitr, move, parallelsugar, sp
@@ -21,3 +21,7 @@ Description: Functions for identifying, fitting, and applying continuous-space, 
 License: GPL-3
 VignetteBuilder: knitr
 NeedsCompilation: no
+<<<<<<< HEAD
+=======
+RoxygenNote: 6.0.1
+>>>>>>> origin/master
