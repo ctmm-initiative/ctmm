@@ -37,7 +37,7 @@ simulate(object,nsim=1,seed=NULL,...)
 }
 \details{
 The prediction or simulation necessarily requires a \code{ctmm} model object and optionally can be conditioned off of \code{telemetry} data, if specified.
-If no data is provided, the simulation will be purely Gaussian.
+If no data is provided, the simulation will be purely Gaussian. 
 Details of the movement model parameters can be found in \code{\link{ctmm.fit}}.
 
 The \code{t} argument fixes the output times to a specific array of times.

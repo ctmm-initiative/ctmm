@@ -5,11 +5,12 @@ mcoptim <- function(par,fn,gr=NULL,method="Newton",lower=-Inf,upper=Inf,control=
 {
   method <- match.arg(method,c("Newton","Simplex"))
   
+  # check complains about visible bindings
+  fnscale <- parscale <- ndeps <- maxit <- abstol <- reltol <- trace <- mc.cores <- NULL
   # fix default control arguments
-  default <- list(fnscale=1,parscale=abs(par),ndeps=1e-3,maxit=100,abstol=0,reltol=sqrt(.Machine$double.eps),trace=FALSE,mc.cores=parallel::detectCores())
+  default <- list(fnscale=1,parscale=pmin(abs(par),abs(par-lower),abs(upper-par)),ndeps=1e-3,maxit=100,abstol=0,reltol=sqrt(.Machine$double.eps),trace=FALSE,mc.cores=parallel::detectCores())
   control <- replace(default,names(control),control)
-  
-  # CRAN DOES NOT LIKE ATTACH :(
+  # check does not like attach
   NAMES <- names(control)
   lapply(1:length(control),function(i){ assign(NAMES[i],control[[i]]) })
   
@@ -24,12 +25,17 @@ mcoptim <- function(par,fn,gr=NULL,method="Newton",lower=-Inf,upper=Inf,control=
   lower <- array(lower,DIM)/parscale
   upper <- array(upper,DIM)/parscale
   
-  # prototype Hessian and inverse Hessian matrices
-  STD <- parscale # diagonal standard deivations
-  COV <- diag(parscale^2) # inverse hessian
-  HESS <- diag(1/parscale^2) # hesssian
+  # prototype Hessian and inverse Hessian matrices relative to parscale
+  STD <- array(1,DIM) # diagonal standard deivations
+  COV <- diag(DIM) # inverse hessian
+  HESS <- diag(DIM) # hesssian
   GRAD <- array(0,DIM) # gradient
-  ERR <- 1 # relative error
+  
+  # start with the canonical directions
+  DIR <- diag(1,DIM) # rows of column vectors
+  # relative error initially assumed along directions
+  ERR <- 1
+  
   
   ######################
   # apply box constraints to travel in a straight line from (global) par by dp
@@ -40,13 +46,16 @@ mcoptim <- function(par,fn,gr=NULL,method="Newton",lower=-Inf,upper=Inf,control=
     p <- par + dp
     
     # did we hit a boundary?
-    UP <- (p >= upper)
     LO <- (p <= lower)
-    if(any(UP) || any(LO)) { BOX <- TRUE } else { BOX <- FALSE }
+    UP <- (p >= upper)
+
+    # are we trying to push through that boundary?
+    LO <- LO && (dp[LO]<0)
+    UP <- UP && (dp[UP]>0)
     
-    # time until we hit the first boundary
-    if(any(UP)) { t.up <- (upper-par)[UP]/dp[UP] } else { t.up <- 1 }
+    # time until we hit the first new boundary
     if(any(LO)) { t.lo <- (lower-par)[LO]/dp[LO] } else { t.lo <- 1 }
+    if(any(UP)) { t.up <- (upper-par)[UP]/dp[UP] } else { t.up <- 1 }
     t <- min(t.lo,t.up)
     
     # stop at first boundary
@@ -55,19 +64,62 @@ mcoptim <- function(par,fn,gr=NULL,method="Newton",lower=-Inf,upper=Inf,control=
     return(p)
   }
   
-  ##################
-  # two-sided symmetric derivatives
-  ##################
-  # invent some initial points surrounding the initial guess (by parscale)
-  P1 <- array(0,c(DIM,DIM))
-  P2 <- P1
-  for(i in 1:DIM)
+  
+  ######################
+  # minimally rotate orthonormal basis DIR to include P
+  ######################
+  Gram.Schmidt <- function(DIR,P)
   {
-    # set of orthogonal displacements
-    P1[i,i] <- + ndeps*STD*ERR
-    P2[i,i] <- - ndeps*STD*ERR
-    # if par is on a boundary then we need to generalize this so that both P1 & P2 are in the same direction !!!
+    # calculate overlaps
+    OVER <- colSums(P*DIR)
+    # replace dimension of largest overlap with P
+    MAX <- which.max(abs(OVER))
+    # OVER[MAX,] <- P
+    # make sure P is in its most canonical slot
+    SWAP <- which.max(abs(P))
+    Q <- OVER[SWAP,]
+    OVER[SWAP,] <- P
+    OVER[MAX,] <- Q
+    
+    # subtract projection from all but P direction
+    DIR[-SWAP,] <- DIR[-SWAP,] - (OVER[-SWAP] %o% P)
+    
+    # re-normalize just in case
+    MAG <- sqrt(colSums(DIR^2))
+    DIR <- t(t(DIR)/MAG)
+    
+    return(DIR)
   }
+  
+  ######################
+  # MAIN LOOP
+  ######################
+  
+  ################################
+  # STEP 1: O(DIM) differentiation
+  ################################
+  # we differentiate in DIM current directions DIR from point par
+  
+  # what points are on the boundary, so that we have to do one-sided derivatives
+  LO <- (par <= lower)
+  UP <- (par >= upper)
+  BOX < UP - LO
+
+  # rotate coordinates so that BOXed dimensions are fixed/isolated in DIR and DIR[,BOX] points strictly away from boundary
+  for(i in which(BOX))
+  {
+    box.dir <- array(0,DIM)
+    box.dir[i] <- -BOX[i]
+    DIR <- Gram.Schmidt(DIR,box.dir)
+  }
+  
+  # sample initial points surrounding the initial point for numerical differentiation
+  dP <- (ndeps*ERR)*t(STD*t(DIR))
+  P1 <- +dP + par # away from boundaries
+  P2 <- -dP + par # towards boundaries
+  # don't sample points across boundary, fold back instead - correct one-sided derivatives implemented
+  if(any(BOX)) { P2[,BOX] <- +dP[,BOX]/2 + par }
+  
   # apply these displacements within box constraints
   P1 <- apply(P1,2,line.boxer)
   P2 <- apply(P2,2,line.boxer)
@@ -84,45 +136,40 @@ mcoptim <- function(par,fn,gr=NULL,method="Newton",lower=-Inf,upper=Inf,control=
   # convert back to displacements
   P1 <- P1 - par
   P2 <- P2 - par
-  # magnitudes of displacement vectors
-  # M1 <- sqrt(colSums(P1^2))
-  M2 <- sqrt(colSums(P2^2))
-  # directions of displacement vectors (defining the positive directon)
-  D <- t(t(P2)/M2)
-  # R applies addition and multiplication to different margins by default... weird
-  # consistent magnitudes in the same direction (general purpose code)
-  M1 <- colSums(P1*D)
+  # signed magnitudes of displacement vectors
+  M1 <- colSums(DIR * P1)
+  M2 <- colSums(DIR * P2)
   
   F1 <- F1-FN
   F2 <- F2-FN
   G1 <- F1/M1
   G2 <- F2/M2
-  # Hessian estimates in the direction of D, not necessarily assuming that par is between P1 & P2
+  # Hessian estimates, not necessarily assuming that par is between P1 & P2
   H <- (G2-G1)/(M2-M1)*2
-  # make sure we are always going downhill
-
+  
   # gradient estimates
   GRAD <- (G2/M2-G1/M1)/(1/M2-1/M1)
-
-  # transform gradient to canonical coordinates
-  GRAD <- c(D %*% GRAD)
   
   # transform Hessian to current coordinates
-  HESS <- t(D) %*% HESS %*% D
-  COV <- t(D) %*% COV %*% D
+  HESS <- t(DIR) %*% HESS %*% DIR
+  COV <- t(DIR) %*% COV %*% DIR
   # curvature correction factor: new curvature / old curvature
-  COR <- sqrt(H/diag(HESS))
+  COR <- sqrt(abs(H/diag(HESS))) # does this flip the correlations? !!!
   COR <- array(COR,c(DIM,DIM))
   COR <- t(COR) * COR
   # update curvatures while preserving correlations
   HESS <- COR * HESS
   # update covariances the same way as Hessian (prevents requirement of matrix inversion)
-  COR <- sqrt(diag(HESS)/H)
+  COR <- sqrt(abs(diag(HESS)/H))
   COR <- array(COR,c(DIM,DIM))
   COR <- t(COR) * COR
   COV <- COR * COV
 
-  # standard deviations
+  # standard deviations along DIR axes
+  STD <- sqrt(abs(diag(COV)))
+  
+  # transform gradient to canonical coordinates
+  GRAD <- c(DIR %*% GRAD)
   
   # transform Hessian back to canonical coordinates
   HESS <- D %*% HESS %*% t(D)
@@ -130,6 +177,12 @@ mcoptim <- function(par,fn,gr=NULL,method="Newton",lower=-Inf,upper=Inf,control=
   
   # Newton-Raphson search step
   dP <- -(COV %*% GRAD)
+  # don't search past boundary, but along the boundary
+  if(BOX && GRAD[BOX,BOX]<0)
+  {
+    dP[BOX] <- 0
+    dP[-BOX] <- -qr.solve(HESS[-BOX,-BOX],GRAD[-BOX])
+  }
   BEST <- P + dP
   
   # generate a sequence of points from old par to the other side of new par
@@ -206,154 +259,4 @@ mcoptim <- function(par,fn,gr=NULL,method="Newton",lower=-Inf,upper=Inf,control=
   
   
   
-  # take best points avoiding degeneracy
-  P <- P[1:(DIM+1)]
-  FN <- FN[1:(DIM+1)]
-  for(i in 1:DIM)
-  {
-    if(F1[i]<F2[i])
-    {
-      P[[i+1]] <- P1[[i]]
-      FN[i+1] <- F1[i]
-    }
-    else
-    {
-      P[[i+1]] <- P2[[i]]
-      FN[i+1] <- F2[i]
-    }
-  }
-  rm(P1,P2,F1,F2)
-  
-  # sort by objective function
-  sorter <- function()
-  {
-    FN <<- sort(FN,index.return=TRUE)
-    P <<- P[FN$ix]
-    FN <<- FN$x
-  }
-  sorter()
-  
-  # decompose vector in to magnitude and direction
-  decompose <- function(par)
-  {
-    MAG <- sqrt(sum(par^2))
-    DIR <- par/MAG
-    return(list(MAG=MAG,DIR=DIR))
-  }
-  
-  # 1/vector for gradient estimation
-  reciprocate <- function(par)
-  {
-    par <- decompose(par)
-    return(par$DIR/par$MAG)
-  }
-  
-  # Newton iterator that can handle negative curvatures appropriately
-  boxsolver <- function(HESS,GRAD,P)
-  {
-    P - qr.solve(HESS,GRAD)
-  }
-  
-  ################
-  # main loop
-  TOL <- Inf
-  counts <- 0
-  NAMES <- c("centroid","reflection","expansion","contraction")
-  while(TOL >= abstol && TOL/FN[1] >= reltol && counts < maxit)
-  {
-    # new points to evaluate
-    PN <- vector("list",4)
-    # centroid ######## seems like we can use this guy more ###########
-    PN[[1]] <- Reduce('+',P[1:DIM])/DIM
-    # reflection
-    PN[[2]] <- PN[[1]] + alpha*(PN[[1]]-P[[DIM+1]])
-    # expansion
-    PN[[3]] <- PN[[1]] + gamma*(PN[[2]]-PN[[1]])
-    # contraction
-    PN[[4]] <- PN[[1]] + rho*(P[[DIM+1]]-PN[[1]])
-    
-    # fill up remaining cue with approximate Newton search
-    # approximate gradient from simplex
-    GRAD <- lapply(2:(DIM+1),function(i){ (FN[i]-FN[1])*reciprocate(P[[i]]-P[[1]]) })
-    GRAD <- Reduce('+',GRAD)/DIM
-    # solve for the Newton step accouting for negative curvature == boundary solution
-    GRAD <- boxsolver(HESS,GRAD,P[[1]])
-    PN[[5]] <- GRAD$P
-    # sequence along the Newton search that we will sample to improve gradient/hessian in that direction
-    SEQ <- seq(0,2,length.out=(max(mc.cores,6)-5)+2)
-    SEQ <- SEQ[2:length(SEQ)]
-    SEQ <- SEQ[SEQ!=1]
-    for(i in 6:max(mc.cores,6))
-    { PN[[i]] <- P[[1]] + SEQ[i-5]*GRAD$dP }
-
-    # evaluate new points in mc
-    PN <- lapply(PN,function(par){boxer(par)})
-    EN <- unlist(parallelsugar::mclapply(PN,fn,mc.cores=mc.cores))/fnscale
-
-    # update Hessian/Covariance with NM line search result
-    MAX <- which.max(EN[1:4]) # worst point to toss can't be in the middle
-    if(MAX==1 || MAX==4)
-    {
-      dP <- decompose(PN[[1]]-P[[DIM+1]])
-      DIR <- dP$DIR
-      # Nelder-Mead search lengths
-      MAG <- c(-rho,0,alpha,alpha*gamma) * dP$MAG
-      MAG <- MAG[-MAX]
-      # gradients along this direction
-      GRAD <- diff(EN[1:4][-MAX])/diff(MAG)
-      # Hessian along this direction
-      H <- diff(GRAD)/(MAG[3]-MAG[1])*2
-      # remove old variance & fix new variance
-      HESS <- HESS + (H - (DIR %*% HESS %*% DIR))*(DIR %o% DIR)
-    }
-    
-    # update Hessian/Covariance with Newton line search result
-    #
-    
-    # to avoid degeneracy, we can only take the best of P[1:DIM] and centroid
-    # why isn't this usually done?
-    
-    # to avoid degeneracy, we can only take the best of reflection, expansion, contraction
-    BEST <- sort(EN[2:4],index.return=TRUE)$ix[1] + 1
-    
-    # to avoid degeneracy, we can only take the 2 best of P[[1]] and Newton direction
-    
-    # shrinkage step if nothing is found
-    if(EN[BEST] >= FN[DIM+1])
-    {
-      NAME <- "shrink"
-      
-      P[2:(DIM+1)] <- lapply(P[2:(DIM+1)],function(par){P[[1]] + sigma*(par-P[[1]])})
-      FN[2:(DIM+1)] <- unlist(parallelsugar::mclapply(P[2:(DIM+1)],fn,mc.cores=mc.cores))/fnscale
-    }
-    else
-    {
-      NAME <- NAMES[BEST]
-      
-      P <- c(P,PN[BEST])
-      FN <- c(FN,EN[BEST])
-    }
-    sorter()
-    P <- P[1:(DIM+1)]
-    FN <- FN[1:(DIM+1)]
-    
-    TOL <- FN[DIM+1]-FN[1]
-    counts <- counts + 1
-    
-    if(trace) { message("step ",counts,"\t",NAME,"\t",TOL) }
-  }
-  # now we can include the centroid
-  P <- c(P,PN[1])
-  FN <- c(FN,EN[1])
-  sorter()
-  
-  RETURN <- list()
-  RETURN$par <- P[1]
-  RETURN$value <- FN[1]
-  RETURN$counts <- counts
-  if(counts<maxit) { RETURN$convergence <- 0 }
-  else { RETURN$convergence <- 1 }
-  # return 10 if degeneracy in P[1:DIM]
-  
-  return(RETURN)
 }
