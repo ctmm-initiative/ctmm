@@ -1,4 +1,4 @@
-0.3.6 2017-02-22
+0.3.6 2017-02-24
 ================
 
   * Better UD plot boxes with new extent methods

@@ -3,7 +3,8 @@
 .gitignore
 .Rhistory
 ..Rcheck
+.Rproj
+^docs$
+_pkgdown.yml
 ^.*\.Rproj$
 ^\.Rproj\.user$
-^NEWS\.md$
-^docs/$

@@ -6,7 +6,7 @@ new.telemetry <- methods::setClass("telemetry", representation(info="list"), con
 subset.telemetry <- function(x,...)
 {
    info <- attr(x,"info")
-   x <- utils::getS3method("subset","data.frame")(x,...)
+   x <- subset.data.frame(x,...)
    x <- new.telemetry(x,info=info)
    return(x)
 }
@@ -14,7 +14,7 @@ subset.telemetry <- function(x,...)
 `[.telemetry` <- function(x,...)
 {
   info <- attr(x,"info")
-  x <- utils::getS3method("[","data.frame")(x,...)
+  x <- "[.data.frame"(x,...)
   if(class(x)=="data.frame") { x <- new.telemetry(x,info=info) }
   return(x)
 }

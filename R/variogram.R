@@ -13,7 +13,7 @@ subset.variogram <- function(x,...)
 `[.variogram` <- function(x,...)
 {
   info <- attr(x,"info")
-  x <- utils::getS3method("[","data.frame")(x,...)
+  x <- "[.data.frame"(x,...)
   if(class(x)=="data.frame") { x <- new.variogram(x,info=info) }
   return(x)
 }

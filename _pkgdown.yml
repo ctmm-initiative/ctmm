@@ -10,10 +10,10 @@ navbar:
     href: news/index.html
   - text: Reference
     href: reference/index.html
-  - text: Vignette - Variograms
-    href: https://cran.r-project.org/web/packages/ctmm/vignettes/variogram.html
-  - text: Vignette - akde
-    href: https://cran.r-project.org/web/packages/ctmm/vignettes/akde.html
+  - text: Variogram vignette
+    href: ../inst/doc/variogram.html
+  - text: AKDE vignette
+    href: ../inst/doc/akde.html
   right:
-    - icon: fa-github fa-2x
-      href: https://github.com/ctmm-initiative/ctmm
+  - icon: fa-github fa-2x
+    href: https://github.com/ctmm-initiative/ctmm
