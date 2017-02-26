@@ -47,6 +47,8 @@ lag.DOF <- function(data,dt=NULL,weights=NULL,lag=NULL,FLOOR=NULL,p=NULL)
 #lag.DOF is an unsupported option for end users
 bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,precision=1/2,PC="Markov",verbose=FALSE,trace=FALSE)
 {
+  PC <- match.arg(PC,c("Markov","circulant","IID","direct"))
+  
   n <- length(data$t)
   error <- 2^(log(.Machine$double.eps,2)*precision)
   
@@ -337,7 +339,7 @@ akde.telemetry <- function(data,CTMM,VMM=NULL,debias=TRUE,smooth=TRUE,error=0.00
   {
     axes <- CTMM$axes
     
-    # smooth out errors
+    # smooth out errors (which also removes duplicate times)
     z <- NULL
     if(!is.null(VMM))
     {
@@ -346,7 +348,7 @@ akde.telemetry <- function(data,CTMM,VMM=NULL,debias=TRUE,smooth=TRUE,error=0.00
       axes <- c(axes,axis)
     }
     if(CTMM$error && smooth) { data <- predict(CTMM,data=data,t=data$t) }
-    # copy back
+    # copy back !!! times and locations
     if(!is.null(VMM)) { data[,axis] <- z }
     
     # calculate optimal bandwidth and some other information

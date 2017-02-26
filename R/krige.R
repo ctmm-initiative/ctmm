@@ -156,7 +156,7 @@ smoother <- function(DATA,CTMM,...)
 
 
 ########################################
-# fill in data gaps with missing observations
+# fill in data gaps with missing observations of infinite error
 ########################################
 fill.data <- function(data,CTMM=ctmm(tau=Inf),verbose=FALSE,t=NULL,dt=NULL,res=1,cor.min=0,dt.max=NULL)
 {
@@ -420,7 +420,7 @@ simulate.telemetry <- function(object,nsim=1,seed=NULL,CTMM=NULL,t=NULL,dt=NULL,
 { simulate.ctmm(CTMM,nsim=nsim,seed=seed,data=object,t=t,dt=dt,res=res,...) }
     
 ##########################
-# predict locations at certaint times
+# predict locations at certaint times !!! make times unique
 ##########################
 predict.ctmm <- function(object,data=NULL,t=NULL,dt=NULL,res=1,...)
 {
@@ -461,6 +461,16 @@ predict.ctmm <- function(object,data=NULL,t=NULL,dt=NULL,res=1,...)
         NAME <- paste("cov.",NAMES[i],".",NAMES[j],sep="")
         data[,NAME] <- COV[,i,j]
       }
+    }
+    
+    if(!is.null(t))
+    {
+      # pair down predictions only to those initially requested
+      IN <- data$t %in% t
+      data <- data[IN,]
+      # remove duplicate predictions that arise with duplicate data (which is ok with error)
+      IN <- which(diff(data$t)==0)
+      if(length(IN)) { data <- data[-IN,] }
     }
   }
   

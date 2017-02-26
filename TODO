@@ -7,7 +7,6 @@ Aligned Krige UDs
 pregridder composite dimension?
 
 LOW HANGING FRUIT & Nagging issues
-* t argument of simulate.telemetry not being used correctly?
 * compass plot
 * summary.telemetry.list like Dong's
 * unit Environment on plots for points()

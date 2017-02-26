@@ -483,7 +483,7 @@ PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC=
         ####################################
         # make this the decrease in Lagrangian or something ?
         # weights are all on the same scale.................
-        ERROR <- sum(abs(dP))/sum(abs(P))
+        ERROR <- max(abs(dP)) * n
         
         CG.STEPS <- CG.STEPS + 1
         
