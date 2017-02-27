@@ -27,7 +27,7 @@ as.telemetry(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,...)
   \item{timezone}{Timezone argument for \code{\link{strptime}}.}
   \item{projection}{Optional PROJ.4 projection argument to be fed to \code{\link[rgdal]{project}}.}
   \item{UERE}{"User equivalent range errors" needed to translate DOP values into location uncertainty.}
-  \item{...}{Optional arguments to be fed to \code{\link{read.csv}}.}
+  \item{...}{Optional arguments to be fed to \code{\link{fread}} or \code{\link{read.csv}}, in the case of compressed files.}
 }
 
 \details{
