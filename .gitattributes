@@ -1,5 +1,6 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+* text eol=lf
 
 # Explicitly declare text files you want to always be normalized and converted
 # to native line endings on checkout.
@@ -8,9 +9,10 @@
 *.Rd text
 *.Rmd text
 DESCRIPTION text
-NEWS text
 TODO text
 
 # Denote all files that are truly binary and should not be modified.
 *.html binary
 *.rda binary
+*.svg binary
+*.png binary
