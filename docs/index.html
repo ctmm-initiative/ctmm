@@ -34,11 +34,20 @@
 <li>
   <a href="reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Vignettes
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
 <li>
-  <a href="http://htmlpreview.github.io/?https://github.com/ctmm-initiative/ctmm/blob/master/inst/doc/variogram.html">Variogram vignette</a>
-</li>
-<li>
-  <a href="http://htmlpreview.github.io/?https://github.com/ctmm-initiative/ctmm/blob/master/inst/doc/akde.html">AKDE vignette</a>
+      <a href="articles/variogram.html">Variograms and Model Selection</a>
+    </li>
+    <li>
+      <a href="articles/akde.html">Autocorrelated Kernel Density Estimation</a>
+    </li>
+  </ul>
 </li>
       </ul>
 <ul class="nav navbar-nav navbar-right">
@@ -62,7 +71,8 @@
     <div id="ctmm-continuous-time-movement-modeling" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
 <a href="#ctmm-continuous-time-movement-modeling" class="anchor"> </a>ctmm: Continuous-Time Movement Modeling</h1></div>
-<p>Functions for identifying, fitting, and applying continuous-space, continuous-time stochastic movement models to animal tracking data.</p>
+<p>ctmm is an R package for analyzing animal tracking data as a continuous-time stochastic processes. Package features include FFT variogram and Lomb-Scargle periodogram analysis, Kalman-filter maximum-likelihood estimation, Kriging, simulation, and autocorrelated kernel-density home-range estimation.</p>
+<p>First-time users can start with the Methods in Ecology and Evolution paper <a href="http://onlinelibrary.wiley.com/wol1/doi/10.1111/2041-210X.12559/abstract">ctmm: an r package for analyzing animal relocation data as a continuous-time stochastic process</a> and then move on to the up-to-date vignettes <code><a href="articles/variogram.html">vignette('variogram')</a></code> and <code><a href="articles/akde.html">vignette('akde')</a></code>.</p>
 </div>
   </div>
 

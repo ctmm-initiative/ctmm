@@ -10,10 +10,12 @@ navbar:
     href: news/index.html
   - text: Reference
     href: reference/index.html
-  - text: Variogram vignette
-    href: http://htmlpreview.github.io/?https://github.com/ctmm-initiative/ctmm/blob/master/inst/doc/variogram.html
-  - text: AKDE vignette
-    href: http://htmlpreview.github.io/?https://github.com/ctmm-initiative/ctmm/blob/master/inst/doc/akde.html
+  - text: Vignettes
+    menu:
+    - text: Variograms and Model Selection
+      href: articles/variogram.html
+    - text: Autocorrelated Kernel Density Estimation
+      href: articles/akde.html
   right:
   - icon: fa-github fa-2x
     href: https://github.com/ctmm-initiative/ctmm
