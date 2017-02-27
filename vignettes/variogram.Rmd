@@ -195,7 +195,7 @@ The height of this initial discontinuity corresponds to the variance of uncorrel
 If your tracking data is GPS and is annotated with a "DOP" column, then this information is automatically imported into the `telemetry` object and only has to be flagged in the `ctmm` model by setting `error=TRUE`. Because of some convenient mathematical relations, fitting without telemetry errors involves 1-4 fewer parameters and is, therefore, faster and more reliable than fitting with telemetry error. So if your data are not swamped by error and do not contain bursts of high-frequency fixes (which would also be relatively swamped by 5-10 meter GPS error), then you might want to apply a two stage fitting method, first from the variogram guess without telemetry error and then from that output with telemetry error. Here we demonstrate this method with Leroy the fisher cat from the `move` package:
 
 ```{r}
-DATA <- as.telemetry(system.file("extdata","leroy.csv.gz",package="move"))
+DATA <- as.telemetry(system.file("extdata","leroy.csv.gz",package="move"), zipfile = TRUE)
 # 1 hour and 1 day autocorrelation timescales
 GUESS <- ctmm(tau=c(1/4,24)*60^2)
 # first fit without telemetry error
