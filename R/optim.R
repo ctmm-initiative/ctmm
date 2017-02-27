@@ -1,14 +1,14 @@
 
 #################################
 # simplex & quasi-Newton optimizers for multiple CPU cores
-mcoptim <- function(par,fn,gr=NULL,method="Newton",lower=-Inf,upper=Inf,control=list(),hessian=FALSE)
+mcoptim <- function(par,fn,method="Newton",lower=-Inf,upper=Inf,control=list(),hessian=FALSE)
 {
   method <- match.arg(method,c("Newton","Simplex"))
   
   # check complains about visible bindings
-  fnscale <- parscale <- ndeps <- maxit <- abstol <- reltol <- trace <- mc.cores <- NULL
-  # fix default control arguments
-  default <- list(fnscale=1,parscale=pmin(abs(par),abs(par-lower),abs(upper-par)),ndeps=1e-3,maxit=100,abstol=0,reltol=sqrt(.Machine$double.eps),trace=FALSE,mc.cores=parallel::detectCores())
+  fnscale <- parscale <- ndeps <- maxit <- reltol <- trace <- fast <- mc.cores <- NULL
+  # fix default control arguments !!! add a covariance/hessian argument that takes preference over parscale
+  default <- list(fnscale=1,parscale=pmin(abs(par),abs(par-lower),abs(upper-par)),ndeps=1e-3,maxit=100,reltol=sqrt(.Machine$double.eps),trace=FALSE,fast=TRUE,mc.cores=parallel::detectCores())
   control <- replace(default,names(control),control)
   # check does not like attach
   NAMES <- names(control)
@@ -70,19 +70,24 @@ mcoptim <- function(par,fn,gr=NULL,method="Newton",lower=-Inf,upper=Inf,control=
   ######################
   Gram.Schmidt <- function(DIR,P)
   {
+    # normalize P
+    P <- P / sqrt(sum(P^2))
+    
     # calculate overlaps
     OVER <- colSums(P*DIR)
     # replace dimension of largest overlap with P
     MAX <- which.max(abs(OVER))
+    DIR[MAX,] <- P
+    OVER[MAX] <- 1
     # OVER[MAX,] <- P
     # make sure P is in its most canonical slot
     SWAP <- which.max(abs(P))
-    Q <- OVER[SWAP,]
-    OVER[SWAP,] <- P
-    OVER[MAX,] <- Q
+    DIR[c(MAX,SWAP),] <- DIR[c(SWAP,MAX),]
+    OVER[c(MAX,SWAP)] <- OVER[c(SWAP,MAX)]
     
     # subtract projection from all but P direction
-    DIR[-SWAP,] <- DIR[-SWAP,] - (OVER[-SWAP] %o% P)
+    MAX <- SWAP
+    DIR[-MAX,] <- DIR[-MAX,] - (OVER[-MAX] %o% P)
     
     # re-normalize just in case
     MAG <- sqrt(colSums(DIR^2))
@@ -91,9 +96,39 @@ mcoptim <- function(par,fn,gr=NULL,method="Newton",lower=-Inf,upper=Inf,control=
     return(DIR)
   }
   
+  
+  ###########################################
+  # calculate local derivatives (along directions DIR) from 3 points, with (par,FN) the best (global variables)
+  ###########################################
+  QuadSolve <- function(P1,P2,DIR,F1,F2)
+  {
+    # convert back to displacements
+    P1 <- P1 - par
+    P2 <- P2 - par
+    # signed magnitudes of displacement vectors
+    # P1, P2, DIR columns will always be parallel
+    M1 <- colSums(DIR * P1)
+    M2 <- colSums(DIR * P2)
+    
+    F1 <- F1-FN
+    F2 <- F2-FN
+    
+    G1 <- F1/M1
+    G2 <- F2/M2
+    # Hessian estimates, not necessarily assuming that par is between P1 & P2
+    HESS <- (G2-G1)/(M2-M1)*2
+    
+    # gradient estimates, also not assuming that par is between P1 & P2
+    GRAD <- (G2/M2-G1/M1)/(1/M2-1/M1)
+    
+    return(list(GRAD=GRAD,HESS=HESS)) 
+  }
+  
+  counts <- 0
   ######################
   # MAIN LOOP
   ######################
+  counts <- counts + 1
   
   ################################
   # STEP 1: O(DIM) differentiation
@@ -105,20 +140,22 @@ mcoptim <- function(par,fn,gr=NULL,method="Newton",lower=-Inf,upper=Inf,control=
   UP <- (par >= upper)
   BOX < UP - LO
 
-  # rotate coordinates so that BOXed dimensions are fixed/isolated in DIR and DIR[,BOX] points strictly away from boundary
+  # rotate coordinates so that BOXed dimensions are fixed/isolated in DIR and DIR[,BOX] points strictly towards boundary
   for(i in which(BOX))
   {
-    box.dir <- array(0,DIM)
-    box.dir[i] <- -BOX[i]
-    DIR <- Gram.Schmidt(DIR,box.dir)
+    dir <- array(0,DIM)
+    dir[i] <- BOX[i]
+    DIR <- Gram.Schmidt(DIR,dir)
   }
+  # now fix BOX to be TRUE/FALSE
+  BOX <- as.logical(BOX)
   
   # sample initial points surrounding the initial point for numerical differentiation
   dP <- (ndeps*ERR)*t(STD*t(DIR))
-  P1 <- +dP + par # away from boundaries
-  P2 <- -dP + par # towards boundaries
+  P1 <- -dP + par # away from boundaries
+  P2 <- +dP + par # towards boundaries
   # don't sample points across boundary, fold back instead - correct one-sided derivatives implemented
-  if(any(BOX)) { P2[,BOX] <- +dP[,BOX]/2 + par }
+  if(any(BOX)) { P2[,BOX] <- -dP[,BOX]/2 + par }
   
   # apply these displacements within box constraints
   P1 <- apply(P1,2,line.boxer)
@@ -128,40 +165,27 @@ mcoptim <- function(par,fn,gr=NULL,method="Newton",lower=-Inf,upper=Inf,control=
   # mc evaluate all points
   P <- c(list(par),apply(P1,2,list),apply(P2,2,list))
   FN <- unlist(parallelsugar::mclapply(P,func,mc.cores=mc.cores))
-  # separate into parts
+  # separate back into parts
   F1 <- FN[2:(DIM+1)]
   F2 <- FN[(DIM+2):(1+2*DIM)]
   FN <- FN[1]
   
-  # convert back to displacements
-  P1 <- P1 - par
-  P2 <- P2 - par
-  # signed magnitudes of displacement vectors
-  M1 <- colSums(DIR * P1)
-  M2 <- colSums(DIR * P2)
-  
-  F1 <- F1-FN
-  F2 <- F2-FN
-  G1 <- F1/M1
-  G2 <- F2/M2
-  # Hessian estimates, not necessarily assuming that par is between P1 & P2
-  H <- (G2-G1)/(M2-M1)*2
-  
-  # gradient estimates
-  GRAD <- (G2/M2-G1/M1)/(1/M2-1/M1)
+  # calculate axial derivatives to second order
+  DIFF <- QuadSolve(P1,P2,DIR,F1,F2)
+  GRAD <- DIFF$GRAD
+  H <- DIFF$HESS
   
   # transform Hessian to current coordinates
   HESS <- t(DIR) %*% HESS %*% DIR
   COV <- t(DIR) %*% COV %*% DIR
   # curvature correction factor: new curvature / old curvature
-  COR <- sqrt(abs(H/diag(HESS))) # does this flip the correlations? !!!
-  COR <- array(COR,c(DIM,DIM))
+  H <- sqrt(abs(H/diag(HESS)))
+  COR <- array(H,c(DIM,DIM))
   COR <- t(COR) * COR
   # update curvatures while preserving correlations
   HESS <- COR * HESS
   # update covariances the same way as Hessian (prevents requirement of matrix inversion)
-  COR <- sqrt(abs(diag(HESS)/H))
-  COR <- array(COR,c(DIM,DIM))
+  COR <- array(1/H,c(DIM,DIM))
   COR <- t(COR) * COR
   COV <- COR * COV
 
@@ -172,18 +196,34 @@ mcoptim <- function(par,fn,gr=NULL,method="Newton",lower=-Inf,upper=Inf,control=
   GRAD <- c(DIR %*% GRAD)
   
   # transform Hessian back to canonical coordinates
-  HESS <- D %*% HESS %*% t(D)
-  COV <- D %*% COV %*% t(D)
+  HESS <- DIR %*% HESS %*% t(DIR)
+  COV <- DIR %*% COV %*% t(DIR)
   
   # Newton-Raphson search step
   dP <- -(COV %*% GRAD)
   # don't search past boundary, but along the boundary
-  if(BOX && GRAD[BOX,BOX]<0)
+  if(BOX && GRAD[BOX]>0)
   {
     dP[BOX] <- 0
-    dP[-BOX] <- -qr.solve(HESS[-BOX,-BOX],GRAD[-BOX])
+    dP[-BOX] <- -PDsolve(HESS[-BOX,-BOX],GRAD[-BOX])
   }
-  BEST <- P + dP
+  
+  # test for stopping condition here
+  ERROR <- max(dP/STD)
+  if(ERROR < reltol) {} # break !!!
+  
+  # calculate best DIR and orthonormalize the remaining DIRs
+  BEST <- which.max(abs(dP)) # future index of dP direction
+  DIR <- Gram.Schmidt(DIR,dP)
+  
+  ##################
+  # LINE SEARCH LOOP
+  ##################
+  counts <- counts + 1
+  
+  # where we will store all line search results
+  P.ALL <- cbind(par)
+  F.ALL <- FN
   
   # generate a sequence of points from old par to the other side of new par
   P <- line.boxer(2*dP)
@@ -195,9 +235,6 @@ mcoptim <- function(par,fn,gr=NULL,method="Newton",lower=-Inf,upper=Inf,control=
   P <- dP + par
   
   # evaluate objective function
-  P.ALL <- cbind(par)
-  F.ALL <- FN
-  
   P <- apply(P,2,list)
   FN <- unlist(parallelsugar::mclapply(P,func,mc.cores=mc.cores))
   
@@ -207,56 +244,63 @@ mcoptim <- function(par,fn,gr=NULL,method="Newton",lower=-Inf,upper=Inf,control=
   
   # do we need to keep going to capture the minimum?
   MIN <- which.min(F.ALL)
-  if(MIN==1) # we went too far
+  if(MIN==1) # we went too far in first step
   {
     
   }
-  else if(MIN==length(F.ALL)) # we didn't go far enough
+  else if(MIN==length(F.ALL)) # we didn't go far enough or we hit a boundary
   {
+    # we hit a boundary and can stop
+    
+    # we didn't hit a boundary and need to keep going
+    
+    # curvature is negative and so search should accelerate naturally
+    
+    # curvature is positive and a linear sequence is too slow
     
   }
-  else # we improved our esitmate
+  else # we improved our estimate and can stop the line search
   {
+    # take known best point
+    par <- P.ALL[MIN]
+    FN <- F.ALL[MIN]
     
-  }
-  
-  # update relative ERRor
-  
-  # test for stopping condition
+    # interpolate to an even better point
+    if(fast)
+    {
+      # take best triplet
+      P1 <- cbind(P[MIN-1])
+      P2 <- cbind(P[MIN+1])
+      F1 <- F.ALL[MIN-1]
+      F2 <- F.ALL[MIN+1]
+      
+      # calculate gradient and curvature
+      DIFF <- QuadSolve(P1,P2,DIR[,BEST,drop=FALSE],F1,F2)
+      GRAD <- DIFF$GRAD
+      H <- DIFF$HESS
+      
+      # estimate better location
+      par <- par - (GRAD/H)*DIR[,BEST]
 
-  # shrink steps
+      # update curvature & error along this axis?
+      # we will do better in the next iteration
+      
+      # break out of line search !!!
+    }
+  }
   
-  # accelerated sequence of M geometrically?
+
+
   
-  # construct new coordinate system
-  
-  # sort old directions by overlap with search direction
-  
-  # Gram–Schmidt from least overlap to most overlap, replacing most overlap with search direction
-  
-  # go back to differentiating
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+  # return stuff in similar format to optim
+  RETURN <- list()
+  RETURN$par <- par*parscale
+  RETURN$value <- FN*fnscale
+  RETURN$counts <- counts
+  RETURN$hessian <- HESS
+  RETURN$covariance <- COV
+  RETURN$lower <- lower
+  RETURN$upper <- upper
+      
+  return(RETURN)
 }

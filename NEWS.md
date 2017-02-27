@@ -1,7 +1,9 @@
-0.3.6 2017-02-24
+0.3.6 2017-02-25
 ================
 
   * Better UD plot boxes with new extent methods
+
+  * akde() can now handle duplicate times (with an error model)
 
   * Reinstated column name preferences in as.telemetry
   
