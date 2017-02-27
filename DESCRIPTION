@@ -1,7 +1,7 @@
 Encoding: UTF-8
 Package: ctmm
 Version: 0.3.6
-Date: 2017-02-25
+Date: 2017-02-27
 Title: Continuous-Time Movement Modeling
 Authors@R: c(person(c("Christen","H."),"Fleming",email="flemingc@si.edu",role=c("aut","cre")),
              person(c("Justin","M."),"Calabrese",email="calabresej@si.edu",role="aut"),
@@ -15,7 +15,7 @@ Authors@R: c(person(c("Christen","H."),"Fleming",email="flemingc@si.edu",role=c(
              person("Thomas","Mueller",role="dtc"))
 URL: https://github.com/ctmm-initiative/ctmm, http://biology.umd.edu/movement.html
 Depends: R (>= 3.3.0)
-Imports: expm, fasttime, graphics, grDevices, manipulate, MASS, Matrix, methods, numDeriv, pbivnorm, raster, rgdal, scales, stats, utils
+Imports: bit64, data.table, expm, fasttime, graphics, grDevices, manipulate, MASS, Matrix, methods, numDeriv, pbivnorm, raster, rgdal, scales, stats, utils
 Suggests: fftw, knitr, move, parallelsugar, sp
 Description: Functions for identifying, fitting, and applying continuous-space, continuous-time stochastic movement models to animal tracking data.
 License: GPL-3
