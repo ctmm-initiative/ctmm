@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Calculate the Lomb-Scargle periodogram of animal-tracking data — periodogram â€¢ ctmm</title>
+<title>Calculate the Lomb-Scargle periodogram of animal-tracking data â€” periodogram â€¢ ctmm</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -54,11 +54,20 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
-<li>
-  <a href="../../inst/docs/variogram.html">Variogram vignette</a>
-</li>
-<li>
-  <a href="../../inst/docs/akde.html">AKDE vignette</a>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Vignettes
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/variogram.html">Variograms and Model Selection</a>
+    </li>
+    <li>
+      <a href="../articles/akde.html">Autocorrelated Kernel Density Estimation</a>
+    </li>
+  </ul>
 </li>
       </ul>
       
@@ -84,7 +93,7 @@
     </div>
 
     
-    <p>This function calculates isotropic Lomb-Scargle periodogram (LSP, Scargle, 1982) from a telemetry object. One of two algorithms is used. The slow \(O(n^2)\) algorithm vectorizes the exact relations of Scargle (1982), while the fast \(O(n \log n)\) algorithm uses the FFT method described in Péron et al (2016). The latter method is exact if the data are evenly scheduled, permitting gaps, and otherwise it can be made arbitrarily precise via the <code>res.time</code> option.</p>
+    <p>This function calculates isotropic Lomb-Scargle periodogram (LSP, Scargle, 1982) from a telemetry object. One of two algorithms is used. The slow \(O(n^2)\) algorithm vectorizes the exact relations of Scargle (1982), while the fast \(O(n \log n)\) algorithm uses the FFT method described in PÃ©ron et al (2016). The latter method is exact if the data are evenly scheduled, permitting gaps, and otherwise it can be made arbitrarily precise via the <code>res.time</code> option.</p>
     
 
     <pre><span class='fu'>periodogram</span>(<span class='no'>data</span>,<span class='kw'>CTMM</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>dt</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>res.freq</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>res.time</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>fast</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>axes</span><span class='kw'>=</span><span class='fu'>c</span>(<span class='st'>"x"</span>,<span class='st'>"y"</span>))
@@ -130,7 +139,7 @@
 <!-- %If no \code{T} is specified, the full sampling period is used.  --></p>
     <p>At default resolution the frequency grid interval is given by <code>1/(2*(range(data$t)+dt))</code> and the frequency cutoff is given by <code>1/(2*dt)</code>, both in accordance with the DFT periodogram. Increasing <code>res.freq</code> beyond <code>res.freq=1</code> will make for a smooth periodogram, but sequential frequencies will be highly correlated. The <code>max=TRUE</code> option to <code>plot.periodogram</code> may be useful for <code>res.freq&gt;1</code>. Increasing <code>res.time</code> beyond <code>res.time=1</code> is helpful if there is variability in the sampling rate and <code>fast&gt;0</code>.</p>
     <p>If a <code>CTMM</code> argument is provided, the ML mean will be detrended from the data prior to calculating the periodogram. Otherwise, the sample mean will be detrended.</p>
-    <p>If a list of <code>telemetry</code> objects are fed into <code>periodogram</code>, then a mean <code>periodogram</code> object will be returned with the default <code>dt</code> and base frequency resolution selected on a worst case basis according to the method described by Péron et al (2016).</p>
+    <p>If a list of <code>telemetry</code> objects are fed into <code>periodogram</code>, then a mean <code>periodogram</code> object will be returned with the default <code>dt</code> and base frequency resolution selected on a worst case basis according to the method described by PÃ©ron et al (2016).</p>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
@@ -139,7 +148,7 @@
     <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
 
     <p>J. D. Scargle. (1952). Studies in astronomical time-series analysis. II. Statistical aspects of spectral analysis of unevenly-sampled data. The Astrophysical Journal, 263, 835-853.</p>
-    <p>G. Péron, C. H. Fleming,  R. C. de Paula, J. M. Calabrese. (2016). Uncovering periodic patterns of space use in animal tracking data with periodograms, including a new algorithm for the Lomb-Scargle periodogram and improved randomization tests. <a href = 'Movement Ecology, 4:19, DOI:10.1186/s40462-016-0084-7'>https://movementecologyjournal.biomedcentral.com/articles/10.1186/s40462-016-0084-7</a>.</p>
+    <p>G. PÃ©ron, C. H. Fleming,  R. C. de Paula, J. M. Calabrese. (2016). Uncovering periodic patterns of space use in animal tracking data with periodograms, including a new algorithm for the Lomb-Scargle periodogram and improved randomization tests. <a href = 'Movement Ecology, 4:19, DOI:10.1186/s40462-016-0084-7'>https://movementecologyjournal.biomedcentral.com/articles/10.1186/s40462-016-0084-7</a>.</p>
     
     <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
 
@@ -178,7 +187,7 @@
     </ul>
 
     <h2>Author</h2>
-     C. H. Fleming and G. Péron 
+     C. H. Fleming and G. PÃ©ron 
   </div>
 </div>
 

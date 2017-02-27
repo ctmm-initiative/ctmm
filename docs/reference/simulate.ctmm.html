@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Predict or simulate from a continuous-time movement model — simulate.ctmm â€¢ ctmm</title>
+<title>Predict or simulate from a continuous-time movement model â€” simulate.ctmm â€¢ ctmm</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -54,11 +54,20 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
-<li>
-  <a href="../../inst/docs/variogram.html">Variogram vignette</a>
-</li>
-<li>
-  <a href="../../inst/docs/akde.html">AKDE vignette</a>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Vignettes
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/variogram.html">Variograms and Model Selection</a>
+    </li>
+    <li>
+      <a href="../articles/akde.html">Autocorrelated Kernel Density Estimation</a>
+    </li>
+  </ul>
 </li>
       </ul>
       
@@ -162,11 +171,10 @@ The same span of time will be used, while <code>dt</code> will fix the sampling 
 <span class='no'>MODEL</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='ctmm.html'>ctmm</a></span>(<span class='kw'>tau</span><span class='kw'>=</span><span class='fu'>c</span>(<span class='fl'>100</span>,<span class='fl'>10</span>),<span class='kw'>sigma</span><span class='kw'>=</span><span class='fl'>10</span>,<span class='kw'>mu</span><span class='kw'>=</span><span class='fu'>c</span>(<span class='fl'>0</span>,<span class='fl'>0</span>))
 
 <span class='co'>#simulate data</span>
-<span class='no'>SIM</span> <span class='kw'>&lt;-</span> <span class='fu'>simulate</span>(<span class='no'>MODEL</span>,<span class='kw'>t</span><span class='kw'>=</span><span class='no'>t</span>)</div><div class='output co'>#&gt; <span class='message'>Note: method with signature ‘symmetricMatrix#missing’ chosen for function ‘Schur’,</span>
-#&gt; <span class='message'> target signature ‘dsyMatrix#missing’.</span>
-#&gt; <span class='message'> &quot;dsyMatrix#ANY&quot; would also be valid</span></div><div class='input'>
+<span class='no'>SIM</span> <span class='kw'>&lt;-</span> <span class='fu'>simulate</span>(<span class='no'>MODEL</span>,<span class='kw'>t</span><span class='kw'>=</span><span class='no'>t</span>)
+
 <span class='co'>#plot data with Gaussian model</span>
-<span class='fu'><a href='plot.telemetry.html'>plot</a></span>(<span class='no'>SIM</span>,<span class='kw'>CTMM</span><span class='kw'>=</span><span class='no'>MODEL</span>)</div><img src='simulate.ctmm-4.png' alt='' width='540' height='400' /></pre>
+<span class='fu'><a href='plot.telemetry.html'>plot</a></span>(<span class='no'>SIM</span>,<span class='kw'>CTMM</span><span class='kw'>=</span><span class='no'>MODEL</span>)</div><img src='simulate.ctmm-2.png' alt='' width='540' height='400' /></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
