@@ -208,7 +208,6 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
 as.telemetry.character <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,...)
 {
   data < NULL
-  
   # fread doesn't work on compressed files yet
   if(endsWith(tolower(object),".csv"))
   { data <- try(data.table::fread(object,data.table=FALSE,check.names=TRUE,...)) }
