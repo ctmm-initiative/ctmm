@@ -207,14 +207,12 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
 # read in a MoveBank object file
 as.telemetry.character <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,...)
 {
-  data < NULL
   # fread doesn't work on compressed files yet
-  if(endsWith(tolower(object),".csv"))
-  { data <- try(data.table::fread(object,data.table=FALSE,check.names=TRUE,...)) }
+  data <- try(data.table::fread(object,data.table=FALSE,check.names=TRUE,nrows=5),silent=TRUE)
   # if fread fails, then fall back on read.table
-  if(class(data)!="data.frame")
-  { data <- utils::read.csv(object,...) }
-
+  if (class(data) == "data.frame") { data <- data.table::fread(object,data.table=FALSE,check.names=TRUE,...) }
+  else { data <- utils::read.csv(object,...) }
+  
   data <- as.telemetry.data.frame(data,timeformat=timeformat,timezone=timezone,projection=projection,UERE=UERE)
   return(data)
 }
