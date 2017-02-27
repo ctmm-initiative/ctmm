@@ -13,9 +13,9 @@ navbar:
   - text: Vignettes
     menu:
     - text: Variograms and Model Selection
-      href: articles/variogram.html
+      href: http://htmlpreview.github.io/?https://github.com/ctmm-initiative/ctmm/blob/master/inst/doc/variogram.html
     - text: Autocorrelated Kernel Density Estimation
-      href: articles/akde.html
+      href: http://htmlpreview.github.io/?https://github.com/ctmm-initiative/ctmm/blob/master/inst/doc/akde.html
   right:
   - icon: fa-github fa-2x
     href: https://github.com/ctmm-initiative/ctmm
