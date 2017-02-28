@@ -5,16 +5,19 @@ new.variogram <- methods::setClass("variogram",representation("data.frame",info=
 subset.variogram <- function(x,...)
 {
   info <- attr(x,"info")
+  x <- data.frame(x)
   x <- subset.data.frame(x,...)
-  x < - droplevels(x)
+  x < - droplevels(x) # why is this here?
   new.variogram(x,info=info)
 }
 
 `[.variogram` <- function(x,...)
 {
   info <- attr(x,"info")
+  x <- data.frame(x)
   x <- "[.data.frame"(x,...)
-  if(class(x)=="data.frame") { x <- new.variogram(x,info=info) }
+  # if(class(x)=="data.frame") { x <- new.variogram(x,info=info) }
+  x <- new.variogram(x,info=info)
   return(x)
 }
 

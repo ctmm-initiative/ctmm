@@ -51,7 +51,7 @@ cilla <- buffalo[[1]]
 #Calculate variogram
 SVF <- variogram(cilla)
 
-# generate a visual fit of the variogram (requires RStudio)
+# generate a visual fit of the variogram (requires RStudio or a guess object is returned)
 variogram.fit(SVF)
 }
 
