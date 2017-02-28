@@ -225,15 +225,14 @@ mcoptim <- function(par,fn,method="Newton",lower=-Inf,upper=Inf,control=list(),h
   P.ALL <- cbind(par)
   F.ALL <- FN
   
-  # generate a sequence of points from old par to the other side of new par
+  # generate a linear sequence of points from old par to the other side of new par
   P <- line.boxer(2*dP)
   dP <- P - par
   M <- sqrt(sum(dP^2))
   d <- dP/M
-  M <- seq(0,M,length.out=min(3,mc.cores+1))[-1] * M
-  dP <- (d %o% M)
-  P <- dP + par
-  
+  SEQ <- seq(0,M,length.out=min(3,mc.cores+1))[-1]
+  P <- (d %o% SEQ) + par
+
   # evaluate objective function
   P <- apply(P,2,list)
   FN <- unlist(parallelsugar::mclapply(P,func,mc.cores=mc.cores))
@@ -246,23 +245,39 @@ mcoptim <- function(par,fn,method="Newton",lower=-Inf,upper=Inf,control=list(),h
   MIN <- which.min(F.ALL)
   if(MIN==1) # we went too far in first step
   {
+    # do a sub line search, including backwards reflection
     
   }
   else if(MIN==length(F.ALL)) # we didn't go far enough or we hit a boundary
   {
-    # we hit a boundary and can stop
+    par <- P.ALL[,MIN]
     
-    # we didn't hit a boundary and need to keep going
+    # if we hit a boundary, then we can stop at the boundary
+    NEW.BOX <- (par <= lower) || (par >= upper)
+    if(sum(NEW.BOX)>sum(BOX)) { } # break !!! or should we update hessian?
     
-    # curvature is negative and so search should accelerate naturally
+    # we didn't hit a boundary, but we will eventually
+    NEW.BOX <- ((sign(dP)<0 & lower>-Inf) | (sign(dP)>0 & upper<Inf)) & !BOX
+    if(sum(NEW.BOX))
+    {
+      # generate a linear sequence of points that terminate at the eventual boundary
+      
+      # evaluate and take the minimum
+      
+      # if the minimum is an interior point & fast=TRUE, then use the later Newton update
+    }
     
-    # curvature is positive and a linear sequence is too slow
+    # we didn't hit a boundary and we never will
     
+    # generate an exponential sequence of points that terminate at the infinite boundary but drop the last point
+    
+    # iterate this
+      
   }
   else # we improved our estimate and can stop the line search
   {
     # take known best point
-    par <- P.ALL[MIN]
+    par <- P.ALL[,MIN]
     FN <- F.ALL[MIN]
     
     # interpolate to an even better point
