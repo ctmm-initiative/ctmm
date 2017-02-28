@@ -1,4 +1,4 @@
-\name{ctmm::uere}
+\name{uere}
 \alias{uere}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Estimate UERE from calibration data}
@@ -45,5 +45,5 @@ Otherwise, when \code{error=TRUE} in \code{\link{ctmm}}, \code{\link{ctmm.fit}} 
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
-\keyword{internal}
+%\keyword{internal}
 %\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
