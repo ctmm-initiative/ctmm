@@ -6,6 +6,7 @@ new.telemetry <- methods::setClass("telemetry", representation(info="list"), con
 subset.telemetry <- function(x,...)
 {
    info <- attr(x,"info")
+   x <- data.frame(x)
    x <- subset.data.frame(x,...)
    x <- new.telemetry(x,info=info)
    return(x)
@@ -14,17 +15,20 @@ subset.telemetry <- function(x,...)
 `[.telemetry` <- function(x,...)
 {
   info <- attr(x,"info")
+  x <- data.frame(x)
   x <- "[.data.frame"(x,...)
-  if(class(x)=="data.frame") { x <- new.telemetry(x,info=info) }
+  # if(class(x)=="data.frame") { x <- new.telemetry(x,info=info) }
+  x <- new.telemetry(x,info=info)
   return(x)
 }
 
 get.telemetry <- function(data,axes=c("x","y"))
 {
-  z <- "[.data.frame"(data,axes)
-  z <- as.matrix(z)
-  colnames(z) <- axes
-  return(z)
+  # z <- "[.data.frame"(data,axes)
+  # z <- as.matrix(z)
+  # colnames(z) <- axes
+  # return(z)
+  return(as.matrix(data.frame(data)[, axes], dimnames = axes))
 }
 
 #######################

@@ -62,10 +62,10 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="http://htmlpreview.github.io/?https://github.com/ctmm-initiative/ctmm/blob/master/inst/doc/variogram.html">Variograms and Model Selection</a>
+      <a href="../articles/variogram.html">Variograms and Model Selection</a>
     </li>
     <li>
-      <a href="http://htmlpreview.github.io/?https://github.com/ctmm-initiative/ctmm/blob/master/inst/doc/akde.html">Autocorrelated Kernel Density Estimation</a>
+      <a href="../articles/akde.html">Autocorrelated Kernel Density Estimation</a>
     </li>
   </ul>
 </li>
@@ -166,9 +166,10 @@
 
 <span class='co'>#Calculate periodogram (fast&gt;0 for a speedy example)</span>
 <span class='co'>#There is drift in the sampling rate here, necessitating res.time&gt;1 with fast&gt;0</span>
-<span class='no'>LSP</span> <span class='kw'>&lt;-</span> <span class='fu'>periodogram</span>(<span class='no'>cilla</span>,<span class='kw'>fast</span><span class='kw'>=</span><span class='fl'>2</span>,<span class='kw'>res.time</span><span class='kw'>=</span><span class='fl'>2</span>)</div><div class='output co'>#&gt; <span class='error'>Error in `[.data.frame`(x, ...): node stack overflow</span></div><div class='input'>
+<span class='no'>LSP</span> <span class='kw'>&lt;-</span> <span class='fu'>periodogram</span>(<span class='no'>cilla</span>,<span class='kw'>fast</span><span class='kw'>=</span><span class='fl'>2</span>,<span class='kw'>res.time</span><span class='kw'>=</span><span class='fl'>2</span>)
+
 <span class='co'>#Plot the periodogram</span>
-<span class='fu'><a href='plot.telemetry.html'>plot</a></span>(<span class='no'>LSP</span>)</div><div class='output co'>#&gt; <span class='error'>Error in plot(LSP): object &#39;LSP&#39; not found</span></div></pre>
+<span class='fu'><a href='plot.telemetry.html'>plot</a></span>(<span class='no'>LSP</span>)</div><img src='periodogram-2.png' alt='' width='540' height='400' /></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

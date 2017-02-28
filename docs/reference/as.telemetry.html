@@ -62,10 +62,10 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="http://htmlpreview.github.io/?https://github.com/ctmm-initiative/ctmm/blob/master/inst/doc/variogram.html">Variograms and Model Selection</a>
+      <a href="../articles/variogram.html">Variograms and Model Selection</a>
     </li>
     <li>
-      <a href="http://htmlpreview.github.io/?https://github.com/ctmm-initiative/ctmm/blob/master/inst/doc/akde.html">Autocorrelated Kernel Density Estimation</a>
+      <a href="../articles/akde.html">Autocorrelated Kernel Density Estimation</a>
     </li>
   </ul>
 </li>
@@ -133,7 +133,7 @@ Global migrations that are not along one geodesic (locally straight line) will p
     <p><code>as.telemetry</code> assumes <a href = 'Movebank naming conventions'>http://rstudio.com</a>.
 Sufficient MoveBank columns include <code>individual.local.identifier</code> (or <code>tag.local.identifier</code>), <code>timestamp</code>, <code>location.long</code> and <code>location.lat</code>, while the optional Movebank columns are <code>eobs.horizontal.accuracy.estimate</code> and <code>GPS.HDOP</code>.
 In the future, we will be supporting more GPS and ARGOS columns, including speed, heading, further error classifications, etc.</p>
-    <p>The <code>GPS.HDOP</code> value requires the device&#39;s <code>UERE</code> value to be translated into telemetry errors. The <code>UERE</code> represents the RMS error given ideal satellite conditions. Therefore, if your device is purported to have an accuracy of 2-10 meters, then the <code>UERE</code> is likely around 2 meters. Consult your device manual and manufacturer for a specific value or see <code><a href='ctmm::uere.html'>uere</a></code> for UERE calibration.</p>
+    <p>The <code>GPS.HDOP</code> value requires the device&#39;s <code>UERE</code> value to be translated into telemetry errors. The <code>UERE</code> represents the RMS error given ideal satellite conditions. Therefore, if your device is purported to have an accuracy of 2-10 meters, then the <code>UERE</code> is likely around 2 meters. Consult your device manual and manufacturer for a specific value or see <code><a href='uere.html'>uere</a></code> for UERE calibration.</p>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
@@ -141,7 +141,7 @@ In the future, we will be supporting more GPS and ARGOS columns, including speed
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <p><code><a href='plot.telemetry.html'>plot.telemetry</a></code>, <code><a href='export.html'>SpatialPoints.telemetry</a></code>, <code><a href='ctmm::uere.html'>uere</a></code>.</p>
+    <p><code><a href='plot.telemetry.html'>plot.telemetry</a></code>, <code><a href='export.html'>SpatialPoints.telemetry</a></code>, <code><a href='uere.html'>uere</a></code>.</p>
     
 
   </div>

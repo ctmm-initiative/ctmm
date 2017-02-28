@@ -98,7 +98,7 @@ mcoptim <- function(par,fn,method="Newton",lower=-Inf,upper=Inf,control=list(),h
   
   
   ###########################################
-  # calculate local derivatives (along directions DIR) from 3 points, with (par,FN) the best (global variables)
+  # calculate local derivatives (along directions DIR) from 3 points, with (par,fp) the best (global variables)
   ###########################################
   QuadSolve <- function(P1,P2,DIR,F1,F2)
   {
@@ -110,8 +110,8 @@ mcoptim <- function(par,fn,method="Newton",lower=-Inf,upper=Inf,control=list(),h
     M1 <- colSums(DIR * P1)
     M2 <- colSums(DIR * P2)
     
-    F1 <- F1-FN
-    F2 <- F2-FN
+    F1 <- F1-fp
+    F2 <- F2-fp
     
     G1 <- F1/M1
     G2 <- F2/M2
@@ -168,7 +168,7 @@ mcoptim <- function(par,fn,method="Newton",lower=-Inf,upper=Inf,control=list(),h
   # separate back into parts
   F1 <- FN[2:(DIM+1)]
   F2 <- FN[(DIM+2):(1+2*DIM)]
-  FN <- FN[1]
+  fp <- FN[1] # fn(par)
   
   # calculate axial derivatives to second order
   DIFF <- QuadSolve(P1,P2,DIR,F1,F2)
@@ -221,50 +221,58 @@ mcoptim <- function(par,fn,method="Newton",lower=-Inf,upper=Inf,control=list(),h
   ##################
   counts <- counts + 1
   
-  # where we will store all line search results
-  P.ALL <- cbind(par)
-  F.ALL <- FN
-  
   # generate a linear sequence of points from old par to the other side of new par
   P <- line.boxer(2*dP)
   dP <- P - par
-  M <- sqrt(sum(dP^2))
-  d <- dP/M
-  SEQ <- seq(0,M,length.out=min(3,mc.cores+1))[-1]
-  P <- (d %o% SEQ) + par
+  M <- sqrt(sum(dP^2)) # total search magnitude
+  SEQ <- seq(0,M,length.out=min(2,mc.cores)+1)[-1]
+  P <- (DIR[,BEST] %o% SEQ) + par
 
   # evaluate objective function
   P <- apply(P,2,list)
   FN <- unlist(parallelsugar::mclapply(P,func,mc.cores=mc.cores))
   
   # pick best points including original par
-  P.ALL <- cbind(P.ALL,P)
-  F.ALL <- c(F.ALL,FN)
+  P.ALL <- cbind(par,P)
+  F.ALL <- c(fp,FN)
   
-  # do we need to keep going to capture the minimum?
+  # new best estimate
   MIN <- which.min(F.ALL)
+  par <- P.ALL[,MIN]
+  fp <- F.ALL[MIN]
+
+  # do we need to keep going to capture the minimum?
+
   if(MIN==1) # we went too far in first step
   {
     # do a sub line search, including backwards reflection
     
   }
-  else if(MIN==length(F.ALL)) # we didn't go far enough or we hit a boundary
+  
+  if(MIN==length(F.ALL)) # we didn't go far enough or we hit a boundary
   {
-    par <- P.ALL[,MIN]
-    
     # if we hit a boundary, then we can stop at the boundary
     NEW.BOX <- (par <= lower) || (par >= upper)
-    if(sum(NEW.BOX)>sum(BOX)) { } # break !!! or should we update hessian?
+    if(sum(NEW.BOX)>sum(BOX)) { } # !!! goto hessian stuff
     
-    # we didn't hit a boundary, but we will eventually
-    NEW.BOX <- ((sign(dP)<0 & lower>-Inf) | (sign(dP)>0 & upper<Inf)) & !BOX
-    if(sum(NEW.BOX))
+    # Distance to first boundary that we will hit going in direction dP
+    M.BOX <- min((upper-par)[dP>0]/dP[dP>0],(lower-par)[dP<0]/dP[dP<0])
+
+    # we didn't hit a boundary yet, but we will eventually hit a boundary, so let's just do that
+    if(M.BOX<Inf)
     {
       # generate a linear sequence of points that terminate at the eventual boundary
+      SEQ <- seq(0,M.BOX,length.out=min(2,mc.cores)+1)[-1]
+      P <- (DIR[,BEST] %o% SEQ) + par
       
       # evaluate and take the minimum
+      P <- apply(P,2,list)
+      FN <- unlist(parallelsugar::mclapply(P,func,mc.cores=mc.cores))
       
-      # if the minimum is an interior point & fast=TRUE, then use the later Newton update
+      P.ALL <- cbind(par,P)
+      F.ALL <- c(fp,FN)
+      
+      # goto hessian stuff !!!
     }
     
     # we didn't hit a boundary and we never will
@@ -274,35 +282,54 @@ mcoptim <- function(par,fn,method="Newton",lower=-Inf,upper=Inf,control=list(),h
     # iterate this
       
   }
-  else # we improved our estimate and can stop the line search
+  
+  # we improved our estimate and can stop the line search
+  
+  # take known best point
+  MIN <- which.min(F.ALL)
+  par <- P.ALL[,MIN]
+  fp <- F.ALL[MIN]
+  
+  # interpolate to an even better point
+  if(fast)
   {
-    # take known best point
-    par <- P.ALL[,MIN]
-    FN <- F.ALL[MIN]
-    
-    # interpolate to an even better point
-    if(fast)
+    # take best triplet
+    if(MIN>1) # first point after boundary
     {
-      # take best triplet
       P1 <- cbind(P[MIN-1])
-      P2 <- cbind(P[MIN+1])
       F1 <- F.ALL[MIN-1]
-      F2 <- F.ALL[MIN+1]
-      
-      # calculate gradient and curvature
-      DIFF <- QuadSolve(P1,P2,DIR[,BEST,drop=FALSE],F1,F2)
-      GRAD <- DIFF$GRAD
-      H <- DIFF$HESS
-      
-      # estimate better location
-      par <- par - (GRAD/H)*DIR[,BEST]
-
-      # update curvature & error along this axis?
-      # we will do better in the next iteration
-      
-      # break out of line search !!!
     }
+    else # first point reflected
+    {
+      P1 <- cbind(P[MIN+2])
+      F1 <- F.ALL[MIN+2]
+    }
+    
+    if(MIN<length(F.ALL)) # second point before boundary
+    {
+      P2 <- cbind(P[MIN+1])
+      F2 <- F.ALL[MIN+1]
+    }
+    else # second point reflected
+    {
+      P2 <- cbind(P[MIN-2])
+      F2 <- F.ALL[MIN-2]
+    }
+    
+    # calculate gradient and curvature
+    DIFF <- QuadSolve(P1,P2,DIR[,BEST,drop=FALSE],F1,F2)
+    GRAD <- DIFF$GRAD
+    H <- DIFF$HESS
+    
+    # estimate better location
+    par <- par - (GRAD/H)*DIR[,BEST]
+    
+    # update curvature & error along this axis?
+    # we will do better in the next iteration
+    
+    # break out of line search !!!
   }
+  
   
 
 
