@@ -21,10 +21,11 @@ subset.telemetry <- function(x,...)
 
 get.telemetry <- function(data,axes=c("x","y"))
 {
-  z <- "[.data.frame"(data,axes)
-  z <- as.matrix(z)
-  colnames(z) <- axes
-  return(z)
+  # z <- "[.data.frame"(data,axes)
+  # z <- as.matrix(z)
+  # colnames(z) <- axes
+  # return(z)
+  temp <- as.matrix(data.frame(data)[, axes], dimnames = axes)
 }
 
 #######################
