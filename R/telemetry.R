@@ -25,7 +25,7 @@ get.telemetry <- function(data,axes=c("x","y"))
   # z <- as.matrix(z)
   # colnames(z) <- axes
   # return(z)
-  temp <- as.matrix(data.frame(data)[, axes], dimnames = axes)
+  return(as.matrix(data.frame(data)[, axes], dimnames = axes))
 }
 
 #######################
