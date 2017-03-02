@@ -21,6 +21,7 @@ License: \tab GPL-3 \cr
 \item{ \href{http://biology.umd.edu/movement.html}{CTMM Initiative} }
 \item{ \href{http://www2.physics.umd.edu/~hfleming/}{Beta packages} }
 \item{ \href{https://github.com/ctmm-initiative/ctmm}{Github project} }
+\item{ \href{https://ctmm-initiative.github.io/ctmm/}{Github reference} }
 \item{ \href{https://CRAN.R-project.org/package=ctmm}{CRAN package} }
 \item{ \href{https://groups.google.com/forum/#!forum/ctmm-user}{Google group} }
 }
