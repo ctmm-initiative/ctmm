@@ -761,25 +761,6 @@ summary.telemetry <- function(object,...)
 #methods::setMethod("summary",signature(object="telemetry"), function(object,...) summary.telemetry(object,...))
 
 
-#########################
-# convert to spatialpoints object
-SpatialPoints.telemetry <- function(object,...)
-{
-  data <- object
-  
-  if(class(data)=="telemetry" || class(data)=="data.frame")
-  {
-    return( sp::SpatialPoints( "[.data.frame"(data,c("x","y")), proj4string=sp::CRS(attr(data,"info")$projection) ) )
-  }
-  else if(class(data)=="list")
-  {
-    SPL <- lapply( data, function(d) { sp::SpatialPoints( "[.data.frame"(d,c("x","y")), proj4string=sp::CRS(attr(d,"info")$projection) ) } )
-    return(SPL)
-  }
-}
-#methods::setMethod("SpatialPoints",signature(coords="telemetry"), function(coords) SpatialPoints.telemetry(coords))
-
-
 ##############
 # BUFFALO DATA
 ##############

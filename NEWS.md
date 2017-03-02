@@ -1,5 +1,7 @@
-0.3.6 2017-02-27
+0.3.6 2017-03-01
 ================
+
+  * writeRaster method for UD objects
 
   * Better UD plot boxes with new extent methods
 
