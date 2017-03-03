@@ -15,8 +15,7 @@ temp_unzip <- function(filename, fun, ...){
     unzip(filename, exdir = temp_dir, overwrite = TRUE)
     dest_file <- file.path(temp_dir, f_in_zip)
   } else {
-    # always overwrite this file. The file could be other than csv but we don't care since it is not supposed to visible to user
-    dest_file <- file.path(tempdir(), "temp_unzipped.csv")
+    dest_file <- tempfile()
     # Setup input and output connections
     inn <- gzfile(filename, open = "rb")
     out <- file(description = dest_file, open = "wb")
