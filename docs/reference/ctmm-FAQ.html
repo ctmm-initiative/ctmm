@@ -99,7 +99,7 @@
         
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p><b>General recommendations:</b>
+    <p><b>General recommendations</b>
 <ol>
 <li>Do not save workspaces between sessions. They can become corrupted.
 </li>
@@ -112,14 +112,12 @@
 <li>Check the <a href = '<code>ctmm</code> user&#39;s group'>https://groups.google.com/forum/#!forum/ctmm-user</a>.
 </li>
 </ol></p>
-    <p><b>Specific issues:</b>
-<dl class='dl-horizontal'>
-<dt>Database corruption, missing functions, and other weird errors</dt><dd><code>R</code> likely did not install the package correctly. I.e., some files may have failed to overwrite previous versions. Uninstall <code>ctmm</code>, restart <code>R</code>, and install <code>ctmm</code> again.</dd>
-<dt><code>manipulate::isAvailable</code> is not found</dt><dd>You probably have an outdated copy of the <code>manipulate</code> package installed. Update <code>R</code> to the latest version and then update all of your packages. This seems to happen frequently with the MacOS release of R.</dd>
-<dt>The <code>manipulate</code> panel does not popup in <code><a href='variogram.fit.html'>variogram.fit</a></code> or <code>zoom</code></dt><dd>Click the gear icon in the upper-left corner of the plot window.</dd>
-<dt>There is no save button in <code><a href='variogram.fit.html'>variogram.fit</a></code></dt><dd>Maximize the plot window and/or increase your screen resolution.</dd>
-<dt><code>plot</code> complains about the datatype or has weird errors</dt><dd>Namespace collision sometimes occurs from <code>raster</code> or <code>sp</code> against <code>move</code> and <code>ctmm</code>. Restart <code>R</code> and only load the <code>ctmm</code> package.</dd>
-<dt>Infinite recursion error</dt><dd><code>ctmm</code> has no recursive functions, so I am not exactly sure what causes this error, but it only occurs with certain versions of <code>R</code> on certain computer architectures. There are several solutions that have worked for people, including restarting <code>R</code> in a fresh session and updating their software. Alternatively:
+    <p><b><code>ctmm.select</code> only returns one model with <code>verbose=TRUE</code></b></p>
+    <p>The newer version of <code>ctmm.select</code> is much more intelligent, necessitated by the exploding number of new model permutations. Any simpler models were judged to be so unlikely that they were not attempted. You can set <code>level=1</code> to force alternative model fitting, but the additional models should lose badly in model selection (please email me if I am wrong).</p>
+    <p><b>Database corruption, missing functions, and other weird errors</b></p>
+    <p><code>R</code> likely did not install the package correctly. I.e., some files may have failed to overwrite previous versions. Uninstall <code>ctmm</code>, restart <code>R</code>, and install <code>ctmm</code> again.</p>
+    <p><b>Infinite recursion and stack overflow errors</b></p>
+    <p><code>ctmm</code> has no recursive functions, so I am not exactly sure what causes this error, but it only occurs with certain versions of <code>R</code> on certain computer architectures. There are several solutions that have worked for people, including restarting <code>R</code> in a fresh session and updating their software. Alternatively:
 <ol>
 <li>Reboot your computer.
 </li>
@@ -127,10 +125,15 @@
 </li>
 <li>Try a different computer.
 </li>
-</ol>
-</dd>
-<dt><code>ctmm.select</code> only returns one model with <code>verbose=TRUE</code></dt><dd>The newer version of <code>ctmm.select</code> is much more intelligent, necessitated by the exploding number of new model permutations. Any simpler models were judged to be so unlikely that they were not attempted. You can set <code>level=1</code> to force alternative model fitting, but the additional models should lose badly in model selection (please email me if I am wrong).</dd>
-</dl></p>
+</ol></p>
+    <p><b><code>manipulate::isAvailable</code> is not found</b></p>
+    <p>You probably have an outdated copy of the <code>manipulate</code> package installed. Update <code>R</code> to the latest version and then update all of your packages. This seems to happen frequently with the MacOS release of R.</p>
+    <p><b><code>manipulate</code> panel does not popup in <code><a href='variogram.fit.html'>variogram.fit</a></code> or <code>zoom</code></b></p>
+    <p>Click the gear icon in the upper-left corner of the plot window.</p>
+    <p><b><code>plot</code> complains about the datatype or has weird errors</b></p>
+    <p>Namespace collision sometimes occurs from <code>raster</code> or <code>sp</code> against <code>move</code> and <code>ctmm</code>. Restart <code>R</code> and only load the <code>ctmm</code> package.</p>
+    <p><b><code><a href='variogram.fit.html'>variogram.fit</a></code> has no save button</b></p>
+    <p>Maximize the plot window and/or increase your screen resolution.</p>
     
 
   </div>

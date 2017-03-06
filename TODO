@@ -14,7 +14,7 @@ LOW HANGING FRUIT & Nagging issues
 * 1-point azimuthal equidistant projection quick option
 * overload covm * / to apply to area & matrix
 * plot.telemetry with HDOP & UERE
-* str.ctmm, str.telemetry (print too?)
+* str.ctmm, str.telemetry (show, print too?)
 * don't delete mean off of IOU and BM... need that to Krige I think...
 * IOU with drift not setup correctly
 * points methods units environment

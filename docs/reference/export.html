@@ -103,6 +103,9 @@
 
 <span class='fu'>SpatialPolygonsDataFrame.UD</span>(<span class='no'>object</span>,<span class='kw'>level.UD</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='no'>...</span>)
 
+<span class='co'># S4 method for UD,character</span>
+<span class='fu'>writeRaster</span>(<span class='no'>x</span>,<span class='no'>filename</span>,<span class='no'>format</span>,<span class='kw'>DF</span><span class='kw'>=</span><span class='st'>"CDF"</span>,<span class='no'>...</span>)
+
 <span class='fu'>writeShapefile</span>(<span class='no'>object</span>,<span class='no'>...</span>)
 
 <span class='co'># S3 method for UD</span>
@@ -120,17 +123,22 @@
       <dd> Confidence level of the UD area. I.e., the 50% core home range would be given by <code>level.UD=0.50</code>. </dd>
       <dt>level</dt>
       <dd> Confidence level for the magnitude of the above area. I.e., the 95% CI of the core home range area. </dd>
+      <dt>filename</dt>
+      <dd>Character name of file for raster file.</dd>
+      <dt>format</dt>
+      <dd>Character format, if not inferred from <code>filename</code> extension (see <code><a href='http://www.rdocumentation.org/packages/raster/topics/writeRaster'>writeRaster</a></code>.)</dd>
       <dt>folder</dt>
       <dd>Character name of folder for shapefile.</dd>
       <dt>file</dt>
       <dd>Character name of files for shapefile.</dd>
       <dt>...</dt>
-      <dd> Optional arguments passed to <code><a href='http://www.rdocumentation.org/packages/rgdal/topics/writeOGR'>writeOGR</a></code>.</dd>
+      <dd> Optional arguments passed to <code><a href='http://www.rdocumentation.org/packages/raster/topics/writeRaster'>writeRaster</a></code>, <code><a href='http://www.rdocumentation.org/packages/rgdal/topics/writeOGR'>writeOGR</a></code>, etc..</dd>
     </dl>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p><code>writeShapefile.UD</code> writes a shapefile to disk, with polygons corresponding to the low, ML, and high home-range area estimates.</p>
+    <p><code>writeRaster</code> writes a raster file to disk, with pixel values corresponding to the density function.</p>
+    <p><code>writeShapefile</code> writes a shapefile to disk, with polygons corresponding to the low, ML, and high home-range area estimates.</p>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
