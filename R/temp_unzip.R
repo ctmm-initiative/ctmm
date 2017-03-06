@@ -12,11 +12,18 @@ temp_unzip <- function(filename, fun, ...){
   # test if it's zip
   files_in_zip <- try(unzip(filename, list = TRUE)$Name, silent = TRUE)
   if (class(files_in_zip) == "character") {
-    if(length(files_in_zip)>1) { warning(paste0(
-      "  Zip file contains multiple files.\n  Mac OS built in zip compressor will add hidden folder for even single file zip.\nUsing the first file: ", 
-      files_in_zip[1])) }
-    unzip(filename, exdir = temp_dir, overwrite = TRUE)
-    dest_file <- file.path(temp_dir, files_in_zip[1])
+    # hidden files can be ignored: starting with ., ending with $, __MACOSX folder 
+    visible_files <- files_in_zip[!grepl("((^__MACOSX\\/.*)|(^\\..*)|(^.*\\$$))", 
+                                          files_in_zip)]
+    # will not continue for multiple non-hidden files since behavior is not well defined.
+    if(length(visible_files)>1) { 
+      stop(paste0("Zip file contains multiple visible files:\n", 
+                  paste0("    ", visible_files, collapse = "\n")))
+    }
+    if(length(visible_files) == 0) { stop("\n  No visible file found in Zip file")}
+    # proceed with single non-hidden file
+    unzip(filename, files = visible_files[1], exdir = temp_dir, overwrite = TRUE)
+    dest_file <- file.path(temp_dir, visible_files[1])
   } else {
     dest_file <- tempfile()
     # Setup input and output connections
