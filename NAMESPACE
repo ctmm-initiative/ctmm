@@ -20,10 +20,10 @@ S3method(plot,list)
 S3method(summary,list)
 #export(setUnits,"%#%")
 
-S3method(extent,list)
-S3method(extent,telemetry)
-S3method(extent,ctmm)
-S3method(extent,UD)
+#S3method(extent,list)
+#S3method(extent,telemetry)
+#S3method(extent,ctmm)
+#S3method(extent,UD)
 
 #TELEMETRY FUNCTIONS
 export(as.telemetry,SpatialPoints.telemetry)

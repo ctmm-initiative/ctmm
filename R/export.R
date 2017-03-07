@@ -1,6 +1,3 @@
-# R compilation is complaining about using raster S4 methods on my S3 UD class
-methods::setOldClass("UD")
-
 ################################
 # create a raster of the ML akde
 raster.UD <- function(x,DF="CDF",...)

@@ -1,8 +1,3 @@
-#########################################
-# telemetry class definition
-#########################################
-new.telemetry <- methods::setClass("telemetry", representation(info="list"), contains="data.frame")
-
 subset.telemetry <- function(x,...)
 {
    info <- attr(x,"info")

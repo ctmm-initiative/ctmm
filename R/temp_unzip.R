@@ -10,10 +10,10 @@ temp_unzip <- function(filename, fun, ...){
   }
   temp_dir <- tempdir()
   # test if it's zip
-  f_in_zip <- try(unzip(filename, list = TRUE)$Name, silent = TRUE)
+  f_in_zip <- try(utils::unzip(filename, list = TRUE)$Name, silent = TRUE)
   if (class(f_in_zip) == "character") {
     if(length(f_in_zip)>1) { stop("Zip file contains multiple files.") }
-    unzip(filename, exdir = temp_dir, overwrite = TRUE)
+    utils::unzip(filename, exdir = temp_dir, overwrite = TRUE)
     dest_file <- file.path(temp_dir, f_in_zip)
   } else {
     dest_file <- tempfile()

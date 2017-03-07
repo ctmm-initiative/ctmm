@@ -45,7 +45,7 @@ The \code{GPS.HDOP} value requires the device's \code{UERE} value to be translat
 
 %\references{}
 
-\author{C. H. Fleming, B. Kranstauber, G. Péron, and K. Safi.}
+\author{C. H. Fleming, X. Dong, B. Kranstauber, G. Péron, and K. Safi.}
 
 %\note{}
 

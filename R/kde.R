@@ -1,7 +1,3 @@
-# akde object generator
-# list of kde objects with info slots
-new.UD <- methods::setClass("UD", representation("list",info="list"))
-
 # S3 generic
 akde <- function(data,CTMM,VMM=NULL,debias=TRUE,smooth=TRUE,error=0.001,res=10,grid=NULL,...) { UseMethod("akde") }
 

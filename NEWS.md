@@ -7,15 +7,15 @@
 
   * akde() can now handle duplicate times (with an error model)
 
-  * Reinstated column name preferences in as.telemetry
+  * Column name preferences in as.telemetry
   
-  * as.telemetry faster with fastPOSIXct & fread
+  * as.telemetry faster with fread & fastPOSIXct
   
   * new trace option for ctmm.fit
   
   * more robust CIs for pREML, REML
   
-  * chi-square CIs (area, semi-variance, etc.) more robust for DOF<1
+  * chi-square CIs (area, semi-variance, etc.) more robust when DOF<1
 
 0.3.5 2017-02-01
 ================

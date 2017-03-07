@@ -1,20 +1,21 @@
 \name{extent}
-\alias{extent}
-\alias{extent.telemetry}
-\alias{extent.ctmm}
-\alias{extent.UD}
+%\alias{extent}
+\alias{extent,telemetry-method}
+\alias{extent,ctmm-method}
+\alias{extent,UD-method}
+\alias{extent,list-method}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Extent}
-\description{Functions to calculate the \eqn{(x,y)} plotting extent (or bounding box) of various ctmm objects, for use when plotting multiple ctmm objects.}
+\description{Functions to calculate the \eqn{(x,y)} plotting extent (or bounding box) of various ctmm objects or list of such objects, for use when plotting multiple ctmm objects.}
 
-\usage{
-extent(x,...)
+\usage{%extent(x,...)
+\S4method{extent}{telemetry}(x,level=1,...)
 
-\S3method{extent}{telemetry}(x,level=1,...)
+\S4method{extent}{ctmm}(x,level=0.95,level.UD=0.95,...)
 
-\S3method{extent}{ctmm}(x,level=0.95,level.UD=0.95,...)
+\S4method{extent}{UD}(x,level=0.95,level.UD=0.95,...)
 
-\S3method{extent}{UD}(x,level=0.95,level.UD=0.95,...)
+\S4method{extent}{list}(x,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

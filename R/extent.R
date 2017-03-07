@@ -1,6 +1,6 @@
 # 2D range of ctmm object
 # I can't get the raster generic to work?? It won't accept my classes?
-extent <- function(x,...) UseMethod("extent")
+# extent <- function(x,...) UseMethod("extent")
 
 # what is the range of a list of objects of any type
 extent.list <- function(x,...)
@@ -14,6 +14,8 @@ extent.list <- function(x,...)
   # level has already been applied
   return(RANGE)
 }
+# raster doesn't really need this?
+setMethod('extent', signature(x='list'), extent.list)
 
 
 # range of telemetry data
@@ -26,6 +28,7 @@ extent.telemetry <- function(x,level=1,...)
   row.names(RANGE) <- c("min","max")
   return(RANGE)
 }
+setMethod('extent', signature(x='telemetry'), extent.telemetry)
 
 
 # range of Gaussian contours
@@ -59,6 +62,8 @@ extent.ctmm <- function(x,level=0.95,level.UD=0.95,...)
   row.names(RANGE) <- c("min","max")
   return(RANGE)
 }
+setMethod('extent', signature(x='ctmm'), extent.ctmm)
+
 
 # range of UD contours
 extent.UD <- function(x,level=0.95,level.UD=0.95,...)
@@ -98,3 +103,4 @@ extent.UD <- function(x,level=0.95,level.UD=0.95,...)
   row.names(RANGE) <- c("min","max")
   return(RANGE)
 }
+setMethod('extent', signature(x='UD'), extent.UD)
