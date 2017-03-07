@@ -1,4 +1,3 @@
-new.ctmm <- methods::setClass("ctmm", representation("list",info="list"))
 new.covm <- methods::setClass("covm", representation("matrix",par="numeric",isotropic="logical"))
 
 #######################################

@@ -1,3 +1,7 @@
+# TODO
+###############
+# filling up mc cue if p>2n+1
+# what is better fine derivatives or coarse derivatives?
 
 #################################
 # simplex & quasi-Newton optimizers for multiple CPU cores
@@ -7,15 +11,19 @@ mcoptim <- function(par,fn,method="Newton",lower=-Inf,upper=Inf,control=list())
   # method simplex not yet supported
   
   # check complains about visible bindings
-  fnscale <- parscale <- ndeps <- maxit <- reltol <- trace <- fast <- mc.cores <- hessian <- covariance <- NULL
+  fnscale <- parscale <- ndeps <- maxit <- precision <- trace <- mc.cores <- hessian <- covariance <- NULL
   # fix default control arguments
-  default <- list(fnscale=1,parscale=pmin(abs(par),abs(par-lower),abs(upper-par)),ndeps=1,maxit=100,reltol=sqrt(.Machine$double.eps),trace=FALSE,fast=TRUE,mc.cores=parallel::detectCores(),hessian=NULL,covariance=NULL)
+  default <- list(fnscale=1,parscale=pmin(abs(par),abs(par-lower),abs(upper-par)),ndeps=1,maxit=100,trace=FALSE,precision=1,mc.cores=parallel::detectCores(),hessian=NULL,covariance=NULL)
   control <- replace(default,names(control),control)
   # check does not like attach
   NAMES <- names(control)
   for(i in 1:length(control)) { assign(NAMES[i],control[[i]]) }
   
   if(any(parscale==0)) { parscale[parscale==0] <- 1 }
+  
+  # error tolerance for objective function
+  TOL <- .Machine$double.eps^precision
+  # half this for optimal parameters
   
   # what we will actually be evaluating
   par <- par/parscale
@@ -59,10 +67,10 @@ mcoptim <- function(par,fn,method="Newton",lower=-Inf,upper=Inf,control=list())
   ######################
   # apply box constraints to travel in a straight line from (global) par by dp
   ######################
-  line.boxer <- function(dp)
+  line.boxer <- function(dp,p0=TARGET)
   {
     # if we don't hit a boundary we go here
-    p <- par + dp
+    p <- p0 + dp
     
     # did we hit a boundary?
     LO <- (p <= lower)
@@ -73,12 +81,12 @@ mcoptim <- function(par,fn,method="Newton",lower=-Inf,upper=Inf,control=list())
     UP <- UP && (dp[UP]>0)
     
     # time until we hit the first new boundary
-    if(any(LO)) { t.lo <- (lower-par)[LO]/dp[LO] } else { t.lo <- 1 }
-    if(any(UP)) { t.up <- (upper-par)[UP]/dp[UP] } else { t.up <- 1 }
+    if(any(LO)) { t.lo <- (lower-p0)[LO]/dp[LO] } else { t.lo <- 1 }
+    if(any(UP)) { t.up <- (upper-p0)[UP]/dp[UP] } else { t.up <- 1 }
     t <- min(t.lo,t.up)
     
     # stop at first boundary
-    p <- par + t*dp
+    p <- p0 + t*dp
       
     return(p)
   }
@@ -119,18 +127,18 @@ mcoptim <- function(par,fn,method="Newton",lower=-Inf,upper=Inf,control=list())
   ###########################################
   # calculate local derivatives (along directions DIR) from 3 points, with (par,fp) the best (global variables)
   ###########################################
-  QuadSolve <- function(P1,P2,DIR,F1,F2)
+  QuadSolve <- function(P0,P1,P2,DIR,F0,F1,F2)
   {
     # convert back to displacements
-    P1 <- P1 - par
-    P2 <- P2 - par
+    P1 <- P1 - P0
+    P2 <- P2 - P0
     # signed magnitudes of displacement vectors
     # P1, P2, DIR columns will always be parallel
     M1 <- colSums(DIR * P1)
     M2 <- colSums(DIR * P2)
     
-    F1 <- F1-fp
-    F2 <- F2-fp
+    F1 <- F1-F0
+    F2 <- F2-F0
     
     G1 <- F1/M1
     G2 <- F2/M2
@@ -168,10 +176,11 @@ mcoptim <- function(par,fn,method="Newton",lower=-Inf,upper=Inf,control=list())
   
   
   counts <- 0
-  ERROR <- DIM # error (relative to std dev) of all dimensions summed in quadrature
+  ERROR <- sqrt(DIM) # error (relative to std dev) of all dimensions summed in quadrature
   RATE <- 1 # estimated rate of convergence
   SUCCESS <- FALSE # else do line searches in between Newton-Raphson iterations (always initially)
-  fp <- Inf
+  TARGET <- par # where to evaluate around next
+  fp <- NA # current best objective value
   ######################
   # MAIN LOOP
   ######################
@@ -183,7 +192,7 @@ mcoptim <- function(par,fn,method="Newton",lower=-Inf,upper=Inf,control=list())
     # we differentiate in DIM current directions DIR from point par
     counts <- counts + 1
     
-    BOX <- is.boxed(par)
+    BOX <- is.boxed(TARGET)
     
     # transform Hessian to current coordinates
     HESS <- t(DIR) %*% HESS %*% DIR
@@ -198,7 +207,7 @@ mcoptim <- function(par,fn,method="Newton",lower=-Inf,upper=Inf,control=list())
     }
     
     # sample initial points surrounding the initial point for numerical differentiation
-    ERROR.DIM <- RATE*ERROR^2/DIM # estimated current error (quadratic & relative to standard deviation) per dimension
+    ERROR.DIM <- RATE*ERROR^2/sqrt(DIM) # estimated current RMS error (quadratic & relative to standard deviation) per dimension
     dP <- (ndeps*ERROR.DIM) * t(STD*t(DIR))
     P1 <- -dP # away from boundaries
     P2 <- +dP # towards boundaries
@@ -211,25 +220,19 @@ mcoptim <- function(par,fn,method="Newton",lower=-Inf,upper=Inf,control=list())
     # columns are now boxed coordinates
     
     # mc evaluate all points
-    P <- cbind(par,P1,P2)
+    P <- cbind(TARGET,P1,P2)
     FN <- unlist(parallelsugar::mclapply(split(P,col(P)),func,mc.cores=mc.cores))
     # separate back into parts
     F1 <- FN[2:(DIM+1)]
     F2 <- FN[(DIM+2):(1+2*DIM)]
     
-    # need to keep old par earlier incase of failure... this only happens when line search was skipped prior
-    OLD.par <- par
-    OLD.fp <- fp
-    fp <- FN[1] # fn(par)
-    if(fp >= OLD.fp) { SUCCESS <- FALSE }
-    
     # calculate axial derivatives to second order
-    DIFF <- QuadSolve(P1,P2,DIR,F1,F2)
+    DIFF <- QuadSolve(P[1],P1,P2,DIR,FN[1],F1,F2)
     GRAD <- DIFF$GRAD
     H <- DIFF$HESS
     
     # if the gradient is null in one direction, then we've fully profiled that axis to machine precision
-    JUNK <- (F1==fp) | (F2==fp)
+    JUNK <- (F1==FN[1]) | (F2==FN[1])
     if(any(JUNK))
     {
       GRAD[JUNK] <- 0
@@ -258,9 +261,11 @@ mcoptim <- function(par,fn,method="Newton",lower=-Inf,upper=Inf,control=list())
     # Newton-Raphson search step from old par
     dP <- -c(COV %*% GRAD)
     
-    # include OLD.par & OLD.fp in this consideration
-    P <- cbind(P,OLD.par)
-    FN <- c(FN,OLD.fp)
+    #  this only happens when line search was skipped prior... so start doing line searches again
+    if(FN[1] >= fp) { SUCCESS <- FALSE }
+    # include values in selection
+    P <- cbind(P,par)
+    FN <- c(FN,fp)
     # pick all-time best evaluated location as our new starting point in line search
     MIN <- which.min(FN)
     dP2 <- P[,MIN]-par # step from old par to new (evaluated) par
@@ -281,15 +286,17 @@ mcoptim <- function(par,fn,method="Newton",lower=-Inf,upper=Inf,control=list())
     STD <- sqrt(abs(diag(COV)))
     # test for stopping condition here
     OLD.ERROR <- ERROR # old error
-    ERROR <- sqrt((dP %*% HESS %*% dP)) # relative error
+    ERROR <- sqrt(dP %*% HESS %*% dP) # relative error 
     if(ERROR<OLD.ERROR) { RATE <- ERROR/OLD.ERROR^2 } else { RATE <- 1 } # Newton-Raphson quadratic convergence rate
     ERROR <- min(1,ERROR) # this could happen?
-    if(ERROR < reltol) { break } # we are finished here
+    if(ERROR/sqrt(2) < TOL) { break } # smallest numerical change to objective function near minimum
     
-    # !!! need to throw the old par in here incase !SUCCESS
     # calculate best DIR and orthonormalize the remaining DIRs
     BEST <- which.max(abs(dP)) # future index of dP direction
     DIR <- Gram.Schmidt(DIR,dP)
+    
+    # where we aim to evaluate next
+    TARGET <- line.boxer(dP,p0=par)
     
     ##################
     # LINE SEARCH LOOP
@@ -299,10 +306,8 @@ mcoptim <- function(par,fn,method="Newton",lower=-Inf,upper=Inf,control=list())
       SUCCESS <- TRUE
       
       # generate a linear sequence of points from old par to the other side of new par
-      START <- par # store for later check !!!
-      TARGET <- par + dP # store for later comparison
-      P <- line.boxer(2*dP)
-      dP <- P - par # twice the old dP with no boundary (reflection=1) # !!! replace dP with dP2 here # !!! or at least dP with DIR[,BEST] below
+      P <- line.boxer(2*dP,p0=par)
+      dP <- P - par # twice the old dP with no boundary (reflection=1)
       M <- sqrt(sum(dP^2)) # total search magnitude
       SEQ <- seq(0,M,length.out=max(2,mc.cores)+1)[-1]
       P <- (DIR[,BEST] %o% SEQ) + par
@@ -330,35 +335,53 @@ mcoptim <- function(par,fn,method="Newton",lower=-Inf,upper=Inf,control=list())
         P.ALL <- P.ALL[,SORT]
         F.ALL <- F.ALL[SORT]
         
+        # store for later check
+        START <- par
         # new best estimate
         MIN <- which.min(F.ALL)
         par <- P.ALL[,MIN]
         fp <- F.ALL[MIN]
         
+        # numerical degeneracy check
+        if((MIN<length(F.ALL) && F.ALL[MIN]==F.ALL[MIN+1]) || (MIN>1 && F.ALL[MIN]==F.ALL[MIN-1]))
+        { break }
+
         # do we need to keep going to capture the minimum?
-        
-        if(MIN==1) # we went too far in first step !!! cliff problem --- iterate until different from START
+        ###################################################
+        if(all(par==START)) # we went too far, ... steep cliff after minimum
         {
           SUCCESS <- FALSE
           
-          # do a sub line search, including backwards reflection
-          # what was the shortest step previously
-          M <- min(diff(SEQ))
-          # tabulate forward steps with half of cores (assuming multiple of 2)
-          # change this to check START somehow !!! maybe need another condition
-          SEQ <- seq(0,M,length.out=max(1,mc.cores/2)+2)
-          SEQ <- SEQ[-c(1,length(SEQ))]
-          # tabulate backward steps other half of cores
-          SEQ <- c(rev(seq(0,-M,length.out=max(1,mc.cores/2)+1)[-1]),SEQ)
+          # calculate gradient and curvature
+          DIFF <- QuadSolve(par,P.ALL[,MIN-1],P.ALL[,MIN+1],DIR[,BEST,drop=FALSE],fp,F.ALL[MIN-1],F.ALL[MIN+1])
+          GRAD <- DIFF$GRAD
+          HESS.L <- DIFF$HESS
+          # will update search direction hessian with this during next iteration
+          dP <- -(GRAD/HESS.L)
+
+          # what was the shortest (normal) step previously, then for next subdivision
+          M <- sort(diff(SEQ),method='quick')[2] * max(2,mc.cores)/(max(2,mc.cores)+1) # fixed subdivision factor
           
+          # what is target step size, including reflection==1
+          dP <- line.boxer(2*dP*DIR[,BEST],p0=par) - par
+          M1 <- (dP %*% DIR[,BEST])
+          
+          # backstep==1
+          dP <- line.boxer(-dP*DIR[,BEST],p0=par) - par
+          M2 <- (dP %*% DIR[,BEST])
+          
+          # smallest steps
+          M1 <- min(abs(M),abs(M1))*sign(M1)
+          M2 <- min(abs(M),abs(M2))*sign(M2)
+          
+          # generate sequence around par
+          SEQ <- seq(M1,M2,length.out=max(2,mc.cores)+1)
+
           # combine for evaluation
           P <- (DIR[,BEST] %o% SEQ) + par
           
           # goto evaluate iteration step
           next
-          
-          # if !fast, this might not be an improvement...
-          # need a conditional or fast by default
         }
         else if(MIN==length(F.ALL)) # we didn't go far enough or we hit a boundary
         {
@@ -368,8 +391,8 @@ mcoptim <- function(par,fn,method="Newton",lower=-Inf,upper=Inf,control=list())
           NEW.BOX <- (par <= lower) | (par >= upper)
           if(sum(NEW.BOX)>sum(BOX)) { break } # goto hessian stuff
           
-          # Distance to first boundary that we will hit going in direction dP
-          M.BOX <- min((upper-par)[dP>0]/dP[dP>0],(lower-par)[dP<0]/dP[dP<0])
+          # Distance to first boundary that we will hit going in direction dP||DIR[,BEST]>0
+          M.BOX <- min(((upper-par)/DIR[,BEST])[DIR[,BEST]>0],((lower-par)/DIR[,BEST])[DIR[,BEST]<0])
           
           # we didn't hit a boundary yet, but we will eventually hit a boundary, so let's just do that
           if(M.BOX<Inf)
@@ -389,7 +412,7 @@ mcoptim <- function(par,fn,method="Newton",lower=-Inf,upper=Inf,control=list())
             P2 <- cbind(P.ALL[,MIN-1])
             F2 <- F.ALL[MIN-1]
             
-            DIFF <- QuadSolve(P1,P2,DIR[,BEST,drop=FALSE],F1,F2)
+            DIFF <- QuadSolve(par,P1,P2,DIR[,BEST,drop=FALSE],fp,F1,F2)
             GRAD <- DIFF$GRAD
             H <- DIFF$HESS
             
@@ -412,54 +435,56 @@ mcoptim <- function(par,fn,method="Newton",lower=-Inf,upper=Inf,control=list())
         { break }
       }
       # end iteration loop
+      ######################################
       # we improved our estimate and can stop the line search
       
+      #####################
+      # LINE SEARCH FINISHER
+      ######################
+      
+      # numerical degeneracy check 2/2
+      if((MIN<length(F.ALL) && F.ALL[MIN]==F.ALL[MIN+1]) || (MIN>1 && F.ALL[MIN]==F.ALL[MIN-1]))
+      { 
+        TARGET <- par
+        break
+      }
+      
       # interpolate to an even better point
-      if(fast)
-      {
-        # take best triplet
-        if(MIN>1) # first point after boundary
-        {
-          P1 <- cbind(P.ALL[,MIN-1])
-          F1 <- F.ALL[MIN-1]
-        }
-        else # first point reflected... I don't think this can ever happen
-        {
-          P1 <- cbind(P.ALL[,MIN+2])
-          F1 <- F.ALL[MIN+2]
-        }
-        
-        if(MIN<length(F.ALL)) # second point before boundary
-        {
-          P2 <- cbind(P.ALL[,MIN+1])
-          F2 <- F.ALL[MIN+1]
-        }
-        else # second point reflected off boundary
-        {
-          P2 <- cbind(P.ALL[,MIN-2])
-          F2 <- F.ALL[MIN-2]
-        }
-        
+      #####################################
+      # take best triplet
+      
+      # left boundary relfect
+      if(MIN>1) { i <- -1 } else { i <- 2 }
+      P1 <- cbind(P.ALL[,MIN+i])
+      F1 <- F.ALL[MIN+i]
+
+      # right boundary relfect
+      if(MIN<length(F.ALL)) { i <- 1 } else { i <- -2 }
+      P2 <- cbind(P.ALL[,MIN+i])
+      F2 <- F.ALL[MIN+i]
+      
+      # estimate better location if we can (if we are in the middle we can)
+      if(1<MIN && MIN<length(F.ALL))
+      { 
         # calculate gradient and curvature
-        DIFF <- QuadSolve(P1,P2,DIR[,BEST,drop=FALSE],F1,F2)
+        DIFF <- QuadSolve(par,P1,P2,DIR[,BEST,drop=FALSE],fp,F1,F2)
         GRAD <- DIFF$GRAD
         HESS.L <- DIFF$HESS
         # will update search direction hessian with this during next iteration
         
-        # estimate better location if we can
-        if(HESS.L>0 && MIN<length(F.ALL) && 1<MIN)
-        { 
-          dP <- -(GRAD/HESS.L)
-          par <- line.boxer(dP*DIR[,BEST]) # need to differentiate new TARGET from evaluated par to save !!!
-          
-          # what is the relative error along the search line
-          ERROR.L <- sqrt(((par-TARGET)%*%DIR[,BEST])^2/HESS.L)
-          RATE.L <- ERROR.L/ERROR^2
-          # is line search relatively efficient?
-          if((RATE.L*ERROR^2)^COST <= RATE*ERROR^2/sqrt(DIM)) { SUCCESS <- FALSE }
-        }
-        else
-        { SUCCESS <- FALSE }
+        dP <- -(GRAD/HESS.L)
+        TARGET <- line.boxer(dP*DIR[,BEST],p0=par) # need to differentiate new TARGET from evaluated par to save !!!
+        
+        # what is the relative error along the search line
+        ERROR.L <- sqrt(((par-TARGET)%*%DIR[,BEST])^2/HESS.L)
+        RATE.L <- ERROR.L/ERROR^2
+        # is line search relatively efficient?
+        if((RATE.L*ERROR^2)^COST <= RATE*ERROR^2/sqrt(DIM)) { SUCCESS <- FALSE }
+      }
+      else
+      {
+        TARGET <- par
+        SUCCESS <- FALSE
       }
     } # go back to differentiation
   } # end main loop

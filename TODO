@@ -7,6 +7,7 @@ Aligned Krige UDs
 pregridder composite dimension?
 
 LOW HANGING FRUIT & Nagging issues
+* give writeShapefile a default folder name, maybe also separate layers into different files
 * compass plot
 * summary.telemetry.list like Dong's
 * unit Environment on plots for points()
