@@ -10,7 +10,7 @@ temp_unzip <- function(filename, fun, ...){
   }
   temp_dir <- tempdir()
   # test if it's zip
-  files_in_zip <- try(unzip(filename, list = TRUE)$Name, silent = TRUE)
+  files_in_zip <- try(utils::unzip(filename, list = TRUE)$Name, silent = TRUE)
   if (class(files_in_zip) == "character") {
     # hidden files can be ignored: starting with ., ending with $, __MACOSX folder 
     visible_files <- files_in_zip[!grepl("((^__MACOSX\\/.*)|(^\\..*)|(^.*\\$$))", 
@@ -22,7 +22,7 @@ temp_unzip <- function(filename, fun, ...){
     }
     if(length(visible_files) == 0) { stop("\n  No visible file found in Zip file")}
     # proceed with single non-hidden file
-    unzip(filename, files = visible_files[1], exdir = temp_dir, overwrite = TRUE)
+    utils::unzip(filename, files = visible_files[1], exdir = temp_dir, overwrite = TRUE)
     dest_file <- file.path(temp_dir, visible_files[1])
   } else {
     dest_file <- tempfile()
