@@ -145,30 +145,6 @@ na.replace <- function(x,rep)
   return(x)
 }
 
-# convenience wrapper for numDeriv::genD on scalar functions
-genD <- function(func,x,...)
-{
-  n <- length(x)
-  D <- numDeriv::genD(func,x,...)$D
-  grad <- D[1:n]
-  D <- D[-(1:n)]
-  
-  # Bates and Watts ordering is not R ordering
-  hess <- lower.tri(diag(n),diag=TRUE)
-  SUM <- 0
-  for(i in 1:3)
-  {
-    for(j in 1:3)
-    {
-      SUM <- SUM + hess[i,j]
-      hess[i,j] <- hess[i,j]*SUM
-    }
-  }
-  hess[upper.tri(hess)] <- t(hess[lower.tri(hess)])
-  hess <- array(D[hess],c(n,n))
-  
-  return(list(grad=grad,hess=hess))
-}
 
 # parity tests
 is.even <- Vectorize(function(x) {x %% 2 == 0})
@@ -203,7 +179,7 @@ Adj <- function(M) { t(Conj(M)) }
 He <- function(M) { (M + Adj(M))/2 }
 
 # Positive definite solver
-PDsolve <- function(M,pseudo=FALSE)
+PDsolve <- function(M,force=FALSE,pseudo=FALSE)
 {
   # symmetrize
   M <- He(M)
@@ -213,22 +189,37 @@ PDsolve <- function(M,pseudo=FALSE)
   W <- sqrt(W)
   W <- W %o% W
   
-  # now a correlation matrix that is easy to invert
+  # now a correlation matrix that is easier to invert
   M <- M/W
-  if(!pseudo)
-  { M <- qr.solve(M) }
-  else
+
+  # conventional tolerance for pseudo-inverse
+  TOL <- length(diag(M))*.Machine$double.eps
+  
+  # try ordinary inverse
+  M <- try(qr.solve(M,tol=TOL))
+  # fall back on decomposition
+  if(class(M) != "matrix")
   {
     M <- eigen(M)
     V <- M$vectors
     M <- M$values
-    INDEX <- (abs(M) >= length(M)*.Machine$double.eps) # conventional tolerance
-    M[INDEX] <- 1/M[INDEX]
-    INDEX <- !INDEX
-    M[INDEX] <- 0
-    M <- lapply(1:length(M),function(i) M[i]*(V[,i] %o% Conj(V[,i])) )
+    
+    if(any(M<=0) && !force && !pseudo) { stop("Matrix not positive definite.") }
+    
+    PSEUDO <- abs(M) < TOL
+    FORCE <- M < TOL
+    
+    if(any(FORCE) && force) { M[FORCE] <- TOL }
+    M <- 1/M
+    if(any(PSEUDO) && pseudo) { M[PSEUDO] <- 0 }
+
+    # add up from smallest contribution to largest contribution
+    INDEX <- sort(M,method="quick",index.return=TRUE)$ix
+    M <- lapply(INDEX,function(i) M[i]*(V[,i] %o% Conj(V[,i])) )
     M <- Reduce('+',M)
   }
+  
+  # back to covariance matrix
   M <- M/W
 
   # symmetrize
@@ -269,7 +260,7 @@ cov.loglike <- function(hess,grad=rep(0,nrow(hess)))
     COV <- try(PDsolve(hess))
     if(class(COV)=="matrix") { return(COV) }
   }
-  # one of the curvatures is negative
+  # one of the curvatures is negative or close to negative
   # return something sensible just in case we are on a boundary and this makes sense
   
   # normalize parameter scales by curvature or gradient (whatever is larger)
@@ -289,6 +280,7 @@ cov.loglike <- function(hess,grad=rep(0,nrow(hess)))
   grad <- t(vectors) %*% grad
 
   # generalized Wald-like formula with zero-curvature limit
+  # VAR ~ square change required to decrease log-likelihood by 1/2
   for(i in 1:length(values))
   {
     DET <- values[i]+grad[i]^2
@@ -297,10 +289,12 @@ cov.loglike <- function(hess,grad=rep(0,nrow(hess)))
     { values[i] <- 1/(2*grad[i])^2 }
     else if(DET>=0.0) # Wald
     { values[i] <- min(((c(1,-1)*sqrt(DET)-grad[i])/values[i])^2) }
-    else # minimum loglike? optim probably failed
+    else # minimum loglike? optim probably failed or hit a boundary
     {
-      warning("Likelihood has not been maximized.")
+      warning("Likelihood has not been maximized. MLE could be near a boundary.")
+      # distance to worst parameter
       values[i] <- (grad[i]/values[i])^2
+      # not sure what else to do...
     }
   }
   

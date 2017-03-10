@@ -1,5 +1,9 @@
-0.3.6 2017-03-01
+0.3.6 2017-03-09
 ================
+
+  * ctmm.fit now has unified options controling optimization & differentiation
+  
+  * ctmm.fit Hessian and PREML calculations faster and more accurate
 
   * writeRaster method for UD objects
 

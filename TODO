@@ -3,6 +3,9 @@ UPDATE [pREML] TODO
 * ctmm.fit PARS==0 : MLE, pREML, REML consistency
 * document pREML
 
+* check pREML CIs
+* check weight tol?
+
 Aligned Krige UDs
 pregridder composite dimension?
 

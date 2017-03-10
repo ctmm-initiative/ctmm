@@ -14,8 +14,7 @@ ctmm(tau=NULL,isotropic=FALSE,range=TRUE,circle=FALSE,error=FALSE,axes=c("x","y"
 
 ctmm.loglike(data,CTMM,REML=FALSE,verbose=FALSE)
 
-ctmm.fit(data,CTMM=ctmm(),method="ML",control=list(maxit=.Machine$integer.max),
-trace=FALSE,...)
+ctmm.fit(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
 
 ctmm.select(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE,...)
 }
@@ -33,11 +32,11 @@ ctmm.select(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE,...)
   \item{REML}{Use residual maximum likelihood if \code{TRUE}. Not recommended.}
   \item{verbose}{Return additional information. See "Value" below.}
   \item{method}{Use residual maximum likelihood if \code{"REML"}. Not recommended.}
-  \item{control}{An optional argument to be passed to \code{\link{optim}}, but with \code{parscale} overwritten with reasonable defaults.}
+  \item{control}{An optional argument list with standardized numerical arguments.}
   \item{trace}{Report progress updates.}
-  \item{...}{Further arguments passed to \code{ctmm.fit} or \code{\link{optim}}.}
   \item{level}{Attempt to simplify a model if a feature's non-existence falls within this level of confidence interval.}
   \item{IC}{Information criteria used. Only \code{"AICc"} is currently supported.}
+  \item{...}{Further arguments passed to \code{ctmm.fit}.}
 }
 
 \details{
@@ -51,6 +50,13 @@ If \code{length(tau)==2}, then the OUF model (continuous-velocity motion restric
 
 Model selection in \code{ctmm.select} proceeds by first fitting the initial model guess, and then attempting to simplify the autocorrelation model and complexify the deterministic (mean) model until the information criteria fails to improve. The intent of working in these directions is to avoid fitting trends to autocorrelation.
 Note that simpler models in a nested hierarchy will only be attempted if they appear credible, which can be adjusted with the \code{level} argument. \code{level=1} will, therefore, always attempt a simpler model.
+
+The \code{control} list can take the folowing arguments, with defaults shown:
+\describe{
+\item{\code{method="Nelder-Mead"}}{\code{\link{optim}} method for multiple parameters.}
+\item{\code{precision=1/2}}{Fraction of machine numerical precision to target in the maximized likelihood value. MLEs will necessarily have half this precision. On most computers, \code{precision=1} is approximately 16 decimal digits of precision for the likelihood and 8 for the MLEs.}
+\item{\code{maxit=.Machine$integer.max}}{Maximum number of iterations allowed for optimization.}
+}
 }
 
 \value{
