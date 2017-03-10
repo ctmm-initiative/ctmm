@@ -93,19 +93,21 @@
     </div>
 
     
-    <p>Functions to calculate the \((x,y)\) plotting extent (or bounding box) of various ctmm objects, for use when plotting multiple ctmm objects.</p>
+    <p>Functions to calculate the \((x,y)\) plotting extent (or bounding box) of various ctmm objects or list of such objects, for use when plotting multiple ctmm objects.</p>
     
 
-    <pre><span class='fu'>extent</span>(<span class='no'>x</span>,<span class='no'>...</span>)
+    <pre><!-- %extent(x,...) -->
+# S4 method for telemetry
+extent(x,level=1,...)
 
-<span class='co'># S3 method for telemetry</span>
-<span class='fu'>extent</span>(<span class='no'>x</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='no'>...</span>)
+# S4 method for ctmm
+extent(x,level=0.95,level.UD=0.95,...)
 
-<span class='co'># S3 method for ctmm</span>
-<span class='fu'>extent</span>(<span class='no'>x</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>level.UD</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='no'>...</span>)
+# S4 method for UD
+extent(x,level=0.95,level.UD=0.95,...)
 
-<span class='co'># S3 method for UD</span>
-<span class='fu'>extent</span>(<span class='no'>x</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>level.UD</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='no'>...</span>)</pre>
+# S4 method for list
+extent(x,...)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <dl class="dl-horizontal">

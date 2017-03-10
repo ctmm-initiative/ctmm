@@ -101,8 +101,7 @@ The fitting functions wrap around <code>optim</code> and <code>ctmm.loglike</cod
 
 <span class='fu'>ctmm.loglike</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>REML</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>verbose</span><span class='kw'>=</span><span class='fl'>FALSE</span>)
 
-<span class='fu'>ctmm.fit</span>(<span class='no'>data</span>,<span class='kw'>CTMM</span><span class='kw'>=</span><span class='fu'>ctmm</span>(),<span class='kw'>method</span><span class='kw'>=</span><span class='st'>"ML"</span>,<span class='kw'>control</span><span class='kw'>=</span><span class='fu'>list</span>(<span class='kw'>maxit</span><span class='kw'>=</span><span class='no'>.Machine</span>$<span class='no'>integer.max</span>),
-<span class='kw'>trace</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='no'>...</span>)
+<span class='fu'>ctmm.fit</span>(<span class='no'>data</span>,<span class='kw'>CTMM</span><span class='kw'>=</span><span class='fu'>ctmm</span>(),<span class='kw'>method</span><span class='kw'>=</span><span class='st'>"ML"</span>,<span class='kw'>control</span><span class='kw'>=</span><span class='fu'>list</span>(),<span class='kw'>trace</span><span class='kw'>=</span><span class='fl'>FALSE</span>)
 
 <span class='fu'>ctmm.select</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>verbose</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.99</span>,<span class='kw'>IC</span><span class='kw'>=</span><span class='st'>"AICc"</span>,<span class='kw'>trace</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='no'>...</span>)</pre>
     
@@ -131,15 +130,15 @@ The fitting functions wrap around <code>optim</code> and <code>ctmm.loglike</cod
       <dt>method</dt>
       <dd>Use residual maximum likelihood if <code>&quot;REML&quot;</code>. Not recommended.</dd>
       <dt>control</dt>
-      <dd>An optional argument to be passed to <code>optim</code>, but with <code>parscale</code> overwritten with reasonable defaults.</dd>
+      <dd>An optional argument list with standardized numerical arguments.</dd>
       <dt>trace</dt>
       <dd>Report progress updates.</dd>
-      <dt>...</dt>
-      <dd>Further arguments passed to <code>ctmm.fit</code> or <code>optim</code>.</dd>
       <dt>level</dt>
       <dd>Attempt to simplify a model if a feature&#39;s non-existence falls within this level of confidence interval.</dd>
       <dt>IC</dt>
       <dd>Information criteria used. Only <code>&quot;AICc&quot;</code> is currently supported.</dd>
+      <dt>...</dt>
+      <dd>Further arguments passed to <code>ctmm.fit</code>.</dd>
     </dl>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
@@ -152,6 +151,12 @@ If <code>length(tau)==1</code>, then an Ornstein-Uhlenbeck (OU) model (Brownian 
 If <code>length(tau)==2</code>, then the OUF model (continuous-velocity motion restricted to a finite home range) is fit to the data, where <code>tau[1]</code> is again the position autocorrelation timescale and <code>tau[2]</code> is the velocity autocorrelation timescale. <code>tau[1]=Inf</code> then yields integrated Ornstein-Uhlenbeck (IOU) motion, which is a spatially unrestricted continuous-velocity process.</p>
     <p>Model selection in <code>ctmm.select</code> proceeds by first fitting the initial model guess, and then attempting to simplify the autocorrelation model and complexify the deterministic (mean) model until the information criteria fails to improve. The intent of working in these directions is to avoid fitting trends to autocorrelation.
 Note that simpler models in a nested hierarchy will only be attempted if they appear credible, which can be adjusted with the <code>level</code> argument. <code>level=1</code> will, therefore, always attempt a simpler model.</p>
+    <p>The <code>control</code> list can take the folowing arguments, with defaults shown:
+<dl class='dl-horizontal'>
+<dt><code>method=&quot;Nelder-Mead&quot;</code></dt><dd><code>optim</code> method for multiple parameters.</dd>
+<dt><code>precision=1/2</code></dt><dd>Fraction of machine numerical precision to target in the maximized likelihood value. MLEs will necessarily have half this precision. On most computers, <code>precision=1</code> is approximately 16 decimal digits of precision for the likelihood and 8 for the MLEs.</dd>
+<dt><code>maxit=.Machine$integer.max</code></dt><dd>Maximum number of iterations allowed for optimization.</dd>
+</dl></p>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
