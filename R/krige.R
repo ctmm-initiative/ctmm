@@ -260,7 +260,6 @@ occurrence <- function(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=
   # evenly sampled subset: data points (bridge ends) may be counted twice and weighted half
   GRID <- c( which(data$t %in% t.grid) , which(data$t %in% t.grid[which(diff(t.grid)==0)]) )
   GRID <- sort.int(GRID,method="quick")
-
   # GRID <- data$t %in% t.grid
   
   # t <- state$t[GRID]

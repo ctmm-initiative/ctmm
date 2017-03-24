@@ -1,3 +1,6 @@
+* Fix new genD cross correlations
+* mc.optimize step minimum
+
 UPDATE [pREML] TODO
 * make ctmm.select robust to use MLE guesses (through R environments?)
 * ctmm.fit PARS==0 : MLE, pREML, REML consistency
@@ -7,6 +10,7 @@ Aligned Krige UDs
 pregridder composite dimension?
 
 LOW HANGING FRUIT & Nagging issues
+* rainbow.telemetry
 * give writeShapefile a default folder name, maybe also separate layers into different files
 * compass plot
 * summary.telemetry.list like Dong's

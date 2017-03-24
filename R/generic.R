@@ -1,24 +1,3 @@
-# existing S4 generic functions
-methods::setGeneric("raster", getGeneric("raster", package="raster"))
-methods::setGeneric("zoom", getGeneric("zoom", package="raster"))
-
-# existing functions -> S4 generics
-# this doesn't work
-#methods::setGeneric("SpatialPoints",package="sp",signature=signature("coords",...))
-#methods::setGeneric("SpatialPolygonsDataFrame",package="sp",signature="Sr")
-
-# existing funtions -> S3 generics
-# this works but is masked if you load sp
-#SpatialPoints <- function(object,...) UseMethod("SpatialPoints")
-#SpatialPoints.matrix <- function(object,...) sp::SpatialPoints(coords=object,...)
-#SpatialPoints.data.frame <- function(object,...) sp::SpatialPoints(coords=object,...)
-
-#SpatialPolygonsDataFrame <- function(object,...) UseMethod("SpatialPolygonsDataFrame")
-#SpatialPolygonsDataFrame.SpatialPolygons <- function(object,...) sp::SpatialPolygonsDataFrame(Sr=object,...)
-
-# new S3 generic functions
-writeShapefile <- function(object,...) UseMethod("writeShapefile")
-
 # is a package installed?
 is.installed <- function(pkg) is.element(pkg, utils::installed.packages()[,1]) 
 
@@ -86,21 +65,6 @@ sinch <- Vectorize( function(x)
   { return(sinh(x)/x) }
 } )
 
-##### det shouldn't fail because R dropped indices
-det.numeric <- function(x,...) { x }
-determinant.numeric <- function(x,logarithm=TRUE,...)
-{
-  SIGN <- sign(x)
-  if(logarithm)
-  { x <- log(abs(x)) }
-  
-  RESULT <- list(modulus=x,sign=SIGN)
-  attr(RESULT$modulus,"logarithm") <- logarithm
-
-  class(RESULT) <- "det"
-  
-  return(det)
-}
 
 # forwarding function for list of a particular datatype
 zoom.list <- function(x,...)
@@ -145,30 +109,6 @@ na.replace <- function(x,rep)
   return(x)
 }
 
-# convenience wrapper for numDeriv::genD on scalar functions
-genD <- function(func,x,...)
-{
-  n <- length(x)
-  D <- numDeriv::genD(func,x,...)$D
-  grad <- D[1:n]
-  D <- D[-(1:n)]
-  
-  # Bates and Watts ordering is not R ordering
-  hess <- lower.tri(diag(n),diag=TRUE)
-  SUM <- 0
-  for(i in 1:3)
-  {
-    for(j in 1:3)
-    {
-      SUM <- SUM + hess[i,j]
-      hess[i,j] <- hess[i,j]*SUM
-    }
-  }
-  hess[upper.tri(hess)] <- t(hess[lower.tri(hess)])
-  hess <- array(D[hess],c(n,n))
-  
-  return(list(grad=grad,hess=hess))
-}
 
 # parity tests
 is.even <- Vectorize(function(x) {x %% 2 == 0})
@@ -196,70 +136,6 @@ Mode <- function(x)
 }
 
 
-# adjoint of matrix
-Adj <- function(M) { t(Conj(M)) }
-
-# Hermitian part of matrix
-He <- function(M) { (M + Adj(M))/2 }
-
-# Positive definite solver
-PDsolve <- function(M,pseudo=FALSE)
-{
-  # symmetrize
-  M <- He(M)
-  
-  # rescale
-  W <- abs(diag(M))
-  W <- sqrt(W)
-  W <- W %o% W
-  
-  # now a correlation matrix that is easy to invert
-  M <- M/W
-  if(!pseudo)
-  { M <- qr.solve(M) }
-  else
-  {
-    M <- eigen(M)
-    V <- M$vectors
-    M <- M$values
-    INDEX <- (abs(M) >= length(M)*.Machine$double.eps) # conventional tolerance
-    M[INDEX] <- 1/M[INDEX]
-    INDEX <- !INDEX
-    M[INDEX] <- 0
-    M <- lapply(1:length(M),function(i) M[i]*(V[,i] %o% Conj(V[,i])) )
-    M <- Reduce('+',M)
-  }
-  M <- M/W
-
-  # symmetrize
-  M <- He(M)
-
-  return(M)
-}
-
-# condition number
-conditionNumber <- function(M)
-{
-  M <- eigen(M)$values
-  M <- range(M)
-  return(M[2]/M[1])
-}
-
-# sqrtm fails on 1x1 matrix
-# it also gives annoying notes if I don't cast it right
-sqrtm <- function(x)
-{
-  DIM <- dim(x)
-  if(all(DIM==c(1,1)))
-  { return ( sqrt(x) ) }
-  else
-  {
-    x <- Matrix::Matrix(x,sparse=FALSE,doDiag=FALSE)
-    return( expm::sqrtm(x) )
-  }
-}
-
-
 # generalized covariance from -likelihood derivatives
 cov.loglike <- function(hess,grad=rep(0,nrow(hess)))
 {
@@ -269,7 +145,7 @@ cov.loglike <- function(hess,grad=rep(0,nrow(hess)))
     COV <- try(PDsolve(hess))
     if(class(COV)=="matrix") { return(COV) }
   }
-  # one of the curvatures is negative
+  # one of the curvatures is negative or close to negative
   # return something sensible just in case we are on a boundary and this makes sense
   
   # normalize parameter scales by curvature or gradient (whatever is larger)
@@ -289,6 +165,7 @@ cov.loglike <- function(hess,grad=rep(0,nrow(hess)))
   grad <- t(vectors) %*% grad
 
   # generalized Wald-like formula with zero-curvature limit
+  # VAR ~ square change required to decrease log-likelihood by 1/2
   for(i in 1:length(values))
   {
     DET <- values[i]+grad[i]^2
@@ -297,10 +174,12 @@ cov.loglike <- function(hess,grad=rep(0,nrow(hess)))
     { values[i] <- 1/(2*grad[i])^2 }
     else if(DET>=0.0) # Wald
     { values[i] <- min(((c(1,-1)*sqrt(DET)-grad[i])/values[i])^2) }
-    else # minimum loglike? optim probably failed
+    else # minimum loglike? optim probably failed or hit a boundary
     {
-      warning("Likelihood has not been maximized.")
+      warning("Likelihood has not been maximized. MLE could be near a boundary.")
+      # distance to worst parameter
       values[i] <- (grad[i]/values[i])^2
+      # not sure what else to do...
     }
   }
   
@@ -380,32 +259,6 @@ first <- function(vec) { vec[1] }
 
 # CLAMP A NUMBER
 clamp <- Vectorize(function(num,min=0,max=1) { if(num<min) {min} else if(num<max) {num} else {max} })
-
-
-# Positive definite part of matrix
-PDclamp <- function(M)
-{ 
-  
-  # singular value decomposition method
-  M <- svd(M)
-  M$d <- clamp(M$d,max=Inf) # toss out small negative values
-  M$u <- (M$u + M$v)/2 # symmetrize
-  
-  M <- lapply(1:length(M$d),function(i){M$d[i]*(M$u[i,]%o%Conj(M$u[i,]))})
-  M <- Reduce("+",M)
-  
-  return(M)
-
-  # simple method
-  M[1,1] <- clamp(M[1,1],0,Inf)
-  M[2,2] <- clamp(M[2,2],0,Inf)
-  m <- sqrt(M[1,1]*M[2,2])
-  M[1,2] <- clamp(M[1,2],-m,m)
-  M[2,1] <- M[1,2]
-  
-  return(M)
-  
-}
 
 
 # PAD VECTOR
