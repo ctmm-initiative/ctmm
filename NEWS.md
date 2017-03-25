@@ -1,6 +1,8 @@
 0.3.6 2017-03-24
 ================
 
+  * AICc formulas updated from univariate to multivariate
+
   * ctmm.fit now has unified options controling optimization & differentiation
   
   * ctmm.fit Hessian and pREML calculations faster and more accurate

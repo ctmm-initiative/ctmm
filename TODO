@@ -1,5 +1,5 @@
+* mc.optimize step minimum or something
 * Fix new genD cross correlations
-* mc.optimize step minimum
 
 UPDATE [pREML] TODO
 * make ctmm.select robust to use MLE guesses (through R environments?)
