@@ -732,7 +732,10 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
   PARS <- length(SIGMA) + length(TAU) + length(CIRCLE) + length(ERROR)
   # degrees of freedom, including the mean, variance/covariance, tau, and error model
   k.mean <- ncol(CTMM$mean.vec)
-  k <- length(axes)*(k.mean - (if(range){0}else{1})) + (if(isotropic){1}else{3}) + length(TAU) + length(CIRCLE) + length(ERROR)
+  # covariance parameters only
+  nu <- (if(isotropic){1}else{3}) + length(TAU) + length(CIRCLE) + length(ERROR)
+  # all parameters
+  k <- length(axes)*(k.mean - (if(range){0}else{1})) + nu
   
   # OPTIMIZATION GUESS (pars)
   # also construct reasonable parscale
@@ -1020,8 +1023,8 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
     dimnames(CTMM$COV) <- list(NAMES,NAMES)
   }
   
-  CTMM$AICc <- (2*k-2*CTMM$loglike) + 2*k*(k+1)/(n-k-1)
-  CTMM$BIC <- k*log(n)-2*CTMM$loglike
+  CTMM$AIC <- (2*k-2*CTMM$loglike)
+  CTMM$AICc <- CTMM$AIC + 2*k*(k+nu)/(length(axes)*n-k-nu)
 
   return(CTMM)
 }
