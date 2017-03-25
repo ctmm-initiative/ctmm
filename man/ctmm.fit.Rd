@@ -92,6 +92,7 @@ Fitting without telemetry errors involves fewer parameters and is much faster th
 Therefore, fitting without telemetry errors, if possible, can provide improved initial estimates of \code{tau} and \code{sigma} for later fitting with telemetry errors.
 
 The default \code{\link{optim}} method here is \code{"Nelder-Mead"} with the largest allowable number of maximum iterations. Annecdotally, the faster \code{"BFGS"} and \code{"L-BFGS-B"} methods often perform poorly on these types of problems.
+However, Nelder Mead is not ideal and you may want to attempt a second fit, using the first fit as its initial guess.
 
 The AICs of endlessly diffusing models like BM and IOU cannot be easily compared to the AICs of range resident models like bivariate Gaussian, OU, and OUF. Endlessly diffusing models have to be conditioned off of an initial state, which we derive in \code{ctmm} by taking the large range limit of a range-restricted process. I.e., BM is the limit OU(\code{Inf}) and IOU(\code{tau}) is the limit OUF(\code{Inf},\code{tau}). Using comparable likelihood functions would give up statistical efficiency and the objective prior.
 
