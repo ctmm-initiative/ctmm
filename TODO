@@ -1,8 +1,11 @@
-* mc.optimize step minimum or something
-* Fix new genD cross correlations
+* m0,m1,m2 -> m.iid,m.ou,m.ouf
+
+* mc.optimize Hessian deflation
+* diagonalize covariance for first attempt?
+* mc.genD cross correlations are wrong
 
 UPDATE [pREML] TODO
-* make ctmm.select robust to use MLE guesses (through R environments?)
+* make ctmm.select robust to use MLE guesses on pREML fits
 * ctmm.fit PARS==0 : MLE, pREML, REML consistency
 * document pREML
 

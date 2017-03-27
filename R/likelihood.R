@@ -735,7 +735,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
   # covariance parameters only
   nu <- (if(isotropic){1}else{3}) + length(TAU) + length(CIRCLE) + length(ERROR)
   # all parameters
-  k <- length(axes)*(k.mean - (if(range){0}else{1})) + nu
+  k <- nu + length(axes)*(if(range){k.mean}else{k.mean-1})
   
   # OPTIMIZATION GUESS (pars)
   # also construct reasonable parscale
@@ -754,9 +754,9 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
       if(is.null(sigma)) { sigma <<- drift@init(data,CTMM)$sigma@par }
       pars <<- sigma[SIGMAV]
       parscale <<- c(parscale,c(sigma[1],1,pi/4)[SIGMAV])
-      LO <- c(0,0,-pi)
+      LO <- c(0,0,-Inf)
       lower <<- LO[SIGMAV]
-      UP <- c(Inf,Inf,pi)
+      UP <- c(Inf,Inf,Inf)
       upper <<- UP[SIGMAV]
       
       # can we profile the variance, if so delete the guess

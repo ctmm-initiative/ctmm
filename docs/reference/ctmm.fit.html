@@ -202,7 +202,7 @@ Note that simpler models in a nested hierarchy will only be attempted if they ap
 By default, <code>ctmm.loglike</code> returns the log-likelihood of the model <code>CTMM</code>.
 <code>ctmm.fit</code> (and <code>ctmm.loglike</code> with <code>verbose=TRUE</code>) returns the maximum likelihood <code>ctmm</code> movement-model object with all of the components of <code>CTMM</code> plus the components listed below.
 <code>ctmm.select</code> returns the best model by default or the list of attempted models if <code>verbose=TRUE</code>.</p><dl class='dl-horizontal'>
-<dt><code>AICc</code></dt><dd><p>The corrected Akaike information criterion, under the assumption of a linear model. Not all model parameters here are linear, but the linear AICc is still implemented rather than AIC because AICc is known to behave well for analogous discrete-time models. Also, following the arguments of Burnham &amp; Anderson (2002), AICc should be an improvement over AIC here because the model parameters are not extremely nonlinear, etc..</p></dd>
+<dt><code>AICc</code></dt><dd><p>The approximate corrected Akaike information criterion for multivariate distributions with variable numbers of unknown mean and (structured) covariance parameters (Burnham &amp; Anderson, Eq. 7.91).</p></dd>
 <dt><code>loglike</code></dt><dd><p>The log-likelihood.</p></dd>
 <dt><code>sigma</code></dt><dd><p>The maximum likelihood variance/covariance estimate (possibly debiased). For the endlessly diffusing BM and IOU processes, this is instead the diffusion rate estimate.</p></dd>
 <dt><code>mu</code></dt><dd><p>The maximum likelihood stationary mean vector estimate.</p></dd>
@@ -214,15 +214,18 @@ By default, <code>ctmm.loglike</code> returns the log-likelihood of the model <c
     
     <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
 
-    <p>C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, and W. F. Fagan. (2014). From fine-scale foraging to home ranges: A semi-variance approach to identifying movement modes across spatiotemporal scales. <a href = 'http://www.jstor.org/discover/10.1086/675504'>The American Naturalist, 183(5), E154-E167.</a></p>
+    <p>K. P. Burnham, D. R. Anderson. (2003) Model Selection and Multimodel Inference: A Practical Information-Theoretic Approach. Springer. 2nd edition.</p>
+<p>C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, and W. F. Fagan. (2014). From fine-scale foraging to home ranges: A semi-variance approach to identifying movement modes across spatiotemporal scales. <a href = 'http://www.jstor.org/discover/10.1086/675504'>The American Naturalist, 183(5), E154-E167.</a></p>
 <p>C. H. Fleming and Y. Subasi and J. M. Calabrese. (2015). A maximum-entropy description of animal movement. <a href = 'http://journals.aps.org/pre/abstract/10.1103/PhysRevE.91.032107'>Physical Review E, 91, 032107.</a></p>
     
     <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
 
     <p>Fitting without telemetry errors involves fewer parameters and is much faster than fitting with telemetry errors, as the variance/covariance can be profiled analytically without numerical optimization.
 Therefore, fitting without telemetry errors, if possible, can provide improved initial estimates of <code>tau</code> and <code>sigma</code> for later fitting with telemetry errors.</p>
-<p>The default <code>optim</code> method here is <code>"Nelder-Mead"</code> with the largest allowable number of maximum iterations. Annecdotally, the faster <code>"BFGS"</code> and <code>"L-BFGS-B"</code> methods often perform poorly on these types of problems.</p>
+<p>The default <code>optim</code> method here is <code>"Nelder-Mead"</code> with the largest allowable number of maximum iterations. Annecdotally, the faster <code>"BFGS"</code> and <code>"L-BFGS-B"</code> methods often perform poorly on these types of problems.
+However, Nelder Mead is not ideal and you may want to attempt a second fit, using the first fit as its initial guess.</p>
 <p>The AICs of endlessly diffusing models like BM and IOU cannot be easily compared to the AICs of range resident models like bivariate Gaussian, OU, and OUF. Endlessly diffusing models have to be conditioned off of an initial state, which we derive in <code>ctmm</code> by taking the large range limit of a range-restricted process. I.e., BM is the limit OU(<code>Inf</code>) and IOU(<code>tau</code>) is the limit OUF(<code>Inf</code>,<code>tau</code>). Using comparable likelihood functions would give up statistical efficiency and the objective prior.</p>
+<p>Prior to v0.3.6, the univariate AICc formula was (mis)used, with the full parameter count treated as degrees of freedom in the mean. As of v.0.3.6, the mean and autocovariance parameters are treated separately in the approximate multivariate AICc formula (Burnham &amp; Anderson, Eq. 7.91).</p>
 <p>Prior to v0.3.2, <code>ctmm.select</code> would consider every possible model.
 This is no longer feasible with current versions of <code>ctmm</code>, as the number of possible models has grown too large.</p>
     
