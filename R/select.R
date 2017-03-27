@@ -278,11 +278,21 @@ summary.ctmm.list <- function(object, IC="AICc", ...)
 }
 
 
+# small sample size adjustment for ctmm.select to be more agressive
+alpha.ctmm <- function(CTMM,alpha)
+{
+  z <- stats::qnorm(alpha)
+  z <- sqrt(z^2 + (CTMM$AICc-CTMM$AIC))
+  alpha <- 1-stats::pnorm(z)
+  return(alpha)
+}
+
 ###############
 # keep removing uncertain parameters until AIC stops improving
 ctmm.select <- function(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE,...)
 {
   alpha <- 1-level
+  
   drift <- get(CTMM$mean)
   
     # fit the intital guess
@@ -294,9 +304,10 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE
   while(!identical(CTMM,OLD))
   {
     GUESS <- list()
+    beta <- alpha.ctmm(CTMM,alpha)
     
     # consider if some timescales are actually zero
-    CI <- confint.ctmm(CTMM,alpha=alpha)
+    CI <- confint.ctmm(CTMM,alpha=beta)
     if(length(CTMM$tau)==2)
     {
       Q <- CI["tau velocity",1]
@@ -331,7 +342,7 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE
     if(!CTMM$isotropic)
     {
       Q <- "eccentricity"
-      Q <- stats::qnorm(alpha/2,mean=CTMM$sigma@par[Q],sd=sqrt(CTMM$COV[Q,Q]))
+      Q <- stats::qnorm(beta/2,mean=CTMM$sigma@par[Q],sd=sqrt(CTMM$COV[Q,Q]))
       if(Q <= 0)
       {
         GUESS[[length(GUESS)+1]] <- CTMM

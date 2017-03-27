@@ -72,7 +72,7 @@
       <h1>Variograms and Model Selection</h1>
                         <h4 class="author">Chris H. Fleming and Justin M. Calabrese</h4>
             
-            <h4 class="date">2017-03-24</h4>
+            <h4 class="date">2017-03-26</h4>
           </div>
 
     
@@ -284,8 +284,8 @@ FITS$ERROR &lt;-<span class="st"> </span><span class="kw"><a href="../reference/
 <span class="kw">summary</span>(FITS)</code></pre></div>
 <pre><code>##         dAICc   DOF[mean]
 ## OUF     0.000   13.216116
-## OU   1458.296    6.648588
-## IID 36617.488 3528.000000</code></pre>
+## OU   1458.297    6.648588
+## IID 36617.490 3528.000000</code></pre>
 <p><code>AICc</code> is the (linearly) corrected Akaike information criteria. AIC balances likelihood against model complexity in a way that is good if we want to make optimal predictions. A lower AIC is better. Getting the AIC to go down by 5 is great, while getting the AIC to go down by 10 is awesome. Our AIC is going down by thousands.</p>
 <p>The fit parameter <code>DOF[mean]</code> is the number of degrees of freedom worth of data we have to estimate the stationary mean parameter, assuming that the model is correct. Notice that the IID model perceives thousands of independent data points, while the autocorrelated OU and OUF models only see a handful of independent data points. This is why the IID model produced tiny confidence intervals on the predicted (Gaussian) area.</p>
 </div>
@@ -297,8 +297,8 @@ FITS$ERROR &lt;-<span class="st"> </span><span class="kw"><a href="../reference/
 <span class="kw">summary</span>(FITZ)</code></pre></div>
 <pre><code>##                     dAICc DOF[mean]
 ## OUF anisotropic    0.0000 13.216116
-## OUF isotropic    113.9408 13.876278
-## OU anisotropic  1458.2960  6.648584</code></pre>
+## OUF isotropic    113.9431 13.876278
+## OU anisotropic  1458.2972  6.648584</code></pre>
 <p>Note that <code>level=1</code> is set here for demonstration purposes only, to attempt every nearest model no matter how unlikely it may seem. The isotropic and anisotropic (<code>isotropic=FALSE</code>) flags correspond to circular and elliptical covariances respectively—an option we did not consider above. <!-- The Ornstein-Uhlenbeck-F (OUF) model is continuous in position and velocity (`M2`),
 the Ornstein-Uhlenbeck (OU) model is continuous in position only (`M1`),
 and the independent and identically distributed (IID) model has no autocorrelation (`M0`). --> The IID model was never considered here by <code>ctmm.select</code> because it first requires selecting OU over OUF in the nested model hierarchy. See <code>help("ctmm")</code> for more options.</p>

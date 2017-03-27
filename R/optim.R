@@ -384,7 +384,7 @@ Optimizer <- function(par,fn,...,method="Nelder-Mead",lower=-Inf,upper=Inf,contr
     }
     RESULT <- stats::optim(par=par,fn=fn,method=method,lower=lower,upper=upper,control=control,...)
   }
-  
+
   return(RESULT)
 }
 
@@ -464,6 +464,8 @@ QuadSolve <- function(P0,P1,P2,DIR,F0,F1,F2)
 ##################################
 mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,control=list())
 {
+  DEBUG <- FALSE
+  
   # check complains about visible bindings
   fnscale <- parscale <- maxit <- precision <- trace <- mc.cores <- hessian <- covariance <- zero <- NULL
   # fix default control arguments
@@ -479,7 +481,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,control=list())
   # half this for optimal parameters
   ERROR.TOL <- .Machine$double.eps^precision
   # the smallest relative parameter step we can take that will change the objective function by >0 numerically
-  STEP.TOL <- sqrt(2*.Machine$double.eps^precision)
+  STEP.TOL <- sqrt(2*ERROR.TOL)
   STEP.MIN <- sqrt(2*.Machine$double.eps)
   
   ZERO <- zero # ZERO will be boolean, zero will be constant
@@ -577,15 +579,15 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,control=list())
   
   # initializing stuff checked in loop
   counts <- 0
-  ERROR <- sqrt(DIM) # error (relative to std dev) of all dimensions summed in quadrature
-  ERROR.RATE <- 1 # estimated rate of convergence
+  ERROR <- 1 # error (relative to std dev) of all dimensions summed in quadrature
+  # ERROR.RATE <- 1 # estimated rate of convergence
   LINE.DO <- TRUE # else do line searches in between Newton-Raphson iterations (always initially)
   LINE.DID <- TRUE # did we do a line search previously
   par.target <- par # where to evaluate around next
   fn.par <- Inf # current best objective value fn(par)
   condition <- Inf
   par.diff.old <- rep(Inf,DIM)
-  hessian.L <- NULL # line-search hessian
+  hessian.LINE <- NULL # line-search hessian
   ######################
   # MAIN LOOP
   ######################
@@ -612,16 +614,17 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,control=list())
     # standard deviations along current axes 
     STD <- sqrt(abs(diag(covariance)))
     # can update this element from line search... will only help for derivative spacing
-    if(!is.null(hessian.L))
+    if(!is.null(hessian.LINE))
     { 
-      STD[BEST] <- 1/sqrt(abs(hessian.L))
-      hessian.L <- NULL
+      STD[BEST] <- 1/sqrt(abs(hessian.LINE))
+      hessian.LINE <- NULL
     }
     
     # sample initial points surrounding the initial point for numerical differentiation
-    ERROR.DIM <- sqrt(2/DIM)*ERROR.RATE*ERROR # estimated current RMS error (linear & relative to standard deviation) per dimension
-    STEP <- max(sqrt(ERROR.DIM*STEP.TOL),STEP.MIN) # put the differentiation step between the error estimate and the numerical tolerance, with a lower limit
-    par.step <- STEP * t(STD*t(DIR))
+    # ERROR.DIM <- sqrt(2/DIM)*ERROR # estimated current RMS error (linear & relative to standard deviation) per dimension
+    # STEP <- max(sqrt(ERROR.DIM*STEP.TOL),STEP.MIN) # put the differentiation step between the error estimate and the numerical tolerance, with a lower limit
+    STEP <- pmin(max(ERROR,STEP.TOL)*STD,1/2) # assumes parscale is good
+    par.step <- t(STEP*t(DIR))
     P1 <- -par.step # away from boundaries
     P2 <- +par.step # towards boundaries
     # don't sample points across boundary, fold back instead - correct one-sided derivatives implemented
@@ -643,33 +646,43 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,control=list())
     F1 <- fn.queue[2+1:DIM]
     F2 <- fn.queue[2+DIM+1:DIM]
     
+    # is the minimum encapsulated?
+    encapsulated <- (fn.target<F1) & (fn.target<F2)
+    
+    # new centroid
+    par.center <- par.target
+    fn.center <- fn.target
+    
     # calculate axial derivatives to second order
     DIFF <- QuadSolve(par.target,P1,P2,DIR,fn.target,F1,F2)
     GRAD <- DIFF$GRAD
-    H <- DIFF$hessian
+    hessian.diag <- DIFF$hessian
     
     # will need line search if not normal looking
-    if(any(H<=.Machine$double.eps)) { LINE.DO <- TRUE }
-    
+    if(any(hessian.diag<=.Machine$double.eps)) { LINE.DO <- TRUE }
+
     # if the gradient is null in one direction, then we've likely profiled that axis to machine precision
     TEST <- abs(F1-fn.target)<=.Machine$double.eps | abs(F2-fn.target)<=.Machine$double.eps
     if(any(TEST))
     {
       GRAD[TEST] <- 0
-      H[TEST] <- diag(hessian)[TEST]
+      hessian.diag[TEST] <- diag(hessian)[TEST]
     }
     # fix profiled dimensions to change nothing, else will get 0/0
     
     # Make sure the Hessian esitmate didn't blow up
-    TEST <- abs(H)<=.Machine$double.eps
-    if(any(TEST)) { H[TEST] <- diag(hessian)[TEST] }
+    TEST <- abs(hessian.diag)<=.Machine$double.eps
+    if(any(TEST)) { hessian.diag[TEST] <- diag(hessian)[TEST] }
     # stick with old estimate
     
-    condition <- H/diag(hessian)
-    condition <- min(sign(condition))*max(abs(condition),1)/min(abs(condition),1)
+    condition <- hessian.diag/diag(hessian)
+    MIN <- which.min(abs(condition))
+    MAX <- which.max(abs(condition))
+    condition <- condition[c(MIN,MAX)]
+    condition <- sign(condition) * sqrt(abs(condition))
     
     # curvature correction factor: new curvature / old curvature (current coordinates)
-    FACT <- sqrt(abs(H/diag(hessian))) # correction factor diagonal
+    FACT <- sqrt(abs(hessian.diag/diag(hessian))) # correction factor diagonal
     # update curvatures while preserving correlations
     hessian <- t(t(FACT*hessian)*FACT)
     # update covariances the same way as Hessian (prevents requirement of matrix inversion)
@@ -684,12 +697,14 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,control=list())
     
     # Newton-Raphson search step from par.target
     par.diff <- -c(covariance %*% GRAD)
+
+    MIN <- which.min(fn.queue)
     
-    #  this only happens when line search was skipped prior... so start doing line searches again
-    if(fn.par <= fn.target && !LINE.DID) { LINE.DO <- TRUE }
+    # line search if encapsulation is degraded
+    if(!LINE.DID && fn.target>fn.queue[MIN]) { LINE.DO <- TRUE }
+    # line search re-targeting could potentially screw this up
     
     # pick all-time best evaluated location as our new starting point in line search
-    MIN <- which.min(fn.queue)
     # new best par
     par <- P[,MIN]
     fn.par <- fn.queue[MIN]
@@ -710,18 +725,6 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,control=list())
       if(any(!BOX)) { par.diff[!BOX] <- -PDsolve(hessian[!BOX,!BOX]) %*% GRAD[!BOX] }
     }
     
-    # test for stopping condition here
-    ERROR.OLD <- sqrt(c(par.diff.old %*% hessian %*% par.diff.old)) # old error, but with new hessian estimate
-    par.diff -> par.diff.old # store for next time
-    ERROR <- sqrt(c(par.diff %*% hessian %*% par.diff)) # relative error
-    # linear convergence rate estimate (underestimates super-linear error)
-    if(!is.nan(ERROR.OLD) && ERROR.OLD<Inf) { ERROR.RATE <- min(1,ERROR/ERROR.OLD,na.rm=TRUE) }
-    else { ERROR.RATE <- 1 }
-    # ERROR <- min(1,ERROR) # should I do this
-    if(ERROR < STEP.TOL) { break } # smallest numerical change to objective function near minimum
-    if(ZERO && max(abs(fn.queue[1:2]))<ERROR.TOL) { break } # absolute tolerance for zeroed objective functions
-    if(!ZERO && abs((fn.par-fn.queue[1])/fn.par)<ERROR.TOL) { break } # relative tolerance for non-zeroed objective functions
-    
     # calculate best DIR and orthonormalize the remaining DIRs
     BEST <- which.max(abs(par.diff)) # future index of par.diff direction
     DIR <- Gram.Schmidt(DIR,par.diff)
@@ -729,21 +732,36 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,control=list())
     # where we aim to evaluate next
     par.target <- line.boxer(par.diff,p0=par,lower=lower,upper=upper)
     
-    # DEBUG <- list()
-    # DEBUG$xy <- cbind(par.target,P) * parscale / c(60^2*24,60)
-    # DEBUG$z <- c(NA,fn.queue)
-    # DEBUG$cex <- DEBUG$z - min(DEBUG$z,na.rm=TRUE)
-    # DEBUG$cex <- 1+2*DEBUG$cex/max(DEBUG$cex[DEBUG$cex<Inf],na.rm=TRUE)
-    # DEBUG$cex[1] <- 1
-    # DEBUG$col <- DEBUG$z - fn.target
-    # DEBUG$col <- sapply(1:length(DEBUG$col),function(i){ col <- DEBUG$col[i] ; if(is.na(col)) { "black" } else if(col>0 && col<Inf) { "red" } else if(col<0) { "blue" } else { "black" } })
-    # DEBUG$pch <- c(4,2,4,rep(1,length(DEBUG$col)-3))
-    # plot(DEBUG$xy[1,],DEBUG$xy[2,],cex=DEBUG$cex,col=DEBUG$col,xlab="Days",ylab="Minutes",pch=DEBUG$pch)
-    # title("Newton-Raphson step")
-    # lines(DEBUG$xy[1,2:3],DEBUG$xy[2,2:3],col="grey")
-    # lines(DEBUG$xy[1,c(1,MIN+1)],DEBUG$xy[2,c(1,MIN+1)],col="grey")
+    if(trace) { message(sprintf("%f Newton-Raphson step (encapsulated=%d/%d; condition=%f:%f)",zero+fn.par,sum(encapsulated),DIM,condition[1],condition[2])) }
     
-    if(trace) { message(sprintf("%f Newton-Raphson step (condition=%f)",zero+fn.par,condition)) }
+    # error estimate & stopping conditions if we didn't do a line search previously
+    if(!LINE.DID && !LINE.DO)
+    {
+      ERROR <- c(par.diff %*% hessian %*% par.diff)
+      ERROR <- sqrt(ERROR)
+      
+      # if(condition > 0 && ERROR < STEP.TOL) { break } # smallest numerical change to objective function near minimum, assuming the hessian estimate is good
+      if(ZERO && abs(fn.par-fn.queue[1]) < ERROR.TOL) { break } # absolute tolerance for zeroed objective functions
+      if(!ZERO && abs((fn.par-fn.queue[1])/fn.par) < ERROR.TOL) { break } # relative tolerance for non-zeroed objective functions
+    }
+    
+    if(DEBUG)
+    {
+      DEBUG1 <- list()
+      DEBUG1$xy <- cbind(par.target,P) * parscale / c(60^2*24,60)
+      DEBUG1$z <- c(NA,fn.queue)
+      DEBUG1$cex <- DEBUG1$z - min(DEBUG1$z,na.rm=TRUE)
+      DEBUG1$cex <- 1+2*DEBUG1$cex/max(DEBUG1$cex[DEBUG1$cex<Inf],na.rm=TRUE)
+      DEBUG1$cex[1] <- 1
+      DEBUG1$col <- DEBUG1$z - fn.target
+      DEBUG1$col <- sapply(1:length(DEBUG1$col),function(i){ col <- DEBUG1$col[i] ; if(is.na(col)) { "black" } else if(col>0 && col<Inf) { "red" } else if(col<0) { "blue" } else { "black" } })
+      DEBUG1$pch <- c(4,2,4,rep(1,length(DEBUG1$col)-3))
+      graphics::plot(DEBUG1$xy[1,],DEBUG1$xy[2,],cex=DEBUG1$cex,col=DEBUG1$col,xlab="Days",ylab="Minutes",pch=DEBUG1$pch)
+      graphics::title("Newton-Raphson step")
+      graphics::lines(DEBUG1$xy[1,2:3],DEBUG1$xy[2,2:3],col="grey")
+      graphics::lines(DEBUG1$xy[1,c(1,MIN+1)],DEBUG1$xy[2,c(1,MIN+1)],col="grey")
+    }
+      
     LINE.DID <- FALSE
     ##################
     # LINE SEARCH LOOP
@@ -763,7 +781,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,control=list())
       SEQ <- seq(0,M,length.out=max(2,mc.cores)+1)[-1]
       P <- (DIR[,BEST] %o% SEQ) + par
       
-      # store for later check
+      # start of line search
       par.start <- par
       fn.start <- fn.par
       
@@ -800,23 +818,27 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,control=list())
         par <- par.all[,MIN]
         fn.par <- fn.all[MIN]
         
-        # DEBUG2 <- list()
-        # DEBUG2$xy <- cbind(DEBUG$xy,par.all * parscale / c(60^2*24,60))
-        # DEBUG2$z <- c(DEBUG$z,fn.all)
-        # DEBUG2$cex <- DEBUG2$z - min(DEBUG2$z,na.rm=TRUE)
-        # DEBUG2$cex <- 1+2*DEBUG2$cex/max(DEBUG2$cex[DEBUG2$cex<Inf],na.rm=TRUE)
-        # DEBUG2$cex[1] <- 1
-        # DEBUG2$col <- DEBUG2$z - fn.target
-        # DEBUG2$col <- sapply(1:length(DEBUG2$col),function(i){ col <- DEBUG2$col[i] ; if(is.na(col)) { "black" } else if(col>0 && col<Inf) { "red" } else if(col<0) { "blue" } else { "black" } })
-        # DEBUG2$pch <- c(4,2,4,rep(1,length(DEBUG2$col)-3))
-        # plot(DEBUG2$xy[1,],DEBUG2$xy[2,],cex=DEBUG2$cex,col=DEBUG2$col,xlab="Days",ylab="Minutes",pch=DEBUG2$pch)
-        # title(sprintf("%s line search",trace.string))
-        # points(par[1]*parscale[1]/(60^2*24) , par[2]*parscale[2]/60, col="orange")
-
+        if(DEBUG)
+        {
+          DEBUG2 <- list()
+          DEBUG2$xy <- cbind(DEBUG1$xy,par.all * parscale / c(60^2*24,60))
+          DEBUG2$z <- c(DEBUG1$z,fn.all)
+          DEBUG2$cex <- DEBUG2$z - min(DEBUG2$z,na.rm=TRUE)
+          DEBUG2$cex <- 1+2*DEBUG2$cex/max(DEBUG2$cex[DEBUG2$cex<Inf],na.rm=TRUE)
+          DEBUG2$cex[1] <- 1
+          DEBUG2$col <- DEBUG2$z - fn.target
+          DEBUG2$col <- sapply(1:length(DEBUG2$col),function(i){ col <- DEBUG2$col[i] ; if(is.na(col)) { "black" } else if(col>0 && col<Inf) { "red" } else if(col<0) { "blue" } else { "black" } })
+          DEBUG2$pch <- c(4,2,4,rep(1,length(DEBUG2$col)-3))
+          graphics::plot(DEBUG2$xy[1,],DEBUG2$xy[2,],cex=DEBUG2$cex,col=DEBUG2$col,xlab="Days",ylab="Minutes",pch=DEBUG2$pch)
+          graphics::title(sprintf("%s line search",trace.string))
+          graphics::points(par[1]*parscale[1]/(60^2*24) , par[2]*parscale[2]/60, col="orange")
+        }
+        
         if(trace) { message(sprintf("%f %s search",zero+fn.par,trace.string)) }
         
         # numerical degeneracy check
-        if((MIN<length(fn.all) && fn.all[MIN]==fn.all[MIN+1]) || (MIN>1 && fn.all[MIN]==fn.all[MIN-1]) || min(fn.all[MIN+c(1,-1)],na.rm=TRUE)-fn.all[MIN]<=ERROR.TOL)
+        # abs(min(fn.all[MIN+c(1,-1)]-fn.all[MIN],na.rm=TRUE))<=ERROR.TOL
+        if((MIN<length(fn.all) && fn.all[MIN]==fn.all[MIN+1]) || (MIN>1 && fn.all[MIN]==fn.all[MIN-1]))
         { 
           par.target <- par
           break 
@@ -842,9 +864,9 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,control=list())
           # calculate gradient and curvature
           DIFF <- QuadSolve(par,P1,P2,DIR[,BEST,drop=FALSE],fn.par,F1,F2)
           GRAD <- DIFF$GRAD
-          hessian.L <- DIFF$hessian
+          hessian.LINE <- DIFF$hessian
           # will update search direction hessian with this during next iteration
-          par.diff <- -(GRAD/abs(hessian.L))
+          par.diff <- -(GRAD/abs(hessian.LINE))
           
           # boundary limits
           M1 <- min((-(lower-par)/DIR[,BEST])[-DIR[,BEST]<0],(-(upper-par)/DIR[,BEST])[-DIR[,BEST]>0],Inf)
@@ -927,9 +949,9 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,control=list())
             
             DIFF <- QuadSolve(par,P1,P2,DIR[,BEST,drop=FALSE],fn.par,F1,F2)
             GRAD <- DIFF$GRAD
-            H <- DIFF$hessian
+            HESS <- DIFF$hessian
             
-            if(H>0) { M <- max(M,-GRAD/H) }
+            if(HESS>0) { M <- max(M,-GRAD/HESS) }
             # make sure we are accelerating
             M <- max(M,last(diff(SEQ)))
             
@@ -970,38 +992,43 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,control=list())
       P2 <- cbind(par.all[,MIN+i])
       F2 <- fn.all[MIN+i]
       
-      # estimate better location if we can (if we are in the middle we can)
+      # estimate better location if we didn't hit a boundary
       if(1<MIN && MIN<length(fn.all))
       { 
+        # what was our target (closest)
+        MIN.start <- which.min( colSums((par.target-par.all)^2) )
+        # should we do a line search next time? Would Newton-Raphson have failed?
+        if(fn.start<fn.all[MIN.start]) { LINE.DO <- TRUE }
+        
         # calculate gradient and curvature
         DIFF <- QuadSolve(par,P1,P2,DIR[,BEST,drop=FALSE],fn.par,F1,F2)
         GRAD <- DIFF$GRAD
-        hessian.L <- DIFF$hessian
+        hessian.LINE <- abs(DIFF$hessian)
         # will update search direction hessian with this during next iteration
         
-        par.diff <- -(GRAD/hessian.L)
-        # need to differentiate new par.target from evaluated par to save
-        par.target.LINE <- par + par.diff*DIR[,BEST]
+        par.diff <- -(GRAD/hessian.LINE)
         # this will always be boxed
+        par.target <- par + par.diff*DIR[,BEST]
+        # what we predict this will be valued at
+        fn.predict <- fn.par - hessian.LINE*par.diff^2/2
         
-        # how far off was our aim? fraction of line search
-        # ERROR.LINE <- sqrt(((par.target-par.target.LINE)%*%DIR[,BEST])^2/((par.all[,1]-par.all[,length(fn.all)])%*%DIR[,BEST])^2)
-        # what was our target (closest)
-        MIN.start <- which.min( colSums((par.target-par.all)^2) )
-        # should we do a line search next time?
-        if(fn.start<fn.all[MIN.start]) { LINE.DO <- TRUE } #  || ERROR.LINE >= 1/4
-        
-        # what is the next target of Newton-Raphson
-        # if(MIN==MIN.start) { par.target <- par } # trust Newton-Raphson more
-        # else 
-        { par.target <- par.target.LINE } # trust line search more
+        # distance from Newton-Raphson search or beginning of line search
+        par.diff <- par.target - par.center
+        ERROR <- sqrt(par.diff %*% hessian %*% par.diff)
+        par.diff <- par - par.center
+        ERROR <- max(ERROR,sqrt(par.diff %*% hessian %*% par.diff))
+        ERROR <- max(ERROR,sqrt(hessian.LINE*sum((par.target-par.start)^2)))
+        ERROR <- max(ERROR,sqrt(hessian.LINE*sum((par-par.start)^2)))
+        # if(DIFF$hessian > 0 && ERROR < STEP.TOL) { break } # smallest numerical change to objective function near minimum, assuming the hessian estimate is good
+        if(ZERO && abs(fn.center-fn.predict) < ERROR.TOL) { break } # absolute tolerance for zeroed objective functions
+        if(!ZERO && abs((fn.center-fn.predict)/fn.predict) < ERROR.TOL) { break } # relative tolerance for non-zeroed objective functions
       }
       else
       {
         par.target <- par
         LINE.DO <- TRUE
       }
-      # points(par.target[1]*parscale[1]/(60^2*24) , par.target[2]*parscale[2]/60, col="orange",pch=4)
+      if(DEBUG) { graphics::points(par.target[1]*parscale[1]/(60^2*24) , par.target[2]*parscale[2]/60, col="orange",pch=4) }
     } # go back to differentiation
   } # end main loop
   

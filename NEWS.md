@@ -1,7 +1,9 @@
-0.3.6 2017-03-24
+0.3.6 2017-03-26
 ================
 
   * AICc formulas updated from univariate to multivariate
+  
+  * ctmm.select more aggressive on small sample sizes where AICc >> AIC
 
   * ctmm.fit now has unified options controling optimization & differentiation
   
