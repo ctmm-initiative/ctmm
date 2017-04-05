@@ -647,7 +647,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
   range <- CTMM$range
   axes <- CTMM$axes
   
-  # will use standard deviation for parscale if present
+  # save for fitting
   COV.init <- CTMM$COV
   # erase previous fitting info if present
   CTMM$COV <- NULL
@@ -743,21 +743,24 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
   parscale <- NULL
   lower <- NULL
   upper <- NULL
+  period <- NULL
   calpars <- function()
   {
     pars <<- NULL
     parscale <<- NULL
+    period <<- NULL
     
     if(length(SIGMA))
     {
       # need some initial guess...
       if(is.null(sigma)) { sigma <<- drift@init(data,CTMM)$sigma@par }
       pars <<- sigma[SIGMAV]
-      parscale <<- c(parscale,c(sigma[1],1,pi/4)[SIGMAV])
+      parscale <<- c(parscale,c(sigma[1],log(2),pi/2)[SIGMAV])
       LO <- c(0,0,-Inf)
       lower <<- LO[SIGMAV]
       UP <- c(Inf,Inf,Inf)
       upper <<- UP[SIGMAV]
+      period <<- c(period,c(F,F,pi)[SIGMAV])
       
       # can we profile the variance, if so delete the guess
       if(!is.element(1,SIGMAV)) { sigma[1] <<- NA }
@@ -772,6 +775,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
       lower <<- c(lower,LO)
       UP <- Inf*(PS+1)
       upper <<- c(upper,UP)
+      period <<- c(period,F)
     }
 
     # use 1/T as circulation parameter
@@ -781,6 +785,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
       parscale <<- c(parscale,1/abs(circle))
       lower <<- c(lower,-Inf)
       upper <<- c(upper,Inf)
+      period <<- c(period,F)
     }
     
     if(length(ERROR))
@@ -799,6 +804,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
       }
       lower <<- c(lower,0)
       upper <<- c(upper,Inf)
+      period <<- c(period,F)
     }
     # names(pars) <<- NAMES
   }
@@ -916,7 +922,9 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
   {
     if(trace) { message("Maximizing likelihood.") }
     control$covariance <- covariance()
-    RESULT <- Optimizer(par=pars,fn=fn,method=optimizer,lower=lower,upper=upper,control=control)
+    control$parscale <- parscale
+    control$zero <- TRUE
+    RESULT <- Optimizer(par=pars,fn=fn,method=optimizer,lower=lower,upper=upper,period=period,control=control)
     pars <- cleanpars(RESULT$par)
     # copy over hessian from fit to COV.init ?
     
@@ -969,16 +977,22 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
 
     calpars()
     if(trace) { message("Calculating covariance.") }
-    DIFF <- genD(par=pars,fn=fn,zero=-CTMM$loglike,lower=lower,upper=upper,covariance=covariance(),Richardson=2,mc.cores=1)
+    DIFF <- genD(par=pars,fn=fn,zero=-CTMM$loglike,lower=lower,upper=upper,covariance=covariance(),parscale=parscale,Richardson=2,mc.cores=1)
     hess <- DIFF$hessian
     grad <- DIFF$gradient
     # robust covariance calculation
     CTMM$COV <- cov.loglike(hess,grad)
     dimnames(CTMM$COV) <- list(NAMES,NAMES)
     
+    CTMM$method <- method
     # perturbative correction
     if(method=="pREML")
     {
+      # store MLE for faster model selection (ML is what is optimized, not pREML or REML)
+      CTMM$MLE <- CTMM
+      CTMM$MLE$method <- "ML"
+      loglike <- CTMM$loglike
+      
       COV <- CTMM$COV
       pNAMES <- names(pars)
       
@@ -986,7 +1000,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
       REML <- TRUE
       #ML.grad <- grad # save old ML gradient
       if(trace) { message("Calculating pREML correction.") }
-      DIFF <- genD(par=pars,fn=fn,zero=-CTMM$loglike,lower=lower,upper=upper,covariance=diag(parscale^2),Richardson=2,mc.cores=1)
+      DIFF <- genD(par=pars,fn=fn,zero=-CTMM$loglike,lower=lower,upper=upper,covariance=covariance(),parscale=parscale,Richardson=2,mc.cores=1)
       d.pars <- -c(COV %*% DIFF$gradient) # COV is -1/Hessian, grad is of -loglike
 
       # gradient transformations
@@ -1005,6 +1019,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
 
       # store parameter correction
       store.pars(pars)
+      CTMM$loglike <- loglike #MLE
       
       # covariance correction
       # REML hessian & ML gradient (at boundaries)
@@ -1018,9 +1033,18 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
       g <- -circle^2
       CTMM$COV[CIRCLE,] <- g*CTMM$COV[CIRCLE,]
       CTMM$COV[,CIRCLE] <- g*CTMM$COV[,CIRCLE]
+      
+      if(method=="pREML")
+      {
+        g <- -CTMM$MLE$circle^2
+        CTMM$MLE$COV[CIRCLE,] <- g*CTMM$MLE$COV[CIRCLE,]
+        CTMM$MLE$COV[,CIRCLE] <- g*CTMM$MLE$COV[,CIRCLE]
+      }
+      # before adding more junk here, just change the ctmm object to store frequency and not period for circulation
     }
     
     dimnames(CTMM$COV) <- list(NAMES,NAMES)
+    if(method=="pREML") { dimnames(CTMM$MLE$COV) <- list(NAMES,NAMES) }
   }
   
   CTMM$AIC <- (2*k-2*CTMM$loglike)

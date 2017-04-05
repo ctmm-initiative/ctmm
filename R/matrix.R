@@ -14,6 +14,8 @@ determinant.numeric <- function(x,logarithm=TRUE,...)
   return(det)
 }
 
+# dyadic product default
+outer <- function(X,Y=X,FUN="*",...) { base::outer(X,Y,FUN=FUN,...) }
 
 # adjoint of matrix
 Adj <- function(M) { t(Conj(M)) }
