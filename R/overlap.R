@@ -239,3 +239,86 @@ mean.UD <- function(x,...)
   
   return(x)
 }
+
+##################
+Tsquared <- function(CTMM1,CTMM2)
+{
+  # periodic mean parameters not yet supported because of COV.mu structure being weird !!!
+  
+  # mean parameters
+  # pooled precision matrix
+  precision <- PDsolve(CTMM1$COV.mu) + PDsolve(CTMM2$COV.mu)
+  # differece in paramters
+  theta.diff <- c(CTMM1$mu - CTMM2$mu)
+  # chi-square for 2D mean
+  chi.square <- c(theta.diff %*% precision %*% theta.diff)
+  
+  ## autocorrelation parameters
+  # null objects
+  NAMES.1 <- dimnames(CTMM1$COV)[[1]]
+  NAMES.2 <- dimnames(CTMM2$COV)[[1]]
+  NAMES <- union( NAMES.1 , NAMES.2 )
+  precision <- matrix(0,length(NAMES),length(NAMES))
+  theta.diff <- rep(0,length(NAMES))
+  
+  # combine precision information
+  names(theta.diff) <- NAMES
+  dimnames(precision) <- list(NAMES,NAMES)
+  precision[NAMES.1,NAMES.1] <- PDsolve(CTMM1$COV[NAMES.1,NAMES.1])
+  precision[NAMES.2,NAMES.2] <- precision[NAMES.2,NAMES.2] + PDsolve(CTMM2$COV[NAMES.2,NAMES.2])
+  
+  # BM & IOU not supported yet !!!
+  # need to convert both to diffusion coefficients
+  # need to flip any tau.position values so that zero is included
+  # return Inf on BM/IOU versus IID
+  
+  # covariance parameters
+  if(CTMM1$isotropic && CTMM2$isotropic)
+  { SUB <- "area" }
+  else if(CTMM1$isotropic || CTMM2$isotropic)
+  {
+    # angle is not really relevant here, I don't think???
+    SUB <- which(NAMES=="angle")
+    NAMES <- NAMES[-SUB]
+    precision <- precision[-SUB,-SUB]
+    theta.diff <- theta.diff[-SUB]
+    SUB <- c("area","eccentricity")
+    # if eccentricity uncertainty is large, does this limit to the next case???
+  }
+  else
+  { SUB <- c("area","eccentricity","angle") }
+  theta.diff[SUB] <- CTMM1$sigma@par[SUB] - CTMM2$sigma@par[SUB]
+  if("angle" %in% SUB)
+  { 
+    theta.diff["angle"] <- theta.diff["angle"] %% pi
+    if(theta.diff["angle"]>pi/2) { theta.diff["angle"] <- pi - theta.diff["angle"]
+    }
+  }
+  
+  # timescale correlation parameters
+  SUB <- startsWith(NAMES,"tau ")
+  if(any(SUB))
+  {
+    if(!is.null(CTMM1$tau))
+    {
+      names(CTMM1$tau) <- paste("tau",names(CTMM1$tau))
+      SUB <- names(CTMM1$tau) %in% NAMES
+      SUB <- names(CTMM1$tau)[SUB]
+      theta.diff[SUB] <- theta.diff[SUB] + CTMM1$tau[SUB]
+    }
+    
+    if(!is.null(CTMM2$tau))
+    {
+      names(CTMM2$tau) <- paste("tau",names(CTMM2$tau))
+      SUB <- names(CTMM2$tau) %in% NAMES
+      SUB <- names(CTMM2$tau)[SUB]
+      theta.diff[SUB] <- theta.diff[SUB] - CTMM2$tau[SUB]
+    }
+  }
+  
+  chi.square <- chi.square + c(theta.diff %*% precision %*% theta.diff)
+  
+  # circulation needs to be flipped before I will include this. Too much trouble with period !!!
+  
+  return(chi.square)
+}

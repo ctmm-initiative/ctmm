@@ -1,22 +1,33 @@
-* m0,m1,m2 -> m.iid,m.ou,m.ouf
+PERIODIC 0.4.0
+* simulate.telemetry (not pure ctmm)
+* smoother (velocity vector--check)
+* akde... slow exact and fast approximation or block toeplitz matrix
+* plot ctmm
+* vignette: periodogram, ctmm.select
+* maned wolf data: individually projected subset in reserve with largest daily periodicities and no weekly periodicity
+  + submit to Rogerio first to check over, ask about MoveBank DOI
+  + get MoveBank DOI
 
-* mc.optimize Hessian deflation
-* diagonalize covariance for first attempt?
+VIGNETTES & EXAMPLES
+* m0,m1,m2 -> m.iid,m.ou,m.ouf
+* numeric guesses -> ctmm.guess
+
+* mc.optimize cross curvature if queue allows space
+* mc.optimize fill up queue with higher-order derivatives if further space allows
 * mc.genD cross correlations are wrong
 
-UPDATE [pREML] TODO
-* make ctmm.select robust to use MLE guesses on pREML fits
-* ctmm.fit PARS==0 : MLE, pREML, REML consistency
 * document pREML
 
 Aligned Krige UDs
 pregridder composite dimension?
 
 LOW HANGING FRUIT & Nagging issues
+* plot errors with HDOP & error model in CTMM
 * rainbow.telemetry
+* summary.telemetry.list like Dong's
+* plot telemetry/UD with reverse axes (preserve x&y orientation)s
 * give writeShapefile a default folder name, maybe also separate layers into different files
 * compass plot
-* summary.telemetry.list like Dong's
 * unit Environment on plots for points()
 * individualized projections
 * 1-point azimuthal equidistant projection quick option
@@ -40,16 +51,6 @@ LOW HANGING FRUIT & Nagging issues
 * put overlap in vignette after publication
 * predict plot with transparency proportional to uncertainty (Google Earth?)
 * mean.ctmm: list -> iid
-
-PERIODIC 0.4.0
-* simulate.telemetry (not pure ctmm)
-* smoother (velocity vector--check)
-* akde... slow exact and fast approximation or block toeplitz matrix
-* plot ctmm
-* vignette: periodogram, ctmm.select
-* maned wolf data: individually projected subset in reserve with largest daily periodicities and no weekly periodicity
-  + submit to Rogerio first to check over, ask about MoveBank DOI
-  + get MoveBank DOI
 
 generalize Gaussian area?
   UDs for both mean and population

@@ -35,12 +35,21 @@ FFTW <- function(X,inverse=FALSE)
   return(X)
 }
 
-# choose FFTW if installed
+# parallel functions
+detectCores <- parallel::detectCores
+mclapply <- parallel::mclapply
+
 .onLoad <- function(...)
 {
+  # choose FFTW if installed
   if(is.installed("fftw")) { utils::assignInMyNamespace("FFT", FFTW) }
 
-  #if(!isNamespaceLoaded("raster")) { assign("zoom",function(x,...) UseMethod("zoom"),envir=envir) }
+  # don't try to fork if winblows
+  if(.Platform$OS.type=="windows")
+  { 
+    utils::assignInMyNamespace("detectCores", function(...) { 1 })
+    utils::assignInMyNamespace("mclapply", function(X,FUN,mc.cores=1,...) { lapply(X,FUN,...) })
+  }
 }
 .onAttach <- .onLoad
 
@@ -256,6 +265,12 @@ lognorm.ci <- function(MLE,COV,alpha=0.05)
 # last element of array
 last <- function(vec) { vec[length(vec)] }
 first <- function(vec) { vec[1] }
+# assign to last element... doesn't work
+# "last<-" <- function(vec,ass)
+# {
+#   vec[length(vec)] <- ass
+#   return(vec)
+# }
 
 # CLAMP A NUMBER
 clamp <- Vectorize(function(num,min=0,max=1) { if(num<min) {min} else if(num<max) {num} else {max} })

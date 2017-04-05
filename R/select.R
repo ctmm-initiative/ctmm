@@ -292,12 +292,15 @@ alpha.ctmm <- function(CTMM,alpha)
 ctmm.select <- function(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE,...)
 {
   alpha <- 1-level
+  method <- list(...)$method
+  pREML <- !is.null(method) && method=="pREML"
   
   drift <- get(CTMM$mean)
   
     # fit the intital guess
   if(trace) { message("Fitting models ",name.ctmm(CTMM)) }
-  CTMM <- ctmm.fit(data,CTMM,trace=trace,...)
+  
+  CTMM <- ctmm.fit(data,(if(!pREML || is.null(CTMM$MLE)) { CTMM } else { CTMM$MLE }),trace=trace,...)
   OLD <- ctmm()
   MODELS <- list(CTMM)
   # while progress is being made, keep going, keep going, ...
@@ -305,6 +308,8 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE
   {
     GUESS <- list()
     beta <- alpha.ctmm(CTMM,alpha)
+    # initial guess in case of pREML (easier for optimization)
+    MLE <- (if(!pREML) { CTMM } else { CTMM$MLE })
     
     # consider if some timescales are actually zero
     CI <- confint.ctmm(CTMM,alpha=beta)
@@ -313,8 +318,8 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE
       Q <- CI["tau velocity",1]
       if(is.nan(Q) || (Q<=0))
       {
-         GUESS[[length(GUESS)+1]] <- CTMM
-         GUESS[[length(GUESS)]]$tau <- CTMM$tau[-length(CTMM$tau)]
+         GUESS[[length(GUESS)+1]] <- MLE
+         GUESS[[length(GUESS)]]$tau <- MLE$tau[-length(MLE$tau)]
       }
     }
     else if(length(CTMM$tau)==1)
@@ -322,7 +327,7 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE
       Q <- CI["tau position",1]
       if(is.nan(Q) || (Q<=0))
       {
-        GUESS[[length(GUESS)+1]] <- CTMM
+        GUESS[[length(GUESS)+1]] <- MLE
         GUESS[[length(GUESS)]]$tau <- NULL
       }
     }
@@ -333,7 +338,7 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE
       Q <- prod(CI["circle",c(1,3)])
       if(is.nan(Q) || (Q<=0))
       {
-        GUESS[[length(GUESS)+1]] <- CTMM
+        GUESS[[length(GUESS)+1]] <- MLE
         GUESS[[length(GUESS)]]$circle <- FALSE
       }
     }
@@ -345,14 +350,14 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE
       Q <- stats::qnorm(beta/2,mean=CTMM$sigma@par[Q],sd=sqrt(CTMM$COV[Q,Q]))
       if(Q <= 0)
       {
-        GUESS[[length(GUESS)+1]] <- CTMM
+        GUESS[[length(GUESS)+1]] <- MLE
         GUESS[[length(GUESS)]]$isotropic <- TRUE
-        GUESS[[length(GUESS)]]$sigma <- covm(CTMM$sigma,isotropic=T)
+        GUESS[[length(GUESS)]]$sigma <- covm(MLE$sigma,isotropic=T)
       }
     }
     
     # consider if the mean could be more detailed
-    GUESS <- c(GUESS,drift@refine(CTMM))
+    GUESS <- c(GUESS,drift@refine(MLE))
     
     # fit every model
     if(trace) { message("Fitting models ",paste(sapply(GUESS,name.ctmm),collapse=", ")) }
