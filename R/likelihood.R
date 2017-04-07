@@ -1054,28 +1054,6 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
 }
 
 
-####################################
-# Newton-Raphson iterate to a ctmm model
-# to test if optim worked
-newton.ctmm <- function(data,CTMM,REML=REML)
-{
-  tau <- CTMM$tau
-  
-  # wrapper function to differentiate
-  fn <- function(par)
-  { 
-    # will need to update this for telemetry error
-    return(-ctmm.loglike(data,CTMM=ctmm(tau=par),REML=REML))
-  }
-  
-  D <- numDeriv::grad(fn,tau)
-  H <- numDeriv::hessian(fn,tau)
-  
-  tau <- tau - (H %*% D)
-
-  return(ctmm(tau=tau,info=attr(data,"info")))
-}
-
 ####### calculate variance and variance-covaraince from area and eccentricity information
 area2var <- function(CTMM,MEAN=TRUE)
 {

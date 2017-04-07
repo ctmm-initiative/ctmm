@@ -11,6 +11,7 @@ PERIODIC 0.4.0
 VIGNETTES & EXAMPLES
 * m0,m1,m2 -> m.iid,m.ou,m.ouf
 * numeric guesses -> ctmm.guess
+* explain effective sample sizes (DOF of summary)
 
 * mc.optimize cross curvature if queue allows space
 * mc.optimize fill up queue with higher-order derivatives if further space allows

@@ -262,14 +262,16 @@ ctmm.prepare <- function(data,CTMM,REML=FALSE)
     if(CTMM$tau[1]==Inf)
     {
       range <- FALSE
-      CTMM$tau[1] <- log(2^(52/2))*(last(data$t)-data$t[1])
+      # aim for OU/OUF decay that is half way to machine epsilon
+      # CTMM$tau[1] <- log(2^((.Machine$double.digits-1)/2))*(last(data$t)-data$t[1]) 
+      CTMM$tau[1] <- (last(data$t)-data$t[1]) / (.Machine$double.eps)^(1/4)
       
       # diffusion -> variance
       if(!is.null(CTMM$sigma))
       { 
-        T <- (CTMM$tau[1]-if(K>1){CTMM$tau[2]}else{0})
-        CTMM$sigma <- CTMM$sigma*T
-        CTMM$sigma@par[1] <- CTMM$sigma@par[1]*T
+        TAU <- CTMM$tau[1]
+        CTMM$sigma <- CTMM$sigma*TAU
+        CTMM$sigma@par[1] <- CTMM$sigma@par[1]*TAU
       }
     }
     
@@ -299,6 +301,7 @@ ctmm.prepare <- function(data,CTMM,REML=FALSE)
   return(CTMM)
 }
 
+# undo the above
 ctmm.repair <- function(CTMM)
 {
   if(!CTMM$range)
@@ -306,9 +309,9 @@ ctmm.repair <- function(CTMM)
     K <- length(CTMM$tau)
     
     # variance -> diffusion
-    T <- (CTMM$tau[1]-if(K>1){CTMM$tau[2]}else{0})
-    CTMM$sigma <- CTMM$sigma/T
-    CTMM$sigma@par[1] <- CTMM$sigma@par[1]/T
+    TAU <- CTMM$tau[1]
+    CTMM$sigma <- CTMM$sigma/TAU
+    CTMM$sigma@par[1] <- CTMM$sigma@par[1]/TAU
     
     CTMM$tau[1] <- Inf
     
