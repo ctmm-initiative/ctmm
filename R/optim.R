@@ -417,7 +417,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
     {
       TOL.STAGE <- max(TOL.GOAL,TOL.HESS)
       ## update hessian from line-search result (Rank-1 update)
-      if(LINE.DID)
+      if(LINE.DID && hessian.LINE>0)
       {
         DIFF <- rank1update(hessian.LINE,DIR.STEP,hessian,covariance)
         hessian <- DIFF$hessian
@@ -527,7 +527,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
           # relative comparison between curvature estimates along search direction
           TEST <- abs(log(abs(hessian.LINE/hessian.DIFF)))
           # NR with a factor of 2 curvature estimate?
-          if(TEST >= log(2)) { LINE.DO <- TRUE }
+          if(is.nan(TEST) || TEST >= log(2)) { LINE.DO <- TRUE }
         }
         
         # will need line search if not normal looking
@@ -653,10 +653,12 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
       par.all <- cbind(par)
       fn.all <- fn.par
       
+      par.diff <- par.target - par
+      if(sum(par.diff^2) <= .Machine$double.eps) { break } # this actually happened once
+      
       if(LINE.TYPE=="Prospection")
       {
         # generate a linear sequence of points from par to the other side of par.target
-        par.diff <- par.target - par
         P <- line.boxer(2*par.diff,p0=par,lower=lower,upper=upper,period=period)
         par.diff <- P - par # twice the old par.diff with no boundary (reflection=1)
         M <- sqrt(sum(par.diff^2)) # total search magnitude
@@ -665,7 +667,6 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
       else if(LINE.TYPE=="Enclosure")
       {
         # generate a linear sequence of points between par and par.target (already evaluated)
-        par.diff <- par.target - par
         M <- sqrt(sum(par.diff^2))
         SEQ <- seq(0,M,length.out=mc.min(3,mc.cores)+2)[-1]
         SEQ <- SEQ[-length(SEQ)]
@@ -888,8 +889,13 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
       }
       else
       {
+        hessian.LINE <- 0 # won't update
         par.target <- par
         LINE.DO <- TRUE
+        
+        TEST <- (ZERO && abs(fn.target.old-fn.par) < TOL.STAGE + TOL.ZERO)
+        TEST <- TEST || (!ZERO && abs((fn.target.old-fn.par)/fn.par) < TOL.STAGE)
+        if(TEST) { INIT <- stage.progress() }
       }
     } # go back to differentiation
   } # end main loop

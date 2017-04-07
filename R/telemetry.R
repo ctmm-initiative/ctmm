@@ -428,7 +428,7 @@ new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,fracti
 #######################################
 # PLOT TELEMETRY DATA
 #######################################
-plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF",col="red",col.level="black",col.DF="blue",col.grid="grey",pch=1,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,cex=1,lwd=1,...)
+plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF",col="red",col.level="black",col.DF="blue",col.grid="grey",pch=1,labels=NULL,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,cex=1,lwd=1,...)
 {
   alpha <- 1-level
   alpha.UD <- 1-level.UD
@@ -492,7 +492,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
   if(!is.null(UD))
   {
     UD <- lapply(UD,function(ud){ unit.UD(ud,length=dist$scale) })
-    plot.UD(UD,level.UD=level.UD,level=level,DF=DF,col.level=col.level,col.DF=col.DF,col.grid=col.grid,fraction=fraction,add=TRUE,xlim=xlim,ylim=ylim,cex=cex,lwd=lwd,...)
+    plot.UD(UD,level.UD=level.UD,level=level,DF=DF,col.level=col.level,col.DF=col.DF,col.grid=col.grid,labels=labels,fraction=fraction,add=TRUE,xlim=xlim,ylim=ylim,cex=cex,lwd=lwd,...)
   }
   
   #########################
@@ -569,7 +569,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
 
 
 ##############
-plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",col.level="black",col.DF="blue",col.grid="grey",fraction=1,add=FALSE,xlim=NULL,ylim=NULL,cex=1,lwd=1,...)
+plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",col.level="black",col.DF="blue",col.grid="grey",labels=NULL,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,cex=1,lwd=1,...)
 {
   if(!is.null(x)) { if(class(x)=="UD") { x <- list(x) } }
   
@@ -580,6 +580,16 @@ plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",col.level="black",col.DF
   { col.level <- t(array(col.level,c(length(level.UD),length(x)))) }
   else 
   { col.level <- array(col.level,c(length(x),length(level.UD))) }
+  
+  # contour labels
+  if(is.null(labels)) { labels <- round(100*level.UD) }
+  if((length(labels)==length(level.UD) || length(labels)==3*length(level.UD)) && length(labels) != length(x))
+  { 
+    labels <- array(labels,c(length(level.UD),3,length(x)))
+    labels <- aperm(labels,c(3,1,2))
+  }
+  else
+  { labels <- array(labels,c(length(x),length(level.UD),3)) }
   
   col.DF <- array(col.DF,length(x))
   col.grid <- array(col.grid,length(x))
@@ -597,15 +607,15 @@ plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",col.level="black",col.DF
   # CONTOURS
   for(i in 1:length(x))
   {
-    if(!any(is.na(col.level[i,])) & !is.na(level.UD))
+    if(!any(is.na(col.level[i,])) && !is.na(level.UD))
     {
       # make sure that correct style is used for low,ML,high even in absence of lows and highs
-      plot.kde(x[[i]],level=level.UD,col=scales::alpha(col.level[i,],1),lwd=lwd,...)
+      plot.kde(x[[i]],level=level.UD,labels=labels[i,,2],col=scales::alpha(col.level[i,],1),lwd=lwd,...)
       
-      if(!is.na(level) & !is.null(x[[i]]$DOF.area))
+      if(!is.na(level) && !is.null(x[[i]]$DOF.area))
       {
         P <- CI.UD(x[[i]],level.UD,level,P=TRUE)
-        plot.kde(x[[i]],level=P[-2],labels=round(100*P[2]),col=scales::alpha(col.level[i,],0.5),lwd=lwd/2,...)
+        plot.kde(x[[i]],level=P[-2],labels=labels[i,,c(1,3)],col=scales::alpha(col.level[i,],0.5),lwd=lwd/2,...)
       }
     }
   }

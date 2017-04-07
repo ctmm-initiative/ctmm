@@ -13,8 +13,8 @@ Produces simple plots of \code{telemetry} objects, possibly overlayed with a Gau
 plot(x,y,...)
 
 \S3method{plot}{telemetry}(x, CTMM=NULL, UD=NULL, level.UD=0.95, level=0.95, DF="CDF", col="red",
-col.level="black", col.DF="blue", col.grid="grey", pch=1, fraction=1, add=FALSE,
-xlim=NULL, ylim=NULL, cex=1, lwd=1, ...)
+col.level="black", col.DF="blue", col.grid="grey", pch=1, labels=NULL, fraction=1,
+add=FALSE, xlim=NULL, ylim=NULL, cex=1, lwd=1, ...)
 
 \S4method{zoom}{list}(x,...)
 
@@ -36,6 +36,7 @@ xlim=NULL, ylim=NULL, cex=1, lwd=1, ...)
   \item{col.DF}{Color option for the density function. Can be an array.}
   \item{col.grid}{Color option for the maximum likelihood \code{akde} bandwidth grid.}
   \item{pch}{Plotting symbol. Can be an array or list of arrays.}
+  \item{labels}{Labels for UD contours. Can be an array or list of arrays.}
   \item{fraction}{Fraction of the data, Gaussian \code{ctmm}, or \code{UD} range to plot, whichever is larger.}
   \item{add}{Setting to \code{TRUE} will disable the unit conversions and base layer plot, so that \code{plot.telemetry} can be overlayed atop other outputs more easily.}
   \item{xlim}{The \code{x} limits \code{c(x1, x2)} of the plot.}

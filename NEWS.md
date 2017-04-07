@@ -1,4 +1,4 @@
-0.3.6 2017-04-04
+0.3.6 2017-04-06
 ================
 
   * AICc formulas updated from univariate to multivariate
@@ -20,6 +20,8 @@
   * as.telemetry faster with fread & fastPOSIXct
   
   * new trace option for ctmm.fit
+  
+  * new labels option for plot.UD
   
   * more robust CIs for pREML, REML
   
