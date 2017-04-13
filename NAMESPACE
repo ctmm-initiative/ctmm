@@ -50,8 +50,9 @@ S3method(subset,periodogram)
 S3method(`[`,periodogram)
 
 #LIKELIHOOD/MODEL FUNCTIONS
-export(ctmm,ctmm.guess,ctmm.fit,ctmm.loglike,ctmm.select)
+export(correlogram,ctmm,ctmm.guess,ctmm.fit,ctmm.loglike,ctmm.select)
 S3method(residuals,ctmm)
+S3method(residuals,telemetry)
 S3method(summary,ctmm)
 
 #MEAN FUNCTIONS

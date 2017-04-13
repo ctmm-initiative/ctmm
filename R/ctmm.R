@@ -263,8 +263,8 @@ ctmm.prepare <- function(data,CTMM,REML=FALSE)
     {
       range <- FALSE
       # aim for OU/OUF decay that is half way to machine epsilon
-      # CTMM$tau[1] <- log(2^((.Machine$double.digits-1)/2))*(last(data$t)-data$t[1]) 
-      CTMM$tau[1] <- (last(data$t)-data$t[1]) / (.Machine$double.eps)^(1/4)
+      CTMM$tau[1] <- log(2^((.Machine$double.digits-1)/2))*(last(data$t)-data$t[1]) 
+      # CTMM$tau[1] <- (last(data$t)-data$t[1]) / (.Machine$double.eps)^(1/4)
       
       # diffusion -> variance
       if(!is.null(CTMM$sigma))
@@ -312,13 +312,12 @@ ctmm.repair <- function(CTMM)
     TAU <- CTMM$tau[1]
     CTMM$sigma <- CTMM$sigma/TAU
     CTMM$sigma@par[1] <- CTMM$sigma@par[1]/TAU
-    
     CTMM$tau[1] <- Inf
     
-    # delete garbate estimates
-    CTMM$mu <- NULL
-    CTMM$COV.mu <- NULL
-    CTMM$DOF.mu <- NULL
+    ## delete garbate estimates
+    # CTMM$mu <- NULL
+    # CTMM$COV.mu <- NULL
+    # CTMM$DOF.mu <- NULL
   }
   
   # erase evaluated mean vector from ctmm.prepare

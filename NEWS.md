@@ -1,19 +1,23 @@
-0.3.6 2017-04-06
+0.3.6 2017-04-12
 ================
 
   * AICc formulas updated from univariate to multivariate
   
   * ctmm.select more aggressive on small sample sizes where AICc >> AIC
+  
+  * new residuals and correlogram functions
 
   * ctmm.fit now has unified options controling optimization & differentiation
   
   * ctmm.fit Hessian and pREML calculations faster and more accurate
 
-  * writeRaster method for UD objects
+  * new writeRaster method for UD objects
 
   * Better UD plot boxes with new extent methods
 
   * akde() can now handle duplicate times (with an error model)
+  
+  * plot.variogram bugfix for fixed error models [still not quite correct]
 
   * Column name preferences in as.telemetry
   

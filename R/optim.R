@@ -712,7 +712,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
         
         if(DEBUG)
         {
-          graphics::plot(DIR.STEP %*% (par.all-par),fn.all-fn.par,xlab="Distance from MIN",ylab="Value over MIN")
+          graphics::plot((DIR.STEP %*% (par.all-par)),(fn.all-fn.par),xlab="Distance from MIN",ylab="Value over MIN")
           graphics::title(sprintf("%s search",LINE.TYPE))
         }
         

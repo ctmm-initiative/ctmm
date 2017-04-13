@@ -416,6 +416,13 @@ new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,fracti
     xlab <- paste("x ", "(", dist$name, ")", sep="")
     ylab <- paste("y ", "(", dist$name, ")", sep="")
     
+    # residuals have no units
+    if(!is.null(data) && !is.null(attr(data[[1]],"info")$residual))
+    {
+      xlab <- "x"
+      ylab <- "y"
+    }
+    
     ext <- ext/dist$scale
 
     # empty base layer plot

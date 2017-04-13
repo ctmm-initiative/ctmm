@@ -17,8 +17,8 @@ cor.min=0.5,dt.max=NULL)
   \item{res.time}{Number of temporal grid points per median timestep.}
   \item{res.space}{Number of grid points along each axis, relative to the average diffusion (per median timestep) from a stationary point.}
   \item{grid}{Optional grid specification with columns labeled \code{x} and \code{y}. Not yet supported.}
-  \item{cor.min}{Minimum amount of correlation required between locations for Kriging.}
-  \item{dt.max}{Maximum time interval allowed between locations for Kriging.}
+  \item{cor.min}{Minimum gap correlation for Kriging interpolation (alternative to \code{dt.max}).}
+  \item{dt.max}{Maximum gap size for Kriging interpolation (alternative to \code{cor.min}).}
 }
 
 %\details{}
@@ -32,7 +32,9 @@ C. H. Fleming and W. F. Fagan and T. Mueller and K. A. Olson and P. Leimgruber a
 
 \author{ C. H. Fleming. }
 
-\note{ In the case of coarse grids, the value of \code{PDF} in a grid cell actually corresponds to the average probability density over the entire rectangular cell. }
+\note{Large gaps have a tendency to blow up the estimate, and can be avoided with the \code{cor.min} or \code{dt.max} arguments.
+
+In the case of coarse grids, the value of \code{PDF} in a grid cell actually corresponds to the average probability density over the entire rectangular cell. }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
