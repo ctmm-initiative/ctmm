@@ -160,7 +160,7 @@ cov.loglike <- function(hess,grad=rep(0,nrow(hess)))
   # normalize parameter scales by curvature or gradient (whatever is larger)
   V <- abs(diag(hess))
   V <- sqrt(V)
-  V <- sapply(1:length(grad), function(i) { max(V[i],abs(grad[i])) } )
+  V <- pmax(V,abs(grad))
   W <- V %o% V
   
   grad <- grad/V

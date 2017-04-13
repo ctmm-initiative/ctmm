@@ -193,7 +193,7 @@ gridder <- function(t,z,dt=NULL,W=NULL,lag=NULL,p=NULL,FLOOR=NULL,finish=TRUE)
 ############################
 # FFT VARIOGRAM
 # SLP sum of lagged product
-variogram.fast <- function(data,dt=NULL,fast=fast,CI="Markov",axes=c("x","y"),SLP=FALSE,ACF=FALSE)
+variogram.fast <- function(data,dt=NULL,CI="Markov",axes=c("x","y"),SLP=FALSE,ACF=FALSE)
 {
   t <- data$t
   z <- get.telemetry(data,axes)
@@ -217,19 +217,26 @@ variogram.fast <- function(data,dt=NULL,fast=fast,CI="Markov",axes=c("x","y"),SL
   DOF <- COL*round(Re(IFFT(abs(W.grid)^2)[1:n]))
   # SVF un-normalized
   SVF <- Re(IFFT(Re(W.grid*rowSums(ZZ.grid))-rowSums(abs(Z.grid)^2))[1:n])
-  if(SLP) { slp <- Re(IFFT(rowSums(abs(Z.grid)^2))[1:n]) }
-  
+  if(SLP || ACF) { slp <- Re(IFFT(rowSums(abs(Z.grid)^2))[1:n]) }
+
   # delete missing lags
   SVF <- data.frame(SVF=SVF,DOF=DOF,lag=lag)
-  if(SLP) { SVF$SLP <- slp }
+  if(SLP || ACF) { SVF$SLP <- slp }
   SVF <- subset(SVF,DOF>0)
-  if(SLP) { slp <- SVF$SLP }
+  if(SLP || ACF) { slp <- SVF$SLP }
   lag <- SVF$lag
   DOF <- SVF$DOF
   SVF <- SVF$SVF
   
   # normalize SVF
   SVF <- SVF/DOF
+  if(ACF)
+  { 
+    # this is really the ACF
+    SVF <- slp/DOF
+    # normalize to 1 at lag 0
+    SVF <- SVF/SVF[1]
+  }
   
   # only count non-overlapping lags... not perfect
   if(CI=="Markov")
@@ -249,7 +256,7 @@ variogram.fast <- function(data,dt=NULL,fast=fast,CI="Markov",axes=c("x","y"),SL
   
   result <- data.frame(SVF=SVF,DOF=DOF,lag=lag)
   if(SLP) { result$SLP <- slp }
-  
+
   # contribution to SVF from telemetry error when UERE=1
   #error <- get.error(data,ctmm(axes=axes,error=1))
   #error <- mean(error)
@@ -534,7 +541,7 @@ svf.func <- function(CTMM,moment=FALSE)
   }
   
   # add error term
-  if(CTMM$error)
+  if(CTMM$error && "error" %in% dimnames(COV)[1])
   {
     err.svf <- function(t) { (if(t==0) {0} else {CTMM$error^2}) }
     GRAD <- function(t) { c(grad(t) , (if(t==0) {0} else {2*CTMM$error}) ) }
@@ -577,7 +584,7 @@ plot.svf <- function(lag,CTMM,error=0,alpha=0.05,col="red",type="l",...)
     error <- sqrt(error)
     CTMM$error <- CTMM$error * error
     
-    if(!is.null(CTMM$COV))
+    if(!is.null(CTMM$COV) && "error" %in% dimnames(CTMM$COV)[1])
     {
       CTMM$COV["error",] <- CTMM$COV["error",] * error
       CTMM$COV[,"error"] <- CTMM$COV[,"error"] * error
@@ -620,8 +627,9 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", 
   n <- length(x)
 
   # default single comparison model
-  if(is.null(CTMM) && n==1 && !is.null(attr(x[[1]],"info")$CTMM)) { CTMM <- attr(x[[1]],"info")$CTMM }
-  
+  # if(is.null(CTMM) && n==1 && !is.null(attr(x[[1]],"info")$CTMM)) { CTMM <- attr(x[[1]],"info")$CTMM }
+  ACF <- !is.null(attr(x[[1]],"info")$ACF)
+    
   # maximum lag in data
   max.lag <- sapply(x, function(v){ last(v$lag) } )
   max.lag <- max(max.lag)
@@ -631,16 +639,33 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", 
   # subset all data to fraction of total period
   x <- lapply(x, function(v) { subset.data.frame(v, lag <= max.lag) })
 
-  # maximum CI on SVF
-  max.SVF <- max(sapply(x, function(v){ max(v$SVF * CI.upper(v$DOF,min(alpha))) } ))
-  # limit plot range to twice max SVF point estimate (otherwise hard to see)
-  max.cap <- 2*max(sapply(x, function(v){ max(v$SVF) } ))
-  if(max.SVF>max.cap) { max.SVF <- max.cap }
-  
-  # choose SVF units
-  SVF.scale <- unit(max.SVF,"area")
-  SVF.name <- SVF.scale$name
-  SVF.scale <- SVF.scale$scale
+  if(!ACF) # SVF plot
+  {
+    min.SVF <- 0
+    # maximum CI on SVF
+    max.SVF <- max(sapply(x, function(v){ max(v$SVF * CI.upper(v$DOF,min(alpha))) } ))
+    # limit plot range to twice max SVF point estimate (otherwise hard to see)
+    max.cap <- 2*max(sapply(x, function(v){ max(v$SVF) } ))
+    max.SVF <- min(max.SVF,max.cap)
+    
+    # choose SVF units
+    SVF.scale <- unit(max.SVF,"area")
+    SVF.name <- SVF.scale$name
+    SVF.scale <- SVF.scale$scale
+    
+    ylab <- paste("Semi-variance ", "(", SVF.name, ")", sep="")
+  }
+  else # ACF plot
+  {
+    min.SVF <- sapply(x,function(v) { min(v$SVF[-1]) })
+    min.SVF <- min(0,2*min.SVF)
+    
+    max.SVF <- sapply(x,function(v) { max(v$SVF[-1]) })
+    max.SVF <- max(0,2*max.SVF)
+    
+    SVF.scale <- 1
+    ylab <- "Autocorrelation"
+  }
   
   # choose lag units
   lag.scale <- unit(max.lag,"time",2)
@@ -648,10 +673,9 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", 
   lag.scale <- lag.scale$scale
   
   xlab <- paste("Time-lag ", "(", lag.name, ")", sep="")
-  ylab <- paste("Semi-variance ", "(", SVF.name, ")", sep="")
   
   # fix base plot layer
-  plot(c(0,max.lag/lag.scale),c(0,max.SVF/SVF.scale), xlab=xlab, ylab=ylab, col=grDevices::rgb(1,1,1,0), ...)
+  plot(c(0,max.lag/lag.scale),c(min.SVF/SVF.scale,max.SVF/SVF.scale), xlab=xlab, ylab=ylab, col=grDevices::rgb(1,1,1,0), ...)
   
   # color array for plots
   col <- array(col,n)
@@ -670,8 +694,28 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", 
     
     for(j in 1:length(alpha))
     {
-      SVF.lower <- SVF * CI.lower(DOF,alpha[j])
-      SVF.upper <- SVF * CI.upper(DOF,alpha[j])
+      # chi-square CIs for semi-variance
+      if(!ACF)
+      {
+        SVF.lower <- SVF * CI.lower(DOF,alpha[j])
+        SVF.upper <- SVF * CI.upper(DOF,alpha[j])
+      }
+      else # Fisher CIs for autocorrelation
+      {
+        # subset relevant data for Fisher transformation
+        STUFF <- data.frame(lag=lag,SVF=SVF,DOF=DOF)
+        STUFF <- STUFF[DOF>3,]
+        lag <- STUFF$lag
+        SVF <- STUFF$SVF
+        DOF <- STUFF$DOF
+        # Fisher transformation
+        FISH <- atanh(SVF)
+        SD <- 1/sqrt(DOF-3)
+        SVF.lower <- tanh(stats::qnorm(alpha[j]/2,mean=FISH,sd=SD,lower.tail=TRUE))
+        SVF.upper <- tanh(stats::qnorm(alpha[j]/2,mean=FISH,sd=SD,lower.tail=FALSE))
+        
+        graphics::abline(h=0,col="red")
+      }
       
       graphics::polygon(c(lag,rev(lag)),c(SVF.lower,rev(SVF.upper)),col=scales::alpha(col[[i]],alpha=0.1),border=NA)
     }
