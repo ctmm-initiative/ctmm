@@ -72,9 +72,14 @@ residuals.ctmm <- function(object,data,...)
 residuals.telemetry <- function(object,CTMM,...) { residuals.ctmm(CTMM,object,...) }
 
 # acf function
-correlogram <- function(data,dt=NULL,axes=c("x","y"))
+correlogram <- function(data,dt=NULL,fast=TRUE,res=1,axes=c("x","y"))
 {
-  ACF <- variogram.fast(data,dt=NULL,CI="IID",axes=c("x","y"),ACF=TRUE)
+  if(fast) { ACF <- variogram.fast(data,dt=dt,res=res,CI="IID",axes=axes,ACF=TRUE) }
+  else { ACF <- variogram.slow(data,dt=dt,CI="IID",axes=axes,ACF=TRUE) }
+  
+  # normalize ACF to 1 at lag 0
+  ACF$SVF <- ACF$SVF / ACF$SVF[1]
+  
   ACF <- new.variogram(ACF,info=attr(data,"info"))
   attr(ACF,"info")$ACF <- TRUE
   # attr(ACF,"info")$CTMM <- NULL

@@ -39,8 +39,8 @@ add=FALSE, xlim=NULL, ylim=NULL, cex=1, lwd=1, ...)
   \item{labels}{Labels for UD contours. Can be an array or list of arrays.}
   \item{fraction}{Fraction of the data, Gaussian \code{ctmm}, or \code{UD} range to plot, whichever is larger.}
   \item{add}{Setting to \code{TRUE} will disable the unit conversions and base layer plot, so that \code{plot.telemetry} can be overlayed atop other outputs more easily.}
-  \item{xlim}{The \code{x} limits \code{c(x1, x2)} of the plot.}
-  \item{ylim}{The \code{y} limits \code{c(y1, y2)} of the plot.}
+  \item{xlim}{The \code{x} limits \code{c(x1, x2)} of the plot (in SI units).}
+  \item{ylim}{The \code{y} limits \code{c(y1, y2)} of the plot (in SI units).}
   \item{cex}{Relative size of plotting symbols. Only used when errors are missing.}
   \item{lwd}{Line widths of \code{UD} contours.}
   \item{\dots}{ Additional options passed to \code{plot}.}

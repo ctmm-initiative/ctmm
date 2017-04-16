@@ -1,4 +1,4 @@
-0.3.6 2017-04-12
+0.3.6 2017-04-14
 ================
 
   * AICc formulas updated from univariate to multivariate
@@ -9,11 +9,15 @@
 
   * ctmm.fit now has unified options controling optimization & differentiation
   
-  * ctmm.fit Hessian and pREML calculations faster and more accurate
+  * ctmm.fit Hessian and pREML calculations 2x faster
 
   * new writeRaster method for UD objects
 
   * Better UD plot boxes with new extent methods
+  
+  * variogram fast=TRUE less biased for irregular data with new res>1 option
+  
+  * variogram fast=FALSE more robust to irregularity
 
   * akde() can now handle duplicate times (with an error model)
   

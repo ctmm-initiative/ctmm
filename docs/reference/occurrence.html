@@ -25,7 +25,7 @@
 <script src="../pkgdown.js"></script>
 
 <!-- mathjax -->
-<script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+<script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
 <!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -98,7 +98,7 @@
     <p>This function calculates an occurrence distribution from <code>telemetry</code> data and a continuous-time movement model.</p>
     
 
-    <pre><span class='fu'>occurrence</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>H</span><span class='kw'>=</span><span class='fl'>0</span>,<span class='kw'>res.time</span><span class='kw'>=</span><span class='fl'>10</span>,<span class='kw'>res.space</span><span class='kw'>=</span><span class='fl'>10</span>,<span class='kw'>grid</span><span class='kw'>=</span><span class='kw'>NULL</span>,
+    <pre class="usage"><span class='fu'>occurrence</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>H</span><span class='kw'>=</span><span class='fl'>0</span>,<span class='kw'>res.time</span><span class='kw'>=</span><span class='fl'>10</span>,<span class='kw'>res.space</span><span class='kw'>=</span><span class='fl'>10</span>,<span class='kw'>grid</span><span class='kw'>=</span><span class='kw'>NULL</span>,
 <span class='kw'>cor.min</span><span class='kw'>=</span><span class='fl'>0.5</span>,<span class='kw'>dt.max</span><span class='kw'>=</span><span class='kw'>NULL</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
@@ -130,11 +130,11 @@
     </tr>
     <tr>
       <th>cor.min</th>
-      <td><p>Minimum amount of correlation required between locations for Kriging.</p></td>
+      <td><p>Minimum gap correlation for Kriging interpolation (alternative to <code>dt.max</code>).</p></td>
     </tr>
     <tr>
       <th>dt.max</th>
-      <td><p>Maximum time interval allowed between locations for Kriging.</p></td>
+      <td><p>Maximum gap size for Kriging interpolation (alternative to <code>cor.min</code>).</p></td>
     </tr>
     </table>
     
@@ -148,7 +148,8 @@
     
     <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
 
-    <p>In the case of coarse grids, the value of <code>PDF</code> in a grid cell actually corresponds to the average probability density over the entire rectangular cell.</p>
+    <p>Large gaps have a tendency to blow up the estimate, and can be avoided with the <code>cor.min</code> or <code>dt.max</code> arguments.</p>
+<p>In the case of coarse grids, the value of <code>PDF</code> in a grid cell actually corresponds to the average probability density over the entire rectangular cell.</p>
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 

@@ -25,7 +25,7 @@
 <script src="../pkgdown.js"></script>
 
 <!-- mathjax -->
-<script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+<script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
 <!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -99,7 +99,7 @@
 The fitting functions wrap around <code>optim</code> and <code>ctmm.loglike</code> to maximize the likelihood function of continuous-time movement models described in Fleming et al (2014) and Fleming et al (2015), given 2D animal tracking data.</p>
     
 
-    <pre><span class='fu'>ctmm</span>(<span class='kw'>tau</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>isotropic</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>range</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>circle</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>error</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>axes</span><span class='kw'>=</span><span class='fu'>c</span>(<span class='st'>"x"</span>,<span class='st'>"y"</span>),<span class='no'>...</span>)
+    <pre class="usage"><span class='fu'>ctmm</span>(<span class='kw'>tau</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>isotropic</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>range</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>circle</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>error</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>axes</span><span class='kw'>=</span><span class='fu'>c</span>(<span class='st'>"x"</span>,<span class='st'>"y"</span>),<span class='no'>...</span>)
 
 <span class='fu'>ctmm.loglike</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>REML</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>zero</span><span class='kw'>=</span><span class='fl'>0</span>,<span class='kw'>verbose</span><span class='kw'>=</span><span class='fl'>FALSE</span>)
 

@@ -7,7 +7,8 @@
 Produces simple plots of \code{varigram} objects (semi-variance vs. time lag) and model semi-variance functions, with approximate confidence intervals around the semi-variance estimates.
 }
 \usage{
-\S3method{plot}{variogram}(x,CTMM=NULL,level=0.95,fraction=0.5,col="black",col.CTMM="red",...)
+\S3method{plot}{variogram}(x,CTMM=NULL,level=0.95,fraction=0.5,col="black",col.CTMM="red",
+     xlim=NULL,ylim=NULL,...)
 
 \S4method{zoom}{variogram}(x,fraction=0.5,...)
 }
@@ -21,6 +22,8 @@ The proportion of the variogram object, \code{variogram}, that will be plotted. 
 }
   \item{col}{Color for the empirical variogram. Can be an array.}
   \item{col.CTMM}{Color for the model. Can be an array.}
+  \item{xlim}{Range of lags to plot (in SI units).}
+  \item{ylim}{Range of semi-variance to plot (in SI units).}
   \item{\dots}{
 Additional \code{plot} function parameters.
 }
@@ -39,7 +42,7 @@ C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, and W. F.
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
-\seealso{ \code{\link{ctmm.fit}}, \code{\link{plot}}, \code{\link{variogram}}, \code{\link{variogram.fit}}. }
+\seealso{ \code{\link{correlogram}}, \code{\link{ctmm.fit}}, \code{\link{plot}}, \code{\link{variogram}}, \code{\link{variogram.fit}}. }
 
 \examples{
 # Load package and data
