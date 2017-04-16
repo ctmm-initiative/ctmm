@@ -25,7 +25,7 @@
 <script src="../pkgdown.js"></script>
 
 <!-- mathjax -->
-<script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+<script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
 <!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -98,15 +98,19 @@
     <div class="contents">
     <div id="section" class="section level1">
 <h1 class="hasAnchor">
-<a href="#section" class="anchor"></a>0.3.6 2017-04-06</h1>
+<a href="#section" class="anchor"></a>0.3.6 2017-04-14</h1>
 <ul>
 <li><p>AICc formulas updated from univariate to multivariate</p></li>
 <li><p>ctmm.select more aggressive on small sample sizes where AICc &gt;&gt; AIC</p></li>
+<li><p>new residuals and correlogram functions</p></li>
 <li><p>ctmm.fit now has unified options controling optimization &amp; differentiation</p></li>
-<li><p>ctmm.fit Hessian and pREML calculations faster and more accurate</p></li>
-<li><p>writeRaster method for UD objects</p></li>
+<li><p>ctmm.fit Hessian and pREML calculations 2x faster</p></li>
+<li><p>new writeRaster method for UD objects</p></li>
 <li><p>Better UD plot boxes with new extent methods</p></li>
+<li><p>variogram fast=TRUE less biased for irregular data with new res&gt;1 option</p></li>
+<li><p>variogram fast=FALSE more robust to irregularity</p></li>
 <li><p>akde() can now handle duplicate times (with an error model)</p></li>
+<li><p>plot.variogram bugfix for fixed error models [still not quite correct]</p></li>
 <li><p>Column name preferences in as.telemetry</p></li>
 <li><p>as.telemetry faster with fread &amp; fastPOSIXct</p></li>
 <li><p>new trace option for ctmm.fit</p></li>
@@ -331,7 +335,7 @@
     <div id="tocnav">
       <h2>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
-        <li><a href="#section">2017-04-06</a></li>
+        <li><a href="#section">2017-04-14</a></li>
         <li><a href="#section-1">2017-02-01</a></li>
         <li><a href="#section-2">2016-11-28</a></li>
         <li><a href="#section-3">2016-09-05</a></li>

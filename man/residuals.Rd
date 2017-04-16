@@ -8,14 +8,14 @@
 \description{
 These functions calculate the residuals of a CTMM model, which should be standardized and IID if the model correctly specified.
 A correlogram method is also provided to assess remaining autocorrelation.
-This function is analogous to \code{acf}, but can handle missing data.
+This function is analogous to \code{acf}, but can handle missing data and multiple dimensions.
 }
 \usage{
 \S3method{residuals}{ctmm}(object,data,...)
 
 \S3method{residuals}{telemetry}(object,CTMM,...)
 
-correlogram(data,dt=NULL,axes=c("x","y"))
+correlogram(data,dt=NULL,fast=TRUE,res=1,axes=c("x","y"))
 
 }
 %- maybe also 'usage' for other objects documented here.
@@ -25,10 +25,14 @@ correlogram(data,dt=NULL,axes=c("x","y"))
   \item{CTMM}{\code{ctmm} model object.}
   \item{...}{Unused arguments.}
   \item{dt}{ Lag bin width. An ordered array will yield a progressive coarsening of the lags. Defaults to the median sampling interval.}
+  \item{fast}{ Use the lag-weighted algorithm if \code{FALSE} or the FFT algorithm if \code{TRUE}. The slow algorithm outputs a progress bar.}
+  \item{res}{Increase the discretization resolution for irregularly sampled data with \code{res>1}. Decreases bias at the cost of smoothness.}
   \item{axes}{Array of axes to calculate an average (isotropic) correlogram for.}
 }
 \details{
-Given a \code{telemetry} dataset and \code{ctmm} model, \code{residuals} calculates the standardized residuals of the Kalman filter, which can be tested for independence. The residuals object can then be plotted with \code{plot} or fed into the \code{correlogram} method to test independence. Output of the correlogram can then be plotted as well, though \code{zoom} is much more useful. This function is more-or-less equivalent to \code{acf}, however it is coded to handle multiple dimensions and missing data. Another difference from \code{acf} is that the confidence intervals here are calculated per lag, using a Fisher transformation of the correlation, which is more accurate far from lag zero.
+Given a \code{telemetry} dataset and \code{ctmm} model, \code{residuals} calculates the standardized residuals of the Kalman filter, which can be tested for independence. The residuals object can then be plotted with \code{plot} or fed into the \code{correlogram} method to test independence. Output of the correlogram can then be plotted as well, though \code{zoom} is much more useful.
+
+When calculating correlograms, minimizing bias is more important than producing a overall smooth estimate. If \code{fast=TRUE}, then \code{res} needs to be large enough to resolve variability in the sampling interval (missing data is permitted). E.g., if the sampling interval is set to 15 minutes, but can be off by a minute or two, then \code{res=15} is a good choice.
 }
 
 \value{
@@ -42,7 +46,7 @@ Given a \code{telemetry} dataset and \code{ctmm} model, \code{residuals} calcula
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
-%\seealso{ \code{\link{plot.periodogram}}. }
+\seealso{ \code{\link{plot.variogram}}, \code{\link{variogram}}. }
 
 %\examples{}
 

@@ -23,29 +23,37 @@ subset.variogram <- function(x,...)
 
 #########################
 # variogram funcion wrapper
-variogram <- function(data,dt=NULL,fast=TRUE,CI="Markov",axes=c("x","y"))
+variogram <- function(data,dt=NULL,fast=TRUE,res=1,CI="Markov",axes=c("x","y"))
 {
-  if(length(dt)<2)
-  { var <- variogram.dt(data,dt=dt,fast=fast,CI=CI,axes=axes) }
-  else
+  res <- round(res)
+  
+  if(length(dt)>1)
   {
-    # calculate a variograms at each dt
-    vars <- lapply(dt, function(DT) { variogram.dt(data,dt=DT,fast=fast,CI=CI,axes=axes) } )
+    dt <- sort(dt,method="quick")
+    res <- rep(res,length(dt))
+    res[-1] <- pmax(res[-1],dt[-1]/dt[-length(dt)])
+    
+    # calculate a variogram at each dt
+    SVF <- lapply(1:length(dt), function(i) { variogram.dt(data,dt=dt[i],fast=fast,res=res[i],CI=CI,axes=axes) } )
     
     # subset each variogram to relevant range of lags
-    dt <- c(dt,Inf)
-    lag <- vars[[1]]$lag
-    vars[[1]] <- vars[[1]][lag<=dt[2],]
-    for(i in 2:(length(dt)-1))
+    dt <- c(-dt[1],dt,Inf)
+    for(i in 1:(length(dt)-2))
     {
-      lag <- vars[[i]]$lag
-      vars[[i]] <- vars[[i]][(dt[i]<lag)&(lag<=dt[i+1]),]
+      SUB <- (dt[i] < SVF[[i]]$lag) & (SVF[[i]]$lag < dt[i+2])
+      SVF[[i]] <- SVF[[i]][SUB,]
     }
     
-    # coalate
-    var <- vars[[1]]
-    for(i in 2:(length(dt)-1)) { var <- rbind(var,vars[[i]]) }
+    # concatentate
+    SVF <- do.call(rbind,SVF)
   }
+  else
+  { 
+    SVF <- variogram.dt(data,dt=dt,res=res,fast=fast,CI=CI,axes=axes)
+  }
+  
+  # delete missing lags
+  SVF <- SVF[SVF$DOF>0,]
   
   # average error when UERE=1
   error <- get.error(data,ctmm(error=TRUE,axes=axes))
@@ -55,13 +63,13 @@ variogram <- function(data,dt=NULL,fast=TRUE,CI="Markov",axes=c("x","y"))
   info$axes <- axes
   info$error <- error
   
-  var <- new.variogram(var,info=info)
-  return(var)
+  SVF <- new.variogram(SVF,info=info)
+  return(SVF)
 } 
   
 ################################
 # wrapper for fast and slow variogram codes, for a specified dt
-variogram.dt <- function(data,dt=NULL,fast=NULL,CI="Markov",axes=c("x","y"))
+variogram.dt <- function(data,dt=NULL,fast=NULL,res=1,CI="Markov",axes=c("x","y"))
 {
   # intelligently select algorithm
   if(is.null(fast))
@@ -71,7 +79,7 @@ variogram.dt <- function(data,dt=NULL,fast=NULL,CI="Markov",axes=c("x","y"))
   }
   
   if(fast)
-  { SVF <- variogram.fast(data=data,dt=dt,CI=CI,axes=axes) }
+  { SVF <- variogram.fast(data=data,dt=dt,res=res,CI=CI,axes=axes) }
   else
   { SVF <- variogram.slow(data=data,dt=dt,CI=CI,axes=axes) }
   
@@ -130,7 +138,7 @@ pregridder <- function(t,dt=NULL,W=NULL)
 
 ############################
 # smear data across a uniform grid
-gridder <- function(t,z,dt=NULL,W=NULL,lag=NULL,p=NULL,FLOOR=NULL,finish=TRUE)
+gridder <- function(t,z,dt=NULL,W=NULL,lag=NULL,p=NULL,FLOOR=NULL,finish=TRUE,res=1)
 {
   n <- length(t)
   COL <- ncol(z)
@@ -147,14 +155,14 @@ gridder <- function(t,z,dt=NULL,W=NULL,lag=NULL,p=NULL,FLOOR=NULL,finish=TRUE)
     # gap weights to prevent oversampling with coarse dt
     if(is.null(W))
     {
-      W <- clamp(c(DT[1],DT)/dt) # left weights
-      W <- W + clamp(c(DT,DT[n-1])/dt) # + right weights
-      W <- W/2 # average left and right
+      W <- clamp(DT/dt) # inner weights
+      W <- c(1,W) + c(W,1) # left & right weights
+      W <- W/2 # average left & right
     }
     else if(!W)
     { W <- rep(1,length(t)) }
     
-    FLOOR <- pregridder(t,dt=dt,W=W)
+    FLOOR <- pregridder(t,dt=dt/res,W=W)
     p <- FLOOR$p
     lag <- FLOOR$lag
     FLOOR <- FLOOR$FLOOR
@@ -182,9 +190,7 @@ gridder <- function(t,z,dt=NULL,W=NULL,lag=NULL,p=NULL,FLOOR=NULL,finish=TRUE)
     POS <- (W.grid>0)
     Z.grid[POS,] <- Z.grid[POS,]/W.grid[POS]
     
-    # continuous weights eff up the FFT numerics so discretize weights
     W <- sum(W) # now total DOF
-    W.grid <- sign(W.grid) # discrete weights
   }
     
   return(list(w=W.grid,z=Z.grid,lag=lag,dt=dt))
@@ -193,49 +199,76 @@ gridder <- function(t,z,dt=NULL,W=NULL,lag=NULL,p=NULL,FLOOR=NULL,finish=TRUE)
 ############################
 # FFT VARIOGRAM
 # SLP sum of lagged product
-variogram.fast <- function(data,dt=NULL,CI="Markov",axes=c("x","y"),SLP=FALSE,ACF=FALSE)
+variogram.fast <- function(data,dt=NULL,res=1,CI="Markov",axes=c("x","y"),ACF=FALSE)
 {
   t <- data$t
   z <- get.telemetry(data,axes)
   COL <- ncol(z)
 
-  # smear the data over an evenly spaced time grid
-  GRID <- gridder(t,z,dt=dt)
-  W.grid <- GRID$w
-  Z.grid <- GRID$z
+  # smear the data over an evenly spaced time grid (possibly at finer resolution)
+  GRID <- gridder(t,z,dt=dt,res=res)
+  dt <- GRID$dt
   lag <- GRID$lag
-
+  df <- GRID$w
+  # continuous weights eff up the FFT numerics so discretize weights
+  w <- sign(GRID$w) # indicator function
+  z <- GRID$z
+  zz <- z^2
+  
   n <- length(lag)
   #N <- 2*n
-  N <- composite(2*n)
+  N <- composite(2*n) # keep FFT fast
 
-  W.grid <- Conj(FFT(pad(W.grid,N)))
-  ZZ.grid <- FFT(rpad(Z.grid^2,N))
-  Z.grid <- FFT(rpad(Z.grid,N))
+  df <- FFT(pad(df,N))
+  w <- Conj(FFT(pad(w,N)))
+  z <- FFT(rpad(z,N))
+  zz <- FFT(rpad(zz,N))
 
-  # pair number. one for x and y data
-  DOF <- COL*round(Re(IFFT(abs(W.grid)^2)[1:n]))
+  # indicator pair number (integer - stable FFT*)
+  DOF <- COL*round(Re(IFFT(abs(w)^2)[1:n]))
   # SVF un-normalized
-  SVF <- Re(IFFT(Re(W.grid*rowSums(ZZ.grid))-rowSums(abs(Z.grid)^2))[1:n])
-  if(SLP || ACF) { slp <- Re(IFFT(rowSums(abs(Z.grid)^2))[1:n]) }
+  if(!ACF) { SVF <- Re(IFFT(Re(w*rowSums(zz))-rowSums(abs(z)^2))[1:n]) }
+  else { SVF <- Re(IFFT(rowSums(abs(z)^2))[1:n]) }
 
-  # delete missing lags
-  SVF <- data.frame(SVF=SVF,DOF=DOF,lag=lag)
-  if(SLP || ACF) { SVF$SLP <- slp }
-  SVF <- subset(SVF,DOF>0)
-  if(SLP || ACF) { slp <- SVF$SLP }
-  lag <- SVF$lag
-  DOF <- SVF$DOF
-  SVF <- SVF$SVF
-  
   # normalize SVF
   SVF <- SVF/DOF
-  if(ACF)
-  { 
-    # this is really the ACF
-    SVF <- slp/DOF
-    # normalize to 1 at lag 0
-    SVF <- SVF/SVF[1]
+
+  # prevent NaNs
+  if(any(DOF==0)) { SVF[DOF==0] <- 0 }
+  
+  # weight pair number (more accurate DOF)
+  DOF <- COL*(Re(IFFT(abs(df)^2)[1:n]))
+  
+  # aggregate to each dt in array if discretized at higher resolution
+  if(res>1)
+  {
+    # resolution to aggregate away
+    n <- dt/diff(lag[1:2])
+    m <- ceiling(length(lag)/n)
+    SVF <- pad(SVF,n*(m+1))
+    DOF <- pad(DOF,n*(m+1))
+    
+    # window weights
+    W <- floor(n)
+    if(is.even(W)) { W <- W - 1 }
+    # full weights
+    W <- rep(1,floor(W))
+    # partial weights on ends
+    if(length(W)<n)
+    {
+      r <- n-length(W)
+      r <- r/2 # half for each end
+      W <- c(r,W,r) # half on each end
+    }
+    SUB <- (length(W)-1)/2
+    SUB <- (-SUB):(+SUB)
+    
+    lag <- (0:m)*dt # aggregated lags > 0
+    SVF <- c(SVF[1], sapply(1:m,function(j){ SUB <- j*n + SUB ; sum(W*DOF[SUB]*SVF[SUB]) }) )
+    DOF <- c(DOF[1], sapply(1:m,function(j){ SUB <- j*n + SUB ; sum(W*DOF[SUB]) }) )
+    
+    SVF[-1] <- SVF[-1]/DOF[-1]
+    if(any(DOF==0)) { SVF[DOF==0] <- 0 }
   }
   
   # only count non-overlapping lags... not perfect
@@ -244,9 +277,9 @@ variogram.fast <- function(data,dt=NULL,CI="Markov",axes=c("x","y"),SLP=FALSE,AC
     # number of lags in the data
     dof <- COL*(last(t)-t[1])/lag
     dof[1] <- COL*length(t)
-  
+    
     # be conservative
-    for(i in 1:length(lag)) { if(dof[i]<DOF[i]) {DOF[i] <- dof[i]} }
+    DOF <- pmin(DOF,dof)
   }
   else if(CI=="IID") # fix initial and total DOF
   {
@@ -254,8 +287,7 @@ variogram.fast <- function(data,dt=NULL,CI="Markov",axes=c("x","y"),SLP=FALSE,AC
     DOF[-1] <- DOF[-1]*(1/sum(DOF[-1])*COL*(length(t)^2-length(t))/2)
   }
   
-  result <- data.frame(SVF=SVF,DOF=DOF,lag=lag)
-  if(SLP) { result$SLP <- slp }
+  SVF <- data.frame(SVF=SVF,DOF=DOF,lag=lag)
 
   # contribution to SVF from telemetry error when UERE=1
   #error <- get.error(data,ctmm(axes=axes,error=1))
@@ -263,12 +295,12 @@ variogram.fast <- function(data,dt=NULL,CI="Markov",axes=c("x","y"),SLP=FALSE,AC
   #result$error <- error
   #result$error[1] <- 0
   
-  return(result)
+  return(SVF)
 }
 
 ##################################
 # LAG-WEIGHTED VARIOGRAM
-variogram.slow <- function(data,dt=NULL,CI="Markov",axes=c("x","y"))
+variogram.slow <- function(data,dt=NULL,CI="Markov",axes=c("x","y"),ACF=FALSE)
 {
   t <- data$t
   #error <- get.error(data,ctmm(axes=axes,error=1)) # telemetry error when UERE=1
@@ -279,14 +311,44 @@ variogram.slow <- function(data,dt=NULL,CI="Markov",axes=c("x","y"))
   
   # time lags
   DT <- diff(t)
-  DT.L <- c(DT[1],DT)
-  DT.R <- c(DT,DT[n-1])
   
   # default time step
   if(is.null(dt)) { dt <- stats::median(DT) }
 
+  # interval-weights for each time
+  W.T <- clamp(DT/dt) # inner weights
+  W.T <- c(1,W.T) + c(W.T,1) # left + right weights
+  W.T <- W.T / 2 # average left & right
+  
+  # matrices (vectorizing all n^2 operations)
+  # matrix of lags
+  LAG <- abs(outer(t,t,'-'))
+  # matrix of semi-variances (not normalized)
+  if(!ACF) { VAR <- lapply(1:COL, function(i) { outer(z[,i],z[,i],'-')^2 }) }
+  else { VAR <- lapply(1:COL, function(i) { outer(z[,i],z[,i],'*') }) }
+  VAR <- Reduce("+",VAR)
+  # matrix of weights
+  W.T <- W.T %o% W.T
+  
+  # fractional index
+  LAG <- 1 + LAG/dt
+  # integer indices
+  I1 <- floor(LAG)
+  I2 <- I1 + 1 # not ceiling if LAG = round(LAG)
+  
+  # fraction to deposit at INT
+  W1 <- 1 - (LAG-I1)
+  # fraction to deposit at INT+1
+  W2 <- 1 - W1
+  rm(LAG)
+  
+  # final weights
+  W1 <- W.T * W1
+  W2 <- W.T * W2
+  rm(W.T)
+  
   # where we will store stuff
-  lag <- seq(0,ceiling((t[n]-t[1])/dt))*dt
+  lag <- seq(0,ceiling((t[n]-t[1])/dt)+1)*dt
   SVF <- numeric(length(lag))
   #ERR <- numeric(length(lag))
   DOF <- numeric(length(lag))
@@ -306,86 +368,46 @@ variogram.slow <- function(data,dt=NULL,CI="Markov",axes=c("x","y"))
   { 
     for(j in i:n)
     {
-      tau <- t[j] - t[i]
-      svf <- mean((z[j,]-z[i,])^2)/2
-      #err <- (error[i]+error[j])/2 # telemetry error when UERE=1
-
-      # gap weight
-      if(tau==0) { w <- 1 }
-      else { w <- (clamp(DT.L[j]/tau)+clamp(DT.R[j]/tau))*(clamp(DT.L[i]/tau)+clamp(DT.R[i]/tau)) }
-      
-      # fractional index
-      k <- tau/dt + 1
-
-      if(floor(k)==ceiling(k))
-      { # even sampling
-        # lag index
-        K <- round(k)
-        # total weight
-        W <- w
-        # accumulate        
-        accumulate(K,W,svf)
-      }
-      else
-      { # account for drift by distributing semi-variance
-        
-        # left index
-        K <- floor(k)
-        # left weight
-        W <- w*(1-(k-K))
-        # accumulate left portion
-        accumulate(K,W,svf)
-        
-        # right index
-        K <- ceiling(k)
-        # right weight
-        W <- w*(1-(K-k))
-        # accumulate right portion
-        accumulate(K,W,svf)
-      }
+      accumulate(I1[i,j],W1[i,j],VAR[i,j])
+      accumulate(I2[i,j],W2[i,j],VAR[i,j])
     }
     utils::setTxtProgressBar(pb,(i*(2*n-i))/(n^2))
   }
+  rm(I1,I2,W1,W2,VAR)
   
   # delete missing lags
   SVF <- data.frame(SVF=SVF,DOF=DOF,DOF2=DOF2,lag=lag)
-  SVF <- subset(SVF,DOF>0)
-  lag <- SVF$lag
-  DOF <- SVF$DOF
-  DOF2 <- SVF$DOF2
-  #error <- SVF$error
-  SVF <- SVF$SVF
+  SVF <- SVF[DOF>0,]
+  rm(DOF,DOF2,lag)
   
-  # normalize SVF
-  SVF <- SVF/DOF
+  # normalize SVF before we correct DOF
+  SVF$SVF <- SVF$SVF/((2*COL)*SVF$DOF)
   #error <- error/DOF
-  # effective DOF from weights, one for x and y
-  DOF <- COL*DOF^2/DOF2
+  
+  # effective DOF from weights
+  SVF$DOF <- pmin(SVF$DOF,SVF$DOF^2/SVF$DOF2)
+  SVF$DOF2 <- NULL
   
   # only count non-overlapping lags... still not perfect
   if(CI=="Markov")
   {
-    dof <- COL*length(t)
-    if(dof<DOF[1]) { DOF[1] <- dof  }
+    dof <- sapply(SVF$lag,function(lag){ sum(DT[DT<=lag])/lag })
+    dof[1] <- length(t)
     
-    for(i in 2:length(lag))
-    { # large gaps are missing data
-      dof <- COL*sum(DT[DT<=lag[i]])/lag[i]
-      if(dof<DOF[i]) { DOF[i] <- dof }
-      
-      utils::setTxtProgressBar(pb,i/length(lag))
-    }
+    SVF$DOF <- pmin(SVF$DOF,dof)
   }
   else if(CI=="IID") # fix initial and total DOF
   {
-    DOF[1] <- COL*length(t)
-    DOF[-1] <- DOF[-1]/sum(DOF[-1])*(length(t)^2-length(t))*COL/2
+    SVF$DOF[1] <- length(t)
+    SVF$DOF[-1] <- SVF$DOF[-1]/sum(SVF$DOF[-1])*(length(t)^2-length(t))/2
   }
+  
+  # finish off DOF, one for x and y
+  SVF$DOF <- COL * SVF$DOF
   
   close(pb)
   
-  result <- data.frame(SVF=SVF,DOF=DOF,lag=lag)
-  return(result)
+  return(SVF)
 }
 
 ########################
@@ -618,7 +640,7 @@ plot.svf <- function(lag,CTMM,error=0,alpha=0.05,col="red",type="l",...)
 ###########################################################
 # PLOT VARIOGRAM
 ###########################################################
-plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", col.CTMM="red", ...)
+plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", col.CTMM="red", xlim=NULL, ylim=NULL, ...)
 {  
   alpha <- 1-level
   
@@ -657,11 +679,11 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", 
   }
   else # ACF plot
   {
-    min.SVF <- sapply(x,function(v) { min(v$SVF[-1]) })
-    min.SVF <- min(0,2*min.SVF)
+    min.SVF <- sapply(x,function(v) { min(v$SVF) })
+    min.SVF <- min(0,1.1*min.SVF)
     
-    max.SVF <- sapply(x,function(v) { max(v$SVF[-1]) })
-    max.SVF <- max(0,2*max.SVF)
+    max.SVF <- sapply(x,function(v) { max(v$SVF[v$lag>0]) })
+    max.SVF <- max(0,1.1*max.SVF)
     
     SVF.scale <- 1
     ylab <- "Autocorrelation"
@@ -674,8 +696,12 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", 
   
   xlab <- paste("Time-lag ", "(", lag.name, ")", sep="")
   
+  # unit convert scales if supplied
+  if(!is.null(xlim)) { xlim <- xlim/lag.scale }
+  if(!is.null(ylim)) { ylim <- ylim/SVF.scale }
+  
   # fix base plot layer
-  plot(c(0,max.lag/lag.scale),c(min.SVF/SVF.scale,max.SVF/SVF.scale), xlab=xlab, ylab=ylab, col=grDevices::rgb(1,1,1,0), ...)
+  plot(c(0,max.lag/lag.scale),c(min.SVF/SVF.scale,max.SVF/SVF.scale), xlim=xlim, ylim=ylim, xlab=xlab, ylab=ylab, col=grDevices::rgb(1,1,1,0), ...)
   
   # color array for plots
   col <- array(col,n)
@@ -714,7 +740,7 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", 
         SVF.lower <- tanh(stats::qnorm(alpha[j]/2,mean=FISH,sd=SD,lower.tail=TRUE))
         SVF.upper <- tanh(stats::qnorm(alpha[j]/2,mean=FISH,sd=SD,lower.tail=FALSE))
         
-        graphics::abline(h=0,col="red")
+        graphics::abline(h=c(-1,0,1)/sqrt(DOF[1])*stats::qnorm(1-alpha[j]/2),col="red",lty=c(2,1,2))
       }
       
       graphics::polygon(c(lag,rev(lag)),c(SVF.lower,rev(SVF.upper)),col=scales::alpha(col[[i]],alpha=0.1),border=NA)

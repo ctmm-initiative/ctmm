@@ -297,6 +297,7 @@ rpad <- function(mat,size,padding=0,side="right")
   size <- size - nrow(mat)
   COL <- ncol(mat)
   padding <- array(padding,c(size,COL))
+  colnames(padding) <- colnames(mat)
     
   if(side=="right"||side=="r")
   { mat <- rbind(mat,padding) }
