@@ -241,11 +241,12 @@ mean.UD <- function(x,...)
 }
 
 ##################
-Tsquared <- function(CTMM1,CTMM2)
+Tsquared <- function(CTMM1,CTMM2,spatial=TRUE)
 {
   DOF <- 0
   chi.square <- 0
   CTMM <- list(CTMM1,CTMM2)
+  rm(CTMM1,CTMM2)
   
   # BM/IOU versus IID is infinitely different
   TEST <- is.null(CTMM[[1]]$tau) && !is.null(CTMM[[2]]$tau[1]) && CTMM[[2]]$tau[1]==Inf
@@ -253,9 +254,28 @@ Tsquared <- function(CTMM1,CTMM2)
   if(TEST) { return(list(chi.square=Inf,DOF=0,p=0)) }
   
   # periodic mean parameters not yet supported because of COV.mu structure being weird !!!
+
+  # switch from area to variance
+  if(!spatial)
+  {
+    for(i in 1:2)
+    {
+      if(!CTMM[[i]]$isotropic)
+      {
+        CTMM[[i]]$COV <- area2var(CTMM[[i]])
+        NAMES <- dimnames(CTMM[[i]]$COV)[[1]]
+        NAMES[NAMES=="variance"] <- "area"
+        dimnames(CTMM[[i]]$COV) <- list(NAMES,NAMES)
+        
+        CTMM[[i]]$sigma <- covm(mean(diag(CTMM[[i]]$sigma)),isotropic=TRUE)
+        
+        CTMM[[i]]$isotropic <- TRUE
+      }
+    }
+  }
   
   # mean parameters
-  if(CTMM[[1]]$range && CTMM[[2]]$range)
+  if(spatial && CTMM[[1]]$range && CTMM[[2]]$range)
   {
     # pooled precision matrix
     precision <- PDsolve(CTMM[[1]]$COV.mu) + PDsolve(CTMM[[2]]$COV.mu)
