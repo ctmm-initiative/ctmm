@@ -92,10 +92,12 @@ speedMLE <- function(data,dt=0,UERE=0,CTMM=ctmm(error=UERE,axes=c("x","y")),TOL=
   
   DT <- diff(data$t)
   # point estimate of frequency without/with truncation error accounted for
-  if(dt==0) # no truncation error
-  { f <- 1/DT }
-  else # truncation error
-  { f <- log((DT+dt/2)/(DT-dt/2))/dt }
+  if(DT>dt) #  two times are uniformly distributed
+  { f <- ( (DT+dt)*log(DT+dt) + (DT-dt)*log(DT-dt) - 2*DT*log(DT) )/dt^2 }
+  else if(DT==dt) # limit of DT -> dt
+  { f <- log(4)/max(dt,DT) }
+  else # fallback - totally made up
+  { f <- 2*log(4)/max(dt,DT) }
   
   return(dr*f)
 }
