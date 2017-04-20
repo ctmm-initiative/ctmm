@@ -1,41 +1,87 @@
-# net speeds for the line segments between points
-mid_speeds <- function(data,dt=time_res(data),UERE=0)
+# speeds assigned by blame
+assign_speeds <- function(data,dt=time_res(data),UERE=0,method=c("max","min"))
 {
-  v <- sapply(1:(length(data$t)-1) , function(i) { speedMLE(data[i+0:1,],dt=dt,UERE=UERE) } )  
+  method <- match.arg(method,c("max","min"))
   
-  return(v)
+  CTMM <- ctmm(error=UERE,axes=c("x","y"))
+  
+  # inner speed estimates
+  v.dt <- speedMLE(data,dt=dt,UERE=UERE,CTMM=CTMM)
+  
+  # end point contingency estimates
+  v1 <- speedMLE(data[c(1,3),],dt=dt,UERE=UERE,CTMM=CTMM)
+  n <- length(data$t)
+  v2 <- speedMLE(data[c(n-2,n),],dt=dt,UERE=UERE,CTMM=CTMM)
+  
+  # left and right estimates - n estimates, 1 lag apart
+  v1 <- c(v1,v.dt)
+  v2 <- c(v.dt,v2)
+  
+  if(method=="max")
+  {
+    # n-1 estimates, 2 lags apart
+    v1 <- v1[-n]
+    v2 <- v2[-1]
+    
+    # which side of lag index looks smaller
+    LESS <- v1 < v2
+    
+    vs <- sort(v.dt,method='quick',index.return=TRUE,decreasing=TRUE)
+    is <- vs$ix
+    vs <- vs$x
+    
+    v <- numeric(length(LESS))
+    # assign blame for smallest speeds, from greatest to least, last/least taking precidence in R
+    LESS <- LESS[is]
+    v[is+!LESS] <- vs
+    
+    # assign blame for largest speeds, from least to greatest, last/greatest taking precidence in R
+    LESS <- rev(LESS)
+    is <- rev(is)
+    vs <- rev(vs)
+    v[is+LESS] <- vs
+  }
+  else if(method=="min")
+  {
+    v <- pmin(v1,v2)
+  }
+  
+  return(list(v.t=v,v.dt=v.dt))
 }
 
-# minimum nearby speed
-min_speeds <- function(data,dt=time_res(data),UERE=0)
-{
-  # inner speed estimates
-  v <- mid_speeds(data,dt=dt,UERE=UERE)
-  
-  # end point contingency
-  v1 <- speedMLE(data[c(1,3),],dt=dt,UERE=UERE)
-  n <- length(data$t)
-  v2 <- speedMLE(data[c(n-2,n),],dt=dt,UERE=UERE)
-  
-  # before and after estimates
-  v1 <- c(v1,v)
-  v2 <- c(v,v2)
-  
-  # minimum adjacent estimate
-  v <- pmin(v1,v2)
-  
-  return(v)
-}
 
 # estimate the speed between the two rows of data with error UERE & temporal resolution dt
-# data is assumed to have 2 rows !!! will try to vectorize later
-# TOL is relative error tolerance for Bessel equation
-speedMLE <- function(data,dt=0,UERE=0,CTMM=ctmm(error=UERE,axes=c("x","y")),TOL=0.01)
+speedMLE <- function(data,dt=time_res(data),UERE=0,CTMM=ctmm(error=UERE,axes=c("x","y")))
 {
-  # how far you can go before R's bessel function breaks down
-  BESSEL_LIMIT <- 2^16
+  ######################
+  # 1/diff(t) estimate
   
-  # measured distance
+  DT <- diff(data$t)
+  if(dt) # truncate 
+  {
+    # result storage
+    f <- numeric(length(DT))
+    
+    # assuming two times are uniformly distributed with roundoff error
+    SUB <- DT>dt
+    DT.SUB <- DT[SUB]
+    if(any(SUB)) { f[SUB] <- ( (DT.SUB+dt)*log(DT.SUB+dt) + (DT.SUB-dt)*log(DT.SUB-dt) - 2*DT.SUB*log(DT.SUB) )/dt^2 }
+
+    # limit of sampling interval == roundoff
+    SUB <- DT==dt
+    if(any(SUB)) { f[SUB] <- log(4)/dt }
+    
+    # fall back - totally made up
+    SUB <- DT<dt
+    if(any(SUB)) { f[SUB] <- 2*log(4)/dt }
+  }
+  else
+  { f <- 1/DT }
+
+  ######################
+  # distance estimate 
+  
+  # measured distances
   dr <- sqrt(diff(data$x)^2+diff(data$y)^2)
   
   # point esitmate of distance with error>0
@@ -49,55 +95,62 @@ speedMLE <- function(data,dt=0,UERE=0,CTMM=ctmm(error=UERE,axes=c("x","y")),TOL=
     # coefficient in transcendental Bessel equation
     # x I0(x) == y I1(x)
     y <- dr^2/error
+    # solution storage
+    x <- numeric(length(y))
+    # how far you can go before R's bessel function breaks down
+    BESSEL_LIMIT <- 2^16
     
-    if(y<=2) { return(0) } # critical point, below which all point estimates are zero
+    # critical point, below which all point estimates are zero
+    SUB1 <- (y<=2)
+    if(any(SUB1)) { dr[SUB1] <- 0 }
+
+    # perturbation of sqrt(EQ) of both sides (from x=0) and solving
+    SUB2 <- (2<y) & (y<3.6)
+    if(any(SUB2))
+    {
+      x.SUB <- sqrt(2*y[SUB2])
+      x[SUB2] <- 4 * sqrt( (x.SUB-2)/(4-x.SUB) )
+    }
     
-    # first guess
-    if(y<3.6) # perturbation of sqrt(EQ) of both sides (from x=0) and solving
+    # expansion EQ/exp (from x=y) and solving
+    SUB3 <- (3.6<=y) & (y<=BESSEL_LIMIT)
+    if(any(SUB3))
     {
-      x <- sqrt(2*y)
-      x <- 4 * sqrt( (x-2)/(4-x) )
+      y.SUB <- y[SUB3]
       
-      BI0 <- BI1 <- 1 # initialize to pass test
-    }
-    else if(y<BESSEL_LIMIT) # expansion EQ/exp (from x=y) and solving
-    {
-      BI0 <- besselI(y,0,expon.scaled=TRUE)
-      BI1 <- besselI(y,1,expon.scaled=TRUE)
+      BI0 <- besselI(y.SUB,0,expon.scaled=TRUE)
+      BI1 <- besselI(y.SUB,1,expon.scaled=TRUE)
       
-      x <- 2*y * ( y*BI0 - (y+1)*BI1 ) / ( (2*y-1)*BI0 - (2*y+1)*BI1 )
+      x[SUB3] <- 2*y.SUB * ( y.SUB*BI0 - (y.SUB+1)*BI1 ) / ( (2*y.SUB-1)*BI0 - (2*y.SUB+1)*BI1 )
     }
-    else # expansion from x=y, solving, and then rational expansion from y=Inf
+    
+    # expansion from x=y, solving, and then rational expansion from y=Inf
+    SUB4 <- BESSEL_LIMIT<y
+    if(any(SUB4))
     {
-      x <- 2*y*(y-1)/(2*y-1)
+      y.SUB <- y[SUB4]
+      
+      x[SUB4] <- 2*y.SUB*(y.SUB-1)/(2*y.SUB-1)
     }
    
     # iterative to solution by expanding EQ/exp from x=x.old and solving
-    ERROR <- abs(x-y)/x
-    while(y<BESSEL_LIMIT && ERROR>TOL)
+    SUB <- SUB2 & SUB3
+    if(any(SUB))
     {
-      x.old <- x
+      x.SUB <- x[SUB]
+      y.SUB <- y[SUB]
       
-      BI0 <- besselI(x,0,expon.scaled=TRUE)
-      BI1 <- besselI(x,1,expon.scaled=TRUE)
+      BI0 <- besselI(x.SUB,0,expon.scaled=TRUE)
+      BI1 <- besselI(x.SUB,1,expon.scaled=TRUE)
       
-      x <- x * ( x*(x+y)*BI0 - (x^2+(x+2)*y)*BI1 ) / ( x*(x+y-1)*BI0 - (x^2+(x+1)*y)*BI1 )
-      
-      ERROR <- abs(x-x.old)/x
+      x[SUB] <- x.SUB * ( x.SUB*(x.SUB+y.SUB)*BI0 - (x.SUB^2+(x.SUB+2)*y.SUB)*BI1 ) / ( x.SUB*(x.SUB+y.SUB-1)*BI0 - (x.SUB^2+(x.SUB+1)*y.SUB)*BI1 )
     }
+    # one iteration is good enough to get everything below 1% relative error
     
     # this is now the point estimate, including telemetry error
-    dr <- error/dr * x
+    SUB <- !SUB1
+    if(any(SUB)) { dr[SUB] <- error[SUB]/dr[SUB] * x[SUB] }
   }
-  
-  DT <- diff(data$t)
-  # point estimate of frequency without/with truncation error accounted for
-  if(DT>dt) #  two times are uniformly distributed
-  { f <- ( (DT+dt)*log(DT+dt) + (DT-dt)*log(DT-dt) - 2*DT*log(DT) )/dt^2 }
-  else if(DT==dt) # limit of DT -> dt
-  { f <- log(4)/max(dt,DT) }
-  else # fallback - totally made up
-  { f <- 2*log(4)/max(dt,DT) }
   
   return(dr*f)
 }
