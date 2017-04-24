@@ -68,7 +68,7 @@ setMethod('extent', signature(x='ctmm'), extent.ctmm)
 # range of UD contours
 extent.UD <- function(x,level=0.95,level.UD=0.95,...)
 {
-  if(level.UD==1 || (level==1 && !is.null(x$DOF.area)))
+  if(level.UD==1 || (!is.na(level) && level==1 && !is.null(x$DOF.area)))
   {
     RANGE <- data.frame(x=c(-1,1),y=c(-1,1))*Inf
     row.names(RANGE) <- c("min","max")
@@ -76,7 +76,7 @@ extent.UD <- function(x,level=0.95,level.UD=0.95,...)
   }
   
   # capture ML contour
-  if(is.null(x$DOF.area))
+  if(is.null(x$DOF.area) || is.na(level))
   { P <- level.UD }
   else # capture outer contour
   { P <- CI.UD(x,level.UD,level,P=TRUE)[3] }

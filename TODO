@@ -1,8 +1,9 @@
 PERIODIC 0.4.0
+* variogram on mean detrended data with CTMM argument
 * simulate.telemetry (not pure ctmm)
 * smoother (velocity vector--check)
-* akde... slow exact and fast approximation or block toeplitz matrix
-* plot ctmm
+* akde... slow exact and fast approximation or block toeplitz matrix (stationary Laplace approximation?)
+* plot ctmm (fall back on kde code)
 * vignette: periodogram, ctmm.select
 * maned wolf data: individually projected subset in reserve with largest daily periodicities and no weekly periodicity
   + submit to Rogerio first to check over, ask about MoveBank DOI
