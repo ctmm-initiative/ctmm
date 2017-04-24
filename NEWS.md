@@ -1,4 +1,4 @@
-0.3.6 2017-04-14
+0.3.6 2017-04-23
 ================
 
   * AICc formulas updated from univariate to multivariate

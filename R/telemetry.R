@@ -105,7 +105,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   else { DATA <- as.POSIXct(object$timestamp,tz=timezone,format=timeformat) }
   DATA <- data.frame(timestamp=DATA)
   
-  COL <- c("animal.ID","individual.local.identifier","deployment.ID","tag.local.identifier","tag.ID")
+  COL <- c("animal.ID","individual.local.identifier","deployment.ID","tag.local.identifier","tag.ID","ID")
   COL <- pull.column(object,COL,as.factor)
   if(length(COL)==0)
   {
@@ -114,7 +114,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   }
   DATA$id <- COL
   
-  COL <- c("location.long","Longitude","long")
+  COL <- c("location.long","Longitude","long","lon")
   COL <- pull.column(object,COL)
   DATA$longitude <- COL
   
