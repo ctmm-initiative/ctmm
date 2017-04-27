@@ -37,12 +37,9 @@
 library(ctmm)
 data(buffalo)
 
-# Fit a continuous-velocity model with tau ~ c(10 days,1 hour)
-# also see help(variogram.fit)
-GUESS <- ctmm(tau=c(10*24*60^2,60^2))
-FITS <- list()
-FITS[[1]] <- ctmm.fit(buffalo[[1]],GUESS)
-FITS[[2]] <- ctmm.fit(buffalo[[2]],GUESS)
+# fit models for first two buffalo
+GUESS <- lapply(buffalo[1:2], function(b) ctmm.guess(b,interactive=FALSE) )
+FITS <- lapply(1:2, function(i) ctmm.fit(buffalo[[i]],GUESS[[i]]) )
 names(FITS) <- names(buffalo[1:2])
 
 # Gaussian overlap between these two buffalo

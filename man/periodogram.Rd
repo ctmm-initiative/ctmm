@@ -53,7 +53,7 @@ G. Péron, C. H. Fleming,  R. C. de Paula, J. M. Calabrese. (2016). Uncovering p
 
 \note{ The LSP is totally inappropriate if you in any way alter the sampling rate within the dataset. Stick with variograms in that case. There is a \code{diagnostic} option in \code{plot.periodogram} that can check for spurious periodicities that result from an autocorrelated sampling schedule. This plot will not contain any periodicities if the LSP is appropriate.
 
-\code{res.time>1} relies on Lagrange interpolation of the sinusoids (not the data), which can suffer from Runge's phenomena. \code{periodogram} tests for an invalid result and can fail with an error message. For whatever reason, this only seems to happen when \code{res.time=3}. }
+\code{res.time>1} relies on Lagrange interpolation of the sinusoids (not the data), which can suffer from Runge's phenomena. \code{periodogram} tests for an invalid result and can fail with an error message. For whatever reason, this more frequently seems to happen when \code{res.time=3}. }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
@@ -62,17 +62,17 @@ G. Péron, C. H. Fleming,  R. C. de Paula, J. M. Calabrese. (2016). Uncovering p
 \examples{
 #Load package and data
 library(ctmm)
-data(buffalo)
+data(wolf)
 
 #Extract movement data for a single animal
-cilla <- buffalo[[1]]
+Tay <- wolf$Tay
 
-#Calculate periodogram (fast>0 for a speedy example)
-#There is drift in the sampling rate here, necessitating res.time>1 with fast>0
-LSP <- periodogram(cilla,fast=2,res.time=2)
+#Calculate periodogram (fast==2 for a speedy example)
+#There is some variability in the sampling frequency, so we increase res.time
+LSP <- periodogram(Tay,fast=2,res.time=2)
 
 #Plot the periodogram
-plot(LSP)
+plot(LSP,max=TRUE)
 }
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the

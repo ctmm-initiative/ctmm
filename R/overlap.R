@@ -79,6 +79,8 @@ overlap.ctmm <- function(object,CTMM,level=0.95,...)
   else
   { VAR <- VAR + grad[8:10] %*% CTMM1$COV[1:3,1:3] %*% grad[8:10] }
   
+  VAR <- as.numeric(VAR)
+  
   # this quantity is roughly chi-square
   MLE <- BhattacharyyaD(CTMM1,CTMM2)
   CI <- chisq.ci(MLE,COV=VAR,alpha=1-level)

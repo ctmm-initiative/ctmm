@@ -10,8 +10,6 @@ PERIODIC 0.4.0
   + get MoveBank DOI
 
 VIGNETTES & EXAMPLES
-* m0,m1,m2 -> m.iid,m.ou,m.ouf
-* numeric guesses -> ctmm.guess
 * explain effective sample sizes (DOF of summary)
 
 * mc.optimize cross curvature if queue allows space
@@ -24,6 +22,9 @@ Aligned Krige UDs
 pregridder composite dimension?
 
 LOW HANGING FRUIT & Nagging issues
+* abbreviated plot axes labels (can I detect label size relative to plot?)
+* grid fix regression - weight to coarse scale when appropriate
+* detrend mean in correlogram function
 * plot errors with HDOP & error model in CTMM
 * rainbow.telemetry
 * summary.telemetry.list like Dong's
@@ -57,7 +58,7 @@ LOW HANGING FRUIT & Nagging issues
 generalize Gaussian area?
   UDs for both mean and population
   homerange(method=normal)
-time/tube plot 
+time/tube plot
 periodic plot.ctmm
 
 level.UD of summary UD/ctmm return Inf
@@ -92,7 +93,7 @@ Fixed period parameters during fitting?
 
 simulate nsim in both unconditioned and conditionedb by storing all objects
 multiple conditional simulations loop
-More efficient sampler/smoother: 
+More efficient sampler/smoother:
 store propagator results for all time-lags
 store forecast/concurrent estimates
 call vectorized RNG

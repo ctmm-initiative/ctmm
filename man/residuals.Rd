@@ -48,7 +48,29 @@ When calculating correlograms, minimizing bias is more important than producing 
 
 \seealso{ \code{\link{plot.variogram}}, \code{\link{variogram}}. }
 
-%\examples{}
+\examples{
+#Load package and data
+library(ctmm)
+data(buffalo)
+Cilla <- buffalo$Cilla
+
+#fit a model
+GUESS <- ctmm.guess(Cilla,interactive=FALSE)
+FIT <- ctmm.fit(Cilla,GUESS)
+
+#calculate residuals
+RES <- residuals(Cilla,FIT)
+
+#scatter plot of residuals
+plot(RES)
+
+#calculate correlogram of residuals
+# increase the res argument to account for sampling variability
+ACF <- correlogram(RES,res=10)
+
+#plot a day's worth of lags
+plot(ACF[ACF$lag<=24*60^2,],fraction=1)
+}
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

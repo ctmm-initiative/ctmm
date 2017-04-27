@@ -11,8 +11,8 @@ The package is described in Calabrese & Fleming (2016) and its methods are based
 \tabular{ll}{
 Package: \tab ctmm\cr
 Type: \tab Package\cr
-Version: \tab 0.3.6 \cr
-Date: \tab 2017-04-23 \cr
+Version: \tab 0.4.0 \cr
+Date: \tab 2017-04-24 \cr
 License: \tab GPL-3 \cr
 }
 

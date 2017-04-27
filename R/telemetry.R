@@ -105,7 +105,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   else { DATA <- as.POSIXct(object$timestamp,tz=timezone,format=timeformat) }
   DATA <- data.frame(timestamp=DATA)
   
-  COL <- c("animal.ID","individual.local.identifier","deployment.ID","tag.local.identifier","tag.ID","ID")
+  COL <- c("animal.ID","individual.local.identifier","deployment.ID","tag.local.identifier","tag.ID","ID","Name")
   COL <- pull.column(object,COL,as.factor)
   if(length(COL)==0)
   {
@@ -750,26 +750,50 @@ plot.ctmm <- function(model,alpha=0.05,col="blue",...)
 # summarize telemetry data
 summary.telemetry <- function(object,...)
 {
-  result <- attr(object,"info")
-  
-  dt <- stats::median(diff(object$t))
-  units <- unit(dt,"time",thresh=1)
-  result <- c(result,dt/units$scale)
-  names(result)[length(result)] <- paste("sampling interval (",units$name,")",sep="")
-  
-  T <- last(object$t)-object$t[1]
-  units <- unit(T,"time",thresh=1)
-  result <- c(result,T/units$scale)
-  names(result)[length(result)] <- paste("sampling period (",units$name,")",sep="")
-  
-  lon <- c(min(object$longitude),max(object$longitude))
-  result <- c(result,list(lon=lon))
-  names(result)[length(result)] <- paste("longitude range")
-  
-  lat <- c(min(object$latitude),max(object$latitude))
-  result <- c(result,list(lat=lat))
-  names(result)[length(result)] <- paste("latitude range")
-  
+  if(class(object)=="telemetry")
+  {
+    result <- attr(object,"info")
+    
+    dt <- stats::median(diff(object$t))
+    units <- unit(dt,"time",thresh=1)
+    result <- c(result,dt/units$scale)
+    names(result)[length(result)] <- paste0("sampling interval (",units$name,")")
+    
+    P <- last(object$t)-object$t[1]
+    units <- unit(P,"time",thresh=1)
+    result <- c(result,P/units$scale)
+    names(result)[length(result)] <- paste0("sampling period (",units$name,")")
+    
+    lon <- c(min(object$longitude),max(object$longitude))
+    result <- c(result,list(lon=lon))
+    names(result)[length(result)] <- "longitude range"
+    
+    lat <- c(min(object$latitude),max(object$latitude))
+    result <- c(result,list(lat=lat))
+    names(result)[length(result)] <- "latitude range"
+  }
+  else if(class(object)=="list")
+  {
+    # NAME <- sapply(object,function(o){ attr(o,"info")$identity })
+    DT <- sapply(object,function(o){ stats::median(diff(o$t)) })
+    P <- sapply(object,function(o){ last(o$t) - o$t[1] })
+    lon <- sapply(object, function(o){ stats::median(o$longitude) })
+    lat <- sapply(object, function(o){ stats::median(o$latitude) })
+    
+    result <- data.frame(interval=DT,period=P,longitude=lon,latitude=lat)
+    
+    # unit conversions
+    COL <- 1
+    units <- unit(stats::median(DT),"time",thresh=1,concise=TRUE)
+    result[,COL] <- result[,COL]/units$scale
+    colnames(result)[COL] <- paste0("interval (",units$name,")")
+    
+    COL <- 2
+    units <- unit(stats::median(P),"time",thresh=1,concise=TRUE)
+    result[,COL] <- result[,COL]/units$scale
+    colnames(result)[COL] <- paste0("period (",units$name,")")
+  }
+    
   return(result)
 }
 #methods::setMethod("summary",signature(object="telemetry"), function(object,...) summary.telemetry(object,...))

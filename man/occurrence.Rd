@@ -44,18 +44,16 @@ In the case of coarse grids, the value of \code{PDF} in a grid cell actually cor
 # Load package and data
 library(ctmm)
 data(buffalo)
-cilla <- buffalo[[1]]
+Cilla <- buffalo$Cilla
 
-# Fit a continuous-velocity model with tau ~ c(10 days, 1 hour)
-# see help(variogram.fit)
-GUESS <- ctmm(tau=c(10*24*60^2,60^2))
-FIT <- ctmm.fit(cilla,GUESS)
+GUESS <- ctmm.guess(Cilla,interactive=FALSE)
+FIT <- ctmm.fit(Cilla,GUESS)
 
 # Compute occurence distribution
-UD <- occurrence(cilla,FIT)
+UD <- occurrence(Cilla,FIT)
 
-# Plot data with UD
-plot(cilla,UD=UD,col.level=NA)
+# Plot occurrence UD
+plot(UD,col.level=NA)
 }}
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the

@@ -163,6 +163,27 @@ This function is analogous to <code>acf</code>, but can handle missing data and 
     <p><code><a href='plot.variogram.html'>plot.variogram</a></code>, <code><a href='variogram.html'>variogram</a></code>.</p>
     
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='co'>#Load package and data</span>
+<span class='fu'>library</span>(<span class='no'>ctmm</span>)
+<span class='fu'>data</span>(<span class='no'>buffalo</span>)
+<span class='no'>Cilla</span> <span class='kw'>&lt;-</span> <span class='no'>buffalo</span>$<span class='no'>Cilla</span>
+
+<span class='co'>#fit a model</span>
+<span class='no'>GUESS</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='variogram.fit.html'>ctmm.guess</a></span>(<span class='no'>Cilla</span>,<span class='kw'>interactive</span><span class='kw'>=</span><span class='fl'>FALSE</span>)
+<span class='no'>FIT</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='ctmm.fit.html'>ctmm.fit</a></span>(<span class='no'>Cilla</span>,<span class='no'>GUESS</span>)
+
+<span class='co'>#calculate residuals</span>
+<span class='no'>RES</span> <span class='kw'>&lt;-</span> <span class='fu'>residuals</span>(<span class='no'>Cilla</span>,<span class='no'>FIT</span>)
+
+<span class='co'>#scatter plot of residuals</span>
+<span class='fu'><a href='plot.telemetry.html'>plot</a></span>(<span class='no'>RES</span>)</div><img src='residuals.ctmm-2.png' alt='' width='540' height='400' /><div class='input'>
+<span class='co'>#calculate correlogram of residuals</span>
+<span class='co'># increase the res argument to account for sampling variability</span>
+<span class='no'>ACF</span> <span class='kw'>&lt;-</span> <span class='fu'>correlogram</span>(<span class='no'>RES</span>,<span class='kw'>res</span><span class='kw'>=</span><span class='fl'>10</span>)
+
+<span class='co'>#plot a day's worth of lags</span>
+<span class='fu'><a href='plot.telemetry.html'>plot</a></span>(<span class='no'>ACF</span>[<span class='no'>ACF</span>$<span class='no'>lag</span><span class='kw'>&lt;=</span><span class='fl'>24</span>*<span class='fl'>60</span>^<span class='fl'>2</span>,],<span class='kw'>fraction</span><span class='kw'>=</span><span class='fl'>1</span>)</div><img src='residuals.ctmm-4.png' alt='' width='540' height='400' /></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
@@ -176,7 +197,9 @@ This function is analogous to <code>acf</code>, but can handle missing data and 
       <li><a href="#note">Note</a></li>
 
       <li><a href="#see-also">See also</a></li>
-          </ul>
+      
+      <li><a href="#examples">Examples</a></li>
+    </ul>
 
     <h2>Author</h2>
      C. H. Fleming

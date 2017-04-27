@@ -47,15 +47,14 @@ library(ctmm)
 data(buffalo)
 
 # Extract movement data for a single animal
-cilla <- buffalo[[1]]
+Cilla <- buffalo$Cilla
 
-# Find the best OU movement model
-# also see help(variogram.fit)
-GUESS <- ctmm(tau=6*24*60^2)
-FIT <- ctmm.fit(cilla,GUESS)
+# Fit a movement model
+GUESS <- ctmm.guess(Cilla,interactive=FALSE)
+FIT <- ctmm.fit(Cilla,GUESS)
 
 # Estimate and summarize the AKDE
-UD <- akde(cilla,FIT)
+UD <- akde(Cilla,FIT)
 summary(UD)
 }}
 

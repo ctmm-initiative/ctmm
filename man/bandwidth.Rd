@@ -56,20 +56,20 @@ D. Marcotte. (1996). Fast variogram computation with FFT. \emph{Computers and Ge
 
 \seealso{ \code{\link{akde}}, \code{\link{ctmm.fit}} }
 
-\examples{\donttest{
-# Load package and data
-library(ctmm)
-data(buffalo)
-cilla <- buffalo[[1]]
-
-# Fit a continuous-velocity model with tau ~ c(10 days, 1 hour)
-# see help(variogram.fit)
-GUESS <- ctmm(tau=c(10*24*60^2,60^2))
-FIT <- ctmm.fit(cilla,GUESS)
-
-# Optimize bandwidth matrix
-H <- bandwidth(cilla,FIT,verbose=TRUE)
-}}
+%\examples{\donttest{
+%# Load package and data
+%library(ctmm)
+%data(buffalo)
+%cilla <- buffalo[[1]]
+%
+%# Fit a continuous-velocity model with tau ~ c(10 days, 1 hour)
+%# see help(variogram.fit)
+%GUESS <- ctmm(tau=c(10*24*60^2,60^2))
+%FIT <- ctmm.fit(cilla,GUESS)
+%
+%# Optimize bandwidth matrix
+%H <- bandwidth(cilla,FIT,verbose=TRUE)
+%}}
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

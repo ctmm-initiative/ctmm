@@ -50,10 +50,10 @@ library(ctmm)
 data(buffalo)
 
 # Extract movement data for a single animal
-cilla <- buffalo[[1]]
+Cilla <- buffalo$Cilla
 
 # Calculate variogram
-SVF <- variogram(cilla)
+SVF <- variogram(Cilla)
 
 # Plot the variogram
 plot(SVF)

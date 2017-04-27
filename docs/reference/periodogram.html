@@ -11,8 +11,8 @@
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
-<link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
 <!-- Font Awesome icons -->
@@ -25,12 +25,14 @@
 <script src="../pkgdown.js"></script>
 
 <!-- mathjax -->
-<script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+<script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
 <!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
+
+
   </head>
 
   <body>
@@ -96,50 +98,79 @@
     <p>This function calculates isotropic Lomb-Scargle periodogram (LSP, Scargle, 1982) from a telemetry object. One of two algorithms is used. The slow \(O(n^2)\) algorithm vectorizes the exact relations of Scargle (1982), while the fast \(O(n \log n)\) algorithm uses the FFT method described in Péron et al (2016). The latter method is exact if the data are evenly scheduled, permitting gaps, and otherwise it can be made arbitrarily precise via the <code>res.time</code> option.</p>
     
 
-    <pre><span class='fu'>periodogram</span>(<span class='no'>data</span>,<span class='kw'>CTMM</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>dt</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>res.freq</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>res.time</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>fast</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>axes</span><span class='kw'>=</span><span class='fu'>c</span>(<span class='st'>"x"</span>,<span class='st'>"y"</span>))
+    <pre class="usage"><span class='fu'>periodogram</span>(<span class='no'>data</span>,<span class='kw'>CTMM</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>dt</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>res.freq</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>res.time</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>fast</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>axes</span><span class='kw'>=</span><span class='fu'>c</span>(<span class='st'>"x"</span>,<span class='st'>"y"</span>))
 
 <span class='co'># S3 method for periodogram</span>
 <span class='fu'><a href='plot.telemetry.html'>plot</a></span>(<span class='no'>x</span>,<span class='kw'>max</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>diagnostic</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>col</span><span class='kw'>=</span><span class='st'>"black"</span>,<span class='kw'>transparency</span><span class='kw'>=</span><span class='fl'>0.25</span>,<span class='kw'>grid</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
-    <dl class="dl-horizontal">
-      <dt>data</dt>
-      <dd> <code>telemetry</code> data object or list of such objects. </dd>
-      <dt>CTMM</dt>
-      <dd> An optional <code>ctmm</code> model object for specifying the mean. </dd>
-      <dt>dt</dt>
-      <dd>Sampling interval for frequency cutoff.</dd>
-      <dt>res.freq</dt>
-      <dd>Multiplier to inflate the frequency resolution.</dd>
-      <dt>res.time</dt>
-      <dd>Integer multiplier to inflate the temporal resolution. Useful when <code>fast</code>&gt;0 and the sampling rate is variable.</dd>
-      <dt>fast</dt>
-      <dd>Use the exact algorithm if FALSE, the FFT algorithm if TRUE, and further inflate the frequency resolution to a power of two sample size if <code>fast=2</code>.</dd>
-      <dt>axes</dt>
-      <dd>Array of axes to calculate an average (isotropic) variogram for.</dd>
-      <dt>x</dt>
-      <dd>Output object of <code>periodogram</code>.</dd>
-      <dt>max</dt>
-      <dd>Plot only the local maxima of the periodogram. Use only with <code>res&gt;1</code>.</dd>
-      <dt>diagnostic</dt>
-      <dd>Plot the sampling schedule&#39;s periodogram to check for spurious periodicities.</dd>
-      <dt>col</dt>
-      <dd>Color of periodogram.</dd>
-      <dt>transparency</dt>
-      <dd>Adds transparency to clustered data if greater than zero. Should be less than one.</dd>
-      <dt>grid</dt>
-      <dd>Whether or not to plot gridlines at common periodicities.</dd>
-      <dt>...</dt>
-      <dd>Optional arguments fed to <code><a href='plot.telemetry.html'>plot</a></code>.</dd>
-    </dl>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>data</th>
+      <td><p><code>telemetry</code> data object or list of such objects.</p></td>
+    </tr>
+    <tr>
+      <th>CTMM</th>
+      <td><p>An optional <code>ctmm</code> model object for specifying the mean.</p></td>
+    </tr>
+    <tr>
+      <th>dt</th>
+      <td><p>Sampling interval for frequency cutoff.</p></td>
+    </tr>
+    <tr>
+      <th>res.freq</th>
+      <td><p>Multiplier to inflate the frequency resolution.</p></td>
+    </tr>
+    <tr>
+      <th>res.time</th>
+      <td><p>Integer multiplier to inflate the temporal resolution. Useful when <code>fast</code>&gt;0 and the sampling rate is variable.</p></td>
+    </tr>
+    <tr>
+      <th>fast</th>
+      <td><p>Use the exact algorithm if FALSE, the FFT algorithm if TRUE, and further inflate the frequency resolution to a power of two sample size if <code>fast=2</code>.</p></td>
+    </tr>
+    <tr>
+      <th>axes</th>
+      <td><p>Array of axes to calculate an average (isotropic) variogram for.</p></td>
+    </tr>
+    <tr>
+      <th>x</th>
+      <td><p>Output object of <code>periodogram</code>.</p></td>
+    </tr>
+    <tr>
+      <th>max</th>
+      <td><p>Plot only the local maxima of the periodogram. Use only with <code>res&gt;1</code>.</p></td>
+    </tr>
+    <tr>
+      <th>diagnostic</th>
+      <td><p>Plot the sampling schedule's periodogram to check for spurious periodicities.</p></td>
+    </tr>
+    <tr>
+      <th>col</th>
+      <td><p>Color of periodogram.</p></td>
+    </tr>
+    <tr>
+      <th>transparency</th>
+      <td><p>Adds transparency to clustered data if greater than zero. Should be less than one.</p></td>
+    </tr>
+    <tr>
+      <th>grid</th>
+      <td><p>Whether or not to plot gridlines at common periodicities.</p></td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td><p>Optional arguments fed to <code><a href='plot.telemetry.html'>plot</a></code>.</p></td>
+    </tr>
+    </table>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>If no <code>dt</code> is specified, the median sampling interval is used. This is typically a good assumption for most data, even when there are gaps and this choice corresponds to the discrete Fourier transform (DFT) periodogram for evenly-sampled data.
 <!-- %If no \code{T} is specified, the full sampling period is used.  --></p>
-    <p>At default resolution the frequency grid interval is given by <code>1/(2*(range(data$t)+dt))</code> and the frequency cutoff is given by <code>1/(2*dt)</code>, both in accordance with the DFT periodogram. Increasing <code>res.freq</code> beyond <code>res.freq=1</code> will make for a smooth periodogram, but sequential frequencies will be highly correlated. The <code>max=TRUE</code> option to <code>plot.periodogram</code> may be useful for <code>res.freq&gt;1</code>. Increasing <code>res.time</code> beyond <code>res.time=1</code> is helpful if there is variability in the sampling rate and <code>fast&gt;0</code>.</p>
-    <p>If a <code>CTMM</code> argument is provided, the ML mean will be detrended from the data prior to calculating the periodogram. Otherwise, the sample mean will be detrended.</p>
-    <p>If a list of <code>telemetry</code> objects are fed into <code>periodogram</code>, then a mean <code>periodogram</code> object will be returned with the default <code>dt</code> and base frequency resolution selected on a worst case basis according to the method described by Péron et al (2016).</p>
+<p>At default resolution the frequency grid interval is given by <code>1/(2*(range(data$t)+dt))</code> and the frequency cutoff is given by <code>1/(2*dt)</code>, both in accordance with the DFT periodogram. Increasing <code>res.freq</code> beyond <code>res.freq=1</code> will make for a smooth periodogram, but sequential frequencies will be highly correlated. The <code>max=TRUE</code> option to <code>plot.periodogram</code> may be useful for <code>res.freq&gt;1</code>. Increasing <code>res.time</code> beyond <code>res.time=1</code> is helpful if there is variability in the sampling rate and <code>fast&gt;0</code>.</p>
+<p>If a <code>CTMM</code> argument is provided, the ML mean will be detrended from the data prior to calculating the periodogram. Otherwise, the sample mean will be detrended.</p>
+<p>If a list of <code>telemetry</code> objects are fed into <code>periodogram</code>, then a mean <code>periodogram</code> object will be returned with the default <code>dt</code> and base frequency resolution selected on a worst case basis according to the method described by Péron et al (2016).</p>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
@@ -148,28 +179,28 @@
     <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
 
     <p>J. D. Scargle. (1952). Studies in astronomical time-series analysis. II. Statistical aspects of spectral analysis of unevenly-sampled data. The Astrophysical Journal, 263, 835-853.</p>
-    <p>G. Péron, C. H. Fleming,  R. C. de Paula, J. M. Calabrese. (2016). Uncovering periodic patterns of space use in animal tracking data with periodograms, including a new algorithm for the Lomb-Scargle periodogram and improved randomization tests. <a href = 'Movement Ecology, 4:19, DOI:10.1186/s40462-016-0084-7'>https://movementecologyjournal.biomedcentral.com/articles/10.1186/s40462-016-0084-7</a>.</p>
+<p>G. Péron, C. H. Fleming,  R. C. de Paula, J. M. Calabrese. (2016). Uncovering periodic patterns of space use in animal tracking data with periodograms, including a new algorithm for the Lomb-Scargle periodogram and improved randomization tests. <a href = 'https://movementecologyjournal.biomedcentral.com/articles/10.1186/s40462-016-0084-7'>Movement Ecology, 4:19, DOI:10.1186/s40462-016-0084-7</a>.</p>
     
     <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
 
-    <p>The LSP is totally inappropriate if you in any way alter the sampling rate within the dataset. Stick with variograms in that case. There is a <code>diagnostic</code> option in <code>plot.periodogram</code> that can check for spurious periodicities that result from an autocorrelated sampling schedule. This plot will not contain any periodicities if the LSP is appropriate.</p>
-    <p><code>res.time&gt;1</code> relies on Lagrange interpolation of the sinusoids (not the data), which can suffer from Runge&#39;s phenomena. <code>periodogram</code> tests for an invalid result and can fail with an error message. For whatever reason, this only seems to happen when <code>res.time=3</code>.</p>
+    <p>The LSP is totally inappropriate if you in any way alter the sampling rate within the dataset. Stick with variograms in that case. There is a <code>diagnostic</code> option in <code>plot.periodogram</code> that can check for spurious periodicities that result from an autocorrelated sampling schedule. This plot will not contain any periodicities if the LSP is appropriate.
+    <code>res.time&gt;1</code> relies on Lagrange interpolation of the sinusoids (not the data), which can suffer from Runge's phenomena. <code>periodogram</code> tests for an invalid result and can fail with an error message. For whatever reason, this more frequently seems to happen when <code>res.time=3</code>.</p>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='co'>#Load package and data</span>
 <span class='fu'>library</span>(<span class='no'>ctmm</span>)
-<span class='fu'>data</span>(<span class='no'>buffalo</span>)
+<span class='fu'>data</span>(<span class='no'>wolf</span>)
 
 <span class='co'>#Extract movement data for a single animal</span>
-<span class='no'>cilla</span> <span class='kw'>&lt;-</span> <span class='no'>buffalo</span><span class='kw'>[[</span><span class='fl'>1</span>]]
+<span class='no'>Tay</span> <span class='kw'>&lt;-</span> <span class='no'>wolf</span>$<span class='no'>Tay</span>
 
-<span class='co'>#Calculate periodogram (fast&gt;0 for a speedy example)</span>
-<span class='co'>#There is drift in the sampling rate here, necessitating res.time&gt;1 with fast&gt;0</span>
-<span class='no'>LSP</span> <span class='kw'>&lt;-</span> <span class='fu'>periodogram</span>(<span class='no'>cilla</span>,<span class='kw'>fast</span><span class='kw'>=</span><span class='fl'>2</span>,<span class='kw'>res.time</span><span class='kw'>=</span><span class='fl'>2</span>)
+<span class='co'>#Calculate periodogram (fast==2 for a speedy example)</span>
+<span class='co'>#There is some variability in the sampling frequency, so we increase res.time</span>
+<span class='no'>LSP</span> <span class='kw'>&lt;-</span> <span class='fu'>periodogram</span>(<span class='no'>Tay</span>,<span class='kw'>fast</span><span class='kw'>=</span><span class='fl'>2</span>,<span class='kw'>res.time</span><span class='kw'>=</span><span class='fl'>2</span>)
 
 <span class='co'>#Plot the periodogram</span>
-<span class='fu'><a href='plot.telemetry.html'>plot</a></span>(<span class='no'>LSP</span>)</div><img src='periodogram-2.png' alt='' width='540' height='400' /></pre>
+<span class='fu'><a href='plot.telemetry.html'>plot</a></span>(<span class='no'>LSP</span>,<span class='kw'>max</span><span class='kw'>=</span><span class='fl'>TRUE</span>)</div><img src='periodogram-2.png' alt='' width='540' height='400' /></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
