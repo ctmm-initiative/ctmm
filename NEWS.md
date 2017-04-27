@@ -5,6 +5,7 @@
   
   * bugfixes in plot.variogram with fitted UEREs
   
+  * bugfixes with OUF/OU fitting & CIs near boundaries
   
   * R 3.4 compatibility fixes
 
