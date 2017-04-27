@@ -1,48 +1,48 @@
 ## ----  fig.show='hold'---------------------------------------------------
 library(ctmm)
 data("buffalo")
-cilla <- buffalo[[1]]
-plot(cilla)
+Cilla <- buffalo$Cilla
+plot(Cilla)
 title("1 Buffalo")
 plot(buffalo,col=rainbow(length(buffalo)))
 title("5 Buffalo")
 
 ## ----  fig.show='hold'---------------------------------------------------
-SVF <- variogram(cilla)
+SVF <- variogram(Cilla)
 plot(SVF,fraction=0.005)
 title("zoomed in")
 plot(SVF,fraction=0.65,level=c(0.5,0.95))
 title("zoomed out")
 
 ## ----  fig.show='hold'---------------------------------------------------
-m0 <- ctmm(sigma=23*1000^2) # 23 km^2 in m^2
-m1 <- ctmm(sigma=23*1000^2,tau=6*24*60^2) # and 6 days in seconds
-plot(SVF,CTMM=m0,fraction=0.65,level=c(0.5,0.95),col.CTMM="red")
-title("m0: IID")
-plot(SVF,CTMM=m1,fraction=0.65,level=c(0.5,0.95),col.CTMM="purple")
-title("m1: OU")
+m.iid <- ctmm(sigma=23*1000^2) # 23 km^2 in m^2
+m.ou <- ctmm(sigma=23*1000^2,tau=6*24*60^2) # and 6 days in seconds
+plot(SVF,CTMM=m.iid,fraction=0.65,level=c(0.5,0.95),col.CTMM="red")
+title("Independent and identically distributed data")
+plot(SVF,CTMM=m.ou,fraction=0.65,level=c(0.5,0.95),col.CTMM="purple")
+title("Ornstein-Uhlenbeck movement")
 
 ## ----  fig.show='hold'---------------------------------------------------
-m2 <- ctmm(sigma=23*1000^2,tau=c(6*24*60^2,1*60^2)) # and 1 hour in seconds
-plot(SVF,CTMM=m1,fraction=0.002,col.CTMM="purple")
-title("m1: OU")
-plot(SVF,CTMM=m2,fraction=0.002,col.CTMM="blue")
-title("m2: OUF")
+m.ouf <- ctmm(sigma=23*1000^2,tau=c(6*24*60^2,1*60^2)) # and 1 hour in seconds
+plot(SVF,CTMM=m.ou,fraction=0.002,col.CTMM="purple")
+title("Ornstein-Uhlenbeck movement")
+plot(SVF,CTMM=m.ouf,fraction=0.002,col.CTMM="blue")
+title("Ornstein-Uhlenbeck-F movement")
 
 ## ----  fig.show='hold'---------------------------------------------------
-plot(SVF,CTMM=m1,fraction=0.65,level=c(0.5,0.95),col.CTMM="purple")
-title("m1: OU")
-plot(SVF,CTMM=m2,fraction=0.65,level=c(0.5,0.95),col.CTMM="blue")
-title("m2: OUF")
+plot(SVF,CTMM=m.ou,fraction=0.65,level=c(0.5,0.95),col.CTMM="purple")
+title("Ornstein-Uhlenbeck movement")
+plot(SVF,CTMM=m.ouf,fraction=0.65,level=c(0.5,0.95),col.CTMM="blue")
+title("Ornstein-Uhlenbeck-F movement")
 
 ## ----  fig.show='hold'---------------------------------------------------
 # simulate fake buffalo with the same sampling schedule
-willa <- simulate(m2,t=cilla$t)
+willa <- simulate(m.ouf,t=Cilla$t)
 plot(willa)
 title("simulation")
 # now calculate and plot its variogram
 SVF2 <- variogram(willa)
-plot(SVF2,CTMM=m2,fraction=0.65,level=c(0.5,0.95),col.CTMM="blue")
+plot(SVF2,CTMM=m.ouf,fraction=0.65,level=c(0.5,0.95),col.CTMM="blue")
 title("simulation")
 
 ## ---- fig.show='hold'----------------------------------------------------
@@ -91,23 +91,23 @@ FITS$ERROR <- ctmm.fit(DATA,GUESS)
 summary(FITS)
 
 ## ----  fig.show='hold'---------------------------------------------------
-M0 <- ctmm.fit(cilla,m0)
-summary(M0)
+M.IID <- ctmm.fit(Cilla,m.iid)
+summary(M.IID)
 
 ## ----  fig.show='hold'---------------------------------------------------
-M1 <- ctmm.fit(cilla,m1)
-summary(M1)
+M.OU <- ctmm.fit(Cilla,m.ou)
+summary(M.OU)
 
 ## ----  fig.show='hold'---------------------------------------------------
-M2 <- ctmm.fit(cilla,m2)
-summary(M2)
+M.OUF <- ctmm.fit(Cilla,m.ouf)
+summary(M.OUF)
 
 ## ----  fig.show='hold'---------------------------------------------------
-FITS <- list(IID=M0,OU=M1,OUF=M2)
+FITS <- list(IID=M.IID,OU=M.OU,OUF=M.OUF)
 summary(FITS)
 
 ## ------------------------------------------------------------------------
-FITZ <- ctmm.select(cilla,m2,verbose=TRUE,level=1)
+FITZ <- ctmm.select(Cilla,m.ouf,verbose=TRUE,level=1)
 summary(FITZ)
 
 ## ----  fig.show='hold'---------------------------------------------------

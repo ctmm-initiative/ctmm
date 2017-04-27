@@ -1,3 +1,13 @@
+0.4.0 2017-04-26
+================
+
+  * summary now works on lists of telemetry objects
+  
+  * bugfixes in plot.variogram with fitted UEREs
+  
+  
+  * R 3.4 compatibility fixes
+
 0.3.6 2017-04-23
 ================
 

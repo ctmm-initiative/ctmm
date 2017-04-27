@@ -48,12 +48,11 @@ library(ctmm)
 data(buffalo)
 
 # Extract movement data for a single animal
-cilla <- buffalo[[1]]
+Cilla <- buffalo$Cilla
 
-# Find the best OU movement model
-# also see help(variogram.fit)
-GUESS <- ctmm(tau=60*60*24*10)
-FIT <- ctmm.fit(cilla,GUESS)
+# fit model
+GUESS <- ctmm.guess(Cilla,interactive=FALSE)
+FIT <- ctmm.fit(Cilla,GUESS)
 
 # Tell us something interpretable
 summary(FIT)

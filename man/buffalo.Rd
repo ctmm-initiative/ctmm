@@ -28,7 +28,7 @@ Movebank Data Repository. DOI:10.5441/001/1.j900f88t
 
 \note{In \code{ctmm} v0.3.2 the erroneous location fix \code{606} was removed from \code{buffalo[[4]]} "Pepper".}
 
-\seealso{ \code{\link{as.telemetry}}, \code{\link{gazelle}}, \code{\link{plot.telemetry}}. }
+\seealso{ \code{\link{as.telemetry}}, \code{\link{gazelle}}, \code{\link{plot.telemetry}}, \code{\link{wolf}}. }
 
 \examples{
 # Load package and data
@@ -36,10 +36,10 @@ library(ctmm)
 data("buffalo")
 
 # Extract movement data for a single animal
-cilla <- buffalo[[1]]
+Cilla <- buffalo$Cilla
 
 # Plot all sampled locations
-plot(cilla)
+plot(Cilla)
 }
 
 \keyword{datasets}

@@ -18,7 +18,7 @@
 
 \bold{\code{ctmm.select} only returns one model with \code{verbose=TRUE}}
 
-{The newer version of \code{ctmm.select} is much more intelligent, necessitated by the exploding number of new model permutations. Any simpler models were judged to be so unlikely that they were not attempted. You can set \code{level=1} to force alternative model fitting, but the additional models should lose badly in model selection (please email me if I am wrong).}
+{The newer version of \code{ctmm.select} is much more intelligent, necessitated by the exploding number of new model permutations. Any simpler models were judged to be so unlikely that they were not attempted. You can set \code{level=1} to force alternative model fitting, but the additional models should lose badly in model selection (please contact me if I am wrong).}
 
 
 \bold{Database corruption, missing functions, and other weird errors}

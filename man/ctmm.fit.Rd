@@ -110,12 +110,10 @@ This is no longer feasible with current versions of \code{ctmm}, as the number o
 # Load package and data
 library(ctmm)
 data(buffalo)
-cilla <- buffalo[[1]]
+Cilla <- buffalo$Cilla
 
-# Fit a continuous-velocity model with tau ~ c(10 days,1 hour)
-# also see help(variogram.fit)
-GUESS <- ctmm(tau=c(10*24*60^2,60^2))
-FIT <- ctmm.fit(cilla,GUESS)
+GUESS <- ctmm.guess(Cilla,interactive=FALSE)
+FIT <- ctmm.fit(Cilla,GUESS)
 
 # some human-readable information
 summary(FIT)

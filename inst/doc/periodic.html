@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="Guillaume Péron, Christen H. Fleming, and Justin M. Calabrese" />
+
+<meta name="date" content="2017-04-26" />
+
+<title>Periodic movement models</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+
+
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Periodic movement models</h1>
+<h4 class="author"><em>Guillaume Péron, Christen H. Fleming, and Justin M. Calabrese</em></h4>
+<h4 class="date"><em>2017-04-26</em></h4>
+
+
+
+<p>In this vignette, we walk through periodogram for movement data and periodic movement model fitting and selection.</p>
+<p>It is assumed that you are already familiar with data preparation with ctmm, as well as the maximum likelihood procedure described in the <code>variogram</code> vignette.</p>
+<p>Our example maned wolf data is already prepared into a <code>telemetry</code> object.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ctmm)
+<span class="kw">data</span>(wolf)
+Tay &lt;-<span class="st"> </span>wolf$Tay
+<span class="kw">plot</span>(Tay)</code></pre></div>
+<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAAEgCAMAAAAjXV6yAAAAaVBMVEUAAAAAADoAAGYAOjoAOpAAZrY6AAA6ADo6Ojo6kNtmAABmADpmAGZmZmZmtrZmtv+QOgCQOmaQZgCQkGaQkNuQtpCQ2/+2ZgC2/7a2///bkDrb/9vb////AAD/tmb/25D//7b//9v///+AKzrcAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAOLklEQVR4nO2di3rjKBKFk95OZpPe3WRv7Rlv4zi8/0OuBCoorkdCSLIzdfprx7oCf4qiiiD7QYuqeji6ArcuAQQkgIAEEJAAAhJAQAIISAABCSAgAQQkgIAEEJAAAhJAQAIISAABCSAgAQQkgIAEEJAAAhJAQAIISAABCSAgAQQkgIAEEJAAAhJAQAIISAABCSAgAQQkgIAEEJAAAhJAQAIISAABCSAgAQQkgIAEEJAAAhJAQAIISAABCSAgAQQkgIAEEJAAAhJAQAIISAABCSAgAQQkgIAEEJAAAhJAQAIISAABCSAgAQQkgIAEEJAAAhJAQAIISAABCSAgAQQkgIAEEJAAAuoM6OFudBSgvrfbTgIISAABfVFAavjXR18AkMqwEEBMBUCdCH0BQFyeiupkRF8NECN0B4A+nt963g5LeUC9vFADoMsUYhYbr6+vPhD99se6cheIO55ePWwxoKHtT/bd53up8SPDl/HHjhaktAdk3h80il3/xpmEW1zX1++/coCWpzgzZXl4QLc/zJ8ef25rQQkBRX7nPgDp88PLNoCm3hNhUFMPU/3YGDUAur6+DK1/GPtQVR/Pf9kS0PRe8b2qo/OZ1ADo9P3Xx/OTPj2hSwY3vkkXY0biACm3t1+WYbQc0PX1bRilhv/FMaxruRmpsGv5HyrYFV/Vxq0N0GmAcz4MECegkl0lC9oN0NC3xkH8+gq7WJdyEynPQDEX5I/3dUJNTvrh8efn+yo+2wEqGlBjcfeXrAYjlRvy2WB2NKDP95fGsprKjaWUCuxl+qE6ZxhObU56x3KZ7EilKOKZttwbiqSzkJrJtWTzq4avpeUy5QFR8KP8Cel16c7uFWUWVJ/I6FxuLOegtTULB4iOFwC1lrezk16ZzSseOk/uiLyPe41hMINrqXH3E7e8nQoNSDNAevJBWQNaoRZAQyf7/uu0bixbBqjUamccity080mZs5vU4qQff57HSHoVoSWA1DRE0WZ0cNo3Acqds2aGqC0OGgDtmIvZhjtEoTVNzlp5QKWhfs9kdQS0azbP8gsdgppsZxr8nalVJj2WgWq3oBOcMetSLlfcuTwpwjINbNYbJSgUe+1e0dgHnSt/9ulZLlfoSpRKPQ45anrNXL9QjaPYw5DQN5TWUG4oGsuZSw4GLkV08nPTDYTuKw6i2Fm5IFHxbkV8Si6oJZ5ucNI/rO0cMuUah4XTDgLDDEhlTKglI2sHdMiUKx+unCNm3UoxBYCYmW1U0enEk8+maoHimf52X8K4DpD3ww4JJWcpIZbjNxBqt6CazoMLt5PW3QGxmIgBovmOkBDzR85nLSW0iZO2k46f75V4u3GYp+Qr7U/Bj8CstPfkDW5ok2SVJh2HWDICtG66g7oXzXv4KDqxGb4R5CHbd7EZyaqbtj499bUgD8j75ZiRpq5EJuS6VkMH2ypZpWODrXXuYt410xbD4QgwNnZTM6e1rMyNklVKRD7fewGa8qjAVEqAAgqRn9oe0P7JKvujTgyIWYzLQtg8mj9Gecl2FT0wWVWR+WjvcCk/V86M3GSIv9xftw+gw5JVD4dbBc/JVJqlBhbXYEL3lKyyfuWdUDSOaWZwdA07ebkR3QkgShRCn6t9mBxYFet45LkDQEu8Udvqjt3/cMgBBcl6HFFTks+cOgGyN/LBU+eKslFs1fC1tFwjn8EnnYuHzdxGKC7k/YuF1LO72n0sXvAEGCDFCDiDYA13KYmf6SAT8+f3q+ihy1+CqQ3te0mUneoo/NHRccUtsXdF/Ykfv60b4ZeVq7n74IaQS1SpI+nEo/Nu6Hpj14oyQM/tTrolm3dRYjClEfkejkgFl6WUFg32LV1s3erE2eWGv+SgO4UZq3tPzZ+cD12XnznqV9HoxB2ctPvls9E46TJB09247wApGtJCLsyMOlQ0e+IOTpo8CfkcnfPIwR7mljS7jg7mnFGPiuZP3MlJK8fIbGXkXbaLBaORn/9oNKGDl+Charq2ZNqdCaHjUMnHP0GYuS2gPqoBYrXPALK7C0N4nl4ykzSfz9GAEvnfeuiFOKCcS/FNj8a6HKAFfJoAmUBok/kglQGklwBKeOQhLZjzaJlRNH9T7Tej6PuTA6SDNFR7ZnRe1PqcJYUmpXW4q6WiM0+kYf7ca046dDjaT2vosLHsNGBCmZFdc0A+kFhU0ZknUqDYe3WHYnaSSzPdrz2PJxNqczsKep1L12o1VKWKohbNsqDPdxAKZAG5H7msgujV7YdZnc71L3cbVmRezYDm+KAzLf24lNaAFMsl/5P51avwWEIlOE17Jx/MynLDmdPHNhnFWDZSsrN6qhF0kziiyY3Z6Q5/H+VGPmeN2hGEkDaJg1g+e1m4eKHihFx4x/foBJn38SEgyllogGTlhdMGje1evvzFaKkF0a87iloi6yA6jElqUlF24buWYhTS4WwPQN5BLfVB1JJ8sJdu5fw1izDzgGYO8NWKlk6c8cE3wXnFkS5brnJjmA7ClgRHNQ4iwGnGRqUUAWX230wuxsIgAAhFiZkRcOqTU0m5QFqx13pFZ7donbKAXDVpHAoTrzi0RqB0EEPV8RQ73c0AsuKDsHZmVbKdYkidOzzdkQCFjrnslBb7oJctn1llY7nd1uRdXYuB+ejiSfb+boQP46Cy/74tC4prx/MzFspMDc4blWPJsn7tj/BSwhjI9e8ZFa216Pof+/Pzn1suXmC/WBe+uBjQG0WSZjmbi4zHwUzKcBseED+rJZs3oc1l29UdWUeaZBphvMShpeG266v+joXoUa0DZII//2F4jZpXbhjz+giZ/EwuM6PTox7F7Iv2BYA0A7S8ouGJl7Ueena5yuUeflfG6QS7XdDsPfx0LwbEAeJFaeqyyysanVhMIOar7qR5PSNAmbxDp2bkLItYKfczKk8FP2Ojah3FLq0T0iCb9xUNnQUPjKY31GE4jcCEmEtyXc8bHL934H1UyGerXGzm7TLKxfwckH+TV5L6+9Bnul7x+2jOPgwCQEVnt6hNzbfzEXFiLUkY4Hhl/G8eUNzBbgNQbkgvbQXRIh+8PaEQkNY6BVS4P78oV9EZLZr7Wa4zbzfVKzmauFL+ngYiH0trT8iNXbyXpfcvbq0FNPPTgGffzlYqPayyxzwZ7ZxL6HiCvRmXy29VPlKqaFU8UESfJ73odnXlANGG90BkRannTu7hbxWZUYHXLfigmpJWqHg7DBPzgOKBK3PvewUUigNicaRPyTKJBwsSU4NM79dc0WUtmvdYeKFOc+TjPRe75AEFQUDGiFAdNvqrxrzHwlHlVLLJAkX+ykfzBBB7v6QNvKJdT9T9HguvAWLul7KsICQqeqSF2vQvq+lj4U23CxSEfCwcJnMpDWYM0CJOTYs40VTQJo+Fp+YUbbsoSOuwY5GTpus2BmQ9cH2+Y4vHwmGzXGZqtzwZpaP+uESNXQwxKj0WvtnXRmg+sNGQ7mbHUkA8xa+q2Qed1014bAHIj1Q+yrZHMidvC+hiwhz07GHtoYUNAGkOKKCS6WGze1oDoHHSzJIByxT3BuSjgGRAVxzQ5qPY3CXSewFig3084RM66OT8GdoyF9sfUHqo7GlmYvoKgOoqGc8NANrxdrPUlI39yQAt158JUJMEEJAAAhJAQIcBuhsdBGhpCRsdXHPpmpObJIDWlCCABNC6EgSQAFpXggASQOtKEEB3LwEEJICABBCQAAISQEACCEgAAQkgIAEEJICABBCQAALaBVDx217MZ6Ll14pcKp+GVbkMlWg+Z2vJk917ALqUPk7n831gcM7W9zIcuRQIVS5DJerLcMA+LDBTOwAy31uWPfLxPC6aza25tmuQTvmGlC+DJdr7Lvkexx0Anb//q7oqNGcokEH+Mlji8s+E3h7QUKf6N06dMhhsQ6qrSXOXwRIv335/RcvlQ20OaDTqKqDsxxlY86gYSeVTEGolnsdF4Is+vn9zQOg7yy5FH10FlL8Mlnh+hJYZaWtApq9UABUMAXWxyqdoVEu0Xs16uHnaEJB58OM8rTaJazQ9FXIuNBQ46dJldOdciUYW+RJXfWygWPzk2OowP+NDr0sl2kfebqmLGZWq+/FcNIRaoFi5DJVoHNSib8g4FNDUG7IczuVUo3YZKNE+sHNTw/y9SwABCSAgAQQkgIAEEJAAAhJAQAIISAABCSAgAQQkgIAEEJAAAhJAQAIISAABCSAgAQQkgIAEEJAAAhJAQAIISAABCSCg4wF9vr9N30xl1l6wL3Mt6VI64/pj3ZfB53Q8oPMTfXWXEQZUOeOy6qvOszockLWaToAGa+xVL9IhgMaVYwTlQu/PDy+ui01rVD6e/zGuSR0Xx5sFZ2bvuDV+Jro95frj3w/f/jBfU21O6W5ChwAaVzBRU8ZVZCOgcdUYAbqY908DC7OkfkA4Ih0XYI5rpwxCvzHcxyzYM19tVVsX26Zjutjl2++TPzXGM7yY5k2A7Aqwoa1mKdn0MnnyweB8pzQbL3xJ3ZLlmfN0kA860SpeYw7X17+aVV8TINvK4dW8oRdrHIbUmw42hmuIEPdmfXQQIPdVb6b519fH/44LTwNA9MYBotWrthOyjenxH3vR1wD0+f539/H4b7ZZJ/MYDrSg6ZJgw+r0+PPrADp//987xYbWBxkOqQ9igByKIJz0gMy7L+KDjA1MJkSj2PhwSjqKMUD2MYLBTmxQ4DZo7PIvXXUIoJNZrGzdtIuDBiJpHMQBuS8kOFEcZC41K8NpVfAXiYO4ZuReB93M6nBAYy7WTV8xF+uZP33NbP7GJYCABBCQAAISQEACCEgAAQkgIAEEJICABBCQAAISQEACCEgAAQkgIAEEJICABBCQAAISQED/Byci4fN7KOxmAAAAAElFTkSuQmCC" /><!-- --></p>
+<div id="non-parametric-approach-periodograms" class="section level3">
+<h3>Non-parametric approach: Periodograms</h3>
+<p>Before anything else, we want to plot the data in a way that makes periodic patterns apparent. This is the periodogram.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">LSP &lt;-<span class="st"> </span><span class="kw">periodogram</span>(Tay,<span class="dt">fast=</span><span class="dv">2</span>,<span class="dt">res.time=</span><span class="dv">2</span>)</code></pre></div>
+<p>The <code>fast=2</code> option requests the use of the (much) faster FFT-based algorithm and furthermore samples a highly composite number of times. Set the argument to FALSE to revert to Scargle<code>s original algorithm, which involves fewer numerical approximations.  The</code>res.time<code>argument increases the resolution of the temporal grid. The algorithm defaults to adequate resolution for regularly scheduled data (permitting gaps), while variable sampling rates require</code>res.time&gt;1` to resolve the fine scale spectrum correctly.</p>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

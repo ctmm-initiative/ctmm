@@ -71,18 +71,16 @@ In v0.3.2, this method was further improved to use \code{DOF.area} from the Gaus
 # Load package and data
 library(ctmm)
 data(buffalo)
-cilla <- buffalo[[1]]
+Cilla <- buffalo$Cilla
 
-# Fit a continuous-velocity model with tau ~ c(10 days, 1 hour)
-# see help(variogram.fit)
-GUESS <- ctmm(tau=c(10*24*60^2,60^2))
-FIT <- ctmm.fit(cilla,GUESS)
+GUESS <- ctmm.guess(Cilla,interactive=FALSE)
+FIT <- ctmm.fit(Cilla,GUESS)
 
 # Compute akde object
-UD <- akde(cilla,FIT)
+UD <- akde(Cilla,FIT)
 
 # Plot data with AKDE contours
-plot(cilla,UD=UD)
+plot(Cilla,UD=UD)
 }}
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the

@@ -65,7 +65,7 @@ C. H. Fleming and W. F. Fagan and T. Mueller and K. A. Olson and P. Leimgruber a
 \seealso{ \code{\link{ctmm.fit}} }
 
 \examples{
-#Load package and data
+#Load package
 library(ctmm)
 
 #prepare simulation parameters
