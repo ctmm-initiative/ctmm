@@ -675,7 +675,15 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", 
     SVF.name <- SVF.scale$name
     SVF.scale <- SVF.scale$scale
 
-    ylab <- paste("Semi-variance ", "(", SVF.name, ")", sep="")
+    SVF.name <- c(SVF.name,unit(max.SVF,"area",concise=TRUE)$name)
+    SVF.name[3] <- SVF.name[2]
+
+    ylab <- "Semi-variance"
+    ylab <- c(ylab,ylab,"SVF")
+
+    # range of possible ylabs with decreasing size
+    ylab <- paste(ylab, " (", SVF.name, ")", sep="")
+
   }
   else # ACF plot
   {
@@ -687,6 +695,7 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", 
 
     SVF.scale <- 1
     ylab <- "Autocorrelation"
+    ylab <- c(ylab,ylab,"ACF")
   }
 
   # choose lag units
@@ -694,14 +703,40 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", 
   lag.name <- lag.scale$name
   lag.scale <- lag.scale$scale
 
-  xlab <- paste("Time-lag ", "(", lag.name, ")", sep="")
+  lag.name <- c(lag.name,unit(max.lag,"time",thresh=2,concise=TRUE)$name)
+  lag.name[3] <- lag.name[2]
+
+  xlab <- "Time-lag"
+  xlab <- c(xlab,xlab,"Lag")
+
+  xlab <- paste(xlab, " (", lag.name, ")", sep="")
+
+  # choose appropriately sized axis labels for base plot
+  lab <- rbind(xlab,ylab)
+
+  #work out string width max
+  max.cex.w <- lab # copy dimensions and preserve below
+  max.cex.w[] <- par('pin')/strwidth(lab,'inches')
+  #work out string height max
+  max.cex.h <- lab
+  max.cex.h[] <- (par('mai')[1:2]/par('mar')[1:2])/strheight(lab,'inches')
+
+  # min of x & y
+  max.cex.w <- pmin(max.cex.w[1,],max.cex.w[2,])
+  max.cex.h <- pmin(max.cex.h[1,],max.cex.h[2,])
+  # min of width and height
+  max.cex <- pmin(max.cex.w,max.cex.h)
+
+  lab <- 1
+  if(max.cex[lab]<1) { lab <- lab + 1 }
+  if(max.cex[lab]<1) { lab <- lab + 1 }
 
   # unit convert scales if supplied
   if(!is.null(xlim)) { xlim <- xlim/lag.scale }
   if(!is.null(ylim)) { ylim <- ylim/SVF.scale }
 
   # fix base plot layer
-  plot(c(0,max.lag/lag.scale),c(min.SVF/SVF.scale,max.SVF/SVF.scale), xlim=xlim, ylim=ylim, xlab=xlab, ylab=ylab, col=grDevices::rgb(1,1,1,0), ...)
+  plot(c(0,max.lag/lag.scale),c(min.SVF/SVF.scale,max.SVF/SVF.scale), xlim=xlim, ylim=ylim, xlab=xlab[lab], ylab=ylab[lab], col=grDevices::rgb(1,1,1,0), ...)
 
   # color array for plots
   col <- array(col,n)
