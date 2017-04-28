@@ -11,16 +11,16 @@ ctmm <- function(tau=NULL,isotropic=FALSE,range=TRUE,circle=FALSE,error=FALSE,ax
   info <- List$info
   List$info <- NULL
   if(is.null(info)) { info=list() }
-  
+
   List$error <- error
   List$circle <- circle
   List$axes <- axes
-  
+
   # put covariance into universal format
   if(length(axes)==1) { isotropic <- TRUE }
   if(!is.null(List$sigma)) { List$sigma <- covm(List$sigma,isotropic=isotropic,axes=axes) }
   List$isotropic <- isotropic
-  
+
   # label tau elements
   K <- length(tau)
   CPF <- List$CPF
@@ -35,24 +35,24 @@ ctmm <- function(tau=NULL,isotropic=FALSE,range=TRUE,circle=FALSE,error=FALSE,ax
   List$CPF <- CPF
   if(CPF && length(tau)) { names(tau) <- c("period","decay") }
   List$tau <- tau
-  
+
   # label parameter covariance matrix
   # cov.names <- c("area",names(tau))
   # if(circle) { cov.names <- c(cov.names,"circle") }
   # List$COV can resolve to List$COV.mu apparently
   # if(!is.null(List[["COV"]])) { dimnames(List$COV) <- list(cov.names,cov.names) }
-  
+
   if(length(tau))
   {
     if(tau[1]==Inf)
     { range <- FALSE }
     else
     { range <- TRUE }
-  }  
+  }
   List$range <- range
-  
+
   if(!range & circle) { stop("Inconsistent model options: range=FALSE, circle=TRUE.") }
-  
+
   # default mean function
   if(is.null(List$mean)) { List$mean <- "stationary" }
 
@@ -62,16 +62,16 @@ ctmm <- function(tau=NULL,isotropic=FALSE,range=TRUE,circle=FALSE,error=FALSE,ax
     List$mu <- rbind(List$mu)
     colnames(List$mu) <- axes
   }
-  
+
   # FIX THIS
   #if(!is.null(List$COV.mu)) { dimnames(List$COV.mu) <- list(axes,axes) }
-  
+
   # supply default parameters / check sanity / label dimensions
   # drift <- get(List$mean)
   # List <- drift@clean(List)
 
   result <- new.ctmm(List,info=info)
-  
+
   return(result)
 }
 #print.ctmm <- function(x,...) { print.listof(x,...) }
@@ -92,12 +92,12 @@ covm <- function(pars,isotropic=FALSE,axes=c("x","y"))
   { return(NULL) }
   else if(class(pars)=="covm")
   { return(pars) }
-  
+
   if(length(axes)==1)
   {
     sigma <- array(pars,c(1,1))
     pars <- sigma[1,1]
-    
+
     names(pars) <- c("area")
   }
   else if(length(axes)==2)
@@ -114,19 +114,19 @@ covm <- function(pars,isotropic=FALSE,axes=c("x","y"))
       sigma <- pars
       pars <- sigma.destruct(sigma)
     }
-    
+
     # isotropic error check
     if(isotropic)
     {
       pars <- c(mean(diag(sigma)),0,0)
       sigma <- diag(pars[1],2)
     }
-    
+
     names(pars) <- c("area","eccentricity","angle")
   }
 
   dimnames(sigma) <- list(axes,axes)
-  
+
   new.covm(sigma,par=pars,isotropic=isotropic)
 }
 
@@ -144,33 +144,33 @@ sigma.construct <- function(pars)
     e <- pars[2]
     theta <- pars[3]
   }
-  
+
   u <- c(cos(theta),sin(theta))
   v <- c(-sin(theta),cos(theta))
   e <- exp(e/2)
-  
+
   sigma <- GM * ( (u%o%u)*e + (v%o%v)/e )
-  
+
   return(sigma)
-} 
+}
 
 # reduce covariance matrix to 1-3 parameters
 sigma.destruct <- function(sigma)
 {
   stuff <- eigen(sigma)
-  
+
   e <- stuff$values
   GM <- sqrt(prod(e))
   e <- log(e[1]/e[2])
-  
+
   if(e==0)
   { theta <- 0 }
   else
   {
     theta <- stuff$vectors[,1]
     theta <- atan(theta[2]/theta[1])
-  } 
-  
+  }
+
   return(c(GM,e,theta))
 }
 
@@ -180,15 +180,15 @@ COV.covm <- function(sigma,n,k=1)
   isotropic <- sigma@isotropic
   par <- sigma@par
   sigma <- methods::getDataPart(sigma)
-  
+
   A <- par["area"]
   ecc <- par["eccentricity"]
   theta <- par["angle"]
-  
+
   DOF.mu <- n
   COV.mu <- sigma/n
-  
-  if(isotropic)
+
+  if(isotropic || length(sigma)==1)
   {
     COV <- cbind( A^2/n )
     dimnames(COV) <- list("area","area")
@@ -197,27 +197,27 @@ COV.covm <- function(sigma,n,k=1)
   {
     # orient eccentricity
     ecc <- sign(sigma[1,1]-sigma[2,2]) * ecc
-    
+
     # covariance matrix for c( sigma_xx , sigma_yy , sigma_xy )
     n <- n-k
     COV <- diag(0,3)
     COV[1:2,1:2] <- 2/n * sigma^2
     COV[3,] <- c( 2*sigma[1,1]*sigma[1,2] , 2*sigma[2,2]*sigma[1,2] , sigma[1,1]*sigma[2,2]+sigma[1,2]^2 )/n
     COV[,3] <- COV[3,]
-    
+
     # gradient matrix d sigma / d par
     grad <- c( sigma[1,1] , sigma[2,2] , sigma[1,2] )/A
     grad <- cbind( grad, A/2*c( sinh(ecc/2)+cosh(ecc/2)*cos(2*theta) , sinh(ecc/2)-cosh(ecc/2)*cos(2*theta) , cosh(ecc/2)*sin(2*theta) ) )
     grad <- cbind( grad, c( -2*sigma[1,2] , 2*sigma[1,2] , A*sinh(ecc/2)*2*cos(2*theta) ) )
-    
+
     # gradient matrix d par / d sigma via inverse function theorem
     grad <- solve(grad)
-    
+
     COV <- (grad) %*% COV %*% t(grad)
     COV <- He(COV) # asymmetric errors
     dimnames(COV) <- list(names(par),names(par))
   }
-  
+
   return(list(COV=COV,COV.mu=COV.mu,DOF.mu=DOF.mu))
 }
 
@@ -255,35 +255,35 @@ ctmm.prepare <- function(data,CTMM,REML=FALSE)
   K <- length(CTMM$tau)  # dimension of hidden state per spatial dimension
   axes <- CTMM$axes
   range <- TRUE
-  
+
   if(K>0)
-  { 
+  {
     # numerical limit for rangeless processes
     if(CTMM$tau[1]==Inf)
     {
       range <- FALSE
       # aim for OU/OUF decay that is half way to machine epsilon
-      CTMM$tau[1] <- log(2^((.Machine$double.digits-1)/2))*(last(data$t)-data$t[1]) 
+      CTMM$tau[1] <- log(2^((.Machine$double.digits-1)/2))*(last(data$t)-data$t[1])
       # CTMM$tau[1] <- (last(data$t)-data$t[1]) / (.Machine$double.eps)^(1/4)
-      
+
       # diffusion -> variance
       if(!is.null(CTMM$sigma))
-      { 
+      {
         TAU <- CTMM$tau[1]
         CTMM$sigma <- CTMM$sigma*TAU
         CTMM$sigma@par[1] <- CTMM$sigma@par[1]*TAU
       }
     }
-    
+
     # continuity reduction
     CTMM$tau = CTMM$tau[CTMM$tau!=0]
     K <- length(CTMM$tau)
   }
   # I am this lazy
   if(K==0) { K <- 1 ; CTMM$tau <- 0 }
-  
+
   CTMM$range <- range
-  
+
   # evaluate mean function for this data set if no vector is provided
   if(is.null(CTMM$mean.vec))
   {
@@ -297,7 +297,7 @@ ctmm.prepare <- function(data,CTMM,REML=FALSE)
       CTMM$REML.loglike <- (length(axes)/2)*(log(det(UU)) + ncol(U)*log(2*pi))
     }
   }
-  
+
   return(CTMM)
 }
 
@@ -307,22 +307,22 @@ ctmm.repair <- function(CTMM)
   if(!CTMM$range)
   {
     K <- length(CTMM$tau)
-    
+
     # variance -> diffusion
     TAU <- CTMM$tau[1]
     CTMM$sigma <- CTMM$sigma/TAU
     CTMM$sigma@par[1] <- CTMM$sigma@par[1]/TAU
     CTMM$tau[1] <- Inf
-    
+
     ## delete garbate estimates
     # CTMM$mu <- NULL
     # CTMM$COV.mu <- NULL
     # CTMM$DOF.mu <- NULL
   }
-  
+
   # erase evaluated mean vector from ctmm.prepare
   CTMM$mean.vec <- NULL
-  
+
   return(CTMM)
 }
 
@@ -336,7 +336,7 @@ get.error <- function(DATA,CTMM,flag=FALSE)
   n <- length(DATA$t)
   axes <- CTMM$axes
   COLS <- names(DATA)
-  
+
   # model the error
   if(CTMM$error)
   {
@@ -344,7 +344,7 @@ get.error <- function(DATA,CTMM,flag=FALSE)
     if(any(is.element(axes,c("x","y"))))
     {
       if(is.element("HERE",COLS))
-      { 
+      {
         error <- DATA$HERE^2/2
         FLAG <- 3
       }
@@ -362,7 +362,7 @@ get.error <- function(DATA,CTMM,flag=FALSE)
     else if(axes=="z")
     {
       if(is.element("VERE",COLS))
-      { 
+      {
         error <- DATA$VERE^2
         FLAG <- 3
       }
@@ -383,10 +383,10 @@ get.error <- function(DATA,CTMM,flag=FALSE)
     error <- rep(0,n)
     FLAG <- 0
   }
-  
+
   if(flag) { return(FLAG) }
   else
-  { 
+  {
     attr(error,"flag") <- FLAG
     return(error)
   }
