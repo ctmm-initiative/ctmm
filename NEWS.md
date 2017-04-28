@@ -8,6 +8,8 @@
   * bugfixes with OUF/OU fitting & CIs near boundaries
   
   * R 3.4 compatibility fixes
+  
+  * various improvements to plot.variogram
 
 0.3.6 2017-04-23
 ================

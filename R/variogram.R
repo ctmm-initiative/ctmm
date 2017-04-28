@@ -652,23 +652,39 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", 
   # if(is.null(CTMM) && n==1 && !is.null(attr(x[[1]],"info")$CTMM)) { CTMM <- attr(x[[1]],"info")$CTMM }
   ACF <- !is.null(attr(x[[1]],"info")$ACF)
 
+  # subset the data if xlim provided
+  if(!is.null(xlim))
+  {
+    fraction <- 1 # xlim overrides fraction
+    x <- lapply(x,function(y){ y[xlim[1]<=y$lag & y$lag<=xlim[2],] })
+  }
+
   # maximum lag in data
   max.lag <- sapply(x, function(v){ last(v$lag) } )
-  max.lag <- max(max.lag)
+  max.lag <- max(max.lag,xlim)
   # subset fraction of data
   max.lag <- fraction*max.lag
 
   # subset all data to fraction of total period
-  x <- lapply(x, function(v) { subset.data.frame(v, lag <= max.lag) })
+  if(fraction<1)
+  { x <- lapply(x, function(y) { y[y$lag<=max.lag,] }) }
 
   if(!ACF) # SVF plot
   {
-    min.SVF <- 0
-    # maximum CI on SVF
-    max.SVF <- max(sapply(x, function(v){ max(v$SVF * CI.upper(v$DOF,min(alpha))) } ))
-    # limit plot range to twice max SVF point estimate (otherwise hard to see)
-    max.cap <- 2*max(sapply(x, function(v){ max(v$SVF) } ))
-    max.SVF <- min(max.SVF,max.cap)
+    if(is.null(ylim))
+    {
+      min.SVF <- 0
+      # maximum CI on SVF
+      max.SVF <- max(sapply(x, function(v){ max(v$SVF * CI.upper(v$DOF,min(alpha))) } ))
+      # limit plot range to twice max SVF point estimate (otherwise hard to see)
+      max.cap <- 2*max(sapply(x, function(v){ max(v$SVF) } ))
+      max.SVF <- min(max.SVF,max.cap)
+    }
+    else
+    {
+      min.SVF <- ylim[1]
+      max.SVF <- ylim[2]
+    }
 
     # choose SVF units
     SVF.scale <- unit(max.SVF,"area")
@@ -687,11 +703,19 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", 
   }
   else # ACF plot
   {
-    min.SVF <- sapply(x,function(v) { min(v$SVF) })
-    min.SVF <- min(0,1.1*min.SVF)
+    if(is.null(ylim))
+    {
+      min.SVF <- sapply(x,function(v) { min(v$SVF) })
+      min.SVF <- min(0,1.1*min.SVF)
 
-    max.SVF <- sapply(x,function(v) { max(v$SVF[v$lag>0]) })
-    max.SVF <- max(0,1.1*max.SVF)
+      max.SVF <- sapply(x,function(v) { max(v$SVF[v$lag>0]) })
+      max.SVF <- max(0,1.1*max.SVF)
+    }
+    else
+    {
+      min.SVF <- ylim[1]
+      max.SVF <- ylim[2]
+    }
 
     SVF.scale <- 1
     ylab <- "Autocorrelation"
