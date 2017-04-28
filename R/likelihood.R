@@ -909,12 +909,20 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
   # NOW OPTIMIZE
   if(PARS==0) # EXACT
   {
-    # Bi-variate Gaussian || Brownian motion with zero error
+    # Bi-variate Gaussian with zero error
     CTMM$sigma <- NULL
     CTMM <- ctmm.loglike(data,CTMM=CTMM,REML=REML,verbose=TRUE)
 
+    # pREML perturbation
+    if(method=="pREML")
+    {
+      VAR.MULT <- (1+k.mean/n)
+      CTMM$sigma <- VAR.MULT * CTMM$sigma
+      CTMM$sigma@par["area"] <- VAR.MULT * CTMM$sigma@par["area"]
+      CTMM$COV.mu <- VAR.MULT * CTMM$COV.mu
+    }
+
     # fast calculation of sigma covariance
-    # make this consistent with REML
     COVSTUFF <- COV.covm(CTMM$sigma,n=n,k=k.mean)
     CTMM$COV <- COVSTUFF$COV
   }
