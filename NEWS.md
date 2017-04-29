@@ -3,6 +3,8 @@
 
   * summary now works on lists of telemetry objects
   
+  * new extent method for variogram objects
+  
   * bugfixes in plot.variogram with fitted UEREs
   
   * bugfixes with OUF/OU fitting & CIs near boundaries

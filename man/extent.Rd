@@ -15,6 +15,8 @@
 
 \S4method{extent}{UD}(x,level=0.95,level.UD=0.95,...)
 
+\S4method{extent}{variogram}(x,level=0.95,threshold=2,...)
+
 \S4method{extent}{list}(x,...)
 }
 %- maybe also 'usage' for other objects documented here.
@@ -22,6 +24,7 @@
   \item{x}{A \code{telemetry}, \code{ctmm}, or \code{UD} object. }
   \item{level}{ For \code{telemetry} objects, this is the fraction of locations bounded, according to two-sided quantiles. For \code{ctmm} and \code{UD} objects, this is confidence level for the magnitude of the utilization area circumscribed by \code{level.UD}. }
   \item{level.UD}{ Confidence level of the UD area. I.e., the 50\% core home range would be given by \code{level.UD=0.50}. }
+  \item{threshold}{Limit \code{ylim} to \code{threshold} times the maximum semi-variance, even if the \code{level} confidence intervals exceed this amount.}
   \item{...}{ Optional arguments for future extensions.}
 }
 
@@ -37,7 +40,7 @@ See \code{vignette('akde')} for an example of \code{extent} used to plot multipl
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
-\seealso{ \code{\link{plot.telemetry}}. }
+\seealso{ \code{\link{plot.telemetry}}, \code{\link{plot.variogram}}. }
 
 %\examples{
 %# Load package and data
