@@ -29,7 +29,7 @@ Before anything else, we want to plot the data in a way that makes periodic patt
 ```{r}
 LSP <- periodogram(Tay,fast=2,res.time=2)
 ```
-The `fast=2` option requests the use of the (much) faster FFT-based algorithm and furthermore samples a highly composite number of times. Set the argument to FALSE to revert to Scargle`s original algorithm, which involves fewer numerical approximations. 
+The `fast=2` option requests the use of the (much) faster FFT-based algorithm and furthermore samples a highly composite number of times. Set the argument to FALSE to revert to Scargle's original algorithm, which involves fewer numerical approximations. 
 The `res.time` argument increases the resolution of the temporal grid. The algorithm defaults to adequate resolution for regularly scheduled data (permitting gaps), while variable sampling rates require `res.time>1` to resolve the fine scale spectrum correctly.
 
 ```{r,  fig.show="hold"}

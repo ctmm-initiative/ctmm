@@ -1,6 +1,3 @@
-# variogram class
-new.variogram <- methods::setClass("variogram",representation("data.frame",info="list"))
-
 # extend subset method
 subset.variogram <- function(x,...)
 {
@@ -652,46 +649,37 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", 
   # if(is.null(CTMM) && n==1 && !is.null(attr(x[[1]],"info")$CTMM)) { CTMM <- attr(x[[1]],"info")$CTMM }
   ACF <- !is.null(attr(x[[1]],"info")$ACF)
 
-  # subset the data if xlim provided
+  # subset the data if xlim or fraction provided
   if(!is.null(xlim))
   {
     fraction <- 1 # xlim overrides fraction
     x <- lapply(x,function(y){ y[xlim[1]<=y$lag & y$lag<=xlim[2],] })
   }
+  else
+  {
+    # maximum lag in data
+    max.lag <- sapply(x, function(v){ last(v$lag) } )
+    max.lag <- max(max.lag,xlim)
+    # subset fraction of data
+    max.lag <- fraction*max.lag
 
-  # maximum lag in data
-  max.lag <- sapply(x, function(v){ last(v$lag) } )
-  max.lag <- max(max.lag,xlim)
-  # subset fraction of data
-  max.lag <- fraction*max.lag
+    # subset all data to fraction of total period
+    if(fraction<1) { x <- lapply(x, function(y) { y[y$lag<=max.lag,] }) }
 
-  # subset all data to fraction of total period
-  if(fraction<1)
-  { x <- lapply(x, function(y) { y[y$lag<=max.lag,] }) }
+    xlim <- c(0,max.lag)
+  }
+
+  # calculate ylimits from all variograms
+  if(is.null(ylim)) { ylim <- extent(x,level=max(level))$y }
 
   if(!ACF) # SVF plot
   {
-    if(is.null(ylim))
-    {
-      min.SVF <- 0
-      # maximum CI on SVF
-      max.SVF <- max(sapply(x, function(v){ max(v$SVF * CI.upper(v$DOF,min(alpha))) } ))
-      # limit plot range to twice max SVF point estimate (otherwise hard to see)
-      max.cap <- 2*max(sapply(x, function(v){ max(v$SVF) } ))
-      max.SVF <- min(max.SVF,max.cap)
-    }
-    else
-    {
-      min.SVF <- ylim[1]
-      max.SVF <- ylim[2]
-    }
-
     # choose SVF units
-    SVF.scale <- unit(max.SVF,"area")
+    SVF.scale <- unit(ylim,"area")
     SVF.name <- SVF.scale$name
     SVF.scale <- SVF.scale$scale
 
-    SVF.name <- c(SVF.name,unit(max.SVF,"area",concise=TRUE)$name)
+    SVF.name <- c(SVF.name,unit(ylim,"area",concise=TRUE)$name)
     SVF.name[3] <- SVF.name[2]
 
     ylab <- "Semi-variance"
@@ -703,31 +691,17 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", 
   }
   else # ACF plot
   {
-    if(is.null(ylim))
-    {
-      min.SVF <- sapply(x,function(v) { min(v$SVF) })
-      min.SVF <- min(0,1.1*min.SVF)
-
-      max.SVF <- sapply(x,function(v) { max(v$SVF[v$lag>0]) })
-      max.SVF <- max(0,1.1*max.SVF)
-    }
-    else
-    {
-      min.SVF <- ylim[1]
-      max.SVF <- ylim[2]
-    }
-
     SVF.scale <- 1
     ylab <- "Autocorrelation"
     ylab <- c(ylab,ylab,"ACF")
   }
 
   # choose lag units
-  lag.scale <- unit(max.lag,"time",2)
+  lag.scale <- unit(xlim,"time",2)
   lag.name <- lag.scale$name
   lag.scale <- lag.scale$scale
 
-  lag.name <- c(lag.name,unit(max.lag,"time",thresh=2,concise=TRUE)$name)
+  lag.name <- c(lag.name,unit(xlim,"time",thresh=2,concise=TRUE)$name)
   lag.name[3] <- lag.name[2]
 
   xlab <- "Time-lag"
@@ -760,7 +734,7 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", 
   if(!is.null(ylim)) { ylim <- ylim/SVF.scale }
 
   # fix base plot layer
-  plot(c(0,max.lag/lag.scale),c(min.SVF/SVF.scale,max.SVF/SVF.scale), xlim=xlim, ylim=ylim, xlab=xlab[lab], ylab=ylab[lab], col=grDevices::rgb(1,1,1,0), ...)
+  plot(xlim/lag.scale,ylim/SVF.scale, xlim=xlim, ylim=ylim, xlab=xlab[lab], ylab=ylab[lab], col=grDevices::rgb(1,1,1,0), ...)
 
   # color array for plots
   col <- array(col,n)

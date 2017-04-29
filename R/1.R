@@ -8,6 +8,9 @@ new.UD <- methods::setClass("UD", representation(info="list"), contains="list")
 methods::setOldClass("ctmm")
 new.ctmm <- methods::setClass("ctmm", representation(info="list"), contains="list")
 
+methods::setOldClass("variogram")
+new.variogram <- methods::setClass("variogram",representation("data.frame",info="list"))
+
 # existing functions -> S4 generics
 # this doesn't work
 #methods::setGeneric("SpatialPoints",package="sp",signature=signature("coords",...))
