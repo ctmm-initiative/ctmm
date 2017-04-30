@@ -53,16 +53,14 @@ SVF3 <- variogram(gazelle[[18]])
 plot(SVF3,fraction=0.85,level=level)
 title("Default method")
 # 1, 5, 25 hour sampling intervals
-dt <- 60*60*c(1,5,25)
+dt <- c(1,5,25) %#% "hour"
 SVF3 <- variogram(gazelle[[18]],dt=dt)
 plot(SVF3,fraction=0.85,level=level)
 title("Multi method")
 
 ## ---- fig.show='hold'----------------------------------------------------
-# 1 hour sampling intervals
-dt = 60*60
 # buffalo 4 is bad
-SVF4 <- lapply(buffalo[-4],function(b){ variogram(b,dt=dt) })
+SVF4 <- lapply(buffalo[-4],variogram)
 SVF4 <- mean(SVF4)
 plot(SVF4,fraction=0.35,level=level)
 title("Population variogram")
