@@ -339,8 +339,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,zero=0,verbose=FALSE)
   }
 
   circle <- CTMM$circle
-  if(circle) { circle <- 2*pi/circle }
-  if(abs(circle) == Inf) { circle <- FALSE }
+  # if(circle) { circle <- 2*pi*circle }
 
   n <- length(data$t)
 
@@ -781,8 +780,8 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
     # use 1/T as circulation parameter
     if(length(CIRCLE))
     {
-      pars <<- c(pars,1/circle)
-      parscale <<- c(parscale,1/abs(circle))
+      pars <<- c(pars,circle)
+      parscale <<- c(parscale,abs(circle))
       lower <<- c(lower,-Inf)
       upper <<- c(upper,Inf)
       period <<- c(period,F)
@@ -876,7 +875,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
 
     # fix circulation from par
     if(length(CIRCLE))
-    { circle <- 1/p[CIRCLE] }
+    { circle <- p[CIRCLE] }
 
     # fix error from par
     if(length(ERROR))
@@ -947,13 +946,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
 
       # save circulation if numerically optimized
       if(circle)
-      {
-        if(pars[CIRCLE])
-        { circle <<- 1/pars[CIRCLE] }
-        else
-        { circle <<- FALSE }
-        # In case ML circulation is zero, deactivate it in the model
-      }
+      { circle <<- pars[CIRCLE] }
 
       # save sigma if numerically optimized
       if(length(SIGMA))
@@ -1037,22 +1030,6 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
       #CTMM$COV <- 2*COV - (COV %*% hess %*% COV)
     }
 
-    # convert from circulation frequency to circulation period
-    if(circle)
-    {
-      g <- -circle^2
-      CTMM$COV[CIRCLE,] <- g*CTMM$COV[CIRCLE,]
-      CTMM$COV[,CIRCLE] <- g*CTMM$COV[,CIRCLE]
-
-      if(method=="pREML")
-      {
-        g <- -CTMM$MLE$circle^2
-        CTMM$MLE$COV[CIRCLE,] <- g*CTMM$MLE$COV[CIRCLE,]
-        CTMM$MLE$COV[,CIRCLE] <- g*CTMM$MLE$COV[,CIRCLE]
-      }
-      # before adding more junk here, just change the ctmm object to store frequency and not period for circulation
-    }
-
     dimnames(CTMM$COV) <- list(NAMES,NAMES)
     if(method=="pREML") { dimnames(CTMM$MLE$COV) <- list(NAMES,NAMES) }
   }
@@ -1127,7 +1104,7 @@ ctmm.guess <- function(data,CTMM=ctmm(),variogram=NULL,name="GUESS",interactive=
     L <- (z[,1]%*%v[,2] - z[,2]%*%v[,1]) / (n-1)
 
     circle <- L / mean(diag(CTMM$sigma))
-    circle <- 2*pi/circle
+    # circle <- 2*pi/circle
 
     CTMM$circle <- circle
   }

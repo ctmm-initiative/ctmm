@@ -72,7 +72,7 @@
       <h1>Periodic movement models</h1>
                         <h4 class="author">Guillaume Péron, Christen H. Fleming, and Justin M. Calabrese</h4>
             
-            <h4 class="date">2017-04-28</h4>
+            <h4 class="date">2017-04-29</h4>
           </div>
 
     
@@ -92,7 +92,7 @@ Tay &lt;-<span class="st"> </span>wolf$Tay
 <p>Before anything else, we want to plot the data in a way that makes periodic patterns apparent. This is the periodogram.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">LSP &lt;-<span class="st"> </span><span class="kw"><a href="../reference/periodogram.html">periodogram</a></span>(Tay,<span class="dt">fast=</span><span class="dv">2</span>,<span class="dt">res.time=</span><span class="dv">2</span>)</code></pre></div>
 <p>The <code>fast=2</code> option requests the use of the (much) faster FFT-based algorithm and furthermore samples a highly composite number of times. Set the argument to FALSE to revert to Scargle’s original algorithm, which involves fewer numerical approximations. The <code>res.time</code> argument increases the resolution of the temporal grid. The algorithm defaults to adequate resolution for regularly scheduled data (permitting gaps), while variable sampling rates require <code>res.time&gt;1</code> to resolve the fine scale spectrum correctly.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(LSP, <span class="dt">max=</span><span class="ot">TRUE</span>, <span class="dt">diagnostic=</span><span class="ot">TRUE</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(LSP,<span class="dt">max=</span><span class="ot">TRUE</span>,<span class="dt">diagnostic=</span><span class="ot">TRUE</span>,<span class="dt">transparency=</span><span class="fl">0.2</span>,<span class="dt">cex=</span><span class="fl">0.5</span>)</code></pre></div>
 <p><img src="periodic_files/figure-html/unnamed-chunk-3-1.png" width="672"></p>
 <p>The <code>max=TRUE</code> option keeps only local maxima and often yields periodograms that are easier to interpret, especially when the resolution of the periodogram has been increased from the default. The <code>diagnostic=TRUE</code> option draws the periodogram of the sampling schedule with red symbols. If the periodogram of the sampling schedule exhibits peaks, this indicates that the corresponding peaks in the movement data could be simply caused by irregularities in the sampling schedule and not by periodicity in the movement. Periodograms should always be interpreted with some caution.</p>
 <p>Here the periodogram exhibits clear peaks for periods of one day that are absent from the red periodogram. This is clear evidence of a daily periodicity in the process mean of the movement process of this individual. The peaks for integers fractions of a day (1/2, 1/3, 1/4…) are harmonics that indicate that the repeated segment of path is, as could be expected, not elliptical.</p>
@@ -104,6 +104,7 @@ Tay &lt;-<span class="st"> </span>wolf$Tay
 <p>Circulatory patterns can be incorporated into stochastic continuous time movement models in two ways: via the mean of the process, modelling that the animal reverts to a point that moves periodically through time, or via the stochastic component, by including a rotation effect. The first is called a periodic-mean process, and the second is called a circulation process.</p>
 <p>For periodic-mean processes, you need to specify one or more period values that you want <code>ctmm</code> to consider.</p>
 <p>In our example, we are going to specify a period of a day, which is what the periodogram was saying. Other individuals in this population were also exhibiting a weekly periodicity, and in similar species, lunar cycles are well-known to affect ranging behaviors. Let us also put these periods into a model prototype.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">PROTO &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">mean=</span><span class="st">"periodic"</span>,<span class="dt">period=</span><span class="kw">c</span>(<span class="dv">1</span> %#%<span class="st"> "month"</span>,<span class="dv">1</span> %#%<span class="st"> "week"</span>,<span class="dv">1</span> %#%<span class="st"> "day"</span>),<span class="dt">circle=</span><span class="ot">TRUE</span>)</code></pre></div>
 </div>
 </div>
   </div>

@@ -712,12 +712,12 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", 
   # choose appropriately sized axis labels for base plot
   lab <- rbind(xlab,ylab)
 
-  #work out string width max
+  # string width max
   max.cex.w <- lab # copy dimensions and preserve below
-  max.cex.w[] <- par('pin')/strwidth(lab,'inches')
-  #work out string height max
+  max.cex.w[] <- graphics::par('pin')/graphics::strwidth(lab,'inches')
+  # string height max
   max.cex.h <- lab
-  max.cex.h[] <- (par('mai')[1:2]/par('mar')[1:2])/strheight(lab,'inches')
+  max.cex.h[] <- (graphics::par('mai')[1:2]/graphics::par('mar')[1:2])/graphics::strheight(lab,'inches')
 
   # min of x & y
   max.cex.w <- pmin(max.cex.w[1,],max.cex.w[2,])
@@ -730,11 +730,11 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", 
   if(max.cex[lab]<1) { lab <- lab + 1 }
 
   # unit convert scales if supplied
-  if(!is.null(xlim)) { xlim <- xlim/lag.scale }
-  if(!is.null(ylim)) { ylim <- ylim/SVF.scale }
+  xlim <- xlim/lag.scale
+  ylim <- ylim/SVF.scale
 
   # fix base plot layer
-  plot(xlim/lag.scale,ylim/SVF.scale, xlim=xlim, ylim=ylim, xlab=xlab[lab], ylab=ylab[lab], col=grDevices::rgb(1,1,1,0), ...)
+  plot(xlim,ylim, xlim=xlim, ylim=ylim, xlab=xlab[lab], ylab=ylab[lab], col=grDevices::rgb(1,1,1,0), ...)
 
   # color array for plots
   col <- array(col,n)
@@ -808,7 +808,7 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", 
         if(j) { error <- attr(x[[j]],"info")$error }
       }
 
-      plot.svf(max.lag/lag.scale,CTMM[[i]],error=error,alpha=alpha,type=type,col=col[[i]])
+      plot.svf(xlim[2],CTMM[[i]],error=error,alpha=alpha,type=type,col=col[[i]])
     }
   }
 

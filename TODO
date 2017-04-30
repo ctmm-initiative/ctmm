@@ -23,7 +23,6 @@ Aligned Krige UDs
 pregridder composite dimension?
 
 LOW HANGING FRUIT & Nagging issues
-* unit conversion convenience functions
 * grid fix regression - weight to coarse scale when appropriate
 * detrend mean in correlogram function
 * plot errors with HDOP & error model in CTMM
