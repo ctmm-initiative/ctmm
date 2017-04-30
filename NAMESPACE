@@ -18,7 +18,7 @@ export(extent,raster,writeRaster,zoom)
 S3method(mean,list)
 S3method(plot,list)
 S3method(summary,list)
-#export(setUnits,"%#%")
+export("%#%")
 
 #S3method(extent,list)
 #S3method(extent,telemetry)

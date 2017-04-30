@@ -3,6 +3,7 @@
 \alias{extent,telemetry-method}
 \alias{extent,ctmm-method}
 \alias{extent,UD-method}
+\alias{extent,variogram-method}
 \alias{extent,list-method}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Extent}

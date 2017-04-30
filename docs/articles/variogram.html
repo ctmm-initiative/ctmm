@@ -72,7 +72,7 @@
       <h1>Variograms and Model Selection</h1>
                         <h4 class="author">Christen H. Fleming and Justin M. Calabrese</h4>
             
-            <h4 class="date">2017-04-28</h4>
+            <h4 class="date">2017-04-29</h4>
           </div>
 
     
@@ -107,9 +107,11 @@ Cilla &lt;-<span class="st"> </span>buffalo$Cilla
 <a href="#variograms" class="anchor"></a>Variograms</h1>
 <p>Variograms are an unbiased way to visualize autocorrelation structure when migration, range shifting, drift, or other translations of the mean location are not happening. When drift occurs in the data, then the variogram represents a mixture of both the drift and the autocorrelation structure, each of which contains distinct movement behaviors. In the future, we will have models that can allow for drift, but the current models assume range residence, which we can check with the variogram.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">SVF &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.html">variogram</a></span>(Cilla)
-<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">fraction=</span><span class="fl">0.005</span>)
+level &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.5</span>,<span class="fl">0.95</span>) <span class="co"># 50% and 95% CIs</span>
+xlim &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">12</span> %#%<span class="st"> "hour"</span>) <span class="co"># 0-12 hour window</span>
+<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">xlim=</span>xlim,<span class="dt">level=</span>level)
 <span class="kw">title</span>(<span class="st">"zoomed in"</span>)
-<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span><span class="kw">c</span>(<span class="fl">0.5</span>,<span class="fl">0.95</span>))
+<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level)
 <span class="kw">title</span>(<span class="st">"zoomed out"</span>)</code></pre></div>
 <p><img src="variogram_files/figure-html/unnamed-chunk-2-1.png" width="672"><img src="variogram_files/figure-html/unnamed-chunk-2-2.png" width="672"></p>
 <p>The first plot is zoomed in to the short lag behavior, while the second plot is zoomed out. You can do this on the fly with <code>zoom(Cilla)</code> in R-studio. The variogram represents the average square distance traveled (vertical axis) within some time lag (horizontal axis).</p>
@@ -120,25 +122,25 @@ Cilla &lt;-<span class="st"> </span>buffalo$Cilla
 <h2 class="hasAnchor">
 <a href="#variogram-fitting-the-hard-way" class="anchor"></a>Variogram Fitting the Hard Way</h2>
 <p>For pedagogical reasons we first “fit” models to the variogram by hand, while later we will use a much easier method. we can manually guesstimate some continuous-time models for the aforementioned behavior with the commands</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">m.iid &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">sigma=</span><span class="dv">23</span>*<span class="dv">1000</span>^<span class="dv">2</span>) <span class="co"># 23 km^2 in m^2</span>
-m.ou &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">sigma=</span><span class="dv">23</span>*<span class="dv">1000</span>^<span class="dv">2</span>,<span class="dt">tau=</span><span class="dv">6</span>*<span class="dv">24</span>*<span class="dv">60</span>^<span class="dv">2</span>) <span class="co"># and 6 days in seconds</span>
-<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>m.iid,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span><span class="kw">c</span>(<span class="fl">0.5</span>,<span class="fl">0.95</span>),<span class="dt">col.CTMM=</span><span class="st">"red"</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">m.iid &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">sigma=</span><span class="dv">23</span> %#%<span class="st"> "km^2"</span>)
+m.ou &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">sigma=</span><span class="dv">23</span> %#%<span class="st"> "km^2"</span>,<span class="dt">tau=</span><span class="dv">6</span> %#%<span class="st"> "day"</span>)
+<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>m.iid,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">"red"</span>)
 <span class="kw">title</span>(<span class="st">"Independent and identically distributed data"</span>)
-<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>m.ou,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span><span class="kw">c</span>(<span class="fl">0.5</span>,<span class="fl">0.95</span>),<span class="dt">col.CTMM=</span><span class="st">"purple"</span>)
+<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>m.ou,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">"purple"</span>)
 <span class="kw">title</span>(<span class="st">"Ornstein-Uhlenbeck movement"</span>)</code></pre></div>
 <p><img src="variogram_files/figure-html/unnamed-chunk-3-1.png" width="672"><img src="variogram_files/figure-html/unnamed-chunk-3-2.png" width="672"></p>
-<p>where for both the models <code>m.iid</code> and <code>m.ou</code>, <code>sigma</code> is the asymptotic variance. In the Ornstein-Uhlenbeck (OU) model <code>m.ou</code>, <code>tau</code> is a single timescale that governs the autocorrelation in position and dictates the animal’s home-range crossing time. The independent and identically distributed (IID) null model <code>m.iid</code> has no autocorrelation. Notice that all units are in meters and seconds.</p>
+<p>where for both the models <code>m.iid</code> and <code>m.ou</code>, <code>sigma</code> is the asymptotic variance. In the Ornstein-Uhlenbeck (OU) model <code>m.ou</code>, <code>tau</code> is a single timescale that governs the autocorrelation in position and dictates the animal’s home-range crossing time. The independent and identically distributed (IID) null model <code>m.iid</code> has no autocorrelation. Notice that all units are in meters and seconds, as output by the utility function <code>%#%</code> (see <code>help("%#%")</code>.</p>
 <p>The IID model <code>m.iid</code> is obviously incorrect and in the zoomed in plot we can also see that the OU model <code>m.ou</code> is incorrectly linear at short lags, whereas the empirical variogram actually curves up for an hour or two before it becomes linear. Let us introduce a model that incorporates this behavior.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">m.ouf &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">sigma=</span><span class="dv">23</span>*<span class="dv">1000</span>^<span class="dv">2</span>,<span class="dt">tau=</span><span class="kw">c</span>(<span class="dv">6</span>*<span class="dv">24</span>*<span class="dv">60</span>^<span class="dv">2</span>,<span class="dv">1</span>*<span class="dv">60</span>^<span class="dv">2</span>)) <span class="co"># and 1 hour in seconds</span>
-<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>m.ou,<span class="dt">fraction=</span><span class="fl">0.002</span>,<span class="dt">col.CTMM=</span><span class="st">"purple"</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">m.ouf &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">sigma=</span><span class="dv">23</span> %#%<span class="st"> "km^2"</span>,<span class="dt">tau=</span><span class="kw">c</span>(<span class="dv">6</span> %#%<span class="st"> "day"</span>,<span class="dv">1</span> %#%<span class="st"> "hour"</span>))
+<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>m.ou,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">"purple"</span>,<span class="dt">xlim=</span>xlim)
 <span class="kw">title</span>(<span class="st">"Ornstein-Uhlenbeck movement"</span>)
-<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>m.ouf,<span class="dt">fraction=</span><span class="fl">0.002</span>,<span class="dt">col.CTMM=</span><span class="st">"blue"</span>)
+<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>m.ouf,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">"blue"</span>,<span class="dt">xlim=</span>xlim)
 <span class="kw">title</span>(<span class="st">"Ornstein-Uhlenbeck-F movement"</span>)</code></pre></div>
 <p><img src="variogram_files/figure-html/unnamed-chunk-4-1.png" width="672"><img src="variogram_files/figure-html/unnamed-chunk-4-2.png" width="672"></p>
 <p>The confidence intervals at short lags are also very narrow, though both of these models look the same at coarser scales and so the discrepancy is only revealed by high resolution data.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>m.ou,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span><span class="kw">c</span>(<span class="fl">0.5</span>,<span class="fl">0.95</span>),<span class="dt">col.CTMM=</span><span class="st">"purple"</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>m.ou,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">"purple"</span>)
 <span class="kw">title</span>(<span class="st">"Ornstein-Uhlenbeck movement"</span>)
-<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>m.ouf,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span><span class="kw">c</span>(<span class="fl">0.5</span>,<span class="fl">0.95</span>),<span class="dt">col.CTMM=</span><span class="st">"blue"</span>)
+<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>m.ouf,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">"blue"</span>)
 <span class="kw">title</span>(<span class="st">"Ornstein-Uhlenbeck-F movement"</span>)</code></pre></div>
 <p><img src="variogram_files/figure-html/unnamed-chunk-5-1.png" width="672"><img src="variogram_files/figure-html/unnamed-chunk-5-2.png" width="672"></p>
 <p>The Ornstein-Uhlenbeck-F (OUF) model <code>m.ouf</code> introduces an additional autocorrelation timescale for the animal’s velocity, so that it more closely matches the initial behavior of the variogram. The initial curve upwards tells us that there is continuity in the animal’s velocity at this timescale. Conventional Markovian animal movement models do not capture this, which leads to the same kind of bias and underestimation of confidence intervals as when ignoring autocorrelation entirely.</p>
@@ -158,7 +160,7 @@ willa &lt;-<span class="st"> </span><span class="kw"><a href="../reference/simul
 <span class="kw">title</span>(<span class="st">"simulation"</span>)
 <span class="co"># now calculate and plot its variogram</span>
 SVF2 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.html">variogram</a></span>(willa)
-<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF2,<span class="dt">CTMM=</span>m.ouf,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span><span class="kw">c</span>(<span class="fl">0.5</span>,<span class="fl">0.95</span>),<span class="dt">col.CTMM=</span><span class="st">"blue"</span>)
+<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF2,<span class="dt">CTMM=</span>m.ouf,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">"blue"</span>)
 <span class="kw">title</span>(<span class="st">"simulation"</span>)</code></pre></div>
 <p><img src="variogram_files/figure-html/unnamed-chunk-6-1.png" width="672"><img src="variogram_files/figure-html/unnamed-chunk-6-2.png" width="672"></p>
 </div>
@@ -168,12 +170,12 @@ SVF2 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variog
 <p>Random gaps in the data are acceptable and fully accounted for in both variogram estimation and model fitting. However, if under any condition the sampling rate changes during data collection, then you will have to account for that in the variogram with the <code>dt</code> argument. In the following example, the collar was programmed to cycle between 1, 5, 25 hour sampling intervals</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(<span class="st">"gazelle"</span>)
 SVF3 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.html">variogram</a></span>(gazelle[[<span class="dv">18</span>]])
-<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF3,<span class="dt">fraction=</span><span class="fl">0.85</span>,<span class="dt">level=</span><span class="kw">c</span>(<span class="fl">0.5</span>,<span class="fl">0.95</span>))
+<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF3,<span class="dt">fraction=</span><span class="fl">0.85</span>,<span class="dt">level=</span>level)
 <span class="kw">title</span>(<span class="st">"Default method"</span>)
 <span class="co"># 1, 5, 25 hour sampling intervals</span>
 dt &lt;-<span class="st"> </span><span class="dv">60</span>*<span class="dv">60</span>*<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">5</span>,<span class="dv">25</span>)
 SVF3 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.html">variogram</a></span>(gazelle[[<span class="dv">18</span>]],<span class="dt">dt=</span>dt)
-<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF3,<span class="dt">fraction=</span><span class="fl">0.85</span>,<span class="dt">level=</span><span class="kw">c</span>(<span class="fl">0.5</span>,<span class="fl">0.95</span>))
+<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF3,<span class="dt">fraction=</span><span class="fl">0.85</span>,<span class="dt">level=</span>level)
 <span class="kw">title</span>(<span class="st">"Multi method"</span>)</code></pre></div>
 <p><img src="variogram_files/figure-html/unnamed-chunk-7-1.png" width="672"><img src="variogram_files/figure-html/unnamed-chunk-7-2.png" width="672"></p>
 <p>With small amounts of highly irregular data, you may also want to try <code>fast=FALSE</code>.</p>
@@ -187,7 +189,7 @@ dt =<span class="st"> </span><span class="dv">60</span>*<span class="dv">60</spa
 <span class="co"># buffalo 4 is bad</span>
 SVF4 &lt;-<span class="st"> </span><span class="kw">lapply</span>(buffalo[-<span class="dv">4</span>],function(b){ <span class="kw"><a href="../reference/variogram.html">variogram</a></span>(b,<span class="dt">dt=</span>dt) })
 SVF4 &lt;-<span class="st"> </span><span class="kw">mean</span>(SVF4)
-<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF4,<span class="dt">fraction=</span><span class="fl">0.35</span>,<span class="dt">level=</span><span class="kw">c</span>(<span class="fl">0.5</span>,<span class="fl">0.95</span>))
+<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF4,<span class="dt">fraction=</span><span class="fl">0.35</span>,<span class="dt">level=</span>level)
 <span class="kw">title</span>(<span class="st">"Population variogram"</span>)</code></pre></div>
 <p><img src="variogram_files/figure-html/unnamed-chunk-8-1.png" width="672"></p>
 </div>
@@ -211,8 +213,8 @@ SVF4 &lt;-<span class="st"> </span><span class="kw">mean</span>(SVF4)
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">DATA &lt;-<span class="st"> </span><span class="kw"><a href="../reference/as.telemetry.html">as.telemetry</a></span>(<span class="kw">system.file</span>(<span class="st">"extdata"</span>,<span class="st">"leroy.csv.gz"</span>,<span class="dt">package=</span><span class="st">"move"</span>))</code></pre></div>
 <pre><code>## Maximum speed of 1.05175649776936 m/s observed in Leroy</code></pre>
 <pre><code>## Minimum sampling interval of 13.2666833321253 minutes in Leroy</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 1 hour and 1 day autocorrelation timescales</span>
-GUESS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">tau=</span><span class="kw">c</span>(<span class="dv">1</span>/<span class="dv">4</span>,<span class="dv">24</span>)*<span class="dv">60</span>^<span class="dv">2</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># default model guess</span>
+GUESS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.fit.html">ctmm.guess</a></span>(DATA,<span class="dt">interactive=</span><span class="ot">FALSE</span>)
 <span class="co"># first fit without telemetry error</span>
 FITS &lt;-<span class="st"> </span><span class="kw">list</span>()
 FITS$NOERR &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(DATA,GUESS)
@@ -223,8 +225,8 @@ FITS$ERROR &lt;-<span class="st"> </span><span class="kw"><a href="../reference/
 <span class="co"># model improvement</span>
 <span class="kw">summary</span>(FITS)</code></pre></div>
 <pre><code>##          dAICc DOF[mean]
-## ERROR  0.00000  16.38577
-## NOERR 21.58168  15.74779</code></pre>
+## ERROR  0.00000  16.39669
+## NOERR 21.58309  15.74074</code></pre>
 <p>Also, see <code>help(uere)</code> if you have the benefit of calibration data.</p>
 </div>
 <div id="cycles-and-periodicities" class="section level3">
@@ -309,7 +311,7 @@ and the independent and identically distributed (IID) model has no autocorrelati
 <p>Now its time to make sure that our selected model is explaining the most significant features of the animal’s movement. Let us plot the variogram again with our fit models</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>FITS,<span class="dt">col.CTMM=</span><span class="kw">c</span>(<span class="st">"red"</span>,<span class="st">"purple"</span>,<span class="st">"blue"</span>),<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span><span class="fl">0.5</span>)
 <span class="kw">title</span>(<span class="st">"zoomed out"</span>)
-<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>FITS,<span class="dt">col.CTMM=</span><span class="kw">c</span>(<span class="st">"red"</span>,<span class="st">"purple"</span>,<span class="st">"blue"</span>),<span class="dt">fraction=</span><span class="fl">0.002</span>,<span class="dt">level=</span><span class="fl">0.5</span>)
+<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>FITS,<span class="dt">col.CTMM=</span><span class="kw">c</span>(<span class="st">"red"</span>,<span class="st">"purple"</span>,<span class="st">"blue"</span>),<span class="dt">xlim=</span>xlim,<span class="dt">level=</span><span class="fl">0.5</span>)
 <span class="kw">title</span>(<span class="st">"zoomed in"</span>)</code></pre></div>
 <p><img src="variogram_files/figure-html/unnamed-chunk-16-1.png" width="672"><img src="variogram_files/figure-html/unnamed-chunk-16-2.png" width="672"></p>
 <p>Notice that the purple OU model <code>M.OU</code> is significantly biased downward and is underestimating diffusion. This is because the continuous-velocity behavior at short time lags, which <code>M.OU</code> does not account for, is throwing off the estimate. The IID model <code>M.IID</code> is ignoring autocorrelation completely, while the OU model <code>M.OU</code> is ignoring autocorrelation in the buffalo’s velocity.</p>

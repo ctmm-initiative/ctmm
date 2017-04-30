@@ -24,7 +24,14 @@ confint.ctmm <- function(model,alpha=0.05)
   if(circle)
   {
     NAME <- c(NAME,"circle")
-    par <- rbind(par,ci.tau(circle,COV["circle","circle"],alpha=alpha,min=-Inf))
+    CI <- stats::qnorm(c(alpha/2,0.5,1-alpha/2),mean=circle,sd=sqrt(COV["circle","circle"]))
+    # f -> period conversion
+    CI <- 2*pi/rev(CI)*sign(circle)
+    # sign change - f crosses 0 - period crosses Inf
+    if(CI[3]<0) { CI[3] <- Inf }
+    CI <- abs(CI)
+
+    par <- rbind(par,CI)
   }
 
   # standard area uncertainty: chi-square
@@ -146,8 +153,8 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
     omega2 <- 0
     if(circle)
     {
-      omega2 <- (2*pi/circle)^2
-      grad <- c(grad,-2*omega2/circle)
+      omega2 <- circle^2
+      grad <- c(grad,2*circle)
     }
 
     # contribution from sigma
@@ -335,8 +342,8 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE
     # consider if there is no circulation
     if(CTMM$circle)
     {
-      Q <- prod(CI["circle",c(1,3)])
-      if(is.nan(Q) || (Q<=0))
+      Q <- CI["circle",3]
+      if(is.nan(Q) || (Q==Inf))
       {
         GUESS[[length(GUESS)+1]] <- MLE
         GUESS[[length(GUESS)]]$circle <- FALSE

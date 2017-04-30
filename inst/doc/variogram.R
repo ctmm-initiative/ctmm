@@ -9,30 +9,32 @@ title("5 Buffalo")
 
 ## ----  fig.show='hold'---------------------------------------------------
 SVF <- variogram(Cilla)
-plot(SVF,fraction=0.005)
+level <- c(0.5,0.95) # 50% and 95% CIs
+xlim <- c(0,12 %#% "hour") # 0-12 hour window
+plot(SVF,xlim=xlim,level=level)
 title("zoomed in")
-plot(SVF,fraction=0.65,level=c(0.5,0.95))
+plot(SVF,fraction=0.65,level=level)
 title("zoomed out")
 
 ## ----  fig.show='hold'---------------------------------------------------
-m.iid <- ctmm(sigma=23*1000^2) # 23 km^2 in m^2
-m.ou <- ctmm(sigma=23*1000^2,tau=6*24*60^2) # and 6 days in seconds
-plot(SVF,CTMM=m.iid,fraction=0.65,level=c(0.5,0.95),col.CTMM="red")
+m.iid <- ctmm(sigma=23 %#% "km^2")
+m.ou <- ctmm(sigma=23 %#% "km^2",tau=6 %#% "day")
+plot(SVF,CTMM=m.iid,fraction=0.65,level=level,col.CTMM="red")
 title("Independent and identically distributed data")
-plot(SVF,CTMM=m.ou,fraction=0.65,level=c(0.5,0.95),col.CTMM="purple")
+plot(SVF,CTMM=m.ou,fraction=0.65,level=level,col.CTMM="purple")
 title("Ornstein-Uhlenbeck movement")
 
 ## ----  fig.show='hold'---------------------------------------------------
-m.ouf <- ctmm(sigma=23*1000^2,tau=c(6*24*60^2,1*60^2)) # and 1 hour in seconds
-plot(SVF,CTMM=m.ou,fraction=0.002,col.CTMM="purple")
+m.ouf <- ctmm(sigma=23 %#% "km^2",tau=c(6 %#% "day",1 %#% "hour"))
+plot(SVF,CTMM=m.ou,level=level,col.CTMM="purple",xlim=xlim)
 title("Ornstein-Uhlenbeck movement")
-plot(SVF,CTMM=m.ouf,fraction=0.002,col.CTMM="blue")
+plot(SVF,CTMM=m.ouf,level=level,col.CTMM="blue",xlim=xlim)
 title("Ornstein-Uhlenbeck-F movement")
 
 ## ----  fig.show='hold'---------------------------------------------------
-plot(SVF,CTMM=m.ou,fraction=0.65,level=c(0.5,0.95),col.CTMM="purple")
+plot(SVF,CTMM=m.ou,fraction=0.65,level=level,col.CTMM="purple")
 title("Ornstein-Uhlenbeck movement")
-plot(SVF,CTMM=m.ouf,fraction=0.65,level=c(0.5,0.95),col.CTMM="blue")
+plot(SVF,CTMM=m.ouf,fraction=0.65,level=level,col.CTMM="blue")
 title("Ornstein-Uhlenbeck-F movement")
 
 ## ----  fig.show='hold'---------------------------------------------------
@@ -42,18 +44,18 @@ plot(willa)
 title("simulation")
 # now calculate and plot its variogram
 SVF2 <- variogram(willa)
-plot(SVF2,CTMM=m.ouf,fraction=0.65,level=c(0.5,0.95),col.CTMM="blue")
+plot(SVF2,CTMM=m.ouf,fraction=0.65,level=level,col.CTMM="blue")
 title("simulation")
 
 ## ---- fig.show='hold'----------------------------------------------------
 data("gazelle")
 SVF3 <- variogram(gazelle[[18]])
-plot(SVF3,fraction=0.85,level=c(0.5,0.95))
+plot(SVF3,fraction=0.85,level=level)
 title("Default method")
 # 1, 5, 25 hour sampling intervals
 dt <- 60*60*c(1,5,25)
 SVF3 <- variogram(gazelle[[18]],dt=dt)
-plot(SVF3,fraction=0.85,level=c(0.5,0.95))
+plot(SVF3,fraction=0.85,level=level)
 title("Multi method")
 
 ## ---- fig.show='hold'----------------------------------------------------
@@ -62,7 +64,7 @@ dt = 60*60
 # buffalo 4 is bad
 SVF4 <- lapply(buffalo[-4],function(b){ variogram(b,dt=dt) })
 SVF4 <- mean(SVF4)
-plot(SVF4,fraction=0.35,level=c(0.5,0.95))
+plot(SVF4,fraction=0.35,level=level)
 title("Population variogram")
 
 ## ----  fig.show='hold', echo=FALSE---------------------------------------
@@ -78,8 +80,8 @@ title("Detector Array")
 
 ## ------------------------------------------------------------------------
 DATA <- as.telemetry(system.file("extdata","leroy.csv.gz",package="move"))
-# 1 hour and 1 day autocorrelation timescales
-GUESS <- ctmm(tau=c(1/4,24)*60^2)
+# default model guess
+GUESS <- ctmm.guess(DATA,interactive=FALSE)
 # first fit without telemetry error
 FITS <- list()
 FITS$NOERR <- ctmm.fit(DATA,GUESS)
@@ -113,6 +115,6 @@ summary(FITZ)
 ## ----  fig.show='hold'---------------------------------------------------
 plot(SVF,CTMM=FITS,col.CTMM=c("red","purple","blue"),fraction=0.65,level=0.5)
 title("zoomed out")
-plot(SVF,CTMM=FITS,col.CTMM=c("red","purple","blue"),fraction=0.002,level=0.5)
+plot(SVF,CTMM=FITS,col.CTMM=c("red","purple","blue"),xlim=xlim,level=0.5)
 title("zoomed in")
 

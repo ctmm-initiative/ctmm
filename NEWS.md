@@ -1,5 +1,7 @@
-0.4.0 2017-04-26
+0.4.0 2017-04-29
 ================
+
+  * New utility function %#% for unit conversions
 
   * summary now works on lists of telemetry objects
   

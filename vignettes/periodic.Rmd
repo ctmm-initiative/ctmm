@@ -33,7 +33,7 @@ The `fast=2` option requests the use of the (much) faster FFT-based algorithm an
 The `res.time` argument increases the resolution of the temporal grid. The algorithm defaults to adequate resolution for regularly scheduled data (permitting gaps), while variable sampling rates require `res.time>1` to resolve the fine scale spectrum correctly.
 
 ```{r,  fig.show="hold"}
-plot(LSP, max=TRUE, diagnostic=TRUE)
+plot(LSP,max=TRUE,diagnostic=TRUE,transparency=0.2,cex=0.5)
 ```
 
 The `max=TRUE` option keeps only local maxima and often yields periodograms that are easier to interpret, especially when the resolution of the periodogram has been increased from the default.
@@ -51,3 +51,8 @@ The first is called a periodic-mean process, and the second is called a circulat
 For periodic-mean processes, you need to specify one or more period values that you want `ctmm` to consider. 
 
 In our example, we are going to specify a period of a day, which is what the periodogram was saying. Other individuals in this population were also exhibiting a weekly periodicity, and in similar species, lunar cycles are well-known to affect ranging behaviors. Let us also put these periods into a model prototype.
+
+```{r}
+PROTO <- ctmm(mean="periodic",period=c(1 %#% "month",1 %#% "week",1 %#% "day"),circle=TRUE)
+```
+
