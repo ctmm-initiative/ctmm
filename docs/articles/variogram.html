@@ -173,7 +173,7 @@ SVF3 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variog
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF3,<span class="dt">fraction=</span><span class="fl">0.85</span>,<span class="dt">level=</span>level)
 <span class="kw">title</span>(<span class="st">"Default method"</span>)
 <span class="co"># 1, 5, 25 hour sampling intervals</span>
-dt &lt;-<span class="st"> </span><span class="dv">60</span>*<span class="dv">60</span>*<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">5</span>,<span class="dv">25</span>)
+dt &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">5</span>,<span class="dv">25</span>) %#%<span class="st"> "hour"</span>
 SVF3 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.html">variogram</a></span>(gazelle[[<span class="dv">18</span>]],<span class="dt">dt=</span>dt)
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF3,<span class="dt">fraction=</span><span class="fl">0.85</span>,<span class="dt">level=</span>level)
 <span class="kw">title</span>(<span class="st">"Multi method"</span>)</code></pre></div>
@@ -184,10 +184,8 @@ SVF3 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variog
 <h3 class="hasAnchor">
 <a href="#pooling-variograms" class="anchor"></a>Pooling Variograms</h3>
 <p>If multiple individuals exhibit similar movement behaviors, then we can pool their individual variograms to create a more precise population variogram. You should be careful though, if the individual movement behaviors and sampling schedules are not identical, then there will be discontinuities at lags where one timeseries runs out of data.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 1 hour sampling intervals</span>
-dt =<span class="st"> </span><span class="dv">60</span>*<span class="dv">60</span>
-<span class="co"># buffalo 4 is bad</span>
-SVF4 &lt;-<span class="st"> </span><span class="kw">lapply</span>(buffalo[-<span class="dv">4</span>],function(b){ <span class="kw"><a href="../reference/variogram.html">variogram</a></span>(b,<span class="dt">dt=</span>dt) })
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># buffalo 4 is bad</span>
+SVF4 &lt;-<span class="st"> </span><span class="kw">lapply</span>(buffalo[-<span class="dv">4</span>],variogram)
 SVF4 &lt;-<span class="st"> </span><span class="kw">mean</span>(SVF4)
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF4,<span class="dt">fraction=</span><span class="fl">0.35</span>,<span class="dt">level=</span>level)
 <span class="kw">title</span>(<span class="st">"Population variogram"</span>)</code></pre></div>
