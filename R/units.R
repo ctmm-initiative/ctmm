@@ -72,8 +72,8 @@ unit.telemetry <- function(data,length=1,time=1)
 ## rescale the units of dimensionful parameters
 unit.ctmm <- function(CTMM,length=1,time=1)
 {
-  if(length(CTMM$tau)>0){ CTMM$tau <- CTMM$tau/time }
-  CTMM$circle <- CTMM$circle/time
+  if(length(CTMM$tau)){ CTMM$tau <- CTMM$tau/time }
+  CTMM$circle <- CTMM$circle * time
 
   # all means scale with length the same way... but not time
   CTMM$mu <- CTMM$mu/length
@@ -117,8 +117,8 @@ unit.ctmm <- function(CTMM,length=1,time=1)
 
     if(CTMM$circle)
     {
-      CTMM$COV["circle",] <- CTMM$COV["circle",]/time
-      CTMM$COV[,"circle"] <- CTMM$COV[,"circle"]/time
+      CTMM$COV["circle",] <- CTMM$COV["circle",] * time
+      CTMM$COV[,"circle"] <- CTMM$COV[,"circle"] * time
     }
   }
 

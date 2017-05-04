@@ -10,28 +10,35 @@ stationary.drift <- function(t,CTMM) { cbind( array(1,length(t)) ) }
 stationary.init <- function(data,CTMM)
 {
   z <- get.telemetry(data,CTMM$axes)
-  
+
   # weights from errors
   error <- get.error(data,CTMM)
   if(CTMM$error) { w <- 1/error }
   else { w <- rep(1,length(data$t)) }
   # normalize weights
   w <- w/sum(w)
-  
+
   CTMM$mu <- c(w %*% z)
 
   z <- t(t(z)-CTMM$mu)
-  
+
   CTMM$sigma <- t(z) %*% z
-  
+
   # remove error from variability
-  if(CTMM$error) { CTMM$sigma <- CTMM$sigma - (sum(error) * diag(length(CTMM$axes))) }
-  
+  error <- sum(error)
+  if(CTMM$error) { CTMM$sigma <- CTMM$sigma - error * diag(length(CTMM$axes)) }
+
   n <- length(data$t)
-  CTMM$sigma <- CTMM$sigma / (n-1)  
-  
+  CTMM$sigma <- CTMM$sigma / (n-1)
+  error <- error/(n-1)
+
+  # don't let variance estimate go below error estimate (or can become negative)
+  STUFF <- eigen(CTMM$sigma)
+  STUFF$values <- pmax(STUFF$values,error)
+  CTMM$sigma <- STUFF$vectors %*% diag(STUFF$values) %*% t(STUFF$vectors)
+
   CTMM$sigma <- covm(CTMM$sigma,isotropic=CTMM$isotropic,axes=CTMM$axes)
-  
+
   return(CTMM)
 }
 
@@ -44,7 +51,7 @@ stationary.svf <- function(CTMM)
   # default
   EST <- function(t) { 0 }
   VAR <- function(t) { 0 }
-  
+
   return(list(EST=EST,VAR=VAR))
 }
 
@@ -71,17 +78,17 @@ periodic.drift <- function(t,CTMM)
 {
   harmonic <- CTMM$harmonic
   period <- CTMM$period
-  
+
   # constant term
   U <- cbind( stationary.drift(t,CTMM) )
-  
+
   omega <- periodic.omega(CTMM)
   if(length(omega))
   {
     omega <- t %o% omega
     U <- cbind( U , cos(omega) , sin(omega) )
   }
-  
+
   return(U)
 }
 
@@ -89,7 +96,7 @@ periodic.drift <- function(t,CTMM)
 periodic.init <- function(data,CTMM)
 {
   # default period of 1 day
-  if(is.null(CTMM$period)) { CTMM$period <- 24*60^2 } 
+  if(is.null(CTMM$period)) { CTMM$period <- 1 %#% "day" }
 
   # default harmonics is none
   if(is.null(CTMM$harmonic)) { CTMM$harmonic <- numeric(length(CTMM$period)) }
@@ -103,7 +110,7 @@ periodic.init <- function(data,CTMM)
 periodic.scale <- function(CTMM,time)
 {
   CTMM$period <- CTMM$period / time
-  
+
   return(CTMM)
 }
 
@@ -111,20 +118,20 @@ periodic.scale <- function(CTMM,time)
 periodic.svf <- function(CTMM)
 {
   if(sum(CTMM$harmonic)==0) { return( stationary.svf(CTMM) ) }
-  
+
   STUFF <- periodic.stuff(CTMM)
   omega <- STUFF$omega
   A <- STUFF$A
   COV <- STUFF$COV
-  
+
   EST <- function(t) { sum( 1/4 * A^2 * (1-cos(omega*t) )) }
-  
+
   VAR <- function(t)
   {
     grad <- 1/2 * A * (1-cos(omega*t))
-    return(grad %*% COV %*% grad)
+    return(c(grad %*% COV %*% grad))
   }
-  
+
   return(list(EST=EST,VAR=VAR))
 }
 
@@ -142,17 +149,17 @@ periodic.name <- function(CTMM)
 periodic.speed <- function(CTMM)
 {
   if(sum(CTMM$harmonic)==0) { return(stationary.speed(CTMM)) }
-  
+
   STUFF <- periodic.stuff(CTMM)
   omega <- STUFF$omega
   A <- STUFF$A
   COV <- STUFF$COV
-  
+
   if(is.null(omega)) { return( stationary.speed(CTMM) ) }
 
   EST <- sum(omega^2*A^2)/2
   grad <- omega^2*A
-  VAR <- grad %*% COV %*% grad
+  VAR <- c(grad %*% COV %*% grad)
 
   return(list(EST=EST,VAR=VAR))
 }
@@ -162,9 +169,9 @@ periodic.summary <- function(CTMM,level,level.UD)
 {
   alpha <- 1-level
   SUM <- stationary.summary(CTMM,level,level.UD)
-  
+
   if(sum(CTMM$harmonic)==0) { return(SUM) }
-  
+
   STUFF <- periodic.stuff(CTMM)
   omega <- STUFF$omega
   A <- STUFF$A
@@ -176,9 +183,9 @@ periodic.summary <- function(CTMM,level,level.UD)
   ecc <- CTMM$sigma@par["eccentricity"]
   RAN <- 2 * area * cosh(ecc/2)
   MLE <- ROT/(ROT+RAN)
-  
+
   GRAD <- A
-  COV.ROT <- GRAD %*% COV %*% GRAD
+  COV.ROT <- c(GRAD %*% COV %*% GRAD)
 
   GRAD <- RAN/area
   PARS <- "area"
@@ -188,7 +195,7 @@ periodic.summary <- function(CTMM,level,level.UD)
     PARS <- c(PARS,"eccentricity")
   }
   COV.RAN <- CTMM$COV[PARS,PARS]
-  COV.RAN <- GRAD %*% COV.RAN %*% GRAD
+  COV.RAN <- c(GRAD %*% COV.RAN %*% GRAD)
 
   GRAD <- c(RAN,-ROT)/(ROT+RAN)^2
   VAR <- sum(GRAD^2 * c(COV.ROT,COV.RAN))
@@ -198,7 +205,7 @@ periodic.summary <- function(CTMM,level,level.UD)
   rownames(CI) <- "rotation/deviation %"
 
   SUM <- rbind(SUM,CI)
-  
+
   # ROTATIONAL SPEED INDEX
   # CIs are too big to be useful
   if(length(CTMM$tau)>1)
@@ -209,7 +216,7 @@ periodic.summary <- function(CTMM,level,level.UD)
     MLE <- ROT/(ROT+RAN)
 
     GRAD <- omega^2*A
-    COV.ROT <- GRAD %*% COV %*% GRAD
+    COV.ROT <- c(GRAD %*% COV %*% GRAD)
 
     GRAD <- c(RAN/area,-2*area*cosh(ecc/2)/prod(CTMM$tau)/CTMM$tau)
     PARS <- c("area","tau position","tau velocity")
@@ -224,7 +231,7 @@ periodic.summary <- function(CTMM,level,level.UD)
       PARS <- c(PARS,"circle")
     }
     COV.RAN <- CTMM$COV[PARS,PARS]
-    COV.RAN <- GRAD %*% COV.RAN %*% GRAD
+    COV.RAN <- c(GRAD %*% COV.RAN %*% GRAD)
 
     GRAD <- c(RAN,-ROT)/(ROT+RAN)^2
     VAR <- sum(GRAD^2 * c(COV.ROT,COV.RAN))
@@ -235,7 +242,7 @@ periodic.summary <- function(CTMM,level,level.UD)
 
     SUM <- rbind(SUM,CI)
   }
-          
+
   return(SUM)
 }
 
@@ -244,20 +251,20 @@ periodic.refine <- function(CTMM)
 {
   period <- CTMM$period
   harmonic <- CTMM$harmonic
-  
+
   GUESS <- list()
-  
+
   # dt <- stats::median(diff(data$t))
   # P <- attr(CTMM$mean,"par")$P
   # # max harmonics for Nyquist frequency
   # kmax <- P/(2*dt)
-  
+
   for(i in 1:length(period))
   {
     GUESS[[length(GUESS)+1]] <- CTMM
     GUESS[[length(GUESS)]]$harmonic[i] <- harmonic[i] + 1
   }
-  
+
   return(GUESS)
 }
 
@@ -269,7 +276,7 @@ periodic.omega <- function(CTMM)
 {
   harmonic <- CTMM$harmonic
   period <- CTMM$period
-  
+
   omega <- NULL
   for(i in 1:length(harmonic))
   {
@@ -279,7 +286,7 @@ periodic.omega <- function(CTMM)
       omega <- c( omega , w )
     }
   }
-  
+
   return(omega)
 }
 
@@ -289,7 +296,7 @@ periodic.stuff <- function(CTMM)
   harmonic <- CTMM$harmonic
   period <- CTMM$period
   omega <- periodic.omega(CTMM)
-  
+
   # amplitudes and covariance
   A <- CTMM$mu
   COV <- CTMM$COV.mu
@@ -301,23 +308,23 @@ periodic.stuff <- function(CTMM)
   if(is.null(COV)) { COV <- 0 }
   # default structure
   COV <- array(COV,c(2,2*k+1,2*k+1,2))
-  
+
   # delete stationary coefficients
   A <- A[-1,,drop=FALSE]
   COV <- COV[,-1,,,drop=FALSE]
   COV <- COV[,,-1,,drop=FALSE]
-  
+
   # structure omega like A
   omega <- c(omega,omega)
   omega <- cbind(omega,omega)
   # this is now (2k)*2
-  
+
   # flatten block-vectors and block-matrices
   A <- array(A,(2*k)*2)
   omega <- array(omega,(2*k)*2)
   COV <- aperm(COV,c(2,1,3,4))
   COV <- array(COV,c((2*k)*2,(2*k)*2))
-  
+
   return(list(A=A,COV=COV,omega=omega))
 }
 
@@ -332,19 +339,19 @@ uspline.drift <- function(t,CTMM)
   STUFF <- uspline.stuff(CTMM)
   tknot <- STUFF$tknot
   dt <- STUFF$dt
-  
+
   # midpoint / no real grid / degenerate case
   if(knot==1)
   {
     U <- stationary.drift(t,CTMM)
     if(degree==1) { return( U ) }
-    
+
     U <- cbind( U , (t-tknot) )
     return(U)
   }
-  
+
   U <- array(0,c(length(t),knot,degree))
-  
+
   # current starting knot
   k <- 1
   for(i in 1:length(t))
@@ -352,10 +359,10 @@ uspline.drift <- function(t,CTMM)
     s <- t[i]
     # iterate knot number k until we are between the appropriate knots
     while(s>tknot[k+1] && k<knot) { k <- k+1 }
-    
+
     # relative distance betwee knots
     s <- (s - tknot[k])/dt
-    
+
     if(degree==1) # linear interpolant
     {
       U[i,k,1] <- 1-s
@@ -371,8 +378,8 @@ uspline.drift <- function(t,CTMM)
   }
 
   U <- array(U,c(length(t),knot*degree))
-  
-  return(U)  
+
+  return(U)
 }
 
 # initialize default parameters
@@ -380,14 +387,14 @@ uspline.init <- function(data,CTMM)
 {
   # degree of continuity: 1,2 - location,velocity
   if(is.null(CTMM$degree)) { CTMM$degree <- 1 }
-  # default number of knots 
+  # default number of knots
   if(is.null(CTMM$knot)) { CTMM$knot <- 1 }
   # default domain of spline grid
   if(is.null(CTMM$domain)) { CTMM$domain <- c(data$t[1],last(data$t)) }
-  
+
   if(is.null(CTMM$mu)) { CTMM <- stationary.init(CTMM) }
-  
-  return(CTMM)  
+
+  return(CTMM)
 }
 
 # scale times
@@ -395,17 +402,17 @@ uspline.scale <- function(CTMM,time)
 {
   knot <- CTMM$knot
   degree <- CTMM$degree
-  
+
   if(CTMM$degree>1)
   {
     scale <- array(1,c(knot,degree))
     scale[,2] <- time
     scale <- array(scale,knot*degree)
-    
+
     CTMM$mu[,1] <- CTMM$mu[,1] * scale
     CTMM$mu[,2] <- CTMM$mu[,2] * scale
   }
-  
+
   return(CTMM)
 }
 
@@ -431,10 +438,10 @@ uspline.speed <- function(CTMM)
 {
   degree <- CTMM$degree
   knot <- CTMM$knot
-  
+
   STUFF <- uspline.stuff()
   dt <- STUFF$dt
-  
+
   if(degree==1 && knot==1)
   {
     EST <- 0
@@ -450,7 +457,7 @@ uspline.speed <- function(CTMM)
     EST <- NA
     VAR <- NA
   }
-  
+
   return(list(EST=EST,VAR=VAR))
 }
 
@@ -464,7 +471,7 @@ uspline.stuff <- function(CTMM)
 {
   knot <- CTMM$knot
   domain <- CTMM$domain
-  
+
   if(knot>1)
   {
     # location of knots
@@ -477,6 +484,6 @@ uspline.stuff <- function(CTMM)
     tknot <- mean(domain)
     dt <- diff(domain)
   }
-    
+
   return(list(tknot=tknot,dt=dt))
 }

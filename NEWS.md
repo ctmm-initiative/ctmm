@@ -1,4 +1,4 @@
-0.4.0 2017-04-29
+0.4.0 2017-05-03
 ================
 
   * New utility function %#% for unit conversions
@@ -7,7 +7,7 @@
   
   * new extent method for variogram objects
   
-  * bugfixes in plot.variogram with fitted UEREs
+  * bugfixes in plot.variogram with fit UERE, tau==0
   
   * bugfixes with OUF/OU fitting & CIs near boundaries
   

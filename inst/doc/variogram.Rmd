@@ -73,7 +73,7 @@ For the long range behavior we can see that the variogram flattens (asymptotes) 
 
 The asymptote of our variogram is around 23 square km, and the fact that it takes roughly 20 days for the variogram to asymptote is indicative of the fact that the buffalo's location appears continuous at this timescale. This is also, roughly, the time it takes for the buffalo to cross its home range.
 
-In the next sections we will "fit" models the the variograms.
+In the next sections we will "fit" models the variograms.
 This is not a rigorous statistical fitting, but a good way of choosing candidate movement models and guessing at their parameters.
 The variogram-fit parameter guestimates will then be fed into maximum likelihood estimation, which requires good initial guesses for non-linear optimization.
 

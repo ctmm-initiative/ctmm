@@ -12,7 +12,7 @@ The fitting functions wrap around \code{optim} and \code{ctmm.loglike} to maximi
 \usage{
 ctmm(tau=NULL,isotropic=FALSE,range=TRUE,circle=FALSE,error=FALSE,axes=c("x","y"),...)
 
-ctmm.loglike(data,CTMM,REML=FALSE,zero=0,verbose=FALSE)
+ctmm.loglike(data,CTMM,REML=FALSE,profile=TRUE,zero=0,verbose=FALSE)
 
 ctmm.fit(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
 
@@ -30,6 +30,7 @@ ctmm.select(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE,...)
   \item{data}{ Timeseries data represented as a \code{telemetry} object. }
   \item{CTMM}{ A \code{ctmm} movement-model object containing the initial parameter guesses conforming to the basic structure of the model hypothesis. \code{ctmm.select} can accept a list of such objects.}
   \item{REML}{Use residual maximum likelihood if \code{TRUE}. Not recommended.}
+  \item{profile}{Analytically solve for as many covariance parameters as possible.}
   \item{zero}{Calculates \eqn{\log(likelihood) - zero}, instead of just \eqn{\log(likelihood)}, in a way that maintains numerical precision if the constant \code{zero} is close to the log likelihood. Used internally by \code{ctmm.fit}.}
   \item{verbose}{Return additional information. See "Value" below.}
   \item{method}{Use residual maximum likelihood if \code{"REML"}. Not recommended.}
