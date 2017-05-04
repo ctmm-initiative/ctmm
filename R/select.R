@@ -406,6 +406,10 @@ name.ctmm <- function(CTMM)
   if(CTMM$circle)
   { NAME <- c(NAME,"circle") }
 
+  # error
+  if(CTMM$error)
+  { NAME <- c(NAME,"error") }
+
   # mean
   drift <- get(CTMM$mean)
   NAME <- c(NAME,drift@name(CTMM))

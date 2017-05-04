@@ -1,4 +1,5 @@
 PERIODIC 0.4.0
+* one solve in Kalman filter -> pass to likelihood function
 * variogram on mean detrended data with CTMM argument
 * simulate.telemetry (not pure ctmm)
 * smoother (velocity vector--check)
@@ -13,6 +14,8 @@ VIGNETTES & EXAMPLES
 * explain effective sample sizes (DOF of summary)
 
 OPTIMIZER
+* don't interpolate - not safe
+* try to fit Gamba with error
 * mc.optimize cross curvature if queue allows space
 * mc.optimize fill up queue with higher-order derivatives if further space allows
 * mc.genD cross correlations are wrong

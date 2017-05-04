@@ -498,17 +498,19 @@ svf.func <- function(CTMM,moment=FALSE)
   CPF <- CTMM$CPF
   circle <- CTMM$circle
 
-  range <- CTMM$range
-  tau <- tau[tau>0]
-  tau <- tau[tau<Inf]
-  K <- length(tau)
-
   # no error considered if missing
   COV <- CTMM$COV
-  if(is.null(COV))
-  { COV <- diag(0,1+K+(if(circle){1}else{0})+(if(CTMM$error){1}else{0})) }
-  else
-  { COV <- area2var(CTMM,MEAN=TRUE) }
+  if(!is.null(COV)) { COV <- area2var(CTMM,MEAN=TRUE) }
+
+  range <- CTMM$range
+  tau <- tau[tau<Inf]
+  if(any(tau==0))
+  {
+    DEL <- paste("tau",names(tau[tau==0]))
+    if(!is.null(COV)) { COV <- rm.name(COV,DEL) }
+    tau <- tau[tau>0]
+  }
+  K <- length(tau)
 
   # FIRST CONSTRUCT STANDARD ACF AND ITS PARAMTER GRADIENTS
   if(CPF) # Central place foraging
@@ -553,14 +555,13 @@ svf.func <- function(CTMM,moment=FALSE)
   }
   else
   {
-    f <- 2*pi/circle
-    ACF <- function(t) { cos(f*t)*acf(t) }
-    svf <- function(t) { sigma*(1-cos(f*t)*acf(t)) }
-    grad <- function(t) { c(svf(t)/sigma, -sigma*cos(f*t)*acf.grad(t), -(f/circle)*sigma*t*sin(f*t)*acf(t)) }
+    ACF <- function(t) { cos(circle*t)*acf(t) }
+    svf <- function(t) { sigma*(1-cos(circle*t)*acf(t)) }
+    grad <- function(t) { c(svf(t)/sigma, -sigma*cos(circle*t)*acf.grad(t), +sigma*t*sin(circle*t)*acf(t)) }
   }
 
   # add error term
-  if(CTMM$error && ("error" %in% dimnames(COV)[[1]]))
+  if(CTMM$error)
   {
     err.svf <- function(t) { (if(t==0) {0} else {CTMM$error^2/2}) }
     GRAD <- function(t) { c(grad(t) , (if(t==0) {0} else {CTMM$error}) ) }
@@ -578,6 +579,9 @@ svf.func <- function(CTMM,moment=FALSE)
   MEAN <- drift@svf(CTMM)
 
   SVF <- function(t) { svf(t) + err.svf(t) + MEAN$EST(t) }
+
+  # no error provided
+  if(is.null(COV)) { COV <- diag(0,nrow=length(GRAD(0))) }
 
   # variance of SVF
   VAR <- function(t)
@@ -599,10 +603,11 @@ plot.svf <- function(lag,CTMM,error=0,alpha=0.05,col="red",type="l",...)
   # adjust model error to incorporate data HDOP average
   if(CTMM$error)
   {
-    if(error==0) { error <- 1 } # default HDOP=1
-    error <- sqrt(error)
+    if(error==0) { error <- 1/2 } # default HDOP=1
+    # effective UERE
+    error <- sqrt(2*error)
+    # UERE adjustment
     CTMM$error <- CTMM$error * error
-
     if(!is.null(CTMM$COV) && "error" %in% dimnames(CTMM$COV)[1])
     {
       CTMM$COV["error",] <- CTMM$COV["error",] * error
@@ -793,7 +798,7 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", 
     for(i in 1:n)
     {
       # units conversion
-      CTMM[[i]] <- unit.ctmm(CTMM[[i]],sqrt(SVF.scale),lag.scale)
+      CTMM[[i]] <- unit.ctmm(CTMM[[i]],length=sqrt(SVF.scale),time=lag.scale)
 
       # include errors in svf plot
       error <- FALSE
@@ -925,6 +930,8 @@ variogram.fit <- function(variogram,CTMM=ctmm(),name="GUESS",fraction=0.5,intera
   if(interactive && !manipulate::isAvailable()) { interactive <- FALSE }
   envir <- .GlobalEnv
 
+  RES <- 1000
+
   # R CHECK CRAN BUG WORKAROUNDS
   z <- NULL
   tau1 <- 1
@@ -957,14 +964,14 @@ variogram.fit <- function(variogram,CTMM=ctmm(),name="GUESS",fraction=0.5,intera
     sigma.unit <- unit(sigma,"area",concise=TRUE)
     sigma <- sigma / sigma.unit$scale
     label <- paste("sigma variance (",sigma.unit$name,")",sep="")
-    manlist <- c(manlist, list(sigma = manipulate::slider(0,m*sigma,initial=sigma,label=label)))
+    manlist <- c(manlist, list(sigma = manipulate::slider(0,m*sigma,initial=sigma,step=sigma/RES,label=label)))
   }
   else
   {
     sigma.unit <- unit(sigma,"diffusion",concise=TRUE)
     sigma <- sigma / sigma.unit$scale
     label <- paste("sigma diffusion (",sigma.unit$name,")",sep="")
-    manlist <- c(manlist, list(sigma = manipulate::slider(0,m*sigma,initial=sigma,label=label)))
+    manlist <- c(manlist, list(sigma = manipulate::slider(0,m*sigma,initial=sigma,step=sigma/RES,label=label)))
   }
 
   CPF <- CTMM$CPF
@@ -976,37 +983,38 @@ variogram.fit <- function(variogram,CTMM=ctmm(),name="GUESS",fraction=0.5,intera
   if(CPF)
   {
     label <- paste("tau period (",tau1.unit$name,")",sep="")
-    manlist <- c(manlist, list(tau1 = manipulate::slider(0,m*tau[1],initial=tau[1],label=label)))
+    manlist <- c(manlist, list(tau1 = manipulate::slider(0,m*tau[1],initial=tau[1],step=tau[1]/RES,label=label)))
 
     label <- paste("tau decay (",tau2.unit$name,")",sep="")
-    manlist <- c(manlist, list(tau2 = manipulate::slider(0,m*tau[2],initial=tau[2],label=label)))
+    manlist <- c(manlist, list(tau2 = manipulate::slider(0,m*tau[2],initial=tau[2],step=tau[2]/RES,label=label)))
 
     tau2 <- NULL # not sure why necessary
   }
   else
   {
     label <- paste("tau position (",tau1.unit$name,")",sep="")
-    manlist <- c(manlist, list(tau1 = manipulate::slider(0,m*tau[1],initial=tau[1],label=label)))
+    manlist <- c(manlist, list(tau1 = manipulate::slider(0,m*tau[1],initial=tau[1],step=tau[1]/RES,label=label)))
 
     label <- paste("tau velocity (",tau2.unit$name,")",sep="")
-    manlist <- c(manlist, list(tau2 = manipulate::slider(0,m*tau[2],initial=tau[2],label=label)))
+    manlist <- c(manlist, list(tau2 = manipulate::slider(0,m*tau[2],initial=tau[2],step=tau[2]/RES,label=label)))
   }
 
   # circulation
   circle <- CTMM$circle
   if(circle)
   {
-    circle.unit <- unit(circle,"time",concise=TRUE)
-    circle <- circle / circle.unit$scale
-    label <- paste("circulation (",circle.unit$name,")",sep="")
+    circle.period <- 2*pi/circle
+    circle.unit <- unit(circle.period,"time",concise=TRUE)
+    circle.period <- circle.period / circle.unit$scale
+    label <- paste("circulation period (",circle.unit$name,")",sep="")
     c1 <- min(0,m*circle)
     c2 <- max(0,m*circle)
-    manlist <- c(manlist, list(circle = manipulate::slider(c1,c2,initial=circle,label=label)))
+    manlist <- c(manlist, list(circle.period = manipulate::slider(c1,c2,initial=circle.period,step=circle.period/RES,label=label)))
   }
 
   # error
   e2 <- max(100,2*error)
-  manlist <- c(manlist, list(error = manipulate::slider(0,e2,initial=as.numeric(error),step=0.1,label="error (m)")))
+  manlist <- c(manlist, list(error = manipulate::slider(0,e2,initial=as.numeric(error),step=e2/RES/2,label="error (m)")))
 
   # storage button
   manlist <- c(manlist, list(store = manipulate::button(paste("Save to",name))))
@@ -1036,7 +1044,7 @@ variogram.fit <- function(variogram,CTMM=ctmm(),name="GUESS",fraction=0.5,intera
       { CTMM$sigma <- sigma }
 
       CTMM$tau <- c(tau1*tau1.unit$scale, tau2*tau2.unit$scale)
-      if(circle) { CTMM$circle <- circle * circle.unit$scale }
+      if(circle) { CTMM$circle <- 2*pi/(circle.period * circle.unit$scale) }
       CTMM$error <- error
 
       CTMM <- as.list(CTMM)

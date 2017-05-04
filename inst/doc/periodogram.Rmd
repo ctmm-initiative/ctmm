@@ -1,0 +1,143 @@
+---
+title: "Periodic movement models"
+author: "Guillaume Péron, Christen H. Fleming, and Justin M. Calabrese"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Periodic movement models}
+  %\VignetteKeyword{periodic}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+In this vignette, we walk through periodogram for movement data and periodic movement model fitting and selection.
+It is assumed that you are already familiar with data preparation with ctmm, as well as the maximum likelihood procedure described in the `variogram` vignette.
+Our example maned wolf data is already prepared into a `telemetry` object.
+```{r,  fig.show="hold"}
+library(ctmm)
+data(wolf)
+Gamba <- wolf$Gamba
+plot(Gamba)
+```
+
+### Non-parametric approach: Periodograms
+
+Before anything else, we want to plot the data in a way that makes periodic patterns apparent. This is the periodogram.
+
+```{r}
+LSP <- periodogram(Gamba,fast=2,res.time=2)
+```
+
+The `fast=2` option requests the use of the (much) faster FFT-based algorithm and furthermore samples a highly composite number of times. Set the argument to FALSE to revert to Scargle's original algorithm, which involves fewer numerical approximations. 
+The `res.time` argument increases the resolution of the temporal grid when `fast>0`. The algorithm defaults to adequate resolution for regularly scheduled data (permitting gaps), while variable sampling rates require `res.time>1` to resolve the fine scale spectrum correctly.
+
+```{r,  fig.show="hold"}
+plot(LSP,max=TRUE,diagnostic=TRUE,cex=0.5)
+```
+
+The `max=TRUE` option keeps only local maxima and often yields periodograms that are easier to interpret, especially when the resolution of the periodogram has been increased from the default.
+
+The `diagnostic=TRUE` option draws the periodogram of the sampling schedule with red symbols. If the periodogram of the sampling schedule exhibits peaks, this indicates that the corresponding peaks in the movement data could be simply caused by irregularities in the sampling schedule and not by periodicity in the movement.
+Here the periodogram exhibits a clear peak for the period of one day, but this is also present in the (red) diagnostic.
+
+Periodograms are a great data exploration tool, but they do not detect everything. In particular circulation processes, those that induce circulatory patterns via a stochastic rotational effect, are often not visible in periodograms. Periodograms are also difficult to compare from one individual to the next, if the aperiodic stochastic movements of these individuals are not the same.  
+
+### Parametric approach: Fitting movement models with circulatory patterns
+Circulatory patterns can be incorporated into stochastic continuous time movement models in two ways: via the mean of the process, modelling that the animal reverts to a point that moves periodically through time, or via the stochastic component, by including a rotation effect.
+The first is called a periodic-mean process, and the second is called a circulation process.
+
+For periodic-mean processes, you need to specify one or more period values that you want `ctmm` to consider. 
+
+In our example, we are going to specify a period of a day, which is what the periodogram was saying. Other individuals in this population were also exhibiting a weekly periodicity, and in similar species, lunar cycles are well-known to affect ranging behaviors.
+
+```{r}
+# circle=TRUE needs to be re-tested
+# PROTO <- ctmm(mean="periodic",period=c(1 %#% "day",1 %#% "month"),circle=TRUE)
+PROTO <- ctmm(mean="periodic",period=c(1 %#% "day",1 %#% "month"))
+```
+
+The `mean="periodic"` option tells `ctmm` that you want a periodic-mean process. The default is `mean="stationary"`.
+The period values are all specified in seconds (SI unit) by the `%#%` function (see `help("%#%")` for more information).
+
+The `circle=TRUE` option tells ctmm that you want to try and fit a model in which there is stochastic circulation on top of the periodicity in the process mean.
+For circulation processes, you do not need to specify candidate period values. The period of the circulation is estimated from the data.
+
+As with other uses of ctmm, the next step is to generate an initial guess of the parameter values to feed to the likelihood optimization routine. You can do this using your intuition, by visually examining the variogram, or by letting `ctmm` do it for you.
+
+```{r}
+SVF <- variogram(Gamba,res=3)
+GUESS <- ctmm.guess(Gamba,PROTO,variogram=SVF,interactive=FALSE)
+```
+
+`ctmm.guess` is a generalization of `variogram.fit` that can estimate other quantites from the data that are not apparent in the variogram, such as the circulation period and location correlations. A variogram argument is not necessary, but here we used the `res` option to increase the FFT variogram's temporal resolution and counteract sampling variability. The `interactive` argument works just as with `variogram.fit`.
+
+Potentially, the most complex model based on our prototype could have both circulation and multiple harmonics of daily periodicity. In addition, we also do not know whether the velocities are autocorrelated in time (OUF model) and whether the animal moves amounts in different directions (anisotropy). All of this makes for a large number of effects. Forcing all these effects upon data that do not support them would inflate the risk of overfitting or convergence issues.
+We thereby conduct a model selection.
+
+```{r}
+control <- list(method="pNewton")
+FITS <- ctmm.select(Gamba,GUESS,verbose=TRUE,control=control)
+```
+
+The non-default `control` list here specifies our prototype optimization code that has been tested to be faster and more accurate on this example.
+With `verbose=TRUE`, we obtain a list fitted `ctmm` objects, one for each relevant combination of effects, in order of increasing AICc.
+The first element of that list is the preferred model.
+We also suggest setting the `trace=TRUE` option to produce updates.
+
+```{r}
+summary(FITS)
+```
+
+We see that the velocity autocorrelation (OUF), anisotropy, and circulation were unambiguously selected using the level option and were present in all the candidate models. 
+In this maned wolf, there is rather strong support (Delta AIC > 4) for the preferred model (the first of the list).
+Given how we specified the prototype, `harmonic 3 0` means that this preferred model has no lunar periodicity, but has three harmonics of the one-day periodicity. This fittingly corresponds to what the periodogram was saying.
+If there was some moon-related pattern of space use and given how we specified our prototype, we would have had a non-zero value as the first `harmonic` value.
+We also see that circulation was selected.
+
+Next we do some sanity checking on our results. The sampling interval for Gamba is fairly steady at
+
+```{r}
+"hour" %#% stats::median(diff(Gamba$t))
+```
+
+4 hours, which (ideally) corresponds to a Nyquist period of 8 (2 $\times$ 4) hours, or 3 (24/8) times per day, or 3 harmonics of the day.
+The Nyquist period/frequency is an information limit on discretely sampled data.
+We expect to be able to extract a maximum of 3 harmonics from uniformly sampled data.
+Therefore, we should limit our consideration to harmonics of the day $\leq$ 3, while for lower quality data, we might have to limit our consideration even further.
+
+Consistent with these considerations, let us look at harmonics 3 and 2 of the day.
+
+```{r}
+summary(FITS[[1]]) # harmonic 3 0
+summary(FITS[[4]]) # harmonic 2 0
+```
+
+* `rotation/deviation %` corresponds to $100 \eta_P$ from the paper. It is interpreted as the proportion of the variance in the animal`s location that is caused by the periodicity in the mean.
+* `rotation/speed %` corresponds to  $100 \eta_V$ from the paper. It is interpreted as the proportion of the variance in the animal`s velocity that is caused by the periodicity in the mean.
+* `area` is the area of the variance ellipse. It quantifies the amplitude of the stochastic component of the movement process.
+* `tau position` is the position autocorrelation time. It is interpreted as the home range crossing time.
+* `tau velocity` is the velocity autocorrelation time. It quantifies the stability of the animal`s direction and speed.
+* `circulation period`  is the period of the stochastic circulations. On average, the animal re-pass through the same neighborhoods every estimated number of months (or days, or hours, depending on the automated unit specification).
+* `speed` is the expected speed of the movement. For Gamba, there is huge uncertainty in this estimate, but for other maned wolf timeseries, this paramter is better resolved.
+
+Note that, aside from the rotational indices, these two models are largely consistent, and the 3 harmonic model has an extrordinarily uncertain speed estimate.
+We can get a better idea of what is happening by comparing the variograms.
+
+```{r, fig.show='hold'}
+xlim <- c(0,1/2) %#% "month"
+plot(SVF,CTMM=FITS[[1]],xlim=xlim)
+title("3 Harmonics")
+plot(SVF,CTMM=FITS[[4]],xlim=xlim)
+title("2 Harmonics")
+```
+
+While the confidence bands encompass the empirical variogram, the 3 harmonic model has clearly overfit in attempting to match the Nyquist period (3/day) with less than ideal data.
+A more stringent infromation criteria would not necessarily select the 3 harmonic model.
+
+```{r}
+summary(FITS,IC="BIC")
+```
+
+### Home-range estimation
+
+This is not coded yet!
