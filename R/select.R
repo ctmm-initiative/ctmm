@@ -317,7 +317,7 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE
   }
 
     # fit the intital guess
-  if(trace) { message("Fitting models ",name.ctmm(CTMM)) }
+  if(trace) { message("* Fitting models ",name.ctmm(CTMM)) }
 
   CTMM <- ctmm.fit(data,(if(!pREML || is.null(CTMM$MLE)) { CTMM } else { CTMM$MLE }),trace=trace,...)
   OLD <- ctmm()
@@ -379,7 +379,7 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE
     GUESS <- c(GUESS,drift@refine(MLE))
 
     # fit every model
-    if(trace) { message("* Fitting models ",paste(sapply(GUESS,name.ctmm),collapse=", ")) }
+    if(trace && length(GUESS)) { message("* Fitting models ",paste(sapply(GUESS,name.ctmm),collapse=", ")) }
     GUESS <- lapply(GUESS,function(g){ctmm.fit(data,g,trace=trace,...)})
     MODELS <- c(MODELS,GUESS)
 

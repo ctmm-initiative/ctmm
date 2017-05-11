@@ -356,7 +356,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
   condition <- Inf
   gradient.old <- rep(Inf,DIM)
   hessian.LINE <- NULL # line-search hessian
-  par.dir <- 0 # search direction for conjugate gradient
+  par.dir <- rep(0,DIM) # search direction for conjugate gradient
   par.diff <- rep(0,DIM)
   ######################
   # MAIN LOOP
@@ -387,7 +387,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
     if(STAGE!=2)
     {
       # reset conjugate gradient direction for next time STAGE==2
-      par.dir <- 0
+      par.dir <- rep(0,DIM)
     }
 
     ## update hessian from line-search result (Rank-1 update)
