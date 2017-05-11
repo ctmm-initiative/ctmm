@@ -11,7 +11,7 @@ FFT <- function(X,inverse=FALSE)
   }
   else
   {
-    if(!inverse) { X <- mvfft(X) }
+    if(!inverse) { X <- stats::mvfft(X) }
     else { X <- stats::mvfft(X,inverse=TRUE)/nrow(X) }
   }
 
