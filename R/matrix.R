@@ -5,12 +5,12 @@ determinant.numeric <- function(x,logarithm=TRUE,...)
   SIGN <- sign(x)
   if(logarithm)
   { x <- log(abs(x)) }
-  
+
   RESULT <- list(modulus=x,sign=SIGN)
   attr(RESULT$modulus,"logarithm") <- logarithm
-  
+
   class(RESULT) <- "det"
-  
+
   return(det)
 }
 
@@ -30,25 +30,25 @@ PDfunc <-function(M,func=function(m){1/m},force=FALSE,pseudo=FALSE)
   DIM <- dim(M)
   if(is.null(DIM)) { DIM <- 1 }
   TOL <- DIM[1]*.Machine$double.eps
-  
+
   M <- eigen(M)
   V <- M$vectors
   M <- M$values
-  
+
   if(any(M<=0) && !force && !pseudo) { stop("Matrix not positive definite.") }
-  
+
   FORCE <- (M < TOL)
   PSEUDO <- (abs(M) < TOL)
-  
+
   if(any(FORCE) && force) { M[FORCE] <- TOL }
   M <- func(M)
   if(any(PSEUDO) && pseudo) { M[PSEUDO] <- 0 }
-  
+
   # add up from smallest contribution to largest contribution
   INDEX <- sort(M,method="quick",index.return=TRUE)$ix
   M <- lapply(INDEX,function(i) M[i]*(V[,i] %o% Conj(V[,i])) )
   M <- Reduce('+',M)
-  
+
   return(M)
 }
 
@@ -59,29 +59,32 @@ PDsolve <- function(M,force=FALSE,pseudo=FALSE)
   DIM <- dim(M)
   if(is.null(DIM)) { DIM <- 1 }
   TOL <- DIM[1]*.Machine$double.eps
-  
+
   # symmetrize
   M <- He(M)
-  
+
   # rescale
   W <- abs(diag(M))
   W <- sqrt(W)
   W <- W %o% W
-  
+
   # now a correlation matrix that is easier to invert
   M <- M/W
-  
+
   # try ordinary inverse
-  M <- try(qr.solve(M,tol=TOL))
+  M.try <- try(qr.solve(M,tol=TOL))
   # fall back on decomposition
-  if(class(M) != "matrix") { M <- PDfunc(M,func=function(m){1/m},force=force,pseudo=pseudo) }
-  
+  if(class(M.try) == "matrix")
+  { M <- M.try }
+  else
+  { M <- PDfunc(M,func=function(m){1/m},force=force,pseudo=pseudo) }
+
   # back to covariance matrix
   M <- M/W
-  
+
   # symmetrize
   M <- He(M)
-  
+
   return(M)
 }
 
@@ -94,7 +97,7 @@ sqrtm <- function(M,force=FALSE,pseudo=FALSE)
   DIM <- dim(M)
   if(is.null(DIM)) { DIM <- 1 }
   TOL <- DIM[1]*.Machine$double.eps
-  
+
   if(all(DIM==1))
   {
     if(M>=0)
@@ -114,7 +117,7 @@ sqrtm <- function(M,force=FALSE,pseudo=FALSE)
     }
     else
     { R <- diag(-1,nrow=DIM[1]) }
-    
+
     if(all(Re(diag(R))>=-TOL && abs(Im(diag(R)))<=TOL))
     {
       M <- Re(R)
@@ -129,7 +132,7 @@ sqrtm <- function(M,force=FALSE,pseudo=FALSE)
       { stop("Matrix is not positive definite.") }
     }
   }
-  
+
   return(M)
 }
 
@@ -145,14 +148,14 @@ conditionNumber <- function(M)
 
 # Positive definite part of matrix
 PDclamp <- function(M)
-{ 
+{
   # symmetrize
   M <- He(M)
-  
+
   M <- PDfunc(M,function(m){clamp(m,0,Inf)},force=TRUE)
-  
+
   # symmetrize
   M <- He(M)
-  
+
   return(M)
 }

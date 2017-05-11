@@ -91,7 +91,7 @@ summary(FITS)
 We see that the velocity autocorrelation (OUF), anisotropy, and circulation were unambiguously selected using the level option and were present in all the candidate models. 
 In this maned wolf, there is rather strong support (Delta AIC > 4) for the preferred model (the first of the list).
 Given how we specified the prototype, `harmonic 3 0` means that this preferred model has no lunar periodicity, but has three harmonics of the one-day periodicity. This fittingly corresponds to what the periodogram was saying.
-If there was some moon-related pattern of space use and given how we specified our prototype, we would have had a non-zero value as the first `harmonic` value.
+If there was some moon-related pattern of space use and given how we specified our prototype, we would have had a non-zero value as the second `harmonic` value.
 We also see that circulation was selected.
 
 Next we do some sanity checking on our results. The sampling interval for Gamba is fairly steady at

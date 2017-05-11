@@ -12,7 +12,7 @@ The package is described in Calabrese & Fleming (2016) and its methods are based
 Package: \tab ctmm\cr
 Type: \tab Package\cr
 Version: \tab 0.4.0 \cr
-Date: \tab 2017-05-03 \cr
+Date: \tab 2017-05-10 \cr
 License: \tab GPL-3 \cr
 }
 

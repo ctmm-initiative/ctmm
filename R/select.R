@@ -15,8 +15,7 @@ confint.ctmm <- function(model,alpha=0.05)
   if(K>0)
   {
     NAME <- paste("tau",names(tau))
-    for(k in 1:K)
-    { par <- rbind(par,ci.tau(tau[k],COV[NAME[k],NAME[k]],alpha=alpha)) }
+    for(k in 1:K) { par <- rbind(par,ci.tau(tau[k],COV[NAME[k],NAME[k]],alpha=alpha)) }
   }
 
   # circulation period
@@ -24,12 +23,20 @@ confint.ctmm <- function(model,alpha=0.05)
   if(circle)
   {
     NAME <- c(NAME,"circle")
-    CI <- stats::qnorm(c(alpha/2,0.5,1-alpha/2),mean=circle,sd=sqrt(COV["circle","circle"]))
-    # f -> period conversion
-    CI <- 2*pi/rev(CI)*sign(circle)
-    # sign change - f crosses 0 - period crosses Inf
-    if(CI[3]<0) { CI[3] <- Inf }
-    CI <- abs(CI)
+    VAR <- COV["circle","circle"]
+    CI <- stats::qnorm(c(alpha/2,0.5,1-alpha/2),mean=circle,sd=sqrt(VAR))
+
+    # does frequency CI cross zero?
+    if(CI[1]*CI[3]<0)
+    {
+      # quick fix
+      CI <- abs(CI)
+      CI[3] <- max(CI)
+      CI[1] <- 0
+    }
+
+    # frequency to period
+    CI <- sort(2*pi/abs(CI))
 
     par <- rbind(par,CI)
   }
@@ -303,6 +310,11 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE
   pREML <- !is.null(method) && method=="pREML"
 
   drift <- get(CTMM$mean)
+  if(CTMM$mean=="periodic")
+  {
+    Nyquist <- CTMM$period/stats::median(diff(data$t))/2
+    message("Nyquist frequency estimated at harmonic ",paste(Nyquist,collapse=" ")," of the period.")
+  }
 
     # fit the intital guess
   if(trace) { message("Fitting models ",name.ctmm(CTMM)) }
@@ -315,8 +327,8 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE
   {
     GUESS <- list()
     beta <- alpha.ctmm(CTMM,alpha)
-    # initial guess in case of pREML (easier for optimization)
-    MLE <- (if(!pREML) { CTMM } else { CTMM$MLE })
+    # initial guess in case of pREML (better for optimization)
+    MLE <- (if(pREML && !is.null(CTMM$MLE)) { CTMM$MLE } else { CTMM })
 
     # consider if some timescales are actually zero
     CI <- confint.ctmm(CTMM,alpha=beta)
@@ -367,7 +379,7 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE
     GUESS <- c(GUESS,drift@refine(MLE))
 
     # fit every model
-    if(trace) { message("Fitting models ",paste(sapply(GUESS,name.ctmm),collapse=", ")) }
+    if(trace) { message("* Fitting models ",paste(sapply(GUESS,name.ctmm),collapse=", ")) }
     GUESS <- lapply(GUESS,function(g){ctmm.fit(data,g,trace=trace,...)})
     MODELS <- c(MODELS,GUESS)
 

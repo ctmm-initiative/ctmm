@@ -1,5 +1,6 @@
 PERIODIC 0.4.0
-* one solve in Kalman filter -> pass to likelihood function
+* test simulation fits of circulation isotropic=T/F, pREML
+* one PDsolve in Kalman filter -> pass to likelihood function
 * variogram on mean detrended data with CTMM argument
 * simulate.telemetry (not pure ctmm)
 * smoother (velocity vector--check)
@@ -14,7 +15,8 @@ VIGNETTES & EXAMPLES
 * explain effective sample sizes (DOF of summary)
 
 OPTIMIZER
-* don't interpolate - not safe
+* local tangent transformation on periodic variables
+* STAGE 4 - pattern search
 * try to fit Gamba with error
 * mc.optimize cross curvature if queue allows space
 * mc.optimize fill up queue with higher-order derivatives if further space allows

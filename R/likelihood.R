@@ -104,7 +104,7 @@ kalman <- function(z,u,dt,CTMM,error=rep(0,nrow(z)),smooth=FALSE,sample=FALSE,we
   MEAN <- (last(DATA)+1):VEC
 
   tau <- CTMM$tau
-  K <- length(tau)  # dimension of hidden state per spatial dimension
+  K <- max(1,length(tau))  # dimension of hidden state per spatial dimension
 
   # observed dimensions
   OBS <- 1
@@ -647,6 +647,10 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
 # FIT MODEL WITH LIKELIHOOD FUNCTION (convenience wrapper to optim)
 ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
 {
+  # used for minimum scale of parameter inspection
+  dt <- stats::median(diff(data$t))
+  df <- 2*pi/(last(data$t)-data$t[1])
+
   method <- match.arg(method,c("ML","pREML","REML"))
 
   default <- list(method="Nelder-Mead",precision=1/2,maxit=.Machine$integer.max)
@@ -655,12 +659,16 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
   optimizer <- control$method
   control$method <- NULL
 
+  if(method=="REML") { REML <- TRUE }
+  else { REML <- FALSE }
+
+  # fit from MLE and not perturbed MLE
+  # if(method=="pREML" && !is.null(CTMM$MLE)) { CTMM <- CTMM$MLE }
+  # too easy to confuse yourself with?
+
   # clean/validate
   CTMM <- ctmm.ctmm(CTMM)
   drift <- get(CTMM$mean)
-
-  if(method=="REML") { REML <- TRUE }
-  else { REML <- FALSE }
 
   # basic info
   n <- length(data$t)
@@ -682,6 +690,10 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
 
   # save for fitting
   COV.init <- CTMM$COV
+  # make sure we can start from previous failed fit
+  if(any(is.nan(COV.init) | COV.init==Inf)) { COV.init <- NULL }
+  if(!is.null(COV.init)) { TEST <- eigen(COV.init,only.values=TRUE)$values } else { TEST <- FALSE }
+  if(any(TEST<=.Machine$double.eps | TEST==Inf)) { COV.init <- NULL }
   # erase previous fitting info if present
   CTMM$COV <- NULL
   CTMM$COV.mu <- NULL
@@ -799,19 +811,18 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
     {
       PS <- pars.tauv(tau)
       pars <<- c(pars,PS) # pull out relevant tau elements
-      parscale <<- c(parscale,PS)
-      LO <- 0*PS
-      lower <<- c(lower,LO)
-      UP <- Inf*(PS+1)
-      upper <<- c(upper,UP)
-      period <<- c(period,F)
+      parscale <<- c(parscale,pmax(PS,dt))
+      K <- length(PS)
+      lower <<- c(lower,rep(0,K))
+      upper <<- c(upper,rep(Inf,K))
+      period <<- c(period,rep(F,K))
     }
 
     # use 1/T as circulation parameter
     if(length(CIRCLE))
     {
       pars <<- c(pars,circle)
-      parscale <<- c(parscale,abs(circle))
+      parscale <<- c(parscale,max(abs(circle),df))
       lower <<- c(lower,-Inf)
       upper <<- c(upper,Inf)
       period <<- c(period,F)
@@ -1005,9 +1016,10 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
     CTMM$COV <- cov.loglike(hess,grad)
     dimnames(CTMM$COV) <- list(NAMES,NAMES)
 
+    CTMM$MLE <- NULL
     CTMM$method <- method
     # perturbative correction
-    if(method=="pREML")
+    if(method=="pREML" && !any(diag(CTMM$COV)==Inf))
     {
       # store MLE for faster model selection (ML is what is optimized, not pREML or REML)
       CTMM$MLE <- CTMM
@@ -1024,16 +1036,10 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
       DIFF <- genD(par=pars,fn=fn,zero=-CTMM$loglike,lower=lower,upper=upper,covariance=covariance(),parscale=parscale,Richardson=2,mc.cores=1)
       d.pars <- -c(COV %*% DIFF$gradient) # COV is -1/Hessian, grad is of -loglike
 
-      # gradient transformations
-      # Jacobian
-      J <- diag(length(pars))
-      dimnames(J) <- list(pNAMES,pNAMES)
-
-      # final perturbation
-      d.pars <- c(J %*% d.pars)
-
       # increment transformed parameters
-      pars <- pars + d.pars
+      # pars <- pars + d.pars
+      # safety catch for bad models near boundaries
+      pars <- line.boxer(d.pars,pars,lower=lower,upper=upper,period=period)
 
       # transform back
       names(pars) <- pNAMES
@@ -1047,9 +1053,11 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
       CTMM$COV <- cov.loglike(DIFF$hessian,grad)
       #CTMM$COV <- 2*COV - (COV %*% hess %*% COV)
     }
+    else if(method=="pREML")
+    { message("pREML failure due to MLE COV divergence.") }
 
     dimnames(CTMM$COV) <- list(NAMES,NAMES)
-    if(method=="pREML") { dimnames(CTMM$MLE$COV) <- list(NAMES,NAMES) }
+    if(!is.null(CTMM$MLE)) { dimnames(CTMM$MLE$COV) <- list(NAMES,NAMES) }
   }
 
   CTMM$AIC <- 2*k - 2*CTMM$loglike
