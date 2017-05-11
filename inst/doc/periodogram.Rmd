@@ -91,7 +91,7 @@ summary(FITS)
 We see that the velocity autocorrelation (OUF), anisotropy, and circulation were unambiguously selected using the level option and were present in all the candidate models. 
 In this maned wolf, there is rather strong support (Delta AIC > 4) for the preferred model (the first of the list).
 Given how we specified the prototype, `harmonic 3 0` means that this preferred model has no lunar periodicity, but has three harmonics of the one-day periodicity. This fittingly corresponds to what the periodogram was saying.
-If there was some moon-related pattern of space use and given how we specified our prototype, we would have had a non-zero value as the first `harmonic` value.
+If there was some moon-related pattern of space use and given how we specified our prototype, we would have had a non-zero value as the second `harmonic` value.
 We also see that circulation was selected.
 
 Next we do some sanity checking on our results. The sampling interval for Gamba is fairly steady at
@@ -114,11 +114,7 @@ summary(FITS[[4]]) # harmonic 2 0
 
 * `rotation/deviation %` corresponds to $100 \eta_P$ from the paper. It is interpreted as the proportion of the variance in the animal`s location that is caused by the periodicity in the mean.
 * `rotation/speed %` corresponds to  $100 \eta_V$ from the paper. It is interpreted as the proportion of the variance in the animal`s velocity that is caused by the periodicity in the mean.
-* `area` is the area of the variance ellipse. It quantifies the amplitude of the stochastic component of the movement process.
-* `tau position` is the position autocorrelation time. It is interpreted as the home range crossing time.
-* `tau velocity` is the velocity autocorrelation time. It quantifies the stability of the animal`s direction and speed.
 * `circulation period`  is the period of the stochastic circulations. On average, the animal re-pass through the same neighborhoods every estimated number of months (or days, or hours, depending on the automated unit specification).
-* `speed` is the expected speed of the movement. For Gamba, there is huge uncertainty in this estimate, but for other maned wolf timeseries, this paramter is better resolved.
 
 Note that, aside from the rotational indices, these two models are largely consistent, and the 3 harmonic model has an extrordinarily uncertain speed estimate.
 We can get a better idea of what is happening by comparing the variograms.

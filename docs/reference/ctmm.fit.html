@@ -101,7 +101,7 @@ The fitting functions wrap around <code>optim</code> and <code>ctmm.loglike</cod
 
     <pre class="usage"><span class='fu'>ctmm</span>(<span class='kw'>tau</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>isotropic</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>range</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>circle</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>error</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>axes</span><span class='kw'>=</span><span class='fu'>c</span>(<span class='st'>"x"</span>,<span class='st'>"y"</span>),<span class='no'>...</span>)
 
-<span class='fu'>ctmm.loglike</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>REML</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>zero</span><span class='kw'>=</span><span class='fl'>0</span>,<span class='kw'>verbose</span><span class='kw'>=</span><span class='fl'>FALSE</span>)
+<span class='fu'>ctmm.loglike</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>REML</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>profile</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>zero</span><span class='kw'>=</span><span class='fl'>0</span>,<span class='kw'>verbose</span><span class='kw'>=</span><span class='fl'>FALSE</span>)
 
 <span class='fu'>ctmm.fit</span>(<span class='no'>data</span>,<span class='kw'>CTMM</span><span class='kw'>=</span><span class='fu'>ctmm</span>(),<span class='kw'>method</span><span class='kw'>=</span><span class='st'>"ML"</span>,<span class='kw'>control</span><span class='kw'>=</span><span class='fu'>list</span>(),<span class='kw'>trace</span><span class='kw'>=</span><span class='fl'>FALSE</span>)
 
@@ -145,6 +145,10 @@ The fitting functions wrap around <code>optim</code> and <code>ctmm.loglike</cod
     <tr>
       <th>REML</th>
       <td><p>Use residual maximum likelihood if <code>TRUE</code>. Not recommended.</p></td>
+    </tr>
+    <tr>
+      <th>profile</th>
+      <td><p>Analytically solve for as many covariance parameters as possible.</p></td>
     </tr>
     <tr>
       <th>zero</th>

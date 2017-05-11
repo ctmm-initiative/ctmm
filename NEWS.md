@@ -1,4 +1,4 @@
-0.4.0 2017-05-03
+0.4.0 2017-05-10
 ================
 
   * New utility function %#% for unit conversions
@@ -9,7 +9,9 @@
   
   * bugfixes in plot.variogram with fit UERE, tau==0
   
-  * bugfixes with OUF/OU fitting & CIs near boundaries
+  * bugfixes with ctmm.fit/select/summary near boundaries
+  
+  * resetting Polak–Ribiere formula in weighted AKDE conjugate gradient routine
   
   * R 3.4 compatibility fixes
   

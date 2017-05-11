@@ -3,17 +3,17 @@
 # and then within that region we apply preconditioned conjugate gradient to the equality constrained optimization problem
 PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC="circulant",IG=NULL,MARKOV=NULL)
 {
-  silent=TRUE
-  
+  silent <- TRUE
+
   if(length(dim(G))==2) { fast <- FALSE } else { fast <- TRUE }
   # are we doing direct matrix calculations or FFT tricks?
   if(!fast)
   {
     n <- dim(G)[1]
-    
+
     # O(n^2) matrix-vector multiplication
     G.VEC <- function(V,inverse=FALSE) { c(G %*% V) }
-    
+
     # stuff needed to apply preconditioners
     if(PC=="IID")
     {
@@ -76,7 +76,7 @@ PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC=
     }
     else if(PC=="Toeplitz")
     {
-      stop("!fast & Topelitz not yet implemented.") 
+      stop("!fast & Topelitz not yet implemented.")
     }
   }
   else ### using FFT tricks ###########################################################
@@ -84,7 +84,7 @@ PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC=
     n <- length(FLOOR) # number of sampled times
     N <- length(G) # numer of grid times
     q <- 1-p
-    
+
     # stuff needed to apply preconditioners
     if(PC=="IID")
     {
@@ -138,7 +138,7 @@ PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC=
       return(M)
     }
     G <- T.C.embed(G)
-    
+
     if(PC=="Toeplitz")
     {
       # separate out the initial discontinuity
@@ -147,7 +147,7 @@ PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC=
       # now the preconditioner is IG0*Id + IG
       IG <- T.C.embed(IG)
     }
-    
+
     # O(n log n) matrix.vector multiplication
     G.VEC <- function(V,inverse=FALSE)
     {
@@ -155,31 +155,31 @@ PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC=
       Vgrid <- array(0,N)
       Vgrid[FLOOR+1] <- q*V
       Vgrid[FLOOR] <- Vgrid[FLOOR] + p*V
-      
+
       # circulant embedding
       Vgrid <- c(Vgrid,rep(0,N))
       # Fourier transform / diagonalize
       Vgrid <- FFT(Vgrid)
-      
+
       # matrix multiplication in diagonalized basis
       if(!inverse)
       { Vgrid <- G * Vgrid }
       else
       { Vgrid <- IG * Vgrid }
-      
+
       # inverse Fourier transform
       Vgrid <- IFFT(Vgrid)
       # Toepltiz part
       Vgrid <- Vgrid[1:N]
       Vgrid <- Re(Vgrid)
-      
+
       # map back from grid
       V <- q*Vgrid[FLOOR+1]
       V <- V + p*Vgrid[FLOOR]
-      
+
       return(V)
     }
-    
+
     if(PC=="Toeplitz")
     {
       # inverse approximation normalization
@@ -200,18 +200,18 @@ PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC=
         IGM <- 1/IGM
       }
     }
-    
+
     if(PC=="direct")
     {
       # calculate n*n G matrix
       G <- sapply(1:n,function(i){ V <- rep(0,n) ; V[i] <- 1 ; G.VEC(V) })
       # somehow this ends up missing a sparse number of times
       G <- pmax(G,t(G))
-      
+
       G.VEC <- function(V,inverse=FALSE) { c(G %*% V) }
     }
   }
-  
+
   ########################################################
   ######### DEFINE PRECONDITIONERS #######################
   # preconditioner application code
@@ -239,25 +239,25 @@ PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC=
       }
       A <- DIAG - BAND[m-1]*B[m-1]
       V[m] <- (VEC[m] - BAND[m-1]*V[m-1])/A
-      
+
       # backwards substitution
       for(i in (m-1):1)
       {
         V[i] <- V[i] - B[i]*V[i+1]
       }
-      
+
       return(V)
     }
-    
+
     # Woodbury matrix identity to account for constant atop tri-band
     PC.VEC <- function(V)
     {
       ONE <- rep(1,m)
       TBF <- BAND.SOLVE(ONE)
       TBV <- BAND.SOLVE(V[FREE])
-      
+
       V[FREE] <- TBV - c(ONE %*% TBV)/(1/CONS + c(ONE %*% TBF))*TBF
-      
+
       return(V)
     }
   }
@@ -297,7 +297,7 @@ PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC=
       PC.D <<- PC.R*PC.E
       PC.D <<- 1 + c(0,PC.D) + c(PC.D,0)
     }
-    
+
     # tri-banded inverse
     MARKOV.SOLVE <- function(V)
     {
@@ -306,25 +306,25 @@ PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC=
       V[FREE] <- W/MARKOV$VAR
       return(V)
     }
-    
+
     # use Woodbury matrix identity to add constant term
     PC.VEC <- function(V)
     {
       MSF <- MARKOV.SOLVE(FREE)
       MSV <- MARKOV.SOLVE(V)
-      
+
       V <- MSV - c(FREE %*% MSV)/(1/MARKOV$ERROR + c(FREE %*% MSF))*MSF
-      
+
       return(V)
     }
   }
-  
+
   # find the best linear combination of vectors for solution to V=solve(G,1)
   L.SEARCH <- function(V,G.V)
   {
     k <- length(V)
     k.V <- length(G.V)
-    
+
     # populate remainder of G.V if necessary
     if(k.V < k)
     {
@@ -333,8 +333,8 @@ PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC=
         G.V[[i]] <- G.VEC(V[[i]])
         G.V[[i]][ACTIVE] <- 0
       }
-    }    
-    
+    }
+
     # matrix of inner productions WRT G
     M <- array(0,c(k,k))
     for(i in 1:k)
@@ -346,22 +346,22 @@ PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC=
       for(j in 1:i)
       { M[j,i] <- M[i,j] }
     }
-    
+
     # vector of inner products WRT 1
     B <- sapply(V,sum)
 
     # safe solver in case of colinearity
     A <- PDsolve(M,pseudo=TRUE) %*% B
-    
+
     V <- lapply(1:k,function(i) { A[i] * V[[i]] })
     G.V <- lapply(1:k,function(i) { A[i] * G.V[[i]] })
-    
+
     V <- Reduce('+',V)
     G.V <- Reduce('+',G.V)
-    
+
     return(list(V=V,G.V=G.V))
   }
-  
+
   #####################
   # CHECK KKT CONDITIONS TO FIX ACTIVE/FREE DIMENSIONS
   ACTIVE <- rep(FALSE,n) # current active constraints
@@ -376,7 +376,7 @@ PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC=
     P[ZERO] <<- 0
     LAMBDA <<- 1/sum(P) # now this is the Lagrange multiplier now
     G.P <<- G.VEC(P)
-    
+
     # optimization on the probability simplex determines the active constraints from KKT equations
     GRAD <- 1 - G.P # -GRAD/LAMBDA, where GRAD == slack at solution (KKT)
     # currently active inequality constraints
@@ -386,7 +386,7 @@ PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC=
     FREE <<- !ACTIVE # free space to work in
     m <<- sum(FREE) # size of current free space
   }
-  
+
   ############################
   # INITIALIZE SOLUTION
   # use previous solution
@@ -394,7 +394,7 @@ PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC=
   {
     # not yet a normalized probability
     P <- rep(1,n)
-    
+
     # approximate solve(G,1) consistent with preconditioner
     if(PC!="direct")
     { P <- PC.VEC(P) }
@@ -409,14 +409,14 @@ PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC=
   # check KKT conditions, incase we have a non-trivial initial guess
   KKT()
   # as a side effect this also evaluates G.P, which we need
-  
+
   CHANGE <- TRUE
   STEPS <- 0
   CHANGES <- 0
   while(CHANGE)
   {
     CHANGES <- CHANGES + 1
-    
+
     # DIRECT SOLVER #############
     if(PC=="direct")
     {
@@ -427,7 +427,7 @@ PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC=
     {
       PC.UPDATE()
       G.P[ACTIVE] <- 0
-      
+
       # we can do a better job of fixing G[FREE,FREE]*P[FREE] == 1[FREE] than just tossing out the zeros from P
       # P[FREE] <- A[1]*P[FREE] + A[2]*1[FREE] + A[3]*PC(1[FREE]) + A[4]*dP[FREE]
       P <- list(P)
@@ -436,22 +436,21 @@ PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC=
       {
         P[[3]] <- PC.VEC(P[[2]])
         P[[3]][ACTIVE] <- 0
-      } 
+      }
       G.P <- list(G.P)
-      
+
       P <- L.SEARCH(P,G.P)
       G.P <- P$G.V
       P <- P$V
       # The improvement with this seems rather marginal, but worth keeping...
-      
+
       # STEEPEST DESCENT INITIALIZATION INTO CONJUGATE GRADIENT ON !CHANGE
       # optimization in the free space to actually solve for Q=solve(G_FREE,1_FREE) proportional to solution by P=LAMBDA*Q
       RES <- FREE - G.P # this is -GRAD in the conditioned free space, using conjugate-gradient notation of residual
       Z <- PC.VEC(RES) # preconditioned conjugate gradient variable
       CONJ <- Z # this is often called 'p', but that's confusing because we are working with probabilities
       # optimize step length in free space assumption
-      RES2 <- c(Z %*% RES)
-      
+
       # CONJUGATE GRADIENT (STEPEST DESCENT ON FIRST STEP)
       ERROR <- Inf
       CG.STEPS <- 0
@@ -462,31 +461,32 @@ PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC=
         G.CONJ[ACTIVE] <- 0
         C.G.C <- c(CONJ %*% G.CONJ)
         if(abs(C.G.C)<=.Machine$double.eps) { if(!silent) { message("PCCG divergence in alpha") } ; break }
-        A <- RES2 / C.G.C
+        Z.RES <- c(Z %*% RES)
+        A <- Z.RES / C.G.C
         dP <- A*CONJ # need this for stopping condition
-        
+
         # make sure Lagrangian/objective is decreasing
         dL <- c((P+dP/2) %*% G.CONJ)*A - sum(dP)
         # the solution going forward is actually worse
         if(dL>=0) { if(!silent) { message("PCCG stopped converging") } ; break }
-        
+
         P <- P + dP
         dRES <- -A*G.CONJ # need this for Polak-Ribiere formula
         RES <- RES + dRES
         Z <- PC.VEC(RES)
-        RES2 -> OLD
-        RES2 <- c(Z %*% dRES) # Polak-Ribiere formula
-        if(abs(RES2)<=.Machine$double.eps) { if(!silent) { message("PCCG divergence in beta") } ; break }
-        B <- RES2 / OLD
+        Z.dRES <- c(Z %*% dRES) # Polak-Ribiere formula
+        Z.dRES <- max(0,Z.dRES) # reset to steepest descent if necessary
+        if(abs(Z.RES)<=.Machine$double.eps) { if(!silent) { message("PCCG divergence in beta") } ; break }
+        B <- Z.dRES / Z.RES
         CONJ <- Z + B*CONJ
-        
+
         ####################################
         # make this the decrease in Lagrangian or something ?
         # weights are all on the same scale.................
         ERROR <- max(abs(dP)) * n
-        
+
         CG.STEPS <- CG.STEPS + 1
-        
+
         # plot(P)
         # # title(paste("ERROR ==",ERROR))
         # title(paste("dL ==",dL))
@@ -495,19 +495,19 @@ PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC=
       }
       STEPS <- STEPS + CG.STEPS
     }
-    
+
     # CHECK KKT CONDITIONS AND RESET ACTIVE/FREE SPACE
     KKT()
   }
-  
+
   #########################################
   # STORE SOLUTION FOR LATER OPTIM EVALUATIONS
   assign("P",P,pos=PQP.env)
   assign("EMPTY",FALSE,pos=PQP.env) # SET TO FALSE TO ACTIVATE MEMORY !!!!!!!!!!!!!!!!!!!!!!!!!!
-  
+
   MISE <- LAMBDA^2 * c(P %*% G.P)
   P <- LAMBDA * P
-  
+
   RETURN <- list(P=P,MISE=MISE,STEPS=STEPS,CHANGES=CHANGES)
   return(RETURN)
 }

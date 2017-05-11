@@ -29,7 +29,7 @@ ctmm <- function(tau=NULL,isotropic=FALSE,range=TRUE,circle=FALSE,error=FALSE,ax
   {
     tau <- sort(tau,decreasing=TRUE)
     names(tau) <- tau.names[1:K]
-    tau <- tau[tau>0]
+    # tau <- tau[tau>0]
   }
   if(!length(tau)) { tau <- NULL } # NULL, NA, integer(0), ...
   List$CPF <- CPF
@@ -280,7 +280,7 @@ ctmm.prepare <- function(data,CTMM,REML=FALSE)
     K <- length(CTMM$tau)
   }
   # I am this lazy
-  if(K==0) { K <- 1 ; CTMM$tau <- 0 }
+  # if(K==0) { K <- 1 ; CTMM$tau <- 0 }
 
   CTMM$range <- range
 
