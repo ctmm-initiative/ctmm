@@ -87,9 +87,13 @@ pull.column <- function(object,NAMES,FUNC=as.numeric)
   for(NAME in NAMES)
   {
     if(NAME %in% COLS)
-    { return( FUNC(object[,NAME]) ) }
+    {
+      # preference non-empty columns
+      COL <- FUNC(object[,NAME])
+      if(any(!is.na(COL))) {return(COL) }
+    }
   }
-  # nothing matched
+  # nothing non-empty matched
   return(NULL)
 }
 
@@ -146,7 +150,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   # Scott's calibration data is more like the latter
 
   # Import third axis if available
-  COL <- "height.above.ellipsoid"
+  COL <- c("height.above.ellipsoid","height.above.msl")
   COL <- pull.column(object,COL)
   DATA$z <- COL
 
@@ -241,10 +245,10 @@ telemetry.clean <- function(data,id)
   dt <- diff(data$t)
   v <- sqrt(diff(data$x)^2+diff(data$y)^2)/dt
   v <- max(v)
-  message("Maximum speed of ",v," m/s observed in ",id)
+  message("Maximum speed of ",format(v,digits=3)," m/s observed in ",id)
   dt <- min(dt)
   units <- unit(dt,dimension='time')
-  message("Minimum sampling interval of ",dt/units$scale," ",units$name," in ",id)
+  message("Minimum sampling interval of ",format(dt/units$scale,digits=3)," ",units$name," in ",id)
 
   return(data)
 }
