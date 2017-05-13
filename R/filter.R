@@ -7,6 +7,11 @@ assign_speeds <- function(data,dt=time_res(data),UERE=0,method=c("max","min"))
 
   # inner speed estimates
   v.dt <- speedMLE(data,dt=dt,UERE=UERE,CTMM=CTMM)
+  if(length(v.dt)==1)
+  {
+    v <- c(v.dt,v.dt)
+    return(list(v.t=v,v.dt=v.dt))
+  }
 
   # end point contingency estimates
   v1 <- speedMLE(data[c(1,3),],dt=dt,UERE=UERE,CTMM=CTMM)
