@@ -71,7 +71,7 @@ You can do this on the fly with `zoom(Cilla)` in R-studio. The variogram represe
 
 For the long range behavior we can see that the variogram flattens (asymptotes) at approximately 20 days. This is, roughly, how coarse you need to make the timeseries so that methods assuming independence (no autocorrelation) can be valid. This includes, conventional kernel density estimation (KDE), minimum convex polygon (MCP), conventional species distribution modeling (SDM), and a host of other analyses.
 
-The asymptote of our variogram is around 23 square km, and the fact that it takes roughly 20 days for the variogram to asymptote is indicative of the fact that the buffalo's location appears continuous at this timescale. This is also, roughly, the time it takes for the buffalo to cross its home range.
+The asymptote of our variogram is around 23 square km, and the fact that it takes roughly 20 days for the variogram to asymptote is indicative of the fact that the buffalo's location appears continuous at this timescale. This is also, roughly, the time it takes for the buffalo to cross its home range several times.
 
 In the next sections we will "fit" models the variograms.
 This is not a rigorous statistical fitting, but a good way of choosing candidate movement models and guessing at their parameters.

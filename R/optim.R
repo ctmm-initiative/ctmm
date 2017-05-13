@@ -532,7 +532,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
       hessian <- DIR %*% hessian %*% t(DIR)
       covariance <- DIR %*% covariance %*% t(DIR)
 
-      if(trace) { message(sprintf("%1.15E Newton-Raphson overstep (encapsulated=%d/%d; condition=%f:%f)",zero+fn.par,sum(encapsulated),DIM,condition[1],condition[2])) }
+      if(trace) { message(sprintf("%s Newton-Raphson overstep (encapsulated=%d/%d; condition=%f:%f)",format(zero+fn.par,digits=16),sum(encapsulated),DIM,condition[1],condition[2])) }
 
       LINE.TYPE <- "Enclosure"
     }
@@ -626,11 +626,11 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
       if(trace)
       {
         if(STAGE==1)
-        { message(sprintf("%1.15E Newton-Raphson step (encapsulated=%d/%d; condition=%f:%f)",zero+fn.par,sum(encapsulated),DIM,condition[1],condition[2])) }
+        { message(sprintf("%s Newton-Raphson step (encapsulated=%d/%d; condition=%f:%f)",format(zero+fn.par,digits=16),sum(encapsulated),DIM,condition[1],condition[2])) }
         else if(STAGE==2)
-        { message(sprintf("%1.15E Conjugate Gradient step (encapsulated=%d/%d)",zero+fn.par,sum(encapsulated),DIM)) }
+        { message(sprintf("%s Conjugate Gradient step (encapsulated=%d/%d)",format(zero+fn.par,digits=16),sum(encapsulated),DIM)) }
         else if(STAGE==3)
-        { message(sprintf("%1.15E Gradient Descent step (encapsulated=%d/%d)",zero+fn.par,sum(encapsulated),DIM)) }
+        { message(sprintf("%s Gradient Descent step (encapsulated=%d/%d)",format(zero+fn.par,digits=16),sum(encapsulated),DIM)) }
       }
       LINE.TYPE <- "Prospection"
     } # end step code
@@ -722,7 +722,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
         par <- par.all[,MIN]
         fn.par <- fn.all[MIN]
 
-        if(trace) { message(sprintf("%1.15E %s search",zero+fn.par,LINE.TYPE)) }
+        if(trace) { message(sprintf("%s %s search",format(zero+fn.par,digits=16),LINE.TYPE)) }
 
         if(DEBUG)
         {

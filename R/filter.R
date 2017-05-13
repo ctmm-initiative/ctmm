@@ -2,39 +2,39 @@
 assign_speeds <- function(data,dt=time_res(data),UERE=0,method=c("max","min"))
 {
   method <- match.arg(method,c("max","min"))
-  
+
   CTMM <- ctmm(error=UERE,axes=c("x","y"))
-  
+
   # inner speed estimates
   v.dt <- speedMLE(data,dt=dt,UERE=UERE,CTMM=CTMM)
-  
+
   # end point contingency estimates
   v1 <- speedMLE(data[c(1,3),],dt=dt,UERE=UERE,CTMM=CTMM)
   n <- length(data$t)
   v2 <- speedMLE(data[c(n-2,n),],dt=dt,UERE=UERE,CTMM=CTMM)
-  
+
   # left and right estimates - n estimates, 1 lag apart
   v1 <- c(v1,v.dt)
   v2 <- c(v.dt,v2)
-  
+
   if(method=="max")
   {
     # n-1 estimates, 2 lags apart
     v1 <- v1[-n]
     v2 <- v2[-1]
-    
+
     # which side of lag index looks smaller
     LESS <- v1 < v2
-    
+
     vs <- sort(v.dt,method='quick',index.return=TRUE,decreasing=TRUE)
     is <- vs$ix
     vs <- vs$x
-    
+
     v <- numeric(length(LESS))
     # assign blame for smallest speeds, from greatest to least, last/least taking precidence in R
     LESS <- LESS[is]
     v[is+!LESS] <- vs
-    
+
     # assign blame for largest speeds, from least to greatest, last/greatest taking precidence in R
     LESS <- rev(LESS)
     is <- rev(is)
@@ -45,7 +45,7 @@ assign_speeds <- function(data,dt=time_res(data),UERE=0,method=c("max","min"))
   {
     v <- pmin(v1,v2)
   }
-  
+
   return(list(v.t=v,v.dt=v.dt))
 }
 
@@ -55,13 +55,13 @@ speedMLE <- function(data,dt=time_res(data),UERE=0,CTMM=ctmm(error=UERE,axes=c("
 {
   ######################
   # 1/diff(t) estimate
-  
+
   DT <- diff(data$t)
-  if(dt) # truncate 
+  if(dt) # truncate
   {
     # result storage
     f <- numeric(length(DT))
-    
+
     # assuming two times are uniformly distributed with roundoff error
     SUB <- DT>dt
     DT.SUB <- DT[SUB]
@@ -70,7 +70,7 @@ speedMLE <- function(data,dt=time_res(data),UERE=0,CTMM=ctmm(error=UERE,axes=c("
     # limit of sampling interval == roundoff
     SUB <- DT==dt
     if(any(SUB)) { f[SUB] <- log(4)/dt }
-    
+
     # fall back - totally made up
     SUB <- DT<dt
     if(any(SUB)) { f[SUB] <- 2*log(4)/dt }
@@ -79,11 +79,11 @@ speedMLE <- function(data,dt=time_res(data),UERE=0,CTMM=ctmm(error=UERE,axes=c("
   { f <- 1/DT }
 
   ######################
-  # distance estimate 
-  
+  # distance estimate
+
   # measured distances
   dr <- sqrt(diff(data$x)^2+diff(data$y)^2)
-  
+
   # point esitmate of distance with error>0
   if(UERE>0)
   {
@@ -91,7 +91,7 @@ speedMLE <- function(data,dt=time_res(data),UERE=0,CTMM=ctmm(error=UERE,axes=c("
     error <- get.error(data,CTMM)
     # 2-time errors
     error <- error[-1] + error[-length(error)]
-    
+
     # coefficient in transcendental Bessel equation
     # x I0(x) == y I1(x)
     y <- dr^2/error
@@ -99,7 +99,7 @@ speedMLE <- function(data,dt=time_res(data),UERE=0,CTMM=ctmm(error=UERE,axes=c("
     x <- numeric(length(y))
     # how far you can go before R's bessel function breaks down
     BESSEL_LIMIT <- 2^16
-    
+
     # critical point, below which all point estimates are zero
     SUB1 <- (y<=2)
     if(any(SUB1)) { dr[SUB1] <- 0 }
@@ -111,47 +111,47 @@ speedMLE <- function(data,dt=time_res(data),UERE=0,CTMM=ctmm(error=UERE,axes=c("
       x.SUB <- sqrt(2*y[SUB2])
       x[SUB2] <- 4 * sqrt( (x.SUB-2)/(4-x.SUB) )
     }
-    
+
     # expansion EQ/exp (from x=y) and solving
     SUB3 <- (3.6<=y) & (y<=BESSEL_LIMIT)
     if(any(SUB3))
     {
       y.SUB <- y[SUB3]
-      
+
       BI0 <- besselI(y.SUB,0,expon.scaled=TRUE)
       BI1 <- besselI(y.SUB,1,expon.scaled=TRUE)
-      
+
       x[SUB3] <- 2*y.SUB * ( y.SUB*BI0 - (y.SUB+1)*BI1 ) / ( (2*y.SUB-1)*BI0 - (2*y.SUB+1)*BI1 )
     }
-    
+
     # expansion from x=y, solving, and then rational expansion from y=Inf
     SUB4 <- BESSEL_LIMIT<y
     if(any(SUB4))
     {
       y.SUB <- y[SUB4]
-      
+
       x[SUB4] <- 2*y.SUB*(y.SUB-1)/(2*y.SUB-1)
     }
-   
+
     # iterative to solution by expanding EQ/exp from x=x.old and solving
     SUB <- SUB2 & SUB3
     if(any(SUB))
     {
       x.SUB <- x[SUB]
       y.SUB <- y[SUB]
-      
+
       BI0 <- besselI(x.SUB,0,expon.scaled=TRUE)
       BI1 <- besselI(x.SUB,1,expon.scaled=TRUE)
-      
+
       x[SUB] <- x.SUB * ( x.SUB*(x.SUB+y.SUB)*BI0 - (x.SUB^2+(x.SUB+2)*y.SUB)*BI1 ) / ( x.SUB*(x.SUB+y.SUB-1)*BI0 - (x.SUB^2+(x.SUB+1)*y.SUB)*BI1 )
     }
     # one iteration is good enough to get everything below 1% relative error
-    
+
     # this is now the point estimate, including telemetry error
     SUB <- !SUB1
     if(any(SUB)) { dr[SUB] <- error[SUB]/dr[SUB] * x[SUB] }
   }
-  
+
   return(dr*f)
 }
 
@@ -161,16 +161,18 @@ time_res <- function(data)
 {
   dt <- diff(data$t)
   dt <- dt[dt>0]
-  
+  if(length(dt)==0) { return(0) }
+  if(length(dt)==1) { return(dt) }
+
   # assume decimal truncation
   M <- -log10(min(dt))
   M <- ceiling(M)
   M <- max(0,M)
   M <- 10^M
-  
+
   dt <- round(M*dt) # shift decimal place to integers
   dt <- gcd.vec(dt)/M # shift back
-  
+
   return(dt)
 }
 
@@ -178,11 +180,11 @@ time_res <- function(data)
 gcd.vec <- function(vec)
 {
   vec <- sort(vec,method='quick')
-  
+
   GCD <- gcd(vec[1],vec[2])
   for(i in vec[-(1:2)]) { GCD <- gcd(i,GCD) }
   # i > GCD because we sorted vec first
-  
+
   return(GCD)
 }
 
