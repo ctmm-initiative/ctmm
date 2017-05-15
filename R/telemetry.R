@@ -210,14 +210,20 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
 # read in a MoveBank object file
 as.telemetry.character <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,...)
 {
-  # fread doesn't work on compressed files yet
-  # using tryCatch because sometimes the fread error message for reading zip file have characters cannot be displayed in system locale, and there will be warning for that.
-  # currently the error message is lost, we can use print(e) for debugging.
+  # read with 3 methods: fread, temp_unzip, read.csv, fall back to next if have error.
+  # fread error message is lost, we can use print(e) for debugging.
   data <- tryCatch(data.table::fread(object,data.table=FALSE,check.names=TRUE,nrows=5),
                    error = function(e) "error")
   # if fread fails, then decompress zip to temp file, read data, remove temp file
   if (class(data) == "data.frame") { data <- data.table::fread(object,data.table=FALSE,check.names=TRUE,...) }
-  else { data <- temp_unzip(object, data.table::fread, data.table=FALSE,check.names=TRUE,...) }
+  else {
+    data <- tryCatch(temp_unzip(object, data.table::fread, data.table=FALSE,check.names=TRUE,...),
+                    error = function(e) "error")
+    if (identical(data, "error")) {
+      cat("fread failed, fall back to read.csv", "\n")
+      data <- utils::read.csv(object,...)
+    }
+  }
   data <- as.telemetry.data.frame(data,timeformat=timeformat,timezone=timezone,projection=projection,UERE=UERE)
   return(data)
 }
