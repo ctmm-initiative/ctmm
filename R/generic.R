@@ -225,6 +225,8 @@ chisq.ci <- function(MLE,COV=NULL,alpha=0.05,DOF=2*MLE^2/COV)
   { CI <- c(0,MLE,Inf) }
   else if(MLE==0)
   { CI <- c(0,0,0) }
+  else if(MLE==Inf)
+  { CI <- c(Inf,Inf,Inf) }
   else if(!is.null(COV) && COV<0) # try an exponential distribution?
   {
     warning("VAR[Area] = ",COV," < 0")

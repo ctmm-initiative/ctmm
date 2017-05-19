@@ -1,4 +1,3 @@
-0.4.0 2017-05-10
 ================
 
   * New utility function %#% for unit conversions
@@ -12,6 +11,8 @@
   * bugfixes with ctmm.fit/select/summary near boundaries
   
   * resetting Polak–Ribiere formula in weighted AKDE conjugate gradient routine
+  
+  * read.table fallback in as.telmetry
   
   * R 3.4 compatibility fixes
   
