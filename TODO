@@ -15,6 +15,8 @@ VIGNETTES & EXAMPLES
 * explain effective sample sizes (DOF of summary)
 
 OPTIMIZER
+* Get TOL.ZERO working better on Nick's bear
+* Stop on encapsulated
 * local tangent transformation on periodic variables
 * STAGE 4 - pattern search
 * try to fit Gamba with error
@@ -28,6 +30,7 @@ Aligned Krige UDs
 pregridder composite dimension?
 
 LOW HANGING FRUIT & Nagging issues
+* as.telemetry drop=TRUE/FALSE for single individuals
 * grid fix regression - weight to coarse scale when appropriate
 * detrend mean in correlogram function
 * plot errors with HDOP & error model in CTMM

@@ -240,13 +240,21 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
   # check complains about visible bindings
   fnscale <- parscale <- maxit <- precision <- trace <- mc.cores <- hessian <- covariance <- NULL
   # fix default control arguments
-  default <- list(fnscale=1,parscale=pmin(abs(par),abs(par-lower),abs(upper-par)),maxit=100,trace=FALSE,precision=1/2,mc.cores=detectCores(),hessian=NULL,covariance=NULL,stages=NULL)
+  default <- list(fnscale=1,parscale=pmin(abs(par),abs(par-lower),abs(upper-par)),maxit=100,trace=FALSE,precision=NULL,mc.cores=detectCores(),hessian=NULL,covariance=NULL,stages=NULL)
   control <- replace(default,names(control),control)
   # check does not like attach
   NAMES <- names(control)
   for(i in 1:length(control)) { assign(NAMES[i],control[[i]]) }
 
   if(any(parscale==0)) { parscale[parscale==0] <- 1 }
+
+  # does fn take a zeroing argument?
+  if("zero" %in% names(formals(fn))) { ZERO <- TRUE } else { ZERO <- FALSE }
+  zero <- 0 # current value of the minimum
+  TOL.ZERO <- 0 # error from zeroing
+
+  if(is.null(precision) && ZERO) { precision <- 1/4 } # don't need as much precision
+  else if(is.null(precision) && !ZERO) { precision <- 1/2 }
 
   if(is.null(stages))
   {
@@ -286,11 +294,6 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
     covariance <- diag(1,DIM) # inverse hessian
     hessian <- diag(1,DIM) # hesssian
   }
-
-  # does fn take a zeroing argument?
-  if("zero" %in% names(formals(fn))) { ZERO <- TRUE } else { ZERO <- FALSE }
-  zero <- 0 # current value of the minimum
-  TOL.ZERO <- 0 # error from zeroing
 
   # what we will actually be evaluating
   # this objective function has the ability to approximately zero its objective value
@@ -439,7 +442,8 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
     F1 <- fn.queue[2+1:DIM]
     F2 <- fn.queue[2+DIM+1:DIM]
 
-    if(counts>counts.diff && ZERO) { TOL.ZERO <- abs(fn.par) }
+    # update estimate of round-off error in zeroing
+    if(counts>counts.diff && ZERO) { TOL.ZERO <- max(TOL.ZERO,abs(fn.par)) }
 
     # is the minimum encapsulated?
     encapsulated <- (fn.target<F1) & (fn.target<F2)
@@ -884,7 +888,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
       # will update search direction hessian with this during next iteration
 
       # estimate better location if we didn't hit a boundary
-      if(1<MIN && MIN<length(fn.all)) # MIN==1 shouldn't be possible here?
+      if(1<MIN && MIN<length(fn.all) && !is.nan(gradient.LINE) && !is.nan(hessian.LINE) && hessian.LINE>0)
       {
         # what was our target (closest if boundary)
         MIN.start <- which.min( colSums((par.target-par.all)^2) )
