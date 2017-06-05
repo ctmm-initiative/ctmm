@@ -189,7 +189,8 @@ kalman <- function(z,u,dt,CTMM,error=rep(0,nrow(z)),smooth=FALSE,sample=FALSE,we
 
     # estimate mean parameter
     W <- as.matrix(M[MEAN,MEAN])
-    mu <- PDsolve(W) %*% M[MEAN,DATA]
+    iW <- PDsolve(W)
+    mu <- iW %*% M[MEAN,DATA]
   }
 
   # returned profiled mean
@@ -201,7 +202,7 @@ kalman <- function(z,u,dt,CTMM,error=rep(0,nrow(z)),smooth=FALSE,sample=FALSE,we
     # log det autocorrelation matrix == trace log autocorrelation matrix
     logdet <- mean(log(sRes)) # this is 1/n times the full term
 
-    return(list(mu=mu,W=W,sigma=sigma,logdet=logdet))
+    return(list(mu=mu,W=W,iW=iW,sigma=sigma,logdet=logdet))
   }
 
   #########################
@@ -351,18 +352,12 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   z <- get.telemetry(data,CTMM$axes)
   u <- CTMM$mean.vec
   M <- ncol(u) # number of linear parameters per spatial dimension
+
+  # variance debias factor
   if(REML)
-  {
-    # variance debias factor
-    VAR.MULT <- n/(n-M)
-    # likelihood constant: 2pi from det second term from variance-profiled quadratic term (which we will subtract if variance is not profiled)
-    LL.CONST <- - (n-M)*AXES/2*log(2*pi) - n*AXES/2 # not fixing this second term for REML yet... not wrong, but suboptimal maybe
-  }
+  { VAR.MULT <- n/(n-M) }
   else # ML constant
-  {
-    VAR.MULT <- 1
-    LL.CONST <- - n*AXES/2*log(2*pi*exp(1))
-  }
+  { VAR.MULT <- 1 }
 
   # make the errors relative to profile the variance
   if(profile) { CTMM$error <- CTMM$error / sqrt(area) }
@@ -405,13 +400,14 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
       # convert from error ratio back to absolute error
       CTMM$error <- sqrt(area) * CTMM$error
 
-      COV.mu <- PDsolve(KALMAN$W/area)
+      COV.mu <- KALMAN$iW * area
       DOF.mu <- KALMAN$W
 
-      # this is loglikelihood/n
-      loglike <- -KALMAN$logdet -log(area) - (ML.area/area-1)
+      # terms needed for AICc
+      logdetCOV <- 2*KALMAN$logdet + 2*log(area) # per n
 
-      if(REML) { loglike <- loglike - log(det(KALMAN$W/area))/n }
+      # this is loglikelihood/n quadratic term
+      loglike <- -(1/VAR.MULT-1)
     }
     else
     {
@@ -419,18 +415,18 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
       KALMAN <- kalman(z,u,dt=dt,CTMM=CTMM,error=error)
 
       # what does this term here represent? relative variance or something
-      R.sigma <- KALMAN$sigma
+      R.sigma <- Re(KALMAN$sigma)/2
 
-      COV.mu <- PDsolve(KALMAN$W)
+      COV.mu <- KALMAN$iW
       DOF.mu <- area * KALMAN$W
 
-      # this is loglikelihood/n
-      loglike <- -KALMAN$logdet - (1/2)*(R.sigma-2)
+      # terms needed for AICc
+      logdetCOV <- 2*KALMAN$logdet # per n
 
-      if(REML) { loglike <- loglike - log(det(KALMAN$W))/n }
+      # this is loglikelihood/n quadratic term
+      loglike <- -(R.sigma-1)
     }
 
-    loglike <- Re(loglike)
     # real array formatting
     mu <- KALMAN$mu
     mu <- cbind(Re(mu),Im(mu))
@@ -448,6 +444,11 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     COV.mu <- array(COV.mu,c(M^2*2,2))
     COV.mu <- t(R * t(COV.mu))
     COV.mu <- array(COV.mu,c(M,M,2,2))
+
+    # now we can calculate the determinant
+    logdetcov <- aperm(COV.mu,c(1,3,2,4))
+    logdetcov <- array(logdetcov,c(2*M,2*M))
+    logdetcov <- log(det(logdetcov))
   }
   else if(!CTMM$error) # ONE KALMAN FILTER WITH UNKNOWN COVARIANCE AND NO ERROR
   {
@@ -465,14 +466,18 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     }
 
     mu <- KALMAN$mu
-    COV.mu <- PDsolve(KALMAN$W) %o% sigma
+    COV.mu <- KALMAN$iW %o% sigma
     DOF.mu <- KALMAN$W %o% diag(AXES)
 
-    # this is loglikelihood/n
-    loglike <- -(AXES/2)*KALMAN$logdet -(1/2)*log(det(sigma)) - (1/2)*sum(diag(ML.sigma %*% solve(sigma))-1)
+    # terms needed for AICc
+    logdetCOV <- AXES*KALMAN$logdet + log(det(sigma)) # per n
+    logdetcov <- log(det(sigma)^M/det(KALMAN$W)^AXES)
 
-    # tensor product rule for determinants
-    if(REML) { loglike <- loglike - (1/2)*log(det(KALMAN$W)^AXES/det(sigma)^M)/n }
+    # this is loglikelihood/n quadratic term
+    if(!profile)
+    { loglike <- -sum(diag(ML.sigma %*% PDsolve(sigma))-1)/2 }
+    else
+    { loglike <- -AXES*(1/VAR.MULT-1)/2 }
   }
   else if(isotropic && UERE<3 && profile) # ONE KALMAN FILTER WITH UNKNOWN VARIANCE AND KNOWN ERROR RATIO
   {
@@ -490,15 +495,14 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     sigma <- covm(area,isotropic=isotropic,axes=CTMM$axes)
 
     mu <- KALMAN$mu
-    COV.mu <- PDsolve(KALMAN$W) %o% sigma
+    COV.mu <- KALMAN$iW %o% sigma
     DOF.mu <- KALMAN$W %o% diag(AXES)
 
-    # this is loglikelihood/n
-    loglike <- -(AXES/2)*KALMAN$logdet -(1/2)*log(det(sigma)) - (1/2)*AXES*(ML.area/area-1)
+    logdetCOV <- AXES*KALMAN$logdet + log(det(sigma))
+    logdetcov <- log(det(sigma)^M/det(KALMAN$W)^AXES)
 
-    # tensor product rule for determinants
-    # not sure about this equation !!!
-    if(REML) { loglike <- loglike - (1/2)*log(det(KALMAN$W)^AXES/det(sigma)^M)/n }
+    # this is loglikelihood/n quadratic term
+    loglike <- -AXES*(1/VAR.MULT-1)/2
   }
   else if(isotropic) # ONE KALMAN FILTER WITH KNOWN VARIANCE AND KNOWN ERROR
   {
@@ -506,17 +510,18 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     KALMAN <- kalman(z,u,dt=dt,CTMM=CTMM,error=error)
 
     mu <- KALMAN$mu
-    COV.mu <- PDsolve(KALMAN$W) %o% diag(AXES)
+    COV.mu <- KALMAN$iW %o% diag(AXES)
     DOF.mu <- (area * KALMAN$W) %o% diag(AXES)
 
     # includes error and standardization
     R.sigma <- KALMAN$sigma
     R.sigma <- mean(diag(R.sigma))
 
-    # this is loglikelihood/n
-    loglike <- -(AXES/2)*KALMAN$logdet -(AXES/2)*(R.sigma-1)
+    logdetCOV <- AXES*KALMAN$logdet
+    logdetcov <- -AXES*log(det(KALMAN$W))
 
-    if(REML) { loglike <- loglike - (AXES/2)*log(det(KALMAN$W))/n }
+    # this is loglikelihood/n quadratic term
+    loglike <- -AXES*(R.sigma-1)/2
   }
   else if(UERE<3 && profile) # TWO KALMAN FILTERS WITH UNKNOWN VARIANCE AND KNOWN ERROR RATIO
   {
@@ -544,13 +549,14 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     logdet <- KALMAN1$logdet + KALMAN2$logdet
 
     mu <- cbind(KALMAN1$mu,KALMAN2$mu)
-    COV.mu <- area * array(c(PDsolve(KALMAN1$W),diag(0,M),diag(0,M),PDsolve(KALMAN2$W)),c(M,M,2,2)) # -1/Hessian
+    COV.mu <- area * array(c(KALMAN1$iW,diag(0,M),diag(0,M),KALMAN2$iW),c(M,M,2,2)) # -1/Hessian
     DOF.mu <- array(c(SIGMA[1]*KALMAN1$W,diag(0,M),diag(0,M),SIGMA[2]*KALMAN2$W),c(M,M,2,2))
 
-    # this is loglikelihood/n
-    loglike <- -(1/2)*logdet - log(area) - (ML.area/area-1)
+    logdetCOV <- logdet + 2*log(area)
+    logdetcov <- -log(det(KALMAN1$W/area)*det(KALMAN2$W/area))
 
-    if(REML) { loglike <- loglike - (1/2)*log(det(KALMAN1$W/area)*det(KALMAN2$W/area))/n }
+    # this is loglikelihood/n quadratic term
+    loglike <- -(1/VAR.MULT-1)
   }
   else # TWO KALMAN FILTERS WITH KNOWN VARIANCE AND FIXED ERROR
   {
@@ -565,17 +571,16 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     CTMM$sigma <- SIGMA[2]
     KALMAN2 <- kalman(cbind(z[,2]),u,dt=dt,CTMM=CTMM,error=error)
 
-    logdet <- KALMAN1$logdet + KALMAN2$logdet
-    R.sigma <- c(KALMAN1$sigma + KALMAN2$sigma)/2 # standardized residual variances
-
     mu <- cbind(KALMAN1$mu,KALMAN2$mu)
-    COV.mu <- array(c(PDsolve(KALMAN1$W),diag(0,M),diag(0,M),PDsolve(KALMAN2$W)),c(M,M,2,2)) # -1/Hessian
+    COV.mu <- array(c(KALMAN1$iW,diag(0,M),diag(0,M),KALMAN2$iW),c(M,M,2,2)) # -1/Hessian
     DOF.mu <- array(c(SIGMA[1]*KALMAN1$W,diag(0,M),diag(0,M),SIGMA[2]*KALMAN2$W),c(M,M,2,2))
 
-    # this is loglikelihood/n
-    loglike <- -(1/2)*logdet - (R.sigma-1)
+    R.sigma <- c(KALMAN1$sigma + KALMAN2$sigma)/2 # standardized residual variances
+    logdetCOV <- KALMAN1$logdet + KALMAN2$logdet
+    logdetcov <- -log(det(KALMAN1$W)*det(KALMAN2$W))
 
-    if(REML) { loglike <- loglike - (1/2)*log(det(KALMAN1$W)*det(KALMAN2$W))/n }
+    # this is loglikelihood/n quadratic term
+    loglike <- -(R.sigma-1)
   }
 
   # restructure indices from m,n,x,y to x,m,n,y
@@ -613,12 +618,22 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   if(length(dim(DOF.mu))==2 && AXES==2)
   { if(DOF.mu[1,1]==DOF.mu[2,2] && DOF.mu[1,2]==0) { DOF.mu <- mean(diag(DOF.mu)) } }
 
-  # mean structure terms
-  if(REML) { loglike <- loglike + CTMM$REML.loglike }
-  CTMM$REML.loglike <- NULL
+  # re-write all of this to calculate constant, divide constant by n, and then subtract off from sum term by term?
+
+  # likelihood constant/n: 2pi from det second term from variance-profiled quadratic term (which we will subtract if variance is not profiled)
+  if(REML)
+  { LL.CONST <- -(n-M)/n *AXES/2*log(2*pi) - AXES/2 } # not fixing this second term for REML yet... not wrong, but suboptimal maybe }
+  else # ML constant
+  { LL.CONST <- -AXES/2*log(2*pi*exp(1)) }
 
   # finish off the loglikelihood calculation
-  loglike <- n*(loglike-(zero-LL.CONST)/n)
+  loglike <- loglike - logdetCOV/2
+  loglike <- n * (loglike + (LL.CONST-zero/n)) # I epxect the last part (all constants) to mostly cancel out
+  logdetCOV <- n * logdetCOV
+
+  # mean structure terms
+  if(REML) { loglike <- loglike + CTMM$REML.loglike + logdetcov }
+  CTMM$REML.loglike <- NULL
 
   if(verbose)
   {
@@ -1033,7 +1048,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
       REML <- TRUE
       #ML.grad <- grad # save old ML gradient
       if(trace) { message("Calculating pREML correction.") }
-      DIFF <- genD(par=pars,fn=fn,zero=-CTMM$loglike,lower=lower,upper=upper,covariance=covariance(),parscale=parscale,Richardson=2,mc.cores=1)
+      DIFF <- genD(par=pars,fn=fn,zero=-CTMM$loglike,lower=lower,upper=upper,covariance=covariance(),parscale=parscale,Richardson=2,order=1,mc.cores=1)
       d.pars <- -c(COV %*% DIFF$gradient) # COV is -1/Hessian, grad is of -loglike
 
       # increment transformed parameters
@@ -1041,17 +1056,17 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
       # safety catch for bad models near boundaries
       pars <- line.boxer(d.pars,pars,lower=lower,upper=upper,period=period)
 
+      # calcualte REML Hessian at pREML parameters
+      DIFF <- genD(par=pars,fn=fn,zero=-CTMM$loglike,lower=lower,upper=upper,covariance=covariance(),parscale=parscale,Richardson=2,mc.cores=1)
+      # Using MLE gradient, which should be zero off boundary
+      CTMM$COV <- cov.loglike(DIFF$hessian,grad)
+
       # transform back
       names(pars) <- pNAMES
 
       # store parameter correction
       store.pars(pars)
-      CTMM$loglike <- loglike #MLE
-
-      # covariance correction
-      # REML hessian & ML gradient (at boundaries)
-      CTMM$COV <- cov.loglike(DIFF$hessian,grad)
-      #CTMM$COV <- 2*COV - (COV %*% hess %*% COV)
+      CTMM$loglike <- loglike #MLE for now
     }
     else if(method=="pREML")
     { message("pREML failure due to MLE COV divergence.") }

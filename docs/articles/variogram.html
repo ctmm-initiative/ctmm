@@ -72,7 +72,7 @@
       <h1>Variograms and Model Selection</h1>
                         <h4 class="author">Christen H. Fleming and Justin M. Calabrese</h4>
             
-            <h4 class="date">2017-05-11</h4>
+            <h4 class="date">2017-06-04</h4>
           </div>
 
     
@@ -116,7 +116,7 @@ xlim &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0<
 <p><img src="variogram_files/figure-html/unnamed-chunk-2-1.png" width="672"><img src="variogram_files/figure-html/unnamed-chunk-2-2.png" width="672"></p>
 <p>The first plot is zoomed in to the short lag behavior, while the second plot is zoomed out. You can do this on the fly with <code>zoom(Cilla)</code> in R-studio. The variogram represents the average square distance traveled (vertical axis) within some time lag (horizontal axis).</p>
 <p>For the long range behavior we can see that the variogram flattens (asymptotes) at approximately 20 days. This is, roughly, how coarse you need to make the timeseries so that methods assuming independence (no autocorrelation) can be valid. This includes, conventional kernel density estimation (KDE), minimum convex polygon (MCP), conventional species distribution modeling (SDM), and a host of other analyses.</p>
-<p>The asymptote of our variogram is around 23 square km, and the fact that it takes roughly 20 days for the variogram to asymptote is indicative of the fact that the buffalo’s location appears continuous at this timescale. This is also, roughly, the time it takes for the buffalo to cross its home range.</p>
+<p>The asymptote of our variogram is around 23 square km, and the fact that it takes roughly 20 days for the variogram to asymptote is indicative of the fact that the buffalo’s location appears continuous at this timescale. This is also, roughly, the time it takes for the buffalo to cross its home range several times.</p>
 <p>In the next sections we will “fit” models the variograms. This is not a rigorous statistical fitting, but a good way of choosing candidate movement models and guessing at their parameters. The variogram-fit parameter guestimates will then be fed into maximum likelihood estimation, which requires good initial guesses for non-linear optimization.</p>
 <div id="variogram-fitting-the-hard-way" class="section level2">
 <h2 class="hasAnchor">
@@ -209,8 +209,8 @@ SVF4 &lt;-<span class="st"> </span><span class="kw">mean</span>(SVF4)
 <p>The height of this initial discontinuity corresponds to the variance of uncorrelated location errors. The second plot is the kind of initial discontinuity one has with detector array data. The end of the (slope) discontinuity is highlighted with a circle. This discontinuity is smooth because the movement and detection are correlated. The height of this initial discontinuity is also (at least roughly) the variance of the location errors.</p>
 <p>If your tracking data is GPS and is annotated with a “DOP” column, then this information is automatically imported into the <code>telemetry</code> object and only has to be flagged in the <code>ctmm</code> model by setting <code>error=TRUE</code>. Because of some convenient mathematical relations, fitting without telemetry errors involves 1-4 fewer parameters and is, therefore, faster and more reliable than fitting with telemetry error. So if your data are not swamped by error and do not contain bursts of high-frequency fixes (which would also be relatively swamped by 5-10 meter GPS error), then you might want to apply a two stage fitting method, first from the variogram guess without telemetry error and then from that output with telemetry error. Here we demonstrate this method with Leroy the fisher cat from the <code>move</code> package:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">DATA &lt;-<span class="st"> </span><span class="kw"><a href="../reference/as.telemetry.html">as.telemetry</a></span>(<span class="kw">system.file</span>(<span class="st">"extdata"</span>,<span class="st">"leroy.csv.gz"</span>,<span class="dt">package=</span><span class="st">"move"</span>))</code></pre></div>
-<pre><code>## Maximum speed of 1.05175649776936 m/s observed in Leroy</code></pre>
-<pre><code>## Minimum sampling interval of 13.2666833321253 minutes in Leroy</code></pre>
+<pre><code>## Maximum speed of 1.05 m/s observed in Leroy</code></pre>
+<pre><code>## Minimum sampling interval of 13.3 minutes in Leroy</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># default model guess</span>
 GUESS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.fit.html">ctmm.guess</a></span>(DATA,<span class="dt">interactive=</span><span class="ot">FALSE</span>)
 <span class="co"># first fit without telemetry error</span>

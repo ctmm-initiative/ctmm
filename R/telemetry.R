@@ -262,8 +262,12 @@ telemetry.clean <- function(data,id)
 ########################################
 # Suggest a good projection
 ########################################
-suggest.projection <- function(data,datum="WGS84")
+suggest.projection <- function(data,PROJ="tpeqd",datum="WGS84")
 {
+  # projections that we will populate/automate
+  PROJS <- c("aeqd","tpeqd")
+  if(!(PROJ %in% PROJS)) { return(PROJ) }
+
   # assume Movebank data.frame
   lon <- data$longitude
   lat <- data$latitude
@@ -271,7 +275,10 @@ suggest.projection <- function(data,datum="WGS84")
   # as a first approximation use one-point equidistant at average geolocation
   lon_0 <- stats::median(lon)
   lat_0 <- stats::median(lat)
-  proj <- paste("+proj=aeqd +lon_0=",lon_0," +lat_0=",lat_0," +datum=",datum,sep="")
+  proj <- paste0("+proj=aeqd +lon_0=",lon_0," +lat_0=",lat_0," +datum=",datum)
+
+  if(PROJ=="aeqd") { return(proj) }
+
   xy <- rgdal::project(cbind(lon,lat),proj)
 
   # calculate and detrend average
@@ -318,7 +325,7 @@ suggest.projection <- function(data,datum="WGS84")
     mu2 <- mu
   }
 
-  proj <- paste("+proj=tpeqd +lon_1=",mu1[1]," +lat_1=",mu1[2]," +lon_2=",mu2[1]," +lat_2=",mu2[2]," +datum=",datum,sep="")
+  proj <- paste0("+proj=tpeqd +lon_1=",mu1[1]," +lat_1=",mu1[2]," +lon_2=",mu2[1]," +lat_2=",mu2[2]," +datum=",datum)
 
   return(proj)
   #################

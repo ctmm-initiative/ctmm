@@ -1,3 +1,4 @@
+0.4.0 2017-06-04
 ================
 
   * New utility function %#% for unit conversions

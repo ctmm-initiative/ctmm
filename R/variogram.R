@@ -906,13 +906,13 @@ variogram.guess <- function(variogram,CTMM=ctmm())
   #else if(length(CTMM$tau)==1) { CTMM$tau[2] <- tau[2] }
 
   # preserve orientation and eccentricity if available/necessary
-  if(is.null(CTMM$sigma) || length(CTMM$axes)==1)
+  if(is.null(CTMM$sigma))
   { CTMM$sigma <- sigma }
-  else
-  {
-    CTMM$sigma <- CTMM$sigma@par
-    CTMM$sigma[1] <- sigma / cosh(CTMM$sigma[2]/2)
-  }
+  # else
+  # {
+  #   CTMM$sigma <- CTMM$sigma@par
+  #   CTMM$sigma[1] <- sigma / cosh(CTMM$sigma[2]/2)
+  # }
 
   # don't overwrite or lose ctmm parameters not considered here
   model <- as.list(CTMM) # getDataPart deletes names()
