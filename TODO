@@ -24,12 +24,15 @@ OPTIMIZER
 * mc.optimize fill up queue with higher-order derivatives if further space allows
 * mc.genD cross correlations are wrong
 
+pREML
 * document pREML
+* autocorrelated AICc
 
 Aligned Krige UDs
 pregridder composite dimension?
 
 LOW HANGING FRUIT & Nagging issues
+* rbind on telemetry objects
 * as.telemetry drop=TRUE/FALSE for single individuals
 * grid fix regression - weight to coarse scale when appropriate
 * detrend mean in correlogram function
