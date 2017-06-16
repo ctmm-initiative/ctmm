@@ -15,6 +15,7 @@ VIGNETTES & EXAMPLES
 * explain effective sample sizes (DOF of summary)
 
 OPTIMIZER
+* Somehow optimizer can stop on stage 1 without proceeding to stage 2
 * Get TOL.ZERO working better on Nick's bear
 * Stop on encapsulated
 * local tangent transformation on periodic variables
