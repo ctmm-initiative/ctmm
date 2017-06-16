@@ -36,7 +36,7 @@ Optimizer <- function(par,fn,...,method="Nelder-Mead",lower=-Inf,upper=Inf,perio
   {
     control$zero <- NULL
     control$precision <- NULL
-    if(!is.null(control$covariance)) { control$parscale <- sqrt(diag(control$covariance)) }
+    if(!is.null(control$covariance)) { control$parscale <- sqrt(abs(diag(control$covariance))) }
     control$covariance <- NULL
     if(method=="Nelder-Mead")
     {

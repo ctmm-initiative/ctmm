@@ -1,6 +1,6 @@
 # convenience wrapper for numDeriv::genD on scalar functions
 ###########################################################
-genD.numDeriv <- function(par,fn,zero=0,lower=-Inf,upper=Inf,step=NULL,r=2,covariance=NULL,order=2,...)
+genD.numDeriv <- function(par,fn,zero=0,lower=-Inf,upper=Inf,step=NULL,r=2,covariance=NULL,order=2,jacobian=FALSE,...)
 {
   # # square root of covariance
   # stddev <- sqrtm(covariance)
@@ -104,7 +104,10 @@ genD.numDeriv <- function(par,fn,zero=0,lower=-Inf,upper=Inf,step=NULL,r=2,covar
   if(any(!is.na(side)) || order==1)
   {
     # grad <- numDeriv::grad(fn.scl,rep(0,n),side=side,method.args=method.args,...)
-    grad <- numDeriv::grad(fn,par,side=side,method.args=list(eps=1e-4,d=0.0001,zero.tol=zero.tol,r=r,v=2,show.details=FALSE),...)
+    if(!jacobian)
+    { grad <- numDeriv::grad(fn,par,side=side,method.args=list(eps=1e-4,d=0.0001,zero.tol=zero.tol,r=r,v=2,show.details=FALSE),...) }
+    else
+    { grad <- numDeriv::jacobian(fn,par,side=side,method.args=list(eps=1e-4,d=0.0001,zero.tol=zero.tol,r=r,v=2,show.details=FALSE),...) }
     # grad <- grad/parscale
   }
   # else
@@ -321,7 +324,7 @@ genD.mcDeriv <- function(par,fn,zero=0,lower=-Inf,upper=Inf,PERIOD=F,step=NULL,c
 # calculate first and second derivatives efficiently
 # assumes to start with approximant of maximum (par) and inverse hessian (covariance)
 ####################
-genD <- function(par,fn,zero=FALSE,lower=-Inf,upper=Inf,step=NULL,precision=1/2,covariance=NULL,parscale=NULL,mc.cores=detectCores(),Richardson=2,order=2)
+genD <- function(par,fn,zero=FALSE,lower=-Inf,upper=Inf,step=NULL,precision=1/2,covariance=NULL,parscale=NULL,mc.cores=detectCores(),Richardson=2,order=2,jacobian=FALSE)
 {
   DIM <- length(par)
 
@@ -335,7 +338,7 @@ genD <- function(par,fn,zero=FALSE,lower=-Inf,upper=Inf,step=NULL,precision=1/2,
   if(Richardson==1) # parallelized, but no Richardson extrapolation (2nd order)
   { RETURN <- genD.mcDeriv(par,fn,zero=zero,lower=lower,upper=upper,step=step,covariance=covariance,mc.cores=mc.cores) }
   else # Richardson extrapolation, but no parallelization
-  { RETURN <- genD.numDeriv(par,fn,zero=zero,lower=lower,upper=upper,step=step,covariance=covariance,r=Richardson,order=order) }
+  { RETURN <- genD.numDeriv(par,fn,zero=zero,lower=lower,upper=upper,step=step,covariance=covariance,r=Richardson,order=order,jacobian=jacobian) }
 
   return(RETURN)
 }
