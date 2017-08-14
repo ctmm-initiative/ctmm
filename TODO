@@ -33,6 +33,8 @@ Aligned Krige UDs
 pregridder composite dimension?
 
 LOW HANGING FRUIT & Nagging issues
+* variogram.fit sets GUESS to NULL initially...?
+* prior on error from calibration?
 * rbind on telemetry objects
 * as.telemetry drop=TRUE/FALSE for single individuals
 * grid fix regression - weight to coarse scale when appropriate

@@ -58,6 +58,17 @@ PDsolve <- function(M,force=FALSE,pseudo=FALSE)
 {
   DIM <- dim(M)
   if(is.null(DIM)) { DIM <- 1 }
+
+  if(DIM[1]==1) { return(1/M) }
+  if(DIM[1]==2)
+  {
+    DET <- M[1,1]*M[2,2]-M[1,2]*M[2,1]
+    SWP <- M[1,1] ; M[1,1] <- M[2,2] ; M[2,2] <- SWP
+    M[1,2] <- -M[1,2]
+    M[2,1] <- -M[2,1]
+    return( M/DET )
+  }
+
   TOL <- DIM[1]*.Machine$double.eps
 
   # symmetrize

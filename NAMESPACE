@@ -82,3 +82,5 @@ export(overlap)
 #S3method(overlap,ctmm)
 #S3method(overlap,telemetry)
 #S3method(overlap,UD)
+
+#export(emulate)
