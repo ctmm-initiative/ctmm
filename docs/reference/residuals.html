@@ -23,7 +23,8 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-
+  
+  
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -177,13 +178,13 @@ This function is analogous to <code>acf</code>, but can handle missing data and 
 <span class='no'>RES</span> <span class='kw'>&lt;-</span> <span class='fu'>residuals</span>(<span class='no'>Cilla</span>,<span class='no'>FIT</span>)
 
 <span class='co'>#scatter plot of residuals</span>
-<span class='fu'><a href='plot.telemetry.html'>plot</a></span>(<span class='no'>RES</span>)</div><img src='residuals.ctmm-2.png' alt='' width='540' height='400' /><div class='input'>
+<span class='fu'><a href='plot.telemetry.html'>plot</a></span>(<span class='no'>RES</span>)</div><div class='img'><img src='residuals-1.png' alt='' width='700' height='432.632880098887' /></div><div class='input'>
 <span class='co'>#calculate correlogram of residuals</span>
 <span class='co'># increase the res argument to account for sampling variability</span>
 <span class='no'>ACF</span> <span class='kw'>&lt;-</span> <span class='fu'>correlogram</span>(<span class='no'>RES</span>,<span class='kw'>res</span><span class='kw'>=</span><span class='fl'>10</span>)
 
 <span class='co'>#plot a day's worth of lags</span>
-<span class='fu'><a href='plot.telemetry.html'>plot</a></span>(<span class='no'>ACF</span>[<span class='no'>ACF</span>$<span class='no'>lag</span><span class='kw'>&lt;=</span><span class='fl'>24</span>*<span class='fl'>60</span>^<span class='fl'>2</span>,],<span class='kw'>fraction</span><span class='kw'>=</span><span class='fl'>1</span>)</div><img src='residuals.ctmm-4.png' alt='' width='540' height='400' /></pre>
+<span class='fu'><a href='plot.telemetry.html'>plot</a></span>(<span class='no'>ACF</span>[<span class='no'>ACF</span>$<span class='no'>lag</span><span class='kw'>&lt;=</span><span class='fl'>24</span>*<span class='fl'>60</span>^<span class='fl'>2</span>,],<span class='kw'>fraction</span><span class='kw'>=</span><span class='fl'>1</span>)</div><div class='img'><img src='residuals-2.png' alt='' width='700' height='432.632880098887' /></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

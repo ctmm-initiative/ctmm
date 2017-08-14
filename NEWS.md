@@ -1,4 +1,4 @@
-0.4.0 2017-06-04
+0.4.0 2017-08-13
 ================
 
   * New utility function %#% for unit conversions
@@ -18,6 +18,8 @@
   * R 3.4 compatibility fixes
   
   * various improvements to plot.variogram
+  
+  * increased numerical precision in ctmm.loglike
 
 0.3.6 2017-04-23
 ================

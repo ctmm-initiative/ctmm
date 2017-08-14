@@ -301,6 +301,7 @@ alpha.ctmm <- function(CTMM,alpha)
   return(alpha)
 }
 
+
 ###############
 # keep removing uncertain parameters until AIC stops improving
 ctmm.select <- function(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE,...)

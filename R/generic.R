@@ -173,7 +173,9 @@ cov.loglike <- function(hess,grad=rep(0,nrow(hess)))
   hess <- hess/W
 
   EIGEN <- eigen(hess)
-  values <- clamp(EIGEN$values,0,Inf)
+  values <- EIGEN$values
+  if(any(values<=0)) { warning("MLE is near a boundary or optim failed.") }
+  values <- clamp(values,0,Inf)
   vectors <- EIGEN$vectors
 
   # transform gradient to hess' coordinate system
@@ -191,7 +193,7 @@ cov.loglike <- function(hess,grad=rep(0,nrow(hess)))
     { values[i] <- ((sqrt(DET)-grad[i])/values[i])^2 }
     else # minimum loglike? optim probably failed or hit a boundary
     {
-      warning("MLE is near a boundary.")
+      # warning("MLE is near a boundary.")
       # (parameter distance to worst parameter * 1/2 / loglike difference to worst parameter)^2
       # values[i] <- 1/grad[i]^2
       # pretty close to the other formula, so just using that

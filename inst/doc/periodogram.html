@@ -12,7 +12,7 @@
 
 <meta name="author" content="Guillaume Péron, Christen H. Fleming, and Justin M. Calabrese" />
 
-<meta name="date" content="2017-06-15" />
+<meta name="date" content="2017-08-14" />
 
 <title>Periodic movement models</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Periodic movement models</h1>
 <h4 class="author"><em>Guillaume Péron, Christen H. Fleming, and Justin M. Calabrese</em></h4>
-<h4 class="date"><em>2017-06-15</em></h4>
+<h4 class="date"><em>2017-08-14</em></h4>
 
 
 
@@ -113,14 +113,14 @@ FITS &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(Gamba,GUE
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(FITS)</code></pre></div>
 <pre><code>##                                   dAICc DOF[mean]
 ## OUF anisotropic harmonic 3 0   0.000000  107.1803
-## OUF anisotropic harmonic 4 0   4.818792  107.1268
-## OUF anisotropic harmonic 3 1   5.599727  108.9836
-## OUF anisotropic harmonic 2 0  17.064596  106.1204
+## OUF anisotropic harmonic 4 0   4.750452  107.1268
+## OUF anisotropic harmonic 3 1   5.531388  108.9836
+## OUF anisotropic harmonic 2 0  17.132115  106.1204
 ## OUF anisotropic harmonic 2 1  22.627079  107.9071
-## OUF anisotropic harmonic 1 0  37.618897  108.2142
-## OUF anisotropic harmonic 1 1  43.040203  110.0647
-## OUF anisotropic harmonic 0 0 140.521989  132.4812
-## OUF anisotropic harmonic 0 1 145.259592  134.7361</code></pre>
+## OUF anisotropic harmonic 1 0  37.753129  108.2142
+## OUF anisotropic harmonic 1 1  43.107722  110.0647
+## OUF anisotropic harmonic 0 0 140.722139  132.4811
+## OUF anisotropic harmonic 0 1 145.393824  134.7361</code></pre>
 <p>We see that the velocity autocorrelation (OUF), anisotropy, and circulation were unambiguously selected using the level option and were present in all the candidate models. In this maned wolf, there is rather strong support (Delta AIC &gt; 4) for the preferred model (the first of the list). Given how we specified the prototype, <code>harmonic 3 0</code> means that this preferred model has no lunar periodicity, but has three harmonics of the one-day periodicity. This fittingly corresponds to what the periodogram was saying. If there was some moon-related pattern of space use and given how we specified our prototype, we would have had a non-zero value as the second <code>harmonic</code> value. We also see that circulation was selected.</p>
 <p>Next we do some sanity checking on our results. The sampling interval for Gamba is fairly steady at</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="st">&quot;hour&quot;</span> %#%<span class="st"> </span>stats::<span class="kw">median</span>(<span class="kw">diff</span>(Gamba$t))</code></pre></div>
@@ -136,23 +136,23 @@ FITS &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(Gamba,GUE
 ##                                low         ML       high
 ## rotation/deviation %     74.795669  91.774630 100.000000
 ## rotation/speed %         96.807431  98.987421 100.000000
-## area (square kilometers) 41.444887  48.269156  55.605890
-## tau position (hours)      6.984419   9.267908  12.297962
-## tau velocity (hours)      1.126099   1.617409   2.323076
-## speed (kilometers/day)   12.674827 103.001923 204.382858</code></pre>
+## area (square kilometers) 41.444887  48.269156  55.605889
+## tau position (hours)      6.984418   9.267907  12.297961
+## tau velocity (hours)      1.126099   1.617410   2.323076
+## speed (kilometers/day)   12.674828 103.001923 204.382857</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(FITS[[<span class="dv">4</span>]]) <span class="co"># harmonic 2 0</span></code></pre></div>
 <pre><code>## $DOF
 ##     mean     area 
-## 106.1204 179.5625 
+## 106.1204 179.5626 
 ## 
 ## $CI
 ##                                 low        ML      high
-## rotation/deviation %     23.6228690 29.019474 35.648925
-## rotation/speed %         24.3431626 29.868660 36.648355
-## area (square kilometers) 41.1021784 47.844462 55.091282
-## tau position (hours)      7.2925137  9.568355 12.554439
-## tau velocity (hours)      0.9699886  1.423753  2.089789
-## speed (kilometers/day)   14.7247950 16.056839 17.387435</code></pre>
+## rotation/deviation %     23.6228693 29.019474 35.648925
+## rotation/speed %         24.3431624 29.868660 36.648354
+## area (square kilometers) 41.1021775 47.844461 55.091280
+## tau position (hours)      7.2925135  9.568354 12.554438
+## tau velocity (hours)      0.9699887  1.423753  2.089789
+## speed (kilometers/day)   14.7247951 16.056839 17.387435</code></pre>
 <ul>
 <li><code>rotation/deviation %</code> corresponds to <span class="math inline">\(100 \eta_P\)</span> from the paper. It is interpreted as the proportion of the variance in the animal`s location that is caused by the periodicity in the mean.</li>
 <li><code>rotation/speed %</code> corresponds to <span class="math inline">\(100 \eta_V\)</span> from the paper. It is interpreted as the proportion of the variance in the animal`s velocity that is caused by the periodicity in the mean.</li>
@@ -175,7 +175,7 @@ FITS &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(Gamba,GUE
 ## OUF anisotropic harmonic 3 1  22.57964253  108.9836
 ## OUF anisotropic harmonic 2 1  22.62707927  107.9071
 ## OUF anisotropic harmonic 1 1  25.99980779  110.0647
-## OUF anisotropic harmonic 0 0  89.22197845  132.4812
+## OUF anisotropic harmonic 0 0  89.22197845  132.4811
 ## OUF anisotropic harmonic 0 1 111.11897842  134.7361</code></pre>
 </div>
 <div id="home-range-estimation" class="section level3">

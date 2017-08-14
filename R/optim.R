@@ -158,7 +158,8 @@ WolfeTest <- function(x,y,grad.i,i=1,MIN=which.min(y),const=c(1,1),thresh=0.1)
   # strong curvature rule
   TEST <- abs(DIFF$gradient)/abs(grad.i)
 
-  return(TEST<=thresh)
+  if(is.nan(DIFF$gradient)) { return(TRUE) } # numerical error - too tight
+  else { return(TEST<=thresh) }
 }
 
 ######################
@@ -315,6 +316,20 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
     if(fix.dir && any(LO)) { diag(DIR)[LO] <<- -1 }
 
     return(BOX)
+  }
+
+  is.toosmallf <- function(fns,fn0)
+  {
+    if(ZERO) { abs(diff(fns))<=TOL.STAGE+TOL.ZERO }
+    else { abs(diff(fns))/fn0<=TOL.STAGE }
+  }
+
+  is.toosmallp <- function(ps,p0)
+  {
+    SCL <- pmax(abs(p0),1)
+    # relative step size
+    dp <- sqrt(abs(c((ps[,2]-ps[,1])^2 %*% SCL^2))) # formula explained in numderiv.diff()
+    return(dp <= STEP[STAGE])
   }
 
   numderiv.diff <- function(p0,DIR)
@@ -736,10 +751,16 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
 
         # numerical degeneracy check
         TEST <- FALSE
-        TEST <- TEST || (MIN<length(fn.all) && ZERO && fn.all[MIN+1]-fn.all[MIN]<=TOL.STAGE + TOL.ZERO)
-        TEST <- TEST || (MIN<length(fn.all) && !ZERO && (fn.all[MIN+1]-fn.all[MIN])/fn.all[MIN]<=TOL.STAGE)
-        TEST <- TEST || (MIN>1 && ZERO && fn.all[MIN-1]-fn.all[MIN]<=TOL.STAGE + TOL.ZERO)
-        TEST <- TEST || (MIN>1 && !ZERO && (fn.all[MIN-1]-fn.all[MIN])/fn.all[MIN]<=TOL.STAGE)
+        if(MIN>1)
+        {
+          TEST <- TEST || is.toosmallf(fn.all[MIN-1:0],fn.par)
+          TEST <- TEST || is.toosmallp(par.all[,MIN-1:0],par)
+        }
+        if(MIN<length(fn.all))
+        {
+          TEST <- TEST || is.toosmallf(fn.all[MIN+0:1],fn.par)
+          TEST <- TEST || is.toosmallp(par.all[,MIN+0:1],par)
+        }
         if(TEST) { break }
 
         #####################################
@@ -774,7 +795,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
             # geometric sequence
             SEQ <- 2^(1:mc.cores) * M
 
-            P <- line.boxer((DIR.STEP %o% SEQ),p0=par,lower=lower,upper=upper,period=period)
+            P <- line.boxer((DIR.STEP %o% SEQ),p0=par,lower=lower,upper=upper,period=period,period.max=Inf)
           }
 
           # goto evaluate iteration step
@@ -826,7 +847,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
           SEQ <- c(-rev(SEQ),seq(0,M2,length.out=n2+2)[-c(1,n2+2)])
 
           # combine for evaluation
-          P <- line.boxer((DIR.STEP %o% SEQ),p0=par,lower=lower,upper=upper,period=period)
+          P <- line.boxer((DIR.STEP %o% SEQ),p0=par,lower=lower,upper=upper,period=period,period.max=Inf)
 
           LINE.SORTED <- FALSE
           next
@@ -855,7 +876,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
           SEQ <- c(-M1*SEQ,M2*rev(SEQ))
 
           # combine for evaluation
-          P <- line.boxer((DIR.STEP %o% SEQ),p0=par,lower=lower,upper=upper,period=period)
+          P <- line.boxer((DIR.STEP %o% SEQ),p0=par,lower=lower,upper=upper,period=period,period.max=Inf)
           LINE.SORTED <- FALSE
           # goto evaluate iteration step
           next

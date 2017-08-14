@@ -23,7 +23,8 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-
+  
+  
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -150,7 +151,29 @@ This point estimate itself is subject to uncertainty, and is given confidence in
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'></div></pre>
+    <pre class="examples"><div class='input'><span class='co'># Load package and data</span>
+<span class='fu'>library</span>(<span class='no'>ctmm</span>)
+<span class='fu'>data</span>(<span class='no'>buffalo</span>)
+
+<span class='co'># Extract movement data for a single animal</span>
+<span class='no'>Cilla</span> <span class='kw'>&lt;-</span> <span class='no'>buffalo</span>$<span class='no'>Cilla</span>
+
+<span class='co'># fit model</span>
+<span class='no'>GUESS</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='variogram.fit.html'>ctmm.guess</a></span>(<span class='no'>Cilla</span>,<span class='kw'>interactive</span><span class='kw'>=</span><span class='fl'>FALSE</span>)
+<span class='no'>FIT</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='ctmm.fit.html'>ctmm.fit</a></span>(<span class='no'>Cilla</span>,<span class='no'>GUESS</span>)
+
+<span class='co'># Tell us something interpretable</span>
+<span class='fu'>summary</span>(<span class='no'>FIT</span>)</div><div class='output co'>#&gt; $DOF
+#&gt;     mean     area 
+#&gt; 13.16465 22.59234 
+#&gt; 
+#&gt; $CI
+#&gt;                                 low         ML      high
+#&gt; area (square kilometers) 280.308958 444.213143 645.24296
+#&gt; tau position (days)        3.498487   5.998142  10.28379
+#&gt; tau velocity (minutes)    43.708867  46.725486  49.95030
+#&gt; speed (kilometers/day)    15.441216  15.705364  15.96945
+#&gt; </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
