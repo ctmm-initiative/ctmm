@@ -1050,6 +1050,9 @@ variogram.fit <- function(variogram,CTMM=ctmm(),name="GUESS",fraction=0.5,intera
       CTMM <- as.list(CTMM)
       CTMM$info <- attr(variogram,"info")
       CTMM <- do.call("ctmm",CTMM)
+      if(any(CTMM$tau>0)) { CTMM$tau <- CTMM$tau[CTMM$tau>0] }
+      else { CTMM$tau <- NULL }
+
       fraction <- b^(z-1)
       if(store) { assign(name,CTMM,envir=envir) }
       plot.variogram(variogram,CTMM=CTMM,fraction=fraction,...)

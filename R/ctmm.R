@@ -302,8 +302,11 @@ ctmm.prepare <- function(data,CTMM,REML=FALSE)
 }
 
 # undo the above
-ctmm.repair <- function(CTMM)
+ctmm.repair <- function(CTMM,K=length(CTMM$tau))
 {
+  # repair dropped zero timescales
+  if(K) { CTMM$tau <- replace(numeric(K),1:length(CTMM$tau),CTMM$tau) }
+
   if(!CTMM$range)
   {
     K <- length(CTMM$tau)

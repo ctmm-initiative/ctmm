@@ -452,7 +452,7 @@ new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,fracti
 #######################################
 # PLOT TELEMETRY DATA
 #######################################
-plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF",col="red",col.level="black",col.DF="blue",col.grid="grey",pch=1,labels=NULL,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,cex=1,lwd=1,...)
+plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF",col="red",col.level="black",col.DF="blue",col.grid="grey",pch=1,labels=NULL,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,cex=NULL,lwd=1,...)
 {
   alpha <- 1-level
   alpha.UD <- 1-level.UD
@@ -539,8 +539,12 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
   pch <- prepare.p(pch)
 
   # automagic the plot point size
-  p <- sum(sapply(x, function(d) { length(d$t) } ))
-  if(p>1000) { cex <- 1000/p * cex }
+  if(is.null(cex))
+  {
+    p <- sum(sapply(x, function(d) { length(d$t) } ))
+    if(p>1000) { cex <- 1000/p } else { cex <- 1 }
+  }
+  cex <- prepare.p(cex)
 
   # minimum error
   suppressWarnings(MIN <- min(sapply(x,function(X){min(X$HERE)})))
@@ -557,7 +561,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
 
     if(is.null(x[[i]]$HERE))
     {
-      graphics::points(r, cex=cex, col=col[[i]], pch=pch[[i]],...)
+      graphics::points(r, cex=cex[[i]], col=col[[i]], pch=pch[[i]],...)
     }
     else
     {
@@ -593,7 +597,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
 
 
 ##############
-plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",col.level="black",col.DF="blue",col.grid="grey",labels=NULL,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,cex=1,lwd=1,...)
+plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",col.level="black",col.DF="blue",col.grid="grey",labels=NULL,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,cex=NULL,lwd=1,...)
 {
   if(!is.null(x)) { if(class(x)=="UD") { x <- list(x) } }
 

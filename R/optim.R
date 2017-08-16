@@ -754,12 +754,12 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
         if(MIN>1)
         {
           TEST <- TEST || is.toosmallf(fn.all[MIN-1:0],fn.par)
-          TEST <- TEST || is.toosmallp(par.all[,MIN-1:0],par)
+          TEST <- TEST || is.toosmallp(par.all[,MIN-1:0,drop=FALSE],par)
         }
         if(MIN<length(fn.all))
         {
           TEST <- TEST || is.toosmallf(fn.all[MIN+0:1],fn.par)
-          TEST <- TEST || is.toosmallp(par.all[,MIN+0:1],par)
+          TEST <- TEST || is.toosmallp(par.all[,MIN+0:1,drop=FALSE],par)
         }
         if(TEST) { break }
 
