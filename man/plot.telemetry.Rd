@@ -14,7 +14,7 @@ plot(x,y,...)
 
 \S3method{plot}{telemetry}(x, CTMM=NULL, UD=NULL, level.UD=0.95, level=0.95, DF="CDF", col="red",
 col.level="black", col.DF="blue", col.grid="grey", pch=1, labels=NULL, fraction=1,
-add=FALSE, xlim=NULL, ylim=NULL, cex=1, lwd=1, ...)
+add=FALSE, xlim=NULL, ylim=NULL, cex=NULL, lwd=1, ...)
 
 \S4method{zoom}{list}(x,...)
 

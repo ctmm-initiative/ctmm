@@ -287,6 +287,8 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   n <- length(data$t)
   AXES <- length(CTMM$axes)
 
+  # save original tau length
+  K <- length(CTMM$tau)
   # prepare model for numerics
   CTMM <- ctmm.prepare(data,CTMM,REML=REML)
 
@@ -615,7 +617,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   {
     # assign variables
     CTMM$sigma <- sigma
-    CTMM <- ctmm.repair(CTMM)
+    CTMM <- ctmm.repair(CTMM,K=K)
 
     # if(range)
     {
@@ -771,21 +773,23 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
     pars <- clean.parameters(RESULT$par)
     # copy over hessian from fit to COV.init ?
 
+    # DEBUG.OPTIM <<- list(CTMM=CTMM,pars=pars,NAMES=NAMES)
+
     # write best estimates over initial guess
     store.pars <- function(pars)
     {
+      names(pars) <- NAMES
       pars <- clean.parameters(pars)
 
       CTMM <- set.parameters(CTMM,pars)
 
       # verbose ML information
       # this is a wasted evaluation !!! store verbose glob in environment?
-      CTMM <- ctmm.loglike(data,CTMM,REML=REML,verbose=TRUE,profile=TRUE)
-
-      # zero-taus can be deleted above
-      CTMM <<- set.parameters(CTMM,pars)
+      CTMM <<- ctmm.loglike(data,CTMM,REML=REML,verbose=TRUE,profile=TRUE)
     }
     store.pars(pars)
+
+    # DEBUG.VERBOSE <<- list(CTMM=CTMM,pars=pars,NAMES=NAMES)
 
     profile <- FALSE # no longer solving covariance analytically
     STUFF <- id.parameters(CTMM,profile=profile,UERE=UERE,dt=dt,df=df)

@@ -333,6 +333,7 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE
 
     # consider if some timescales are actually zero
     CI <- confint.ctmm(CTMM,alpha=beta)
+
     if(length(CTMM$tau)==2)
     {
       Q <- CI["tau velocity",1]

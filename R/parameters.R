@@ -143,8 +143,8 @@ set.parameters <- function(CTMM,par)
   NAME <- "angle"; if(NAME %in% NAMES) { sigma[NAME] <- par[NAME] }
   CTMM$sigma <- covm(sigma)
 
-  NAME <- "tau position"; if(NAME %in% NAMES) { CTMM$tau[1] <- par[NAME] }
-  NAME <- "tau velocity"; if(NAME %in% NAMES) { CTMM$tau[2] <- par[NAME] }
+  NAME <- "tau position"; if(NAME %in% NAMES) { CTMM$tau[1] <- par[NAME] ; names(CTMM$tau)[1] <- 'position' }
+  NAME <- "tau velocity"; if(NAME %in% NAMES) { CTMM$tau[2] <- par[NAME] ; names(CTMM$tau)[2] <- 'velocity' }
 
   NAME <- "circle"; if(NAME %in% NAMES) { CTMM[[NAME]] <- par[NAME] }
   NAME <- "error"; if(NAME %in% NAMES) { CTMM[[NAME]] <- par[NAME] }
