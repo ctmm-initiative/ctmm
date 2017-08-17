@@ -1,4 +1,4 @@
-0.4.0 2017-08-16
+0.4.0 2017-08-17
 ================
 
   * New utility function %#% for unit conversions
@@ -20,6 +20,8 @@
   * various improvements to plot.variogram
   
   * increased numerical precision in ctmm.loglike
+  
+  * SI speeds fixed with units=FALSE
 
 0.3.6 2017-04-23
 ================

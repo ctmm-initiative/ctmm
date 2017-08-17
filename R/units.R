@@ -1,5 +1,6 @@
 # CHOOSE BEST UNITS FOR A LIST OF DATA
 # thresh is threshold for switching to coarser unit
+#   thresh==Inf is a special value that returns SI units
 # concise gives abbreviated names
 unit <- function(data,dimension,thresh=1,concise=FALSE)
 {
@@ -26,12 +27,28 @@ unit <- function(data,dimension,thresh=1,concise=FALSE)
     name.list <- c("meters/day","kilometers/day")
     abrv.list <- c("m/day","km/day")
     scale.list <- c(1,1000)/(60*60*24)
+
+    # SI units fix
+    if(thresh==Inf)
+    {
+      name.list <- "meters/second"
+      abrv.list <- "m/s"
+      scale.list <- 1
+    }
   }
   else if(dimension=="diffusion")
   {
     name.list <- c("square meters/day","hectares/day","square kilometers/day")
     abrv.list <- c("m\u00B2/day","hm\u00B2/day","km\u00B2/day")
     scale.list <- c(1,100^2,1000^2)/(60*60*24)
+
+    # SI units fix
+    if(thresh==Inf)
+    {
+      name.list <- "square meters/second"
+      abrv.list <- "m\u00B2/s"
+      scale.list <- 1
+    }
   }
 
   max.data <- max(abs(data))
