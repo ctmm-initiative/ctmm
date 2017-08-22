@@ -31,7 +31,7 @@ emulate.ctmm <- function(CTMM)
   par <- MASS::mvrnorm(mu=par,Sigma=COV)
 
   # transform log back to positive parameters
-  for(P in PAR) { par[P] <- exp(par[P]) }
+  par[PAR] <- exp(par[PAR])
 
   CTMM <- set.parameters(CTMM,par)
 

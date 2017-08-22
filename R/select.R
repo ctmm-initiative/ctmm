@@ -353,6 +353,17 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE
       }
     }
 
+    # consider if there is no telemetry error
+    # if(CTMM$error)
+    # {
+    #   Q <- CI["error",1]
+    #   if(is.nan(Q) || (Q<=0)) # This will never happen wich chi-square error model
+    #   {
+    #     GUESS[[length(GUESS)+1]] <- MLE
+    #     GUESS[[length(GUESS)]]$error <- FALSE
+    #   }
+    # }
+
     # consider if there is no circulation
     if(CTMM$circle)
     {

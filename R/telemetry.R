@@ -397,7 +397,7 @@ new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,fracti
     { ext <- rbind(ext,extent(UD,level=level,level.UD=level.UD)) }
 
     # bounding locations from Gaussian CTMM
-    if(!is.null(CTMM) & !is.na(level.UD))
+    if(!is.null(CTMM) & !any(is.na(level.UD)))
     { ext <- rbind(ext,extent(CTMM,level=level,level.UD=level.UD)) }
 
     # combine ranges
@@ -456,7 +456,6 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
 {
   alpha <- 1-level
   alpha.UD <- 1-level.UD
-  if(is.na(alpha.UD)) { alpha.UD <- exp(-1) } # mean area
 
   # listify everything for generality
   if(class(x)=="telemetry" || class(x)=="data.frame") { x <- list(x)  }
@@ -608,6 +607,7 @@ plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",col.level="black",col.DF
   { col.level <- t(array(col.level,c(length(level.UD),length(x)))) }
   else
   { col.level <- array(col.level,c(length(x),length(level.UD))) }
+  col.level <- array(col.level,c(length(x),length(level.UD),3))
 
   # contour labels
   if(is.null(labels)) { labels <- round(100*level.UD) }
@@ -635,15 +635,15 @@ plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",col.level="black",col.DF
   # CONTOURS
   for(i in 1:length(x))
   {
-    if(!any(is.na(col.level[i,])) && !is.na(level.UD))
+    if(!any(is.na(col.level[i,,])) && !any(is.na(level.UD)))
     {
       # make sure that correct style is used for low,ML,high even in absence of lows and highs
-      plot.kde(x[[i]],level=level.UD,labels=labels[i,,2],col=scales::alpha(col.level[i,],1),lwd=lwd,...)
+      plot.kde(x[[i]],level=level.UD,labels=labels[i,,2],col=scales::alpha(col.level[i,,2],1),lwd=lwd,...)
 
       if(!is.na(level) && !is.null(x[[i]]$DOF.area))
       {
-        P <- CI.UD(x[[i]],level.UD,level,P=TRUE)
-        plot.kde(x[[i]],level=P[-2],labels=labels[i,,c(1,3)],col=scales::alpha(col.level[i,],0.5),lwd=lwd/2,...)
+        P <- sapply(level.UD, function(l) { CI.UD(x[[i]],l,level,P=TRUE)[-2] } )
+        plot.kde(x[[i]],level=P,labels=c(t(labels[i,,c(1,3)])),col=scales::alpha(c(t(col.level[i,,c(1,3)])),0.5),lwd=lwd/2,...)
       }
     }
   }

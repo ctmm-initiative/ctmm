@@ -33,8 +33,10 @@ Aligned Krige UDs
 pregridder composite dimension?
 
 LOW HANGING FRUIT & Nagging issues
+* ctmm.select for error
+* standardize x,y prior to likelihood calculation
 * link to Dong's Linux notes in package documentation
-* change default gap skip in occurrence
+* change default gap skip in occurrence?
 * prior on error from calibration?
 * rbind on telemetry objects
 * as.telemetry drop=TRUE/FALSE for single individuals

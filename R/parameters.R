@@ -92,7 +92,7 @@ id.parameters <- function(CTMM,profile=TRUE,UERE=FALSE,dt=0,df=0)
 
   if(CTMM$error && UERE<3)
   {
-    parscale <- c(parscale,CTMM$error)
+    parscale <- c(parscale,min(1,CTMM$error)) # minimum of 1-meter error parscale
     lower <- c(lower,0)
     upper <- c(upper,Inf)
     period <- c(period,FALSE)

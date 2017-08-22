@@ -1,4 +1,4 @@
-0.4.0 2017-08-17
+0.4.0 2017-08-21
 ================
 
   * New utility function %#% for unit conversions
@@ -18,6 +18,8 @@
   * R 3.4 compatibility fixes
   
   * various improvements to plot.variogram
+  
+  * plot.UD can now accept multiple level.UD values
   
   * increased numerical precision in ctmm.loglike
   
