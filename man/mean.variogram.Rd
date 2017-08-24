@@ -19,9 +19,9 @@
 Returns a \code{variogram} object which is a dataframe containing the lag, the semi-variance estimate at that lag, and the approximate degrees of freedom associated with the semi-variance estimate.
 }
 \references{
-C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, and W. F. Fagan. (2014).
+C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, W. F. Fagan.
 From fine-scale foraging to home ranges: A semi-variance approach to identifying movement modes across spatiotemporal scales.
-\href{http://www.jstor.org/discover/10.1086/675504}{The American Naturalist, 183(5), E154-E167}.
+\href{http://www.jstor.org/discover/10.1086/675504}{The American Naturalist, 183:5, E154-E167 (2014)}.
 }
 \author{
 J. M. Calabrese and C. H. Fleming

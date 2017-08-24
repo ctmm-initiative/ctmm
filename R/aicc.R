@@ -1,29 +1,39 @@
-# solve for sample size of VAR[log(det(Wishart))] of dim c(d,d)
-n.varlogdet <- function(varlogdet,d,TOL=.Machine$double.eps^(3/4))
+AICc.list <- function(object,...)
 {
-  # zeroth-order term of expansion
-  arg <- (1:(d-1))/2
-  V0 <- sum(trigamma(arg)) + pi^2/6
-  if(varlogdet>V0) # pertubative solution from n = d-1 + epsilon
-  { n <- d-1 + 2/sqrt(varlogdet-V0) }
-  else if(varlogdet<2*d/(d-1)) # asymptotic solution from 1/n = epsilon
-  { n <- 2*d/varlogdet }
-  else
-  { n <- d } # blind guess
+  LIST <- sapply(object,function(M) { AIC <- AICc(M,...) ; c(AIC$mean,AIC$error) } )
+  LIST <- t(LIST)
 
-  dn <- Inf
-  while(abs(dn)>TOL)
+  colnames(LIST) <- c("mean","error")
+
+  ORDER <- sort(LIST[,1],method="quick",index.return=TRUE)$ix
+  LIST <- LIST[ORDER,]
+
+  return(LIST)
+}
+
+# double-bootstrap AICc estimate for one model
+AICc.ctmm <- function(object,data,n=100,fast=FALSE,...)
+{
+  CTMM <- object
+  # toss location information for simulations
+  data[,CTMM$axes] <- NULL
+
+  LIKE <- numeric(n)
+  for(i in 1:n)
   {
-    arg <- (n+1-(1:d))/2
-    # variance of the logarithm of the determinant of a Wishart matrix
-    V0 <- sum(trigamma(arg))
-    # derivative of that
-    V1 <- sum(psigamma(arg,2))/2
-    # Newton-Raphson iterate
-    dn <- (varlogdet-V0)/V1
-    # Newton-Raphson iteration under log transform: n = d-1 + exp(z)
-    n <- (d-1) + (n-d+1)*exp(dn/(n-d+1))
+    DATA <- simulate(CTMM,data=data)
+
+    FIT <- emulate(CTMM,data=data,fast=fast,...)
+
+    LIKE[i] <- ctmm.loglike(DATA,FIT,profile=FALSE)
   }
 
-  return(n)
+  # now these are AICc targets
+  LIKE <- -2*LIKE
+
+  MEAN <- mean(LIKE)
+  SE <- sqrt(stats::var(LIKE)/n)
+
+  RESULT <- list(mean=MEAN,error=SE)
+  return(RESULT)
 }

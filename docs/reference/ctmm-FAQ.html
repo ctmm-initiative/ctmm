@@ -108,7 +108,9 @@
 <li><p>Work through the vignettes <code><a href='../articles/variogram.html'>vignette("variogram")</a></code> and <code><a href='../articles/akde.html'>vignette("akde")</a></code>.</p></li>
 <li><p>Check the <a href='http://www2.physics.umd.edu/~hfleming/'><code>ctmm</code> website</a> to see if there is a beta release that fixes any bugs.</p></li>
 <li><p>Check the <a href='https://groups.google.com/forum/#!forum/ctmm-user'><code>ctmm</code> user's group</a>.</p></li>
-</ol><p><b><code>ctmm.select</code> only returns one model with <code>verbose=TRUE</code></b>
+</ol><p><b>Help installing packages on Linux</b>
+    <a href='https://github.com/ctmm-initiative/ctmm-webapp/blob/master/README-install.md'>see Xianghui Dong's installation tips here.</a>
+    <b><code>ctmm.select</code> only returns one model with <code>verbose=TRUE</code></b>
     The newer version of <code>ctmm.select</code> is much more intelligent, necessitated by the exploding number of new model permutations. Any simpler models were judged to be so unlikely that they were not attempted. You can set <code>level=1</code> to force alternative model fitting, but the additional models should lose badly in model selection (please contact me if I am wrong).</p>
 <p><b>Database corruption, missing functions, and other weird errors</b>
     <code>R</code> likely did not install the package correctly. I.e., some files may have failed to overwrite previous versions. Uninstall <code>ctmm</code>, restart <code>R</code>, and install <code>ctmm</code> again.

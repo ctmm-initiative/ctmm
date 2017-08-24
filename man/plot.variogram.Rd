@@ -34,7 +34,9 @@ Additional \code{plot} function parameters.
 \value{Returns a plot of semi-variance vs. time lag, with the empirical variogram in blue and the \code{ctmm} semi-variance function in red if specified. \code{zoom} includes a log-scale zoom slider to manipulate \code{fraction}.}
 
 \references{
-C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, and W. F. Fagan. (2014). From fine-scale foraging to home ranges: A semi-variance approach to identifying movement modes across spatiotemporal scales. \href{http://www.jstor.org/discover/10.1086/675504}{The American Naturalist, 183(5), E154-E167.}
+C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, W. F. Fagan.
+From fine-scale foraging to home ranges: A semi-variance approach to identifying movement modes across spatiotemporal scales.
+\href{http://www.jstor.org/discover/10.1086/675504}{The American Naturalist, 183:5, E154-E167 (2014)}.
 }
 \author{J. M. Calabrese and C. H. Fleming}
 

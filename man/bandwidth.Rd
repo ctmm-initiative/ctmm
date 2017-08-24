@@ -38,15 +38,15 @@ On the other hand, if the data contain some very tiny time intervals, say 1 seco
 \value{Returns a bandwidth \code{matrix} object, which is to be the optimal covariance matrix of the individual kernels of the kernel density estimate.}
 
 \references{
-T. F. Chan (1988).
+T. F. Chan.
 An Optimal Circulant Preconditioner for Toeplitz Systems.
-SIAM Journal on Scientific and Statistical Computing, 9(4), 766-771.
+SIAM Journal on Scientific and Statistical Computing, 9:4, 766-771 (1988).
 
-C. H. Fleming and W. F. Fagan and T. Mueller and K. A. Olson and P. Leimgruber and J. M. Calabrese (2015).
+D. Marcotte. Fast variogram computation with FFT. \emph{Computers and Geosciences} 22:10, 1175-1186 (1996).
+
+C. H. Fleming, W. F. Fagan, T. Mueller, K. A. Olson, P. Leimgruber, J. M. Calabrese.
 Rigorous home-range estimation with movement data: A new autocorrelated kernel-density estimator.
-\href{http://www.esajournals.org/doi/abs/10.1890/14-2010.1}{Ecology, 96(5), 1182-1188}.
-
-D. Marcotte. (1996). Fast variogram computation with FFT. \emph{Computers and Geosciences} 22(10), 1175-1186.
+\href{http://www.esajournals.org/doi/abs/10.1890/14-2010.1}{Ecology, 96:5, 1182-1188 (2015)}.
 }
 
 \author{ C. H. Fleming. }

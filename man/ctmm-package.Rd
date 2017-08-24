@@ -12,7 +12,7 @@ The package is described in Calabrese & Fleming (2016) and its methods are based
 Package: \tab ctmm\cr
 Type: \tab Package\cr
 Version: \tab 0.4.0 \cr
-Date: \tab 2017-08-21 \cr
+Date: \tab 2017-08-23 \cr
 License: \tab GPL-3 \cr
 }
 
@@ -33,33 +33,48 @@ Christen H. Fleming and Justin M. Calabrese
 
 Maintainer: Christen H. Fleming <flemingc@si.edu>
 }
+
 \references{
-J. M. Calabrese, C. H. Fleming. (2016). ctmm: an R package for analyzing animal relocation data as a continuous-time stochastic process. \href{http://onlinelibrary.wiley.com/wol1/doi/10.1111/2041-210X.12559/abstract}{Methods in Ecology and Evolution, DOI:10.1111/2041-210X.12559}.
-
-C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, and W. F. Fagan. (2014).
+C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, W. F. Fagan.
 From fine-scale foraging to home ranges: A semi-variance approach to identifying movement modes across spatiotemporal scales.
-\href{http://www.jstor.org/discover/10.1086/675504}{The American Naturalist, 183(5), E154-E167}.
+\href{http://www.jstor.org/discover/10.1086/675504}{The American Naturalist, 183:5, E154-E167 (2014)}.
 
-C. H. Fleming and J. M. Calabrese and T. Mueller and K. A. Olson and P. Leimgruber, and W. F. Fagan (2014).
-Non-Markovian maximum likelihood estimation of autocorrelated movement processes
-\href{http://onlinelibrary.wiley.com/doi/10.1111/2041-210X.12176/abstract}{Methods in Ecology and Evolution, 5(5) 462-472}.
+C. H. Fleming, J. M. Calabrese, T. Mueller, K. A. Olson, P. Leimgruber, W. F. Fagan.
+Non-Markovian maximum likelihood estimation of autocorrelated movement processes.
+\href{http://onlinelibrary.wiley.com/doi/10.1111/2041-210X.12176/abstract}{Methods in Ecology and Evolution, 5:5 462-472 (2014)}.
 
-C. H. Fleming and Y. Subasi and J. M. Calabrese. (2015).
+C. H. Fleming, Y. Subasi, J. M. Calabrese.
 A maximum-entropy description of animal movement.
-\href{http://journals.aps.org/pre/abstract/10.1103/PhysRevE.91.032107}{Physical Review E, 91, 032107}.
+\href{http://journals.aps.org/pre/abstract/10.1103/PhysRevE.91.032107}{Physical Review E, 91, 032107 (2015)}.
 
-C. H. Fleming and W. F. Fagan and T. Mueller and K. A. Olson and P. Leimgruber, and J. M. Calabrese (2015).
+C. H. Fleming, W. F. Fagan, T. Mueller, K. A. Olson, P. Leimgruber, J. M. Calabrese.
 Rigorous home-range estimation with movement data: A new autocorrelated kernel-density estimator.
-\href{http://www.esajournals.org/doi/abs/10.1890/14-2010.1}{Ecology, 96(5), 1182-1188}.
+\href{http://www.esajournals.org/doi/abs/10.1890/14-2010.1}{Ecology, 96:5, 1182-1188 (2015)}.
 
-C. H. Fleming, W. F. Fagan, T. Mueller, K. A. Olson, P. Leimgruber, and J. M. Calabrese. (2016).
+J. M. Calabrese, C. H. Fleming.
+ctmm: an R package for analyzing animal relocation data as a continuous-time stochastic process.
+\href{http://onlinelibrary.wiley.com/wol1/doi/10.1111/2041-210X.12559/abstract}{Methods in Ecology and Evolution, 7:9, 1124-1132 (2016)}.
+
+C. H. Fleming, W. F. Fagan, T. Mueller, K. A. Olson, P. Leimgruber, J. M. Calabrese.
 Estimating where and how animals travel: An optimal framework for path reconstruction from autocorrelated tracking data.
-\href{http://onlinelibrary.wiley.com/doi/10.1890/15-1607/full}{Ecology, DOI:10.1890/15-1607}.
+\href{http://onlinelibrary.wiley.com/doi/10.1890/15-1607/full}{Ecology, DOI:10.1890/15-1607 (2016)}.
 
-G. Péron, C. H. Fleming,  R. C. de Paula, J. M. Calabrese. (2016). Uncovering periodic patterns of space use in animal tracking data with periodograms, including a new algorithm for the Lomb-Scargle periodogram and improved randomization tests. \href{https://movementecologyjournal.biomedcentral.com/articles/10.1186/s40462-016-0084-7}{Movement Ecology, 4:19, DOI:10.1186/s40462-016-0084-7}.
+G. Péron, C. H. Fleming,  R. C. de Paula, J. M. Calabrese.
+Uncovering periodic patterns of space use in animal tracking data with periodograms, including a new algorithm for the Lomb-Scargle periodogram and improved randomization tests.
+\href{https://movementecologyjournal.biomedcentral.com/articles/10.1186/s40462-016-0084-7}{Movement Ecology, 4:19, DOI:10.1186/s40462-016-0084-7 (2016)}.
 
-C. H. Fleming, J. M. Calabrese, A new kernel-density estimator for accurate home-range and species-range area estimation, \href{http://onlinelibrary.wiley.com/wol1/doi/10.1111/2041-210X.12673/abstract}{Methods in Ecology and Evolution, DOI:10.1111/2041-210X.12673 (2016)}.
+C. H. Fleming, J. M. Calabrese.
+A new kernel-density estimator for accurate home-range and species-range area estimation.
+\href{http://onlinelibrary.wiley.com/wol1/doi/10.1111/2041-210X.12673/abstract}{Methods in Ecology and Evolution, 8:5, 571-579 (2016)}.
+
+G. Péron, C. H. Fleming, R. C. de Paula, N. Mitchell, M. Strohbach, P. Leimgruber, J. M. Calabrese.
+Periodic continuous-time movement models uncover behavioral changes of wild canids along anthropization gradients. \href{http://onlinelibrary.wiley.com/wol1/doi/10.1002/ecm.1260/abstract}{Ecological Monographs 87:3, 442-456 (2017)}
+
+C. H. Fleming, D. Sheldon, E. Gurarie, W. F. Fagan, S. LaPoint, J. M. Calabrese.
+Kálmán filters for continuous-time movement models.
+\href{http://www.sciencedirect.com/science/article/pii/S1574954117301115}{Ecological Informatics, 40, 8-21 (2017)}.
 }
+
 
 %~~ Optionally other standard keywords, one per line, from file KEYWORDS in ~~
 %~~ the R documentation directory ~~

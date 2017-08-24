@@ -31,3 +31,5 @@ methods::setGeneric("zoom", getGeneric("zoom", package="raster"))
 
 # new S3 generic functions
 writeShapefile <- function(object,...) UseMethod("writeShapefile")
+emulate <- function(object,...) UseMethod("emulate")
+AICc <- function(object,...) UseMethod("AICc")
