@@ -168,7 +168,7 @@
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>If no <code>dt</code> is specified, the median sampling interval is used. This is typically a good assumption for most data, even when there are gaps and this choice corresponds to the discrete Fourier transform (DFT) periodogram for evenly-sampled data.
-<!-- %If no \code{T} is specified, the full sampling period is used.  --></p>
+<!-- %If no \code{T} is specified, the full sampling period is used. --></p>
 <p>At default resolution the frequency grid interval is given by <code>1/(2*(range(data$t)+dt))</code> and the frequency cutoff is given by <code>1/(2*dt)</code>, both in accordance with the DFT periodogram. Increasing <code>res.freq</code> beyond <code>res.freq=1</code> will make for a smooth periodogram, but sequential frequencies will be highly correlated. The <code>max=TRUE</code> option to <code>plot.periodogram</code> may be useful for <code>res.freq&gt;1</code>. Increasing <code>res.time</code> beyond <code>res.time=1</code> is helpful if there is variability in the sampling rate and <code>fast&gt;0</code>.</p>
 <p>If a <code>CTMM</code> argument is provided, the ML mean will be detrended from the data prior to calculating the periodogram. Otherwise, the sample mean will be detrended.</p>
 <p>If a list of <code>telemetry</code> objects are fed into <code>periodogram</code>, then a mean <code>periodogram</code> object will be returned with the default <code>dt</code> and base frequency resolution selected on a worst case basis according to the method described by Péron et al (2016).</p>
@@ -179,8 +179,12 @@
     
     <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
 
-    <p>J. D. Scargle. (1952). Studies in astronomical time-series analysis. II. Statistical aspects of spectral analysis of unevenly-sampled data. The Astrophysical Journal, 263, 835-853.</p>
-<p>G. Péron, C. H. Fleming,  R. C. de Paula, J. M. Calabrese. (2016). Uncovering periodic patterns of space use in animal tracking data with periodograms, including a new algorithm for the Lomb-Scargle periodogram and improved randomization tests. <a href='https://movementecologyjournal.biomedcentral.com/articles/10.1186/s40462-016-0084-7'>Movement Ecology, 4:19, DOI:10.1186/s40462-016-0084-7</a>.</p>
+    <p>J. D. Scargle.
+Studies in astronomical time-series analysis. II. Statistical aspects of spectral analysis of unevenly-sampled data.
+The Astrophysical Journal, 263, 835-853 (1952).</p>
+<p>G. Péron, C. H. Fleming,  R. C. de Paula, J. M. Calabrese.
+Uncovering periodic patterns of space use in animal tracking data with periodograms, including a new algorithm for the Lomb-Scargle periodogram and improved randomization tests.
+<a href='https://movementecologyjournal.biomedcentral.com/articles/10.1186/s40462-016-0084-7'>Movement Ecology, 4:19, DOI:10.1186/s40462-016-0084-7 (2016)</a>.</p>
     
     <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
 

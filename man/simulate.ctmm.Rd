@@ -5,6 +5,7 @@
 \alias{simulate}
 \alias{simulate.ctmm}
 \alias{simulate.telemetry}
+\encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Predict or simulate from a continuous-time movement model}
 \description{
@@ -27,7 +28,7 @@ simulate(object,nsim=1,seed=NULL,...)
 \arguments{
   \item{object}{A \code{ctmm} movement-model or \code{telemetry} object, which requires an additional \code{CTMM} argument.}
   \item{data}{Optional \code{telemetry} object on which the prediction or simulation will be conditioned.}
-  \item{t}{Array of numeric time values over which the process will be predicted or simulated.}
+  \item{t}{Optional array of numeric time values over which the process will be predicted or simulated.}
   \item{dt}{Timestep to space the prediction or simulation over if \code{data} is specified.}
   \item{res}{Average number of locations to predict or simulate per \code{data} time.}
   \item{CTMM}{A \code{ctmm} movement-model in the same format as the output of \code{\link{ctmm.fit}} or \code{\link{variogram.fit}}.}
@@ -36,8 +37,9 @@ simulate(object,nsim=1,seed=NULL,...)
   \item{...}{Unused options.}
 }
 \details{
-The prediction or simulation necessarily requires a \code{ctmm} model object and optionally can be conditioned off of \code{telemetry} data, if specified.
-If no data is provided, the simulation will be purely Gaussian. 
+The prediction or simulation necessarily requires a \code{ctmm} model object.
+If a \code{telemetry} \code{data} object is supplied, the output will be conditional on the \code{data} (i.e., simulations that run through the data).
+If no \code{data} is provided then the output will be purely Gaussian, and times \code{t} must be provided.
 Details of the movement model parameters can be found in \code{\link{ctmm.fit}}.
 
 The \code{t} argument fixes the output times to a specific array of times.
@@ -48,11 +50,13 @@ The same span of time will be used, while \code{dt} will fix the sampling rate a
 \value{ A simulated animal-tracking \code{telemetry} object with components \code{t}, \code{x}, and \code{y}, or a predicted \code{telemetry} object that also includes \code{x}-\code{y} covariances for the location point estimates \code{x} and \code{y}. }
 
 \references{
-C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, and W. F. Fagan. (2014). From fine-scale foraging to home ranges: A semi-variance approach to identifying movement modes across spatiotemporal scales. \href{http://www.jstor.org/discover/10.1086/675504}{The American Naturalist, 183(5), E154-E167}.
+C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, W. F. Fagan.
+From fine-scale foraging to home ranges: A semi-variance approach to identifying movement modes across spatiotemporal scales.
+\href{http://www.jstor.org/discover/10.1086/675504}{The American Naturalist, 183:5, E154-E167 (2014)}.
 
-C. H. Fleming and Y. Subasi and J. M. Calabrese. (2015). A maximum-entropy description of animal movement. \href{http://journals.aps.org/pre/abstract/10.1103/PhysRevE.91.032107}{Physical Review E, 91, 032107}.
-
-C. H. Fleming and W. F. Fagan and T. Mueller and K. A. Olson and P. Leimgruber and J. M. Calabrese. (2016). Estimating where and how animals travel: An optimal framework for path reconstruction from autocorrelated tracking data. \href{http://onlinelibrary.wiley.com/doi/10.1890/15-1607/full}{Ecology, DOI:10.1890/15-1607}.
+C. H. Fleming, D. Sheldon, E. Gurarie, W. F. Fagan, S. LaPoint, J. M. Calabrese.
+Kálmán filters for continuous-time movement models.
+\href{http://www.sciencedirect.com/science/article/pii/S1574954117301115}{Ecological Informatics, 40, 8-21 (2017)}.
 }
 
 

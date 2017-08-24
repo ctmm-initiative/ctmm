@@ -54,17 +54,7 @@ Confidence intervals placed on the \code{ctmm} Gaussian home-range contour estim
 \code{akde} \code{UD} plots also come with a standard resolution grid.
 \code{zoom} includes a zoom slider to manipulate \code{fraction}.}
 
-\references{
-C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, and W. F. Fagan. (2014). From fine-scale foraging to home ranges: A semi-variance approach to identifying movement modes across spatiotemporal scales. \href{http://www.jstor.org/discover/10.1086/675504}{The American Naturalist, 183(5), E154-E167.}
-
-C. H. Fleming and J. M. Calabrese and T. Mueller and K. A. Olson and P. Leimgruber and W. F. Fagan (2014).
-Non-Markovian maximum likelihood estimation of autocorrelated movement processes
-\href{http://onlinelibrary.wiley.com/doi/10.1111/2041-210X.12176/abstract}{Methods in Ecology and Evolution, 5(5) 462-472}.
-
-C. H. Fleming and W. F. Fagan and T. Mueller and K. A. Olson and P. Leimgruber and J. M. Calabrese (2015).
-Rigorous home-range estimation with movement data: A new autocorrelated kernel-density estimator.
-\href{http://www.esajournals.org/doi/abs/10.1890/14-2010.1}{Ecology, DOI:10.1890/14-2010.1}.
-}
+%\references{}
 
 \author{C. H. Fleming.}
 

@@ -1,5 +1,6 @@
 \name{occurrence}
 \alias{occurrence}
+\encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Calculate a Kriged occurrence disribution estimate}
 \description{
@@ -27,7 +28,13 @@ cor.min=0.5,dt.max=NULL)
 }
 
 \references{
-C. H. Fleming and W. F. Fagan and T. Mueller and K. A. Olson and P. Leimgruber and J. M. Calabrese. (2016). Estimating where and how animals travel: An optimal framework for path reconstruction from autocorrelated tracking data. \href{http://onlinelibrary.wiley.com/doi/10.1890/15-1607/full}{Ecology, DOI:10.1890/15-1607}.
+C. H. Fleming, W. F. Fagan, T. Mueller, K. A. Olson, P. Leimgruber, J. M. Calabrese.
+Estimating where and how animals travel: An optimal framework for path reconstruction from autocorrelated tracking data.
+\href{http://onlinelibrary.wiley.com/doi/10.1890/15-1607/full}{Ecology, DOI:10.1890/15-1607 (2016)}.
+
+C. H. Fleming, D. Sheldon, E. Gurarie, W. F. Fagan, S. LaPoint, J. M. Calabrese.
+Kálmán filters for continuous-time movement models.
+\href{http://www.sciencedirect.com/science/article/pii/S1574954117301115}{Ecological Informatics, 40, 8-21 (2017)}.
 }
 
 \author{ C. H. Fleming. }

@@ -1,22 +1,26 @@
 PERIODIC 0.4.0
 * test simulation fits of circulation isotropic=T/F, pREML
-* one PDsolve in Kalman filter -> pass to likelihood function
 * variogram on mean detrended data with CTMM argument
 * simulate.telemetry (not pure ctmm)
 * smoother (velocity vector--check)
 * akde... slow exact and fast approximation or block toeplitz matrix (stationary Laplace approximation?)
 * plot ctmm (fall back on kde code)
 * vignette: periodogram, ctmm.select
-* maned wolf data: individually projected subset in reserve with largest daily periodicities and no weekly periodicity
-  + submit to Rogerio first to check over, ask about MoveBank DOI
-  + get MoveBank DOI
+
+pREML PAPER
+* document pREML
+* autocorrelated AICc
+
+ERROR PAPER
+* ctmm.select for error
+* standardize x,y prior to likelihood calculation
+* prior on error from calibration?
 
 VIGNETTES & EXAMPLES
 * explain effective sample sizes (DOF of summary)
 
 OPTIMIZER
 * Somehow optimizer can stop on stage 1 without proceeding to stage 2
-* Get TOL.ZERO working better on Nick's bear
 * Stop on encapsulated
 * local tangent transformation on periodic variables
 * STAGE 4 - pattern search
@@ -25,19 +29,12 @@ OPTIMIZER
 * mc.optimize fill up queue with higher-order derivatives if further space allows
 * mc.genD cross correlations are wrong
 
-pREML
-* document pREML
-* autocorrelated AICc
-
 Aligned Krige UDs
 pregridder composite dimension?
 
 LOW HANGING FRUIT & Nagging issues
-* ctmm.select for error
-* standardize x,y prior to likelihood calculation
-* link to Dong's Linux notes in package documentation
+* check IID AICc formula for isotropic case
 * change default gap skip in occurrence?
-* prior on error from calibration?
 * rbind on telemetry objects
 * as.telemetry drop=TRUE/FALSE for single individuals
 * grid fix regression - weight to coarse scale when appropriate

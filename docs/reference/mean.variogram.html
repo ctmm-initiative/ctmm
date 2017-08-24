@@ -23,7 +23,8 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-
+  
+  
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -120,9 +121,9 @@
     
     <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
 
-    <p>C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, and W. F. Fagan. (2014).
+    <p>C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, W. F. Fagan.
 From fine-scale foraging to home ranges: A semi-variance approach to identifying movement modes across spatiotemporal scales.
-<a href = 'http://www.jstor.org/discover/10.1086/675504'>The American Naturalist, 183(5), E154-E167</a>.</p>
+<a href='http://www.jstor.org/discover/10.1086/675504'>The American Naturalist, 183:5, E154-E167 (2014)</a>.</p>
     
     <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
 
@@ -134,7 +135,20 @@ From fine-scale foraging to home ranges: A semi-variance approach to identifying
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'></div></pre>
+    <pre class="examples"><div class='input'><span class='co'># Load package and data</span>
+<span class='fu'>library</span>(<span class='no'>ctmm</span>)
+<span class='fu'>data</span>(<span class='no'>buffalo</span>)
+
+<span class='co'># Calculate a list of variograms for all similar individuals in the dataset</span>
+<span class='co'># the 4th buffalo has a different sampling rate</span>
+<span class='no'>SVFS</span> <span class='kw'>&lt;-</span> <span class='fu'>lapply</span>( <span class='no'>buffalo</span>[-<span class='fl'>4</span>] , <span class='no'>variogram</span> )
+<span class='co'># alternatively, we could variogram all at coarsest scale with variogram option dt</span>
+
+<span class='co'># Calculate the average variogram</span>
+<span class='no'>SVF</span> <span class='kw'>&lt;-</span> <span class='fu'>mean</span>(<span class='no'>SVFS</span>)
+
+<span class='co'># Plot the mean variogram</span>
+<span class='fu'><a href='plot.telemetry.html'>plot</a></span>(<span class='no'>SVF</span>)</div><div class='img'><img src='mean.variogram-1.png' alt='' width='700' height='432.632880098887' /></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

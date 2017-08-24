@@ -1,7 +1,9 @@
-0.4.0 2017-08-21
+0.4.0 2017-08-23
 ================
 
   * New utility function %#% for unit conversions
+  
+  * New model-fit sampling function "emulate"
 
   * summary now works on lists of telemetry objects
   
@@ -19,11 +21,11 @@
   
   * various improvements to plot.variogram
   
-  * plot.UD can now accept multiple level.UD values
+  * plot.UD & export can now accept multiple level.UD values
   
   * increased numerical precision in ctmm.loglike
   
-  * SI speeds fixed with units=FALSE
+  * SI speeds & diffusion fixed with units=FALSE
 
 0.3.6 2017-04-23
 ================

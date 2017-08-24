@@ -331,9 +331,28 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
   axes <- object$axes
   AXES <- length(axes)
 
-  # Gaussian simulation not conditioned off of any data
-  if(is.null(data))
+  CLASS <- class(data)
+  CONDITIONAL <- FALSE
+  if((CLASS=="telemetry" || CLASS=='data.frame'))
   {
+    if(all(object$axes %in% names(data))) # condition off of data
+    { CONDITIONAL <- TRUE }
+    else # use data time & error for unconditional simulation
+    { t <- data$t }
+  }
+
+  if(CONDITIONAL)
+  {
+    object <- ctmm.prepare(data,object)
+    data <- fill.data(data,CTMM=object,t=t,dt=dt,res=res)
+    object$error <- TRUE # avoids unit variance algorithm, data already contains fixed errors from fill.data
+    data <- smoother(data,object,sample=TRUE)
+    data <- cbind(t=data$t,data$R)
+    data <- data.frame(data)
+  }
+  else # Gaussian simulation not conditioned off of any data
+  {
+    if(is.null(data)) { error <- FALSE } else { error <- get.error(data,object) } # get error if provided
     object <- ctmm.prepare(list(t=t),object)
 
     tau <- object$tau
@@ -397,17 +416,15 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
     z <- z + mu
     colnames(z) <- axes
 
+    # throw in error
+    if(any(as.logical(error)))
+    {
+      for(i in 1:length(axes))
+      { z[,i] <- z[,i] + stats::rnorm(n,sd=sqrt(error)) }
+    }
+
     data <- data.frame(z)
     data$t <- t
-  }
-  else # condition off of the data
-  {
-    object <- ctmm.prepare(data,object)
-    data <- fill.data(data,CTMM=object,t=t,dt=dt,res=res)
-    object$error <- TRUE # avoids unit variance algorithm, data already contains fixed errors from fill.data
-    data <- smoother(data,object,sample=TRUE)
-    data <- cbind(t=data$t,data$R)
-    data <- data.frame(data)
   }
 
   data <- new.telemetry(data,info=info)
