@@ -51,7 +51,7 @@ For periodic-mean processes, you need to specify one or more period values that 
 In our example, we are going to specify a period of a day, which is what the periodogram was saying. Other individuals in this population were also exhibiting a weekly periodicity, and in similar species, lunar cycles are well-known to affect ranging behaviors.
 
 ```{r}
-# circle=TRUE needs to be re-tested
+# circle=TRUE takes longer to fit and gives optim more problems
 # PROTO <- ctmm(mean="periodic",period=c(1 %#% "day",1 %#% "month"),circle=TRUE)
 PROTO <- ctmm(mean="periodic",period=c(1 %#% "day",1 %#% "month"))
 ```
@@ -75,14 +75,13 @@ Potentially, the most complex model based on our prototype could have both circu
 We thereby conduct a model selection.
 
 ```{r}
-control <- list(method="pNewton")
+control <- list(method="pNewton") # beta optimizer is much faster here
 FITS <- ctmm.select(Gamba,GUESS,verbose=TRUE,control=control)
 ```
 
 The non-default `control` list here specifies our prototype optimization code that has been tested to be faster and more accurate on this example.
 With `verbose=TRUE`, we obtain a list fitted `ctmm` objects, one for each relevant combination of effects, in order of increasing AICc.
 The first element of that list is the preferred model.
-We also suggest setting the `trace=TRUE` option to produce updates.
 
 ```{r}
 summary(FITS)
@@ -92,7 +91,7 @@ We see that the velocity autocorrelation (OUF), anisotropy, and circulation were
 In this maned wolf, there is rather strong support (Delta AIC > 4) for the preferred model (the first of the list).
 Given how we specified the prototype, `harmonic 3 0` means that this preferred model has no lunar periodicity, but has three harmonics of the one-day periodicity. This fittingly corresponds to what the periodogram was saying.
 If there was some moon-related pattern of space use and given how we specified our prototype, we would have had a non-zero value as the second `harmonic` value.
-We also see that circulation was selected.
+Circulation would also be selected if included.
 
 Next we do some sanity checking on our results. The sampling interval for Gamba is fairly steady at
 

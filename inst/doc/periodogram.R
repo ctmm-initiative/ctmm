@@ -11,7 +11,7 @@ LSP <- periodogram(Gamba,fast=2,res.time=2)
 plot(LSP,max=TRUE,diagnostic=TRUE,cex=0.5)
 
 ## ------------------------------------------------------------------------
-# circle=TRUE needs to be re-tested
+# circle=TRUE takes longer to fit and gives optim more problems
 # PROTO <- ctmm(mean="periodic",period=c(1 %#% "day",1 %#% "month"),circle=TRUE)
 PROTO <- ctmm(mean="periodic",period=c(1 %#% "day",1 %#% "month"))
 
@@ -20,7 +20,7 @@ SVF <- variogram(Gamba,res=3)
 GUESS <- ctmm.guess(Gamba,PROTO,variogram=SVF,interactive=FALSE)
 
 ## ------------------------------------------------------------------------
-control <- list(method="pNewton")
+control <- list(method="pNewton") # beta optimizer is much faster here
 FITS <- ctmm.select(Gamba,GUESS,verbose=TRUE,control=control)
 
 ## ------------------------------------------------------------------------
