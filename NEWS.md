@@ -1,5 +1,7 @@
-0.4.0 2017-08-23
+0.4.0 2017-08-25
 ================
+
+  * periodigram vignette
 
   * New utility function %#% for unit conversions
   

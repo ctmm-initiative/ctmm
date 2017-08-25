@@ -16,6 +16,8 @@ navbar:
       href: articles/variogram.html
     - text: Autocorrelated Kernel Density Estimation
       href: articles/akde.html
+    - text: Periodograms and Periodicities
+      href: articles/periodogram.html
   right:
   - icon: fa-github fa-2x
     href: https://github.com/ctmm-initiative/ctmm

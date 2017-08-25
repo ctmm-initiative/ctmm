@@ -1,5 +1,6 @@
 \name{ctmm-FAQ}
 \alias{ctmm-FAQ}
+\alias{ctmm-faq}
 \encoding{UTF-8}
 
 \description{Frequently asked questions for the \code{ctmm} package.}
@@ -18,7 +19,8 @@
 
 \bold{Help installing packages on Linux}
 
-\href{https://github.com/ctmm-initiative/ctmm-webapp/blob/master/README-install.md}{see Xianghui Dong's installation tips here.}
+{see Xianghui Dong's installation tips \href{https://github.com/ctmm-initiative/ctmm-webapp/blob/master/README-install.md}{here}.}
+
 
 \bold{\code{ctmm.select} only returns one model with \code{verbose=TRUE}}
 
@@ -29,6 +31,7 @@
 
 {\code{R} likely did not install the package correctly. I.e., some files may have failed to overwrite previous versions. Uninstall \code{ctmm}, restart \code{R}, and install \code{ctmm} again.}
 
+
 \bold{Infinite recursion and stack overflow errors}
 
 {\code{ctmm} has no recursive functions, so I am not exactly sure what causes this error, but it only occurs with certain versions of \code{R} on certain computer architectures. There are several solutions that have worked for people, including restarting \code{R} in a fresh session and updating their software. Alternatively:
@@ -38,17 +41,21 @@
 \item{Try a different computer.}
 }}
 
+
 \bold{\code{manipulate::isAvailable} is not found}
 
 {You probably have an outdated copy of the \code{manipulate} package installed. Update \code{R} to the latest version and then update all of your packages. This seems to happen frequently with the MacOS release of R.}
+
 
 \bold{\code{manipulate} panel does not popup in \code{\link{variogram.fit}} or \code{\link{zoom}}}
 
 {Click the gear icon in the upper-left corner of the plot window.}
 
+
 \bold{\code{plot} complains about the datatype or has weird errors}
 
 {Namespace collision sometimes occurs from \code{raster} or \code{sp} against \code{move} and \code{ctmm}. Restart \code{R} and only load the \code{ctmm} package.}
+
 
 \bold{\code{\link{variogram.fit}} has no save button}
 

@@ -47,6 +47,9 @@
     <li>
       <a href="../articles/akde.html">Autocorrelated Kernel Density Estimation</a>
     </li>
+    <li>
+      <a href="../articles/periodogram.html">Periodograms and Periodicities</a>
+    </li>
   </ul>
 </li>
       </ul>
@@ -72,7 +75,7 @@
       <h1>Periodic movement models</h1>
                         <h4 class="author">Guillaume Péron, Christen H. Fleming, and Justin M. Calabrese</h4>
             
-            <h4 class="date">2017-08-23</h4>
+            <h4 class="date">2017-08-25</h4>
           </div>
 
     
@@ -102,7 +105,7 @@ Gamba &lt;-<span class="st"> </span>wolf$Gamba
 <p>Circulatory patterns can be incorporated into stochastic continuous time movement models in two ways: via the mean of the process, modelling that the animal reverts to a point that moves periodically through time, or via the stochastic component, by including a rotation effect. The first is called a periodic-mean process, and the second is called a circulation process.</p>
 <p>For periodic-mean processes, you need to specify one or more period values that you want <code>ctmm</code> to consider.</p>
 <p>In our example, we are going to specify a period of a day, which is what the periodogram was saying. Other individuals in this population were also exhibiting a weekly periodicity, and in similar species, lunar cycles are well-known to affect ranging behaviors.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># circle=TRUE needs to be re-tested</span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># circle=TRUE takes longer to fit and gives optim more problems</span>
 <span class="co"># PROTO &lt;- ctmm(mean="periodic",period=c(1 %#% "day",1 %#% "month"),circle=TRUE)</span>
 PROTO &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">mean=</span><span class="st">"periodic"</span>,<span class="dt">period=</span><span class="kw">c</span>(<span class="dv">1</span> %#%<span class="st"> "day"</span>,<span class="dv">1</span> %#%<span class="st"> "month"</span>))</code></pre></div>
 <p>The <code>mean="periodic"</code> option tells <code>ctmm</code> that you want a periodic-mean process. The default is <code>mean="stationary"</code>. The period values are all specified in seconds (SI unit) by the <code>%#%</code> function (see <code>help("%#%")</code> for more information).</p>
@@ -112,10 +115,10 @@ PROTO &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.
 GUESS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.fit.html">ctmm.guess</a></span>(Gamba,PROTO,<span class="dt">variogram=</span>SVF,<span class="dt">interactive=</span><span class="ot">FALSE</span>)</code></pre></div>
 <p><code>ctmm.guess</code> is a generalization of <code>variogram.fit</code> that can estimate other quantites from the data that are not apparent in the variogram, such as the circulation period and location correlations. A variogram argument is not necessary, but here we used the <code>res</code> option to increase the FFT variogram’s temporal resolution and counteract sampling variability. The <code>interactive</code> argument works just as with <code>variogram.fit</code>.</p>
 <p>Potentially, the most complex model based on our prototype could have both circulation and multiple harmonics of daily periodicity. In addition, we also do not know whether the velocities are autocorrelated in time (OUF model) and whether the animal moves amounts in different directions (anisotropy). All of this makes for a large number of effects. Forcing all these effects upon data that do not support them would inflate the risk of overfitting or convergence issues. We thereby conduct a model selection.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">control &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">method=</span><span class="st">"pNewton"</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">control &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">method=</span><span class="st">"pNewton"</span>) <span class="co"># beta optimizer is much faster here</span>
 FITS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.select</a></span>(Gamba,GUESS,<span class="dt">verbose=</span><span class="ot">TRUE</span>,<span class="dt">control=</span>control)</code></pre></div>
 <pre><code>## Nyquist frequency estimated at harmonic 3 88.5917638888889 of the period.</code></pre>
-<p>The non-default <code>control</code> list here specifies our prototype optimization code that has been tested to be faster and more accurate on this example. With <code>verbose=TRUE</code>, we obtain a list fitted <code>ctmm</code> objects, one for each relevant combination of effects, in order of increasing AICc. The first element of that list is the preferred model. We also suggest setting the <code>trace=TRUE</code> option to produce updates.</p>
+<p>The non-default <code>control</code> list here specifies our prototype optimization code that has been tested to be faster and more accurate on this example. With <code>verbose=TRUE</code>, we obtain a list fitted <code>ctmm</code> objects, one for each relevant combination of effects, in order of increasing AICc. The first element of that list is the preferred model.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(FITS)</code></pre></div>
 <pre><code>##                                   dAICc DOF[mean]
 ## OUF anisotropic harmonic 3 0   0.000000  107.1803
@@ -125,9 +128,9 @@ FITS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.f
 ## OUF anisotropic harmonic 2 1  22.627079  107.9071
 ## OUF anisotropic harmonic 1 0  37.753129  108.2142
 ## OUF anisotropic harmonic 1 1  43.107722  110.0647
-## OUF anisotropic harmonic 0 0 140.722139  132.4811
+## OUF anisotropic harmonic 0 0 140.722139  132.4812
 ## OUF anisotropic harmonic 0 1 145.393824  134.7361</code></pre>
-<p>We see that the velocity autocorrelation (OUF), anisotropy, and circulation were unambiguously selected using the level option and were present in all the candidate models. In this maned wolf, there is rather strong support (Delta AIC &gt; 4) for the preferred model (the first of the list). Given how we specified the prototype, <code>harmonic 3 0</code> means that this preferred model has no lunar periodicity, but has three harmonics of the one-day periodicity. This fittingly corresponds to what the periodogram was saying. If there was some moon-related pattern of space use and given how we specified our prototype, we would have had a non-zero value as the second <code>harmonic</code> value. We also see that circulation was selected.</p>
+<p>We see that the velocity autocorrelation (OUF), anisotropy, and circulation were unambiguously selected using the level option and were present in all the candidate models. In this maned wolf, there is rather strong support (Delta AIC &gt; 4) for the preferred model (the first of the list). Given how we specified the prototype, <code>harmonic 3 0</code> means that this preferred model has no lunar periodicity, but has three harmonics of the one-day periodicity. This fittingly corresponds to what the periodogram was saying. If there was some moon-related pattern of space use and given how we specified our prototype, we would have had a non-zero value as the second <code>harmonic</code> value. Circulation would also be selected if included.</p>
 <p>Next we do some sanity checking on our results. The sampling interval for Gamba is fairly steady at</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="st">"hour"</span> %#%<span class="st"> </span>stats::<span class="kw">median</span>(<span class="kw">diff</span>(Gamba$t))</code></pre></div>
 <pre><code>## [1] 4</code></pre>
@@ -142,10 +145,10 @@ FITS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.f
 ##                                low         ML       high
 ## rotation/deviation %     74.795669  91.774630 100.000000
 ## rotation/speed %         96.807431  98.987421 100.000000
-## area (square kilometers) 41.444886  48.269156  55.605889
-## tau position (hours)      6.984418   9.267907  12.297961
+## area (square kilometers) 41.444887  48.269156  55.605889
+## tau position (hours)      6.984418   9.267907  12.297962
 ## tau velocity (hours)      1.126099   1.617410   2.323076
-## speed (kilometers/day)   12.674827 103.001923 204.382857</code></pre>
+## speed (kilometers/day)   12.674828 103.001923 204.382857</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(FITS[[<span class="dv">4</span>]]) <span class="co"># harmonic 2 0</span></code></pre></div>
 <pre><code>## $DOF
 ##     mean     area 
@@ -154,8 +157,8 @@ FITS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.f
 ## $CI
 ##                                 low        ML      high
 ## rotation/deviation %     23.6228691 29.019474 35.648925
-## rotation/speed %         24.3431626 29.868660 36.648355
-## area (square kilometers) 41.1021783 47.844462 55.091282
+## rotation/speed %         24.3431627 29.868660 36.648355
+## area (square kilometers) 41.1021782 47.844462 55.091281
 ## tau position (hours)      7.2925135  9.568355 12.554438
 ## tau velocity (hours)      0.9699887  1.423753  2.089789
 ## speed (kilometers/day)   14.7247950 16.056839 17.387434</code></pre>
@@ -184,7 +187,7 @@ FITS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.f
 ## OUF anisotropic harmonic 3 1  22.57964253  108.9836
 ## OUF anisotropic harmonic 2 1  22.62707927  107.9071
 ## OUF anisotropic harmonic 1 1  25.99980779  110.0647
-## OUF anisotropic harmonic 0 0  89.22197845  132.4811
+## OUF anisotropic harmonic 0 0  89.22197845  132.4812
 ## OUF anisotropic harmonic 0 1 111.11897842  134.7361</code></pre>
 </div>
 <div id="home-range-estimation" class="section level3">
