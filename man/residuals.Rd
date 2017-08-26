@@ -52,7 +52,7 @@ Kálmán filters for continuous-time movement models.
 
 \seealso{ \code{\link{plot.variogram}}, \code{\link{variogram}}. }
 
-\examples{
+\examples{\donttest{
 #Load package and data
 library(ctmm)
 data(buffalo)
@@ -74,7 +74,7 @@ ACF <- correlogram(RES,res=10)
 
 #plot a day's worth of lags
 plot(ACF[ACF$lag<=24*60^2,],fraction=1)
-}
+}}
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
