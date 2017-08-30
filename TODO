@@ -16,6 +16,11 @@ ERROR PAPER
 * standardize x,y prior to likelihood calculation
 * prior on error from calibration?
 
+VELOCITY PAPER
+* predict -> velocity
+* as.telemetry <- velocity
+* ctmm.fit <- velocity
+
 VIGNETTES & EXAMPLES
 * explain effective sample sizes (DOF of summary)
 
@@ -33,6 +38,7 @@ Aligned Krige UDs
 pregridder composite dimension?
 
 LOW HANGING FRUIT & Nagging issues
+* project(telemetry) <- function
 * check IID AICc formula for isotropic case
 * change default gap skip in occurrence?
 * rbind on telemetry objects

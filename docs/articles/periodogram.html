@@ -75,7 +75,7 @@
       <h1>Periodic movement models</h1>
                         <h4 class="author">Guillaume Péron, Christen H. Fleming, and Justin M. Calabrese</h4>
             
-            <h4 class="date">2017-08-25</h4>
+            <h4 class="date">2017-08-30</h4>
           </div>
 
     
@@ -116,6 +116,7 @@ GUESS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/vario
 <p><code>ctmm.guess</code> is a generalization of <code>variogram.fit</code> that can estimate other quantites from the data that are not apparent in the variogram, such as the circulation period and location correlations. A variogram argument is not necessary, but here we used the <code>res</code> option to increase the FFT variogram’s temporal resolution and counteract sampling variability. The <code>interactive</code> argument works just as with <code>variogram.fit</code>.</p>
 <p>Potentially, the most complex model based on our prototype could have both circulation and multiple harmonics of daily periodicity. In addition, we also do not know whether the velocities are autocorrelated in time (OUF model) and whether the animal moves amounts in different directions (anisotropy). All of this makes for a large number of effects. Forcing all these effects upon data that do not support them would inflate the risk of overfitting or convergence issues. We thereby conduct a model selection.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">control &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">method=</span><span class="st">"pNewton"</span>) <span class="co"># beta optimizer is much faster here</span>
+control &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">method=</span><span class="st">"pNewton"</span>,<span class="dt">mc.cores=</span><span class="dv">2</span>) <span class="co"># CRAN policy limits to 2 processes</span>
 FITS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.select</a></span>(Gamba,GUESS,<span class="dt">verbose=</span><span class="ot">TRUE</span>,<span class="dt">control=</span>control)</code></pre></div>
 <pre><code>## Nyquist frequency estimated at harmonic 3 88.5917638888889 of the period.</code></pre>
 <p>The non-default <code>control</code> list here specifies our prototype optimization code that has been tested to be faster and more accurate on this example. With <code>verbose=TRUE</code>, we obtain a list fitted <code>ctmm</code> objects, one for each relevant combination of effects, in order of increasing AICc. The first element of that list is the preferred model.</p>
@@ -145,8 +146,8 @@ FITS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.f
 ##                                low         ML       high
 ## rotation/deviation %     74.795669  91.774630 100.000000
 ## rotation/speed %         96.807431  98.987421 100.000000
-## area (square kilometers) 41.444887  48.269156  55.605889
-## tau position (hours)      6.984418   9.267907  12.297962
+## area (square kilometers) 41.444887  48.269156  55.605890
+## tau position (hours)      6.984419   9.267908  12.297962
 ## tau velocity (hours)      1.126099   1.617410   2.323076
 ## speed (kilometers/day)   12.674828 103.001923 204.382857</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(FITS[[<span class="dv">4</span>]]) <span class="co"># harmonic 2 0</span></code></pre></div>
@@ -156,12 +157,12 @@ FITS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.f
 ## 
 ## $CI
 ##                                 low        ML      high
-## rotation/deviation %     23.6228691 29.019474 35.648925
-## rotation/speed %         24.3431627 29.868660 36.648355
-## area (square kilometers) 41.1021782 47.844462 55.091281
-## tau position (hours)      7.2925135  9.568355 12.554438
-## tau velocity (hours)      0.9699887  1.423753  2.089789
-## speed (kilometers/day)   14.7247950 16.056839 17.387434</code></pre>
+## rotation/deviation %     23.6228690 29.019474 35.648924
+## rotation/speed %         24.3431625 29.868660 36.648354
+## area (square kilometers) 41.1021785 47.844463 55.091282
+## tau position (hours)      7.2925138  9.568355 12.554439
+## tau velocity (hours)      0.9699886  1.423753  2.089789
+## speed (kilometers/day)   14.7247951 16.056839 17.387435</code></pre>
 <ul>
 <li>
 <code>rotation/deviation %</code> corresponds to <span class="math inline">\(100 \eta_P\)</span> from the paper. It is interpreted as the proportion of the variance in the animal`s location that is caused by the periodicity in the mean.</li>

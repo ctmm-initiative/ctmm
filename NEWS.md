@@ -1,4 +1,9 @@
-0.4.0 2017-08-25
+0.4.1 2017-08-30
+================
+
+  * projection method for ctmm objects
+
+0.4.0 2017-08-29
 ================
 
   * periodigram vignette
