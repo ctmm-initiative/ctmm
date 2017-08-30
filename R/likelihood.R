@@ -670,6 +670,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
   UERE <- get.error(data,CTMM,flag=TRUE) # do we fit the error?
   axes <- CTMM$axes
   range <- CTMM$range
+  if(is.null(CTMM$sigma)) { CTMM$sigma <- covm(stats::cov(get.telemetry(data,axes))) }
 
   # save for fitting
   COV.init <- CTMM$COV

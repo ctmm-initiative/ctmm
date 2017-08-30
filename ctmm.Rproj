@@ -19,5 +19,5 @@ LineEndingConversion: Posix
 BuildType: Package
 PackageUseDevtools: Yes
 PackageInstallArgs: --no-multiarch --with-keep.source
-PackageBuildArgs: --no-build-vignettes
+PackageBuildBinaryArgs: --no-build-vignettes
 PackageCheckArgs: --as-cran  --no-build-vignettes --no-vignettes --run-donttest
