@@ -17,6 +17,48 @@ subset.telemetry <- function(x,...)
   return(x)
 }
 
+
+# rbind track segments
+rbind.telemetry <- function(...,deparse.level=1,make.row.names=TRUE,stringsAsFactors=default.stringsAsFactors())
+{
+  # sorting checks
+  x <- list(...)
+  t1 <- sapply(x,function(y){ y$t[1] })
+  t2 <- sapply(x,function(y){ last(y$t) })
+  IND1 <- sort(t1,method="quick",index.return=TRUE)$ix
+  IND2 <- sort(t2,method="quick",index.return=TRUE)$ix
+  if(any(IND1!=IND2)) { warning("Segments are overlapping and will be intermixed.") }
+  # all other sorting is segment-segment sorting, which is valid
+
+  # combine data
+  info <- mean.info(x)
+  x <- rbind.data.frame(...,stringsAsFactors=FALSE)
+  x <- new.telemetry(x,info=info)
+
+  # sort times
+  IND <- sort(x$t,method="quick",index.return=TRUE)$ix
+  x <- x[IND,]
+
+  return(x)
+}
+
+
+# time-ordered sample of a track
+# sample.telemetry <- function(x,size,replace=FALSE,prob=NULL)
+# {
+#   n <- length(x$t)
+#
+#   SAM <- sample(n,size,replace=replace,prob=prob)
+#
+#   SAM <- sort.int(SAM,method="quick")
+#
+#   x <- x[SAM,]
+#
+#   return(x)
+# }
+
+
+# pull out axis data
 get.telemetry <- function(data,axes=c("x","y"))
 {
   # z <- "[.data.frame"(data,axes)

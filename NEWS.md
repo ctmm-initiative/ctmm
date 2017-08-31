@@ -1,3 +1,8 @@
+0.4.2 2017-08-31
+================
+
+  * new rbind method for telemetry objects
+
 0.4.1 2017-08-30
 ================
 
@@ -8,9 +13,9 @@
 
   * periodigram vignette
 
-  * New utility function %#% for unit conversions
+  * new utility function %#% for unit conversions
   
-  * New model-fit sampling function "emulate"
+  * new model-fit sampling function "emulate"
 
   * summary now works on lists of telemetry objects
   
@@ -49,7 +54,7 @@
 
   * new writeRaster method for UD objects
 
-  * Better UD plot boxes with new extent methods
+  * better UD plot boxes with new extent methods
   
   * variogram fast=TRUE less biased for irregular data with new res>1 option
   

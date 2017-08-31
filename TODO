@@ -38,6 +38,7 @@ Aligned Krige UDs
 pregridder composite dimension?
 
 LOW HANGING FRUIT & Nagging issues
+* Bayesian=FALSE argument for simulate() leveraging emulate()
 * project(telemetry) <- function
 * check IID AICc formula for isotropic case
 * change default gap skip in occurrence?
