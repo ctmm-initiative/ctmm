@@ -36,6 +36,8 @@ S3method(plot,telemetry)
 S3method(subset,telemetry)
 S3method(summary,telemetry)
 S3method(`[`,telemetry)
+S3method(rbind,telemetry)
+#S3method(sample,telemetry)
 
 #VARIOGRAM FUNCTIONS
 export(variogram,variogram.fit)

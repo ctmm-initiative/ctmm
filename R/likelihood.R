@@ -65,7 +65,19 @@ langevin <- function(dt,CTMM)
     }
   }
 
-  return(list(Green=Green, Sigma=sigma*Sigma))
+  # this needs to be generalized to an outer product for complicated models
+  if(is.null(dim(sigma))) { Sigma <- sigma * Sigma }
+  else
+  {
+    Sigma <- outer(Sigma,sigma)
+    Sigma <- aperm(Sigma,c(1,3,4,2)) # (k,k,d,d) -> (k,d,k,d)
+  }
+
+  # Green will need to be generalized?
+
+  # should I have done this here or in the Kalman filter
+
+  return(list(Green=Green, Sigma=Sigma))
 }
 
 #############################################################
