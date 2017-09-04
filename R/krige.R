@@ -41,6 +41,7 @@ smoother <- function(DATA,CTMM,...)
 
   V <- array(0,dim=c(n,AXES))
   COV <- array(0,dim=c(n,AXES,AXES))
+  VCOV <- array(0,dim=c(n,AXES,AXES)) # velocity covariance
 
   # do we need to orient the data along the major an minor axes of sigma
   ROTATE <- !isotropic && (CTMM$error || circle)
@@ -70,29 +71,44 @@ smoother <- function(DATA,CTMM,...)
     KALMAN <- kalman(R,u,dt=dt,CTMM=CTMM,error=DATA$error,...)
 
     R <- KALMAN$Z[,"position",1]
-    if(K>1) { V <- KALMAN$Z[,"velocity",1] }
     COV[,1,1] <- KALMAN$S[,"position","position"]
     COV[,2,2] <- KALMAN$S[,"position","position"]
+    if(K>1)
+    {
+      V <- KALMAN$Z[,"velocity",1]
+      VCOV[,1,1] <- KALMAN$S[,"velocity","velocity"]
+      VCOV[,2,2] <- KALMAN$S[,"velocity","velocity"]
+    }
 
     # spin back + velocity of frame
     M <- Conj(M)
     R <- M * R
     mu <- mu[1] + 1i*mu[2]
-    V <- (M * V) + 1i*circle*(R-mu)
-
     R <- cbind(Re(R),Im(R))
-    V <- cbind(Re(V),Im(V))
+
+    if(K>1)
+    {
+      V <- (M * V) + 1i*circle*(R-mu)
+      V <- cbind(Re(V),Im(V))
+    }
+
     # unstandardize
     if(ecc)
     {
       R[,1] <- R[,1] * exp(+ecc/4)
       R[,2] <- R[,2] * exp(-ecc/4)
 
-      V[,1] <- V[,1] * exp(+ecc/4)
-      V[,2] <- V[,2] * exp(-ecc/4)
-
       COV[,1,1] <- COV[,1,1] * exp(+ecc/2)
       COV[,2,2] <- COV[,2,2] * exp(-ecc/2)
+
+      if(K>1)
+      {
+        V[,1] <- V[,1] * exp(+ecc/4)
+        V[,2] <- V[,2] * exp(-ecc/4)
+
+        VCOV[,1,1] <- VCOV[,1,1] * exp(+ecc/2)
+        VCOV[,2,2] <- VCOV[,2,2] * exp(-ecc/2)
+      }
     }
   }
   else if(CTMM$isotropic || !CTMM$error)
@@ -102,12 +118,13 @@ smoother <- function(DATA,CTMM,...)
 
     R <- KALMAN$Z[,"position",]
     R <- cbind(R) # R drops dimension-1
+    COV <- KALMAN$S[,"position","position"] %o% covm(c(1,ecc,theta),isotropic,axes=CTMM$axes)
     if(K>1)
     {
       V <- KALMAN$Z[,"velocity",]
       V <- cbind(V) # R drops dimension-1
+      VCOV <- KALMAN$S[,"velocity","velocity"] %o% covm(c(1,ecc,theta),isotropic,axes=CTMM$axes)
     }
-    COV <- KALMAN$S[,"position","position"] %o% covm(c(1,ecc,theta),isotropic,axes=CTMM$axes)
   }
   else
   {
@@ -117,16 +134,24 @@ smoother <- function(DATA,CTMM,...)
     KALMAN <- kalman(cbind(R[,1]),u,dt=dt,CTMM=CTMM,error=DATA$error,...)
 
     R[,1] <- KALMAN$Z[,"position",1]
-    if(K>1) { V[,1] <- KALMAN$Z[,"velocity",1] }
     COV[,1,1] <- KALMAN$S[,"position","position"]
+    if(K>1)
+    {
+      V[,1] <- KALMAN$Z[,"velocity",1]
+      VCOV[,1,1] <- KALMAN$S[,"velocity","velocity"]
+    }
 
     # minor axis likelihood
     CTMM$sigma <- area * exp(-ecc/2)
     KALMAN <- kalman(cbind(R[,2]),u,dt=dt,CTMM=CTMM,error=DATA$error,...)
 
     R[,2] <- KALMAN$Z[,"position",1]
-    if(K>1) { V[,2] <- KALMAN$Z[,"velocity",1] }
     COV[,2,2] <- KALMAN$S[,"position","position"]
+    if(K>1)
+    {
+      V[,2] <- KALMAN$Z[,"velocity",1]
+      VCOV[,2,2] <- KALMAN$S[,"velocity","velocity"]
+    }
   }
 
   if(ROTATE)
@@ -134,22 +159,25 @@ smoother <- function(DATA,CTMM,...)
     # transform results back
     M <- rotate(+theta)
 
-    # there MUST be an easier way to do a simple inner product but %*% fails
     COV <- aperm(COV,perm=c(2,1,3))
-    dim(COV) <- c(2,2*n)
-    COV <- M %*% COV
-    dim(COV) <- c(2*n,2)
-    COV <- COV %*% t(M)
-    dim(COV) <- c(2,n,2)
+    COV <- M %.% COV %.% t(M)
     COV <- aperm(COV,perm=c(2,1,3))
 
     R <- t(M %*% t(R))
-    V <- t(M %*% t(V))
+
+    if(K>1)
+    {
+      V <- t(M %*% t(V))
+
+      VCOV <- aperm(VCOV,perm=c(2,1,3))
+      VCOV <- M %.% VCOV %.% t(M)
+      VCOV <- aperm(VCOV,perm=c(2,1,3))
+    }
   }
 
   colnames(R) <- CTMM$axes
   RETURN <- list(t=t,R=R,COV=COV)
-  if(K>1) { RETURN$V <- V }
+  if(K>1) { RETURN$V <- V ; RETURN$VCOV <- VCOV }
 
   return(RETURN)
 }
@@ -461,12 +489,19 @@ predict.ctmm <- function(object,data=NULL,t=NULL,dt=NULL,res=1,...)
   else # condition off of the data
   {
     object <- ctmm.prepare(data,object)
+    K <- length(object$tau)
     data <- fill.data(data,CTMM=object,t=t,dt=dt,res=res)
     object$error <- TRUE # avoids unit variance algorithm
     data <- smoother(data,object,smooth=TRUE)
+
     NAMES <- colnames(data$R)
     COV <- data$COV
-    data <- cbind(t=data$t,data$R)
+
+    VNAMES <- paste0("v.",NAMES)
+    VNAMES -> colnames(data$V)
+    VCOV <- data$VCOV
+
+    data <- cbind(t=data$t,data$R,data$V)
     data <- data.frame(data)
 
     # flatten covariance matrix and include in data.frame
@@ -476,6 +511,19 @@ predict.ctmm <- function(object,data=NULL,t=NULL,dt=NULL,res=1,...)
       {
         NAME <- paste("cov.",NAMES[i],".",NAMES[j],sep="")
         data[,NAME] <- COV[,i,j]
+      }
+    }
+
+    if(K>1)
+    {
+      # flatten covariance matrix and include in data.frame
+      for(i in 1:length(VNAMES))
+      {
+        for(j in i:length(VNAMES))
+        {
+          NAME <- paste("cov.",VNAMES[i],".",VNAMES[j],sep="")
+          data[,NAME] <- VCOV[,i,j]
+        }
       }
     }
 

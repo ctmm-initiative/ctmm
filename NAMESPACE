@@ -4,6 +4,8 @@ importFrom("methods",new)
 importFrom("raster",extent,projection,raster,writeRaster,zoom)
 importFrom("stats",simulate,predict)
 
+#importClassesFrom("Matrix",dpoMatrix)
+
 # non-base generics to export
 export(plot,simulate,predict)
 export(extent,projection,raster,writeRaster,zoom)
@@ -36,7 +38,7 @@ S3method(plot,telemetry)
 S3method(subset,telemetry)
 S3method(summary,telemetry)
 S3method(`[`,telemetry)
-S3method(rbind,telemetry)
+#S3method(rbind,telemetry)
 #S3method(sample,telemetry)
 
 #VARIOGRAM FUNCTIONS

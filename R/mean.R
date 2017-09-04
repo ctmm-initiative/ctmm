@@ -487,3 +487,72 @@ uspline.stuff <- function(CTMM)
 
   return(list(tknot=tknot,dt=dt))
 }
+
+#################################
+# piecewise-stationary by categorical mean/drift function
+#################################
+cspline.drift <- function(t,CTMM) { cbind( array(1,length(t)) ) }
+
+# guess some parameters and check the model parameter sanity
+cspline.init <- function(data,CTMM)
+{
+  z <- get.telemetry(data,CTMM$axes)
+
+  # weights from errors
+  error <- get.error(data,CTMM)
+  if(CTMM$error) { w <- 1/error }
+  else { w <- rep(1,length(data$t)) }
+  # normalize weights
+  w <- w/sum(w)
+
+  CTMM$mu <- c(w %*% z)
+
+  z <- t(t(z)-CTMM$mu)
+
+  CTMM$sigma <- t(z) %*% z
+
+  # remove error from variability
+  error <- sum(error)
+  if(CTMM$error) { CTMM$sigma <- CTMM$sigma - error * diag(length(CTMM$axes)) }
+
+  n <- length(data$t)
+  CTMM$sigma <- CTMM$sigma / (n-1)
+  error <- error/(n-1)
+
+  # don't let variance estimate go below error estimate (or can become negative)
+  STUFF <- eigen(CTMM$sigma)
+  STUFF$values <- pmax(STUFF$values,error)
+  CTMM$sigma <- STUFF$vectors %*% diag(STUFF$values) %*% t(STUFF$vectors)
+
+  CTMM$sigma <- covm(CTMM$sigma,isotropic=CTMM$isotropic,axes=CTMM$axes)
+
+  return(CTMM)
+}
+
+# how do we rescale time
+cspline.scale <- function(CTMM,time) { CTMM }
+
+# svf of mean function
+cspline.svf <- function(CTMM)
+{
+  # default
+  EST <- function(t) { 0 }
+  VAR <- function(t) { 0 }
+
+  return(list(EST=EST,VAR=VAR))
+}
+
+# increase number of linear model parameters
+cspline.refine <- function(CTMM) { list() }
+
+# name of mean function
+cspline.name <- function(CTMM) { NULL }
+
+# mean square speed function: point estimate and variance
+cspline.speed <- function(CTMM) { list(EST=0,VAR=0) }
+
+# place to put optional summary information
+cspline.summary <- function(CTMM,level,level.UD) { NULL }
+
+# combine this all together for convenience
+cspline <- new.drift(stationary.drift,init=stationary.init,scale=stationary.scale,svf=stationary.svf,refine=stationary.refine,name=stationary.name,speed=stationary.speed,summary=stationary.summary)

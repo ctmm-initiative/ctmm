@@ -10,6 +10,7 @@
 \details{
 \bold{General recommendations}
 \enumerate{
+\item{Never edit your CSV in Microsoft Excel. The dates will be reformatted incorrectly.}
 \item{Do not save workspaces between sessions. They can become corrupted.}
 \item{Upgrade \code{R} to the latest version and update all of your packages.}
 \item{Work through the vignettes \code{vignette("variogram")} and \code{vignette("akde")}.}

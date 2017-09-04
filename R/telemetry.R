@@ -19,28 +19,28 @@ subset.telemetry <- function(x,...)
 
 
 # rbind track segments
-rbind.telemetry <- function(...,deparse.level=1,make.row.names=TRUE,stringsAsFactors=default.stringsAsFactors())
-{
-  # sorting checks
-  x <- list(...)
-  t1 <- sapply(x,function(y){ y$t[1] })
-  t2 <- sapply(x,function(y){ last(y$t) })
-  IND1 <- sort(t1,method="quick",index.return=TRUE)$ix
-  IND2 <- sort(t2,method="quick",index.return=TRUE)$ix
-  if(any(IND1!=IND2)) { warning("Segments are overlapping and will be intermixed.") }
-  # all other sorting is segment-segment sorting, which is valid
-
-  # combine data
-  info <- mean.info(x)
-  x <- rbind.data.frame(...,stringsAsFactors=FALSE)
-  x <- new.telemetry(x,info=info)
-
-  # sort times
-  IND <- sort(x$t,method="quick",index.return=TRUE)$ix
-  x <- x[IND,]
-
-  return(x)
-}
+# rbind.telemetry <- function(...,deparse.level=1,make.row.names=TRUE,stringsAsFactors=default.stringsAsFactors())
+# {
+#   # sorting checks
+#   x <- list(...)
+#   t1 <- sapply(x,function(y){ y$t[1] })
+#   t2 <- sapply(x,function(y){ last(y$t) })
+#   IND1 <- sort(t1,method="quick",index.return=TRUE)$ix
+#   IND2 <- sort(t2,method="quick",index.return=TRUE)$ix
+#   if(any(IND1!=IND2)) { warning("Segments are overlapping and will be intermixed.") }
+#   # all other sorting is segment-segment sorting, which is valid
+#
+#   # combine data
+#   info <- mean.info(x)
+#   x <- rbind.data.frame(...,stringsAsFactors=FALSE)
+#   x <- new.telemetry(x,info=info)
+#
+#   # sort times
+#   IND <- sort(x$t,method="quick",index.return=TRUE)$ix
+#   x <- x[IND,]
+#
+#   return(x)
+# }
 
 
 # time-ordered sample of a track
@@ -151,7 +151,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   else { DATA <- as.POSIXct(object$timestamp,tz=timezone,format=timeformat) }
   DATA <- data.frame(timestamp=DATA)
 
-  COL <- c("animal.ID","individual.local.identifier","deployment.ID","tag.local.identifier","tag.ID","ID","Name")
+  COL <- c("animal.ID","individual.local.identifier","local.identifier","Name","ID","tag.local.identifier","tag.ID","deployment.ID","trackId")
   COL <- pull.column(object,COL,as.factor)
   if(length(COL)==0)
   {
