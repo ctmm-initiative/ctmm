@@ -1,3 +1,6 @@
+* categorical mean function cspline
+* speed function calculator
+
 PERIODIC 0.4.0
 * test simulation fits of circulation isotropic=T/F, pREML
 * variogram on mean detrended data with CTMM argument
@@ -38,6 +41,7 @@ Aligned Krige UDs
 pregridder composite dimension?
 
 LOW HANGING FRUIT & Nagging issues
+* move object coordinate x1,x2 lat-lon
 * Bayesian=FALSE argument for simulate() leveraging emulate()
 * project(telemetry) <- function
 * check IID AICc formula for isotropic case

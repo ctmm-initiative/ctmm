@@ -1,7 +1,7 @@
-0.4.2 2017-08-31
+0.4.2 2017-09-04
 ================
 
-  * new rbind method for telemetry objects
+  * velocity esimtates now included in predict(). Warning: fitting one model to multiple behaviors can result in wildly optimistic confidence intervals.
 
 0.4.1 2017-08-30
 ================

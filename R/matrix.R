@@ -123,7 +123,8 @@ sqrtm <- function(M,force=FALSE,pseudo=FALSE)
   {
     if(all(diag(M)>=-TOL))
     {
-      R <- Matrix::Matrix(M,sparse=FALSE,doDiag=FALSE) # complains still.... ???
+      # R <- Matrix::Matrix(M,sparse=FALSE,doDiag=FALSE) # complains still.... ???
+      # R <- as(R,"dpoMatrix")
       R <- expm::sqrtm(M) # reduces back to class "matrix" ?
     }
     else
