@@ -634,7 +634,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     # if(range)
     {
       # translate back to origin from center
-      mu[1,] <- mu[1,] + mu.center # assumes first mean term is always stationary mean term
+      mu[1,] <- mu[1,] + mu.center # !!! assumes first mean term is always stationary mean term
       CTMM$mu <- mu
       CTMM$COV.mu <- COV.mu
       CTMM$DOF.mu <- DOF.mu

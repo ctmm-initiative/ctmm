@@ -210,7 +210,14 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   }
   # need to know where the ground is too
 
-  DATA <- stats::na.omit(DATA)
+  # delete missing rows for necessary information
+  COLS <- c("timestamp","latitude","longitude")
+  for(COL in COLS)
+  {
+    NAS <- which(is.na(DATA[,COL]))
+    if(length(NAS)) { DATA <- DATA[-NAS,] }
+  }
+
   DATA$t <- as.numeric(DATA$timestamp)
 
   xy <- cbind(DATA$longitude,DATA$latitude)
@@ -242,6 +249,10 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     # combine data.frame with ancillary info
     info <- list(identity=id[i], timezone=timezone, projection=projection, UERE=UERE)
     telist[[i]] <- new.telemetry( telist[[i]] , info=info )
+
+    # delete empty columns in case collars/tags are different
+    for(COL in names(telist[[i]]))
+    { if(any(is.na(DATA[[COL]]))) { DATA[[COL]] <- NULL } }
   }
   names(telist) <- id
 
@@ -685,16 +696,17 @@ plot.kde <- function(kde,level=0.95,labels=round(level*100),col="black",...)
 # Plot Gaussian ctmm contours
 plot.ctmm <- function(model,alpha=0.05,col="blue",...)
 {
-  mu <- model$mu
-  sigma <- model$sigma
+  mu <- model$mu # mean vector
+  sigma <- model$sigma # covariance matrix
 
   Eigen <- eigen(sigma)
   std <- sqrt(Eigen$values)
   vec <- Eigen$vectors
 
+  # confidence level = 1-alpha
   z <- sqrt(-2*log(alpha))
 
-  num <- 100
+  num <- 100 # number of plotted points
   theta <- 2*pi*(0:num)/(num+1)
   Sin <- sin(theta)
   Cos <- cos(theta)
