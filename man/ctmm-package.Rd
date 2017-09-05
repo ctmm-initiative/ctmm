@@ -21,7 +21,7 @@ Fleming et al (2017) <doi:10.1016/j.ecoinf.2017.04.008>.
 Package: \tab ctmm\cr
 Type: \tab Package\cr
 Version: \tab 0.4.1 \cr
-Date: \tab 2017-09-04 \cr
+Date: \tab 2017-09-05 \cr
 License: \tab GPL-3 \cr
 }
 

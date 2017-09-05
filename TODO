@@ -1,5 +1,9 @@
-* categorical mean function cspline
+* level.UD=NA doesn't work in plot.telemetry
+* apply drift@shift in likelihood function
+* drift.shift function needs to be defined for uspline & cspline
 * speed function calculator
+* export ellipse drawing function
+* effective DOF for diffusion rate?
 
 PERIODIC 0.4.0
 * test simulation fits of circulation isotropic=T/F, pREML

@@ -12,7 +12,7 @@
 
 <meta name="author" content="Guillaume Péron, Christen H. Fleming, and Justin M. Calabrese" />
 
-<meta name="date" content="2017-09-04" />
+<meta name="date" content="2017-09-05" />
 
 <title>Periodic movement models</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Periodic movement models</h1>
 <h4 class="author"><em>Guillaume Péron, Christen H. Fleming, and Justin M. Calabrese</em></h4>
-<h4 class="date"><em>2017-09-04</em></h4>
+<h4 class="date"><em>2017-09-05</em></h4>
 
 
 
@@ -138,7 +138,7 @@ FITS &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(Gamba,GUE
 ## rotation/deviation %     74.795669  91.774630 100.000000
 ## rotation/speed %         96.807431  98.987421 100.000000
 ## area (square kilometers) 41.444887  48.269156  55.605890
-## tau position (hours)      6.984418   9.267907  12.297961
+## tau position (hours)      6.984419   9.267908  12.297962
 ## tau velocity (hours)      1.126099   1.617410   2.323076
 ## speed (kilometers/day)   12.674828 103.001923 204.382857</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(FITS[[<span class="dv">4</span>]]) <span class="co"># harmonic 2 0</span></code></pre></div>
@@ -150,10 +150,10 @@ FITS &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(Gamba,GUE
 ##                                 low        ML      high
 ## rotation/deviation %     23.6228691 29.019474 35.648925
 ## rotation/speed %         24.3431626 29.868660 36.648355
-## area (square kilometers) 41.1021782 47.844462 55.091281
+## area (square kilometers) 41.1021782 47.844462 55.091282
 ## tau position (hours)      7.2925136  9.568355 12.554438
 ## tau velocity (hours)      0.9699887  1.423753  2.089789
-## speed (kilometers/day)   14.7247950 16.056839 17.387434</code></pre>
+## speed (kilometers/day)   14.7247950 16.056839 17.387435</code></pre>
 <ul>
 <li><code>rotation/deviation %</code> corresponds to <span class="math inline">\(100 \eta_P\)</span> from the paper. It is interpreted as the proportion of the variance in the animal`s location that is caused by the periodicity in the mean.</li>
 <li><code>rotation/speed %</code> corresponds to <span class="math inline">\(100 \eta_V\)</span> from the paper. It is interpreted as the proportion of the variance in the animal`s velocity that is caused by the periodicity in the mean.</li>
