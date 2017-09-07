@@ -1,9 +1,13 @@
-0.4.2 2017-09-05
+0.4.2 2017-09-07
 ================
 
   * velocity esimtates now included in predict(). Warning: fitting one model to multiple behaviors can result in wildly optimistic confidence intervals.
   
   * as.telemetry will no longer drop individuals with missing data columns
+  
+  * fixed AIC bug in new parameterization code where isotropic=TRUE model would never be selected
+  
+  * fixed CI bug in plot.variogram CTMM argument for calibrated error model.
 
 0.4.1 2017-08-30
 ================

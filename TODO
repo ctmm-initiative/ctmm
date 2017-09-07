@@ -1,6 +1,14 @@
+* variogram.fit slider circulation error: initial value greater than maximum
+* simulate conditionally with t=t returns data and t times. predict does not.
 * level.UD=NA doesn't work in plot.telemetry
+* plot3D of 2D UD
+* ltraj export
+* add acf of residuals to uere diagnostic
+* sort.ctmm by IC argument
+
 * apply drift@shift in likelihood function
 * drift.shift function needs to be defined for uspline & cspline
+
 * speed function calculator
 * export ellipse drawing function
 * effective DOF for diffusion rate?
@@ -168,3 +176,7 @@ Repeated times in variograms -- account for as error -- fix cap
 dplyr, rolling for loops
 
 fixed mean parameter for boundary issues
+
+HIERARCHICAL___________
+* stochastic gradient Langevin dynamics
+* proximal methods of optimization
