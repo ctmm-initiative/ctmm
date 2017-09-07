@@ -715,10 +715,6 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
 
   # degrees of freedom, including the mean, variance/covariance, tau, and error model
   k.mean <- ncol(CTMM$mean.vec)
-  # covariance parameters only
-  nu <- length(NAMES)
-  # all parameters
-  k <- nu + length(axes)*(if(range){k.mean}else{k.mean-1})
 
   # initial guess for optimization
   pars <- get.parameters(CTMM,NAMES)
@@ -862,6 +858,11 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
     dimnames(CTMM$COV) <- list(NAMES,NAMES)
     if(!is.null(CTMM$MLE)) { dimnames(CTMM$MLE$COV) <- list(NAMES,NAMES) }
   }
+
+  # covariance parameters only
+  nu <- length(CTMM$COV[1,])
+  # all parameters
+  k <- nu + length(axes)*(if(range){k.mean}else{k.mean-1})
 
   CTMM$AIC <- 2*k - 2*CTMM$loglike
   CTMM$AICc <- CTMM$AIC + 2*k*(k+nu)/(length(axes)*n-k-nu)

@@ -495,7 +495,6 @@ svf.func <- function(CTMM,moment=FALSE)
   # trace variance
   sigma <- mean(diag(CTMM$sigma)) # now AM.sigma
 
-  CPF <- CTMM$CPF
   circle <- CTMM$circle
 
   # no error considered if missing
@@ -513,38 +512,38 @@ svf.func <- function(CTMM,moment=FALSE)
   K <- length(tau)
 
   # FIRST CONSTRUCT STANDARD ACF AND ITS PARAMTER GRADIENTS
-  if(CPF) # Central place foraging
+  if(K==0 && range) # Bivariate Gaussian
   {
-    nu <- 2*pi/tau[1]
-    f <- 1/tau[2]
-    acf <- function(t){ (cos(nu*t)+f/nu*sin(nu*t))*exp(-f*t) }
-    acf.grad <- function(t) { -c(2*pi,1)/tau^2 * c( (-(t+f/nu^2)*sin(nu*t)+f/nu*t*cos(nu*t))*exp(-f*t) , -t*acf(t) + 1/nu*sin(nu*t)*exp(-f*t) ) }
-  }
-  else if(K==0 && range) # Bivariate Gaussian
-  {
+    NAMES <- NULL
     acf <- function(t){ if(t==0) {1} else {0} }
     acf.grad <- function(t){ NULL }
   }
   else if(K==0) # Brownian motion
   {
+    NAMES <- NULL
     acf <- function(t){ 1-t }
     acf.grad <- function(t){ NULL }
   }
   else if(K==1 && range) # OU motion
   {
+    NAMES <- "tau position"
     acf <- function(t){ exp(-t/tau) }
     acf.grad <- function(t){ t/tau^2*acf(t) }
   }
   else if(K==1) # IOU motion
   {
+    NAMES <- "tau velocity"
     acf <- function(t) { 1-(t-tau*(1-exp(-t/tau))) }
     acf.grad <- function(t){ 1-(1+t/tau)*exp(-t/tau) }
   }
   else if(K==2) # OUF motion
   {
+    NAMES <- c("tau position","tau velocity")
     acf <- function(t){ diff(tau*exp(-t/tau))/diff(tau) }
     acf.grad <- function(t) { c(1,-1)*((1+t/tau)*exp(-t/tau)-acf(t))/diff(tau) }
   }
+
+  # !!! this is all hard-coded dumb to the ordering of COV !!!
 
   # finish off svf function including circulation if present
   if(!circle)
@@ -555,16 +554,24 @@ svf.func <- function(CTMM,moment=FALSE)
   }
   else
   {
+    NAMES <- c(NAMES,"circle")
     ACF <- function(t) { cos(circle*t)*acf(t) }
     svf <- function(t) { sigma*(1-cos(circle*t)*acf(t)) }
     grad <- function(t) { c(svf(t)/sigma, -sigma*cos(circle*t)*acf.grad(t), +sigma*t*sin(circle*t)*acf(t)) }
   }
+  NAMES <- c("variance",NAMES)
 
   # add error term
   if(CTMM$error)
   {
     err.svf <- function(t) { (if(t==0) {0} else {CTMM$error^2/2}) }
-    GRAD <- function(t) { c(grad(t) , (if(t==0) {0} else {CTMM$error}) ) }
+    if("error" %in% dimnames(CTMM$COV)[[1]]) # fit or fixed error?
+    {
+      NAMES <- c(NAMES,"error")
+      GRAD <- function(t) { c(grad(t) , (if(t==0) {0} else {CTMM$error}) ) }
+    }
+    else
+    { GRAD <- grad }
   }
   else
   {
