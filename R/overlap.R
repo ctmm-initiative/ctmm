@@ -181,7 +181,7 @@ akde.list <- function(data,CTMM,VMM=NULL,debias=TRUE,smooth=TRUE,error=0.001,res
 
   # take only the necessary columns
   data.all <- lapply(data,function(d) { d[,c("t",axes)] })
-  data.all <- do.call("rbind", data)
+  data.all <- do.call("rbind", data.all)
 
   dr <- vector("numeric", COL)
   dr[1] <- sqrt(min(sapply(HP.list, function(i) { i$H[1,1] })))
