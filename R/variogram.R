@@ -929,6 +929,19 @@ variogram.guess <- function(variogram,CTMM=ctmm())
 }
 
 
+##############################
+# manipulate abstraction layer
+# input data.frame DF: columns of label, initial, min, max, step
+# row names of data.frame = variable names
+variogram.fit.manipulate <- function(DF,storer)
+{
+  LIST <- lapply(1:nrow(DF),function(r){ manipulate::slider(min=DF$min[r],max=DF$max[r],initial=DF$initial[r],label=DF$label[r],step=DF$step[r]) })
+  names(LIST) <- rownames(DF)
+
+
+}
+
+
 ######################################################################
 # visual fit of the variogram
 ######################################################################
@@ -981,30 +994,17 @@ variogram.fit <- function(variogram,CTMM=ctmm(),name="GUESS",fraction=0.5,intera
     manlist <- c(manlist, list(sigma = manipulate::slider(0,m*sigma,initial=sigma,step=sigma/RES,label=label)))
   }
 
-  CPF <- CTMM$CPF
   tau <- CTMM$tau
   tau1.unit <- unit(tau[1],"time",2,concise=TRUE)
   tau2.unit <- unit(tau[2],"time",2,concise=TRUE)
   tau[1] <- tau[1] / tau1.unit$scale
   tau[2] <- tau[2] / tau2.unit$scale
-  if(CPF)
-  {
-    label <- paste("tau period (",tau1.unit$name,")",sep="")
-    manlist <- c(manlist, list(tau1 = manipulate::slider(0,m*tau[1],initial=tau[1],step=tau[1]/RES,label=label)))
 
-    label <- paste("tau decay (",tau2.unit$name,")",sep="")
-    manlist <- c(manlist, list(tau2 = manipulate::slider(0,m*tau[2],initial=tau[2],step=tau[2]/RES,label=label)))
+  label <- paste("tau position (",tau1.unit$name,")",sep="")
+  manlist <- c(manlist, list(tau1 = manipulate::slider(0,m*tau[1],initial=tau[1],step=tau[1]/RES,label=label)))
 
-    tau2 <- NULL # not sure why necessary
-  }
-  else
-  {
-    label <- paste("tau position (",tau1.unit$name,")",sep="")
-    manlist <- c(manlist, list(tau1 = manipulate::slider(0,m*tau[1],initial=tau[1],step=tau[1]/RES,label=label)))
-
-    label <- paste("tau velocity (",tau2.unit$name,")",sep="")
-    manlist <- c(manlist, list(tau2 = manipulate::slider(0,m*tau[2],initial=tau[2],step=tau[2]/RES,label=label)))
-  }
+  label <- paste("tau velocity (",tau2.unit$name,")",sep="")
+  manlist <- c(manlist, list(tau2 = manipulate::slider(0,m*tau[2],initial=tau[2],step=tau[2]/RES,label=label)))
 
   # circulation
   circle <- CTMM$circle

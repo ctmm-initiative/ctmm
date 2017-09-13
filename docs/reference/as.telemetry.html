@@ -69,6 +69,9 @@
     <li>
       <a href="../articles/akde.html">Autocorrelated Kernel Density Estimation</a>
     </li>
+    <li>
+      <a href="../articles/periodogram.html">Periodograms and Periodicities</a>
+    </li>
   </ul>
 </li>
       </ul>
@@ -98,16 +101,16 @@
     <p>Functions to import MoveBank csv files, <code>data.frame</code>, and <code>Move</code> objects, coerce them into <code>telemetry</code> objects, and summarize them.</p>
     
 
-    <pre class="usage"><span class='fu'>as.telemetry</span>(<span class='no'>object</span>,<span class='kw'>timeformat</span><span class='kw'>=</span><span class='st'>""</span>,<span class='kw'>timezone</span><span class='kw'>=</span><span class='st'>"UTC"</span>,<span class='kw'>projection</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>UERE</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='no'>...</span>)
+    <pre class="usage"><span class='fu'>as.telemetry</span>(<span class='no'>object</span>,<span class='kw'>timeformat</span><span class='kw'>=</span><span class='st'>""</span>,<span class='kw'>timezone</span><span class='kw'>=</span><span class='st'>"UTC"</span>,<span class='kw'>projection</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>UERE</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>drop</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='no'>...</span>)
 
 <span class='co'># S3 method for character</span>
-<span class='fu'>as.telemetry</span>(<span class='no'>object</span>,<span class='kw'>timeformat</span><span class='kw'>=</span><span class='st'>""</span>,<span class='kw'>timezone</span><span class='kw'>=</span><span class='st'>"UTC"</span>,<span class='kw'>projection</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>UERE</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='no'>...</span>)
+<span class='fu'>as.telemetry</span>(<span class='no'>object</span>,<span class='kw'>timeformat</span><span class='kw'>=</span><span class='st'>""</span>,<span class='kw'>timezone</span><span class='kw'>=</span><span class='st'>"UTC"</span>,<span class='kw'>projection</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>UERE</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>drop</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='no'>...</span>)
 
 <span class='co'># S3 method for data.frame</span>
-<span class='fu'>as.telemetry</span>(<span class='no'>object</span>,<span class='kw'>timeformat</span><span class='kw'>=</span><span class='st'>""</span>,<span class='kw'>timezone</span><span class='kw'>=</span><span class='st'>"UTC"</span>,<span class='kw'>projection</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>UERE</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='no'>...</span>)
+<span class='fu'>as.telemetry</span>(<span class='no'>object</span>,<span class='kw'>timeformat</span><span class='kw'>=</span><span class='st'>""</span>,<span class='kw'>timezone</span><span class='kw'>=</span><span class='st'>"UTC"</span>,<span class='kw'>projection</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>UERE</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>drop</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='no'>...</span>)
 
 <span class='co'># S3 method for Move</span>
-<span class='fu'>as.telemetry</span>(<span class='no'>object</span>,<span class='kw'>timeformat</span><span class='kw'>=</span><span class='st'>""</span>,<span class='kw'>timezone</span><span class='kw'>=</span><span class='st'>"UTC"</span>,<span class='kw'>projection</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>UERE</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='no'>...</span>)
+<span class='fu'>as.telemetry</span>(<span class='no'>object</span>,<span class='kw'>timeformat</span><span class='kw'>=</span><span class='st'>""</span>,<span class='kw'>timezone</span><span class='kw'>=</span><span class='st'>"UTC"</span>,<span class='kw'>projection</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>UERE</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>drop</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='no'>...</span>)
 
 <span class='co'># S3 method for telemetry</span>
 <span class='fu'>summary</span>(<span class='no'>object</span>,<span class='no'>...</span>)</pre>
@@ -136,6 +139,10 @@
       <td><p>"User equivalent range errors" needed to translate DOP values into location uncertainty.</p></td>
     </tr>
     <tr>
+      <th>drop</th>
+      <td><p>Only return a <code>telemetry</code> object for one individual if <code>TRUE</code>. Always return a <code>list</code> of telemetry objects if <code>FALSE</code>.</p></td>
+    </tr>
+    <tr>
       <th>...</th>
       <td><p>Optional arguments to be fed to <code>fread</code> or <code>read.csv</code>, in the case of compressed files.</p></td>
     </tr>
@@ -148,7 +155,7 @@ Global migrations that are not along one geodesic (locally straight line) will p
     <code>as.telemetry</code> assumes <a href = 'http://rstudio.com'>Movebank naming conventions</a>.
 Sufficient MoveBank columns include <code>individual.local.identifier</code> (or <code>tag.local.identifier</code>), <code>timestamp</code>, <code>location.long</code> and <code>location.lat</code>, while the optional Movebank columns are <code>eobs.horizontal.accuracy.estimate</code> and <code>GPS.HDOP</code>.
 In the future, we will be supporting more GPS and ARGOS columns, including speed, heading, further error classifications, etc.</p>
-<p>The <code>GPS.HDOP</code> value requires the device's <code>UERE</code> value to be translated into telemetry errors. The <code>UERE</code> represents the RMS error given ideal satellite conditions. Therefore, if your device is purported to have an accuracy of 2-10 meters, then the <code>UERE</code> is likely around 2 meters. Consult your device manual and manufacturer for a specific value or see <code><a href='uere.html'>uere</a></code> for UERE calibration.</p>
+<p>The <code>GPS.HDOP</code> value requires the device's <code>UERE</code> value to be translated into telemetry errors. The <code>UERE</code> represents the RMS error given ideal (\(HDOP=1\)) satellite conditions. Therefore, if your device is purported to have an accuracy of 2-10 meters, then the <code>UERE</code> is likely around 2 meters. Consult your device manual and manufacturer for a specific value or see <code><a href='uere.html'>uere</a></code> for UERE calibration.</p>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
