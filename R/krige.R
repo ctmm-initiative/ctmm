@@ -377,6 +377,26 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
     data <- smoother(data,object,sample=TRUE)
     data <- cbind(t=data$t,data$R)
     data <- data.frame(data)
+
+    # # the user probably only wants times t if t is specified
+    # other stuff seems to be coded for uniform sampling...
+    # if(!is.null(t))
+    # {
+    #   DEBUG <<- list(data=data,t=t)
+    #   WHICH <- logical(length(data$t))
+    #   i <- 1 ; j <- 1
+    #   while(j < length(data$t))
+    #   {
+    #     if(t[i]==data$t[j])
+    #     {
+    #       WHICH[j] <- TRUE
+    #       i <- i + 1
+    #     }
+    #     j <- j + 1
+    #   }
+    #   data <- data[WHICH,]
+    # }
+
   }
   else # Gaussian simulation not conditioned off of any data
   {

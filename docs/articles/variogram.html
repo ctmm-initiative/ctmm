@@ -75,7 +75,7 @@
       <h1>Variograms and Model Selection</h1>
                         <h4 class="author">Christen H. Fleming and Justin M. Calabrese</h4>
             
-            <h4 class="date">2017-09-07</h4>
+            <h4 class="date">2017-09-13</h4>
           </div>
 
     
@@ -255,40 +255,40 @@ FITS$ERROR &lt;-<span class="st"> </span><span class="kw"><a href="../reference/
 <span class="kw">summary</span>(M.IID)</code></pre></div>
 <pre><code>## $DOF
 ## mean area 
-## 3528 3527 
+## 3527 3526 
 ## 
 ## $CI
 ##                               low       ML     high
-## area (square kilometers) 357.0535 369.1364 381.4176</code></pre>
+## area (square kilometers) 356.8236 368.9005 381.1756</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">M.OU &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(Cilla,m.ou)
 <span class="kw">summary</span>(M.OU)</code></pre></div>
 <pre><code>## $DOF
 ##      mean      area 
-##  6.648585 12.138673 
+##  6.122945 11.761761 
 ## 
 ## $CI
-##                                low       ML     high
-## area (square kilometers) 206.16490 397.2375 649.9230
-## tau position (days)        5.66902  12.9888  29.7598</code></pre>
+##                                 low        ML      high
+## area (square kilometers) 183.968205 358.81236 591.08138
+## tau position (days)        6.122657  14.31745  33.48046</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">M.OUF &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(Cilla,m.ouf)
 <span class="kw">summary</span>(M.OUF)</code></pre></div>
 <pre><code>## $DOF
 ##     mean     area 
-## 13.21612 22.98810 
+## 11.54404 22.48618 
 ## 
 ## $CI
 ##                                 low         ML      high
-## area (square kilometers) 280.284979 442.207890 640.45464
-## tau position (days)        3.505292   5.972745  10.17709
-## tau velocity (minutes)    43.697289  46.712585  49.93595
-## speed (kilometers/day)    15.441208  15.705348  15.96943</code></pre>
+## area (square kilometers) 234.930055 372.751530 541.87274
+## tau position (days)        4.040128   6.926154  11.87379
+## tau velocity (minutes)    39.621344  42.124613  44.78604
+## speed (kilometers/day)    13.818849  14.053489  14.28808</code></pre>
 <p>Notice how tiny the (Gaussian) area uncertainty is in IID model <code>M.IID</code>. Let us look into some details of the models.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">FITS &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">IID=</span>M.IID,<span class="dt">OU=</span>M.OU,<span class="dt">OUF=</span>M.OUF)
 <span class="kw">summary</span>(FITS)</code></pre></div>
 <pre><code>##         dAICc   DOF[mean]
-## OUF     0.000   13.216116
-## OU   1458.297    6.648585
-## IID 36617.490 3528.000000</code></pre>
+## OUF     0.000   11.544044
+## OU   1565.211    6.122945
+## IID 38112.285 3527.000000</code></pre>
 <p><code>AICc</code> is the (linearly) corrected Akaike information criteria. AIC balances likelihood against model complexity in a way that is good if we want to make optimal predictions. A lower AIC is better. Getting the AIC to go down by 5 is great, while getting the AIC to go down by 10 is awesome. Our AIC is going down by thousands.</p>
 <p>The fit parameter <code>DOF[mean]</code> is the number of degrees of freedom worth of data we have to estimate the stationary mean parameter, assuming that the model is correct. Notice that the IID model perceives thousands of independent data points, while the autocorrelated OU and OUF models only see a handful of independent data points. This is why the IID model produced tiny confidence intervals on the predicted (Gaussian) area.</p>
 </div>
@@ -298,10 +298,10 @@ FITS$ERROR &lt;-<span class="st"> </span><span class="kw"><a href="../reference/
 <p>If you have a complex, hypothetical model in mind, say the OUF <code>m.ouf</code> as you would get from variogram fitting the easy way, then you can perform model selection more conveniently with the <code>ctmm.select</code> function. <code>ctmm.select</code> considers the initial guess (hypothesis) and then iterates this model to select the best model based upon an information criteria.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">FITZ &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.select</a></span>(Cilla,m.ouf,<span class="dt">verbose=</span><span class="ot">TRUE</span>,<span class="dt">level=</span><span class="dv">1</span>)
 <span class="kw">summary</span>(FITZ)</code></pre></div>
-<pre><code>##                     dAICc DOF[mean]
-## OUF anisotropic    0.0000 13.216116
-## OUF isotropic    113.9431 13.876278
-## OU anisotropic  1458.2972  6.648585</code></pre>
+<pre><code>##                    dAICc DOF[mean]
+## OUF anisotropic    0.000 11.544044
+## OUF isotropic     67.749 11.502637
+## OU anisotropic  1565.211  6.122948</code></pre>
 <p>Note that <code>level=1</code> is set here for demonstration purposes only, to attempt every nearest model no matter how unlikely it may seem. The isotropic and anisotropic (<code>isotropic=FALSE</code>) flags correspond to circular and elliptical covariances respectively—an option we did not consider above. <!-- The Ornstein-Uhlenbeck-F (OUF) model is continuous in position and velocity (`M.OUF`),
 the Ornstein-Uhlenbeck (OU) model is continuous in position only (`M.OU`),
 and the independent and identically distributed (IID) model has no autocorrelation (`M.IID`). --> The IID model was never considered here by <code>ctmm.select</code> because it first requires selecting OU over OUF in the nested model hierarchy. See <code>help("ctmm")</code> for more options.</p>
@@ -324,8 +324,7 @@ and the independent and identically distributed (IID) model has no autocorrelati
 
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
         <div id="tocnav">
-      <h2 class="hasAnchor">
-<a href="#tocnav" class="anchor"></a>Contents</h2>
+      <h2>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
 <li><a href="#data-preparation">Data Preparation</a></li>
       <li>

@@ -25,13 +25,13 @@ The \code{weights} argument can be used to correct fixed sampling bias with a pr
 \code{weights=TRUE} will optimize \code{n=length(data$t)} weights via constrained & preconditioned conjugate gradient algorithms.
 These algorithms have a few options that should be considered if the data are very irregular.
 
-\code{FFT=TRUE} grids the data with grid width \code{dt} and applies FFT algorithms, for a computational cost as low as \eqn{O(n \log n)} with only \eqn{O(n)} function evaluations.
+\code{fast=TRUE} grids the data with grid width \code{dt} and applies FFT algorithms, for a computational cost as low as \eqn{O(n \log n)} with only \eqn{O(n)} function evaluations.
 If no \code{dt} is specified, the minimum sampling interval \code{min(diff(data$t))} is used.
 \strong{If the data are irregular (permitting gaps), then \code{dt} may need to be several times smaller} to avoid slow down. In this case, try setting \code{trace=TRUE} and decreasing \code{dt} until the interations speed up and the number of feasibility assessments becomes less than \eqn{O(n)}.
 On the other hand, if the data contain some very tiny time intervals, say 1 second among hourly sampled data, then the default \code{dt} setting will create an excessively high-resolution discretization of time, which will also cause slowdown. In this case \code{CTMM} should contain an error model and \code{dt} can likely be increased to a larger fraction of the median sampling interval.
 %With the sub-optimal \code{PC="IID"} preconditioner, \code{dt} can be relaxed to the median value, but the computational cost is then increased to \eqn{O(n^2 \log n)}.
 
-\code{FFT=FALSE} uses exact times and has a computational cost as low as \eqn{O(n^2)}, including \eqn{O(n^2)} function evaluations. With \code{PC="direct"} this method will produce a result that is exact to within machine precision, but with a computational cost of \eqn{O(n^3)}.
+\code{fast=FALSE} uses exact times and has a computational cost as low as \eqn{O(n^2)}, including \eqn{O(n^2)} function evaluations. With \code{PC="direct"} this method will produce a result that is exact to within machine precision, but with a computational cost of \eqn{O(n^3)}.
 
 }
 

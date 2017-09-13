@@ -1,14 +1,13 @@
+* as.telemetry drop=FALSE
+* abstract variogram.fit
+
+* standardize x,y prior to likelihood calculation
+
+RECODE VARIOGRAM.FIT ABSTRACTLY
 * variogram.fit slider circulation error: initial value greater than maximum
-* simulate conditionally with t=t returns data and t times. predict does not.
-* level.UD=NA doesn't work in plot.telemetry
+
 * plot3D of 2D UD
 * ltraj export
-* add acf of residuals to uere diagnostic
-* sort.ctmm by IC argument
-
-* apply drift@shift in likelihood function
-* drift.shift function needs to be defined for uspline & cspline
-
 * speed function calculator
 * export ellipse drawing function
 * effective DOF for diffusion rate?
@@ -27,9 +26,9 @@ pREML PAPER
 * autocorrelated AICc
 
 ERROR PAPER
+* store fixed error in data uere()<- function
+* UERE priors from calibration
 * ctmm.select for error
-* standardize x,y prior to likelihood calculation
-* prior on error from calibration?
 
 VELOCITY PAPER
 * predict -> velocity
@@ -53,18 +52,19 @@ Aligned Krige UDs
 pregridder composite dimension?
 
 LOW HANGING FRUIT & Nagging issues
+* add acf of calibration residuals to uere diagnostic
+* sort.ctmm by IC argument
+* simulate conditionally with t=t returns data and t times. predict does not. (lots of low-level changes here)
 * move object coordinate x1,x2 lat-lon
 * Bayesian=FALSE argument for simulate() leveraging emulate()
 * project(telemetry) <- function
 * check IID AICc formula for isotropic case
 * change default gap skip in occurrence?
 * rbind on telemetry objects
-* as.telemetry drop=TRUE/FALSE for single individuals
 * grid fix regression - weight to coarse scale when appropriate
 * detrend mean in correlogram function
 * plot errors with HDOP & error model in CTMM
 * rainbow.telemetry
-* summary.telemetry.list like Dong's
 * plot telemetry/UD with reverse axes (preserve x&y orientation)s
 * give writeShapefile a default folder name, maybe also separate layers into different files
 * compass plot
@@ -72,13 +72,8 @@ LOW HANGING FRUIT & Nagging issues
 * individualized projections
 * 1-point azimuthal equidistant projection quick option
 * overload covm * / to apply to area & matrix
-* plot.telemetry with HDOP & UERE
 * str.ctmm, str.telemetry (show, print too?)
-* don't delete mean off of IOU and BM... need that to Krige I think...
-* IOU with drift not setup correctly
 * points methods units environment
-* UERE priors from calibration
-* store fixed error in data
 * have summary return a warning on occurrence distributions
 * variogram.list <- mean-lapply-variogram
 * occurrence.list

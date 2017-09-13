@@ -42,10 +42,17 @@ drift.init <- function(data,CTMM)
 drift.scale <- function(CTMM,time) { CTMM }
 
 # how do we shift the mean by a constant location
-drift.shift <- function(mu,dmu)
+# this assumes the first mean term is always the stationary mean value and all others are deviations
+stationary.shift <- function(mu,dmu)
 {
-  # assumes first mean term is always stationary mean term by default
-  mu[,1] <- mu[,1] + dmu
+  mu[1,] <- mu[1,] + dmu
+  return(mu)
+}
+
+# for when all mean coefficients are centered on the origin and must be shifted
+uniform.shift <- function(mu,dmu)
+{
+  mu <- t(t(mu) + dmu)
   return(mu)
 }
 
@@ -63,7 +70,7 @@ attr(prototype.drift,"init") <- drift.init
 attr(prototype.drift,"name") <- drift.name
 attr(prototype.drift,"refine") <- drift.refine
 attr(prototype.drift,"scale") <- drift.scale
-attr(prototype.drift,"shift") <- drift.shift
+attr(prototype.drift,"shift") <- stationary.shift
 attr(prototype.drift,"summary") <- drift.summary
 
 new.drift <- methods::setClass("drift",
@@ -291,9 +298,6 @@ periodic.refine <- function(CTMM)
   return(GUESS)
 }
 
-# combine this all together for convenience
-periodic <- new.drift(periodic.drift,init=periodic.init,scale=periodic.scale,svf=periodic.svf,refine=periodic.refine,name=periodic.name,speed=periodic.speed,summary=periodic.summary)
-
 # list of non-zero frequencies of model
 periodic.omega <- function(CTMM)
 {
@@ -350,6 +354,9 @@ periodic.stuff <- function(CTMM)
 
   return(list(A=A,COV=COV,omega=omega))
 }
+
+# combine this all together for convenience
+periodic <- new.drift(periodic.drift,init=periodic.init,scale=periodic.scale,svf=periodic.svf,refine=periodic.refine,name=periodic.name,speed=periodic.speed,summary=periodic.summary)
 
 #################################
 # continuous uniform spline mean functions
@@ -415,7 +422,7 @@ uspline.init <- function(data,CTMM)
   # default domain of spline grid
   if(is.null(CTMM$domain)) { CTMM$domain <- c(data$t[1],last(data$t)) }
 
-  if(is.null(CTMM$mu)) { CTMM <- stationary.init(CTMM) }
+  if(is.null(CTMM$mu)) { CTMM <- drift.init(CTMM) }
 
   return(CTMM)
 }
@@ -486,9 +493,6 @@ uspline.speed <- function(CTMM)
 
 # summary
 
-# convenience function
-uspline <- new.drift(uspline.drift,init=uspline.init,scale=uspline.scale,refine=uspline.refine,name=uspline.name)
-
 # calculate spline grid
 uspline.stuff <- function(CTMM)
 {
@@ -511,10 +515,13 @@ uspline.stuff <- function(CTMM)
   return(list(tknot=tknot,dt=dt))
 }
 
+# convenience function
+uspline <- new.drift(uspline.drift,init=uspline.init,scale=uspline.scale,shift=uniform.shift,refine=uspline.refine,name=uspline.name)
+
 #################################
 # piecewise-stationary mean/drift function
 #################################
-pstationary.drift <- function(t,CTMM)
+pwstationary.drift <- function(t,CTMM)
 {
   breaks <- CTMM$breaks
   id <- factor(breaks$id)
@@ -551,6 +558,15 @@ pstationary.drift <- function(t,CTMM)
   return(u)
 }
 
+############ init handle posixct start & stop
+
+#############
+pwstationary.scale <- function(CTMM,time)
+{
+  CTMM$breaks[,c('start','stop')] <- CTMM$breaks[,c('start','stop')] / time
+
+  return(CTMM)
+}
 
 # combine this all together for convenience
-pstationary <- new.drift(pstationary.drift,svf=stationary.svf,speed=stationary.speed)
+pwstationary <- new.drift(pwstationary.drift,shift=uniform.shift,speed=stationary.speed,svf=stationary.svf)

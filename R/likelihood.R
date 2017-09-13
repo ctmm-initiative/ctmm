@@ -304,6 +304,8 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   # prepare model for numerics
   CTMM <- ctmm.prepare(data,CTMM,REML=REML)
 
+  drift <- get(CTMM$mean)
+
   range <- CTMM$range
   isotropic <- CTMM$isotropic
 
@@ -571,8 +573,6 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     loglike <- -(R.sigma-1)
   }
 
-  # DEBUG <<- list(loglike=loglike,logdetCOV=logdetCOV,logdetcov=logdetcov)
-
   # restructure indices from m,n,x,y to x,m,n,y
   COV.mu <- aperm( COV.mu , c(3,1,2,4))
   DOF.mu <- aperm( DOF.mu , c(3,1,2,4))
@@ -633,8 +633,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
 
     # if(range)
     {
-      # translate back to origin from center
-      mu[1,] <- mu[1,] + mu.center # !!! assumes first mean term is always stationary mean term
+      mu <- drift@shift(mu,mu.center) # translate back to origin from center
       CTMM$mu <- mu
       CTMM$COV.mu <- COV.mu
       CTMM$DOF.mu <- DOF.mu

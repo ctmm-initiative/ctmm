@@ -70,25 +70,25 @@ get.telemetry <- function(data,axes=c("x","y"))
 
 #######################
 # Generic import function
-as.telemetry <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,...) UseMethod("as.telemetry")
+as.telemetry <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,drop=TRUE,...) UseMethod("as.telemetry")
 
 # MoveStack object
-as.telemetry.MoveStack <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,...)
+as.telemetry.MoveStack <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,drop=TRUE,...)
 {
   # need to first conglomerate to MoveBank format, then run as.telemetry
   object <- move::split(object)
   DATA <- lapply(object,function(mv){ Move2CSV(mv,timeformat=timeformat,timezone=timezone,projection=projection,UERE=UERE) })
   DATA <- do.call(rbind,DATA)
-  DATA <- as.telemetry.data.frame(DATA,timeformat=timeformat,timezone=timezone,projection=projection,UERE=UERE)
+  DATA <- as.telemetry.data.frame(DATA,timeformat=timeformat,timezone=timezone,projection=projection,UERE=UERE,drop=drop)
   return(DATA)
 }
 
 # Move object
-as.telemetry.Move <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,...)
+as.telemetry.Move <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,drop=TRUE,...)
 {
   DATA <- Move2CSV(object,timeformat=timeformat,timezone=timezone,projection=projection,UERE=UERE)
   # can now treat this as a MoveBank object
-  DATA <- as.telemetry.data.frame(DATA,timeformat=timeformat,timezone=timezone,projection=projection,UERE=UERE)
+  DATA <- as.telemetry.data.frame(DATA,timeformat=timeformat,timezone=timezone,projection=projection,UERE=UERE,drop=drop)
   return(DATA)
 }
 
@@ -139,8 +139,29 @@ pull.column <- function(object,NAMES,FUNC=as.numeric)
   return(NULL)
 }
 
+# read in a MoveBank object file
+as.telemetry.character <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,drop=TRUE,...)
+{
+  # read with 3 methods: fread, temp_unzip, read.csv, fall back to next if have error.
+  # fread error message is lost, we can use print(e) for debugging.
+  data <- tryCatch(data.table::fread(object,data.table=FALSE,check.names=TRUE,nrows=5),
+                   error = function(e) "error")
+  # if fread fails, then decompress zip to temp file, read data, remove temp file
+  if (class(data) == "data.frame") { data <- data.table::fread(object,data.table=FALSE,check.names=TRUE,...) }
+  else {
+    data <- tryCatch(temp_unzip(object, data.table::fread, data.table=FALSE,check.names=TRUE,...),
+                     error = function(e) "error")
+    if (identical(data, "error")) {
+      cat("fread failed, fall back to read.csv", "\n")
+      data <- utils::read.csv(object,...)
+    }
+  }
+  data <- as.telemetry.data.frame(data,timeformat=timeformat,timezone=timezone,projection=projection,UERE=UERE,drop=drop)
+  return(data)
+}
+
 # this assumes a MoveBank data.frame
-as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,...)
+as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,drop=TRUE,...)
 {
   # make column names canonicalish
   names(object) <- tolower(names(object))
@@ -252,33 +273,12 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
 
     # delete empty columns in case collars/tags are different
     for(COL in names(telist[[i]]))
-    { if(any(is.na(DATA[[COL]]))) { DATA[[COL]] <- NULL } }
+    { if(any(is.na(telist[[i]][[COL]]))) { telist[[i]][[COL]] <- NULL } }
   }
   names(telist) <- id
 
-  if (n>1) { return(telist) }
+  if (n>1 || !drop) { return(telist) }
   else { return(telist[[1]]) }
-}
-
-# read in a MoveBank object file
-as.telemetry.character <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,...)
-{
-  # read with 3 methods: fread, temp_unzip, read.csv, fall back to next if have error.
-  # fread error message is lost, we can use print(e) for debugging.
-  data <- tryCatch(data.table::fread(object,data.table=FALSE,check.names=TRUE,nrows=5),
-                   error = function(e) "error")
-  # if fread fails, then decompress zip to temp file, read data, remove temp file
-  if (class(data) == "data.frame") { data <- data.table::fread(object,data.table=FALSE,check.names=TRUE,...) }
-  else {
-    data <- tryCatch(temp_unzip(object, data.table::fread, data.table=FALSE,check.names=TRUE,...),
-                    error = function(e) "error")
-    if (identical(data, "error")) {
-      cat("fread failed, fall back to read.csv", "\n")
-      data <- utils::read.csv(object,...)
-    }
-  }
-  data <- as.telemetry.data.frame(data,timeformat=timeformat,timezone=timezone,projection=projection,UERE=UERE)
-  return(data)
 }
 
 #################
@@ -774,11 +774,12 @@ summary.telemetry <- function(object,...)
 ##############
 # BUFFALO DATA
 ##############
-# buffalo <- as.telemetry("../Data/buffalo/Kruger African Buffalo, GPS tracking, South Africa.csv")
+# buffalo <- as.telemetry("../DATA/Paul Cross/Kruger African Buffalo, GPS tracking, South Africa.csv")
 ## some bad data points
-# buffalo[[6]] <- ctmm:::new.telemetry(buffalo[[6]][-5720,],info=attr(buffalo[[6]],"info"))
-# buffalo[[5]] <- ctmm:::new.telemetry(buffalo[[5]][-869,],info=attr(buffalo[[5]],"info"))
-# buffalo[[4]] <- ctmm:::new.telemetry(buffalo[[4]][-606,],info=attr(buffalo[[4]],"info"))
+# buffalo[[6]] <- buffalo[[6]][-5720,]
+# buffalo[[5]] <- buffalo[[5]][-869,]
+# buffalo[[4]] <- buffalo[[4]][-606,]
+# buffalo[[1]] <- buffalo[[1]][-1,]
 # save(buffalo,file="data/buffalo.rda",compress="xz")
 
 

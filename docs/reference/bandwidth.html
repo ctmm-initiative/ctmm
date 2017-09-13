@@ -23,8 +23,7 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-  
-  
+
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -155,12 +154,12 @@
     <p>The <code>weights</code> argument can be used to correct fixed sampling bias with a prescribed <code>numeric</code> array or to correct temporal sampling bias caused by autocorrelation with <code>weights=TRUE</code>.
 <code>weights=TRUE</code> will optimize <code>n=length(data$t)</code> weights via constrained &amp; preconditioned conjugate gradient algorithms.
 These algorithms have a few options that should be considered if the data are very irregular.
-    <code>FFT=TRUE</code> grids the data with grid width <code>dt</code> and applies FFT algorithms, for a computational cost as low as \(O(n \log n)\) with only \(O(n)\) function evaluations.
+    <code>fast=TRUE</code> grids the data with grid width <code>dt</code> and applies FFT algorithms, for a computational cost as low as \(O(n \log n)\) with only \(O(n)\) function evaluations.
 If no <code>dt</code> is specified, the minimum sampling interval <code>min(diff(data$t))</code> is used.
 <strong>If the data are irregular (permitting gaps), then <code>dt</code> may need to be several times smaller</strong> to avoid slow down. In this case, try setting <code>trace=TRUE</code> and decreasing <code>dt</code> until the interations speed up and the number of feasibility assessments becomes less than \(O(n)\).
 On the other hand, if the data contain some very tiny time intervals, say 1 second among hourly sampled data, then the default <code>dt</code> setting will create an excessively high-resolution discretization of time, which will also cause slowdown. In this case <code>CTMM</code> should contain an error model and <code>dt</code> can likely be increased to a larger fraction of the median sampling interval.
 <!-- %With the sub-optimal \code{PC="IID"} preconditioner, \code{dt} can be relaxed to the median value, but the computational cost is then increased to \eqn{O(n^2 \log n)}. -->
-    <code>FFT=FALSE</code> uses exact times and has a computational cost as low as \(O(n^2)\), including \(O(n^2)\) function evaluations. With <code>PC="direct"</code> this method will produce a result that is exact to within machine precision, but with a computational cost of \(O(n^3)\).</p>
+    <code>fast=FALSE</code> uses exact times and has a computational cost as low as \(O(n^2)\), including \(O(n^2)\) function evaluations. With <code>PC="direct"</code> this method will produce a result that is exact to within machine precision, but with a computational cost of \(O(n^3)\).</p>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
@@ -174,7 +173,7 @@ SIAM Journal on Scientific and Statistical Computing, 9:4, 766-771 (1988).</p>
 <p>D. Marcotte. Fast variogram computation with FFT. <em>Computers and Geosciences</em> 22:10, 1175-1186 (1996).</p>
 <p>C. H. Fleming, W. F. Fagan, T. Mueller, K. A. Olson, P. Leimgruber, J. M. Calabrese.
 Rigorous home-range estimation with movement data: A new autocorrelated kernel-density estimator.
-<a href='http://www.esajournals.org/doi/abs/10.1890/14-2010.1'>Ecology, 96:5, 1182-1188 (2015)</a>.</p>
+<a href = 'http://www.esajournals.org/doi/abs/10.1890/14-2010.1'>Ecology, 96:5, 1182-1188 (2015)</a>.</p>
     
     <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
 
