@@ -52,22 +52,20 @@ SpatialPolygonsDataFrame.UD <- function(object,level.UD=0.95,level=0.95,...)
 
   # populate arrays: level.UD versus level
   P <- NULL
-  NAMES <- NULL
+  ID <- NULL
   for(i in 1:length(level.UD))
   {
-    P <- cbind(P,CI.UD(UD,level.UD[i],level,P=TRUE))
-    NAMES <- cbind(NAMES,names(P[,i]))
+    p <- CI.UD(UD,level.UD[i],level,P=TRUE)
+    P <- cbind(P,p)
+    ID <- cbind(ID,paste(UD@info$identity," ",round(100*level.UD[i]),"% ",names(p),sep=""))
   }
 
   # flatten arrays
-  DIM <- prod(dim(P))
-  P <- array(P,DIM)
-  NAMES <- array(NAMES,DIM)
-
-  ID <- paste(UD@info$identity," ",round(100*level.UD),"% ",NAMES,sep="")
+  P <- c(P)
+  ID <- c(ID)
 
   polygons <- list()
-  for(i in 1:DIM)
+  for(i in 1:length(P))
   {
     CL <- grDevices::contourLines(UD$r,z=UD$CDF,levels=P[i])
 
