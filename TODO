@@ -1,7 +1,5 @@
-RECODE VARIOGRAM.FIT ABSTRACTLY
-* abstract variogram.fit
-* variogram.fit slider circulation error: initial value greater than maximum
-
+* boundry warning in help(ctmm.fit)
+* speed filter Pepper
 * bootstrap model, area
 * standardize x,y prior to likelihood calculation
 * plot3D of 2D UD
