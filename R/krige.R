@@ -517,9 +517,12 @@ predict.ctmm <- function(object,data=NULL,t=NULL,dt=NULL,res=1,...)
     NAMES <- colnames(data$R)
     COV <- data$COV
 
-    VNAMES <- paste0("v.",NAMES)
-    VNAMES -> colnames(data$V)
-    VCOV <- data$VCOV
+    if(K>1)
+    {
+      VNAMES <- paste0("v.",NAMES)
+      VNAMES -> colnames(data$V)
+      VCOV <- data$VCOV
+    }
 
     data <- cbind(t=data$t,data$R,data$V)
     data <- data.frame(data)

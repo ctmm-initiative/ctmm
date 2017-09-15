@@ -1,4 +1,4 @@
-0.4.2 2017-09-13
+0.4.2 2017-09-15
 ================
 
   * velocity esimtates now included in predict() [fitting one model to multiple behaviors can result in wildly optimistic confidence intervals]

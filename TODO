@@ -1,11 +1,9 @@
-* as.telemetry drop=FALSE
-* abstract variogram.fit
-
-* standardize x,y prior to likelihood calculation
-
 RECODE VARIOGRAM.FIT ABSTRACTLY
+* abstract variogram.fit
 * variogram.fit slider circulation error: initial value greater than maximum
 
+* bootstrap model, area
+* standardize x,y prior to likelihood calculation
 * plot3D of 2D UD
 * ltraj export
 * speed function calculator
