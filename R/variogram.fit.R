@@ -80,7 +80,8 @@ variogram.fit <- function(variogram,CTMM=ctmm(),name="GUESS",fraction=0.5,intera
   tau1 <- NULL
   tau2 <- NULL
   circle.period <- NULL
-  rm(z,sigma,tau1,tau2,circle.period)
+  error <- NULL
+  rm(z,sigma,tau1,tau2,circle.period,error)
 
   if(interactive && !manipulate::isAvailable()) { interactive <- FALSE }
   envir <- .GlobalEnv
@@ -102,7 +103,7 @@ variogram.fit <- function(variogram,CTMM=ctmm(),name="GUESS",fraction=0.5,intera
 
   manipulate::manipulate(
     {
-      CTMM <- STUFF$storer(z,sigma,tau1,tau2,circle.period,error)
+      CTMM <- STUFF$storer(sigma,tau1,tau2,circle.period,error)
       fraction <- STUFF$fraction(z)
 
       if(store) { assign(name,CTMM,envir=envir) }
@@ -219,7 +220,7 @@ variogram.fit.backend <- function(variogram,CTMM=ctmm(),fraction=0.5)
   }
 
   # non-destructive parameter overwrite
-  storer <- function(z=z,sigma=sigma,tau1=tau[1],tau2=tau[2],circle.period=circle.period,error=error)
+  storer <- function(sigma=sigma,tau1=tau[1],tau2=tau[2],circle.period=circle.period,error=error)
   {
     # store trace, but preserve angle & eccentricity
     if(length(CTMM$axes)==2)
