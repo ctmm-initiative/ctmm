@@ -118,7 +118,7 @@ variogram.fit <- function(variogram,CTMM=ctmm(),name="GUESS",fraction=0.5,intera
 
 # data.frame DF: columns of label, initial, min, max, step
 # row names of data.frame = variable names
-# storer function sets ctmm object
+# storer() function sets ctmm object
 # fraction() sets plot fraction
 variogram.fit.backend <- function(variogram,CTMM=ctmm(),fraction=0.5)
 {
@@ -200,9 +200,9 @@ variogram.fit.backend <- function(variogram,CTMM=ctmm(),fraction=0.5)
   DF <- rbind(DF,data.frame(min=0,max=e2,initial=as.numeric(error),label="error (m)",step=e2/RES/2,stringsAsFactors=FALSE))
   NAMES <- c(NAMES,"error")
 
-
   rownames(DF) <- NAMES
 
+  # discard rows we don't want
   if(!range)
   {
     NAMES <- rownames(DF)

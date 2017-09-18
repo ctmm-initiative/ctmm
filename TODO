@@ -1,15 +1,21 @@
-* boundry warning in help(ctmm.fit)
 * speed filter Pepper
+* boundry warning in help(ctmm.fit)
 * bootstrap model, area
 * standardize x,y prior to likelihood calculation
 * plot3D of 2D UD
 * ltraj export
-* speed function calculator
 * export ellipse drawing function
 * effective DOF for diffusion rate?
 
-PERIODIC 0.4.0
-* test simulation fits of circulation isotropic=T/F, pREML
+pREML PAPER
+* document pREML
+
+ERROR PAPER
+* error ellipse
+* error class translation
+* UERE priors from calibration
+
+PERIODIC 0.4.X
 * variogram on mean detrended data with CTMM argument
 * simulate.telemetry (not pure ctmm)
 * smoother (velocity vector--check)
@@ -17,19 +23,10 @@ PERIODIC 0.4.0
 * plot ctmm (fall back on kde code)
 * vignette: periodogram, ctmm.select
 
-pREML PAPER
-* document pREML
-* autocorrelated AICc
-
-ERROR PAPER
-* store fixed error in data uere()<- function
-* UERE priors from calibration
-* ctmm.select for error
-
 VELOCITY PAPER
-* predict -> velocity
 * as.telemetry <- velocity
 * ctmm.fit <- velocity
+* speed function calculator
 
 VIGNETTES & EXAMPLES
 * explain effective sample sizes (DOF of summary)

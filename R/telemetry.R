@@ -121,7 +121,7 @@ pull.column <- function(object,NAMES,FUNC=as.numeric)
   # consider alternative spellings of NAMES, but preserve order (preference) of NAMES
   COPY <- NULL
   for(NAME in NAMES)
-  { COPY <- c(COPY,unique(c(NAME,gsub("[.]","_",NAME)))) }
+  { COPY <- c(COPY,unique(c(NAME,gsub("[.: ]","_",NAME)))) }
   NAMES <- tolower(COPY) # all lower case
 
   COLS <- names(object) # already lower case
@@ -189,20 +189,6 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   COL <- pull.column(object,COL)
   DATA$latitude <- COL
 
-  # Import and use HDOP if available
-  COL <- c("GPS.HDOP","HDOP","DOP")
-  COL <- pull.column(object,COL)
-  if(length(COL))
-  {
-    if(is.null(UERE))
-    {
-      warning("HDOP values found but UERE not specified and will have to be fit. See help(\"uere\").")
-      DATA$HDOP <- COL
-    }
-    else
-    { DATA$HERE <- (COL*UERE) }
-  }
-
   # Import and use e-obs accuracy if available
   COL <- "eobs.horizontal.accuracy.estimate"
   COL <- pull.column(object,COL)
@@ -211,6 +197,37 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   # Do I assume this is a sigma_H ?
   # Do I assume this is an x-y standard deviation?
   # Scott's calibration data is more like the latter
+
+  # Import and use HDOP if available
+  COL <- c("GPS.HDOP","HDOP","DOP")
+  COL <- pull.column(object,COL)
+  if(length(COL))
+  {
+    DATA$HDOP <- COL
+    if(is.null(UERE))
+    { warning("HDOP values found, but UERE not specified and will have to be fit. See help(\"uere\").") }
+    else
+    { DATA$HERE <- (COL*UERE) }
+  }
+
+  # approximate DOP from # satellites if necessary
+  if(!any(c("HDOP","HERE") %in% names(DATA)))
+  {
+    COL <- c("GPS.satellite.count","satellite.count","NumSats","Sats") # Counts?
+    COL <- pull.column(object,COL)
+
+    if(length(COL))
+    {
+      warning("HDOP values not found. Approximating with # satellites.")
+      COL <- 10/(COL-2)
+      DATA$HDOP <- COL
+
+      if(is.null(UERE))
+      { warning("HDOP values approximated, but UERE not specified and will have to be fit. See help(\"uere\").") }
+      else
+      { DATA$HERE <- (COL*UERE) }
+    }
+  }
 
   # Import third axis if available
   COL <- c("height.above.ellipsoid","height.above.msl")
@@ -221,11 +238,9 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   COL <- pull.column(object,COL)
   if(length(COL))
   {
+    DATA$VDOP <- COL
     if(is.null(UERE))
-    {
-      warning("VDOP values found but UERE not specified. See help(\"uere\").")
-      DATA$VDOP <- COL
-    }
+    { warning("VDOP values found, but UERE not specified and will have to be fit. See help(\"uere\").") }
     else
     { DATA$VERE <- (COL*UERE) }
   }
