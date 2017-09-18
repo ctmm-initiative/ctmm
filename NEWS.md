@@ -1,5 +1,7 @@
-0.4.2 2017-09-15
+0.4.2 2017-09-17
 ================
+
+  * new uere()<- assignment method
 
   * velocity esimtates now included in predict() [fitting one model to multiple behaviors can result in wildly optimistic confidence intervals]
   

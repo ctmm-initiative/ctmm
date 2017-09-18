@@ -79,7 +79,7 @@ S3method(simulate,ctmm)
 S3method(simulate,telemetry)
 
 #UERE FUNCTIONS
-export(uere)
+export(uere,"uere<-")
 
 #OVERLAP FUNCTIONS
 export(overlap)
