@@ -103,7 +103,14 @@ variogram.fit <- function(variogram,CTMM=ctmm(),name="GUESS",fraction=0.5,intera
 
   manipulate::manipulate(
     {
-      CTMM <- STUFF$storer(sigma,tau1,tau2,circle.period,error)
+      slider_names <- rownames(DF)
+      # zoom slider is not needed here
+      slider_names <- slider_names[!(slider_names %in% "z")]
+      # must use as.name to avoid immediate evaluation
+      slider_values <- lapply(slider_names, as.name)
+      names(slider_values) <- slider_names
+      CTMM <- do.call(STUFF$storer, slider_values)
+
       fraction <- STUFF$fraction(z)
 
       if(store) { assign(name,CTMM,envir=envir) }
@@ -120,7 +127,7 @@ variogram.fit <- function(variogram,CTMM=ctmm(),name="GUESS",fraction=0.5,intera
 # row names of data.frame = variable names
 # storer() function sets ctmm object
 # fraction() sets plot fraction
-variogram.fit.backend <- function(variogram,CTMM=ctmm(),fraction=0.5)
+variogram.fit.backend <- function(variogram,CTMM=ctmm(),fraction=0.5,b=4)
 {
   # R CHECK CRAN BUG BYPASS
   z <- NULL
@@ -138,7 +145,7 @@ variogram.fit.backend <- function(variogram,CTMM=ctmm(),fraction=0.5)
   n <- length(variogram$lag)
 
   # parameters for logarithmic slider
-  b <- 4
+  # b <- 4
   min.step <- 10*variogram$lag[2]/variogram$lag[n]
   #min.step <- max(min.step,fraction)
 
