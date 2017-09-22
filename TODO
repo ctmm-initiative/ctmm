@@ -1,4 +1,6 @@
 * speed filter Pepper
+* use speed filter in ctmm.guess circle=TRUE
+* expose speed filter
 * boundry warning in help(ctmm.fit)
 * bootstrap model, area
 * standardize x,y prior to likelihood calculation
@@ -11,6 +13,7 @@ pREML PAPER
 * document pREML
 
 ERROR PAPER
+* uere.ctmm
 * error ellipse
 * error class translation
 * UERE priors from calibration

@@ -49,41 +49,50 @@ uere <- function(data,diagnostic=FALSE)
     data <- list(data)
   }
 
-  n <- 0
-  mu <- list()
-  r <- list()
+  x <- list()
+  y <- list()
   # calculate mean and residuals
   for(i in 1:length(data))
   {
     if(is.null(data[[i]]$HDOP))
     { stop("Failed to import GPS.HDOP column from Movebank file.") }
 
-    w <- 2/data[[i]]$HDOP^2
-    n <- n + 2*length(w)
-    mu[[i]] <- c( w %*% data[[i]]$x , w %*% data[[i]]$y )/sum(w)
-    r[[i]] <- c( sqrt(w) * (data[[i]]$x - mu[[i]][1]) , sqrt(w) * (data[[i]]$y - mu[[i]][2]) )
+    w <- 1/data[[i]]$HDOP^2
+    mu <- c( w %*% data[[i]]$x , w %*% data[[i]]$y )/sum(w)
+
+    # detrend data
+    data[[i]]$x <- data[[i]]$x - mu[1]
+    data[[i]]$y <- data[[i]]$y - mu[2]
+
+    w <- 1/data[[i]]$HDOP
+    y[[i]] <- w * data[[i]]$x
+    x[[i]] <- w * data[[i]]$y
   }
-  r <- unlist(r)
+  x <- unlist(x)
+  y <- unlist(y)
 
   # total degrees of freedom
-  n <- n - 2*length(data)
+  n <- length(x) - length(data)
 
   # residuals and UERE
-  UERE <- sqrt(sum(r^2/n))
-  CI <- sqrt(chisq.ci(UERE^2,DOF=n))
+  UERE <- sqrt(sum(x^2+y^2)/n)
 
   if(diagnostic)
   {
-    graphics::hist(r,breaks="scott",freq=FALSE,main="residual distribution",xlab="normalized residual")
-    graphics::lines(stats::density(r,bw="SJ"))
-    DNORM <- Vectorize(function(x){ stats::dnorm(x,sd=UERE) })
+    r <- c(x,y) / sqrt(UERE/2)
+    CI <- chisq.ci(1,DOF=2*n)
+
+    KDE <- stats::density(r,bw="SJ")
+    graphics::hist(r,breaks="scott",freq=FALSE,main="residual distribution",xlab="standardized error",ylim=c(0,max(KDE$y,1/sqrt(2*pi*CI[1]))))
+    graphics::lines(KDE)
+    DNORM <- Vectorize(function(x){ exp(-x^2/2/CI[2])/sqrt(2*pi*CI[2]) })
     graphics::curve(DNORM,from=min(r),to=max(r),n=1001,add=TRUE,col="red",lwd=2)
-    DNORM <- Vectorize(function(x){ stats::dnorm(x,sd=CI[1]) })
+    DNORM <- Vectorize(function(x){ exp(-x^2/2/CI[1])/sqrt(2*pi*CI[1]) })
     graphics::curve(DNORM,from=min(r),to=max(r),n=1001,add=TRUE,col="red")
-    DNORM <- Vectorize(function(x){ stats::dnorm(x,sd=CI[3]) })
+    DNORM <- Vectorize(function(x){ exp(-x^2/2/CI[3])/sqrt(2*pi*CI[3]) })
     graphics::curve(DNORM,from=min(r),to=max(r),n=1001,add=TRUE,col="red")
 
-    return(CI)
+    return(sqrt(chisq.ci(UERE^2,DOF=2*n)))
   }
   else
   { return( UERE ) }

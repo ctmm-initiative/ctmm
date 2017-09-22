@@ -915,6 +915,7 @@ ctmm.guess <- function(data,CTMM=ctmm(),variogram=NULL,name="GUESS",interactive=
   drift <- get(CTMM$mean)
   CTMM <- drift@init(data,CTMM)
   mu <- CTMM$mu
+  u <- drift(data$t,CTMM)
 
   # estimate circulation period
   if(CTMM$circle==1)
@@ -923,9 +924,9 @@ ctmm.guess <- function(data,CTMM=ctmm(),variogram=NULL,name="GUESS",interactive=
 
     # residuals
     z <- get.telemetry(data,CTMM$axes)
-    z <- t(t(z)-mu)
+    z <- z - (u %*% CTMM$mu)
 
-    # velocities
+    # velocities !!! update this to minimally filtered estimate
     v <- cbind(diff(z[,1]),diff(z[,2])) / diff(data$t)
     # midpoint locations during velocity v
     z <- cbind(z[-1,1]+z[-n,1],z[-1,2]+z[-n,2])/2

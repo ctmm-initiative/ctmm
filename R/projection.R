@@ -113,3 +113,15 @@ validate.projection <- function(projection)
   if(grepl("units=",projection,fixed=TRUE) && !grepl("units=m",projection,fixed=TRUE))
   { stop("Units of distance other than meters not supported.") }
 }
+
+
+# return unit vector that points north
+northing <- function(proj,center=c(0,0))
+{
+  mu <- rgdal::project(rbind(center),proj,inv=TRUE)
+  mu[1,2] <- mu[1,2] + 1/60^2 # 1 arcsecond north (30 m)
+  mu <- rgdal::project(mu,proj)[1,]
+  mu <- mu - center
+  mu <- mu/sqrt(sum(mu^2))
+  return(mu)
+}
