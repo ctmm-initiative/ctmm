@@ -285,7 +285,7 @@ PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC=
   else if(PC=="Markov")
   {
     # This is all exactly the same, fast and slow
-    # following the notation of Rybicki 1994
+    # following the notation of Rybicki (1994)
     PC.R <- exp(-diff(MARKOV$t))
     PC.E <- PC.R/(1-PC.R^2)
     PC.D <- PC.R*PC.E
@@ -368,23 +368,38 @@ PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC=
   FREE <- !ACTIVE # current feasible dimensions
   m <- n # number of free dimensions
   CHANGE <- TRUE # did our constraints change?, then keep working
-  LAMBDA <- 1/n # junk value to initialize
+  MISE <- rep(Inf,3) # last 3 MISE objectives - the 3>1 is arbitrary
+  LAMBDA <- rep(1/n,3) # last 3 normalization constants
   KKT <- function()
   {
     # we're going to toss the negative probabilities out of the feasible region
     ZERO <- (P<=0)
     P[ZERO] <<- 0
-    LAMBDA <<- 1/sum(P) # now this is the Lagrange multiplier now
+
+    # update past esitmates (un-normalized)
+    P.OLD <<- rbind(P,P.OLD[1:2,])
+
+    # normalization constant
+    LAMBDA[2:3] <<- LAMBDA[1:2] # update past lambdas
+    LAMBDA[1] <<- 1/sum(P) # the current Lagrange multiplier
+
     G.P <<- G.VEC(P)
+
+    # update MISE objective
+    MISE[2:3] <<- MISE[1:2]
+    MISE[1] <<- LAMBDA[1]^2 * c(P %*% G.P)
 
     # optimization on the probability simplex determines the active constraints from KKT equations
     GRAD <- 1 - G.P # -GRAD/LAMBDA, where GRAD == slack at solution (KKT)
+
     # currently active inequality constraints
     ACTIVE -> OLD
     ACTIVE <<- ZERO & (GRAD <= 0) # in these dimensions, the gradient is trying to push through the boundary, creating slack (KKT)
     CHANGE <<- any(ACTIVE-OLD) # did our active constraints change?
     FREE <<- !ACTIVE # free space to work in
     m <<- sum(FREE) # size of current free space
+
+    return(NULL)
   }
 
   ############################
@@ -406,8 +421,9 @@ PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC=
     P <- get("P",pos=PQP.env)
   }
   G.P <- P # initializing variable with junk
+  P.OLD <- rbind(P,P,P) # more junk x3
   # check KKT conditions, incase we have a non-trivial initial guess
-  KKT()
+  KKT() # this returns a number now... does that matter in R?
   # as a side effect this also evaluates G.P, which we need
 
   CHANGE <- TRUE
@@ -486,27 +502,27 @@ PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC=
         ERROR <- max(abs(dP)) * n
 
         CG.STEPS <- CG.STEPS + 1
-
-        # plot(P)
-        # # title(paste("ERROR ==",ERROR))
-        # title(paste("dL ==",dL))
-        # abline(h=0)
-        # readline(prompt=paste(CHANGES,":",CG.STEPS))
       }
       STEPS <- STEPS + CG.STEPS
     }
 
     # CHECK KKT CONDITIONS AND RESET ACTIVE/FREE SPACE
     KKT()
+
+    # make sure the MISE is decreasing and we are not stuck in a rare numerical-indiscrimination / solution-boundary loop
+    if(all(MISE[1] >= MISE[2:3])) { break }
   }
 
-  #########################################
+  # select best solution of past few (in case of rare boundary loop)
+  MIN <- which.min(MISE)
+  MISE <- MISE[MIN]
+  P <- P.OLD[MIN,]
+
   # STORE SOLUTION FOR LATER OPTIM EVALUATIONS
   assign("P",P,pos=PQP.env)
   assign("EMPTY",FALSE,pos=PQP.env) # SET TO FALSE TO ACTIVATE MEMORY !!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  MISE <- LAMBDA^2 * c(P %*% G.P)
-  P <- LAMBDA * P
+  P <- LAMBDA[MIN] * P
 
   RETURN <- list(P=P,MISE=MISE,STEPS=STEPS,CHANGES=CHANGES)
   return(RETURN)

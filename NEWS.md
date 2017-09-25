@@ -1,4 +1,4 @@
-0.4.2 2017-09-19
+0.4.2 2017-09-24
 ================
 
   * new uere()<- assignment method
@@ -12,6 +12,8 @@
   * fixed AIC bug in new parameterization code (0.4.0-0.4.1) where isotropic=TRUE model would never be selected
   
   * fixed CI bug in plot.variogram CTMM argument for calibrated error model
+  
+  * fixed rare endless loop in akde/bandwidth with weights=TRUE
   
   * outlier removed from buffalo$Cilla
 

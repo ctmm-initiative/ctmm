@@ -12,7 +12,7 @@ bandwidth(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,precision=1/2,PC="M
   \item{data}{ 2D timeseries telemetry data represented as a \code{telemetry} object. }
   \item{CTMM}{A \code{ctmm} movement model as from the output of \code{ctmm.fit}.}
   \item{VMM}{An optional vertical \code{ctmm} object for 3D bandwidth calculation.}
-  \item{weights}{By default, the weights are taken to be uniform. \code{weights=TRUE} will optimize the weights, while a \code{numeric} array will fix the weights.}
+  \item{weights}{By default, the weights are taken to be uniform, whereas \code{weights=TRUE} will optimize the weights.}
   \item{fast}{Use FFT algorithms for weight optimization.}
   \item{dt}{ Optional lag bin width for the FFT algorithm.}
   \item{precision}{Fraction of maximum possible digits of precision to target in weight optimization. \code{precision=1/2} results in about 7 decimal digits of precision if the preconditioner is stable.}
@@ -21,7 +21,7 @@ bandwidth(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,precision=1/2,PC="M
   \item{trace}{Produce tracing information on the progress of weight optimization.}
 }
 \details{
-The \code{weights} argument can be used to correct fixed sampling bias with a prescribed \code{numeric} array or to correct temporal sampling bias caused by autocorrelation with \code{weights=TRUE}.
+The \code{weights=TRUE} argument can be used to correct temporal sampling bias caused by autocorrelation.
 \code{weights=TRUE} will optimize \code{n=length(data$t)} weights via constrained & preconditioned conjugate gradient algorithms.
 These algorithms have a few options that should be considered if the data are very irregular.
 

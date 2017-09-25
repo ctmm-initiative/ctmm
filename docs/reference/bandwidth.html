@@ -121,7 +121,7 @@
     </tr>
     <tr>
       <th>weights</th>
-      <td><p>By default, the weights are taken to be uniform. <code>weights=TRUE</code> will optimize the weights, while a <code>numeric</code> array will fix the weights.</p></td>
+      <td><p>By default, the weights are taken to be uniform, whereas <code>weights=TRUE</code> will optimize the weights.</p></td>
     </tr>
     <tr>
       <th>fast</th>
@@ -151,7 +151,7 @@
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>The <code>weights</code> argument can be used to correct fixed sampling bias with a prescribed <code>numeric</code> array or to correct temporal sampling bias caused by autocorrelation with <code>weights=TRUE</code>.
+    <p>The <code>weights=TRUE</code> argument can be used to correct temporal sampling bias caused by autocorrelation.
 <code>weights=TRUE</code> will optimize <code>n=length(data$t)</code> weights via constrained &amp; preconditioned conjugate gradient algorithms.
 These algorithms have a few options that should be considered if the data are very irregular.
     <code>fast=TRUE</code> grids the data with grid width <code>dt</code> and applies FFT algorithms, for a computational cost as low as \(O(n \log n)\) with only \(O(n)\) function evaluations.
