@@ -122,7 +122,7 @@ The R-studio function `variogram.fit(SVF)` is much easier to use than guestimati
 
 ### Variogram Error is Autocorrelated
 
-It is important to note that variogram errors---the difference between the empirical variogram and the true semi-variance function---are themselves autocorrelated. Therefore, the smooth wiggling around that the point estimate does within the confidence bands is not necessarily meaningful. To demonstrate this, let us simulate some data from the OUF model `m.ouf` and look at its empirical variogram.
+It is important to note that variogram errors---the difference between the empirical variogram and the true semi-variance function---are themselves autocorrelated. Therefore, if the empirical variogram is higher (or lower) than the truth at one lag, then it will also tend to be higher (or lower) than the truth at the next lag. Smooth wiggling of the point estimate that falls within the confidence bands is not necessarily meaningful. To demonstrate this, let us simulate some data from the OUF model `m.ouf` and look at its empirical variogram.
 
 ```{r,  fig.show='hold'}
 # simulate fake buffalo with the same sampling schedule
@@ -134,6 +134,8 @@ SVF2 <- variogram(willa)
 plot(SVF2,CTMM=m.ouf,fraction=0.65,level=level,col.CTMM="blue")
 title("simulation")
 ```
+
+In this case, the blue curve is the true model, while the (black) empirical variogram is our estimate calculated from the data. The undulations in the empirical variogram are caused by autocorrelation between the its errors and are not features of the underlying model.
 
 ### Irregular Sampling Schedules
 

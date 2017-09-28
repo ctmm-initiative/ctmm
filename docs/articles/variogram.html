@@ -75,7 +75,7 @@
       <h1>Variograms and Model Selection</h1>
                         <h4 class="author">Christen H. Fleming and Justin M. Calabrese</h4>
             
-            <h4 class="date">2017-09-24</h4>
+            <h4 class="date">2017-09-28</h4>
           </div>
 
     
@@ -156,7 +156,7 @@ m.ou &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.f
 <div id="variogram-error-is-autocorrelated" class="section level3">
 <h3 class="hasAnchor">
 <a href="#variogram-error-is-autocorrelated" class="anchor"></a>Variogram Error is Autocorrelated</h3>
-<p>It is important to note that variogram errors—the difference between the empirical variogram and the true semi-variance function—are themselves autocorrelated. Therefore, the smooth wiggling around that the point estimate does within the confidence bands is not necessarily meaningful. To demonstrate this, let us simulate some data from the OUF model <code>m.ouf</code> and look at its empirical variogram.</p>
+<p>It is important to note that variogram errors—the difference between the empirical variogram and the true semi-variance function—are themselves autocorrelated. Therefore, if the empirical variogram is higher (or lower) than the truth at one lag, then it will also tend to be higher (or lower) than the truth at the next lag. Smooth wiggling of the point estimate that falls within the confidence bands is not necessarily meaningful. To demonstrate this, let us simulate some data from the OUF model <code>m.ouf</code> and look at its empirical variogram.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># simulate fake buffalo with the same sampling schedule</span>
 willa &lt;-<span class="st"> </span><span class="kw"><a href="../reference/simulate.ctmm.html">simulate</a></span>(m.ouf,<span class="dt">t=</span>Cilla$t)
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(willa)
@@ -166,6 +166,7 @@ SVF2 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variog
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF2,<span class="dt">CTMM=</span>m.ouf,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">"blue"</span>)
 <span class="kw">title</span>(<span class="st">"simulation"</span>)</code></pre></div>
 <p><img src="variogram_files/figure-html/unnamed-chunk-6-1.png" width="672"><img src="variogram_files/figure-html/unnamed-chunk-6-2.png" width="672"></p>
+<p>In this case, the blue curve is the true model, while the (black) empirical variogram is our estimate calculated from the data. The undulations in the empirical variogram are caused by autocorrelation between the its errors and are not features of the underlying model.</p>
 </div>
 <div id="irregular-sampling-schedules" class="section level3">
 <h3 class="hasAnchor">
