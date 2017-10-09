@@ -276,17 +276,11 @@ summary.ctmm.list <- function(object, IC="AICc", ...)
   rownames(ICS) <- names(object)
 
   CNAME <- paste("d",IC,sep="")
-  # quick fix for is.resident
-  #if(IC=="AICc")
-  {
-    DOF <- sapply(object,DOF.mean)
-    ICS <- cbind(ICS,DOF)
-    colnames(ICS) <- c(CNAME,"DOF[mean]")
-  }
-  #else
-  #{
-  #  colnames(ICS) <- CNAME
-  #}
+  DOF <- sapply(object,DOF.mean)
+  METH <- sapply(object,function(m){m$method})
+  ICS <- data.frame(ICS,DOF,METH)
+
+  colnames(ICS) <- c(CNAME,"DOF[mean]","method")
 
   return(ICS)
 }

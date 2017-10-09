@@ -1,6 +1,10 @@
 0.4.2 2017-09-24
 ================
 
+  * pHREML, pREML, HREML ctmm.fit methods implemented distinctly
+  
+  * IID pREML & REML AICc values implemented
+
   * new uere()<- assignment method
 
   * velocity esimtates now included in predict() [fitting one model to multiple behaviors can result in wildly optimistic confidence intervals]
@@ -8,6 +12,8 @@
   * drop=TRUE option in as.telemetry
   
   * as.telemetry will no longer drop individuals with missing data columns
+  
+  * plot.UD resolution grid less obnoxious
   
   * fixed AIC bug in new parameterization code (0.4.0-0.4.1) where isotropic=TRUE model would never be selected
   

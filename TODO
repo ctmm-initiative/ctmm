@@ -1,3 +1,4 @@
+* background grid color on plot.UD
 * speed filter Pepper
 * use speed filter in ctmm.guess circle=TRUE
 * expose speed filter
@@ -10,7 +11,8 @@
 * effective DOF for diffusion rate?
 
 pREML PAPER
-* document pREML
+* bootstrap stuff
+* document pREML & bootstrap stuff
 
 ERROR PAPER
 * uere.ctmm
@@ -19,6 +21,7 @@ ERROR PAPER
 * UERE priors from calibration
 
 PERIODIC 0.4.X
+* T-test on high frequency amplitudes
 * variogram on mean detrended data with CTMM argument
 * simulate.telemetry (not pure ctmm)
 * smoother (velocity vector--check)

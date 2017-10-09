@@ -8,8 +8,7 @@ Optimizer <- function(par,fn,...,method="Nelder-Mead",lower=-Inf,upper=Inf,perio
   default <- list(precision=1/2,maxit=.Machine$integer.max,parscale=pmin(abs(par),abs(par-lower),abs(upper-par)))
   control <- replace(default,names(control),control)
   # check does not like attach
-  NAMES <- names(control)
-  for(i in 1:length(control)) { assign(NAMES[i],control[[i]]) }
+  NAMES <- names(control) ; for(i in 1:length(control)) { assign(NAMES[i],control[[i]]) }
 
   if(any(parscale==0)) { parscale[parscale==0] <- 1 }
 

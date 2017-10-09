@@ -107,7 +107,7 @@ The fitting functions wrap around <code>optim</code> and <code>ctmm.loglike</cod
 
 <span class='fu'>ctmm.loglike</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>REML</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>profile</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>zero</span><span class='kw'>=</span><span class='fl'>0</span>,<span class='kw'>verbose</span><span class='kw'>=</span><span class='fl'>FALSE</span>)
 
-<span class='fu'>ctmm.fit</span>(<span class='no'>data</span>,<span class='kw'>CTMM</span><span class='kw'>=</span><span class='fu'>ctmm</span>(),<span class='kw'>method</span><span class='kw'>=</span><span class='st'>"ML"</span>,<span class='kw'>control</span><span class='kw'>=</span><span class='fu'>list</span>(),<span class='kw'>trace</span><span class='kw'>=</span><span class='fl'>FALSE</span>)
+<span class='fu'>ctmm.fit</span>(<span class='no'>data</span>,<span class='kw'>CTMM</span><span class='kw'>=</span><span class='fu'>ctmm</span>(),<span class='kw'>method</span><span class='kw'>=</span><span class='st'>"ML"</span>,<span class='kw'>COV</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>control</span><span class='kw'>=</span><span class='fu'>list</span>(),<span class='kw'>trace</span><span class='kw'>=</span><span class='fl'>FALSE</span>)
 
 <span class='fu'>ctmm.select</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>verbose</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.99</span>,<span class='kw'>IC</span><span class='kw'>=</span><span class='st'>"AICc"</span>,<span class='kw'>trace</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='no'>...</span>)</pre>
     
@@ -165,6 +165,10 @@ The fitting functions wrap around <code>optim</code> and <code>ctmm.loglike</cod
     <tr>
       <th>method</th>
       <td><p>Use residual maximum likelihood if <code>"REML"</code>. Not recommended.</p></td>
+    </tr>
+    <tr>
+      <th>COV</th>
+      <td><p>Estimate the autocorrelation parameter covariance matrix.</p></td>
     </tr>
     <tr>
       <th>control</th>
@@ -261,16 +265,16 @@ This is no longer feasible with current versions of <code>ctmm</code>, as the nu
 <span class='no'>FIT</span> <span class='kw'>&lt;-</span> <span class='fu'>ctmm.fit</span>(<span class='no'>Cilla</span>,<span class='no'>GUESS</span>)
 
 <span class='co'># some human-readable information</span>
-<span class='fu'>summary</span>(<span class='no'>FIT</span>)</div><div class='output co'>#&gt; $DOF
+<span class='fu'>summary</span>(<span class='no'>FIT</span>)</div><div class='img'><img src='ctmm.fit-1.png' alt='' width='700' height='432.632880098887' /></div><div class='output co'>#&gt; $DOF
 #&gt;     mean     area 
-#&gt; 13.16465 22.59234 
+#&gt; 11.54854 22.49909 
 #&gt; 
 #&gt; $CI
-#&gt;                                 low         ML      high
-#&gt; area (square kilometers) 280.308958 444.213143 645.24296
-#&gt; tau position (days)        3.498487   5.998142  10.28379
-#&gt; tau velocity (minutes)    43.708867  46.725486  49.95030
-#&gt; speed (kilometers/day)    15.441216  15.705364  15.96945
+#&gt;                                 low        ML      high
+#&gt; area (square kilometers) 234.954078 372.73449 541.79530
+#&gt; tau position (days)        4.039193   6.92318  11.86634
+#&gt; tau velocity (minutes)    39.636583  42.14108  44.80384
+#&gt; speed (kilometers/day)    13.818785  14.05342  14.28799
 #&gt; </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">

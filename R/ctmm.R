@@ -112,7 +112,7 @@ covm <- function(pars,isotropic=FALSE,axes=c("x","y"))
     else if(length(pars)==4)
     {
       sigma <- pars
-      pars <- sigma.destruct(sigma)
+      pars <- sigma.destruct(sigma,isotropic=isotropic)
     }
 
     # isotropic error check
@@ -155,7 +155,7 @@ sigma.construct <- function(pars)
 }
 
 # reduce covariance matrix to 1-3 parameters
-sigma.destruct <- function(sigma)
+sigma.destruct <- function(sigma,isotropic=FALSE) # last arg not implemented
 {
   stuff <- eigen(sigma)
 
@@ -305,7 +305,8 @@ ctmm.prepare <- function(data,CTMM,REML=FALSE)
 ctmm.repair <- function(CTMM,K=length(CTMM$tau))
 {
   # repair dropped zero timescales
-  if(K) { CTMM$tau <- replace(numeric(K),1:length(CTMM$tau),CTMM$tau) }
+  if(K && length(CTMM$tau)) { CTMM$tau <- replace(numeric(K),1:length(CTMM$tau),CTMM$tau) }
+  else if(K) { CTMM$tau <- numeric(K) }
 
   if(!CTMM$range)
   {

@@ -68,3 +68,25 @@ emulate.telemetry <- function(object,CTMM,fast=FALSE,...)
 
   return(CTMM)
 }
+
+
+# fast here debiases for fast emulate
+ctmm.boot <- function(data,CTMM,fast=FALSE,n=1E4,mc.cores=NULL,...)
+{
+  if(is.null(mc.cores)) { mc.cores <- detectCores() } # Windows safe wrapper
+
+  NAMES <- dimnames(CTMM$COV)[[1]] # parameters to extract & debias
+
+  Replicate <- function()
+  {
+    FIT <- emulate(CTMM,data=data,fast=FALSE,...)
+    FIT <- get.parameters(FIT,NAMES)
+    return(FIT)
+  }
+
+  P0 <- get.parameters(CTMM,NAMES)
+  PS <- mclapply(1:n,Replicate,mc.cores=mc.cores)
+
+
+
+}

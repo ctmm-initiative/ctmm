@@ -23,7 +23,8 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-
+  
+  
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -103,10 +104,13 @@
 <h1 class="hasAnchor">
 <a href="#section" class="anchor"></a>0.4.2 2017-09-24</h1>
 <ul>
+<li><p>pHREML, pREML, HREML ctmm.fit methods implemented distinctly</p></li>
+<li><p>IID pREML &amp; REML AICc values implemented</p></li>
 <li><p>new uere()&lt;- assignment method</p></li>
 <li><p>velocity esimtates now included in predict() [fitting one model to multiple behaviors can result in wildly optimistic confidence intervals]</p></li>
 <li><p>drop=TRUE option in as.telemetry</p></li>
 <li><p>as.telemetry will no longer drop individuals with missing data columns</p></li>
+<li><p>plot.UD resolution grid less obnoxious</p></li>
 <li><p>fixed AIC bug in new parameterization code (0.4.0-0.4.1) where isotropic=TRUE model would never be selected</p></li>
 <li><p>fixed CI bug in plot.variogram CTMM argument for calibrated error model</p></li>
 <li><p>fixed rare endless loop in akde/bandwidth with weights=TRUE</p></li>

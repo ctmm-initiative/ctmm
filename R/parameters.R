@@ -32,7 +32,8 @@ clean.parameters <- function(par)
 
 # identify autocovariance parameters in ctmm object
 # if profile==TRUE, some parameters can be solved exactly and so aren't identified
-id.parameters <- function(CTMM,profile=TRUE,UERE=FALSE,dt=0,df=0)
+# if linear=TRUE, only return linear non-problematic parameters
+id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,UERE=FALSE,dt=0,df=0)
 {
   # identify and name autocovariance parameters
   NAMES <- NULL
@@ -43,11 +44,14 @@ id.parameters <- function(CTMM,profile=TRUE,UERE=FALSE,dt=0,df=0)
   else if(CTMM$error || CTMM$circle) # must fit shape, but scale free
   { if(!CTMM$isotropic) { NAMES <- c(NAMES,names(sigma[2:3])) } }
 
-  TAU <- CTMM$tau
-  if(!CTMM$range) { TAU <- TAU[-1] }
-  if(length(TAU)) { NAMES <- c(NAMES,paste("tau",names(TAU))) }
+  if(!linear) # nonlinear autocorrelation parameters
+  {
+    TAU <- CTMM$tau
+    if(!CTMM$range) { TAU <- TAU[-1] }
+    if(length(TAU)) { NAMES <- c(NAMES,paste("tau",names(TAU))) }
 
-  if(CTMM$circle) { NAMES <- c(NAMES,"circle") }
+    if(CTMM$circle) { NAMES <- c(NAMES,"circle") }
+  }
 
   if(CTMM$error && UERE<3) { NAMES <- c(NAMES,"error") }
 
@@ -74,20 +78,23 @@ id.parameters <- function(CTMM,profile=TRUE,UERE=FALSE,dt=0,df=0)
     period <- c(period,FALSE,pi)
   }
 
-  if(length(TAU))
+  if(!linear) # nonlinear autocorrelation parameters
   {
-    parscale <- c(parscale,pmax(TAU,dt))
-    lower <- c(lower,rep(0,length(TAU)))
-    upper <- c(upper,rep(Inf,length(TAU)))
-    period <- c(period,rep(FALSE,length(TAU)))
-  }
+    if(length(TAU))
+    {
+      parscale <- c(parscale,pmax(TAU,dt))
+      lower <- c(lower,rep(0,length(TAU)))
+      upper <- c(upper,rep(Inf,length(TAU)))
+      period <- c(period,rep(FALSE,length(TAU)))
+    }
 
-  if(CTMM$circle)
-  {
-    parscale <- c(parscale,max(abs(CTMM$circle),df))
-    lower <- c(lower,-Inf)
-    upper <- c(upper,Inf)
-    period <- c(period,FALSE)
+    if(CTMM$circle)
+    {
+      parscale <- c(parscale,max(abs(CTMM$circle),df))
+      lower <- c(lower,-Inf)
+      upper <- c(upper,Inf)
+      period <- c(period,FALSE)
+    }
   }
 
   if(CTMM$error && UERE<3)
@@ -98,10 +105,13 @@ id.parameters <- function(CTMM,profile=TRUE,UERE=FALSE,dt=0,df=0)
     period <- c(period,FALSE)
   }
 
-  names(parscale) <- NAMES
-  names(lower) <- NAMES
-  names(upper) <- NAMES
-  names(period) <- NAMES
+  if(length(parscale))
+  {
+    names(parscale) <- NAMES
+    names(lower) <- NAMES
+    names(upper) <- NAMES
+    names(period) <- NAMES
+  }
 
   return(list(NAMES=NAMES,parscale=parscale,lower=lower,upper=upper,period=period))
 }

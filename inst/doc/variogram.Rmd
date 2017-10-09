@@ -135,7 +135,7 @@ plot(SVF2,CTMM=m.ouf,fraction=0.65,level=level,col.CTMM="blue")
 title("simulation")
 ```
 
-In this case, the blue curve is the true model, while the (black) empirical variogram is our estimate calculated from the data. The undulations in the empirical variogram are caused by autocorrelation between the its errors and are not features of the underlying model.
+In this case, the blue curve is the true model, while the (black) empirical variogram is our estimate calculated from the data. The undulations in the empirical variogram are caused by autocorrelation between its errors and are not features of the underlying model.
 
 ### Irregular Sampling Schedules
 

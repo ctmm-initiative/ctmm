@@ -14,7 +14,7 @@ ctmm(tau=NULL,isotropic=FALSE,range=TRUE,circle=FALSE,error=FALSE,axes=c("x","y"
 
 ctmm.loglike(data,CTMM,REML=FALSE,profile=TRUE,zero=0,verbose=FALSE)
 
-ctmm.fit(data,CTMM=ctmm(),method="ML",control=list(),trace=FALSE)
+ctmm.fit(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=FALSE)
 
 ctmm.select(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE,...)
 }
@@ -34,6 +34,7 @@ ctmm.select(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE,...)
   \item{zero}{Calculates \eqn{\log(likelihood) - zero}, instead of just \eqn{\log(likelihood)}, in a way that maintains numerical precision if the constant \code{zero} is close to the log likelihood. Used internally by \code{ctmm.fit}.}
   \item{verbose}{Return additional information. See "Value" below.}
   \item{method}{Use residual maximum likelihood if \code{"REML"}. Not recommended.}
+  \item{COV}{Estimate the autocorrelation parameter covariance matrix.}
   \item{control}{An optional argument list with standardized numerical arguments.}
   \item{trace}{Report progress updates.}
   \item{level}{Attempt to simplify a model if a feature's non-existence falls within this level of confidence interval.}

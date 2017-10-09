@@ -75,7 +75,7 @@
       <h1>Variograms and Model Selection</h1>
                         <h4 class="author">Christen H. Fleming and Justin M. Calabrese</h4>
             
-            <h4 class="date">2017-09-28</h4>
+            <h4 class="date">2017-10-09</h4>
           </div>
 
     
@@ -166,7 +166,7 @@ SVF2 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variog
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF2,<span class="dt">CTMM=</span>m.ouf,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">"blue"</span>)
 <span class="kw">title</span>(<span class="st">"simulation"</span>)</code></pre></div>
 <p><img src="variogram_files/figure-html/unnamed-chunk-6-1.png" width="672"><img src="variogram_files/figure-html/unnamed-chunk-6-2.png" width="672"></p>
-<p>In this case, the blue curve is the true model, while the (black) empirical variogram is our estimate calculated from the data. The undulations in the empirical variogram are caused by autocorrelation between the its errors and are not features of the underlying model.</p>
+<p>In this case, the blue curve is the true model, while the (black) empirical variogram is our estimate calculated from the data. The undulations in the empirical variogram are caused by autocorrelation between its errors and are not features of the underlying model.</p>
 </div>
 <div id="irregular-sampling-schedules" class="section level3">
 <h3 class="hasAnchor">
@@ -226,9 +226,9 @@ GUESS$error &lt;-<span class="st"> </span><span class="ot">TRUE</span>
 FITS$ERROR &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(DATA,GUESS)
 <span class="co"># model improvement</span>
 <span class="kw">summary</span>(FITS)</code></pre></div>
-<pre><code>##          dAICc DOF[mean]
-## ERROR  0.00000  16.39669
-## NOERR 21.58309  15.74074</code></pre>
+<pre><code>##          dAICc DOF[mean] method
+## ERROR  0.00000  16.39669     ML
+## NOERR 21.58309  15.74074     ML</code></pre>
 <p>Also, see <code>help(uere)</code> if you have the benefit of calibration data.</p>
 </div>
 <div id="cycles-and-periodicities" class="section level3">
@@ -286,10 +286,10 @@ FITS$ERROR &lt;-<span class="st"> </span><span class="kw"><a href="../reference/
 <p>Notice how tiny the (Gaussian) area uncertainty is in IID model <code>M.IID</code>. Let us look into some details of the models.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">FITS &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">IID=</span>M.IID,<span class="dt">OU=</span>M.OU,<span class="dt">OUF=</span>M.OUF)
 <span class="kw">summary</span>(FITS)</code></pre></div>
-<pre><code>##         dAICc   DOF[mean]
-## OUF     0.000   11.544044
-## OU   1565.211    6.122945
-## IID 38112.285 3527.000000</code></pre>
+<pre><code>##         dAICc   DOF[mean] method
+## OUF     0.000   11.544044     ML
+## OU   1565.211    6.122945     ML
+## IID 38112.285 3527.000000     ML</code></pre>
 <p><code>AICc</code> is the (linearly) corrected Akaike information criteria. AIC balances likelihood against model complexity in a way that is good if we want to make optimal predictions. A lower AIC is better. Getting the AIC to go down by 5 is great, while getting the AIC to go down by 10 is awesome. Our AIC is going down by thousands.</p>
 <p>The fit parameter <code>DOF[mean]</code> is the number of degrees of freedom worth of data we have to estimate the stationary mean parameter, assuming that the model is correct. Notice that the IID model perceives thousands of independent data points, while the autocorrelated OU and OUF models only see a handful of independent data points. This is why the IID model produced tiny confidence intervals on the predicted (Gaussian) area.</p>
 </div>
@@ -299,10 +299,10 @@ FITS$ERROR &lt;-<span class="st"> </span><span class="kw"><a href="../reference/
 <p>If you have a complex, hypothetical model in mind, say the OUF <code>m.ouf</code> as you would get from variogram fitting the easy way, then you can perform model selection more conveniently with the <code>ctmm.select</code> function. <code>ctmm.select</code> considers the initial guess (hypothesis) and then iterates this model to select the best model based upon an information criteria.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">FITZ &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.select</a></span>(Cilla,m.ouf,<span class="dt">verbose=</span><span class="ot">TRUE</span>,<span class="dt">level=</span><span class="dv">1</span>)
 <span class="kw">summary</span>(FITZ)</code></pre></div>
-<pre><code>##                    dAICc DOF[mean]
-## OUF anisotropic    0.000 11.544044
-## OUF isotropic     67.749 11.502637
-## OU anisotropic  1565.211  6.122948</code></pre>
+<pre><code>##                    dAICc DOF[mean] method
+## OUF anisotropic    0.000 11.544044     ML
+## OUF isotropic     67.749 11.502637     ML
+## OU anisotropic  1565.211  6.122948     ML</code></pre>
 <p>Note that <code>level=1</code> is set here for demonstration purposes only, to attempt every nearest model no matter how unlikely it may seem. The isotropic and anisotropic (<code>isotropic=FALSE</code>) flags correspond to circular and elliptical covariances respectively—an option we did not consider above. <!-- The Ornstein-Uhlenbeck-F (OUF) model is continuous in position and velocity (`M.OUF`),
 the Ornstein-Uhlenbeck (OU) model is continuous in position only (`M.OU`),
 and the independent and identically distributed (IID) model has no autocorrelation (`M.IID`). --> The IID model was never considered here by <code>ctmm.select</code> because it first requires selecting OU over OUF in the nested model hierarchy. See <code>help("ctmm")</code> for more options.</p>
@@ -325,7 +325,8 @@ and the independent and identically distributed (IID) model has no autocorrelati
 
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
         <div id="tocnav">
-      <h2>Contents</h2>
+      <h2 class="hasAnchor">
+<a href="#tocnav" class="anchor"></a>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
 <li><a href="#data-preparation">Data Preparation</a></li>
       <li>

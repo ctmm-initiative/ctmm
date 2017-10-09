@@ -416,7 +416,7 @@ new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,fracti
 #######################################
 # PLOT TELEMETRY DATA
 #######################################
-plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF",col="red",col.level="black",col.DF="blue",col.grid="grey",pch=1,type='p',labels=NULL,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,cex=NULL,lwd=1,...)
+plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF",col="red",col.level="black",col.DF="blue",col.grid="white",pch=1,type='p',labels=NULL,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,cex=NULL,lwd=1,...)
 {
   alpha <- 1-level
   alpha.UD <- 1-level.UD
@@ -561,7 +561,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
 
 
 ##############
-plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",col.level="black",col.DF="blue",col.grid="grey",labels=NULL,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,cex=NULL,lwd=1,...)
+plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",col.level="black",col.DF="blue",col.grid="white",labels=NULL,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,cex=NULL,lwd=1,...)
 {
   if(!is.null(x)) { if(class(x)=="UD") { x <- list(x) } }
 
@@ -595,22 +595,6 @@ plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",col.level="black",col.DF
 
     # ML DENSITY PLOTS
     plot.df(x[[i]],DF=DF,col=col.DF[[i]],...)
-  }
-
-  # CONTOURS
-  for(i in 1:length(x))
-  {
-    if(!any(is.na(col.level[i,,])) && !any(is.na(level.UD)))
-    {
-      # make sure that correct style is used for low,ML,high even in absence of lows and highs
-      plot.kde(x[[i]],level=level.UD,labels=labels[i,,2],col=scales::alpha(col.level[i,,2],1),lwd=lwd,...)
-
-      if(!is.na(level) && !is.null(x[[i]]$DOF.area))
-      {
-        P <- sapply(level.UD, function(l) { CI.UD(x[[i]],l,level,P=TRUE)[-2] } )
-        plot.kde(x[[i]],level=P,labels=c(t(labels[i,,c(1,3)])),col=scales::alpha(c(t(col.level[i,,c(1,3)])),0.5),lwd=lwd/2,...)
-      }
-    }
   }
 
   # plot grid
@@ -665,6 +649,25 @@ plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",col.level="black",col.DF
 
       for(j in 1:length(u)) { graphics::segments(x0=X[j,1],y0=Y[j,1],x1=last(X[j,]),y1=last(Y[j,]),col=col.grid[i],...) }
       for(j in 1:length(v)) { graphics::segments(x0=X[1,j],y0=Y[1,j],x1=last(X[,j]),y1=last(Y[,j]),col=col.grid[i],...) }
+    }
+
+    # not sure why this is necessary
+    graphics::box()
+  }
+
+  # CONTOURS
+  for(i in 1:length(x))
+  {
+    if(!any(is.na(col.level[i,,])) && !any(is.na(level.UD)))
+    {
+      # make sure that correct style is used for low,ML,high even in absence of lows and highs
+      plot.kde(x[[i]],level=level.UD,labels=labels[i,,2],col=scales::alpha(col.level[i,,2],1),lwd=lwd,...)
+
+      if(!is.na(level) && !is.null(x[[i]]$DOF.area))
+      {
+        P <- sapply(level.UD, function(l) { CI.UD(x[[i]],l,level,P=TRUE)[-2] } )
+        plot.kde(x[[i]],level=P,labels=c(t(labels[i,,c(1,3)])),col=scales::alpha(c(t(col.level[i,,c(1,3)])),0.5),lwd=lwd/2,...)
+      }
     }
   }
 

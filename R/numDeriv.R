@@ -335,9 +335,9 @@ genD <- function(par,fn,zero=FALSE,lower=-Inf,upper=Inf,step=NULL,precision=1/2,
 
   if(is.null(step)) { step <- sqrt(2*.Machine$double.eps^precision) }
 
-  if(Richardson==1) # parallelized, but no Richardson extrapolation (2nd order)
-  { RETURN <- genD.mcDeriv(par,fn,zero=zero,lower=lower,upper=upper,step=step,covariance=covariance,mc.cores=mc.cores) }
-  else # Richardson extrapolation, but no parallelization
+  # if(Richardson==1) # parallelized, but no Richardson extrapolation (2nd order)
+  # { RETURN <- genD.mcDeriv(par,fn,zero=zero,lower=lower,upper=upper,step=step,covariance=covariance,mc.cores=mc.cores) }
+  #else # Richardson extrapolation, but no parallelization
   { RETURN <- genD.numDeriv(par,fn,zero=zero,lower=lower,upper=upper,step=step,covariance=covariance,r=Richardson,order=order,jacobian=jacobian) }
 
   return(RETURN)

@@ -12,7 +12,7 @@
 
 <meta name="author" content="Guillaume Péron, Christen H. Fleming, and Justin M. Calabrese" />
 
-<meta name="date" content="2017-09-28" />
+<meta name="date" content="2017-10-09" />
 
 <title>Periodic movement models</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Periodic movement models</h1>
 <h4 class="author"><em>Guillaume Péron, Christen H. Fleming, and Justin M. Calabrese</em></h4>
-<h4 class="date"><em>2017-09-28</em></h4>
+<h4 class="date"><em>2017-10-09</em></h4>
 
 
 
@@ -112,16 +112,16 @@ FITS &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(Gamba,GUE
 <pre><code>## Nyquist frequency estimated at harmonic 3 88.5917638888889 of the period.</code></pre>
 <p>The non-default <code>control</code> list here specifies our prototype optimization code that has been tested to be faster and more accurate on this example. With <code>verbose=TRUE</code>, we obtain a list fitted <code>ctmm</code> objects, one for each relevant combination of effects, in order of increasing AICc. The first element of that list is the preferred model.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(FITS)</code></pre></div>
-<pre><code>##                                   dAICc DOF[mean]
-## OUF anisotropic harmonic 3 0   0.000000  107.1803
-## OUF anisotropic harmonic 4 0   4.818792  107.1268
-## OUF anisotropic harmonic 3 1   5.599727  108.9836
-## OUF anisotropic harmonic 2 0  17.064596  106.1204
-## OUF anisotropic harmonic 2 1  22.627079  107.9071
-## OUF anisotropic harmonic 1 0  37.618897  108.2142
-## OUF anisotropic harmonic 1 1  43.040203  110.0647
-## OUF anisotropic harmonic 0 0 140.521989  132.4812
-## OUF anisotropic harmonic 0 1 145.259592  134.7361</code></pre>
+<pre><code>##                                   dAICc DOF[mean] method
+## OUF anisotropic harmonic 3 0   0.000000  107.1803     ML
+## OUF anisotropic harmonic 4 0   4.818792  107.1268     ML
+## OUF anisotropic harmonic 3 1   5.599727  108.9836     ML
+## OUF anisotropic harmonic 2 0  17.064596  106.1204     ML
+## OUF anisotropic harmonic 2 1  22.627079  107.9071     ML
+## OUF anisotropic harmonic 1 0  37.618897  108.2142     ML
+## OUF anisotropic harmonic 1 1  43.040203  110.0647     ML
+## OUF anisotropic harmonic 0 0 140.521989  132.4811     ML
+## OUF anisotropic harmonic 0 1 145.259592  134.7361     ML</code></pre>
 <p>We see that the velocity autocorrelation (OUF), anisotropy, and circulation were unambiguously selected using the level option and were present in all the candidate models. In this maned wolf, there is rather strong support (Delta AIC &gt; 4) for the preferred model (the first of the list). Given how we specified the prototype, <code>harmonic 3 0</code> means that this preferred model has no lunar periodicity, but has three harmonics of the one-day periodicity. This fittingly corresponds to what the periodogram was saying. If there was some moon-related pattern of space use and given how we specified our prototype, we would have had a non-zero value as the second <code>harmonic</code> value. Circulation would also be selected if included.</p>
 <p>Next we do some sanity checking on our results. The sampling interval for Gamba is fairly steady at</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="st">&quot;hour&quot;</span> %#%<span class="st"> </span>stats::<span class="kw">median</span>(<span class="kw">diff</span>(Gamba$t))</code></pre></div>
@@ -137,8 +137,8 @@ FITS &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(Gamba,GUE
 ##                                low         ML       high
 ## rotation/deviation %     74.795669  91.774630 100.000000
 ## rotation/speed %         96.807431  98.987421 100.000000
-## area (square kilometers) 41.444887  48.269156  55.605889
-## tau position (hours)      6.984418   9.267907  12.297962
+## area (square kilometers) 41.444887  48.269156  55.605890
+## tau position (hours)      6.984419   9.267908  12.297962
 ## tau velocity (hours)      1.126099   1.617410   2.323076
 ## speed (kilometers/day)   12.674828 103.001923 204.382857</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(FITS[[<span class="dv">4</span>]]) <span class="co"># harmonic 2 0</span></code></pre></div>
@@ -148,10 +148,10 @@ FITS &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(Gamba,GUE
 ## 
 ## $CI
 ##                                 low        ML      high
-## rotation/deviation %     23.6228691 29.019474 35.648925
-## rotation/speed %         24.3431629 29.868660 36.648355
-## area (square kilometers) 41.1021782 47.844462 55.091281
-## tau position (hours)      7.2925133  9.568354 12.554438
+## rotation/deviation %     23.6228690 29.019474 35.648925
+## rotation/speed %         24.3431626 29.868660 36.648355
+## area (square kilometers) 41.1021783 47.844462 55.091282
+## tau position (hours)      7.2925136  9.568355 12.554438
 ## tau velocity (hours)      0.9699887  1.423753  2.089789
 ## speed (kilometers/day)   14.7247950 16.056839 17.387434</code></pre>
 <ul>
@@ -168,16 +168,16 @@ FITS &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(Gamba,GUE
 <p><img src="data:image/png;base64,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" /><img src="data:image/png;base64,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" /></p>
 <p>While the confidence bands encompass the empirical variogram, the 3 harmonic model has clearly overfit in attempting to match the Nyquist period (3/day) with less than ideal data. A more stringent infromation criteria would not necessarily select the 3 harmonic model.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(FITS,<span class="dt">IC=</span><span class="st">&quot;BIC&quot;</span>)</code></pre></div>
-<pre><code>##                                      dBIC DOF[mean]
-## OUF anisotropic harmonic 3 0   0.00000000  107.1803
-## OUF anisotropic harmonic 2 0   0.02420079  106.1204
-## OUF anisotropic harmonic 1 0   3.47828338  108.2142
-## OUF anisotropic harmonic 4 0  21.79870746  107.1268
-## OUF anisotropic harmonic 3 1  22.57964253  108.9836
-## OUF anisotropic harmonic 2 1  22.62707927  107.9071
-## OUF anisotropic harmonic 1 1  25.99980779  110.0647
-## OUF anisotropic harmonic 0 0  89.22197845  132.4812
-## OUF anisotropic harmonic 0 1 111.11897842  134.7361</code></pre>
+<pre><code>##                                      dBIC DOF[mean] method
+## OUF anisotropic harmonic 3 0   0.00000000  107.1803     ML
+## OUF anisotropic harmonic 2 0   0.02420079  106.1204     ML
+## OUF anisotropic harmonic 1 0   3.47828338  108.2142     ML
+## OUF anisotropic harmonic 4 0  21.79870746  107.1268     ML
+## OUF anisotropic harmonic 3 1  22.57964253  108.9836     ML
+## OUF anisotropic harmonic 2 1  22.62707927  107.9071     ML
+## OUF anisotropic harmonic 1 1  25.99980779  110.0647     ML
+## OUF anisotropic harmonic 0 0  89.22197845  132.4811     ML
+## OUF anisotropic harmonic 0 1 111.11897842  134.7361     ML</code></pre>
 </div>
 <div id="home-range-estimation" class="section level3">
 <h3>Home-range estimation</h3>
