@@ -14,7 +14,7 @@ CI.lower <- Vectorize(function(k,Alpha){stats::qchisq(Alpha/2,k,lower.tail=TRUE)
 
 
 # calculate chi^2 confidence intervals from MLE and COV estimates
-chisq.ci <- function(MLE,COV=NULL,alpha=0.05,DOF=2*MLE^2/COV)
+chisq.ci <- function(MLE,COV=NULL,alpha=0.05,DOF=2*MLE^2/COV,fast=TRUE)
 {
   # try to do something reasonable on failure cases
   if(DOF==0)
@@ -32,7 +32,15 @@ chisq.ci <- function(MLE,COV=NULL,alpha=0.05,DOF=2*MLE^2/COV)
   }
   else     # regular estimate
   {
-    CI <- MLE * c(CI.lower(DOF,alpha),1,CI.upper(DOF,alpha))
+    # traditional confidence intervals
+    if(fast)
+    { CI <- MLE * c(CI.lower(DOF,alpha),1,CI.upper(DOF,alpha)) }
+    else # more probable confidence intervals
+    {
+      CI <- MLE * q2chisq(1-alpha,DOF)/DOF
+      CI[3] <- CI[2]
+      CI[2] <- MLE
+    }
 
     # qchisq upper.tail is too small when DOF<<1
     # probably an R bug that no regular use of chi-square/gamma would come across
@@ -45,6 +53,62 @@ chisq.ci <- function(MLE,COV=NULL,alpha=0.05,DOF=2*MLE^2/COV)
   names(CI) <- c("low","ML","high")
   return(CI)
 }
+
+
+# proper 2-sided quantile function for chi-squared distribution
+q2chisq <- function(p,df)
+{
+  # mode == 0
+  if(df <= 2) { CI <- c(0,0,stats::qchisq(p,df,lower.tail=TRUE)) }
+  else # mode == df
+  {
+    # conventional CIs
+    x1 <- stats::qchisq((1-p)/2,df,lower.tail=TRUE)
+    x2 <- stats::qchisq((1-p)/2,df,lower.taul=FALSE)
+    # mismatched density
+    p1 <- stats::dchisq(x1,df)
+    p2 <- stats::dchisq(x2,df)
+    # average density as first guess
+    p0 <- sqrt(p1*p2)
+
+    # MORE TO COME !!!
+
+    # start loop
+
+    # quantiles for this density
+    x <- idchisq(p0,df)
+
+    # total probability for these quantiles
+
+    # newton iteration towards target probability
+
+    # end loop
+
+    CI <- c(x1,df-2,x2)
+  }
+  return(CI)
+}
+
+
+# inverse density function for chi-square distribution
+# p == dchisq(x,df)
+idchisq <- function(p,df)
+{
+  # constant
+  p <- 2^(df/2) * gamma(df/2) * p
+  # unit power
+  p <- p^2
+  p <- p^(1/(df-2))
+  # unit scale
+  p <- -p/(df-2)
+  # solve
+  # x <- c( lamW::lambertW0(p) , lamW::lambertWm1(p) ) ### CRAN check won't like without depends
+  # transform back
+  x <- -(df-2)*x
+  x <- sort(x)
+  return(x)
+}
+
 
 # normal confidence intervals
 norm.ci <- function(MLE,COV,alpha=0.05)

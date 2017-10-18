@@ -37,7 +37,7 @@ genD.numDeriv <- function(par,fn,zero=0,lower=-Inf,upper=Inf,step=NULL,r=2,covar
 
   # default numDeriv arguments except r=2... seems very sensitive otherwise
   d <- 0.01
-  zero.tol <- sqrt(.Machine$double.eps/7e-7)
+  zero.tol <- sqrt(.Machine$double.eps/7e-7) # this can bug up for microscopic sigma !!!
   n <- length(par)
 
   # calculate hessian and gradient simultaneously

@@ -652,7 +652,7 @@ plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",col.level="black",col.DF
     }
 
     # not sure why this is necessary
-    graphics::box()
+    graphics::box(lwd=lwd,...)
   }
 
   # CONTOURS
@@ -702,7 +702,8 @@ plot.kde <- function(kde,level=0.95,labels=round(level*100),col="black",...)
 
   # do something that works
   options(max.contour.segments=.Machine$integer.max)
-  graphics::contour(kde$r,z=kde$CDF,levels=level,labels=labels,labelcex=1,col=col,add=TRUE,...)
+  drawlabels <- labels==FALSE | is.na(labels)
+  graphics::contour(kde$r,z=kde$CDF,levels=level,labels=labels,labelcex=1,drawlabels=drawlabels,col=col,add=TRUE,...)
 
   # reinstate initial option (or default if was NULL--can't set back to NULL???)
   # if(is.null(MAX)) { MAX <- 25000 }

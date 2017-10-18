@@ -1,4 +1,6 @@
-* background grid color on plot.UD
+* error as.telemetry if user attempts lon-lat projection
+* projection() <- on all plottable objects + plot option
+* occurrence error option
 * speed filter Pepper
 * use speed filter in ctmm.guess circle=TRUE
 * expose speed filter
