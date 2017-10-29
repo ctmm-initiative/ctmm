@@ -75,7 +75,7 @@
       <h1>Variograms and Model Selection</h1>
                         <h4 class="author">Christen H. Fleming and Justin M. Calabrese</h4>
             
-            <h4 class="date">2017-10-18</h4>
+            <h4 class="date">2017-10-29</h4>
           </div>
 
     
@@ -97,7 +97,7 @@
 <p>Our example buffalo data is already prepared into a list of <code>telemetry</code> objects. Let us look at the first buffalo and then every buffalo:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ctmm)
 <span class="kw">data</span>(<span class="st">"buffalo"</span>)
-Cilla &lt;-<span class="st"> </span>buffalo$Cilla
+Cilla &lt;-<span class="st"> </span>buffalo<span class="op">$</span>Cilla
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(Cilla)
 <span class="kw">title</span>(<span class="st">"1 Buffalo"</span>)
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(buffalo,<span class="dt">col=</span><span class="kw">rainbow</span>(<span class="kw">length</span>(buffalo)))
@@ -111,7 +111,7 @@ Cilla &lt;-<span class="st"> </span>buffalo$Cilla
 <p>Variograms are an unbiased way to visualize autocorrelation structure when migration, range shifting, drift, or other translations of the mean location are not happening. When drift occurs in the data, then the variogram represents a mixture of both the drift and the autocorrelation structure, each of which contains distinct movement behaviors. In the future, we will have models that can allow for drift, but the current models assume range residence, which we can check with the variogram.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">SVF &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.html">variogram</a></span>(Cilla)
 level &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.5</span>,<span class="fl">0.95</span>) <span class="co"># 50% and 95% CIs</span>
-xlim &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">12</span> %#%<span class="st"> "hour"</span>) <span class="co"># 0-12 hour window</span>
+xlim &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">12</span> <span class="op">%#%</span><span class="st"> "hour"</span>) <span class="co"># 0-12 hour window</span>
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">xlim=</span>xlim,<span class="dt">level=</span>level)
 <span class="kw">title</span>(<span class="st">"zoomed in"</span>)
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level)
@@ -125,8 +125,8 @@ xlim &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0<
 <h2 class="hasAnchor">
 <a href="#variogram-fitting-the-hard-way" class="anchor"></a>Variogram Fitting the Hard Way</h2>
 <p>For pedagogical reasons we first “fit” models to the variogram by hand, while later we will use a much easier method. we can manually guesstimate some continuous-time models for the aforementioned behavior with the commands</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">m.iid &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">sigma=</span><span class="dv">23</span> %#%<span class="st"> "km^2"</span>)
-m.ou &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">sigma=</span><span class="dv">23</span> %#%<span class="st"> "km^2"</span>,<span class="dt">tau=</span><span class="dv">6</span> %#%<span class="st"> "day"</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">m.iid &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">sigma=</span><span class="dv">23</span> <span class="op">%#%</span><span class="st"> "km^2"</span>)
+m.ou &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">sigma=</span><span class="dv">23</span> <span class="op">%#%</span><span class="st"> "km^2"</span>,<span class="dt">tau=</span><span class="dv">6</span> <span class="op">%#%</span><span class="st"> "day"</span>)
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>m.iid,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">"red"</span>)
 <span class="kw">title</span>(<span class="st">"Independent and identically distributed data"</span>)
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>m.ou,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">"purple"</span>)
@@ -134,7 +134,7 @@ m.ou &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.f
 <p><img src="variogram_files/figure-html/unnamed-chunk-3-1.png" width="672"><img src="variogram_files/figure-html/unnamed-chunk-3-2.png" width="672"></p>
 <p>where for both the models <code>m.iid</code> and <code>m.ou</code>, <code>sigma</code> is the asymptotic variance. In the Ornstein-Uhlenbeck (OU) model <code>m.ou</code>, <code>tau</code> is a single timescale that governs the autocorrelation in position and dictates the animal’s home-range crossing time. The independent and identically distributed (IID) null model <code>m.iid</code> has no autocorrelation. Notice that all units are in meters and seconds, as output by the utility function <code>%#%</code> (see <code>help("%#%")</code>.</p>
 <p>The IID model <code>m.iid</code> is obviously incorrect and in the zoomed in plot we can also see that the OU model <code>m.ou</code> is incorrectly linear at short lags, whereas the empirical variogram actually curves up for an hour or two before it becomes linear. Let us introduce a model that incorporates this behavior.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">m.ouf &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">sigma=</span><span class="dv">23</span> %#%<span class="st"> "km^2"</span>,<span class="dt">tau=</span><span class="kw">c</span>(<span class="dv">6</span> %#%<span class="st"> "day"</span>,<span class="dv">1</span> %#%<span class="st"> "hour"</span>))
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">m.ouf &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">sigma=</span><span class="dv">23</span> <span class="op">%#%</span><span class="st"> "km^2"</span>,<span class="dt">tau=</span><span class="kw">c</span>(<span class="dv">6</span> <span class="op">%#%</span><span class="st"> "day"</span>,<span class="dv">1</span> <span class="op">%#%</span><span class="st"> "hour"</span>))
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>m.ou,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">"purple"</span>,<span class="dt">xlim=</span>xlim)
 <span class="kw">title</span>(<span class="st">"Ornstein-Uhlenbeck movement"</span>)
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>m.ouf,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">"blue"</span>,<span class="dt">xlim=</span>xlim)
@@ -158,7 +158,7 @@ m.ou &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.f
 <a href="#variogram-error-is-autocorrelated" class="anchor"></a>Variogram Error is Autocorrelated</h3>
 <p>It is important to note that variogram errors—the difference between the empirical variogram and the true semi-variance function—are themselves autocorrelated. Therefore, if the empirical variogram is higher (or lower) than the truth at one lag, then it will also tend to be higher (or lower) than the truth at the next lag. Smooth wiggling of the point estimate that falls within the confidence bands is not necessarily meaningful. To demonstrate this, let us simulate some data from the OUF model <code>m.ouf</code> and look at its empirical variogram.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># simulate fake buffalo with the same sampling schedule</span>
-willa &lt;-<span class="st"> </span><span class="kw"><a href="../reference/simulate.ctmm.html">simulate</a></span>(m.ouf,<span class="dt">t=</span>Cilla$t)
+willa &lt;-<span class="st"> </span><span class="kw"><a href="../reference/simulate.ctmm.html">simulate</a></span>(m.ouf,<span class="dt">t=</span>Cilla<span class="op">$</span>t)
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(willa)
 <span class="kw">title</span>(<span class="st">"simulation"</span>)
 <span class="co"># now calculate and plot its variogram</span>
@@ -177,7 +177,7 @@ SVF3 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variog
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF3,<span class="dt">fraction=</span><span class="fl">0.85</span>,<span class="dt">level=</span>level)
 <span class="kw">title</span>(<span class="st">"Default method"</span>)
 <span class="co"># 1, 5, 25 hour sampling intervals</span>
-dt &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">5</span>,<span class="dv">25</span>) %#%<span class="st"> "hour"</span>
+dt &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">5</span>,<span class="dv">25</span>) <span class="op">%#%</span><span class="st"> "hour"</span>
 SVF3 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.html">variogram</a></span>(gazelle[[<span class="dv">18</span>]],<span class="dt">dt=</span>dt)
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF3,<span class="dt">fraction=</span><span class="fl">0.85</span>,<span class="dt">level=</span>level)
 <span class="kw">title</span>(<span class="st">"Multi method"</span>)</code></pre></div>
@@ -189,7 +189,7 @@ SVF3 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variog
 <a href="#pooling-variograms" class="anchor"></a>Pooling Variograms</h3>
 <p>If multiple individuals exhibit similar movement behaviors, then we can pool their individual variograms to create a more precise population variogram. You should be careful though, if the individual movement behaviors and sampling schedules are not identical, then there will be discontinuities at lags where one timeseries runs out of data.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># buffalo 4 is bad</span>
-SVF4 &lt;-<span class="st"> </span><span class="kw">lapply</span>(buffalo[-<span class="dv">4</span>],variogram)
+SVF4 &lt;-<span class="st"> </span><span class="kw">lapply</span>(buffalo[<span class="op">-</span><span class="dv">4</span>],variogram)
 SVF4 &lt;-<span class="st"> </span><span class="kw">mean</span>(SVF4)
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF4,<span class="dt">fraction=</span><span class="fl">0.35</span>,<span class="dt">level=</span>level)
 <span class="kw">title</span>(<span class="st">"Population variogram"</span>)</code></pre></div>
@@ -213,17 +213,22 @@ SVF4 &lt;-<span class="st"> </span><span class="kw">mean</span>(SVF4)
 <p>The height of this initial discontinuity corresponds to the variance of uncorrelated location errors. The second plot is the kind of initial discontinuity one has with detector array data. The end of the (slope) discontinuity is highlighted with a circle. This discontinuity is smooth because the movement and detection are correlated. The height of this initial discontinuity is also (at least roughly) the variance of the location errors.</p>
 <p>If your tracking data is GPS and is annotated with a “DOP” column, then this information is automatically imported into the <code>telemetry</code> object and only has to be flagged in the <code>ctmm</code> model by setting <code>error=TRUE</code>. Because of some convenient mathematical relations, fitting without telemetry errors involves 1-4 fewer parameters and is, therefore, faster and more reliable than fitting with telemetry error. So if your data are not swamped by error and do not contain bursts of high-frequency fixes (which would also be relatively swamped by 5-10 meter GPS error), then you might want to apply a two stage fitting method, first from the variogram guess without telemetry error and then from that output with telemetry error. Here we demonstrate this method with Leroy the fisher cat from the <code>move</code> package:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">DATA &lt;-<span class="st"> </span><span class="kw"><a href="../reference/as.telemetry.html">as.telemetry</a></span>(<span class="kw">system.file</span>(<span class="st">"extdata"</span>,<span class="st">"leroy.csv.gz"</span>,<span class="dt">package=</span><span class="st">"move"</span>))</code></pre></div>
+<pre><code>## Warning in require_bit64(): Some columns are type 'integer64' but
+## package bit64 is not installed. Those columns will print as strange
+## looking floating point data. There is no need to reload the data. Simply
+## install.packages('bit64') to obtain the integer64 print method and print
+## the data again.</code></pre>
 <pre><code>## Maximum speed of 1.05 m/s observed in Leroy</code></pre>
 <pre><code>## Minimum sampling interval of 13.3 minutes in Leroy</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># default model guess</span>
 GUESS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.fit.html">ctmm.guess</a></span>(DATA,<span class="dt">interactive=</span><span class="ot">FALSE</span>)
 <span class="co"># first fit without telemetry error</span>
 FITS &lt;-<span class="st"> </span><span class="kw">list</span>()
-FITS$NOERR &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(DATA,GUESS)
+FITS<span class="op">$</span>NOERR &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(DATA,GUESS)
 <span class="co"># second fit based on first with telemetry error</span>
-GUESS &lt;-<span class="st"> </span>FITS$NOERR
-GUESS$error &lt;-<span class="st"> </span><span class="ot">TRUE</span>
-FITS$ERROR &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(DATA,GUESS)
+GUESS &lt;-<span class="st"> </span>FITS<span class="op">$</span>NOERR
+GUESS<span class="op">$</span>error &lt;-<span class="st"> </span><span class="ot">TRUE</span>
+FITS<span class="op">$</span>ERROR &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(DATA,GUESS)
 <span class="co"># model improvement</span>
 <span class="kw">summary</span>(FITS)</code></pre></div>
 <pre><code>##          dAICc DOF[mean] method

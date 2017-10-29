@@ -1,3 +1,4 @@
+* default labels not working for UD contours
 * error as.telemetry if user attempts lon-lat projection
 * projection() <- on all plottable objects + plot option
 * occurrence error option

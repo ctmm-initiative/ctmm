@@ -1,4 +1,4 @@
-0.4.2 2017-09-24
+0.4.2 2017-10-29
 ================
 
   * pHREML, pREML, HREML ctmm.fit methods implemented distinctly
@@ -13,7 +13,7 @@
   
   * as.telemetry will no longer drop individuals with missing data columns
   
-  * plot.UD resolution grid less obnoxious
+  * plot.UD resolution grid less obnoxious, NA/FALSE contour label option
   
   * fixed AIC bug in new parameterization code (0.4.0-0.4.1) where isotropic=TRUE model would never be selected
   

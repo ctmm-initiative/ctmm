@@ -75,7 +75,7 @@
       <h1>Autocorrelated Kernel Density Estimation</h1>
                         <h4 class="author">Christen H. Fleming and Justin M. Calabrese</h4>
             
-            <h4 class="date">2017-10-18</h4>
+            <h4 class="date">2017-10-29</h4>
           </div>
 
     
@@ -84,7 +84,7 @@
 <p>In this vignette we walk through autocorrelated kernel density estimation. We will assume that you have already estimated a good <code>ctmm</code> movement model for your data. For demonstration purposes we will be working from the results of the “Variograms and Model Selection” vignette (see <code><a href="../articles/variogram.html">vignette("variogram")</a></code>). Here we will use the buffalo “Pepper” instead of “Cilla”, because Pepper has a GPS collar malfunction that can be mitigated with optimal weighting.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ctmm)
 <span class="kw">data</span>(buffalo)
-Pepper &lt;-<span class="st"> </span>buffalo$Pepper
+Pepper &lt;-<span class="st"> </span>buffalo<span class="op">$</span>Pepper
 M.IID &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(Pepper) <span class="co"># no autocorrelation timescales</span>
 m.ouf &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.fit.html">ctmm.guess</a></span>(Pepper,<span class="dt">interactive=</span><span class="ot">FALSE</span>) <span class="co"># automated model guess</span>
 M.OUF &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(Pepper,m.ouf)</code></pre></div>
@@ -95,11 +95,11 @@ UD2w &lt;-<span class="st"> </span><span class="kw"><a href="../reference/akde.h
 <span class="co"># calculate one extent for all UDs</span>
 EXT &lt;-<span class="st"> </span><span class="kw">extent</span>(<span class="kw">list</span>(UD0,UD2,UD2w),<span class="dt">level=</span><span class="fl">0.95</span>)</code></pre></div>
 <p>We calculated UDs with and with out accounting for autocorrelation (<code>M.OUF</code> versus <code>M.IID</code>), with and without optimal weighting of the data (<code>weights=TRUE</code>). Now let us plot the results.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(Pepper,<span class="dt">UD=</span>UD0,<span class="dt">xlim=</span>EXT$x,<span class="dt">ylim=</span>EXT$y)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(Pepper,<span class="dt">UD=</span>UD0,<span class="dt">xlim=</span>EXT<span class="op">$</span>x,<span class="dt">ylim=</span>EXT<span class="op">$</span>y)
 <span class="kw">title</span>(<span class="kw">expression</span>(<span class="st">"IID KDE"</span>[<span class="st">"C"</span>]))
-<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(Pepper,<span class="dt">UD=</span>UD2,<span class="dt">xlim=</span>EXT$x,<span class="dt">ylim=</span>EXT$y)
+<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(Pepper,<span class="dt">UD=</span>UD2,<span class="dt">xlim=</span>EXT<span class="op">$</span>x,<span class="dt">ylim=</span>EXT<span class="op">$</span>y)
 <span class="kw">title</span>(<span class="kw">expression</span>(<span class="st">"OUF AKDE"</span>[<span class="st">"C"</span>]))
-<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(Pepper,<span class="dt">UD=</span>UD2w,<span class="dt">xlim=</span>EXT$x,<span class="dt">ylim=</span>EXT$y)
+<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(Pepper,<span class="dt">UD=</span>UD2w,<span class="dt">xlim=</span>EXT<span class="op">$</span>x,<span class="dt">ylim=</span>EXT<span class="op">$</span>y)
 <span class="kw">title</span>(<span class="kw">expression</span>(<span class="st">"weighted OUF AKDE"</span>[<span class="st">"C"</span>]))</code></pre></div>
 <p><img src="akde_files/figure-html/unnamed-chunk-3-1.png" width="672"><img src="akde_files/figure-html/unnamed-chunk-3-2.png" width="672"><img src="akde_files/figure-html/unnamed-chunk-3-3.png" width="672"></p>
 <p>By default both the density function and its 95% contours are plotted along with the location data. The middle contour represent the maximum likelihood area where the animal spends 95% of its time. This percentage can be changed with the <code>level.UD</code> option (see <code>help(plot.telemetry)</code>). The inner and outer contours correspond to confidence intervals on the magnitude of the area, which can be adjusted with the <code>level</code> option.</p>
@@ -117,11 +117,11 @@ EXT &lt;-<span class="st"> </span><span class="kw">extent</span>(<span class="kw
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(UD2w)</code></pre></div>
 <pre><code>## $DOF
 ##      area bandwidth 
-##  20.02346  31.67125 
+##  20.02345  31.67125 
 ## 
 ## $CI
 ##                               low      ML     high
-## area (square kilometers) 444.6052 727.639 1079.259</code></pre>
+## area (square kilometers) 444.6051 727.639 1079.259</code></pre>
 </div>
   </div>
 

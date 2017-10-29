@@ -702,7 +702,7 @@ plot.kde <- function(kde,level=0.95,labels=round(level*100),col="black",...)
 
   # do something that works
   options(max.contour.segments=.Machine$integer.max)
-  drawlabels <- labels==FALSE | is.na(labels)
+  drawlabels <- !(labels==FALSE | is.na(labels))
   graphics::contour(kde$r,z=kde$CDF,levels=level,labels=labels,labelcex=1,drawlabels=drawlabels,col=col,add=TRUE,...)
 
   # reinstate initial option (or default if was NULL--can't set back to NULL???)
