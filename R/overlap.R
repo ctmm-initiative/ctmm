@@ -1,7 +1,7 @@
 # overlap <- function(object,...) UseMethod("overlap") #S3 generic
 
 # forwarding function for list of a particular datatype
-overlap <- function(object,CTMM=NULL,level=0.95,...)
+overlap <- function(object,CTMM=NULL,level=0.95,debias=FALSE,...)
 {
   CLASS <- class(object[[1]])
 
@@ -22,7 +22,7 @@ overlap <- function(object,CTMM=NULL,level=0.95,...)
   for(i in 1:n)
   {
     for(j in (i+1):n)
-    { if(j<=n) { OVER[i,j,] <- OverlapFun(object[c(i,j)],CTMM=CTMM[c(i,j)],level=level,...) } }
+    { if(j<=n) { OVER[i,j,] <- OverlapFun(object[c(i,j)],CTMM=CTMM[c(i,j)],level=level,debias=debias,...) } }
   }
 
   # symmetrize matrix
@@ -38,7 +38,8 @@ overlap <- function(object,CTMM=NULL,level=0.95,...)
 }
 
 
-overlap.ctmm <- function(object,CTMM,level=0.95,...)
+#####################
+overlap.ctmm <- function(object,CTMM,level=0.95,debias=FALSE,...)
 {
   CTMM1 <- object[[1]]
   CTMM2 <- object[[2]]
@@ -83,29 +84,80 @@ overlap.ctmm <- function(object,CTMM,level=0.95,...)
 
   # this quantity is roughly chi-square
   MLE <- BhattacharyyaD(CTMM1,CTMM2)
-  CI <- chisq.ci(MLE,COV=VAR,alpha=1-level)
+  DOF <- 2*MLE^2/VAR
 
-  # transform from (square) distance to overlap measure
-  CI <- exp(-rev(CI))
-  names(CI) <- c("low","ML","high")
 
-  if(level) { return(CI) }
-  else { return(list(MLE=MLE,VAR=VAR)) }
+  # approximate debiasing, correct for IID, equal covariance, REML
+  ########################
+  mu <- CTMM1$mu[1,] - CTMM2$mu[1,]
+  COV.mu <- CTMM1$COV.mu + CTMM2$COV.mu
+
+  sigma <- (CTMM1$sigma + CTMM2$sigma)/2
+  DIM <- nrow(sigma)
+
+  s0 <- mean(diag(sigma))
+  s1 <- mean(diag(CTMM1$sigma))
+  s2 <- mean(diag(CTMM2$sigma))
+
+  n1 <- DOF.area(CTMM1)
+  n2 <- DOF.area(CTMM2)
+
+  # approximate average Wishart DOF
+  # using mean variance - additive & rotationally invariant
+  n0 <- 4 * s0^2 / (s1^2/n1 + s2^2/n2)
+
+  # expectation value of log det Wishart
+  ElogW <- function(s,n)
+  {
+    n <- max(n,DIM+2) # safety catch, not accounting for bias below denominator==1
+    log(det(s)) + mpsigamma(n/2,dim=DIM) - DIM*log(n/2)
+  }
+
+  # inverse Wishart expectation value pre-factor
+  BIAS <- n0/(n0-DIM-1)
+  # mean terms
+  BIAS <- BIAS * sum(diag((outer(mu) + COV.mu) %*% PDsolve(sigma)))/8
+  # AMGM covariance terms
+  BIAS <- BIAS + ElogW(sigma,n0)/2 - ElogW(CTMM1$sigma,n1)/4 - ElogW(CTMM2$sigma,n2)/4
+
+  # relative bias instead of absolute bias
+  BIAS <- BIAS/MLE
+  # would subtract off estimte to get absolute bias
+
+  BIAS <- as.numeric(BIAS)
+  #####################
+
+  if(debias) { MLE <- MLE/BIAS }
+
+  if(level)
+  {
+    CI <- chisq.ci(MLE,VAR,alpha=1-level)
+
+    # transform from (square) distance to overlap measure
+    CI <- exp(-rev(CI))
+    names(CI) <- c("low","ML","high")
+
+    return(CI)
+  }
+  else # return BD ingredients
+  { return(list(MLE=MLE,VAR=VAR,DOF=DOF,BIAS=BIAS)) }
 }
 
+####################
 # square distance between stationary Gaussian distributions
 BhattacharyyaD <- function(CTMM1,CTMM2)
 {
   sigma <- (CTMM1$sigma + CTMM2$sigma)/2
   mu <- CTMM1$mu[1,] - CTMM2$mu[1,]
 
-  D <- as.numeric(mu %*% solve(sigma) %*% mu)/8 + log(det(sigma)/sqrt(det(CTMM1$sigma)*det(CTMM2$sigma)))/2
+  D <- as.numeric(mu %*% PDsolve(sigma) %*% mu)/8 + log(det(sigma)/sqrt(det(CTMM1$sigma)*det(CTMM2$sigma)))/2
 
   return(D)
 }
 
+#####################
 #overlap density function
-overlap.UD <- function(object,CTMM,level=0.95,...)
+overlap.UD <- function(object,CTMM,level=0.95,debias=FALSE,...)
 {
   dr <- object[[1]]$dr
   dA <- prod(dr)
@@ -117,15 +169,18 @@ overlap.UD <- function(object,CTMM,level=0.95,...)
 
   if(!is.null(CTMM))
   {
-    # calculate Gaussian overlap distance^2 variance
+    # calculate Gaussian overlap distance^2 variance, bias, etc.
     CI <- overlap.ctmm(CTMM,level=FALSE)
 
     # Bhattacharyya distances
     D <- -log(OVER)
-    COV.D <- CI$VAR
+    VAR <- CI$VAR
+
+    # relative debias
+    if(debias){ D <- D/CI$BIAS }
 
     # calculate new distance^2 with KDE point estimate
-    CI <- chisq.ci(D,COV=COV.D,alpha=1-level)
+    CI <- chisq.ci(D,VAR,alpha=1-level)
 
     # transform from (square) distance to overlap measure
     OVER <- exp(-rev(CI))

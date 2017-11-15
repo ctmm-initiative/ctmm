@@ -75,6 +75,17 @@ sinch <- Vectorize( function(x)
 } )
 
 
+# multivariate polygamma function
+mpsigamma <- function(x,deriv=0,dim=1)
+{
+  PSI <- 1 - 1:dim
+  PSI <- x + PSI/2
+  PSI <- sapply(PSI,function(p) psigamma(p,deriv=deriv))
+  PSI <- sum(PSI)
+  return(PSI)
+}
+
+
 # forwarding function for list of a particular datatype
 zoom.list <- function(x,...)
 {
