@@ -106,17 +106,18 @@ overlap.ctmm <- function(object,CTMM,level=0.95,debias=FALSE,...)
   # using mean variance - additive & rotationally invariant
   n0 <- 4 * s0^2 / (s1^2/n1 + s2^2/n2)
 
+  # clamp the DOF not to diverge
+  n0 <- clamp(n0,DIM+2,Inf)
+  n1 <- clamp(n1,DIM+2,Inf)
+  n2 <- clamp(n2,DIM+2,Inf)
+
   # expectation value of log det Wishart
-  ElogW <- function(s,n)
-  {
-    n <- max(n,DIM+2) # safety catch, not accounting for bias below denominator==1
-    log(det(s)) + mpsigamma(n/2,dim=DIM) - DIM*log(n/2)
-  }
+  ElogW <- function(s,n) { log(det(s)) + mpsigamma(n/2,dim=DIM) - DIM*log(n/2) }
 
   # inverse Wishart expectation value pre-factor
   BIAS <- n0/(n0-DIM-1)
   # mean terms
-  BIAS <- BIAS * sum(diag((outer(mu) + COV.mu) %*% PDsolve(sigma)))/8
+  BIAS <- sum(diag((BIAS*outer(mu) + COV.mu) %*% PDsolve(sigma)))/8
   # AMGM covariance terms
   BIAS <- BIAS + ElogW(sigma,n0)/2 - ElogW(CTMM1$sigma,n1)/4 - ElogW(CTMM2$sigma,n2)/4
 
@@ -124,7 +125,9 @@ overlap.ctmm <- function(object,CTMM,level=0.95,debias=FALSE,...)
   BIAS <- BIAS/MLE
   # would subtract off estimte to get absolute bias
 
+  # error corrections
   BIAS <- as.numeric(BIAS)
+  if(MLE==0) { BIAS <- 1 }
   #####################
 
   if(debias) { MLE <- MLE/BIAS }
