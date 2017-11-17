@@ -1,5 +1,7 @@
-0.4.2 2017-10-29
+0.4.2 2017-11-17
 ================
+
+  * debias argument for overlap (TESTING!)
 
   * pHREML, pREML, HREML ctmm.fit methods implemented distinctly
   

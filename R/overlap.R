@@ -95,16 +95,16 @@ overlap.ctmm <- function(object,CTMM,level=0.95,debias=FALSE,...)
   sigma <- (CTMM1$sigma + CTMM2$sigma)/2
   DIM <- nrow(sigma)
 
-  s0 <- mean(diag(sigma))
-  s1 <- mean(diag(CTMM1$sigma))
-  s2 <- mean(diag(CTMM2$sigma))
+  s0 <- mean(diag(sigma)^2)
+  s1 <- mean(diag(CTMM1$sigma)^2)
+  s2 <- mean(diag(CTMM2$sigma)^2)
 
   n1 <- DOF.area(CTMM1)
   n2 <- DOF.area(CTMM2)
 
   # approximate average Wishart DOF
   # using mean variance - additive & rotationally invariant
-  n0 <- 4 * s0^2 / (s1^2/n1 + s2^2/n2)
+  n0 <- 4 * s0 / (s1/n1 + s2/n2)
 
   # clamp the DOF not to diverge
   n0 <- clamp(n0,DIM+2,Inf)
@@ -130,11 +130,11 @@ overlap.ctmm <- function(object,CTMM,level=0.95,debias=FALSE,...)
   if(MLE==0) { BIAS <- 1 }
   #####################
 
-  if(debias) { MLE <- MLE/BIAS }
-
   if(level)
   {
-    CI <- chisq.ci(MLE,VAR,alpha=1-level)
+    if(debias) { MLE <- MLE/BIAS }
+
+    CI <- chisq.ci(MLE,COV=VAR,alpha=1-level)
 
     # transform from (square) distance to overlap measure
     CI <- exp(-rev(CI))
@@ -177,13 +177,12 @@ overlap.UD <- function(object,CTMM,level=0.95,debias=FALSE,...)
 
     # Bhattacharyya distances
     D <- -log(OVER)
-    VAR <- CI$VAR
 
     # relative debias
     if(debias){ D <- D/CI$BIAS }
 
     # calculate new distance^2 with KDE point estimate
-    CI <- chisq.ci(D,VAR,alpha=1-level)
+    CI <- chisq.ci(D,COV=CI$VAR,alpha=1-level)
 
     # transform from (square) distance to overlap measure
     OVER <- exp(-rev(CI))
