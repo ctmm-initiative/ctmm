@@ -24,15 +24,6 @@ langevin <- function(dt,CTMM)
     nu <- abs(diff(f))/2
     TT <- 2*mean(f)/Omega2
 
-    # should we use the exponential or hyperbolic representation?
-    if(nu*dt>0.8813736) # exponential
-    { DAMP <- TRUE }
-    else # hyperbolic
-    {
-      DAMP <- FALSE
-      f <- mean(f)
-    }
-
     if(dt==Inf) # make this numerically relative in future
     {
       Green <- rbind( c(0,0) , c(0,0) )
@@ -40,6 +31,15 @@ langevin <- function(dt,CTMM)
     }
     else
     {
+      # should we use the exponential or hyperbolic representation?
+      if(nu*dt>0.8813736) # exponential
+      { DAMP <- TRUE }
+      else # hyperbolic
+      {
+        DAMP <- FALSE
+        f <- mean(f)
+      }
+
       if(DAMP) # very overdamped
       {
         Exp <- exp(-dt/tau)/diff(tau)

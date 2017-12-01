@@ -1,4 +1,4 @@
-0.4.2 2017-11-17
+0.4.2 2017-11-30
 ================
 
   * debias argument for overlap (TESTING!)
