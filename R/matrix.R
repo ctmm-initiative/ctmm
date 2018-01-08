@@ -142,7 +142,7 @@ sqrtm <- function(M,force=FALSE,pseudo=FALSE)
     else
     {
       if(force || pseudo)
-      { M <- PDfunc(M,func=function(m){sqrt(m)},force=force,pseudo=pseudo) }
+      { M <- PDfunc(M,func=sqrt,force=force,pseudo=pseudo) }
       else
       { stop("Matrix is not positive definite.") }
     }
@@ -167,7 +167,7 @@ PDclamp <- function(M)
   # symmetrize
   M <- He(M)
 
-  M <- PDfunc(M,function(m){clamp(m,0,Inf)},force=TRUE)
+  M <- PDfunc(M,function(m){clamp(m,0,Inf)},pseudo=TRUE)
 
   # symmetrize
   M <- He(M)

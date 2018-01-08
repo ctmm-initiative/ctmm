@@ -832,8 +832,9 @@ pnorm3 <- function(X,Y,Z,sigma,dr,alpha=0.001)
 # UNFINISHED
 pnorm1 <- function(X,sigma,dr,alpha=0.001) { 0 }
 
+
 #################
-# Newton-Cotes integrators
+# Newton-Cotes integrators (2D)
 NewtonCotes <- function(X,Y,sigma,W,dx=mean(diff(X)),dy=mean(diff(Y)))
 {
   W <- W/sum(W)
@@ -863,6 +864,7 @@ NewtonCotes <- function(X,Y,sigma,W,dx=mean(diff(X)),dy=mean(diff(Y)))
 
   return(cdf)
 }
+
 
 #####################
 # gaussian pdf

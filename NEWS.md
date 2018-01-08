@@ -1,7 +1,7 @@
-0.4.2 2017-11-30
+0.4.2 2017-01-08
 ================
 
-  * debias argument for overlap (TESTING!)
+  * debias argument for overlap
 
   * pHREML, pREML, HREML ctmm.fit methods implemented distinctly
   
@@ -10,6 +10,10 @@
   * new uere()<- assignment method
 
   * velocity esimtates now included in predict() [fitting one model to multiple behaviors can result in wildly optimistic confidence intervals]
+  
+  * velocities now included in simulate()
+  
+  * precompute option for simulate
   
   * drop=TRUE option in as.telemetry
   

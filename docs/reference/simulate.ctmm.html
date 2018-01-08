@@ -113,10 +113,10 @@
 <span class='fu'>simulate</span>(<span class='no'>object</span>,<span class='kw'>nsim</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>seed</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='no'>...</span>)
 
 <span class='co'># S3 method for ctmm</span>
-<span class='fu'>simulate</span>(<span class='no'>object</span>,<span class='kw'>nsim</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>seed</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>data</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>t</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>dt</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>res</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='no'>...</span>)
+<span class='fu'>simulate</span>(<span class='no'>object</span>,<span class='kw'>nsim</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>seed</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>data</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>t</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>dt</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>res</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>precompute</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='no'>...</span>)
 
 <span class='co'># S3 method for telemetry</span>
-<span class='fu'>simulate</span>(<span class='no'>object</span>,<span class='kw'>nsim</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>seed</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>CTMM</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>t</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>dt</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>res</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='no'>...</span>)</pre>
+<span class='fu'>simulate</span>(<span class='no'>object</span>,<span class='kw'>nsim</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>seed</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>CTMM</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>t</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>dt</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>res</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>precompute</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
@@ -154,6 +154,10 @@
       <td><p>Optional random seed to fix.</p></td>
     </tr>
     <tr>
+      <th>precompute</th>
+      <td><p>Precalculate matrices of the Kalman filter (see details).</p></td>
+    </tr>
+    <tr>
       <th>...</th>
       <td><p>Unused options.</p></td>
     </tr>
@@ -168,6 +172,11 @@ Details of the movement model parameters can be found in <code><a href='ctmm.fit
 <p>The <code>t</code> argument fixes the output times to a specific array of times.
 The <code>dt</code> and <code>res</code> arguments are relative to the sampling schedule present in the optional <code>telemetry</code> object.
 The same span of time will be used, while <code>dt</code> will fix the sampling rate absolutely and <code>res</code> will fix the sampling rate relative to that of the data.</p>
+<p>The <code>precompute</code> option can speed up calculations of multiple simulations of the same model, data, and <em>irregular</em> sampling schedule.
+First run <code>simulate</code> with <code>precompute=TRUE</code> to calculate and store all of the necessary matrices of the Kalman filter.
+A simulated <code>telemetry</code> object will be produced, as usual, and the precomputed objects are stored in the environment.
+Subsequent simulations with <code>precompute=-1</code> will then apply these precomputed matrices for a computational cost savings.
+If the sampling schedule is irregular, then this can result in faster simulations.</p>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 

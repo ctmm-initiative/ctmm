@@ -3,17 +3,15 @@
 ################################
 # Return hidden state estimates or simulations
 ################################
-smoother <- function(DATA,CTMM,...)
+smoother <- function(DATA,CTMM,precompute=FALSE,...)
 {
-  CTMM <- ctmm.prepare(DATA,CTMM)
+  if(is.null(CTMM$mean.vec)) { CTMM <- ctmm.prepare(DATA,CTMM) }
   AXES <- length(CTMM$axes)
 
   t <- DATA$t
 
   dt <- c(Inf,diff(t))
   n <- length(t)
-
-  u <- array(1,n)
 
   isotropic <- CTMM$isotropic
   sigma <- CTMM$sigma
@@ -32,43 +30,64 @@ smoother <- function(DATA,CTMM,...)
   K <- length(CTMM$tau)
 
   circle <- CTMM$circle
-  if(circle) { circle <- 2*pi/circle }
-  if(abs(circle) == Inf) { circle <- FALSE }
 
-  R <- get.telemetry(DATA,CTMM$axes)
-  # stationary mean function
-  u <- array(1,n)
+  ####################################
+  # PRECOMPUTE AVOIDS WASTEFUL ROTATION
+  STUFF <- c("R","u","mu","M","ROTATE")
+  if(precompute>=0) # calculate new
+  {
+    R <- get.telemetry(DATA,CTMM$axes)
+    u <- CTMM$mean.vec
+    mu <- CTMM$mu
+
+    # do we need to orient the data along the major an minor axes of sigma
+    ROTATE <- !isotropic && (CTMM$error || circle)
+    if(ROTATE)
+    {
+      M <- rotate(-theta)
+      R <- R %*% t(M)
+      mu <- M %*% as.numeric(CTMM$mu) # not being used?
+    }
+    else
+    { M <- 1 }
+  }
+  else # pull from old
+  { for(thing in STUFF) { assign(thing,get(thing,pos=Kalman.env)) } }
+
+  # store for later
+  if(precompute>0) { for(thing in STUFF) { assign(thing,get(thing),pos=Kalman.env) } }
+  # END PRECOMPUTE
+  ################################
 
   V <- array(0,dim=c(n,AXES))
   COV <- array(0,dim=c(n,AXES,AXES))
   VCOV <- array(0,dim=c(n,AXES,AXES)) # velocity covariance
 
-  # do we need to orient the data along the major an minor axes of sigma
-  ROTATE <- !isotropic && (CTMM$error || circle)
-  if(ROTATE)
-  {
-    M <- rotate(-theta)
-    R <- R %*% t(M)
-    mu <- M %*% as.numeric(CTMM$mu)
-  }
-
   if(circle)
   {
-    # proportional standardization from ellipse to circle
-    if(ecc)
+    #### PRECOMPUTE AVOIDS WASTEFUL RESCALE & ROTATION
+    if(precompute>=0)
     {
-      R[,1] <- R[,1] * exp(-ecc/4)
-      R[,2] <- R[,2] * exp(+ecc/4)
-    }
-    R <- cbind(R[,1] + 1i*R[,2])
+      # proportional standardization from ellipse to circle
+      if(ecc)
+      {
+        R[,1] <- R[,1] * exp(-ecc/4)
+        R[,2] <- R[,2] * exp(+ecc/4)
+      }
+      R <- cbind(R[,1] + 1i*R[,2])
 
-    # corotating frame
-    M <- exp(-1i*circle*(t-t[1]))
-    R <- M * R
-    u <- M * u
+      # corotating frame
+      M <- exp(-1i*circle*(t-t[1]))
+      R <- M * R
+      u <- M * u
+    }
+    # else this was already pulled out of Kalman.env
+    # store this stuff for good (last time was excess)
+    if(precompute>0) { for(thing in STUFF) { assign(thing,get(thing),pos=Kalman.env) } }
+    ### END PRECOMPUTE
 
     CTMM$sigma <- area
-    KALMAN <- kalman(R,u,dt=dt,CTMM=CTMM,error=DATA$error,...)
+    KALMAN <- kalman(R,u,dt=dt,CTMM=CTMM,error=DATA$error,precompute=precompute,...)
 
     R <- KALMAN$Z[,"position",1]
     COV[,1,1] <- KALMAN$S[,"position","position"]
@@ -114,7 +133,7 @@ smoother <- function(DATA,CTMM,...)
   else if(CTMM$isotropic || !CTMM$error)
   {
     CTMM$sigma <- area
-    KALMAN <- kalman(R,u,dt=dt,CTMM=CTMM,error=DATA$error,...)
+    KALMAN <- kalman(R,u,dt=dt,CTMM=CTMM,error=DATA$error,precompute=precompute,...)
 
     R <- KALMAN$Z[,"position",]
     R <- cbind(R) # R drops dimension-1
@@ -131,7 +150,7 @@ smoother <- function(DATA,CTMM,...)
     #diagonalize data and then run two 1D Kalman filters with separate means
     # major axis likelihood
     CTMM$sigma <- area * exp(+ecc/2)
-    KALMAN <- kalman(cbind(R[,1]),u,dt=dt,CTMM=CTMM,error=DATA$error,...)
+    KALMAN <- kalman(cbind(R[,1]),u,dt=dt,CTMM=CTMM,error=DATA$error,precompute=precompute,...)
 
     R[,1] <- KALMAN$Z[,"position",1]
     COV[,1,1] <- KALMAN$S[,"position","position"]
@@ -143,7 +162,7 @@ smoother <- function(DATA,CTMM,...)
 
     # minor axis likelihood
     CTMM$sigma <- area * exp(-ecc/2)
-    KALMAN <- kalman(cbind(R[,2]),u,dt=dt,CTMM=CTMM,error=DATA$error,...)
+    KALMAN <- kalman(cbind(R[,2]),u,dt=dt,CTMM=CTMM,error=DATA$error,precompute=precompute,...)
 
     R[,2] <- KALMAN$Z[,"position",1]
     COV[,2,2] <- KALMAN$S[,"position","position"]
@@ -272,7 +291,7 @@ occurrence <- function(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=
 
   info <- attr(data,"info")
   SIGMA <- CTMM$sigma # diffusion matrix for later
-  CTMM <- ctmm.prepare(data,CTMM)
+  CTMM <- ctmm.prepare(data,CTMM,precompute=FALSE) # not the final t for calculating u
   error <- get.error(data,CTMM)
   MIN.ERR <- min(error)
 
@@ -351,7 +370,7 @@ occurrence <- function(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=
 
 ##############################################
 # SIMULATE DATA over time array t
-simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1,...)
+simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1,precompute=FALSE,...)
 {
   if(!is.null(seed)){ set.seed(seed) }
 
@@ -371,11 +390,25 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
 
   if(CONDITIONAL)
   {
-    object <- ctmm.prepare(data,object)
-    data <- fill.data(data,CTMM=object,t=t,dt=dt,res=res)
-    object$error <- TRUE # avoids unit variance algorithm, data already contains fixed errors from fill.data
-    data <- smoother(data,object,sample=TRUE)
-    data <- cbind(t=data$t,data$R)
+    STUFF <- c('object','data')
+    if(precompute>=0) # prepare model and data frame
+    {
+      object <- ctmm.prepare(data,object,precompute=FALSE) # u calculated here with unfilled t
+      data <- fill.data(data,CTMM=object,t=t,dt=dt,res=res)
+      object$error <- TRUE # avoids unit variance algorithm, data already contains fixed errors from fill.data
+    }
+    else # recycle model and data frame
+    { for(thing in STUFF){ assign(thing,get(thing,pos=Kalman.env)) } }
+
+    # store prepared model and data frame
+    if(precompute>0) { for(thing in STUFF){ assign(thing,get(thing),pos=Kalman.env) } }
+
+    data <- smoother(data,object,sample=TRUE,precompute=precompute)
+
+    # properly name speeds !! move up to smoother ?
+    if(length(object$tau)>1) { colnames(data$V) <- paste0("v.",axes) }
+
+    data <- cbind(t=data$t,data$R,data$V)
     data <- data.frame(data)
 
     # # the user probably only wants times t if t is specified
@@ -400,79 +433,100 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
   }
   else # Gaussian simulation not conditioned off of any data
   {
-    if(is.null(data)) { error <- FALSE } else { error <- get.error(data,object) } # get error if provided
-    object <- ctmm.prepare(list(t=t),object)
+    STUFF <- c('Green','Sigma','error','object','mu','Lambda','n','K','z','v','circle','R')
+    if(precompute>=0)
+    {
+      if(is.null(data)) { error <- FALSE } else { error <- get.error(data,object) } # get error if provided
+      object <- ctmm.prepare(list(t=t),object) # mean.vec calculated here
 
-    tau <- object$tau
-    if(is.null(tau)) { tau = 0 }
-    K <- length(tau)
+      tau <- object$tau
+      if(is.null(tau)) { tau = 0 }
+      K <- length(tau)
 
-    mu <- object$mu
-    if(is.null(mu)) { mu <- array(0,c(1,AXES)) }
-    sigma <- object$sigma
-    if(is.null(sigma)) { sigma <- diag(1,AXES) }
+      mu <- object$mu
+      if(is.null(mu)) { mu <- array(0,c(1,AXES)) }
+      sigma <- object$sigma
+      if(is.null(sigma)) { sigma <- diag(1,AXES) }
 
-    Lambda <- sqrtm(sigma)
+      Lambda <- sqrtm(sigma)
 
-    K <- length(tau)
+      K <- length(tau)
 
-    n <- length(t)
-    dt <- c(Inf,diff(t)) # time lags
+      n <- length(t)
+      dt <- c(Inf,diff(t)) # time lags
 
-    # where we will store the data
-    z <- array(0,c(n,AXES))
+      # where we will store the data
+      z <- array(0,c(n,AXES))
+      if(K>1) { v <- array(0,c(n,AXES)) } else { v <- NULL }
+
+      Green <- array(0,c(n,K,K))
+      Sigma <- array(0,c(n,K,K))
+
+      object$sigma <- 1
+      for(i in 1:n)
+      {
+        # tabulate propagators if necessary
+        if((i==1)||(dt[i]!=dt[i-1])) { Langevin <- langevin(dt=dt[i],CTMM=object) }
+        Green[i,,] <- Langevin$Green
+        Sigma[i,,] <- Langevin$Sigma
+      }
+
+      # circulation stuff
+      circle <- object$circle
+      R <- exp(1i*circle*(t-t[1]))
+    } # END precompute
+    else # precomputed objects from previous run
+    { for(thing in STUFF) { assign(thing,get(thing,pos=Kalman.env)) } }
+
+    # store precomputed objects for later
+    if(precompute>0) { for(thing in STUFF) { assign(thing,get(thing),pos=Kalman.env) } }
 
     # initial hidden state, for standardized process
     H <- array(0,c(K,AXES))
-
-    object$sigma <- 1
     for(i in 1:n)
     {
-      # tabulate propagators if necessary
-      if((i==1)||(dt[i]!=dt[i-1]))
-      {
-        Langevin <- langevin(dt=dt[i],CTMM=object)
-        Green <- Langevin$Green
-        Sigma <- Langevin$Sigma
-      }
-
       # generate standardized process
       # R drops dimensions ... so this code has to be a little weird
-      H <- lapply(1:AXES,function(X){ MASS::mvrnorm(n=1,mu=as.vector(Green %*% H[,X]),Sigma=Sigma) })
+      H <- lapply(1:AXES,function(X){ MASS::mvrnorm(n=1,mu=as.vector(Green[i,,] %*% H[,X]),Sigma=Sigma[i,,]) })
       H <- do.call(cbind,H)
       # pull out location from hidden state
       z[i,] <- H[1,]
+      if(K>1) { v[i,] <- H[2,] }
     }
 
     # rotate process if necessary
-    circle <- object$circle
     if(circle)
     {
       z <- z[,1] + 1i*z[,2]
-
-      circle <- 2*pi/circle
-      R <- exp(1i*circle*(t-t[1]))
       z <- R * z
-
       z <- cbind(Re(z),Im(z))
+
+      if(K>1)
+      {
+        v <- v[,] + 1i*v[,2]
+        v <- (R*v) + 1i*circle*z # mean zero here
+        v <- cbind(Re(v),Im(v))
+      }
     }
 
     z <- z %*% Lambda
+    if(K>1) { v <- v %*% Lambda }
 
     # calculate mean function
     mu <- object$mean.vec %*% mu
     z <- z + mu
     colnames(z) <- axes
+    if(K>1) { colnames(v) <- paste0("v.",axes) }
 
     # throw in error
     if(any(as.logical(error)))
     {
       for(i in 1:length(axes))
-      { z[,i] <- z[,i] + stats::rnorm(n,sd=sqrt(error)) }
+      { z[,i] <- z[,i] + stats::rnorm(n,sd=sqrt(error)) } # what about v?
     }
 
-    data <- data.frame(z)
-    data$t <- t
+    data <- cbind(t=t,z,v)
+    data <- data.frame(data)
   }
 
   data <- new.telemetry(data,info=info)
@@ -480,7 +534,7 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
 }
 #methods::setMethod("simulate",signature(object="ctmm"), function(object,...) simulate.ctmm(object,...))
 
-simulate.telemetry <- function(object,nsim=1,seed=NULL,CTMM=NULL,t=NULL,dt=NULL,res=1,...)
+simulate.telemetry <- function(object,nsim=1,seed=NULL,CTMM=NULL,t=NULL,dt=NULL,res=1,precompute=FALSE,...)
 { simulate.ctmm(CTMM,nsim=nsim,seed=seed,data=object,t=t,dt=dt,res=res,...) }
 
 ##########################
@@ -508,7 +562,7 @@ predict.ctmm <- function(object,data=NULL,t=NULL,dt=NULL,res=1,...)
   }
   else # condition off of the data
   {
-    object <- ctmm.prepare(data,object)
+    # object <- ctmm.prepare(data,object) # mean.vec here is calculated with pre-filled t
     K <- length(object$tau)
     data <- fill.data(data,CTMM=object,t=t,dt=dt,res=res)
     object$error <- TRUE # avoids unit variance algorithm

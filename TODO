@@ -1,3 +1,24 @@
+SPEED PAPER
+* precompute man page
+* speed man page
+* analytic solution if mean=stationary & ?isotropic=TRUE?
+* progress bar arg for speed
+* use speed data in likelihood (kalman filter upgrade)
+
+pREML PAPER
+* bootstrap stuff
+* document pREML & bootstrap stuff
+
+ERROR PAPER
+* HDOP & VDOP simultaneous, different
+* uere.ctmm
+* error ellipse
+* error class translation
+* UERE priors from calibration
+
+* simulate nsim>1 with mclapply
+* FAQ entry on automated time format reading in as.telemetry breaking with R update
+* non-range resident in vignette
 * default labels not working for UD contours
 * error as.telemetry if user attempts lon-lat projection
 * projection() <- on all plottable objects + plot option
@@ -6,28 +27,18 @@
 * use speed filter in ctmm.guess circle=TRUE
 * expose speed filter
 * boundry warning in help(ctmm.fit)
-* bootstrap model, area
 * standardize x,y prior to likelihood calculation
 * plot3D of 2D UD
 * ltraj export
 * export ellipse drawing function
 * effective DOF for diffusion rate?
 
-pREML PAPER
-* bootstrap stuff
-* document pREML & bootstrap stuff
-
-ERROR PAPER
-* uere.ctmm
-* error ellipse
-* error class translation
-* UERE priors from calibration
-
 PERIODIC 0.4.X
+* mean derivative not included in simulate/predict/etc.
 * T-test on high frequency amplitudes
 * variogram on mean detrended data with CTMM argument
 * simulate.telemetry (not pure ctmm)
-* smoother (velocity vector--check)
+* smoother (non-uniform u(t) and velocity vector)
 * akde... slow exact and fast approximation or block toeplitz matrix (stationary Laplace approximation?)
 * plot ctmm (fall back on kde code)
 * vignette: periodogram, ctmm.select

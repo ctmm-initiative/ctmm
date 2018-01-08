@@ -20,9 +20,9 @@ predict(object,...)
 
 simulate(object,nsim=1,seed=NULL,...)
 
-\S3method{simulate}{ctmm}(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1,...)
+\S3method{simulate}{ctmm}(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1,precompute=FALSE,...)
 
-\S3method{simulate}{telemetry}(object,nsim=1,seed=NULL,CTMM=NULL,t=NULL,dt=NULL,res=1,...)
+\S3method{simulate}{telemetry}(object,nsim=1,seed=NULL,CTMM=NULL,t=NULL,dt=NULL,res=1,precompute=FALSE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -34,6 +34,7 @@ simulate(object,nsim=1,seed=NULL,...)
   \item{CTMM}{A \code{ctmm} movement-model in the same format as the output of \code{\link{ctmm.fit}} or \code{\link{variogram.fit}}.}
   \item{nsim}{Not yet supported.}
   \item{seed}{Optional random seed to fix.}
+  \item{precompute}{Precalculate matrices of the Kalman filter (see details).}
   \item{...}{Unused options.}
 }
 \details{
@@ -45,6 +46,12 @@ Details of the movement model parameters can be found in \code{\link{ctmm.fit}}.
 The \code{t} argument fixes the output times to a specific array of times.
 The \code{dt} and \code{res} arguments are relative to the sampling schedule present in the optional \code{telemetry} object.
 The same span of time will be used, while \code{dt} will fix the sampling rate absolutely and \code{res} will fix the sampling rate relative to that of the data.
+
+The \code{precompute} option can speed up calculations of multiple simulations of the same model, data, and \emph{irregular} sampling schedule.
+First run \code{simulate} with \code{precompute=TRUE} to calculate and store all of the necessary matrices of the Kalman filter.
+A simulated \code{telemetry} object will be produced, as usual, and the precomputed objects are stored in the environment.
+Subsequent simulations with \code{precompute=-1} will then apply these precomputed matrices for a computational cost savings.
+If the sampling schedule is irregular, then this can result in faster simulations.
 }
 
 \value{ A simulated animal-tracking \code{telemetry} object with components \code{t}, \code{x}, and \code{y}, or a predicted \code{telemetry} object that also includes \code{x}-\code{y} covariances for the location point estimates \code{x} and \code{y}. }
