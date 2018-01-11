@@ -37,6 +37,74 @@ overlap <- function(object,CTMM=NULL,level=0.95,debias=FALSE,...)
   # utils::getS3method("overlap",CLASS)(object,...)
 }
 
+overlap_par <- function(object,CTMM=NULL,level=0.95,debias=FALSE,...)
+{
+  CLASS <- class(object[[1]])
+
+  if(CLASS=="ctmm")
+  { OverlapFun <- overlap.ctmm }
+  else if(CLASS=="telemetry")
+  {
+    # Generate aligned UDs
+    object <- akde(object,CTMM=CTMM,...)
+    OverlapFun <- overlap.UD
+  }
+  else if(CLASS=="UD")
+  { OverlapFun <- overlap.UD }
+
+  n <- length(object)
+  OVER <- array(0,c(n,n,3))
+  # tabulate overlaps
+  # generate all index combinations
+  index_combn <- expand.grid(seq_len(n), seq_len(n))
+  index_list <- split(index_combn, 1:nrow(index_combn))
+  # function to apply on index, only calculate when i < j
+  par_fun <- function(index) {
+    i <- index[[1]]
+    j <- index[[2]]
+    if (i < j) {
+      OverlapFun(object[c(i,j)],CTMM=CTMM[c(i,j)],level=level,debias=debias,...)
+    } else {
+      c(-1, -1, -1)
+    }
+  }
+  # parallel calculation
+  res_list <- ctmmweb::par_lapply(index_list, par_fun, fallback = TRUE)
+  # fill in result
+  for (res_i in 1:nrow(index_combn)) {
+    i <- index_combn[res_i, 1]
+    j <- index_combn[res_i, 2]
+    OVER[i, j, ] <- res_list[[res_i]]
+    OVER[j, i, ] <- res_list[[res_i]]
+  }
+  browser()
+
+  # for(i in 1:n)
+  # {
+  #   for(j in (i+1):n)
+  #   # { if(j<=n) { OVER[i,j,] <- OverlapFun(object[c(i,j)],CTMM=CTMM[c(i,j)],level=level,debias=debias,...) } }
+  #   {
+  #     res_index <- res_index + 1
+  #     if(j<=n) {
+  #       browser()
+  #       cat(c(i, j), "\n")
+  #       cat(OVER[i,j,], "\n")
+  #       cat(res_list[[res_index]])
+  #     OVER[i,j,] <- res_list[[res_index]]
+  #     } }
+  # }
+
+  # symmetrize matrix
+  # OVER <- OVER + aperm(OVER,c(2,1,3))
+
+  # fix diagonals
+  diag(OVER[,,1]) <- diag(OVER[,,2]) <- diag(OVER[,,3]) <- 1
+
+  dimnames(OVER) <- list(names(object),names(object),c("low","ML","high"))
+
+  return(OVER)
+  # utils::getS3method("overlap",CLASS)(object,...)
+}
 
 #####################
 overlap.ctmm <- function(object,CTMM,level=0.95,debias=FALSE,...)
