@@ -56,28 +56,24 @@ overlap_par <- function(object,CTMM=NULL,level=0.95,debias=FALSE,...)
   OVER <- array(0,c(n,n,3))
   # tabulate overlaps
   # generate all index combinations
-  index_combn <- expand.grid(seq_len(n), seq_len(n))
-  index_list <- split(index_combn, 1:nrow(index_combn))
+  index_combn <- data.frame(expand.grid(seq_len(n), seq_len(n)))
+  index_valid <- index_combn[index_combn$Var1 < index_combn$Var2, ]
+  index_list <- split(index_valid, 1:nrow(index_valid))
   # function to apply on index, only calculate when i < j
   par_fun <- function(index) {
     i <- index[[1]]
     j <- index[[2]]
-    if (i < j) {
-      OverlapFun(object[c(i,j)],CTMM=CTMM[c(i,j)],level=level,debias=debias,...)
-    } else {
-      c(-1, -1, -1)
-    }
+    OverlapFun(object[c(i,j)],CTMM=CTMM[c(i,j)],level=level,debias=debias,...)
   }
   # parallel calculation
-  res_list <- ctmmweb::par_lapply(index_list, par_fun, fallback = TRUE)
+  res_list <- ctmmweb::par_lapply(index_list, par_fun)
   # fill in result
-  for (res_i in 1:nrow(index_combn)) {
-    i <- index_combn[res_i, 1]
-    j <- index_combn[res_i, 2]
+  for (res_i in 1:nrow(index_valid)) {
+    i <- index_valid[res_i, 1]
+    j <- index_valid[res_i, 2]
     OVER[i, j, ] <- res_list[[res_i]]
     OVER[j, i, ] <- res_list[[res_i]]
   }
-  browser()
 
   # for(i in 1:n)
   # {
