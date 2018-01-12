@@ -22,7 +22,12 @@ overlap <- function(object,CTMM=NULL,level=0.95,debias=FALSE,...)
   for(i in 1:n)
   {
     for(j in (i+1):n)
-    { if(j<=n) { OVER[i,j,] <- OverlapFun(object[c(i,j)],CTMM=CTMM[c(i,j)],level=level,debias=debias,...) } }
+    { if(j<=n) {
+      # cat("runtime for", i, j, "\n")
+      # print(system.time(
+        OVER[i,j,] <- OverlapFun(object[c(i,j)],CTMM=CTMM[c(i,j)],level=level,debias=debias,...)
+      # ))
+      } }
   }
 
   # symmetrize matrix
