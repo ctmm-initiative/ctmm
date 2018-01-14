@@ -1,12 +1,12 @@
 SPEED PAPER
-* precompute man page
-* speed man page
 * analytic solution if mean=stationary & ?isotropic=TRUE?
 * progress bar arg for speed
 * use speed data in likelihood (kalman filter upgrade)
 
 pREML PAPER
-* bootstrap stuff
+* bootstrap dealing with colinear estimators (choose minimum bias estimators from degenerate subspace)
+* bootstrap complete
+* bootstrap test buffalo, gazelle
 * document pREML & bootstrap stuff
 
 ERROR PAPER
@@ -16,6 +16,8 @@ ERROR PAPER
 * error class translation
 * UERE priors from calibration
 
+* overlap() man example akde() first
+* CODE REWRITE: X <- array(X,DIM) ;%TO%; dim(X) <- DIM
 * simulate nsim>1 with mclapply
 * FAQ entry on automated time format reading in as.telemetry breaking with R update
 * non-range resident in vignette

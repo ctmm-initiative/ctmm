@@ -74,7 +74,7 @@ emulate.telemetry <- function(object,CTMM,fast=FALSE,...)
 #####################################
 # multi-estimator parametric bootstrap
 # + concurrent double-bootstrap AICc
-ctmm.boot <- function(data,CTMM,method=c('HREML','pREML','pHREML'),error=0.01,mc.cores=NULL,AICc=FALSE,...)
+ctmm.boot <- function(data,CTMM,method=c('HREML','pREML','pHREML'),error=0.01,mc.cores=NULL,AICc=FALSE,verbose=FALSE,...)
 {
   if(is.null(mc.cores)) { mc.cores <- detectCores() } # Windows safe wrapper
 
@@ -94,21 +94,26 @@ ctmm.boot <- function(data,CTMM,method=c('HREML','pREML','pHREML'),error=0.01,mc
   # log transform positive parameters
   Transform <- function(p,inverse=FALSE)
   {
+    DIM <- dim(p)
+    if(length(DIM)<2) { p <- cbind(p) }
+
     if(length(POS))
     {
       if(inverse) { p[POS,] <- exp(p[POS,]) }
       else { p[POS,] <- log(p[POS,]) }
     }
 
+    dim(p) <- DIM
+
     return(p)
   }
 
   # simulate with errors & return parameter estimates
-  Replicate <- function(i,DATA=simulate(CTMM,data=FRAME))
+  Replicate <- function(i=0,DATA=simulate(CTMM,data=FRAME,precompute=precompute),...)
   {
     # apply all estimators, recycling previous fit as first guess
     FIT <- list(CTMM=CTMM) # first guess (to be removed)
-    for(m in method) { FIT <- c(FIT,ctmm.fit(FRAME,FIT[[length(FIT)]],method=m,COV=FALSE,...)) }
+    for(m in method) { FIT[[length(FIT)+1]] <- ctmm.fit(DATA,FIT[[length(FIT)]],method=m,COV=FALSE,...) }
     FIT <- FIT[-1] # remove first (fake) guess
 
     # extract parameters
@@ -122,40 +127,53 @@ ctmm.boot <- function(data,CTMM,method=c('HREML','pREML','pHREML'),error=0.01,mc
     return(FIT)
   }
 
+  # add batch of calculations to intermediate results
+  # rolling mean and variance
+  rolling_update <- function(ADD) # [par*method,run]
+  {
+    # update sums
+    S1 <<- S1 + rowSums(ADD) # sum over runs
+    S2 <<- S2 + (ADD %.% t(ADD)) # inner product over runs
+    # update sample size
+    N <<- N + mc.cores
+    # normalize sums
+    MEAN <<- S1/N
+    COV <<- (S2-N*outer(MEAN))/max(1,N-1)
+  }
+
   # outer loop: designing the weight matrix until estimate converges
   EST <- Replicate(0,DATA=data) # estimates to weight (ultimately)
   P0 <- Transform(get.parameters(CTMM,NAMES)) # null model for parametric bootstrap
   ERROR <- Inf
   while(ERROR>=error)
   {
+    # initialize results
     MEAN <- S1 <- array(0,DIM)
     COV <- S2 <- array(0,c(DIM,DIM))
     ERROR <- Inf
     N <- 0
 
+    # INITIAL simulation precomputes Kalman filter matrix
+    precompute <- TRUE
+    ADD <- Replicate() # [par,method]
+    dim(ADD) <- c(DIM,1) # [par*method,1]
+    rolling_update(ADD)
+
     # inner loop: adding to ensemble until average converges
+    precompute <- -1 # now use precomputed Kalman filter matrices
     while(ERROR>=error)
     {
       # calculate burst of mc.cores estimates
       ADD <- mclapply(1:mc.cores,Replicate,mc.cores=mc.cores)
       ADD <- simplify2array(ADD) # [par,method,run]
-      ADD <- array(ADD,c(DIM,mc.cores)) # [par*method,run]
-
-      # rolling mean and variance
-      # update sums
-      S1 <- S1 + rowSums(ADD)
-      S2 <- S2 + (ADD %.% t(ADD))
-      # update sample size
-      N <- N + mc.cores
-      # normalize sums
-      MEAN <- S1/N
-      COV <- (S2-N^2*outer(MEAN))/max(1,N-1) # !!! subtract mean^2
+      dim(ADD) <- c(DIM,mc.cores) # [par*method,run]
+      rolling_update(ADD)
 
       # recalculate error
       if(N>10) # may want to increase to 100
       {
         BIAS <- MEAN - P0
-        ERROR <- sqrt((BIAS %*% PDsolve(COV) %*% BIAS)/N)
+        ERROR <- sqrt((BIAS %*% PDsolve(COV) %*% BIAS)/N) # bias relative to standard error
       }
     }
 

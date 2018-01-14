@@ -6,7 +6,7 @@
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Estimate the average speed of a tracked animal}
 \description{
-Given a \code{ctmm} movement model and \code{telemetry} data, \code{speed} simulates multiple realizations of the animal's trajectory and estimates the average speed, which is proportional to distance travled. In this way, both tortuosity and telemetry error can be accounted for.
+Given a \code{ctmm} movement model and \code{telemetry} data, \code{speed} simulates multiple realizations of the animal's trajectory and estimates the average speed, which is proportional to distance traveled. Both tortuosity (non straight-line motion between the data) and telemetry error can be accounted for. Given only a \code{ctmm} movement model and no data, \code{speed} calculates the average speed of the Gaussian movement process.
 }
 \usage{
 speed(object,...)

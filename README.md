@@ -6,3 +6,5 @@ ctmm is an R package for analyzing animal tracking data as a continuous-time sto
 * [The ctmm initiative](http://biology.umd.edu/movement.html)
 * [Beta packages](http://www2.physics.umd.edu/~hfleming/)
 * [Google group](https://groups.google.com/forum/#!forum/ctmm-user)
+* [GitHub project](https://github.com/ctmm-initiative/ctmm)
+* [GitHub reference](https://ctmm-initiative.github.io/ctmm/)
