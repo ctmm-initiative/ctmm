@@ -6,6 +6,9 @@ speed.ctmm <- function(object,data=NULL,level=0.95,prior=TRUE,fast=TRUE,error=0.
   if(length(object$tau)<2 || object$tau[2]<=.Machine$double.eps)
   { stop("Movement model is fractal. Speed cannot be estimated.") }
 
+  if(prior && fast && any(eigen(object$COV,only.values=TRUE)$values<=.Machine$double.eps))
+  { stop("Indefinite covariance matrix in sampling distribution.") }
+
   # analytically solvable cases
   if(is.null(data) && object$mean=="stationary")
   {
@@ -56,12 +59,11 @@ speed.ctmm <- function(object,data=NULL,level=0.95,prior=TRUE,fast=TRUE,error=0.
     }
 
     # keep replicating until error target
-    ERROR.MEAN <- Inf
-    ERROR.SE <- Inf
+    ERROR <- Inf
     N <- length(SPEEDS)
     S1 <- sum(SPEEDS)
     S2 <- sum(SPEEDS^2)
-    while(ERROR.MEAN>=error || ERROR.SE>=error || length(SPEEDS)<=10)
+    while(ERROR>=error || length(SPEEDS)<=10)
     {
       ADD <- unlist(mclapply(1:mc.cores,spd.fn,mc.cores=mc.cores))
       SPEEDS <- c(SPEEDS,ADD)
@@ -73,10 +75,19 @@ speed.ctmm <- function(object,data=NULL,level=0.95,prior=TRUE,fast=TRUE,error=0.
       VAR <- abs(S2 - N*MEAN^2)/max(1,N-1)
 
       # standard_error(mean) / mean
-      ERROR.MEAN <- sqrt(VAR/N) / MEAN
+      ERROR <- sqrt(VAR/N) / MEAN
 
-      # standard_error(standard_deviation) / mean
-      ERROR.SE <- 1/2 * sqrt(2/(N-1)*VAR) / MEAN
+      # fallback on quantiles if some Inf speeds
+      if((is.na(level) || is.null(level)) && length(SPEEDS)>1)
+      {
+        SPEEDS <- sort(SPEEDS,method='quick')
+        # median
+        M <- SPEEDS[round(N/2)]
+        # standard error on the median
+        Q1 <- SPEEDS[round((N-sqrt(N))/2)]
+        Q2 <- SPEEDS[round((1+N+sqrt(N))/2)]
+        ERROR <- max(M-Q1,Q2-M) / M
+      }
     }
 
     # return raw data (undocumented)
@@ -103,10 +114,9 @@ speed.ctmm <- function(object,data=NULL,level=0.95,prior=TRUE,fast=TRUE,error=0.
 speed.rand <- function(CTMM,data=NULL,prior=TRUE,fast=TRUE,error=0.01,precompute=FALSE,...)
 {
   # capture model uncertainty
-  if(prior) {  CTMM <- emulate(CTMM,data=data,fast=fast,...) }
+  if(prior) { CTMM <- emulate(CTMM,data=data,fast=fast,...) }
   # fail state for fractal process
-  if(length(CTMM$tau)==1 || CTMM$tau[2]<=.Machine$double.eps)
-  { stop("Sampling distribution includes fractal motion. Mean speed cannot be estimated.") }
+  if(length(CTMM$tau)==1 || CTMM$tau[2]<=.Machine$double.eps) { return(Inf) }
 
   # SIMPSON'S RULE MIGHT NOT BE CORRECT FOR SQRT ERRORS
   # time range
