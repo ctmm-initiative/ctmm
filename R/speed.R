@@ -59,7 +59,8 @@ speed.ctmm <- function(object,data=NULL,level=0.95,prior=TRUE,fast=TRUE,error=0.
     }
 
     # keep replicating until error target
-    ERROR <- Inf
+    pb <- utils::txtProgressBar(style=3)
+    ERROR <- ERROR0 <- Inf
     N <- length(SPEEDS)
     S1 <- sum(SPEEDS)
     S2 <- sum(SPEEDS^2)
@@ -71,23 +72,31 @@ speed.ctmm <- function(object,data=NULL,level=0.95,prior=TRUE,fast=TRUE,error=0.
       N <- N + mc.cores
       S1 <- S1 + sum(ADD)
       S2 <- S2 + sum(ADD^2)
-      MEAN <- S1/N
-      VAR <- abs(S2 - N*MEAN^2)/max(1,N-1)
 
       # standard_error(mean) / mean
-      ERROR <- sqrt(VAR/N) / MEAN
-
-      # fallback on quantiles if some Inf speeds
-      if((is.na(level) || is.null(level)) && length(SPEEDS)>1)
+      if(length(SPEEDS)>1)
       {
-        SPEEDS <- sort(SPEEDS,method='quick')
-        # median
-        M <- SPEEDS[round(N/2)]
-        # standard error on the median
-        Q1 <- SPEEDS[round((N-sqrt(N))/2)]
-        Q2 <- SPEEDS[round((1+N+sqrt(N))/2)]
-        ERROR <- max(M-Q1,Q2-M) / M
+        MEAN <- S1/N
+        VAR <- abs(S2 - N*MEAN^2)/(N-1)
+        ERROR <- sqrt(VAR/N) / MEAN
+
+        # fallback on quantiles if some Inf speeds
+        if((is.na(level) || is.null(level)))
+        {
+          SPEEDS <- sort(SPEEDS,method='quick')
+          # median
+          M <- SPEEDS[round(N/2)]
+          # standard error on the median
+          Q1 <- SPEEDS[round((N-sqrt(N))/2)]
+          Q2 <- SPEEDS[round((1+N+sqrt(N))/2)]
+          ERROR <- max(M-Q1,Q2-M) / M
+        }
       }
+
+      # set initial error
+      if(ERROR0==Inf && ERROR<Inf) { ERROR0 <- ERROR }
+      # update progress bar
+      if(ERROR<Inf) { utils::setTxtProgressBar(pb, clamp(log(ERROR0/ERROR)/log(ERROR0/error)) ) }
     }
 
     # return raw data (undocumented)
@@ -101,6 +110,8 @@ speed.ctmm <- function(object,data=NULL,level=0.95,prior=TRUE,fast=TRUE,error=0.
     # chi^2 square speed
     CI <- chisq.ci(MEAN^2,(2*MEAN)^2*VAR,alpha=1-level)
     CI <- sqrt(CI)
+
+    close(pb)
   }
 
   UNITS <- unit(CI,"speed")

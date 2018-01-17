@@ -1,5 +1,4 @@
 SPEED PAPER
-* analytic solution if mean=stationary & ?isotropic=TRUE?
 * progress bar arg for speed
 * use speed data in likelihood (kalman filter upgrade)
 
