@@ -271,11 +271,26 @@ summary.ctmm.list <- function(object, IC="AICc", ...)
 {
   object <- sort.ctmm(object,IC=IC)
   ICS <- sapply(object,function(m){m[[IC]]})
-  ICS <- ICS - ICS[[1]]
+
+  ### IC specific stuff
+  if(IC %in% c("AIC","AICc","BIC")) # relative information criteria
+  {
+    ICS <- ICS - ICS[[1]]
+    CNAME <- paste0("d",IC)
+  }
+  else if(IC=="MSPE") # convert to meters
+  {
+    ICS <- sqrt(ICS)
+    UNIT <- unit(ICS,"length",concise=TRUE)
+    ICS <- ICS/UNIT$scale
+    CNAME <- paste0("RMSPE (",UNIT$name,")")
+  }
+  else
+  { CNAME <- IC }
+
   ICS <- cbind(ICS)
   rownames(ICS) <- names(object)
 
-  CNAME <- paste("d",IC,sep="")
   DOF <- sapply(object,DOF.mean)
   METH <- sapply(object,function(m){m$method})
   ICS <- data.frame(ICS,DOF,METH)

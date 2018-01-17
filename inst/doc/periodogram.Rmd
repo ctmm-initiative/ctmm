@@ -134,6 +134,17 @@ A more stringent infromation criteria would not necessarily select the 3 harmoni
 summary(FITS,IC="BIC")
 ```
 
+But still, its troubling that a bad model has the lowest BIC.
+Last, we turn to the mean square predictive error (MSPE), which explicitly penalizes highly-variable trend predictions like the ones we see here.
+
+```{r}
+summary(FITS,IC="MSPE")
+```
+
+Finally, a good model wins out, with the 2 harmonic model beating the 3 harmonic model by 2.5 meters.
+Unlike AIC and BIC, MSPE has units and an absolute scale.
+Note that MSPE should only be used to select among models with the same autocorrelation structure.
+
 ### Home-range estimation
 
 This is not coded yet!

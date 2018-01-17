@@ -400,12 +400,12 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
   CTMM$DOF.mu <- NULL
 
   # evaluate mean function for this data set if no vector is provided
-  if(is.null(CTMM$mean.vec))
+  # if(is.null(CTMM$mean.vec))
   {
     U <- drift(data$t,CTMM)
     CTMM$mean.vec <- U
 
-    UU <- t(U) %*% U
+    UU <- t(U) %*% U # always need this for MSPE
     CTMM$REML.loglike <- (length(axes)/2)*(log(det(UU)) + ncol(U)*log(2*pi))
   }
 
@@ -629,6 +629,19 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
   { CTMM$AICc <- -2*CTMM$loglike + (q*n)^2/(q*n+q*k.mean) * 2*k/(q*n-k-nu) }
   else if(method %in% c('pHREML','HREML','REML'))
   { CTMM$AICc <- -2*CTMM$loglike + (q*n-q*k.mean) * 2*k/(q*n-k-nu) }
+
+  # Mean square prediction error
+  MSPE <- CTMM$COV.mu
+  if(length(dim(MSPE))==2) # only 1 mean vector
+  { MSPE <- sum(diag(MSPE)) * c(UU) }
+  else if(length(dim(MSPE))==4) # k mean vectors
+  {
+    MSPE <- lapply(1:length(axes),function(i) MSPE[i,,,i])
+    MSPE <- Reduce("+",MSPE)
+    MSPE <- sum(diag(MSPE %*% UU))
+  }
+  MSPE <- MSPE/n + sum(diag(CTMM$sigma))
+  CTMM$MSPE <- MSPE
 
   return(CTMM)
 }
