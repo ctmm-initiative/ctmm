@@ -60,7 +60,8 @@ speed.ctmm <- function(object,data=NULL,level=0.95,prior=TRUE,fast=TRUE,error=0.
 
     # keep replicating until error target
     pb <- utils::txtProgressBar(style=3)
-    ERROR <- ERROR0 <- Inf
+    ERROR <- Inf
+    MAX <- 0
     N <- length(SPEEDS)
     S1 <- sum(SPEEDS)
     S2 <- sum(SPEEDS^2)
@@ -91,12 +92,13 @@ speed.ctmm <- function(object,data=NULL,level=0.95,prior=TRUE,fast=TRUE,error=0.
           Q2 <- SPEEDS[round((1+N+sqrt(N))/2)]
           ERROR <- max(M-Q1,Q2-M) / M
         }
-      }
 
-      # set initial error
-      if(ERROR0==Inf && ERROR<Inf) { ERROR0 <- ERROR }
-      # update progress bar
-      if(ERROR<Inf) { utils::setTxtProgressBar(pb, clamp(log(ERROR0/ERROR)/log(ERROR0/error)) ) }
+        # update progress bar
+        MAX <- c(MAX,ERROR,error)
+        MAX <- max(MAX[MAX<Inf])
+        if(error<MAX) { PROG <- clamp(log(MAX/ERROR)/log(MAX/error)) } else { PROG <- 1 }
+        utils::setTxtProgressBar(pb,PROG)
+      }
     }
 
     # return raw data (undocumented)

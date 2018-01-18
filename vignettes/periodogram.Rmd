@@ -141,8 +141,8 @@ Last, we turn to the mean square predictive error (MSPE), which explicitly penal
 summary(FITS,IC="MSPE")
 ```
 
-Finally, a good model wins out, with the 2 harmonic model beating the 3 harmonic model by 2.5 meters.
-Unlike AIC and BIC, MSPE has units and an absolute scale.
+Finally, a good model wins out, with the 2 harmonic model beating the 3 harmonic model by 2.5 meters of RMS predictive error (RMSPE).
+Unlike likelihood based ICs (AIC & BIC), MSPE has units and an absolute scale, though in summary we only show differences in the RMSPE for simplicity.
 Note that MSPE should only be used to select among models with the same autocorrelation structure.
 
 ### Home-range estimation

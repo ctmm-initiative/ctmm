@@ -12,7 +12,7 @@
   \item{level}{ Confidence level for parameter estimates. }
   \item{level.UD}{ Confidence level for the Gaussian home-range area. }
   \item{units}{Convert result to natural units.}
-  \item{IC}{Information criteria for sorting lists of \code{ctmm} objects.}
+  \item{IC}{Information criteria for sorting lists of \code{ctmm} objects. Options include AIC, AICc, BIC, and MSPE.}
   \item{...}{Unused options.}
 }
 

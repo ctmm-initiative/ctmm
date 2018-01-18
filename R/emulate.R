@@ -74,7 +74,7 @@ emulate.telemetry <- function(object,CTMM,fast=FALSE,...)
 #####################################
 # multi-estimator parametric bootstrap
 # + concurrent double-bootstrap AICc
-ctmm.boot <- function(data,CTMM,method=c('HREML','pREML','pHREML'),error=0.01,mc.cores=NULL,AICc=FALSE,verbose=FALSE,...)
+ctmm.boot <- function(data,CTMM,method=c('HREML','pREML','pHREML'),error=0.01,mc.cores=NULL,AICc=FALSE,...)
 {
   if(is.null(mc.cores)) { mc.cores <- detectCores() } # Windows safe wrapper
 

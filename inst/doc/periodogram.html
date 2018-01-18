@@ -12,7 +12,7 @@
 
 <meta name="author" content="Guillaume Péron, Christen H. Fleming, and Justin M. Calabrese" />
 
-<meta name="date" content="2018-01-16" />
+<meta name="date" content="2018-01-18" />
 
 <title>Periodic movement models</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Periodic movement models</h1>
 <h4 class="author"><em>Guillaume Péron, Christen H. Fleming, and Justin M. Calabrese</em></h4>
-<h4 class="date"><em>2018-01-16</em></h4>
+<h4 class="date"><em>2018-01-18</em></h4>
 
 
 
@@ -137,8 +137,8 @@ FITS &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(Gamba,GUE
 ##                                low         ML       high
 ## rotation/deviation %     74.795669  91.774630 100.000000
 ## rotation/speed %         96.807431  98.987421 100.000000
-## area (square kilometers) 41.444887  48.269156  55.605890
-## tau position (hours)      6.984419   9.267908  12.297962
+## area (square kilometers) 41.444887  48.269156  55.605889
+## tau position (hours)      6.984418   9.267907  12.297961
 ## tau velocity (hours)      1.126099   1.617410   2.323076
 ## speed (kilometers/day)   12.674828 103.001923 204.382857</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(FITS[[<span class="dv">4</span>]]) <span class="co"># harmonic 2 0</span></code></pre></div>
@@ -149,9 +149,9 @@ FITS &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(Gamba,GUE
 ## $CI
 ##                                 low        ML      high
 ## rotation/deviation %     23.6228691 29.019474 35.648925
-## rotation/speed %         24.3431627 29.868660 36.648355
-## area (square kilometers) 41.1021781 47.844462 55.091281
-## tau position (hours)      7.2925135  9.568355 12.554438
+## rotation/speed %         24.3431626 29.868660 36.648355
+## area (square kilometers) 41.1021782 47.844462 55.091282
+## tau position (hours)      7.2925136  9.568355 12.554438
 ## tau velocity (hours)      0.9699887  1.423753  2.089789
 ## speed (kilometers/day)   14.7247950 16.056839 17.387434</code></pre>
 <ul>
@@ -178,19 +178,19 @@ FITS &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(Gamba,GUE
 ## OUF anisotropic harmonic 1 1  25.99980779  110.0647     ML
 ## OUF anisotropic harmonic 0 0  89.22197845  132.4812     ML
 ## OUF anisotropic harmonic 0 1 111.11897842  134.7361     ML</code></pre>
-<p>But still, its troubling that a bad model has the lowest BIC. Last, we turn to the mean square predictive error (MSPE), which explicitly penalizes highly-variable trend predictions like the ones we see here.</p>
+<p>But still, it is troubling that a bad model has the lowest BIC. Last, we turn to the mean square predictive error (MSPE), which explicitly penalizes highly-variable trend predictions like the ones we see here.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(FITS,<span class="dt">IC=</span><span class="st">&quot;MSPE&quot;</span>)</code></pre></div>
-<pre><code>##                              RMSPE (km) DOF[mean] method
-## OUF anisotropic harmonic 2 0   2.371128  106.1204     ML
-## OUF anisotropic harmonic 3 0   2.373637  107.1803     ML
-## OUF anisotropic harmonic 4 0   2.373660  107.1268     ML
-## OUF anisotropic harmonic 1 0   2.374960  108.2142     ML
-## OUF anisotropic harmonic 2 1   2.377214  107.9071     ML
-## OUF anisotropic harmonic 3 1   2.379414  108.9836     ML
-## OUF anisotropic harmonic 1 1   2.380671  110.0647     ML
-## OUF anisotropic harmonic 0 0   2.473042  132.4812     ML
-## OUF anisotropic harmonic 0 1   2.475394  134.7361     ML</code></pre>
-<p>Finally, a good model wins out, with the 2 harmonic model beating the 3 harmonic model by 2.5 meters. Unlike AIC and BIC, MSPE has units and an absolute scale. Note that MSPE should only be used to select among models with the same autocorrelation structure.</p>
+<pre><code>##                              dRMSPE (m) DOF[mean] method
+## OUF anisotropic harmonic 2 0   0.000000  106.1204     ML
+## OUF anisotropic harmonic 3 0   2.508589  107.1803     ML
+## OUF anisotropic harmonic 4 0   2.531330  107.1268     ML
+## OUF anisotropic harmonic 1 0   3.832053  108.2142     ML
+## OUF anisotropic harmonic 2 1   6.085744  107.9071     ML
+## OUF anisotropic harmonic 3 1   8.285121  108.9836     ML
+## OUF anisotropic harmonic 1 1   9.542710  110.0647     ML
+## OUF anisotropic harmonic 0 0 101.913150  132.4812     ML
+## OUF anisotropic harmonic 0 1 104.265390  134.7361     ML</code></pre>
+<p>Finally, a good model wins out, with the 2 harmonic model beating the 3 harmonic model by 2.5 meters of RMS predictive error (RMSPE). Unlike likelihood based ICs (AIC &amp; BIC), MSPE has units and an absolute scale, though in summary we only show differences in the RMSPE for simplicity. Note that MSPE should only be used to select among models with the same autocorrelation structure.</p>
 </div>
 <div id="home-range-estimation" class="section level3">
 <h3>Home-range estimation</h3>

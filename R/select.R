@@ -269,24 +269,32 @@ DOF.mean <- function(CTMM)
 ########
 summary.ctmm.list <- function(object, IC="AICc", ...)
 {
+  IC <- match.arg(IC,c("AIC","AICc","BIC","MSPE"))
+
   object <- sort.ctmm(object,IC=IC)
   ICS <- sapply(object,function(m){m[[IC]]})
 
-  ### IC specific stuff
-  if(IC %in% c("AIC","AICc","BIC")) # relative information criteria
-  {
-    ICS <- ICS - ICS[[1]]
-    CNAME <- paste0("d",IC)
-  }
-  else if(IC=="MSPE") # convert to meters
+  CNAME <- IC
+
+  # convert to RMS
+  if(IC=="MSPE")
   {
     ICS <- sqrt(ICS)
-    UNIT <- unit(ICS,"length",concise=TRUE)
-    ICS <- ICS/UNIT$scale
-    CNAME <- paste0("RMSPE (",UNIT$name,")")
+    CNAME <- paste0("R",CNAME)
   }
-  else
-  { CNAME <- IC }
+
+  # show relative IC
+  ICS <- ICS - ICS[[1]]
+  CNAME <- paste0("d",CNAME)
+
+  # convert to meters/kilometers
+  if(IC=="MSPE")
+  {
+    if(length(ICS)>1) { MIN <- ICS[2] } else { MIN <- ICS[1] }
+    UNIT <- unit(MIN,"length",concise=TRUE)
+    ICS <- ICS/UNIT$scale
+    CNAME <- paste0(CNAME," (",UNIT$name,")")
+  }
 
   ICS <- cbind(ICS)
   rownames(ICS) <- names(object)
