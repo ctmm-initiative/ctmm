@@ -3,7 +3,7 @@ SPEED PAPER
 * use speed data in likelihood (kalman filter upgrade)
 
 pREML PAPER
-* bootstrap dealing with colinear estimators (choose minimum bias estimators from degenerate subspace)
+* bootstrap dealing with colinear estimators - automatically exclude identical estimators (ML,HREML) & (pREML,pHREML) ; (!isotropic & !error)
 * bootstrap complete
 * bootstrap test buffalo, gazelle
 * document pREML & bootstrap stuff

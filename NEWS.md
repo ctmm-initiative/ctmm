@@ -1,5 +1,7 @@
-0.4.2 2017-01-08
+0.4.2 2017-01-22
 ================
+  
+  * new speed() method
 
   * debias argument for overlap
 

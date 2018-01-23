@@ -246,12 +246,50 @@ kalman <- function(z,u,dt,CTMM,error=rep(0,nrow(z)),smooth=FALSE,sample=FALSE,re
     zCon <- zCon[,,DATA,drop=FALSE]
     zFor <- zFor[,,DATA,drop=FALSE]
     # drop=FALSE must be here for BM/OU and I don't fully understand why
-  }
-  # END PRECOMPUTE BLOCK
+
+    #################
+    # RANDOM SAMPLER
+    #################
+
+    # initialize new matrices
+    L <- array(0,c(n,K,K))
+    SQRT <- array(0,c(n,K,K))
+
+    if(sample)
+    {
+      # this is all we need precomputed for generating random location
+      SQRT[n,,] <- PDfunc(sCon[n,,],func=function(x){sqrt(abs(x))},pseudo=TRUE)
+      # with a known location, collapse the state uncertainty
+      sCon[n,,] <- array(0,c(K,K))
+    }
+
+    # upgrade concurrent estimates to Kriged estimates (covariance only)
+    for(i in (n-1):1)
+    {
+      L[i,,] <- sCon[i,,] %*% t(Green[i+1,,]) %*% PDsolve(sFor[i+1,,])
+      # manifestly symmetric backsolver
+      # sCon[i,,] <- sCon[i,,] + L %*% (sCon[i+1,,]-sFor[i+1,,]) %*% t(L)
+      # manifestly PSD backsolver
+      JOSEPH <- IdH - (L[i,,] %*% Green[i+1,,])
+      sCon[i,,] <- (JOSEPH %*% sCon[i,,] %*% t(JOSEPH)) + (L[i,,] %*% (sCon[i+1,,]+Sigma[i+1,,]) %*% t(L[i,,]))
+
+      #################
+      # RANDOM SAMPLER
+      #################
+      if(sample)
+      {
+        # get what we need to generate random state and collapse uncertainty
+        SQRT[i,,] <- PDfunc(sCon[i,,],func=function(x){sqrt(abs(x))},pseudo=TRUE)
+        sCon[i,,] <- array(0,c(K,K))
+      }
+    }
+
+    rm(Green,Sigma,sFor)
+  } # END PRECOMPUTE BLOCK
 
   ###############
   # CAN START WITH PRECOMPUTE HERE
-  if(precompute){ STUFF <- c('n','K','IdH','u','mu','DATA','zCon','sCon','zFor','sFor','Green','Sigma') }
+  if(precompute){ STUFF <- c('n','K','u','mu','DATA','zCon','sCon','zFor','L','SQRT') }
   # STORE PRECOMPUTED STUFF FOR LATER EVALUATIONS || PULL PRECOMPUTED STUFF FOR FAST EVALUATIONS
   if(precompute>0) { for(thing in STUFF) { assign(thing,get(thing),pos=Kalman.env) } }
   else if(precompute<0) { for(thing in STUFF) { assign(thing,get(thing,pos=Kalman.env)) } }
@@ -259,40 +297,16 @@ kalman <- function(z,u,dt,CTMM,error=rep(0,nrow(z)),smooth=FALSE,sample=FALSE,re
   #################
   # RANDOM SAMPLER: end point
   #################
-  if(sample)
-  {
-    zCon[n,,] <- sapply(DATA,function(d){MASS::mvrnorm(mu=zCon[n,,d],Sigma=sCon[n,,])})
-    sCon[n,,] <- array(0,c(K,K))
-  }
+  if(sample) { zCon[n,,] <- sapply(DATA,function(d){zCon[n,,d] + c(SQRT[n,,] %*% stats::rnorm(K))}) }
 
-  # upgrade concurrent estimates to Kriged estimates
+  # smooth/simulate data finish
   for(i in (n-1):1)
   {
-    # DOUBLE CHECK THIS
-    L <- sCon[i,,] %*% t(Green[i+1,,]) %*% PDsolve(sFor[i+1,,])
-
-    # overwrite concurrent estimate with smoothed estimate
     # RTS smoother
-    zCon[i,,] <- zCon[i,,] + L %*% (zCon[i+1,,]-zFor[i+1,,])
-    # manifestly symmetric backsolver
-    # sCon[i,,] <- sCon[i,,] + L %*% (sCon[i+1,,]-sFor[i+1,,]) %*% t(L)
-    # manifestly PSD backsolver
-    JOSEPH <- IdH - (L %*% Green[i+1,,])
-    sCon[i,,] <- (JOSEPH %*% sCon[i,,] %*% t(JOSEPH)) + (L %*% (sCon[i+1,,]+Sigma[i+1,,]) %*% t(L))
+    zCon[i,,] <- zCon[i,,] + L[i,,] %*% (zCon[i+1,,]-zFor[i+1,,])
 
-    #################
     # RANDOM SAMPLER
-    #################
-    if(sample)
-    {
-      # covariance matrices can contain small negative eigen values if dt is small
-      SQRT <- PDfunc(sCon[i,,],func=function(x){sqrt(abs(x))},pseudo=TRUE)
-      zCon[i,,] <- sapply(DATA,function(d){zCon[i,,d] + (SQRT %*% stats::rnorm(K))})
-      # old slower method - solves matrix twice
-      # sCon[i,,] <- PDclamp(sCon[i,,]) # prevent small numerical errors from tiny dt
-      # zCon[i,,] <- sapply(DATA,function(d){MASS::mvrnorm(mu=zCon[i,,d],Sigma=sCon[i,,])})
-      sCon[i,,] <- array(0,c(K,K))
-    }
+    if(sample) { zCon[i,,] <- sapply(DATA,function(d){zCon[i,,d] + c(SQRT[i,,] %*% stats::rnorm(K))}) }
   }
 
   # restore stationary mean to locations only
