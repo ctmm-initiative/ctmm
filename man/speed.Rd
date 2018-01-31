@@ -11,9 +11,11 @@ Given a \code{ctmm} movement model and \code{telemetry} data, \code{speed} simul
 \usage{
 speed(object,...)
 
-\S3method{speed}{ctmm}(object,data=NULL,level=0.95,prior=TRUE,fast=TRUE,error=0.01,mc.cores=NULL,...)
+\S3method{speed}{ctmm}(object,data=NULL,level=0.95,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,
+mc.cores=NULL,...)
 
-\S3method{speed}{telemetry}(object,CTMM,level=0.95,prior=TRUE,fast=TRUE,error=0.01,mc.cores=NULL,...)
+\S3method{speed}{telemetry}(object,CTMM,level=0.95,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,
+mc.cores=NULL,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -23,11 +25,14 @@ speed(object,...)
   \item{level}{Confidence level to report on the estimated average speed.}
   \item{prior}{Account for model uncertainty.}
   \item{fast}{Whether or not to invoke the central-limit theorem (see \code{\link{emulate}}).}
+  \item{cor.min}{Velocity correlation threshold for skipping gaps.}
+  \item{dt.max}{Absolute gap sizes to skip (in seconds), alternative to \code{cor.min}.}
   \item{error}{Target (relative) standard error.}
   \item{mc.cores}{How many CPU cores to use (Unix required). Will use all if \code{NULL}.}
   \item{...}{Arguments passed to \code{\link{emulate}}.}
 }
 \details{
+The \code{cor.min} or \code{dt.max} arguments are used to constrain the estimate to be derived from simulations near the data, and therefore ensure that the estimate is more reflective of the data than the model.
 }
 
 \value{ }

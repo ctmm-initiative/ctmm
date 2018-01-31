@@ -25,11 +25,11 @@ He <- function(M) { (M + Adj(M))/2 }
 
 
 # map function for PSD matrices
-PDfunc <-function(M,func=function(m){1/m},force=FALSE,pseudo=FALSE)
+PDfunc <-function(M,func=function(m){1/m},force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
 {
   DIM <- dim(M)
   if(is.null(DIM)) { DIM <- 1 }
-  TOL <- DIM[1]*.Machine$double.eps
+  # tol <- max(tol,.Machine$double.eps)
 
   M <- eigen(M)
   V <- M$vectors
@@ -37,10 +37,14 @@ PDfunc <-function(M,func=function(m){1/m},force=FALSE,pseudo=FALSE)
 
   if(any(M<=0) && !force && !pseudo) { stop("Matrix not positive definite.") }
 
-  FORCE <- (M < TOL)
-  PSEUDO <- (abs(M) < TOL)
+  # negative eigenvalues indicate size of numerical error
+  # MIN <- last(M)
+  # if(MIN<0) { tol <- max(tol,2*abs(MIN)) }
 
-  if(any(FORCE) && force) { M[FORCE] <- TOL }
+  FORCE <- (M < tol) -> PSEUDO
+  # PSEUDO <- (abs(M) < tol) # why abs(M)?
+
+  if(any(FORCE) && force) { M[FORCE] <- tol }
   M <- func(M)
   if(any(PSEUDO) && pseudo) { M[PSEUDO] <- 0 }
 
@@ -54,7 +58,7 @@ PDfunc <-function(M,func=function(m){1/m},force=FALSE,pseudo=FALSE)
 
 
 # Positive definite solver
-PDsolve <- function(M,force=FALSE,pseudo=FALSE)
+PDsolve <- function(M,force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
 {
   DIM <- dim(M)
   if(is.null(DIM)) { DIM <- 1 }
@@ -72,8 +76,6 @@ PDsolve <- function(M,force=FALSE,pseudo=FALSE)
     }
   }
 
-  TOL <- DIM[1]*.Machine$double.eps
-
   # symmetrize
   M <- He(M)
 
@@ -86,12 +88,12 @@ PDsolve <- function(M,force=FALSE,pseudo=FALSE)
   M <- M/W
 
   # try ordinary inverse
-  M.try <- try(qr.solve(M,tol=TOL))
+  M.try <- try(qr.solve(M,tol=tol),silent=TRUE)
   # fall back on decomposition
   if( class(M.try) == "matrix")
   { M <- M.try }
   else
-  { M <- PDfunc(M,func=function(m){1/m},force=force,pseudo=pseudo) }
+  { M <- PDfunc(M,func=function(m){1/m},force=force,pseudo=pseudo,tol=tol) }
 
   # back to covariance matrix
   M <- M/W

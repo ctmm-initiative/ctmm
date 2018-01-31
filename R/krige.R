@@ -394,7 +394,7 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
     if(precompute>=0) # prepare model and data frame
     {
       object <- ctmm.prepare(data,object,precompute=FALSE) # u calculated here with unfilled t
-      data <- fill.data(data,CTMM=object,t=t,dt=dt,res=res)
+      data <- fill.data(data,CTMM=object,t=t,dt=dt,res=res,...)
       object$error <- TRUE # avoids unit variance algorithm, data already contains fixed errors from fill.data
     }
     else # recycle model and data frame
@@ -469,6 +469,8 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
         if((i==1)||(dt[i]!=dt[i-1])) { Langevin <- langevin(dt=dt[i],CTMM=object) }
         Green[i,,] <- Langevin$Green
         Sigma[i,,] <- Langevin$Sigma
+        # Sigma is now standardization matrix
+        Sigma[i,,] <- PDfunc(Sigma[i,,],func=function(x){sqrt(abs(x))},pseudo=TRUE)
       }
 
       # circulation stuff
@@ -486,9 +488,7 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
     for(i in 1:n)
     {
       # generate standardized process
-      # R drops dimensions ... so this code has to be a little weird
-      H <- lapply(1:AXES,function(X){ MASS::mvrnorm(n=1,mu=as.vector(Green[i,,] %*% H[,X]),Sigma=Sigma[i,,]) })
-      H <- do.call(cbind,H)
+      H <- sapply(1:AXES,function(X){ c(Green[i,,] %*% H[,X] + Sigma[i,,] %*% stats::rnorm(K)) })
       # pull out location from hidden state
       z[i,] <- H[1,]
       if(K>1) { v[i,] <- H[2,] }
