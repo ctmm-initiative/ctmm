@@ -394,7 +394,7 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
     if(precompute>=0) # prepare model and data frame
     {
       object <- ctmm.prepare(data,object,precompute=FALSE) # u calculated here with unfilled t
-      data <- fill.data(data,CTMM=object,t=t,dt=dt,res=res)
+      data <- fill.data(data,CTMM=object,t=t,dt=dt,res=res,...)
       object$error <- TRUE # avoids unit variance algorithm, data already contains fixed errors from fill.data
     }
     else # recycle model and data frame

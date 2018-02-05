@@ -341,51 +341,35 @@ get.error <- function(DATA,CTMM,flag=FALSE)
   axes <- CTMM$axes
   COLS <- names(DATA)
 
-  # model the error
   if(CTMM$error)
   {
-    # is the data supplied with error estimates
-    if(any(is.element(axes,c("x","y"))))
+    TYPE <- DOP.match(axes)
+    # DOP.LIST is global variable from uere.R
+    TYPE <- DOP.LIST[[TYPE]]
+    AXES <- TYPE$axes
+    ERE <- TYPE$ERE
+    DOP <- TYPE$DOP
+
+    if(ERE %in% COLS) # calibrated errors - HERE
     {
-      if(is.element("HERE",COLS))
-      {
-        error <- DATA$HERE^2/2
-        FLAG <- 3
-      }
-      else if(is.element("HDOP",COLS))
-      {
-        error <- (CTMM$error * DATA$HDOP)^2/2
-        FLAG <- 2
-      }
-      else
-      {
-        error <- rep(CTMM$error^2/2,n)
-        FLAG <- 1
-      }
+      error <- DATA[[ERE]]^2/length(axes)
+      FLAG <- 3
     }
-    else if(axes=="z")
+    else if(DOP %in% COLS) # fitted errors - HDOP
     {
-      if(is.element("VERE",COLS))
-      {
-        error <- DATA$VERE^2
-        FLAG <- 3
-      }
-      else if(is.element("VDOP",COLS))
-      {
-        error <- (CTMM$error * DATA$VDOP)^2
-        FLAG <- 2
-      }
-      else
-      {
-        error <- rep(CTMM$error^2,n)
-        FLAG <- 1
-      }
+      error <- (CTMM$error*DATA[[DOP]])^2/length(axes)
+      FLAG <- 2
     }
-  }
-  else
+    else # fitted errors - no HDOP
+    {
+      error <- rep(CTMM$error^2/length(axes),n)
+      FLAG <- 1
+    }
+  } # END error
+  else # no error
   {
-    error <- rep(0,n)
     FLAG <- 0
+    error <- rep(0,n)
   }
 
   if(flag) { return(FLAG) }

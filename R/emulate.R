@@ -74,8 +74,9 @@ emulate.telemetry <- function(object,CTMM,fast=FALSE,...)
 #####################################
 # multi-estimator parametric bootstrap
 # + concurrent double-bootstrap AICc
-ctmm.boot <- function(data,CTMM,method=c('HREML','pREML','pHREML'),error=0.01,mc.cores=NULL,trace=TRUE,...)
+ctmm.boot <- function(data,CTMM,method=c('HREML','pREML','pHREML'),error=0.01,mc.cores=1,trace=TRUE,...)
 {
+  method <- match.arg(method,c('ML','HREML','pREML','pHREML','REML'),several.ok=TRUE)
   if(is.null(mc.cores)) { mc.cores <- detectCores() } # Windows safe wrapper
 
   # toss location information for simulations unconditioned
@@ -117,27 +118,6 @@ ctmm.boot <- function(data,CTMM,method=c('HREML','pREML','pHREML'),error=0.01,mc
     return(p)
   }
 
-  # discard identical estimators - indicator matrix
-  IND <- array(TRUE,c(length(NAMES),length(method)))
-  dimnames(IND) <- list(NAMES,method)
-  discard <- function(p,m) { for(q in p) { if(q %in% NAMES) { IND[which(NAMES==q),which(method==m)] <<- FALSE } } }
-  if(all(c('ML','HREML') %in% method))
-  {
-    discard(c('tau position','tau velocity'),'HREML')
-    if(!CTMM$isotropic && !CTMM$error) { discard(c('eccentricity','angle'),'HREML') }
-  }
-  if(all(c('pREML','pHREML') %in% method))
-  {
-    discard(c('tau position','tau velocity'),'pHREML')
-    if(!CTMM$isotropic && !CTMM$error) { discard(c('eccentricity','angle'),'pHREML') }
-  }
-  DIMI <- sum(IND)
-
-  # deprojection matrix
-  # full deprojection matrix
-  I <- t(array(diag(length(NAMES)),c(length(NAMES),DIM))) # incorrect for excluding !!!
-  # discarding identical estimators
-  I <- I[c(IND),]
 
   # simulate with errors & return parameter estimates
   Replicate <- function(i=0,DATA=simulate(CTMM,data=FRAME,precompute=precompute),...)
@@ -172,14 +152,18 @@ ctmm.boot <- function(data,CTMM,method=c('HREML','pREML','pHREML'),error=0.01,mc
     COV <<- (S2-N*outer(MEAN))/max(1,N-1)
   }
 
+  W <- array(1/length(method),c(length(NAMES),length(method))) # weights
+  J <- array(1,c(length(method),1)) # de-projection matrix
+
   ### outer loop: designing the weight matrix until estimate converges
   EST <- Replicate(0,DATA=data) # fundamental estimates to weight (ultimately)
   dim(EST) <- DIM
-  P0 <- Transform(get.parameters(CTMM,NAMES)) # null model for parametric bootstrap
+  P0 <- Transform(get.parameters(CTMM,NAMES)) -> P1 # null model for parametric bootstrap
   if(trace>1) { print(P0) }
-  ERROR <- Inf
+  ERROR <- Inf -> ERROR.OLD
+  tol <- error*sqrt(length(NAMES)) # eigen-value tolerance for pseudo-inverse
   if(trace) { pb <- utils::txtProgressBar(style=3) }
-  while(ERROR>=error)
+  while(ERROR>error)
   {
     # initialize results
     MEAN <- S1 <- array(0,DIM)
@@ -196,7 +180,7 @@ ctmm.boot <- function(data,CTMM,method=c('HREML','pREML','pHREML'),error=0.01,mc
     # inner loop: adding to ensemble until average converges
     precompute <- -1 # now use precomputed Kalman filter matrices
     MAX <- 1/error^2
-    while(N<=MAX || ERROR>=error) # standard error ratio criterias
+    while(N<=MAX && ERROR>=error) # standard error ratio criterias
     {
       # calculate burst of mc.cores estimates
       ADD <- mclapply(1:mc.cores,Replicate,mc.cores=mc.cores)
@@ -207,23 +191,45 @@ ctmm.boot <- function(data,CTMM,method=c('HREML','pREML','pHREML'),error=0.01,mc
       # alternative test if bias is relatively well resolved
       if(N>20)
       {
-        BIAS <- (MEAN - EST)[IND]
-        H <- PDsolve(COV[IND,IND],pseudo=TRUE)
-        ERROR <- sqrt(c(BIAS %*% H %*% BIAS)/N/DIMI)
+        BIAS <- MEAN - EST
+        ERROR <- sqrt(sum(BIAS^2/diag(COV))/N/DIM)
       }
 
       if(trace) { utils::setTxtProgressBar(pb,clamp(max(N/MAX,(error/ERROR)^2))) }
-    }
+    } # END INNER LOOP
 
     ## recalculate weighted estimator
-    H.RED <- t(I) %*% H %*% I
-    COV.RED <- PDsolve(H.RED)
-    P1 <- c(COV.RED %*% t(I) %*% H %*% (EST[IND]-BIAS))
+    JACOB <- array(0,c(length(NAMES),DIM))
+    for(i in 1:length(NAMES))
+    {
+      SUB <- array(FALSE,c(length(NAMES),length(method)))
+      SUB[i,] <- TRUE
+
+      H <- PDsolve(COV[SUB,SUB],pseudo=TRUE,tol=tol)
+      VAR <- PDsolve(t(J) %*% H %*% J)
+
+      W[i,] <- VAR %*% t(J) %*% H
+      P1[i] <- c(W[i,] %*% (EST[SUB]-BIAS[SUB]))
+
+      JACOB[i,] <- array(W*SUB,DIM)
+    }
+    # covariance of weighted estimator
+    COV.W <- JACOB %*% COV %*% t(JACOB)
 
     ## recalculate error & store best model
     BIAS <- P1 - P0 # how much does best estimate change?
     # previous error estimate
-    ERROR <- sqrt(abs(c(BIAS %*% H.RED %*% BIAS))/DIM)
+    ERROR <- sqrt(abs(c(BIAS %*% PDsolve(COV.W) %*% BIAS))/length(NAMES)/2) # 2-point comparison correction
+
+    # check to make sure relative error is decreasing
+    if(ERROR>ERROR.OLD)
+    {
+      if(trace>1) { sprintf("Iterative convergence ceased at error=%f over tolerance of %f",ERROR.OLD,error)  }
+      break
+    }
+    COV.W -> COV.OLD
+    ERROR -> ERROR.OLD
+
     # order of current error, which we do not know
     ERROR <- ERROR^2
     names(P1) <- NAMES
@@ -233,7 +239,7 @@ ctmm.boot <- function(data,CTMM,method=c('HREML','pREML','pHREML'),error=0.01,mc
     P1 -> P0
   } # END OUTER LOOP
 
-  COV.RED -> COV
+  COV.W -> COV
   dimnames(COV) <- list(NAMES,NAMES)
 
   # transform COV

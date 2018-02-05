@@ -1,7 +1,7 @@
-speed.telemetry <- function(object,CTMM,level=0.95,prior=TRUE,fast=TRUE,error=0.01,mc.cores=NULL,...)
+speed.telemetry <- function(object,CTMM,level=0.95,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,mc.cores=1,...)
 { speed.ctmm(CTMM,data=object,level=level,prior=prior,error=error,mc.cores=mc.cores,...) }
 
-speed.ctmm <- function(object,data=NULL,level=0.95,prior=TRUE,fast=TRUE,error=0.01,mc.cores=NULL,...)
+speed.ctmm <- function(object,data=NULL,level=0.95,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,mc.cores=1,...)
 {
   if(length(object$tau)<2 || object$tau[2]<=.Machine$double.eps)
   { stop("Movement model is fractal. Speed cannot be estimated.") }
@@ -49,7 +49,7 @@ speed.ctmm <- function(object,data=NULL,level=0.95,prior=TRUE,fast=TRUE,error=0.
     if(is.null(mc.cores)) { mc.cores <- detectCores() }
 
     # random speed calculation
-    spd.fn <- function(i=0) { speed.rand(object,data=data,prior=prior,fast=fast,error=error,precompute=precompute,...) }
+    spd.fn <- function(i=0) { speed.rand(object,data=data,prior=prior,fast=fast,cor.min=cor.min,dt.max=dt.max,error=error,precompute=precompute,...) }
 
     # setup precompute stuff
     if(prior==FALSE)
@@ -126,7 +126,7 @@ speed.ctmm <- function(object,data=NULL,level=0.95,prior=TRUE,fast=TRUE,error=0.
 }
 
 # calculate speed of one random trajectory
-speed.rand <- function(CTMM,data=NULL,prior=TRUE,fast=TRUE,error=0.01,precompute=FALSE,...)
+speed.rand <- function(CTMM,data=NULL,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,precompute=FALSE,...)
 {
   # capture model uncertainty
   if(prior) { CTMM <- emulate(CTMM,data=data,fast=fast,...) }
@@ -167,15 +167,18 @@ speed.rand <- function(CTMM,data=NULL,prior=TRUE,fast=TRUE,error=0.01,precompute
       }
     }
 
-    data <- simulate(CTMM,data=data,dt=dt,precompute=precompute)
+    if(cor.min) { dt.max <- -log(cor.min)*CTMM$tau[2] }
+    data <- simulate(CTMM,data=data,dt=dt,precompute=precompute,dt.max=dt.max)
     t <- data$t
   }
+  if(is.null(dt.max)) { dt.max <- Inf }
 
   # instantaneous speeds
   data <- sqrt(data$v.x^2+data$v.y^2)
 
   # weights for Riemmann sum
   w <- diff(t)
+  w <- w * (w<=dt.max) # skip gaps
   w <- c(0,w) + c(w,0)
 
   # weighted average speed

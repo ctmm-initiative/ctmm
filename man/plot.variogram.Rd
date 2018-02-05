@@ -7,8 +7,8 @@
 Produces simple plots of \code{varigram} objects (semi-variance vs. time lag) and model semi-variance functions, with approximate confidence intervals around the semi-variance estimates.
 }
 \usage{
-\S3method{plot}{variogram}(x,CTMM=NULL,level=0.95,fraction=0.5,col="black",col.CTMM="red",
-     xlim=NULL,ylim=NULL,...)
+\S3method{plot}{variogram}(x,CTMM=NULL,level=0.95,fraction=0.5,col="black",col.CTMM="red",xlim=NULL,ylim=NULL,
+     ...)
 
 \S4method{zoom}{variogram}(x,fraction=0.5,...)
 }

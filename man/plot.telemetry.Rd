@@ -12,9 +12,9 @@ Produces simple plots of \code{telemetry} objects, possibly overlayed with a Gau
 \usage{
 plot(x,y,...)
 
-\S3method{plot}{telemetry}(x, CTMM=NULL, UD=NULL, level.UD=0.95, level=0.95, DF="CDF", col="red",
-col.level="black", col.DF="blue", col.grid="white", pch=1, type='p', labels=NULL,
-fraction=1, add=FALSE, xlim=NULL, ylim=NULL, cex=NULL, lwd=1, ...)
+\S3method{plot}{telemetry}(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF",velocity=FALSE,
+     col="red",col.level="black",col.DF="blue",col.grid="white",pch=1,type='p',
+     labels=NULL,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,cex=NULL,lwd=1,...)
 
 \S4method{zoom}{list}(x,...)
 
@@ -31,6 +31,7 @@ fraction=1, add=FALSE, xlim=NULL, ylim=NULL, cex=NULL, lwd=1, ...)
   \item{level.UD}{Confidence level of Gaussian \code{ctmm} model or \code{UD} estimate contours to be displayed. I.e., \code{level.UD=0.50} can yield the 50\% core home range within the rendered contours.}
   \item{level}{ Confidence levels placed on the contour estimates themselves. I.e., the above 50\% core home-range area can be estimated with 95\% confidence via \code{level=0.95}. }
   \item{DF}{Plot the maximum likelihood probability density function \code{"PDF"} or cumulative distribution function \code{"CDF"}.}
+  \item{velocity}{Plot velocity vectors if recorded in the data.}
   \item{col}{Color option for telemetry data. Can be an array or list of arrays.}
   \item{col.level}{Color option for home-range contours. Can be an array.}
   \item{col.DF}{Color option for the density function. Can be an array.}
@@ -38,7 +39,7 @@ fraction=1, add=FALSE, xlim=NULL, ylim=NULL, cex=NULL, lwd=1, ...)
   \item{pch}{Plotting symbol. Can be an array or list of arrays.}
   \item{type}{How plot points are connected. Can be an array.}
   \item{labels}{Labels for UD contours. Can be an array or list of arrays.}
-  \item{fraction}{Fraction of the data, Gaussian \code{ctmm}, or \code{UD} range to plot, whichever is larger.}
+  \item{fraction}{Quantile fraction of the data, Gaussian \code{ctmm}, or \code{UD} range to plot, whichever is larger.}
   \item{add}{Setting to \code{TRUE} will disable the unit conversions and base layer plot, so that \code{plot.telemetry} can be overlayed atop other outputs more easily.}
   \item{xlim}{The \code{x} limits \code{c(x1, x2)} of the plot (in SI units).}
   \item{ylim}{The \code{y} limits \code{c(y1, y2)} of the plot (in SI units).}

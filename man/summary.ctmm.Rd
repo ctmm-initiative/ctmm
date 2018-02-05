@@ -12,7 +12,7 @@
   \item{level}{ Confidence level for parameter estimates. }
   \item{level.UD}{ Confidence level for the Gaussian home-range area. }
   \item{units}{Convert result to natural units.}
-  \item{IC}{Information criteria for sorting lists of \code{ctmm} objects. Options include AIC, AICc, BIC, and MSPE.}
+  \item{IC}{Information criteria for sorting lists of \code{ctmm} objects. Options include \code{"AIC"}, \code{"AICc"}, \code{"BIC"}, and \code{"MSPE"}.}
   \item{...}{Unused options.}
 }
 
@@ -24,7 +24,7 @@ If summary is called with a single \code{ctmm} object output from \code{\link{ct
 \item{\code{tau}}{The autocorrelation timescales.}
 \item{\code{area}}{The Gaussian home-range area, where the point estimate has a significance level of \code{level.UD}. I.e., the core home range is where the animal is located 50\% of the time with \code{level.UD=0.50}.
 This point estimate itself is subject to uncertainty, and is given confidence intervals derived from \code{level}.}
-\item{\code{speed}}{The Gaussian root-mean-square (RMS) velocity, which is a convenient measure of average speed.}
+\item{\code{speed}}{The Gaussian root-mean-square (RMS) velocity, which is a convenient measure of average speed but not the conventional measure of average speed (see \code{\link{speed}}).}
 }
 If summary is called on a list of \code{ctmm} objects output from \code{\link{ctmm.select}}, then a table is returned with the model names and AIC differences, where "IID" denotes the uncorrelated bi-variate Gaussian model, "OU" denotes the continuous-position Ornstein-Uhlenbeck model, and "OUF" denotes the continuous-velocity Ornstein-Uhlenbeck-F model.
 }

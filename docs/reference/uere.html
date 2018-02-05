@@ -23,7 +23,8 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-
+  
+  
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -101,7 +102,7 @@
     <p>Functions for estimating and assigning the User Equivalent Range Error (UERE) of a GPS device from calibration data.</p>
     
 
-    <pre class="usage"><span class='fu'>uere</span>(<span class='no'>data</span>,<span class='kw'>diagnostic</span><span class='kw'>=</span><span class='fl'>FALSE</span>)
+    <pre class="usage"><span class='fu'>uere</span>(<span class='no'>data</span>,<span class='kw'>axes</span><span class='kw'>=</span><span class='fu'>c</span>(<span class='st'>"x"</span>,<span class='st'>"y"</span>),<span class='kw'>diagnostic</span><span class='kw'>=</span><span class='fl'>FALSE</span>)
 
 <span class='fu'>uere</span>(<span class='no'>data</span>) <span class='kw'>&lt;-</span> <span class='no'>value</span></pre>
     
@@ -113,12 +114,16 @@
       <td><p>Telemetry object or list of telemetry objects with Movebank column <code>GPS.HDOP</code>.</p></td>
     </tr>
     <tr>
+      <th>axes</th>
+      <td><p>Set of axes to estimate the UERE from. Other options include the vertical <code>"z"</code> and velocity <code>c("v.x","v.y")</code>.</p></td>
+    </tr>
+    <tr>
       <th>diagnostic</th>
       <td><p>Return extra details, such as the UERE's 95% confidence interval and a plot.</p></td>
     </tr>
     <tr>
       <th>value</th>
-      <td><p>UERE value to assign to telemetry data.</p></td>
+      <td><p>UERE value(s) to assign to telemetry data (see details).</p></td>
     </tr>
     </table>
     
@@ -128,6 +133,11 @@
 <code>uere()</code> allows users to estimate the UERE from calibration data, where the device was left fixed over a period of time.
 Otherwise, when <code>error=TRUE</code> in <code><a href='ctmm.fit.html'>ctmm</a></code>, <code><a href='ctmm.fit.html'>ctmm.fit</a></code> will estimate the UERE simultaneously with the movement model, which is less reliable than using calibration data.</p>
 <p>The calibration UERE can then be applied to tracking data during import, with <code><a href='as.telemetry.html'>as.telemetry</a></code>, or after import with the <code>uere()&lt;-</code> assignment method.</p>
+<p>Ideally, device HDOP and VDOP values are scaled to the same UERE.
+However, in many cases not all DOP values are supplied and some must be approximated.
+In such cases, different UERE values need to be estimated for each set of DOP values, via the <code>axes</code> argument of <code>uere</code>.
+A <code>c</code> combination of properly named UERE values can then be used in assignment via <code>uere&lt;-</code>.
+Proper names include <code>"horizontal"</code>, <code>"vertical"</code>, and <code>"speed"</code>.</p>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 

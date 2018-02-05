@@ -1,13 +1,17 @@
-0.4.2 2017-01-22
+0.4.2 2017-02-03
 ================
   
   * new speed() method
+  
+  * new ctmm.boot() method
 
-  * debias argument for overlap
+  * overlap debias=TRUE option (approximate)
 
-  * pHREML, pREML, HREML ctmm.fit methods implemented distinctly
+  * pHREML, pREML, HREML ctmm.fit methods implemented and documented
   
   * IID pREML & REML AICc values implemented
+  
+  * MSPE values implemented
 
   * new uere()<- assignment method
 
@@ -15,13 +19,19 @@
   
   * velocities now included in simulate()
   
-  * precompute option for simulate
+  * simulate precompute option
   
-  * drop=TRUE option in as.telemetry
+  * as.telemetry drop=TRUE option
   
   * as.telemetry will no longer drop individuals with missing data columns
   
+  * as.telemetry will try to approximate DOP values
+  
+  * as.telemetry imports velocity vectors (NOT TESTED!)
+  
   * plot.UD resolution grid less obnoxious, NA/FALSE contour label option
+  
+  * plot.telemetry velocity=TRUE option for data with recorded velocities
   
   * fixed AIC bug in new parameterization code (0.4.0-0.4.1) where isotropic=TRUE model would never be selected
   

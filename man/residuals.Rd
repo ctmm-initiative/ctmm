@@ -73,7 +73,7 @@ plot(RES)
 ACF <- correlogram(RES,res=10)
 
 #plot a day's worth of lags
-plot(ACF[ACF$lag<=24*60^2,],fraction=1)
+plot(ACF[ACF$lag<=1 \%#\% 'day',],fraction=1)
 }}
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the

@@ -126,7 +126,7 @@
     </tr>
     <tr>
       <th>IC</th>
-      <td><p>Information criteria for sorting lists of <code>ctmm</code> objects. Options include AIC, AICc, BIC, and MSPE.</p></td>
+      <td><p>Information criteria for sorting lists of <code>ctmm</code> objects. Options include <code>"AIC"</code>, <code>"AICc"</code>, <code>"BIC"</code>, and <code>"MSPE"</code>.</p></td>
     </tr>
     <tr>
       <th>...</th>
@@ -140,7 +140,7 @@
 <dt><code>tau</code></dt><dd><p>The autocorrelation timescales.</p></dd>
 <dt><code>area</code></dt><dd><p>The Gaussian home-range area, where the point estimate has a significance level of <code>level.UD</code>. I.e., the core home range is where the animal is located 50% of the time with <code>level.UD=0.50</code>.
 This point estimate itself is subject to uncertainty, and is given confidence intervals derived from <code>level</code>.</p></dd>
-<dt><code>speed</code></dt><dd><p>The Gaussian root-mean-square (RMS) velocity, which is a convenient measure of average speed.</p></dd>
+<dt><code>speed</code></dt><dd><p>The Gaussian root-mean-square (RMS) velocity, which is a convenient measure of average speed but not the conventional measure of average speed (see <code><a href='speed.html'>speed</a></code>).</p></dd>
 </dl><p>If summary is called on a list of <code>ctmm</code> objects output from <code><a href='ctmm.fit.html'>ctmm.select</a></code>, then a table is returned with the model names and AIC differences, where "IID" denotes the uncorrelated bi-variate Gaussian model, "OU" denotes the continuous-position Ornstein-Uhlenbeck model, and "OUF" denotes the continuous-velocity Ornstein-Uhlenbeck-F model.</p>
     
     <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
