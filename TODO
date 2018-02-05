@@ -1,18 +1,16 @@
-SPEED PAPER
-* dt.max, cor.min arguments like occurrence
-* use speed data in likelihood (kalman filter upgrade)
-* plot velocity vectors
-
 pREML PAPER
-* bootstrap test buffalo, gazelle
-* document pREML & bootstrap stuff
+* test with one estimator
+
+SPEED PAPER
+* ? velocity vector transparency propto speed uncertainty ?
+* TEST: import speed & heading on something with good estimates
+* use speed data in likelihood (kalman filter upgrade)
 
 ERROR PAPER
-* HDOP & VDOP simultaneous, different
-* uere.ctmm
+* x,y,z simultaneous HDOP,VDOP calibration
 * error ellipse
 * error class translation
-* UERE priors from calibration
+* UERE error propagation from calibration (do not use as prior!)
 
 * overlap() man example akde() first
 * CODE REWRITE: X <- array(X,DIM) ;%TO%; dim(X) <- DIM
@@ -34,7 +32,8 @@ ERROR PAPER
 * effective DOF for diffusion rate?
 
 PERIODIC 0.4.X
-* mean derivative not included in simulate/predict/etc.
+* AIC/MSPE hybrid model selection
+* mean derivative not included in simulate/predict/etc?
 * T-test on high frequency amplitudes
 * variogram on mean detrended data with CTMM argument
 * simulate.telemetry (not pure ctmm)

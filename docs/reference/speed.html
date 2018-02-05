@@ -105,10 +105,12 @@
     <pre class="usage"><span class='fu'>speed</span>(<span class='no'>object</span>,<span class='no'>...</span>)
 
 <span class='co'># S3 method for ctmm</span>
-<span class='fu'>speed</span>(<span class='no'>object</span>,<span class='kw'>data</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>prior</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>fast</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>error</span><span class='kw'>=</span><span class='fl'>0.01</span>,<span class='kw'>mc.cores</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='no'>...</span>)
+<span class='fu'>speed</span>(<span class='no'>object</span>,<span class='kw'>data</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>prior</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>fast</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>cor.min</span><span class='kw'>=</span><span class='fl'>0.5</span>,<span class='kw'>dt.max</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>error</span><span class='kw'>=</span><span class='fl'>0.01</span>,
+<span class='kw'>mc.cores</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='no'>...</span>)
 
 <span class='co'># S3 method for telemetry</span>
-<span class='fu'>speed</span>(<span class='no'>object</span>,<span class='no'>CTMM</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>prior</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>fast</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>error</span><span class='kw'>=</span><span class='fl'>0.01</span>,<span class='kw'>mc.cores</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='no'>...</span>)</pre>
+<span class='fu'>speed</span>(<span class='no'>object</span>,<span class='no'>CTMM</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>prior</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>fast</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>cor.min</span><span class='kw'>=</span><span class='fl'>0.5</span>,<span class='kw'>dt.max</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>error</span><span class='kw'>=</span><span class='fl'>0.01</span>,
+<span class='kw'>mc.cores</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
@@ -138,12 +140,20 @@
       <td><p>Whether or not to invoke the central-limit theorem (see <code><a href='emulate.ctmm.html'>emulate</a></code>).</p></td>
     </tr>
     <tr>
+      <th>cor.min</th>
+      <td><p>Velocity correlation threshold for skipping gaps.</p></td>
+    </tr>
+    <tr>
+      <th>dt.max</th>
+      <td><p>Absolute gap sizes to skip (in seconds), alternative to <code>cor.min</code>.</p></td>
+    </tr>
+    <tr>
       <th>error</th>
       <td><p>Target (relative) standard error.</p></td>
     </tr>
     <tr>
       <th>mc.cores</th>
-      <td><p>How many CPU cores to use (Unix required). Will use all if <code>NULL</code>.</p></td>
+      <td><p>Number of processes to run in parallel (UNIX only). <code>mc.cores=NULL</code> will use all present cores.</p></td>
     </tr>
     <tr>
       <th>...</th>
@@ -153,15 +163,11 @@
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    
+    <p>The <code>cor.min</code> or <code>dt.max</code> arguments are used to constrain the estimate to be derived from simulations near the data, and therefore ensure that the estimate is more reflective of the data than the model.</p>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p></p>
-    
-    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
-
-    
+    <p>Returns the estimated mean speed of the sampled trajectory with CIs by default. If <code>level=NULL</code>, then the ensemble of mean speeds is returned instead.</p>
     
     <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
 
@@ -181,8 +187,6 @@
       <li><a href="#details">Details</a></li>
 
       <li><a href="#value">Value</a></li>
-
-      <li><a href="#references">References</a></li>
 
       <li><a href="#note">Note</a></li>
 

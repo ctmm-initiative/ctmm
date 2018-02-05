@@ -12,10 +12,10 @@ Given a \code{ctmm} movement model and \code{telemetry} data, \code{speed} simul
 speed(object,...)
 
 \S3method{speed}{ctmm}(object,data=NULL,level=0.95,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,
-mc.cores=NULL,...)
+mc.cores=1,...)
 
 \S3method{speed}{telemetry}(object,CTMM,level=0.95,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,
-mc.cores=NULL,...)
+mc.cores=1,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -28,18 +28,16 @@ mc.cores=NULL,...)
   \item{cor.min}{Velocity correlation threshold for skipping gaps.}
   \item{dt.max}{Absolute gap sizes to skip (in seconds), alternative to \code{cor.min}.}
   \item{error}{Target (relative) standard error.}
-  \item{mc.cores}{How many CPU cores to use (Unix required). Will use all if \code{NULL}.}
+  \item{mc.cores}{Number of processes to run in parallel (UNIX only). \code{mc.cores=NULL} will use all present cores.}
   \item{...}{Arguments passed to \code{\link{emulate}}.}
 }
 \details{
 The \code{cor.min} or \code{dt.max} arguments are used to constrain the estimate to be derived from simulations near the data, and therefore ensure that the estimate is more reflective of the data than the model.
 }
 
-\value{ }
+\value{ Returns the estimated mean speed of the sampled trajectory with CIs by default. If \code{level=NULL}, then the ensemble of mean speeds is returned instead. }
 
-\references{
-}
-
+%\references{ }
 
 \author{ C. H. Fleming. }
 

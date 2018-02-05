@@ -102,8 +102,7 @@
     <p>This function calculates an occurrence distribution from <code>telemetry</code> data and a continuous-time movement model.</p>
     
 
-    <pre class="usage"><span class='fu'>occurrence</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>H</span><span class='kw'>=</span><span class='fl'>0</span>,<span class='kw'>res.time</span><span class='kw'>=</span><span class='fl'>10</span>,<span class='kw'>res.space</span><span class='kw'>=</span><span class='fl'>10</span>,<span class='kw'>grid</span><span class='kw'>=</span><span class='kw'>NULL</span>,
-<span class='kw'>cor.min</span><span class='kw'>=</span><span class='fl'>0.5</span>,<span class='kw'>dt.max</span><span class='kw'>=</span><span class='kw'>NULL</span>)</pre>
+    <pre class="usage"><span class='fu'>occurrence</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>H</span><span class='kw'>=</span><span class='fl'>0</span>,<span class='kw'>res.time</span><span class='kw'>=</span><span class='fl'>10</span>,<span class='kw'>res.space</span><span class='kw'>=</span><span class='fl'>10</span>,<span class='kw'>grid</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>cor.min</span><span class='kw'>=</span><span class='fl'>0.5</span>,<span class='kw'>dt.max</span><span class='kw'>=</span><span class='kw'>NULL</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
@@ -134,13 +133,17 @@
     </tr>
     <tr>
       <th>cor.min</th>
-      <td><p>Minimum gap correlation for Kriging interpolation (alternative to <code>dt.max</code>).</p></td>
+      <td><p>Location correlation threshold for skipping gaps.</p></td>
     </tr>
     <tr>
       <th>dt.max</th>
-      <td><p>Maximum gap size for Kriging interpolation (alternative to <code>cor.min</code>).</p></td>
+      <td><p>Maximum absolute gap size (in seconds) for Kriging interpolation, alternative to <code>cor.min</code>.</p></td>
     </tr>
     </table>
+    
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>The arguments <code>cor.min</code> or <code>dt.max</code> are used to prevent the interpolation of large gaps, which would bias the estimate to more resemble the movement model than the data.</p>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
@@ -185,6 +188,8 @@ Kálmán filters for continuous-time movement models.
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
       
+      <li><a href="#details">Details</a></li>
+
       <li><a href="#value">Value</a></li>
 
       <li><a href="#references">References</a></li>

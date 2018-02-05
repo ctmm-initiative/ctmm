@@ -7,7 +7,7 @@
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Specify, fit, and select continuous-time movement models}
 \description{These functions allow one to propose hypothethical movement models (with initial estimates), fit those models to the data, and select among those models via an information criteria.
-The fitting functions wrap around \code{optim} and \code{ctmm.loglike} to maximize the likelihood function of continuous-time movement models described in Fleming et al (2014) and Fleming et al (2015), given 2D animal tracking data.
+The fitting functions wrap around \code{optim} and \code{ctmm.loglike} to fit continuous-time movement models to 2D animal tracking data as described in Fleming et al (2014) and Fleming et al (2015), and Fleming et al (2017).
 }
 \usage{
 ctmm(tau=NULL,isotropic=FALSE,range=TRUE,circle=FALSE,error=FALSE,axes=c("x","y"),...)
@@ -33,7 +33,7 @@ ctmm.select(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE,...)
   \item{profile}{Analytically solve for as many covariance parameters as possible.}
   \item{zero}{Calculates \eqn{\log(likelihood) - zero}, instead of just \eqn{\log(likelihood)}, in a way that maintains numerical precision if the constant \code{zero} is close to the log likelihood. Used internally by \code{ctmm.fit}.}
   \item{verbose}{Return additional information. See "Value" below.}
-  \item{method}{Use residual maximum likelihood if \code{"REML"}. Not recommended.}
+  \item{method}{Fitting method to use: \code{"ML"}, \code{"HREML"}, \code{"pREML"}, \code{"pHREML"}, or \code{"REML"}. See "Description" below.}
   \item{COV}{Estimate the autocorrelation parameter covariance matrix.}
   \item{control}{An optional argument list with standardized numerical arguments.}
   \item{trace}{Report progress updates.}
@@ -51,8 +51,7 @@ If \code{length(tau)==0}, then an IID bi-variate Gaussian model is fit to the da
 If \code{length(tau)==1}, then an Ornstein-Uhlenbeck (OU) model (Brownian motion restricted to a finite home range) is fit the data, where \code{tau} is the position autocorrelation timescale. \code{tau=Inf} then yields Brownian motion (BM).
 If \code{length(tau)==2}, then the OUF model (continuous-velocity motion restricted to a finite home range) is fit to the data, where \code{tau[1]} is again the position autocorrelation timescale and \code{tau[2]} is the velocity autocorrelation timescale. \code{tau[1]=Inf} then yields integrated Ornstein-Uhlenbeck (IOU) motion, which is a spatially unrestricted continuous-velocity process.
 
-Model selection in \code{ctmm.select} proceeds by first fitting the initial model guess, and then attempting to simplify the autocorrelation model and complexify the deterministic (mean) model until the information criteria fails to improve. The intent of working in these directions is to avoid fitting trends to autocorrelation.
-Note that simpler models in a nested hierarchy will only be attempted if they appear credible, which can be adjusted with the \code{level} argument. \code{level=1} will, therefore, always attempt a simpler model.
+The potential fitting methods---maximum likelihood (\code{ML}), residual maximum likelihood (\code{REML}), perturbative REML (\code{pREML}), hybrid REML (\code{HREML}), and perturbative hybrid REML (\code{pHREML})---are described in Fleming et al (2018). In general, \code{pHREML} is the best method, though when parameter estimates lie near boundaries it can fail, in which case \code{ctmm.fit} will fall back to \code{HREML}, as reported by the \code{method} slot of the resulting fit object.
 
 The \code{control} list can take the folowing arguments, with defaults shown:
 \describe{
@@ -60,13 +59,16 @@ The \code{control} list can take the folowing arguments, with defaults shown:
 \item{\code{precision=1/2}}{Fraction of machine numerical precision to target in the maximized likelihood value. MLEs will necessarily have half this precision. On most computers, \code{precision=1} is approximately 16 decimal digits of precision for the likelihood and 8 for the MLEs.}
 \item{\code{maxit=.Machine$integer.max}}{Maximum number of iterations allowed for optimization.}
 }
+
+Model selection in \code{ctmm.select} proceeds by first fitting the initial model guess, and then attempting to simplify the autocorrelation model and complexify the deterministic (mean) model until the information criteria fails to improve. The intent of working in these directions is to avoid fitting trends to autocorrelation.
+Note that simpler models in a nested hierarchy will only be attempted if they appear credible, which can be adjusted with the \code{level} argument. \code{level=1} will, therefore, always attempt a simpler model.
 }
 
 \value{
 The function \code{ctmm} returns a prototype \code{ctmm} movement-model object.
 By default, \code{ctmm.loglike} returns the log-likelihood of the model \code{CTMM}.
 \code{ctmm.fit} (and \code{ctmm.loglike} with \code{verbose=TRUE}) returns the maximum likelihood \code{ctmm} movement-model object with all of the components of \code{CTMM} plus the components listed below.
-\code{ctmm.select} returns the best model by default or the list of attempted models if \code{verbose=TRUE}.
+\code{ctmm.select} returns the best model by default or the complete list of attempted models if \code{verbose=TRUE}.
 \describe{
 \item{\code{AICc}}{The approximate corrected Akaike information criterion for multivariate distributions with variable numbers of unknown mean and (structured) covariance parameters (Burnham & Anderson, Eq. 7.91). This formula is only exact for IID data.}
 \item{\code{loglike}}{The log-likelihood.}
@@ -74,7 +76,7 @@ By default, \code{ctmm.loglike} returns the log-likelihood of the model \code{CT
 \item{\code{mu}}{The maximum likelihood stationary mean vector estimate.}
 \item{\code{COV.mu}}{The covariance matrix of the vector \code{mu}, assuming that the point estimate \code{sigma} is good.}
 \item{\code{DOF.mu}}{The effective number of degrees of freedom in the estimate of \code{mu}, assuming that the point estimate of \code{tau} is good. This can be much smaller than \code{length(data$t)} if the data are autocorrelated.}
-\item{\code{COV}}{Covariance of the parameter vector \code{c(sigma,tau,circle)}, as derived from \code{hessian}, and where \code{sigma} is parameterized in terms of its standard \code{area}, \code{eccentricity}, and \code{angle} of orientation. Typically, \code{sigma}'s \code{area} parameter is extremely correlated to \code{tau[1]}, and sequential components of \code{tau} are slightly correlated.}
+\item{\code{COV}}{Covariance of the autocovariance parameter estimate vector \code{c(sigma,tau,circle)}, as derived (asymptotically) from the \code{hessian} of the log-likelihood function, and where \code{sigma} is parameterized in terms of its standard \code{area}, \code{eccentricity}, and \code{angle} of orientation. Typically, \code{sigma}'s \code{area} parameter is extremely correlated to \code{tau[1]}, and sequential components of \code{tau} are slightly correlated.}
 }
 }
 
@@ -116,7 +118,7 @@ This is no longer feasible with current versions of \code{ctmm}, as the number o
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
-\seealso{ \code{\link{ctmm.guess}}, \code{\link{optim}}, \code{\link{summary.ctmm}}, \code{\link{variogram.fit}}. }
+\seealso{ \code{\link{ctmm.boot}}, \code{\link{ctmm.guess}}, \code{\link{optim}}, \code{\link{summary.ctmm}}, \code{\link{variogram.fit}}. }
 
 \examples{\donttest{
 # Load package and data

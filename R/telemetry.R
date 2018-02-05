@@ -189,69 +189,18 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   COL <- pull.column(object,COL)
   DATA$latitude <- COL
 
-  # Import and use e-obs accuracy if available
-  COL <- "eobs.horizontal.accuracy.estimate"
-  COL <- pull.column(object,COL)
-  if(length(COL)) { DATA$HERE <- sqrt(2)*COL }
-  # I emailed them, but they didn't know if there needed to be a sqrt(2) factor here
-  # Do I assume this is a sigma_H ?
-  # Do I assume this is an x-y standard deviation?
-  # Scott's calibration data is more like the latter
-
-  # Import and use HDOP if available
-  COL <- c("GPS.HDOP","HDOP","DOP")
-  COL <- pull.column(object,COL)
-  if(length(COL))
-  {
-    DATA$HDOP <- COL
-    if(is.null(UERE))
-    { warning("HDOP values found, but UERE not specified and will have to be fit. See help(\"uere\").") }
-    else
-    { DATA$HERE <- (COL*UERE) }
-  }
-
-  # approximate DOP from # satellites if necessary
-  if(!any(c("HDOP","HERE") %in% names(DATA)))
-  {
-    COL <- c("GPS.satellite.count","satellite.count","NumSats","Sats") # Counts?
-    COL <- pull.column(object,COL)
-
-    if(length(COL))
-    {
-      warning("HDOP values not found. Approximating with # satellites.")
-      COL <- 10/(COL-2)
-      DATA$HDOP <- COL
-
-      if(is.null(UERE))
-      { warning("HDOP values approximated, but UERE not specified and will have to be fit. See help(\"uere\").") }
-      else
-      { DATA$HERE <- (COL*UERE) }
-    }
-  }
-
-  # Import third axis if available
-  COL <- c("height.above.ellipsoid","height.above.msl")
-  COL <- pull.column(object,COL)
-  DATA$z <- COL
-
-  COL <- c("GPS.VDOP","VDOP")
-  COL <- pull.column(object,COL)
-  if(length(COL))
-  {
-    DATA$VDOP <- COL
-    if(is.null(UERE))
-    { warning("VDOP values found, but UERE not specified and will have to be fit. See help(\"uere\").") }
-    else
-    { DATA$VERE <- (COL*UERE) }
-  }
-  # need to know where the ground is too
-
+  ###############################################
+  # PROJECTION
   # delete missing rows for necessary information
   COLS <- c("timestamp","latitude","longitude")
   for(COL in COLS)
   {
     NAS <- which(is.na(DATA[,COL]))
-    if(length(NAS)) { DATA <- DATA[-NAS,] }
+    if(length(NAS))
+    {
+      DATA <- DATA[-NAS,]
+      object <- object[-NAS,]
+    }
   }
 
   DATA$t <- as.numeric(DATA$timestamp)
@@ -267,6 +216,127 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   DATA$x <- xy[,1]
   DATA$y <- xy[,2]
 
+  rm(xy)
+
+  ###################################
+  # HDOP
+  # Import and use e-obs accuracy if available
+  COL <- "eobs.horizontal.accuracy.estimate"
+  COL <- pull.column(object,COL)
+  if(length(COL)) { DATA$HERE <- sqrt(2)*COL }
+  # I emailed them, but they didn't know if there needed to be a sqrt(2) factor here
+  # Do I assume this is an HDOP sigma_H ?
+  # Do I assume this is an x-y standard deviation?
+  # Scott's calibration data is more like the latter
+
+  # ARGOS error ellipse goes here
+  # !!
+
+  # Import and use HDOP if available
+  COL <- c("GPS.HDOP","HDOP","DOP")
+  COL <- pull.column(object,COL)
+  if(length(COL))
+  {
+    DATA$HDOP <- COL
+    if(is.null(UERE)) { warning("HDOP values found, but UERE not specified and will have to be fit. See help(\"uere\").") }
+  }
+
+  # ARGOS error categories go here
+  # !!
+
+  # approximate DOP from # satellites if necessary
+  if(!any(c("HDOP","HERE") %in% names(DATA)))
+  {
+    COL <- c("GPS.satellite.count","satellite.count","NumSats","Sats") # Counts?
+    COL <- pull.column(object,COL)
+
+    if(length(COL))
+    {
+      warning("HDOP values not found. Approximating with # satellites.")
+      COL <- 10/(COL-2)
+      DATA$HDOP <- COL
+
+      if(is.null(UERE)) { warning("HDOP values approximated, but UERE not specified and will have to be fit. See help(\"uere\").") }
+    }
+  }
+
+  ################################
+  # HEIGHT
+  # Import third axis if available
+  COL <- c("height.above.ellipsoid","height.above.msl")
+  COL <- pull.column(object,COL)
+  if(length(COL))
+  {
+    DATA$z <- COL
+
+    COL <- c("GPS.VDOP","VDOP")
+    COL <- pull.column(object,COL)
+    if(length(COL))
+    {
+      DATA$VDOP <- COL
+      if(is.null(UERE)) { warning("VDOP values found, but UERE not specified and will have to be fit. See help(\"uere\").") }
+    }
+    # need to know where the ground is too
+
+    # if no VDOP, USE HDOP/HERE as approximate VDOP
+    COL <- intersect(c("HERE","HDOP"),names(DATA))
+    if(!any(c("VDOP","VERE") %in% names(DATA)) && length(COL))
+    {
+      COL <- COL[1]
+      DATA$VDOP <- DATA[,COL]
+      warning("VDOP not found. ",COL," used as an approximate VDOP, which will require a separate UERE. See help(\"uere\").")
+    }
+  }
+
+  ########################################
+  # VELOCITY
+  # Import velocity information if present
+  COL <- c("ground.speed","speed","GPS.speed")
+  COL <- pull.column(object,COL)
+  if(length(COL))
+  {
+    v <- COL
+    COL <- c("heading","GPS.heading")
+    d.theta <- pull.column(object,COL)
+
+    # WGS-84
+    R.EQ <- 6378137
+    R.PL <- 6356752.3142
+    # approximate 1-meter-North latitude displacements
+    d.lambda <- 1/sqrt((R.EQ*sin(DATA$latitude))^2+(R.PL*cos(DATA$latitude))^2)
+    # could use grad() but would be slowwwww....
+    xy <- cbind(DATA$longitude,DATA$latitude + d.lambda)
+    colnames(xy) <- c("x","y")
+    xy <- rgdal::project(xy,projection)
+    # difference vector
+    xy <- xy - DATA[,c('x','y')]
+    # North heading
+    theta <- atan2(xy[,1],xy[,2])
+    # velocity heading
+    theta <- theta + d.theta
+    # velocity components
+    DATA$v.x <- v * cos(theta)
+    DATA$v.y <- v * sin(theta)
+
+    rm(v,theta,d.theta,d.lambda,xy)
+
+    ####################
+    # SPEED ERE
+    COL <- "eobs.speed.accuracy.estimate"
+    COL <- pull.column(object,COL)
+    if(length(COL)) { DATA$SERE <- sqrt(2)*COL } # assuming same form as EOBS horizontal accuracy estimate
+
+    # if no VDOP, USE HDOP/HERE as approximate SDOP
+    COL <- intersect(c("HERE","HDOP"),names(DATA))
+    if(!any(c("SDOP","SERE") %in% names(DATA)) && length(COL))
+    {
+      COL <- COL[1]
+      DATA$SDOP <- DATA[,COL]
+      warning(COL," used as an approximate SDOP, which will require a separate UERE. See help(\"uere\").")
+    }
+  } # END SPEED IMPORT
+
+  #######################################
   # do this or possibly get empty animals from subset
   DATA <- droplevels(DATA)
 
@@ -292,6 +362,10 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   }
   names(telist) <- id
 
+  # finally set the UERE if present
+  if(!is.null(UERE)) { uere(telist) <- UERE }
+
+  # return single or list
   if (n>1 || !drop) { return(telist) }
   else { return(telist[[1]]) }
 }
@@ -416,7 +490,7 @@ new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,fracti
 #######################################
 # PLOT TELEMETRY DATA
 #######################################
-plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF",col="red",col.level="black",col.DF="blue",col.grid="white",pch=1,type='p',labels=NULL,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,cex=NULL,lwd=1,...)
+plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF",velocity=FALSE,col="red",col.level="black",col.DF="blue",col.grid="white",pch=1,type='p',labels=NULL,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,cex=NULL,lwd=1,...)
 {
   alpha <- 1-level
   alpha.UD <- 1-level.UD
@@ -539,16 +613,16 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
     }
 
     # also plot velocity vectors at dt scale
-    #     if(all(c("vx","vy") %in% names(x[[i]])))
-    #     {
-    #       dr <- x[[i]][,c("vx","vy")]/dist$scale*dt
-    #
-    #       arr.length <- dr^2
-    #       arr.length <- sqrt(arr.length[,1]+arr.length[,2])
-    #       arr.length <- 0.1*cmpkm*arr.length
-    #
-    #       shape::Arrows(x0=r$x, y0=r$y, x1=(r$x+dr$vx), y1=(r$y+dr$vy), col=col[[i]], code=2, segment=T, arr.adj=1, arr.length=arr.length, arr.type="curved")
-    #     }
+    if(velocity && all(c("v.x","v.y") %in% names(x[[i]])))
+    {
+      dr <- x[[i]][,c("v.x","v.y")]/dist$scale*dt
+
+      arr.length <- dr^2
+      arr.length <- sqrt(arr.length[,1]+arr.length[,2])
+      arr.length <- 0.1*cmpkm*arr.length
+
+      shape::Arrows(x0=r$x, y0=r$y, x1=(r$x+dr$v.x), y1=(r$y+dr$v.y), col=col[[i]], code=2, segment=T, arr.adj=1, arr.length=arr.length, arr.type="curved")
+    }
   }
 
 }

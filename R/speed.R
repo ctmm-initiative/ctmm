@@ -1,7 +1,7 @@
-speed.telemetry <- function(object,CTMM,level=0.95,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,mc.cores=NULL,...)
+speed.telemetry <- function(object,CTMM,level=0.95,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,mc.cores=1,...)
 { speed.ctmm(CTMM,data=object,level=level,prior=prior,error=error,mc.cores=mc.cores,...) }
 
-speed.ctmm <- function(object,data=NULL,level=0.95,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,mc.cores=NULL,...)
+speed.ctmm <- function(object,data=NULL,level=0.95,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,mc.cores=1,...)
 {
   if(length(object$tau)<2 || object$tau[2]<=.Machine$double.eps)
   { stop("Movement model is fractal. Speed cannot be estimated.") }

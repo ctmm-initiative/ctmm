@@ -74,8 +74,9 @@ emulate.telemetry <- function(object,CTMM,fast=FALSE,...)
 #####################################
 # multi-estimator parametric bootstrap
 # + concurrent double-bootstrap AICc
-ctmm.boot <- function(data,CTMM,method=c('HREML','pREML','pHREML'),error=0.01,mc.cores=NULL,trace=TRUE,...)
+ctmm.boot <- function(data,CTMM,method=c('HREML','pREML','pHREML'),error=0.01,mc.cores=1,trace=TRUE,...)
 {
+  method <- match.arg(method,c('ML','HREML','pREML','pHREML','REML'),several.ok=TRUE)
   if(is.null(mc.cores)) { mc.cores <- detectCores() } # Windows safe wrapper
 
   # toss location information for simulations unconditioned
@@ -160,6 +161,7 @@ ctmm.boot <- function(data,CTMM,method=c('HREML','pREML','pHREML'),error=0.01,mc
   P0 <- Transform(get.parameters(CTMM,NAMES)) -> P1 # null model for parametric bootstrap
   if(trace>1) { print(P0) }
   ERROR <- Inf -> ERROR.OLD
+  tol <- error*sqrt(length(NAMES)) # eigen-value tolerance for pseudo-inverse
   if(trace) { pb <- utils::txtProgressBar(style=3) }
   while(ERROR>error)
   {
@@ -203,7 +205,7 @@ ctmm.boot <- function(data,CTMM,method=c('HREML','pREML','pHREML'),error=0.01,mc
       SUB <- array(FALSE,c(length(NAMES),length(method)))
       SUB[i,] <- TRUE
 
-      H <- PDsolve(COV[SUB,SUB],pseudo=TRUE,tol=error)
+      H <- PDsolve(COV[SUB,SUB],pseudo=TRUE,tol=tol)
       VAR <- PDsolve(t(J) %*% H %*% J)
 
       W[i,] <- VAR %*% t(J) %*% H

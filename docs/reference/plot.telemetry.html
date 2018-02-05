@@ -105,9 +105,9 @@
     <pre class="usage"><span class='fu'>plot</span>(<span class='no'>x</span>,<span class='no'>y</span>,<span class='no'>...</span>)
 
 <span class='co'># S3 method for telemetry</span>
-<span class='fu'>plot</span>(<span class='no'>x</span>, <span class='kw'>CTMM</span><span class='kw'>=</span><span class='kw'>NULL</span>, <span class='kw'>UD</span><span class='kw'>=</span><span class='kw'>NULL</span>, <span class='kw'>level.UD</span><span class='kw'>=</span><span class='fl'>0.95</span>, <span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>, <span class='kw'>DF</span><span class='kw'>=</span><span class='st'>"CDF"</span>, <span class='kw'>col</span><span class='kw'>=</span><span class='st'>"red"</span>,
-<span class='kw'>col.level</span><span class='kw'>=</span><span class='st'>"black"</span>, <span class='kw'>col.DF</span><span class='kw'>=</span><span class='st'>"blue"</span>, <span class='kw'>col.grid</span><span class='kw'>=</span><span class='st'>"white"</span>, <span class='kw'>pch</span><span class='kw'>=</span><span class='fl'>1</span>, <span class='kw'>type</span><span class='kw'>=</span><span class='st'>'p'</span>, <span class='kw'>labels</span><span class='kw'>=</span><span class='kw'>NULL</span>,
-<span class='kw'>fraction</span><span class='kw'>=</span><span class='fl'>1</span>, <span class='kw'>add</span><span class='kw'>=</span><span class='fl'>FALSE</span>, <span class='kw'>xlim</span><span class='kw'>=</span><span class='kw'>NULL</span>, <span class='kw'>ylim</span><span class='kw'>=</span><span class='kw'>NULL</span>, <span class='kw'>cex</span><span class='kw'>=</span><span class='kw'>NULL</span>, <span class='kw'>lwd</span><span class='kw'>=</span><span class='fl'>1</span>, <span class='no'>...</span>)
+<span class='fu'>plot</span>(<span class='no'>x</span>,<span class='kw'>CTMM</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>UD</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>level.UD</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>DF</span><span class='kw'>=</span><span class='st'>"CDF"</span>,<span class='kw'>velocity</span><span class='kw'>=</span><span class='fl'>FALSE</span>,
+     <span class='kw'>col</span><span class='kw'>=</span><span class='st'>"red"</span>,<span class='kw'>col.level</span><span class='kw'>=</span><span class='st'>"black"</span>,<span class='kw'>col.DF</span><span class='kw'>=</span><span class='st'>"blue"</span>,<span class='kw'>col.grid</span><span class='kw'>=</span><span class='st'>"white"</span>,<span class='kw'>pch</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>type</span><span class='kw'>=</span><span class='st'>'p'</span>,
+     <span class='kw'>labels</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>fraction</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>add</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>xlim</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>ylim</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>cex</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>lwd</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='no'>...</span>)
 
 <span class='co'># S4 method for list</span>
 <span class='fu'>zoom</span>(<span class='no'>x</span>,<span class='no'>...</span>)
@@ -150,6 +150,10 @@
       <td><p>Plot the maximum likelihood probability density function <code>"PDF"</code> or cumulative distribution function <code>"CDF"</code>.</p></td>
     </tr>
     <tr>
+      <th>velocity</th>
+      <td><p>Plot velocity vectors if recorded in the data.</p></td>
+    </tr>
+    <tr>
       <th>col</th>
       <td><p>Color option for telemetry data. Can be an array or list of arrays.</p></td>
     </tr>
@@ -179,7 +183,7 @@
     </tr>
     <tr>
       <th>fraction</th>
-      <td><p>Fraction of the data, Gaussian <code>ctmm</code>, or <code>UD</code> range to plot, whichever is larger.</p></td>
+      <td><p>Quantile fraction of the data, Gaussian <code>ctmm</code>, or <code>UD</code> range to plot, whichever is larger.</p></td>
     </tr>
     <tr>
       <th>add</th>
