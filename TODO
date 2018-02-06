@@ -1,9 +1,5 @@
-pREML PAPER
-* test with one estimator
-
 SPEED PAPER
 * ? velocity vector transparency propto speed uncertainty ?
-* TEST: import speed & heading on something with good estimates
 * use speed data in likelihood (kalman filter upgrade)
 
 ERROR PAPER
