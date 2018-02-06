@@ -139,6 +139,7 @@ pull.column <- function(object,NAMES,FUNC=as.numeric)
   return(NULL)
 }
 
+
 # read in a MoveBank object file
 as.telemetry.character <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,drop=TRUE,...)
 {
@@ -159,6 +160,7 @@ as.telemetry.character <- function(object,timeformat="",timezone="UTC",projectio
   data <- as.telemetry.data.frame(data,timeformat=timeformat,timezone=timezone,projection=projection,UERE=UERE,drop=drop)
   return(data)
 }
+
 
 # this assumes a MoveBank data.frame
 as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,drop=TRUE,...)
@@ -263,7 +265,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   ################################
   # HEIGHT
   # Import third axis if available
-  COL <- c("height.above.ellipsoid","height.above.msl")
+  COL <- c("height.above.ellipsoid","height.above.msl","height.above.mean.sea.level","height.raw","height.(raw)","barometric.height","height","Argos.altitude","altitude","barometric.depth","depth")
   COL <- pull.column(object,COL)
   if(length(COL))
   {
@@ -296,8 +298,8 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   if(length(COL))
   {
     v <- COL
-    COL <- c("heading","GPS.heading")
-    d.theta <- pull.column(object,COL)
+    COL <- c("heading","GPS.heading","Course")
+    theta <- pull.column(object,COL) * (2*pi/360) # ack, degrees!
 
     # WGS-84
     R.EQ <- 6378137
@@ -305,20 +307,24 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     # approximate 1-meter-North latitude displacements
     d.lambda <- 1/sqrt((R.EQ*sin(DATA$latitude))^2+(R.PL*cos(DATA$latitude))^2)
     # could use grad() but would be slowwwww....
-    xy <- cbind(DATA$longitude,DATA$latitude + d.lambda)
+    xy <- cbind(DATA$longitude,DATA$latitude + d.lambda*(360/2/pi)) # arg, degrees!
     colnames(xy) <- c("x","y")
     xy <- rgdal::project(xy,projection)
-    # difference vector
-    xy <- xy - DATA[,c('x','y')]
-    # North heading
-    theta <- atan2(xy[,1],xy[,2])
-    # velocity heading
-    theta <- theta + d.theta
+    # difference vectors pointing North ~1 meters
+    xy <- xy - get.telemetry(DATA) # [n,2]
+    # difference vectors pointing North 1 meters exact
+    xy <- t(xy) / sqrt(rowSums(xy^2)) # [2,n]
+    # velocity vectors pointing North
+    v <- xy * v # [2,n]
+    # rotation in complex plane
+    v <- v[1,] + 1i*v[2,]
+    R <- exp(-1i*theta)
+    v <- R*v
     # velocity components
-    DATA$v.x <- v * cos(theta)
-    DATA$v.y <- v * sin(theta)
+    DATA$v.x <- Re(v)
+    DATA$v.y <- Im(v)
 
-    rm(v,theta,d.theta,d.lambda,xy)
+    rm(v,theta,R,d.lambda,xy)
 
     ####################
     # SPEED ERE
@@ -595,7 +601,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
 
   for(i in 1:length(x))
   {
-    r <- x[[i]][,c("x","y")]/dist$scale
+    r <- x[[i]][,c('x','y')]/dist$scale
 
     if(is.null(x[[i]]$HERE))
     {
@@ -615,11 +621,20 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
     # also plot velocity vectors at dt scale
     if(velocity && all(c("v.x","v.y") %in% names(x[[i]])))
     {
-      dr <- x[[i]][,c("v.x","v.y")]/dist$scale*dt
+      dr <- x[[i]][,c('v.x','v.y')]/dist$scale*dt
 
       arr.length <- dr^2
       arr.length <- sqrt(arr.length[,1]+arr.length[,2])
       arr.length <- 0.1*cmpkm*arr.length
+
+      # make uncertain speeds more transparent
+      if("SERE" %in% names(x[[i]]))
+      {
+        # magnitude of estimate relative to uncertainty
+        alpha <- sqrt(rowSums(get.telemetry(x[[i]],axes=c("v.x","v.y"))^2))/(x[[i]]$SERE/sqrt(2))
+        alpha <- clamp(alpha)
+        col[[i]] <- scales::alpha(col[[i]],alpha)
+      }
 
       shape::Arrows(x0=r$x, y0=r$y, x1=(r$x+dr$v.x), y1=(r$y+dr$v.y), col=col[[i]], code=2, segment=T, arr.adj=1, arr.length=arr.length, arr.type="curved")
     }
