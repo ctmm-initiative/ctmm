@@ -1,7 +1,7 @@
-speed.telemetry <- function(object,CTMM,level=0.95,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,mc.cores=1,...)
-{ speed.ctmm(CTMM,data=object,level=level,prior=prior,error=error,mc.cores=mc.cores,...) }
+speed.telemetry <- function(object,CTMM,level=0.95,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,cores=1,...)
+{ speed.ctmm(CTMM,data=object,level=level,prior=prior,error=error,cores=cores,...) }
 
-speed.ctmm <- function(object,data=NULL,level=0.95,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,mc.cores=1,...)
+speed.ctmm <- function(object,data=NULL,level=0.95,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,cores=1,...)
 {
   if(length(object$tau)<2 || object$tau[2]<=.Machine$double.eps)
   { stop("Movement model is fractal. Speed cannot be estimated.") }
@@ -46,7 +46,7 @@ speed.ctmm <- function(object,data=NULL,level=0.95,prior=TRUE,fast=TRUE,cor.min=
   }
   else # simulation based evaluation
   {
-    if(is.null(mc.cores)) { mc.cores <- detectCores() }
+    cores <- resolveCores(cores,fast=FALSE)
 
     # random speed calculation
     spd.fn <- function(i=0) { speed.rand(object,data=data,prior=prior,fast=fast,cor.min=cor.min,dt.max=dt.max,error=error,precompute=precompute,...) }
@@ -72,10 +72,10 @@ speed.ctmm <- function(object,data=NULL,level=0.95,prior=TRUE,fast=TRUE,cor.min=
     S2 <- sum(SPEEDS^2)
     while(ERROR>=error || length(SPEEDS)<=20)
     {
-      ADD <- unlist(mclapply(1:mc.cores,spd.fn,mc.cores=mc.cores))
+      ADD <- unlist(plapply(1:cores,spd.fn,cores=cores,fast=FALSE))
       SPEEDS <- c(SPEEDS,ADD)
       # rolling mean & variance
-      N <- N + mc.cores
+      N <- N + cores
       S1 <- S1 + sum(ADD)
       S2 <- S2 + sum(ADD^2)
 

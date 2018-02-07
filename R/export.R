@@ -114,9 +114,10 @@ SpatialPolygonsDataFrame.UD <- function(object,level.UD=0.95,level=0.95,...)
 
 
 ################
-writeShapefile.UD <- function(object, folder, file=UD@info$identity, level.UD=0.95 ,level=0.95,  ...)
+writeShapefile.UD <- function(object,folder,file=NULL,level.UD=0.95,level=0.95,...)
 {
   UD <- object
+  if(is.null(file)) { file <- attr(object,"info")$identity }
 
   SP <- SpatialPolygonsDataFrame.UD(UD,level.UD=level.UD,level=level)
 
@@ -128,16 +129,48 @@ writeShapefile.UD <- function(object, folder, file=UD@info$identity, level.UD=0.
 # convert to spatialpoints object
 SpatialPoints.telemetry <- function(object,...)
 {
-  data <- object
+  CLASS <- class(object)
+  # promote to list if not already
+  object <- listify(object)
 
-  if(class(data)=="telemetry" || class(data)=="data.frame")
-  {
-    return( sp::SpatialPoints( "[.data.frame"(data,c("x","y")), proj4string=sp::CRS(attr(data,"info")$projection) ) )
-  }
-  else if(class(data)=="list")
-  {
-    SPL <- lapply( data, function(d) { sp::SpatialPoints( "[.data.frame"(d,c("x","y")), proj4string=sp::CRS(attr(d,"info")$projection) ) } )
-    return(SPL)
-  }
+  SP <- lapply( object, function(d) { sp::SpatialPoints( "[.data.frame"(d,c("x","y")), proj4string=sp::CRS(attr(d,"info")$projection) ) } )
+
+  # rbind all together
+  SP <- do.call(sp::rbind.SpatialPoints,SP)
+
+  return(SP)
 }
 #methods::setMethod("SpatialPoints",signature(coords="telemetry"), function(coords) SpatialPoints.telemetry(coords))
+
+
+##############
+# convert to spatialpoints data.frame object
+SpatialPointsDataFrame.telemetry <- function(object,...)
+{
+  # promote to list if not already
+  object <- listify(object)
+
+  # make identity array
+  identity <- unlist(sapply(object,function(o){ rep(attr(o,"info")$identity,length(o$t)) }))
+
+  SP <- SpatialPoints.telemetry(object,...)
+
+  # make SPDF with identity information
+  SP <- sp::SpatialPointsDataFrame(SP,data.frame(identity=identity),match.ID=FALSE)
+
+  return(SP)
+}
+
+################
+writeShapefile.telemetry <- function(object,folder,file=NULL, ...)
+{
+  if(is.null(file)) { file <- mean.info(object) }
+
+  # make one long SPDF
+  SP <- SpatialPointsDataFrame.telemetry(object)
+
+  # make shape file from points
+  rgdal::writeOGR(SP, dsn=folder, layer=file, driver="ESRI Shapefile",...)
+
+  # no return value
+}

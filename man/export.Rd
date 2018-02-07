@@ -2,9 +2,11 @@
 \alias{export}
 \alias{raster,UD-method}
 \alias{SpatialPoints.telemetry}
+\alias{SpatialPointsDataFrame.telemetry}
 \alias{SpatialPolygonsDataFrame.UD}
 \alias{writeRaster,UD,character-method}
 \alias{writeShapefile}
+\alias{writeShapefile.telemetry}
 \alias{writeShapefile.UD}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Export ctmm data formats}
@@ -15,13 +17,17 @@
 
 SpatialPoints.telemetry(object,...)
 
+SpatialPointsDataFrame.telemetry(object,...)
+
 SpatialPolygonsDataFrame.UD(object,level.UD=0.95,level=0.95,...)
 
 \S4method{writeRaster}{UD,character}(x,filename,format,DF="CDF",...)
 
-writeShapefile(object,...)
+writeShapefile(object,folder,file=NULL,...)
 
-\S3method{writeShapefile}{UD}(object,folder,file=UD@info$identity,level.UD=0.95,level=0.95,...)
+\S3method{writeShapefile}{telemetry}(object,folder,file=NULL,...)
+
+\S3method{writeShapefile}{UD}(object,folder,file=NULL,level.UD=0.95,level=0.95,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -39,14 +45,15 @@ writeShapefile(object,...)
 
 \details{\code{writeRaster} writes a raster file to disk, with pixel values corresponding to the density function.
 
-\code{writeShapefile} writes a shapefile to disk, with polygons corresponding to the low, ML, and high home-range area estimates.}
+\code{writeShapefile} writes a shapefile to disk, with UD polygons corresponding to the low, ML, and high home-range area estimates.}
 
 \value{\code{raster.UD} returns a \code{raster} of the maximum likelihood (ML) distribution function \code{DF}.
 \code{DF=PDF} gives the average probability density per cell,
 \code{DF=PMF} gives the total probability per cell,
 and \code{DF=CDF} gives the cumulative probability.
 
-\code{SpatialPoints.telemetry} returns a \code{spatialPoints} object for the \code{x}-\code{y} locations.
+\code{SpatialPoints.telemetry} returns a single \code{spatialPoints} object for the \code{x}-\code{y} locations, with individual identity information lost.
+\code{SpatialPointsDataFrame.telemetry} returns a \code{SpatialPointsDataFrame} with the individual identities recorded in the data frame.
 
 \code{SpatialPolygonsDataFrame.UD} returns a \code{SpatialPolygonsDataFrame} of the low, ML, and high home-range area estimates, in the appropriate order for plotting.
 }

@@ -12,10 +12,10 @@ Given a \code{ctmm} movement model and \code{telemetry} data, \code{speed} simul
 speed(object,...)
 
 \S3method{speed}{ctmm}(object,data=NULL,level=0.95,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,
-mc.cores=1,...)
+      cores=1,...)
 
 \S3method{speed}{telemetry}(object,CTMM,level=0.95,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,
-mc.cores=1,...)
+      cores=1,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -28,7 +28,7 @@ mc.cores=1,...)
   \item{cor.min}{Velocity correlation threshold for skipping gaps.}
   \item{dt.max}{Absolute gap sizes to skip (in seconds), alternative to \code{cor.min}.}
   \item{error}{Target (relative) standard error.}
-  \item{mc.cores}{Number of processes to run in parallel (UNIX only). \code{mc.cores=NULL} will use all present cores.}
+  \item{cores}{Number of simulations to run in parallel. \code{cores=NULL} will use all cores, while \code{cores<0} will reserve \code{abs(cores)}.}
   \item{...}{Arguments passed to \code{\link{emulate}}.}
 }
 \details{

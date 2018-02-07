@@ -6,8 +6,7 @@
 \description{This function allows the point estimates and confidence intervals of an initial estimated movement model to be improved by parametric boostrap,  as described in Fleming et al (2018).
 }
 \usage{
-ctmm.boot(data,CTMM,method=c('HREML','pREML','pHREML'),error=0.01,mc.cores=1,trace=TRUE,
-          ...)
+ctmm.boot(data,CTMM,method=c('HREML','pREML','pHREML'),error=0.01,cores=1,trace=TRUE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -15,7 +14,7 @@ ctmm.boot(data,CTMM,method=c('HREML','pREML','pHREML'),error=0.01,mc.cores=1,tra
   \item{CTMM}{ A \code{ctmm} movement-model object from the output of \code{ctmm.fit} containing the initial parameter estimates.}
   \item{method}{Fitting method(s) to use: \code{"ML"}, \code{"HREML"}, \code{"pREML"}, \code{"pHREML"}, or \code{"REML"}. See "Description" below.}
   \item{error}{Relative standard error target for bootstrap ensemble estimates and nonlinear iterations.}
-  \item{mc.cores}{Number of processes to run in parallel (UNIX only). \code{mc.cores=NULL} will use all present cores.}
+  \item{cores}{Number of simulations to run in parallel. \code{cores=NULL} will use all cores, while \code{cores<0} will reserve \code{abs(cores)}.}
   \item{trace}{Report progress updates. Can be among \code{0:2} with increasing detail.}
   \item{...}{Further arguments passed to \code{ctmm.fit}.}
 }

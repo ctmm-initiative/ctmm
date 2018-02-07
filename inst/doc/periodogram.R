@@ -21,7 +21,7 @@ GUESS <- ctmm.guess(Gamba,PROTO,variogram=SVF,interactive=FALSE)
 
 ## ------------------------------------------------------------------------
 control <- list(method="pNewton") # beta optimizer is much faster here
-control <- list(method="pNewton",mc.cores=2) # CRAN policy limits to 2 processes
+control <- list(method="pNewton",cores=2) # CRAN policy limits to 2 processes
 FITS <- ctmm.select(Gamba,GUESS,verbose=TRUE,control=control)
 
 ## ------------------------------------------------------------------------

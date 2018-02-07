@@ -38,21 +38,10 @@ FFTW <- function(X,inverse=FALSE)
   return(X)
 }
 
-# parallel functions
-detectCores <- parallel::detectCores
-mclapply <- parallel::mclapply
-
 .onLoad <- function(...)
 {
   # choose FFTW if installed
   if(is.installed("fftw")) { utils::assignInMyNamespace("FFT", FFTW) }
-
-  # don't try to fork if winblows
-  if(.Platform$OS.type=="windows")
-  {
-    utils::assignInMyNamespace("detectCores", function(...) { 1 })
-    utils::assignInMyNamespace("mclapply", function(X,FUN,mc.cores=1,...) { lapply(X,FUN,...) })
-  }
 }
 .onAttach <- .onLoad
 
@@ -121,6 +110,13 @@ summary.list <- function(object,...)
 {
   CLASS <- class(object[[1]])
   utils::getS3method("summary",CLASS)(object,...)
+}
+
+# forwarding function for list of a particular datatype
+writeShapefile.list <- function(object,folder,file=NULL,...)
+{
+  CLASS <- class(object[[1]])
+  utils::getS3method("writeShapefile",CLASS)(object,folder,file=file,...)
 }
 
 
@@ -271,3 +267,11 @@ rm.name <- function(object,name)
   object[!rownames(object) %in% name,!colnames(object) %in% name]
 }
 
+
+# put in a list if not in a list already
+listify <- function(x)
+{
+  if(is.null(x)) { return(x) }
+  if(class(x) != "list") { x <- list(x) }
+  return(x)
+}

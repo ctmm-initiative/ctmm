@@ -29,7 +29,7 @@ export("%#%")
 #S3method(extent,UD)
 
 #TELEMETRY FUNCTIONS
-export(as.telemetry,SpatialPoints.telemetry)
+export(as.telemetry,SpatialPoints.telemetry,SpatialPointsDataFrame.telemetry)
 S3method(as.telemetry,character)
 S3method(as.telemetry,data.frame)
 S3method(as.telemetry,Move)
@@ -69,6 +69,8 @@ S3method(akde,telemetry)
 S3method(mean,UD)
 S3method(plot,UD)
 S3method(summary,UD)
+S3method(writeShapefile,list)
+S3method(writeShapefile,telemetry)
 S3method(writeShapefile,UD)
 
 #KRIGE FUNCTIONS

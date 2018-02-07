@@ -376,6 +376,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   else { return(telist[[1]]) }
 }
 
+
 #################
 # clean up data
 telemetry.clean <- function(data,id)
@@ -420,6 +421,7 @@ zoom.telemetry <- function(x,fraction=1,...)
 }
 methods::setMethod("zoom",signature(x="telemetry"), function(x,fraction=1,...) zoom.telemetry(x,fraction=fraction,...))
 methods::setMethod("zoom",signature(x="UD"), function(x,fraction=1,...) zoom.telemetry(x,fraction=fraction,...))
+
 
 ##############
 new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,...)
@@ -493,6 +495,7 @@ new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,fracti
   return(dist)
 }
 
+
 #######################################
 # PLOT TELEMETRY DATA
 #######################################
@@ -502,9 +505,9 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
   alpha.UD <- 1-level.UD
 
   # listify everything for generality
-  if(class(x)=="telemetry" || class(x)=="data.frame") { x <- list(x)  }
-  if(!is.null(CTMM)) { if(class(CTMM)=="ctmm") { CTMM <- list(CTMM) } }
-  if(!is.null(UD)) { if(class(UD)=="UD") { UD <- list(UD) } }
+  x <- listify(x)
+  CTMM <- listify(CTMM)
+  UD <- listify(UD)
 
   # median time step of data
   dt <- lapply(x,function(X){diff(X$t)})
@@ -652,7 +655,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
 ##############
 plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",col.level="black",col.DF="blue",col.grid="white",labels=NULL,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,cex=NULL,lwd=1,...)
 {
-  if(!is.null(x)) { if(class(x)=="UD") { x <- list(x) } }
+  x <- listify(x)
 
   dist <- new.plot(UD=x,fraction=fraction,add=add,xlim=xlim,ylim=ylim,...)
 

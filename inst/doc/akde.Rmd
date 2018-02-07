@@ -31,15 +31,28 @@ UD2w <- akde(Pepper,M.OUF,weights=TRUE)
 EXT <- extent(list(UD0,UD2,UD2w),level=0.95)
 ```
 
-We calculated UDs with and with out accounting for autocorrelation (`M.OUF` versus `M.IID`), with and without optimal weighting of the data (`weights=TRUE`).
+With this code we will highlight Pepper's collar malfunction, where the sampling interval abruptly changed from (roughly) 1-hour to 2-hours per fix.
+
+```{r,  fig.show='hold', results = "hide"}
+# sampling intervals in hours
+col <- "hr" %#% diff(Pepper$t)
+# minimum adjacent sampling interval
+col <- pmin(c(Inf,col),c(col,Inf))
+# sampling intervals under 1.5 hours
+col <- (col < 1.5)
+# red (low-frequency) or yellow (high-frequency)
+col <- grDevices::rgb(1,col,0)
+```
+
+We calculate UDs with and with out accounting for autocorrelation (`M.OUF` versus `M.IID`), with and without optimal weighting of the data (`weights=TRUE`).
 Now let us plot the results.
 
 ```{r,  fig.show='hold'}
-plot(Pepper,UD=UD0,xlim=EXT$x,ylim=EXT$y)
+plot(Pepper,UD=UD0,xlim=EXT$x,ylim=EXT$y,col=col)
 title(expression("IID KDE"["C"]))
-plot(Pepper,UD=UD2,xlim=EXT$x,ylim=EXT$y)
+plot(Pepper,UD=UD2,xlim=EXT$x,ylim=EXT$y,col=col)
 title(expression("OUF AKDE"["C"]))
-plot(Pepper,UD=UD2w,xlim=EXT$x,ylim=EXT$y)
+plot(Pepper,UD=UD2w,xlim=EXT$x,ylim=EXT$y,col=col)
 title(expression("weighted OUF AKDE"["C"]))
 ```
 
@@ -47,7 +60,7 @@ By default both the density function and its 95% contours are plotted along with
 
 The optimal bandwidth determines the "resolution" of the kernel density estimate. By default we plot grid lines with dimensions matching the standard deviations of the individual kernels. This gives a rough guideline as to what spatial details are and are not important in the density estimate. One can see that the IID KDE<sub>C</sub> estimate fits tightly to the data and reports many significant details in the buffalo's home range. The autocorrelated estimates predict future space use more accurately, based on the diffusion model, and yield a more honest account of their uncertainties.
 
-In the case of Pepper, the GPS collar malfunctioned during data collection and the sampling interval mysteriously changed from 1 hour to 2 hours. This irregularity makes Pepper a good candidate for optimally weighted AKDE (`weights=TRUE`). The optimally weighted estimate features smaller error, finer resolution, and mitigation of sampling bias.
+In the case of Pepper, the GPS collar malfunctioned during data collection and the sampling interval mysteriously changed from 1 hour to 2 hours. This irregularity makes Pepper a good candidate for optimally weighted AKDE (`weights=TRUE`). The optimally weighted estimate features smaller error, finer resolution, and mitigation of sampling bias. You can see that the uniformly weighted estimates place excessive emphasis on the oversampled data (yellow).
 
 Finally, we can compare the area estimates and effective sample sizes.
 

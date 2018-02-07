@@ -1,9 +1,11 @@
-0.4.2 2017-02-03
+0.4.2 2017-02-07
 ================
   
   * new speed() method
   
   * new ctmm.boot() method
+  
+  * new export functionality for telemetry class
 
   * overlap debias=TRUE option (approximate)
 

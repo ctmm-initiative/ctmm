@@ -23,7 +23,8 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-
+  
+  
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -69,6 +70,9 @@
     <li>
       <a href="../articles/akde.html">Autocorrelated Kernel Density Estimation</a>
     </li>
+    <li>
+      <a href="../articles/periodogram.html">Periodograms and Periodicities</a>
+    </li>
   </ul>
 </li>
       </ul>
@@ -103,15 +107,20 @@
 
 <span class='fu'>SpatialPoints.telemetry</span>(<span class='no'>object</span>,<span class='no'>...</span>)
 
+<span class='fu'>SpatialPointsDataFrame.telemetry</span>(<span class='no'>object</span>,<span class='no'>...</span>)
+
 <span class='fu'>SpatialPolygonsDataFrame.UD</span>(<span class='no'>object</span>,<span class='kw'>level.UD</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='no'>...</span>)
 
 <span class='co'># S4 method for UD,character</span>
 <span class='fu'>writeRaster</span>(<span class='no'>x</span>,<span class='no'>filename</span>,<span class='no'>format</span>,<span class='kw'>DF</span><span class='kw'>=</span><span class='st'>"CDF"</span>,<span class='no'>...</span>)
 
-<span class='fu'>writeShapefile</span>(<span class='no'>object</span>,<span class='no'>...</span>)
+<span class='fu'>writeShapefile</span>(<span class='no'>object</span>,<span class='no'>folder</span>,<span class='kw'>file</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='no'>...</span>)
+
+<span class='co'># S3 method for telemetry</span>
+<span class='fu'>writeShapefile</span>(<span class='no'>object</span>,<span class='no'>folder</span>,<span class='kw'>file</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='no'>...</span>)
 
 <span class='co'># S3 method for UD</span>
-<span class='fu'>writeShapefile</span>(<span class='no'>object</span>,<span class='no'>folder</span>,<span class='kw'>file</span><span class='kw'>=</span><span class='no'>UD</span>@<span class='kw'>info</span>$<span class='no'>identity</span>,<span class='kw'>level.UD</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='no'>...</span>)</pre>
+<span class='fu'>writeShapefile</span>(<span class='no'>object</span>,<span class='no'>folder</span>,<span class='kw'>file</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>level.UD</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
@@ -161,7 +170,7 @@
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p><code>writeRaster</code> writes a raster file to disk, with pixel values corresponding to the density function.
-    <code>writeShapefile</code> writes a shapefile to disk, with polygons corresponding to the low, ML, and high home-range area estimates.</p>
+    <code>writeShapefile</code> writes a shapefile to disk, with UD polygons corresponding to the low, ML, and high home-range area estimates.</p>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
@@ -170,7 +179,8 @@
 <code>DF=PMF</code> gives the total probability per cell,
 and <code>DF=CDF</code> gives the cumulative probability.
 
-<code>SpatialPoints.telemetry</code> returns a <code>spatialPoints</code> object for the <code>x</code>-<code>y</code> locations.
+<code>SpatialPoints.telemetry</code> returns a single <code>spatialPoints</code> object for the <code>x</code>-<code>y</code> locations, with individual identity information lost.
+<code>SpatialPointsDataFrame.telemetry</code> returns a <code>SpatialPointsDataFrame</code> with the individual identities recorded in the data frame.
 
 <code>SpatialPolygonsDataFrame.UD</code> returns a <code>SpatialPolygonsDataFrame</code> of the low, ML, and high home-range area estimates, in the appropriate order for plotting.</p>
     

@@ -217,11 +217,11 @@ rank1update <- function(H.LINE,LINE,hessian,covariance)
   return(list(hessian=hessian,covariance=covariance,condition=FACT))
 }
 
-# best number of calculations to make with min count and mc.cores
-mc.min <- function(min,mc.cores=detectCores())
+# best number of calculations to make with min count and cores
+mc.min <- function(min,cores=detectCores())
 {
-  x <- ceiling(min/mc.cores)
-  x <- x * mc.cores
+  x <- ceiling(min/cores)
+  x <- x * cores
   return(x)
 }
 
@@ -238,13 +238,15 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
 {
   DEBUG <- FALSE
   # check complains about visible bindings
-  fnscale <- parscale <- maxit <- precision <- trace <- mc.cores <- hessian <- covariance <- NULL
+  fnscale <- parscale <- maxit <- precision <- trace <- cores <- hessian <- covariance <- NULL
   # fix default control arguments
-  default <- list(fnscale=1,parscale=pmin(abs(par),abs(par-lower),abs(upper-par)),maxit=100,trace=FALSE,precision=NULL,mc.cores=detectCores(),hessian=NULL,covariance=NULL,stages=NULL)
+  default <- list(fnscale=1,parscale=pmin(abs(par),abs(par-lower),abs(upper-par)),maxit=100,trace=FALSE,precision=NULL,cores=NULL,hessian=NULL,covariance=NULL,stages=NULL)
   control <- replace(default,names(control),control)
   # check does not like attach
   NAMES <- names(control)
   for(i in 1:length(control)) { assign(NAMES[i],control[[i]]) }
+
+  cores <- resolveCores(cores)
 
   if(any(parscale==0)) { parscale[parscale==0] <- 1 }
 
@@ -447,9 +449,9 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
     # mc evaluate all points
     P <- cbind(par,par.target,P1,P2)
     # par must be re-evaluated againt to prevent zero shift roundoff error
-    counts.diff <- ceiling(ncol(P)/mc.cores)
+    counts.diff <- ceiling(ncol(P)/cores)
     counts <- counts + counts.diff
-    fn.queue <- unlist(mclapply(split(P,col(P)),func,mc.cores=mc.cores))
+    fn.queue <- unlist(plapply(split(P,col(P)),func,cores=cores))
     # separate back into parts
     fn.par <- fn.queue[1]
     fn.target <- fn.queue[2]
@@ -694,13 +696,13 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
         P <- line.boxer(2*par.diff,p0=par,lower=lower,upper=upper,period=period)
         par.diff <- P - par # twice the old par.diff with no boundary (reflection=1)
         M <- sqrt(sum(par.diff^2)) # total search magnitude
-        SEQ <- seq(0,M,length.out=mc.min(4,mc.cores)+1)[-1]
+        SEQ <- seq(0,M,length.out=mc.min(4,cores)+1)[-1]
       }
       else if(LINE.TYPE=="Enclosure")
       {
         # generate a linear sequence of points between par and par.target (already evaluated)
         M <- sqrt(sum(par.diff^2))
-        SEQ <- seq(0,M,length.out=mc.min(3,mc.cores)+2)[-1]
+        SEQ <- seq(0,M,length.out=mc.min(3,cores)+2)[-1]
         SEQ <- SEQ[-length(SEQ)]
 
         par.all <- cbind(par.all,par.target)
@@ -714,11 +716,11 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
       # start iteration loop
       while(counts < maxit)
       {
-        counts <- counts + ceiling(ncol(P)/mc.cores)
+        counts <- counts + ceiling(ncol(P)/cores)
 
         # most expensive part
         # evaluate objective function at new P and store to fn.queue
-        fn.queue <- unlist(mclapply(split(P,col(P)),func,mc.cores=mc.cores))
+        fn.queue <- unlist(plapply(split(P,col(P)),func,cores=cores))
 
         # combine with older results
         par.all <- cbind(par.all,P)
@@ -783,7 +785,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
           if(M.BOX<Inf)
           {
             # generate a linear sequence of points that terminate at the eventual boundary
-            SEQ <- seq(0,M.BOX,length.out=mc.cores+1)[-1]
+            SEQ <- seq(0,M.BOX,length.out=cores+1)[-1]
             P <- line.boxer((DIR.STEP %o% SEQ),p0=par,lower=lower,upper=upper,period=period)
           }
           else # we didn't hit a boundary and we never will, because there is no boundary
@@ -792,7 +794,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
             M <- max(M,last(diff(SEQ)))
 
             # geometric sequence
-            SEQ <- 2^(1:mc.cores) * M
+            SEQ <- 2^(1:cores) * M
 
             P <- line.boxer((DIR.STEP %o% SEQ),p0=par,lower=lower,upper=upper,period=period,period.max=Inf)
           }
@@ -827,7 +829,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
 
           # refining aims to make the grid even when filling in gaps adjacent to MIN
           # how many points to refine on each side of MIN
-          n <- mc.min(2,mc.cores)
+          n <- mc.min(2,cores)
           # left solution if points were continuous
           n1 <- ((n+1)*M1-M2)/(M1+M2)
           # positive constraints on n1, n2
@@ -871,7 +873,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
           if(M2==Inf) { M2 <- M1 }
 
           # generate geometrically tightening sequence around par
-          SEQ <- (1/2)^(1:ceiling(mc.cores/2)-1)
+          SEQ <- (1/2)^(1:ceiling(cores/2)-1)
           SEQ <- c(-M1*SEQ,M2*rev(SEQ))
 
           # combine for evaluation

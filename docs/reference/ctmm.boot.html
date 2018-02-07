@@ -102,8 +102,7 @@
     <p>This function allows the point estimates and confidence intervals of an initial estimated movement model to be improved by parametric boostrap,  as described in Fleming et al (2018).</p>
     
 
-    <pre class="usage"><span class='fu'>ctmm.boot</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>method</span><span class='kw'>=</span><span class='fu'>c</span>(<span class='st'>'HREML'</span>,<span class='st'>'pREML'</span>,<span class='st'>'pHREML'</span>),<span class='kw'>error</span><span class='kw'>=</span><span class='fl'>0.01</span>,<span class='kw'>mc.cores</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>trace</span><span class='kw'>=</span><span class='fl'>TRUE</span>,
-          <span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>ctmm.boot</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>method</span><span class='kw'>=</span><span class='fu'>c</span>(<span class='st'>'HREML'</span>,<span class='st'>'pREML'</span>,<span class='st'>'pHREML'</span>),<span class='kw'>error</span><span class='kw'>=</span><span class='fl'>0.01</span>,<span class='kw'>cores</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>trace</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
@@ -125,8 +124,8 @@
       <td><p>Relative standard error target for bootstrap ensemble estimates and nonlinear iterations.</p></td>
     </tr>
     <tr>
-      <th>mc.cores</th>
-      <td><p>Number of processes to run in parallel (UNIX only). <code>mc.cores=NULL</code> will use all present cores.</p></td>
+      <th>cores</th>
+      <td><p>Number of simulations to run in parallel. <code>cores=NULL</code> will use all cores, while <code>cores&lt;0</code> will reserve <code>abs(cores)</code>.</p></td>
     </tr>
     <tr>
       <th>trace</th>

@@ -74,10 +74,10 @@ emulate.telemetry <- function(object,CTMM,fast=FALSE,...)
 #####################################
 # multi-estimator parametric bootstrap
 # + concurrent double-bootstrap AICc
-ctmm.boot <- function(data,CTMM,method=c('HREML','pREML','pHREML'),error=0.01,mc.cores=1,trace=TRUE,...)
+ctmm.boot <- function(data,CTMM,method=c('HREML','pREML','pHREML'),error=0.01,cores=1,trace=TRUE,...)
 {
   method <- match.arg(method,c('ML','HREML','pREML','pHREML','REML'),several.ok=TRUE)
-  if(is.null(mc.cores)) { mc.cores <- detectCores() } # Windows safe wrapper
+  cores <- resolveCores(cores,fast=FALSE)
 
   # toss location information for simulations unconditioned
   FRAME <- data
@@ -146,7 +146,7 @@ ctmm.boot <- function(data,CTMM,method=c('HREML','pREML','pHREML'),error=0.01,mc
     S1 <<- S1 + rowSums(ADD) # sum over runs
     S2 <<- S2 + (ADD %.% t(ADD)) # inner product over runs
     # update sample size
-    N <<- N + mc.cores
+    N <<- N + cores
     # normalize sums
     MEAN <<- S1/N
     COV <<- (S2-N*outer(MEAN))/max(1,N-1)
@@ -182,10 +182,10 @@ ctmm.boot <- function(data,CTMM,method=c('HREML','pREML','pHREML'),error=0.01,mc
     MAX <- 1/error^2
     while(N<=MAX && ERROR>=error) # standard error ratio criterias
     {
-      # calculate burst of mc.cores estimates
-      ADD <- mclapply(1:mc.cores,Replicate,mc.cores=mc.cores)
+      # calculate burst of cores estimates
+      ADD <- plapply(1:cores,Replicate,cores=cores,fast=FALSE)
       ADD <- simplify2array(ADD) # [par,method,run]
-      dim(ADD) <- c(DIM,mc.cores) # [par*method,run]
+      dim(ADD) <- c(DIM,cores) # [par*method,run]
       rolling_update(ADD)
 
       # alternative test if bias is relatively well resolved

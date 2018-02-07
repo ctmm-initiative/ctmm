@@ -1,20 +1,21 @@
-SPEED PAPER
-* ? velocity vector transparency propto speed uncertainty ?
-* use speed data in likelihood (kalman filter upgrade)
+PRIORITY
+* Error in sinch(nu * dt) * Exp : non-numeric argument to binary operator ???
+* parallelize akde.list & document overlap
+* overlap() man example akde() first
+* check latlon projection stop code against KT's input
 
 ERROR PAPER
-* x,y,z simultaneous HDOP,VDOP calibration
+* x,y,z simultaneous HDOP,VDOP calibration - calibrate everything that needs it
 * error ellipse
 * error class translation
 * UERE error propagation from calibration (do not use as prior!)
 
-* overlap() man example akde() first
-* CODE REWRITE: X <- array(X,DIM) ;%TO%; dim(X) <- DIM
-* simulate nsim>1 with mclapply
+SCRAP WORK
+* simulate nsim>1 with plapply
 * FAQ entry on automated time format reading in as.telemetry breaking with R update
 * non-range resident in vignette
 * default labels not working for UD contours
-* error as.telemetry if user attempts lon-lat projection
+* error as.telemetry if user attempts lon-lat projection ???
 * projection() <- on all plottable objects + plot option
 * occurrence error option
 * speed filter Pepper
@@ -38,15 +39,11 @@ PERIODIC 0.4.X
 * plot ctmm (fall back on kde code)
 * vignette: periodogram, ctmm.select
 
-VELOCITY PAPER
-* as.telemetry <- velocity
-* ctmm.fit <- velocity
-* speed function calculator
-
 VIGNETTES & EXAMPLES
 * explain effective sample sizes (DOF of summary)
 
 OPTIMIZER
+* convex perimeter tracker
 * Somehow optimizer can stop on stage 1 without proceeding to stage 2
 * Stop on encapsulated
 * local tangent transformation on periodic variables
