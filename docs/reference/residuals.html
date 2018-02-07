@@ -193,7 +193,7 @@ Kálmán filters for continuous-time movement models.
 <span class='no'>ACF</span> <span class='kw'>&lt;-</span> <span class='fu'>correlogram</span>(<span class='no'>RES</span>,<span class='kw'>res</span><span class='kw'>=</span><span class='fl'>10</span>)
 
 <span class='co'>#plot a day's worth of lags</span>
-<span class='fu'><a href='plot.telemetry.html'>plot</a></span>(<span class='no'>ACF</span>[<span class='no'>ACF</span>$<span class='no'>lag</span><span class='kw'>&lt;=</span><span class='fl'>24</span>*<span class='fl'>60</span>^<span class='fl'>2</span>,],<span class='kw'>fraction</span><span class='kw'>=</span><span class='fl'>1</span>)</div><div class='img'><img src='residuals-2.png' alt='' width='700' height='432.632880098887' /></div></pre>
+<span class='fu'><a href='plot.telemetry.html'>plot</a></span>(<span class='no'>ACF</span>[<span class='no'>ACF</span>$<span class='no'>lag</span><span class='kw'>&lt;=</span><span class='fl'>1</span> <span class='kw'>%#%</span> <span class='st'>'day'</span>,],<span class='kw'>fraction</span><span class='kw'>=</span><span class='fl'>1</span>)</div><div class='img'><img src='residuals-2.png' alt='' width='700' height='432.632880098887' /></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

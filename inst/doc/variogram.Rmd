@@ -213,12 +213,6 @@ summary(FITS)
 
 Also, see `help(uere)` if you have the benefit of calibration data.
 
-### Cycles and Periodicities
-
-### One-Off Migrations
-
-### Repeated Migrations
-
 # Maximum Likelihood
 
 ## Maximum Likelihood Fitting the Hard Way 

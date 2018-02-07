@@ -50,8 +50,8 @@ langevin <- function(dt,CTMM)
       else # mildly overdamped to underdamped
       {
         Exp <- exp(-f*dt)
-
-        SincE <- sinch(nu*dt)*Exp
+        # DEBUG <<- list(dt=dt,CTMM=CTMM,f=f,Exp=Exp,nu=nu)
+        SincE <- sinch(nu*dt)*Exp  # !!! Error in sinch(nu * dt) * Exp : non-numeric argument to binary operator ???
         CosE <- cosh(nu*dt)*Exp
 
         c0 <- CosE + (f*dt)*SincE

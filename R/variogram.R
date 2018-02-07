@@ -473,6 +473,8 @@ mean.variogram <- function(x,...)
 # consolodate info attributes from multiple datasets
 mean.info <- function(x)
 {
+  if(class(x) != "list") { return( attr(x,"info")$identity ) }
+
   # mean identity
   identity <- sapply(x , function(v) { attr(v,"info")$identity } )
   identity <- unique(identity) # why did I do this?
@@ -654,7 +656,7 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", 
   alpha <- 1-level
 
   # number of variograms
-  if(class(x)=="variogram" || class(x)=="data.frame") { x <- list(x) }
+  x <- listify(x)
   n <- length(x)
 
   # default single comparison model
@@ -795,7 +797,7 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", 
   # NOW PLOT THE MODELS
   if(!is.null(CTMM))
   {
-    if(class(CTMM)=="ctmm") { CTMM <- list(CTMM) }
+    CTMM <- listify(CTMM)
     n <- length(CTMM)
 
     # color array for plots
@@ -841,9 +843,8 @@ zoom.variogram <- function(x, fraction=0.5, ...)
   z <- NULL
 
   # number of variograms
-  n <- 1
-  if(class(x)=="list") { n <- length(x) }
-  else {x <- list(x) } # promote to list of one
+  x <- listify(x)
+  n <- length(x)
 
   # maximum lag in data
   max.lag <- sapply(x, function(v){ last(v$lag) } )

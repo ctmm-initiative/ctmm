@@ -26,9 +26,9 @@ subset.periodogram <- function(x,...)
 periodogram <- function(data,CTMM=NULL,dt=NULL,res.freq=1,res.time=1,fast=NULL,axes=c("x","y"))
 {
   # listify for general purpose code
-  if(class(data)=="telemetry" || class(data)=="data.frame") { data <- list(data)  }
-  if(!is.null(CTMM)) { if(class(CTMM)=="ctmm") { CTMM <- list(CTMM) } }
-  
+  data <- listify(data)
+  if(!is.null(CTMM)) { CTMM <- listify(CTMM) }
+
   # detrend the mean
   for(i in 1:length(data))
   {
@@ -44,24 +44,24 @@ periodogram <- function(data,CTMM=NULL,dt=NULL,res.freq=1,res.time=1,fast=NULL,a
     }
     )
   }
-  
+
   # default worst temporal resolution
   dts <- sapply(data,function(d) { stats::median(diff(d$t)) })
   if(is.null(dt)) { dt <- max(dts) }
-  
+
   # default best sampling period
   Ts <- sapply(data,function(d) { last(d$t)-d$t[1] })
   T <- max(Ts)
-  
+
   # round off grid number
   n <- round(T*res.freq/(dt/res.time)) + 1
-  
+
   # intelligently select algorithm
   if(is.null(fast))
   {
     if(n < 10^4)
     { fast <- FALSE }
-    else 
+    else
     { fast <- 2 }
   }
 
@@ -74,16 +74,16 @@ periodogram <- function(data,CTMM=NULL,dt=NULL,res.freq=1,res.time=1,fast=NULL,a
     # all encompassing grid size, including interpolation buffer
     n <- max(sapply(data,function(d) { last(d$t) })) + 2*res.time
     n <- ceiling(n*res.freq)
-    
+
     if(fast==2) { n <- composite(n) }
   }
-  
+
   # frequency resolution
   df <- 1/(2*n*dt/res.time)
-  
+
   # frequency grid
   f <- seq(from=df,by=df,length.out=n-1)
-  
+
   # T=T*res.freq+dt/res.time
   if(fast)
   { lsp <- lapply(data,function(d) periodogram.fast(d,n=n,dn=res.time,axes=axes)) }
@@ -103,29 +103,29 @@ periodogram <- function(data,CTMM=NULL,dt=NULL,res.freq=1,res.time=1,fast=NULL,a
   # average the periodograms if there are multiple
   LSP <- rowSums( sapply(1:length(lsp),function(i){DOF[i]*lsp[[i]]$LSP}) )
   SSP <- rowSums( sapply(1:length(lsp),function(i){DOF[i]*lsp[[i]]$SSP}) )
-  
+
   # DOF of one frequency in ave LSP
   DOF <- sum(DOF)
-  
+
   LSP <- LSP/DOF
   SSP <- SSP/DOF
-  
+
   result <- data.frame(f=f,LSP=LSP,SSP=SSP,DOF=DOF)
-  
+
   if(res.time>1)
   {
     # toss high-frequency garbage from Lagrange interpolation
     result <- result[LOW,]
-    
+
     # check for leakage from Lagrange interpolation high-frequency garbage
     if(any(is.nan(result$LSP)) || any(is.nan(result$SSP)) || any(result$LSP<0)|| any(result$SSP<0))
     { stop("Lagrange interpolation failed. Try a different value of res.time.") }
   }
-  
+
   result <- new.periodogram(result,info=mean.info(data))
   attr(result,"info")$axes <- axes
-  
-  
+
+
   return(result)
 }
 
@@ -137,15 +137,15 @@ periodogram.fast <- function(data,n=NULL,dn=NULL,axes=c("x","y"))
 
   SPAN <- (1-dn):dn
   OFFSET <- (dn-1) - SPAN
-  
+
   # denomenator of all Lagrange polynomial terms
   DEN <- outer(SPAN,SPAN,"-")
   diag(DEN) <- rep(1,length(SPAN))
   DEN <- sapply(1:length(SPAN),function(i){ prod(DEN[i,]) })
-  
+
   z <- get.telemetry(data,axes)
   COL <- ncol(z)
-  
+
   W <- numeric(n)
   Z <- array(0,c(n,COL))
 
@@ -154,7 +154,7 @@ periodogram.fast <- function(data,n=NULL,dn=NULL,axes=c("x","y"))
   {
     FLOOR <- floor(t[i])
     p <- t[i] - FLOOR
-    
+
     if(dn==1) # efficient code for simplest case
     {
       q <- 1-p
@@ -165,7 +165,7 @@ periodogram.fast <- function(data,n=NULL,dn=NULL,axes=c("x","y"))
       dt <- p + OFFSET
 
       LAGRANGE <- prod(dt)/dt/DEN
-      
+
       # avoid near coincidence singularity
       LAGRANGE[dn] <- prod(dt[-dn])/DEN[dn]
       LAGRANGE[dn+1] <- prod(dt[-(dn+1)])/DEN[dn+1]
@@ -175,7 +175,7 @@ periodogram.fast <- function(data,n=NULL,dn=NULL,axes=c("x","y"))
     W[IND] <- W[IND] + LAGRANGE
     Z[IND,] <- Z[IND,] + (LAGRANGE %o% z[i,])
   }
-  
+
   # double padded fourier transforms
   W <- FFT(pad(W,2*n))
   Z <- FFT(rpad(Z,2*n))
@@ -186,20 +186,20 @@ periodogram.fast <- function(data,n=NULL,dn=NULL,axes=c("x","y"))
   # same thing but without rep
   W2 <- c(W,W)[seq(1,4*n,2)]
   W2 <- Conj(W2)
-  
+
   # LSP and SSP denominator
   DEN <- W[1]^2 - abs(W2)^2
-  
+
   LSP <- W[1]*rowSums(abs(Z)^2) - W2*rowSums(Z^2)
   LSP <- Re(LSP/DEN/COL)
-  
+
   SSP <- W[1]*abs(W)^2 - W2*W^2
   SSP <- Re(SSP/DEN)
-  
+
   # Stop before Nyquist periodicity
   LSP <- LSP[2:n]
   SSP <- SSP[2:n]
-  
+
   result <- data.frame(LSP=LSP,SSP=SSP)
 
   return(result)
@@ -212,29 +212,29 @@ periodogram.slow <- function(data,f=NULL,axes=c("x","y"))
   t <- data$t
   z <- get.telemetry(data,axes)
   COL <- ncol(z)
-  
+
   # double angle matrix
   theta <- (4 * pi) * (f %o% t)
 
   # LSP lag shifts
   tau <- atan( rowSums(sin(theta)) / rowSums(cos(theta)) ) / (4*pi*f)
-  
+
   # lagged angle matrix
   theta <- (2 * pi) * ((f %o% t) - (f * tau))
 
   # trigonometric matrices
   COS <- cos(theta)
   SIN <- sin(theta)
-  
+
   LSP <- rowSums((COS %*% z)^2)/rowSums(COS^2) + rowSums((SIN %*% z)^2)/rowSums(SIN^2)
   LSP <- LSP/(2*COL)
-  
+
   # sampling schedule periodogram
   SSP <- rowSums(COS)^2/rowSums(COS^2) + rowSums(SIN)^2/rowSums(SIN^2)
   SSP <- SSP/2
-  
+
   result <- data.frame(LSP=LSP,SSP=SSP)
-  
+
   return(result)
 }
 
@@ -244,11 +244,11 @@ max.periodogram <- function(LSP,df=stats::median(diff(LSP$f)))
 {
   #P <- log(P)
   dP <- diff(LSP$P)
-  
+
   n <- length(dP)
   dP.left <- dP[1:(n-1)]
   dP.right <- dP[2:n]
-  
+
   # first index of 3-index sequence containing a local maximum
   START <- which((dP.left>=0) & (dP.right<=0))
 
@@ -262,28 +262,28 @@ max.periodogram <- function(LSP,df=stats::median(diff(LSP$f)))
   f <- LSP$f[START+1] + df
   P <- LSP$P[START+1] + dP.mean*df + (1/2)*dP.curve*df^2
   #P <- exp(P)
-  
+
   result <- data.frame(f=f,P=P)
 
   return(result)
 }
-  
+
 
 # plot periodograms
 plot.periodogram <- function(x,max=FALSE,diagnostic=FALSE,col="black",transparency=0.25,grid=TRUE,...)
 {
   DAY <- 24*60^2
-  
+
   # frequency in 1/seconds
   f <- x$f
-  
+
   LSP <- data.frame(f=f,P=log(x$LSP))
   if(max) { LSP <- max.periodogram(LSP) }
   # re-scale to max at 0
   LSP$P <- LSP$P - max(LSP$P)
-  
+
   at=labels=gcol=c()
-  
+
   # tick specification function
   ticker <- function(time,div,name)
   {
@@ -297,13 +297,13 @@ plot.periodogram <- function(x,max=FALSE,diagnostic=FALSE,col="black",transparen
     labels <<- c(labels,array(NA,length(DIV)))
     gcol <<- c(gcol,grDevices::rgb(0.5,0.5,0.5,1/DIV))
   }
-  
+
   # yearly periods
   ticker(365.24*DAY,11,"year")
-  
+
   # lunar periods
   ticker(29.53059*DAY,29,"month")
-  
+
   # diurnal periods
   ticker(DAY,24,"day")
 
@@ -315,7 +315,7 @@ plot.periodogram <- function(x,max=FALSE,diagnostic=FALSE,col="black",transparen
     LSP <- data.frame(f=f,P=log(x$SSP))
     if(max) { LSP <- max.periodogram(LSP) }
     LSP$P <- LSP$P - max(LSP$P)
-    
+
     col <- scales::alpha("red",alpha=((f[1]/f)^transparency))
     graphics::points(1/LSP$f,LSP$P,col=col,...)
   }

@@ -106,11 +106,11 @@
 
 <span class='co'># S3 method for ctmm</span>
 <span class='fu'>speed</span>(<span class='no'>object</span>,<span class='kw'>data</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>prior</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>fast</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>cor.min</span><span class='kw'>=</span><span class='fl'>0.5</span>,<span class='kw'>dt.max</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>error</span><span class='kw'>=</span><span class='fl'>0.01</span>,
-<span class='kw'>mc.cores</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='no'>...</span>)
+      <span class='kw'>cores</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='no'>...</span>)
 
 <span class='co'># S3 method for telemetry</span>
 <span class='fu'>speed</span>(<span class='no'>object</span>,<span class='no'>CTMM</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>prior</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>fast</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>cor.min</span><span class='kw'>=</span><span class='fl'>0.5</span>,<span class='kw'>dt.max</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>error</span><span class='kw'>=</span><span class='fl'>0.01</span>,
-<span class='kw'>mc.cores</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='no'>...</span>)</pre>
+      <span class='kw'>cores</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
@@ -152,8 +152,8 @@
       <td><p>Target (relative) standard error.</p></td>
     </tr>
     <tr>
-      <th>mc.cores</th>
-      <td><p>Number of processes to run in parallel (UNIX only). <code>mc.cores=NULL</code> will use all present cores.</p></td>
+      <th>cores</th>
+      <td><p>Number of simulations to run in parallel. <code>cores=NULL</code> will use all cores, while <code>cores&lt;0</code> will reserve <code>abs(cores)</code>.</p></td>
     </tr>
     <tr>
       <th>...</th>

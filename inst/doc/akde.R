@@ -13,12 +13,22 @@ UD2w <- akde(Pepper,M.OUF,weights=TRUE)
 # calculate one extent for all UDs
 EXT <- extent(list(UD0,UD2,UD2w),level=0.95)
 
+## ----  fig.show='hold', results = "hide"---------------------------------
+# sampling intervals in hours
+col <- "hr" %#% diff(Pepper$t)
+# minimum adjacent sampling interval
+col <- pmin(c(Inf,col),c(col,Inf))
+# sampling intervals under 1.5 hours
+col <- (col < 1.5)
+# red (low-frequency) or yellow (high-frequency)
+col <- grDevices::rgb(1,col,0)
+
 ## ----  fig.show='hold'---------------------------------------------------
-plot(Pepper,UD=UD0,xlim=EXT$x,ylim=EXT$y)
+plot(Pepper,UD=UD0,xlim=EXT$x,ylim=EXT$y,col=col)
 title(expression("IID KDE"["C"]))
-plot(Pepper,UD=UD2,xlim=EXT$x,ylim=EXT$y)
+plot(Pepper,UD=UD2,xlim=EXT$x,ylim=EXT$y,col=col)
 title(expression("OUF AKDE"["C"]))
-plot(Pepper,UD=UD2w,xlim=EXT$x,ylim=EXT$y)
+plot(Pepper,UD=UD2w,xlim=EXT$x,ylim=EXT$y,col=col)
 title(expression("weighted OUF AKDE"["C"]))
 
 ## ----  fig.show='hold'---------------------------------------------------
