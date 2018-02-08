@@ -21,7 +21,8 @@ resolveCores <- function(cores=1,fast=TRUE)
 {
   if(is.null(cores) || is.na(cores)) { cores <- detectCores(fast=fast) }
   else if(cores<1) { cores <-  max(1,detectCores(fast=fast) + cores) }
-  else if(fast && .Platform$OS.type=="windows") { cores <- 1 }
+  # Windows can't fork
+  if(fast && .Platform$OS.type=="windows") { cores <- 1 }
 
   return(cores)
 }
