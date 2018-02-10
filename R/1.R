@@ -26,6 +26,8 @@ new.variogram <- methods::setClass("variogram",representation("data.frame",info=
 #SpatialPolygonsDataFrame.SpatialPolygons <- function(object,...) sp::SpatialPolygonsDataFrame(Sr=object,...)
 
 # existing S4 generic functions
+methods::setGeneric("projection", getGeneric("projection", package="raster"))
+methods::setGeneric("projection<-", getGeneric("projection<-", package="raster"))
 methods::setGeneric("raster", getGeneric("raster", package="raster"))
 methods::setGeneric("zoom", getGeneric("zoom", package="raster"))
 

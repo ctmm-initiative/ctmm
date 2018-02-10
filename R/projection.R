@@ -10,6 +10,98 @@ setMethod('projection', signature(x='ctmm'), projection.telemetry)
 setMethod('projection', signature(x='UD'), projection.telemetry)
 
 
+"projection<-.telemetry" <- function(x,value)
+{
+  NAMES <- names(x)
+  n <- nrow(x)
+
+  ### project locations ###
+  R <- cbind(x$longitude,x$latitude)
+  colnames(R) <- c("x","y")
+  R <- rgdal::project(R,value)
+  x[c('x','y')] <- R
+  rm(R)
+
+  if(any(c('speed','COV.angle') %in% NAMES))
+  {
+    # local vectors pointing north
+    NORTH <- northing(x,value)
+
+    ### project error ellipses ###
+    if('COV.angle' %in%  NAMES)
+    {
+      # major axis eigen vector
+      COV <- rotate.north(NORTH,x$COV.angle) # [n,2]
+      # major axis eigen matrices
+      COV <- sapply(1:n,function(i){outer(COV[i,])},simplify="array") # [2,2,n]
+      ID <- diag(2)
+      # covariance matrices
+      COV <- sapply(1:n,function(i){x$COV.major[i]*COV[,,i] + x$COV.minor[i]*(ID-COV[,,i])},simplify="array") # [2,2,n]
+      # flatten spatial indices
+      dim(COV) <- c(2*2,n)
+      # unique entries
+      ID <- c(upper.tri(ID,diag=TRUE))
+      x[DOP.LIST$horizontal$COV] <- t(COV[ID,]) # R is so confusing
+
+      rm(COV)
+    }
+
+    ### project velocities ###
+    if('speed' %in% NAMES)
+    {
+      # set magnitude and heading of velocity
+      v <- rotate.north(x$speed*NORTH,x$heading)
+      # velocity components
+      x[DOP.LIST$speed$axes] <- v
+
+      rm(v)
+    }
+  }
+
+  attr(x,"info")$projection <- value
+
+  return(x)
+}
+setMethod('projection<-', signature(x='telemetry'), `projection<-.telemetry`)
+
+
+# unit vector pointing north at projected locations R
+# x = partially projected telemetry data dim(n,2)
+# return dim(n,2)
+northing <- function(x,proj)
+{
+  # WGS-84 ellipsoid
+  R.EQ <- 6378137
+  R.PL <- 6356752.3142
+  # approximate 1-meter-North latitude displacements
+  d.lambda <- 1/sqrt((R.EQ*sin(x$latitude))^2+(R.PL*cos(x$latitude))^2)
+  # could use grad() but would be slowwwww....
+  u <- cbind(x$longitude,x$latitude + d.lambda*(360/2/pi)) # arg, degrees!
+  colnames(u) <- c("x","y")
+  u <- rgdal::project(u,proj)
+  # difference vectors pointing North ~1 meters
+  u <- u - get.telemetry(x) # [n,2]
+  # difference vectors pointing North 1 meters exact
+  u <- u / sqrt(rowSums(u^2)) # [n,2]
+  return(u)
+}
+
+# rotate northing to heading
+# u = dim(2,n)
+# return = dim(n,2)
+rotate.north <- function(u,heading)
+{
+  heading <- heading * (2*pi/360) # ack, degrees!
+
+  u <- u[,1] + 1i*u[,2] # velocity vector
+  R <- exp(-1i*heading) # rotation matrix
+  u <- R*u
+  u <- cbind(Re(u),Im(u))
+
+  return(u)
+}
+
+
 ########################################
 # Suggest a good projection
 ########################################
@@ -112,16 +204,4 @@ validate.projection <- function(projection)
 
   if(grepl("units=",projection,fixed=TRUE) && !grepl("units=m",projection,fixed=TRUE))
   { stop("Units of distance other than meters not supported.") }
-}
-
-
-# return unit vector that points north
-northing <- function(proj,center=c(0,0))
-{
-  mu <- rgdal::project(rbind(center),proj,inv=TRUE)
-  mu[1,2] <- mu[1,2] + 1/60^2 # 1 arcsecond north (30 m)
-  mu <- rgdal::project(mu,proj)[1,]
-  mu <- mu - center
-  mu <- mu/sqrt(sum(mu^2))
-  return(mu)
 }

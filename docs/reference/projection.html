@@ -110,7 +110,10 @@ projection(x,asText=TRUE)
 projection(x,asText=TRUE)
 
 # S4 method for UD
-projection(x,asText=TRUE)</pre>
+projection(x,asText=TRUE)
+
+# S4 method for telemetry
+projection(x) <- value</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
@@ -123,11 +126,15 @@ projection(x,asText=TRUE)</pre>
       <th>asText</th>
       <td><p>If <code>TRUE</code>, the projection is returned as text. Otherwise a <code>CRS</code> object is returned.</p></td>
     </tr>
+    <tr>
+      <th>value</th>
+      <td><p>Projection to apply.</p></td>
+    </tr>
     </table>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>Returns the projection information from  ctmm objects.</p>
+    <p><code>projection(x)</code> returns the projection information from ctmm object <code>x</code>, while <code>projection(x) &lt;- value</code> applies the projection <code>value</code> to ctmm object <code>x</code>.</p>
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 

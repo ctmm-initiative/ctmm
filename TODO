@@ -1,26 +1,33 @@
 PRIORITY
 * Error in sinch(nu * dt) * Exp : non-numeric argument to binary operator ???
-* parallelize akde.list & document overlap
-* overlap() man example akde() first
-* check latlon projection stop code against KT's input
 
 ERROR PAPER
+* error class import translation
 * x,y,z simultaneous HDOP,VDOP calibration - calibrate everything that needs it
-* error ellipse
-* error class translation
 * UERE error propagation from calibration (do not use as prior!)
-
-SCRAP WORK
-* simulate nsim>1 with plapply
-* FAQ entry on automated time format reading in as.telemetry breaking with R update
-* non-range resident in vignette
-* default labels not working for UD contours
-* error as.telemetry if user attempts lon-lat projection ???
-* projection() <- on all plottable objects + plot option
-* occurrence error option
 * speed filter Pepper
 * use speed filter in ctmm.guess circle=TRUE
 * expose speed filter
+* geometric median
+
+PROJECTION
+* projection() <- on all plottable objects + plot option
+* project()<- ignores simulated/predicted velocities & covariances without headings & magnitudes
+* error as.telemetry if user attempts lon-lat projection
+* check latlon projection stop code against KT's input
+* document projection projection<- dispatch methods
+
+PARALLELIZATION
+* parallelize akde.list & document overlap
+* overlap() man example akde() first
+* simulate nsim>1 with plapply
+* parallel derivatives with upper/lower/etc.
+
+MISC WORK
+* FAQ entry on automated time format reading in as.telemetry breaking with R update
+* non-range resident in vignette
+* default labels not working for UD contours
+* occurrence error option
 * boundry warning in help(ctmm.fit)
 * standardize x,y prior to likelihood calculation
 * plot3D of 2D UD

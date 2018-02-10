@@ -1,7 +1,7 @@
-# global variables for dop/uere functions (special axes)
-DOP.LIST <- list(horizontal=list(axes=c("x","y"),DOP="HDOP",ERE="HERE"),
-                 vertical=list(axes="z",DOP="VDOP",ERE="VERE"),
-                 speed=list(axes=c("v.x","v.y"),DOP="SDOP",ERE="SERE"))
+# global variables for dop/uere/error functions (special axes)
+DOP.LIST <- list(horizontal=list(axes=c("x","y"),DOP="HDOP",VAR="VAR.xy",COV=c("COV.x.x","COV.x.y","COV.y.y")),
+                 vertical=list(axes="z",DOP="VDOP",VAR="VAR.z"),
+                 speed=list(axes=c("vx","vy"),DOP="SDOP",VAR="VAR.v",COV=c("COV.vx.vx","COV.vx.vy","COV.vy.vy")) )
 
 
 # match DOP type for DOP.LIST by axes argument
@@ -19,8 +19,8 @@ try.assign.uere <- function(data,UERE,TYPE=names(UERE))
 {
   if(is.null(TYPE)) # universal assignment from unnamed UERE
   {
-    # try every possible UERE type assignment
-    for(TYPE in names(DOP.LIST)) { data <- try.assign.uere(data,UERE,TYPE) }
+    # try every UERE type assignment if those axes are present in the data
+    for(TYPE in names(DOP.LIST)) { if(all(DOP.LIST[[TYPE]]$axes %in% names(data))) {data <- try.assign.uere(data,UERE,TYPE) } }
     attr(data,"info")$UERE <- UERE # overwrite individual UEREs
   }
   else # non-destructive assignment from named UERE
@@ -28,12 +28,13 @@ try.assign.uere <- function(data,UERE,TYPE=names(UERE))
     NAMES <- names(attr(data,"info")$UERE)
     # global variable DOP.LIST
     LIST <- DOP.LIST[[TYPE]]
-    ERE <- LIST$ERE
+    axes <- LIST$axes
     DOP <- LIST$DOP
+    VAR <- LIST$VAR
 
-    if(is.null(UERE)) # null assignment
+    if(is.null(UERE) && (DOP %in% names(data))) # null assignment
     {
-      data[,ERE] <- NULL
+      data[[VAR]] <- NULL
 
       # code to delete a possible element seems complicated in R ???
       if(TYPE %in% NAMES) { attr(data,"info")$UERE <- attr(data,"info")$UERE[-which(NAMES==TYPE)] }
@@ -41,7 +42,13 @@ try.assign.uere <- function(data,UERE,TYPE=names(UERE))
     }
     else # numeric assignment
     {
-      if(DOP %in% names(data)) { data[[ERE]] <- UERE * data[[DOP]] }
+      if(DOP %in% names(data))
+      { data[[VAR]] <- (UERE*data[[DOP]])^2/length(axes) }
+      else if(!(VAR %in% names(data)))
+      {
+        data[[VAR]] <- (UERE)^2/length(axes)
+        message("DOP values missing. Assuming DOP=1 homoskedastic errors.")
+      }
 
       # store specific UERE if it exists already with names
       if(is.null(attr(data,"info")$UERE) || is.null(NAMES)) { attr(data,"info")$UERE <- UERE }
@@ -147,4 +154,55 @@ uere <- function(data,axes=c("x","y"),diagnostic=FALSE)
   }
   else
   { return( UERE ) }
+}
+
+
+## prepare error array, also return a flag #
+# 0 : no error
+# 1 : constant error parameter fit
+# 2 : proportional error parameter fit to DOP value
+# 3 : full error no fit
+get.error <- function(DATA,CTMM,flag=FALSE)
+{
+  n <- length(DATA$t)
+  axes <- CTMM$axes
+  COLS <- names(DATA)
+
+  if(CTMM$error)
+  {
+    TYPE <- DOP.match(axes)
+    # DOP.LIST is global variable from uere.R
+    TYPE <- DOP.LIST[[TYPE]]
+    AXES <- TYPE$axes
+    VAR <- TYPE$VAR
+    DOP <- TYPE$DOP
+
+    if(VAR %in% COLS) # calibrated errors - HERE
+    {
+      error <- DATA[[VAR]]
+      FLAG <- 3
+    }
+    else if(DOP %in% COLS) # fitted errors - HDOP
+    {
+      error <- (CTMM$error*DATA[[DOP]])^2/length(axes)
+      FLAG <- 2
+    }
+    else # fitted errors - no HDOP
+    {
+      error <- rep(CTMM$error^2/length(axes),n)
+      FLAG <- 1
+    }
+  } # END error
+  else # no error
+  {
+    FLAG <- 0
+    error <- rep(0,n)
+  }
+
+  if(flag) { return(FLAG) }
+  else
+  {
+    attr(error,"flag") <- FLAG
+    return(error)
+  }
 }

@@ -35,9 +35,9 @@
   
   * plot.telemetry velocity=TRUE option for data with recorded velocities
   
-  * fixed AIC bug in new parameterization code (0.4.0-0.4.1) where isotropic=TRUE model would never be selected
+  * plot.variogram bugfixes with telemetry errors
   
-  * fixed CI bug in plot.variogram CTMM argument for calibrated error model
+  * fixed AIC bug in new parameterization code (0.4.0-0.4.1) where isotropic=TRUE model would never be selected
   
   * fixed rare endless loop in akde/bandwidth with weights=TRUE
   

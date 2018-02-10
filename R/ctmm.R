@@ -330,55 +330,6 @@ ctmm.repair <- function(CTMM,K=length(CTMM$tau))
   return(CTMM)
 }
 
-## prepare error array, also return a flag #
-# 0 : no error
-# 1 : constant error parameter fit
-# 2 : proportional error parameter fit to DOP value
-# 3 : full error no fit
-get.error <- function(DATA,CTMM,flag=FALSE)
-{
-  n <- length(DATA$t)
-  axes <- CTMM$axes
-  COLS <- names(DATA)
-
-  if(CTMM$error)
-  {
-    TYPE <- DOP.match(axes)
-    # DOP.LIST is global variable from uere.R
-    TYPE <- DOP.LIST[[TYPE]]
-    AXES <- TYPE$axes
-    ERE <- TYPE$ERE
-    DOP <- TYPE$DOP
-
-    if(ERE %in% COLS) # calibrated errors - HERE
-    {
-      error <- DATA[[ERE]]^2/length(axes)
-      FLAG <- 3
-    }
-    else if(DOP %in% COLS) # fitted errors - HDOP
-    {
-      error <- (CTMM$error*DATA[[DOP]])^2/length(axes)
-      FLAG <- 2
-    }
-    else # fitted errors - no HDOP
-    {
-      error <- rep(CTMM$error^2/length(axes),n)
-      FLAG <- 1
-    }
-  } # END error
-  else # no error
-  {
-    FLAG <- 0
-    error <- rep(0,n)
-  }
-
-  if(flag) { return(FLAG) }
-  else
-  {
-    attr(error,"flag") <- FLAG
-    return(error)
-  }
-}
 
 # degree of continuity in the model
 continuity <- function(CTMM)

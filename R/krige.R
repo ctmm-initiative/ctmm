@@ -557,6 +557,8 @@ predict.ctmm <- function(object,data=NULL,t=NULL,dt=NULL,res=1,...)
     r <- object$mean.vec %*% mu
     colnames(r) <- axes
 
+    # missing COV !!!
+
     data <- data.frame(r)
     data$t <- t
   }
@@ -573,7 +575,7 @@ predict.ctmm <- function(object,data=NULL,t=NULL,dt=NULL,res=1,...)
 
     if(K>1)
     {
-      VNAMES <- paste0("v.",NAMES)
+      VNAMES <- paste0("v",NAMES)
       VNAMES -> colnames(data$V)
       VCOV <- data$VCOV
     }
@@ -586,7 +588,7 @@ predict.ctmm <- function(object,data=NULL,t=NULL,dt=NULL,res=1,...)
     {
       for(j in i:length(NAMES))
       {
-        NAME <- paste("cov.",NAMES[i],".",NAMES[j],sep="")
+        NAME <- paste("COV.",NAMES[i],".",NAMES[j],sep="") # consistent with imported ARGOS error ellipse notation
         data[,NAME] <- COV[,i,j]
       }
     }
@@ -598,7 +600,7 @@ predict.ctmm <- function(object,data=NULL,t=NULL,dt=NULL,res=1,...)
       {
         for(j in i:length(VNAMES))
         {
-          NAME <- paste("cov.",VNAMES[i],".",VNAMES[j],sep="")
+          NAME <- paste("COV.",VNAMES[i],".",VNAMES[j],sep="") # consistent with above
           data[,NAME] <- VCOV[,i,j]
         }
       }

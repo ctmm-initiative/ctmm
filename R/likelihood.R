@@ -337,6 +337,9 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     CTMM$sigma <- sigma
     CTMM <- ctmm.repair(CTMM,K=K)
 
+    # profile code above broke logical error flag
+    if(UERE>=3) { CTMM$error <- as.logical(CTMM$error) }
+
     # if(range)
     {
       mu <- drift@shift(mu,mu.center) # translate back to origin from center
@@ -423,6 +426,8 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
     pars <<- get.parameters(CTMM,NAMES)
   }
   setup.parameters(CTMM)
+  # fix numeric error when it should be logical
+  if(!("error" %in% NAMES)) { CTMM$error <- as.logical(CTMM$error) }
 
   # degrees of freedom, including the mean, variance/covariance, tau, and error model
   k.mean <- ncol(CTMM$mean.vec)
