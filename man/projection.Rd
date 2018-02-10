@@ -1,6 +1,7 @@
 \name{projection}
 %\alias{projection}
 \alias{projection,telemetry-method}
+\alias{projection<-,telemetry-method}
 \alias{projection,ctmm-method}
 \alias{projection,UD-method}
 %- Also NEED an '\alias' for EACH other topic documented here.
@@ -13,14 +14,17 @@
 \S4method{projection}{ctmm}(x,asText=TRUE)
 
 \S4method{projection}{UD}(x,asText=TRUE)
+
+\S4method{projection}{telemetry}(x) <- value
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{A \code{telemetry}, \code{ctmm}, or \code{UD} object. }
   \item{asText}{ If \code{TRUE}, the projection is returned as text. Otherwise a \code{\link{CRS}} object is returned.}
+  \item{value}{Projection to apply.}
 }
 
-\details{Returns the projection information from  ctmm objects.}
+\details{\code{projection(x)} returns the projection information from ctmm object \code{x}, while \code{projection(x) <- value} applies the projection \code{value} to ctmm object \code{x}.}
 
 %\references{}
 

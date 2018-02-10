@@ -12,7 +12,7 @@
 
 <meta name="author" content="Christen H. Fleming and Justin M. Calabrese" />
 
-<meta name="date" content="2018-02-07" />
+<meta name="date" content="2018-02-09" />
 
 <title>Autocorrelated Kernel Density Estimation</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Autocorrelated Kernel Density Estimation</h1>
 <h4 class="author"><em>Christen H. Fleming and Justin M. Calabrese</em></h4>
-<h4 class="date"><em>2018-02-07</em></h4>
+<h4 class="date"><em>2018-02-09</em></h4>
 
 
 
@@ -81,7 +81,8 @@ Pepper &lt;-<span class="st"> </span>buffalo<span class="op">$</span>Pepper
 M.IID &lt;-<span class="st"> </span><span class="kw">ctmm.fit</span>(Pepper) <span class="co"># no autocorrelation timescales</span>
 m.ouf &lt;-<span class="st"> </span><span class="kw">ctmm.guess</span>(Pepper,<span class="dt">interactive=</span><span class="ot">FALSE</span>) <span class="co"># automated model guess</span>
 M.OUF &lt;-<span class="st"> </span><span class="kw">ctmm.fit</span>(Pepper,m.ouf)</code></pre></div>
-<p><code>M.IID</code> is the innapropriate, IID model, which will result in a conventional kernel-density estimate, while <code>M.OUF</code> is the superior, continuous-velocity OUF model. Now we can calculate an <code>akde</code> object for each model.</p>
+<p><code>M.IID</code> is the innapropriate, IID model, which will result in a conventional kernel-density estimate, while <code>M.OUF</code> is the superior, continuous-velocity OUF model. Note that you want the best model for each individual, even if that differs by individual. Different movement behaviors and sampling schedules will reveal different autocorrelation structures in the data.</p>
+<p>Now we can calculate an <code>akde</code> object for each model.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">UD0 &lt;-<span class="st"> </span><span class="kw">akde</span>(Pepper,M.IID)
 UD2 &lt;-<span class="st"> </span><span class="kw">akde</span>(Pepper,M.OUF)
 UD2w &lt;-<span class="st"> </span><span class="kw">akde</span>(Pepper,M.OUF,<span class="dt">weights=</span><span class="ot">TRUE</span>)
@@ -96,7 +97,7 @@ col &lt;-<span class="st"> </span><span class="kw">pmin</span>(<span class="kw">
 col &lt;-<span class="st"> </span>(col <span class="op">&lt;</span><span class="st"> </span><span class="fl">1.5</span>)
 <span class="co"># red (low-frequency) or yellow (high-frequency)</span>
 col &lt;-<span class="st"> </span>grDevices<span class="op">::</span><span class="kw">rgb</span>(<span class="dv">1</span>,col,<span class="dv">0</span>)</code></pre></div>
-<p>We calculate UDs with and with out accounting for autocorrelation (<code>M.OUF</code> versus <code>M.IID</code>), with and without optimal weighting of the data (<code>weights=TRUE</code>). Now let us plot the results.</p>
+<p>Finally we calculate UDs with and with out accounting for autocorrelation (<code>M.OUF</code> versus <code>M.IID</code>), with and without optimal weighting of the data (<code>weights=TRUE</code>). Now let us plot the results.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(Pepper,<span class="dt">UD=</span>UD0,<span class="dt">xlim=</span>EXT<span class="op">$</span>x,<span class="dt">ylim=</span>EXT<span class="op">$</span>y,<span class="dt">col=</span>col)
 <span class="kw">title</span>(<span class="kw">expression</span>(<span class="st">&quot;IID KDE&quot;</span>[<span class="st">&quot;C&quot;</span>]))
 <span class="kw">plot</span>(Pepper,<span class="dt">UD=</span>UD2,<span class="dt">xlim=</span>EXT<span class="op">$</span>x,<span class="dt">ylim=</span>EXT<span class="op">$</span>y,<span class="dt">col=</span>col)

@@ -21,7 +21,9 @@ m.ouf <- ctmm.guess(Pepper,interactive=FALSE) # automated model guess
 M.OUF <- ctmm.fit(Pepper,m.ouf)
 ```
 
-`M.IID` is the innapropriate, IID model, which will result in a conventional kernel-density estimate, while `M.OUF` is the superior, continuous-velocity OUF model. Now we can calculate an `akde` object for each model.
+`M.IID` is the innapropriate, IID model, which will result in a conventional kernel-density estimate, while `M.OUF` is the superior, continuous-velocity OUF model. Note that you want the best model for each individual, even if that differs by individual. Different movement behaviors and sampling schedules will reveal different autocorrelation structures in the data.
+
+Now we can calculate an `akde` object for each model.
 
 ```{r,  fig.show='hold', results = "hide"}
 UD0 <- akde(Pepper,M.IID)
@@ -44,8 +46,7 @@ col <- (col < 1.5)
 col <- grDevices::rgb(1,col,0)
 ```
 
-We calculate UDs with and with out accounting for autocorrelation (`M.OUF` versus `M.IID`), with and without optimal weighting of the data (`weights=TRUE`).
-Now let us plot the results.
+Finally we calculate UDs with and with out accounting for autocorrelation (`M.OUF` versus `M.IID`), with and without optimal weighting of the data (`weights=TRUE`). Now let us plot the results.
 
 ```{r,  fig.show='hold'}
 plot(Pepper,UD=UD0,xlim=EXT$x,ylim=EXT$y,col=col)

@@ -75,7 +75,7 @@
       <h1>Autocorrelated Kernel Density Estimation</h1>
                         <h4 class="author">Christen H. Fleming and Justin M. Calabrese</h4>
             
-            <h4 class="date">2018-02-07</h4>
+            <h4 class="date">2018-02-10</h4>
           </div>
 
     
@@ -88,13 +88,14 @@ Pepper &lt;-<span class="st"> </span>buffalo<span class="op">$</span>Pepper
 M.IID &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(Pepper) <span class="co"># no autocorrelation timescales</span>
 m.ouf &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.fit.html">ctmm.guess</a></span>(Pepper,<span class="dt">interactive=</span><span class="ot">FALSE</span>) <span class="co"># automated model guess</span>
 M.OUF &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(Pepper,m.ouf)</code></pre></div>
-<p><code>M.IID</code> is the innapropriate, IID model, which will result in a conventional kernel-density estimate, while <code>M.OUF</code> is the superior, continuous-velocity OUF model. Now we can calculate an <code>akde</code> object for each model.</p>
+<p><code>M.IID</code> is the innapropriate, IID model, which will result in a conventional kernel-density estimate, while <code>M.OUF</code> is the superior, continuous-velocity OUF model. Note that you want the best model for each individual, even if that differs by individual. Different movement behaviors and sampling schedules will reveal different autocorrelation structures in the data.</p>
+<p>Now we can calculate an <code>akde</code> object for each model.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">UD0 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/akde.html">akde</a></span>(Pepper,M.IID)
 UD2 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/akde.html">akde</a></span>(Pepper,M.OUF)
 UD2w &lt;-<span class="st"> </span><span class="kw"><a href="../reference/akde.html">akde</a></span>(Pepper,M.OUF,<span class="dt">weights=</span><span class="ot">TRUE</span>)
 <span class="co"># calculate one extent for all UDs</span>
 EXT &lt;-<span class="st"> </span><span class="kw">extent</span>(<span class="kw">list</span>(UD0,UD2,UD2w),<span class="dt">level=</span><span class="fl">0.95</span>)</code></pre></div>
-<p>With this code we will highlight Pepper’s collar malfunction, where the sampling interval abruptly changed from (roughly) 1-hour to 2-hours per fix.</p>
+<p>With this next code we highlight Pepper’s collar malfunction, where the sampling interval abruptly changed from (roughly) 1-hour to 2-hours per fix.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># sampling intervals in hours</span>
 col &lt;-<span class="st"> "hr"</span> <span class="op">%#%</span><span class="st"> </span><span class="kw">diff</span>(Pepper<span class="op">$</span>t)
 <span class="co"># minimum adjacent sampling interval</span>
@@ -103,7 +104,7 @@ col &lt;-<span class="st"> </span><span class="kw">pmin</span>(<span class="kw">
 col &lt;-<span class="st"> </span>(col <span class="op">&lt;</span><span class="st"> </span><span class="fl">1.5</span>)
 <span class="co"># red (low-frequency) or yellow (high-frequency)</span>
 col &lt;-<span class="st"> </span>grDevices<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/grDevices/topics/rgb">rgb</a></span>(<span class="dv">1</span>,col,<span class="dv">0</span>)</code></pre></div>
-<p>We calculate UDs with and with out accounting for autocorrelation (<code>M.OUF</code> versus <code>M.IID</code>), with and without optimal weighting of the data (<code>weights=TRUE</code>). Now let us plot the results.</p>
+<p>Finally we calculate UDs with and with out accounting for autocorrelation (<code>M.OUF</code> versus <code>M.IID</code>), with and without optimal weighting of the data (<code>weights=TRUE</code>). Now let us plot the results.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(Pepper,<span class="dt">UD=</span>UD0,<span class="dt">xlim=</span>EXT<span class="op">$</span>x,<span class="dt">ylim=</span>EXT<span class="op">$</span>y,<span class="dt">col=</span>col)
 <span class="kw">title</span>(<span class="kw">expression</span>(<span class="st">"IID KDE"</span>[<span class="st">"C"</span>]))
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(Pepper,<span class="dt">UD=</span>UD2,<span class="dt">xlim=</span>EXT<span class="op">$</span>x,<span class="dt">ylim=</span>EXT<span class="op">$</span>y,<span class="dt">col=</span>col)

@@ -1,15 +1,15 @@
 #IMPORTED GENERIC FUNCTIONS TO OVERLOAD
 importFrom("graphics",plot)
 importFrom("methods",new)
-importFrom("raster",extent,projection,raster,writeRaster,zoom)
+importFrom("raster",extent,projection,"projection<-",raster,writeRaster,zoom)
 importFrom("stats",simulate,predict)
 
 #importClassesFrom("Matrix",dpoMatrix)
 
 # non-base generics to export
 export(plot,simulate,predict)
-export(extent,projection,raster,writeRaster,zoom)
-export(emulate,speed)
+export(extent,projection,"projection<-",raster,writeRaster,zoom)
+export(emulate,speed,writeShapefile)
 #export(SpatialPoints,SpatialPolygonsDataFrame)
 #S3method(SpatialPoints,matrix)
 #S3method(SpatialPoints,data.frame)
@@ -27,6 +27,10 @@ export("%#%")
 #S3method(extent,telemetry)
 #S3method(extent,ctmm)
 #S3method(extent,UD)
+
+#PROJECTION METHODS
+#S3method(projection,telemetry)
+#S3method(`projection<-`,telemetry)
 
 #TELEMETRY FUNCTIONS
 export(as.telemetry,SpatialPoints.telemetry,SpatialPointsDataFrame.telemetry)
