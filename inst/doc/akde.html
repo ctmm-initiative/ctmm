@@ -12,7 +12,7 @@
 
 <meta name="author" content="Christen H. Fleming and Justin M. Calabrese" />
 
-<meta name="date" content="2018-02-09" />
+<meta name="date" content="2018-02-12" />
 
 <title>Autocorrelated Kernel Density Estimation</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Autocorrelated Kernel Density Estimation</h1>
 <h4 class="author"><em>Christen H. Fleming and Justin M. Calabrese</em></h4>
-<h4 class="date"><em>2018-02-09</em></h4>
+<h4 class="date"><em>2018-02-12</em></h4>
 
 
 
@@ -88,7 +88,7 @@ UD2 &lt;-<span class="st"> </span><span class="kw">akde</span>(Pepper,M.OUF)
 UD2w &lt;-<span class="st"> </span><span class="kw">akde</span>(Pepper,M.OUF,<span class="dt">weights=</span><span class="ot">TRUE</span>)
 <span class="co"># calculate one extent for all UDs</span>
 EXT &lt;-<span class="st"> </span><span class="kw">extent</span>(<span class="kw">list</span>(UD0,UD2,UD2w),<span class="dt">level=</span><span class="fl">0.95</span>)</code></pre></div>
-<p>With this code we will highlight Pepper’s collar malfunction, where the sampling interval abruptly changed from (roughly) 1-hour to 2-hours per fix.</p>
+<p>With this next code we highlight Pepper’s collar malfunction, where the sampling interval abruptly changed from (roughly) 1-hour to 2-hours per fix.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># sampling intervals in hours</span>
 col &lt;-<span class="st"> &quot;hr&quot;</span> <span class="op">%#%</span><span class="st"> </span><span class="kw">diff</span>(Pepper<span class="op">$</span>t)
 <span class="co"># minimum adjacent sampling interval</span>

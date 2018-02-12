@@ -124,28 +124,57 @@ suggest.projection <- function(data,PROJ="tpeqd",datum="WGS84")
 
   xy <- rgdal::project(cbind(lon,lat),proj)
 
-  # calculate and detrend average
-  mu <- c(stats::median(xy[,1]),stats::median(xy[,2]))
-  xy <- xy - mu
-  colnames(xy) <- c("x","y")
+  # # calculate and detrend average
+  # mu <- c(stats::median(xy[,1]),stats::median(xy[,2]))
+  # xy <- t(t(xy) - mu)
+  # colnames(xy) <- c("x","y")
 
+  ## non-robust orientation
   # cross correlation
-  cov <- mean(xy[,1]*xy[,2])
+  COV <- mean(xy[,1]*xy[,2])
   # covariance matrix
-  cov <- rbind( c( mean(xy[,1]^2) , cov ) , c( cov , mean(xy[,2]^2) ) )
+  COV <- rbind( c( mean(xy[,1]^2) , COV ) , c( COV , mean(xy[,2]^2) ) )
 
   # figure out long axis (always first dim)
-  R <- eigen(cov)$vectors
+  R <- eigen(COV)$vectors
   # rotate data to long axis
   xy <- xy %*% R
+
+  ## robust centrality & covariation
+  COV <- Gmedian::GmedianCov(xy,init=c(0,0),score=0)
+  mu <- c(COV$median)
+  COV <- COV$covmedian
+
+  # detrend average
+  xy <- t(t(xy) - mu)
+  colnames(xy) <- c("x","y")
+  mu <- c(mu %*% solve(R)) # value of mu pre-R-rotation
+
+  # figure out long axis (always first dim)
+  Rm <- eigen(COV)$vectors
+  # rotate data to long axis
+  xy <- xy %*% Rm
+  R <- R %*% Rm
 
   # bi-modal split of data
   xy1 <- xy[xy[,1]<0,]
   xy2 <- xy[xy[,1]>0,]
 
-  # bi-modal modes
+  # long split modes
   mu1 <- c(stats::median(xy1[,1]),stats::median(xy1[,2]))
   mu2 <- c(stats::median(xy2[,1]),stats::median(xy2[,2]))
+
+  mu1 <- c(Gmedian::Gmedian(xy1,init=mu1))
+  mu2 <- c(Gmedian::Gmedian(xy2,init=mu2))
+
+  # # cluster modes # not sure that this could ever help
+  # muk <- Gmedian::kGmedian(xy,ncenters=rbind(mu1,mu2))$centers
+  # # use the most separated
+  # if(sum((mu1-mu2)^2)<sum((muk[1,]-muk[2,])^2))
+  # {
+  #   mu1 <- muk[1,]
+  #   mu2 <- muk[2,]
+  # }
 
   # reverse rotation
   R <- solve(R)

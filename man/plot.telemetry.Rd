@@ -31,7 +31,7 @@ plot(x,y,...)
   \item{level.UD}{Confidence level of Gaussian \code{ctmm} model or \code{UD} estimate contours to be displayed. I.e., \code{level.UD=0.50} can yield the 50\% core home range within the rendered contours.}
   \item{level}{ Confidence levels placed on the contour estimates themselves. I.e., the above 50\% core home-range area can be estimated with 95\% confidence via \code{level=0.95}. }
   \item{DF}{Plot the maximum likelihood probability density function \code{"PDF"} or cumulative distribution function \code{"CDF"}.}
-  \item{error}{Plot error circles if present in the data. Also sets the plot UERE if HDOP information is present.}
+  \item{error}{Plot error circles/ellipses if present in the data. \code{error=2} will fill in the circles and \code{error=3} will plot densities instead.}
   \item{velocity}{Plot velocity vectors if present in the data.}
   \item{col}{Color option for telemetry data. Can be an array or list of arrays.}
   \item{col.level}{Color option for home-range contours. Can be an array.}

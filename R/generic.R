@@ -98,6 +98,14 @@ mean.list <- function(x,...)
 
 
 # forwarding function for list of a particular datatype
+median.list <- function(x,na.rm=FALSE,...)
+{
+  CLASS <- class(x[[1]])
+  utils::getS3method("median",CLASS)(x,na.rm=na.rm,...)
+}
+
+
+# forwarding function for list of a particular datatype
 plot.list <- function(x,...)
 {
   CLASS <- class(x[[1]])

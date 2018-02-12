@@ -1,4 +1,4 @@
-0.4.2 2017-02-07
+0.4.2 2017-02-11
 ================
   
   * new speed() method
@@ -29,9 +29,13 @@
   
   * as.telemetry will try to approximate DOP values
   
-  * as.telemetry imports velocity vectors (NOT TESTED!)
+  * as.telemetry imports velocity vectors
+  
+  * as.telemetry default projection orientation now robust with GmedianCOV
   
   * plot.UD resolution grid less obnoxious, NA/FALSE contour label option
+  
+  * plot.telemetry error=0:3 options for data with recorded error circles/ellipses
   
   * plot.telemetry velocity=TRUE option for data with recorded velocities
   

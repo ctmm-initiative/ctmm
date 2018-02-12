@@ -1,3 +1,53 @@
+median.telemetry <- function(x,na.rm=FALSE,...)
+{
+  x <- listify(x)
+
+  id <- paste0("median of ",mean.info(x)$identity)
+  proj <- projection(x[[1]])
+  tz <- attr(x[[1]],'info')$timezone
+  x <- do.call(rbind,x)
+
+  long <- stats::median(x$longitude)
+  lat <- stats::median(x$latitude)
+  t <- stats::median(x$t)
+  timestamp <- as.character(as.POSIXct(t,tz=tz,origin="1970/01/01"))
+
+  x <- data.frame(timestamp=timestamp,t=t,longitude=long,latitude=lat)
+  x <- new.telemetry(x,info=list(identity=id,projection=proj,timezone=tz))
+  projection(x) <- proj
+
+  return(x)
+}
+
+
+# UNFINISHED
+distances <- function(x,y=median(x),error=NULL)
+{
+  x <- listify(x)
+  y <- listify(y)
+  if(length(x)>length(y))
+  y <- rep(y,length(x)/length(y))
+
+  d <- list()
+  for(i in 1:length(x))
+  {
+    n <- length(x[[i]])
+
+  }
+
+
+}
+
+
+#
+speeds <- function(data,error=NULL,dt=NULL)
+{
+  if(is.null(error)) { error <- 10 } # GPS default 10 meter error
+  if(is.null(dt)) { dt <- time_res(data) }
+  assign_speeds(data,UERE=error,dt=dt)$v.t
+}
+
+
 # speeds assigned by blame
 assign_speeds <- function(data,dt=time_res(data),UERE=0,method=c("max","min"))
 {
@@ -100,64 +150,77 @@ speedMLE <- function(data,dt=time_res(data),UERE=0,CTMM=ctmm(error=UERE,axes=c("
     # coefficient in transcendental Bessel equation
     # x I0(x) == y I1(x)
     y <- dr^2/error
-    # solution storage
-    x <- numeric(length(y))
-    # how far you can go before R's bessel function breaks down
-    BESSEL_LIMIT <- 2^16
 
-    # critical point, below which all point estimates are zero
-    SUB1 <- (y<=2)
-    if(any(SUB1)) { dr[SUB1] <- 0 }
+    x <- BesselSolver(y)
 
-    # perturbation of sqrt(EQ) of both sides (from x=0) and solving
-    SUB2 <- (2<y) & (y<3.6)
-    if(any(SUB2))
-    {
-      x.SUB <- sqrt(2*y[SUB2])
-      x[SUB2] <- 4 * sqrt( (x.SUB-2)/(4-x.SUB) )
-    }
-
-    # expansion EQ/exp (from x=y) and solving
-    SUB3 <- (3.6<=y) & (y<=BESSEL_LIMIT)
-    if(any(SUB3))
-    {
-      y.SUB <- y[SUB3]
-
-      BI0 <- besselI(y.SUB,0,expon.scaled=TRUE)
-      BI1 <- besselI(y.SUB,1,expon.scaled=TRUE)
-
-      x[SUB3] <- 2*y.SUB * ( y.SUB*BI0 - (y.SUB+1)*BI1 ) / ( (2*y.SUB-1)*BI0 - (2*y.SUB+1)*BI1 )
-    }
-
-    # expansion from x=y, solving, and then rational expansion from y=Inf
-    SUB4 <- BESSEL_LIMIT<y
-    if(any(SUB4))
-    {
-      y.SUB <- y[SUB4]
-
-      x[SUB4] <- 2*y.SUB*(y.SUB-1)/(2*y.SUB-1)
-    }
-
-    # iterative to solution by expanding EQ/exp from x=x.old and solving
-    SUB <- SUB2 & SUB3
-    if(any(SUB))
-    {
-      x.SUB <- x[SUB]
-      y.SUB <- y[SUB]
-
-      BI0 <- besselI(x.SUB,0,expon.scaled=TRUE)
-      BI1 <- besselI(x.SUB,1,expon.scaled=TRUE)
-
-      x[SUB] <- x.SUB * ( x.SUB*(x.SUB+y.SUB)*BI0 - (x.SUB^2+(x.SUB+2)*y.SUB)*BI1 ) / ( x.SUB*(x.SUB+y.SUB-1)*BI0 - (x.SUB^2+(x.SUB+1)*y.SUB)*BI1 )
-    }
-    # one iteration is good enough to get everything below 1% relative error
-
-    # this is now the point estimate, including telemetry error
-    SUB <- !SUB1
+    SUB <- dr>0
     if(any(SUB)) { dr[SUB] <- error[SUB]/dr[SUB] * x[SUB] }
   }
 
   return(dr*f)
+}
+
+
+# x I0(x) == y I1(x)
+BesselSolver <- function(y)
+{
+  # solution storage
+  x <- numeric(length(y))
+  # how far you can go before R's bessel function breaks down
+  BESSEL_LIMIT <- 2^16
+
+  # critical point, below which all point estimates are zero
+  # SUB1 <- (y<=2)
+  # if(any(SUB1)) { dr[SUB1] <- 0 }
+  # x[SUB1] <- 0 # this is now default
+
+  # perturbation of sqrt(EQ) of both sides (from x=0) and solving
+  SUB2 <- (2<y) & (y<3.6)
+  if(any(SUB2))
+  {
+    x.SUB <- sqrt(2*y[SUB2])
+    x[SUB2] <- 4 * sqrt( (x.SUB-2)/(4-x.SUB) )
+  }
+
+  # expansion EQ/exp (from x=y) and solving
+  SUB3 <- (3.6<=y) & (y<=BESSEL_LIMIT)
+  if(any(SUB3))
+  {
+    y.SUB <- y[SUB3]
+
+    BI0 <- besselI(y.SUB,0,expon.scaled=TRUE)
+    BI1 <- besselI(y.SUB,1,expon.scaled=TRUE)
+
+    x[SUB3] <- 2*y.SUB * ( y.SUB*BI0 - (y.SUB+1)*BI1 ) / ( (2*y.SUB-1)*BI0 - (2*y.SUB+1)*BI1 )
+  }
+
+  # expansion from x=y, solving, and then rational expansion from y=Inf
+  SUB4 <- BESSEL_LIMIT<y
+  if(any(SUB4))
+  {
+    y.SUB <- y[SUB4]
+
+    x[SUB4] <- 2*y.SUB*(y.SUB-1)/(2*y.SUB-1)
+  }
+
+  # iterative to solution by expanding EQ/exp from x=x.old and solving
+  SUB <- SUB2 & SUB3
+  if(any(SUB))
+  {
+    x.SUB <- x[SUB]
+    y.SUB <- y[SUB]
+
+    BI0 <- besselI(x.SUB,0,expon.scaled=TRUE)
+    BI1 <- besselI(x.SUB,1,expon.scaled=TRUE)
+
+    x[SUB] <- x.SUB * ( x.SUB*(x.SUB+y.SUB)*BI0 - (x.SUB^2+(x.SUB+2)*y.SUB)*BI1 ) / ( x.SUB*(x.SUB+y.SUB-1)*BI0 - (x.SUB^2+(x.SUB+1)*y.SUB)*BI1 )
+  }
+  # one iteration is good enough to get everything below 1% relative error
+
+  # this is now the point estimate, including telemetry error
+  # SUB <- !SUB1
+
+  return(x)
 }
 
 
