@@ -161,7 +161,8 @@ uere <- function(data,axes=c("x","y"),diagnostic=FALSE)
 # 0 : no error
 # 1 : constant error parameter fit
 # 2 : proportional error parameter fit to DOP value
-# 3 : full error no fit
+# 3 : full error no fit (circle)
+# 4 : " " (ellipse)
 get.error <- function(DATA,CTMM,flag=FALSE)
 {
   n <- length(DATA$t)
@@ -174,10 +175,17 @@ get.error <- function(DATA,CTMM,flag=FALSE)
     # DOP.LIST is global variable from uere.R
     TYPE <- DOP.LIST[[TYPE]]
     AXES <- TYPE$axes
+    COV <- TYPE$COV
     VAR <- TYPE$VAR
     DOP <- TYPE$DOP
 
-    if(VAR %in% COLS) # calibrated errors - HERE
+    if(all(COV %in% COLS)) # calibrated error ellipses - ARGOS
+    {
+      error <- get.telemetry(DATA,COV[c(1,2,2,3)]) # pull matrix elements
+      dim(error) <- c(nrow(error),2,2) # array of matrices
+      FLAG <- 4
+    }
+    else if(VAR %in% COLS) # calibrated error circles - VAR=(UERE*HDOP)^2/2
     {
       error <- DATA[[VAR]]
       FLAG <- 3

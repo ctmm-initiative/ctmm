@@ -434,12 +434,23 @@ akde.telemetry <- function(data,CTMM,VMM=NULL,debias=TRUE,smooth=TRUE,error=0.00
 
 
 # if a single H matrix is given, make it into an array of H matrices
-prepare.H <- function(H,n)
+# output [n,d,d]
+prepare.H <- function(H,n,axes=c('x','y'))
 {
-  # one matrix given
-  if(length(dim(H))==2)
+  d <- length(axes)
+
+  # one variance given - promote to matrix first - then passes to later stage
+  if(length(H)==1)
+  { H <- H*diag(d) }
+  else if(is.null(dim(H))) # array of variances given
   {
-    d <- nrow(H)
+    H <- sapply(H,function(h) h * diag(d),simplify='array') # [d,d,n]
+    H <- aperm(H,c(3,1,2))
+  }
+
+  # one matrix given
+  if(length(dim(H))==2 && all(dim(H)==c(d,d)))
+  {
     H <- array(H,c(d,d,n))
     H <- aperm(H,c(3,1,2))
   }
@@ -455,7 +466,7 @@ kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=1,dr=NULL)
   R <- get.telemetry(data,axes) # (times,dim)
   n <- nrow(R) # (times)
 
-  H <- prepare.H(H,n) # (times,dim,dim)
+  H <- prepare.H(H,n,axes=axes) # (times,dim,dim)
 
   # how far to extend range from data as to ensure alpha significance in total probability
   z <- sqrt(-2*log(alpha))
@@ -499,7 +510,7 @@ kde <- function(data,H,axes=c("x","y"),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr
   W <- W/sum(W)
 
   # format bandwidth matrix
-  H <- prepare.H(H,n)
+  H <- prepare.H(H,n,axes=axes)
 
   if(is.null(grid)) { grid <- kde.grid(data,H=H,axes=axes,alpha=alpha,res=res,dr=dr) }
 

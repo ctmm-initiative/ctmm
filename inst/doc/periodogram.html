@@ -12,7 +12,7 @@
 
 <meta name="author" content="Guillaume Péron, Christen H. Fleming, and Justin M. Calabrese" />
 
-<meta name="date" content="2018-02-09" />
+<meta name="date" content="2018-02-12" />
 
 <title>Periodic movement models</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Periodic movement models</h1>
 <h4 class="author"><em>Guillaume Péron, Christen H. Fleming, and Justin M. Calabrese</em></h4>
-<h4 class="date"><em>2018-02-09</em></h4>
+<h4 class="date"><em>2018-02-12</em></h4>
 
 
 
@@ -120,7 +120,7 @@ FITS &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(Gamba,GUE
 ## OUF anisotropic harmonic 2 1  22.627079  107.9071     ML
 ## OUF anisotropic harmonic 1 0  37.618897  108.2142     ML
 ## OUF anisotropic harmonic 1 1  43.040203  110.0647     ML
-## OUF anisotropic harmonic 0 0 140.521989  132.4811     ML
+## OUF anisotropic harmonic 0 0 140.521989  132.4812     ML
 ## OUF anisotropic harmonic 0 1 145.259592  134.7361     ML</code></pre>
 <p>We see that the velocity autocorrelation (OUF), anisotropy, and circulation were unambiguously selected using the level option and were present in all the candidate models. In this maned wolf, there is rather strong support (Delta AIC &gt; 4) for the preferred model (the first of the list). Given how we specified the prototype, <code>harmonic 3 0</code> means that this preferred model has no lunar periodicity, but has three harmonics of the one-day periodicity. This fittingly corresponds to what the periodogram was saying. If there was some moon-related pattern of space use and given how we specified our prototype, we would have had a non-zero value as the second <code>harmonic</code> value. Circulation would also be selected if included.</p>
 <p>Next we do some sanity checking on our results. The sampling interval for Gamba is fairly steady at</p>
@@ -148,12 +148,12 @@ FITS &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(Gamba,GUE
 ## 
 ## $CI
 ##                                 low        ML      high
-## rotation/deviation %     23.6228688 29.019474 35.648924
-## rotation/speed %         24.3431616 29.868659 36.648354
-## area (square kilometers) 41.1021791 47.844464 55.091284
-## tau position (hours)      7.2925147  9.568356 12.554440
-## tau velocity (hours)      0.9699885  1.423752  2.089789
-## speed (kilometers/day)   14.7247953 16.056839 17.387435</code></pre>
+## rotation/deviation %     23.6228691 29.019474 35.648925
+## rotation/speed %         24.3431626 29.868660 36.648355
+## area (square kilometers) 41.1021782 47.844462 55.091282
+## tau position (hours)      7.2925136  9.568355 12.554438
+## tau velocity (hours)      0.9699887  1.423753  2.089789
+## speed (kilometers/day)   14.7247950 16.056839 17.387435</code></pre>
 <ul>
 <li><code>rotation/deviation %</code> corresponds to <span class="math inline">\(100 \eta_P\)</span> from the paper. It is interpreted as the proportion of the variance in the animal`s location that is caused by the periodicity in the mean.</li>
 <li><code>rotation/speed %</code> corresponds to <span class="math inline">\(100 \eta_V\)</span> from the paper. It is interpreted as the proportion of the variance in the animal`s velocity that is caused by the periodicity in the mean.</li>
@@ -176,20 +176,20 @@ FITS &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(Gamba,GUE
 ## OUF anisotropic harmonic 3 1  22.57964253  108.9836     ML
 ## OUF anisotropic harmonic 2 1  22.62707927  107.9071     ML
 ## OUF anisotropic harmonic 1 1  25.99980779  110.0647     ML
-## OUF anisotropic harmonic 0 0  89.22197845  132.4811     ML
+## OUF anisotropic harmonic 0 0  89.22197845  132.4812     ML
 ## OUF anisotropic harmonic 0 1 111.11897842  134.7361     ML</code></pre>
 <p>But still, it is troubling that a bad model has the lowest BIC. Last, we turn to the mean square predictive error (MSPE), which explicitly penalizes highly-variable trend predictions like the ones we see here.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(FITS,<span class="dt">IC=</span><span class="st">&quot;MSPE&quot;</span>)</code></pre></div>
 <pre><code>##                              dRMSPE (m) DOF[mean] method
 ## OUF anisotropic harmonic 2 0   0.000000  106.1204     ML
-## OUF anisotropic harmonic 3 0   2.508551  107.1803     ML
-## OUF anisotropic harmonic 4 0   2.531293  107.1268     ML
-## OUF anisotropic harmonic 1 0   3.832011  108.2142     ML
-## OUF anisotropic harmonic 2 1   6.085700  107.9071     ML
-## OUF anisotropic harmonic 3 1   8.285083  108.9836     ML
-## OUF anisotropic harmonic 1 1   9.542674  110.0647     ML
-## OUF anisotropic harmonic 0 0 101.913151  132.4811     ML
-## OUF anisotropic harmonic 0 1 104.265353  134.7361     ML</code></pre>
+## OUF anisotropic harmonic 3 0   2.508591  107.1803     ML
+## OUF anisotropic harmonic 4 0   2.531355  107.1268     ML
+## OUF anisotropic harmonic 1 0   3.832061  108.2142     ML
+## OUF anisotropic harmonic 2 1   6.085746  107.9071     ML
+## OUF anisotropic harmonic 3 1   8.285131  108.9836     ML
+## OUF anisotropic harmonic 1 1   9.542748  110.0647     ML
+## OUF anisotropic harmonic 0 0 101.913131  132.4812     ML
+## OUF anisotropic harmonic 0 1 104.265392  134.7361     ML</code></pre>
 <p>Finally, a good model wins out, with the 2 harmonic model beating the 3 harmonic model by 2.5 meters of RMS predictive error (RMSPE). Unlike likelihood based ICs (AIC &amp; BIC), MSPE has units and an absolute scale, though in summary we only show differences in the RMSPE for simplicity. Note that MSPE should only be used to select among models with the same autocorrelation structure.</p>
 </div>
 <div id="home-range-estimation" class="section level3">

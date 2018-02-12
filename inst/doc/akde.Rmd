@@ -33,7 +33,7 @@ UD2w <- akde(Pepper,M.OUF,weights=TRUE)
 EXT <- extent(list(UD0,UD2,UD2w),level=0.95)
 ```
 
-With this code we will highlight Pepper's collar malfunction, where the sampling interval abruptly changed from (roughly) 1-hour to 2-hours per fix.
+With this next code we highlight Pepper's collar malfunction, where the sampling interval abruptly changed from (roughly) 1-hour to 2-hours per fix.
 
 ```{r,  fig.show='hold', results = "hide"}
 # sampling intervals in hours

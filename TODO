@@ -1,11 +1,15 @@
 PRIORITY
-* Error in sinch(nu * dt) * Exp : non-numeric argument to binary operator ???
+* Error in sinch(nu * dt) * Exp : non-numeric argument to binary operator ??? Random R bug?
+
+SPEED
+* user predict() to fix the mean speed mean (exact to within discretization) and then you can divide by n instead of (n-1); maybe update the stopping criteria?
 
 ERROR PAPER
-* error class import translation
 * x,y,z simultaneous HDOP,VDOP calibration - calibrate everything that needs it
 * UERE error propagation from calibration (do not use as prior!)
-* speed filter Pepper
+* document median
+* kGcluster
+* speed filter Pepper functions
 * use speed filter in ctmm.guess circle=TRUE
 * expose speed filter
 * geometric median
