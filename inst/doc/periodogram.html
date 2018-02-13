@@ -148,9 +148,9 @@ FITS &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(Gamba,GUE
 ## 
 ## $CI
 ##                                 low        ML      high
-## rotation/deviation %     23.6228691 29.019474 35.648925
+## rotation/deviation %     23.6228690 29.019474 35.648925
 ## rotation/speed %         24.3431626 29.868660 36.648355
-## area (square kilometers) 41.1021782 47.844462 55.091282
+## area (square kilometers) 41.1021783 47.844462 55.091282
 ## tau position (hours)      7.2925136  9.568355 12.554438
 ## tau velocity (hours)      0.9699887  1.423753  2.089789
 ## speed (kilometers/day)   14.7247950 16.056839 17.387435</code></pre>
@@ -182,14 +182,14 @@ FITS &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(Gamba,GUE
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(FITS,<span class="dt">IC=</span><span class="st">&quot;MSPE&quot;</span>)</code></pre></div>
 <pre><code>##                              dRMSPE (m) DOF[mean] method
 ## OUF anisotropic harmonic 2 0   0.000000  106.1204     ML
-## OUF anisotropic harmonic 3 0   2.508591  107.1803     ML
-## OUF anisotropic harmonic 4 0   2.531355  107.1268     ML
-## OUF anisotropic harmonic 1 0   3.832061  108.2142     ML
-## OUF anisotropic harmonic 2 1   6.085746  107.9071     ML
-## OUF anisotropic harmonic 3 1   8.285131  108.9836     ML
-## OUF anisotropic harmonic 1 1   9.542748  110.0647     ML
-## OUF anisotropic harmonic 0 0 101.913131  132.4812     ML
-## OUF anisotropic harmonic 0 1 104.265392  134.7361     ML</code></pre>
+## OUF anisotropic harmonic 3 0   2.508589  107.1803     ML
+## OUF anisotropic harmonic 4 0   2.531331  107.1268     ML
+## OUF anisotropic harmonic 1 0   3.832054  108.2142     ML
+## OUF anisotropic harmonic 2 1   6.085776  107.9071     ML
+## OUF anisotropic harmonic 3 1   8.285117  108.9836     ML
+## OUF anisotropic harmonic 1 1   9.542713  110.0647     ML
+## OUF anisotropic harmonic 0 0 101.913126  132.4812     ML
+## OUF anisotropic harmonic 0 1 104.265395  134.7361     ML</code></pre>
 <p>Finally, a good model wins out, with the 2 harmonic model beating the 3 harmonic model by 2.5 meters of RMS predictive error (RMSPE). Unlike likelihood based ICs (AIC &amp; BIC), MSPE has units and an absolute scale, though in summary we only show differences in the RMSPE for simplicity. Note that MSPE should only be used to select among models with the same autocorrelation structure.</p>
 </div>
 <div id="home-range-estimation" class="section level3">

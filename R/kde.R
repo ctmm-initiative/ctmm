@@ -461,7 +461,7 @@ prepare.H <- function(H,n,axes=c('x','y'))
 
 ############################################
 # construct a grid for the density function
-kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=1,dr=NULL)
+kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=1,dr=NULL,EXT=NULL)
 {
   R <- get.telemetry(data,axes) # (times,dim)
   n <- nrow(R) # (times)
@@ -474,7 +474,7 @@ kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=1,dr=NULL)
   dH <- t(dH) # (times,dim)
 
   # now to find the necessary extent of our grid
-  EXT <- rbind( apply(R-dH,2,min) , apply(R+dH,2,max) ) # (ext,dim)
+  if(is.null(EXT)) { EXT <- rbind( apply(R-dH,2,min) , apply(R+dH,2,max) ) } # (ext,dim) }
   dEXT <- EXT[2,]-EXT[1,]
 
   # grid center
@@ -531,6 +531,10 @@ kde <- function(data,H,axes=c("x","y"),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr
     # sub-grid lower/upper bound indices
     i1 <- floor((r[i,]-dH[i,]-R0)/dr) + 1
     i2 <- ceiling((r[i,]+dH[i,]-R0)/dr) + 1
+
+    # constrain to within grid
+    i1 <- pmax(i1,1)
+    i2 <- pmin(i2,dim(PMF))
 
     SUB <- lapply(1:length(i1),function(d){ i1[d]:i2[d] })
 

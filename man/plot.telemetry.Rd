@@ -14,7 +14,7 @@ plot(x,y,...)
 
 \S3method{plot}{telemetry}(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF",error=TRUE,velocity=FALSE,
      col="red",col.level="black",col.DF="blue",col.grid="white",pch=1,type='p',
-     labels=NULL,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,cex=NULL,lwd=1,...)
+     labels=NULL,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,cex=NULL,lwd=1,lwd.level=1,...)
 
 \S4method{zoom}{list}(x,...)
 
@@ -45,7 +45,8 @@ plot(x,y,...)
   \item{xlim}{The \code{x} limits \code{c(x1, x2)} of the plot (in SI units).}
   \item{ylim}{The \code{y} limits \code{c(y1, y2)} of the plot (in SI units).}
   \item{cex}{Relative size of plotting symbols. Only used when errors are missing.}
-  \item{lwd}{Line widths of \code{UD} contours.}
+  \item{lwd}{Line widths of \code{telemetry} points.}
+  \item{lwd.level}{Line widths of \code{UD} contours.}
   \item{\dots}{ Additional options passed to \code{plot}.}
 }
 
