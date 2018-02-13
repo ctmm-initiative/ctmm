@@ -1,18 +1,14 @@
 PRIORITY
 * Error in sinch(nu * dt) * Exp : non-numeric argument to binary operator ??? Random R bug?
 
-SPEED
-* user predict() to fix the mean speed mean (exact to within discretization) and then you can divide by n instead of (n-1); maybe update the stopping criteria?
-
 ERROR PAPER
-* x,y,z simultaneous HDOP,VDOP calibration - calibrate everything that needs it
+* x,y,z simultaneous HDOP,VDOP calibration - calibrate everything that needs it - look for all DOP without VAR/COV (message)
 * UERE error propagation from calibration (do not use as prior!)
-* document median
+* email ARGOS about McClintock formula
 * kGcluster
-* speed filter Pepper functions
-* use speed filter in ctmm.guess circle=TRUE
 * expose speed filter
-* geometric median
+* speed filter Pepper functions
+* use speed filter in ctmm.guess circle=TRUE ???
 
 PROJECTION
 * projection() <- on all plottable objects + plot option

@@ -88,7 +88,7 @@ new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,fracti
 #######################################
 # PLOT TELEMETRY DATA
 #######################################
-plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF",error=TRUE,velocity=FALSE,col="red",col.level="black",col.DF="blue",col.grid="white",pch=1,type='p',labels=NULL,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,cex=NULL,lwd=1,...)
+plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF",error=TRUE,velocity=FALSE,col="red",col.level="black",col.DF="blue",col.grid="white",pch=1,type='p',labels=NULL,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,cex=NULL,lwd=1,lwd.level=1,...)
 {
   alpha <- 1-level
   alpha.UD <- 1-level.UD
@@ -127,7 +127,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
       plot.df(pdf,DF=DF,col=col.DF[[i]],...)
 
       # plot ML estimate, regular style
-      plot.ctmm(CTMM[[i]],alpha.UD,col=col.level[[i]],lwd=lwd,...)
+      plot.ctmm(CTMM[[i]],alpha.UD,col=col.level[[i]],lwd=lwd.level,...)
 
       # plot CIs dashed if present
       if(!is.null(CTMM[[i]]$COV) & !is.na(level))
@@ -140,7 +140,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
         for(j in 1:2)
         {
           CTMM[[i]]$sigma <- const[j]*sigma
-          plot.ctmm(CTMM[[i]],alpha.UD,col=scales::alpha(col.level[[i]],0.5),lwd=lwd/2,...)
+          plot.ctmm(CTMM[[i]],alpha.UD,col=scales::alpha(col.level[[i]],0.5),lwd=lwd.level/2,...)
         }
       }
     }
@@ -151,7 +151,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
   if(!is.null(UD))
   {
     UD <- lapply(UD,function(ud){ unit.UD(ud,length=dist$scale) })
-    plot.UD(UD,level.UD=level.UD,level=level,DF=DF,col.level=col.level,col.DF=col.DF,col.grid=col.grid,labels=labels,fraction=fraction,add=TRUE,xlim=xlim,ylim=ylim,cex=cex,lwd=lwd,...)
+    plot.UD(UD,level.UD=level.UD,level=level,DF=DF,col.level=col.level,col.DF=col.DF,col.grid=col.grid,labels=labels,fraction=fraction,add=TRUE,xlim=xlim,ylim=ylim,cex=cex,lwd=lwd.level,...)
   }
 
   #########################
@@ -173,6 +173,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
   col <- prepare.p(col)
   pch <- prepare.p(pch)
   type <- prepare.p(type,all=TRUE)
+  error <- rep(error,length(x))
 
   # automagic the plot point size
   if(is.null(cex))
@@ -182,118 +183,84 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
   }
   cex <- prepare.p(cex)
 
-  # prepare errors as a group
-  if(error)
-  {
-    # standard deviations to plot for circle/ellipse
-    z <- sqrt(-2*log(alpha.UD))
-
-    # scaled error info
-    ERRORS <- lapply(x,function(X){ get.error(X,list(error=as.logical(error),axes=c('x','y')))/dist$scale^2 })
-    # don't want to throw z in here yet, in case of kernels
-    FLAGS <- sapply(ERRORS,function(E) attr(E,"flag") ) # nothing, circle or ellipse?
-    # we aren't plotting if UERE is missing
-    OFF <- FLAGS==1
-    if(any(OFF)) { FLAGS[OFF] <- 0 }
-
-    if(any(FLAGS>1) && error<3) # CIRCLE/ELLIPSE PLOT GROUP INFO
-    {
-      if(error==1) # RIM PLOT STUFF
-      {
-        # circular/elliptical circumferences
-        escales <- function(i)
-        {
-          # elliptical circumference
-          if(all(DOP.LIST$horizontal$COV %in% names(x[[i]])))
-          {
-            A2 <- x[[i]][["COV.major"]]
-            B2 <- x[[i]][["COV.minor"]]
-
-            CIRC <- (4*z/dist$scale) * sqrt(A2) * pracma::ellipke(sqrt(1-B2/A2))$e
-          }
-          else # circular circumference
-          { CIRC <- (2*pi*z)*sqrt(ERRORS[[i]]) }
-
-          return(CIRC)
-        }
-
-        # circumference of a pixel in physical units
-        PIXDEN <- 4/pxpkm
-      }
-      else if(error==2) # DISC PLOT STUFF
-      {
-        # circular/elliptical areas
-        escales <- function(i)
-        {
-          if((all(DOP.LIST$horizontal$COV %in% names(x[[i]]))))
-          { AREA <- (pi*z^2/dist$scale^2) * sqrt(x[[i]][["COV.major"]] * x[[i]][["COV.minor"]]) }
-          else
-          { AREA <- (pi*z^2) * ERRORS[[i]] }
-
-          return(AREA)
-        }
-
-        # area of a pixel in physical units
-        PIXDEN <- 1/pxpkm^2
-      } # end circle/ellipse specific plot stuff
-
-      SCALES <- lapply(1:length(x),escales)
-      # minimum circumference
-      MIN <- min(sapply(SCALES,min))
-      MIN <- z*MIN
-      # don't let this drop below pixel value
-      MIN <- max(MIN,PIXDEN)
-
-      # opacity based on density
-      SCALES <- lapply(SCALES,function(S) clamp(MIN/S) )
-    } # end group circle/ellipse plots stuff
-  } # END GROUP ERROR
+  # standard deviations to plot for circle/ellipse
+  z <- sqrt(-2*log(alpha.UD))
 
   # now plot individually
   for(i in 1:length(x))
   {
     r <- x[[i]][,c('x','y')]/dist$scale
 
-    if(error && FLAGS[i])
+    # scaled error info
+    ERROR <- get.error(x[[i]],list(error=TRUE,axes=c('x','y')))/dist$scale^2
+    # don't want to throw z in here yet, in case of kernels
+    FLAG <- attr(ERROR,"flag") # nothing, circle or ellipse?
+    # we aren't plotting if UERE is missing
+
+    # error=FALSE or no UERE
+    if(!error[i] || FLAG<=1) # DEFAULT POINTS
+    { graphics::points(r, cex=cex[[i]], col=col[[i]], pch=pch[[i]], type=type[[i]], lwd=lwd, ...) }
+    else if(error[i]<3) # CIRCLE/ELLIPSE
     {
-      if(error<3) # CIRCLE/ELLIPSE
-      {
-        # scale radii
-        ERRORS[[i]] <- z^2 * ERRORS[[i]]
+      # scale radii
+      ERROR <- z^2 * ERROR
 
-        # set coloring to outer rim or solid disc
-        if(error==1) # RIM
-        {
-          bg <- NA
-          fg <- scales::alpha(col[[i]],SCALES[[i]])
-        }
-        else if(error==2) # DISC
-        {
-          bg <- scales::alpha(col[[i]],SCALES[[i]])
-          fg <- scales::alpha(col[[i]],SCALES[[i]]/2)
-        }
-
-        # plot circle
-        if(FLAGS[i]<4)
-        {
-          # convert to radii
-          ERRORS[[i]] <- sqrt(ERRORS[[i]])
-          graphics::symbols(x=r$x,y=r$y,circles=ERRORS[[i]],fg=fg,bg=bg,inches=FALSE,add=TRUE,...)
-        }
-        else if(FLAGS[i]==4)
-        { for(j in 1:nrow(r)) { ellipsograph(mu=as.numeric(r[j,]),sigma=ERRORS[[i]][j,,],level=level.UD,fg=fg[j],bg=bg[j],...) } }
-      } # end circle/ellipse plot
-      else if(error==3) # kernels
+      # set coloring to outer rim or solid disc
+      if(error[i]==1) # RIM
       {
-        # calculate kernels
-        UD <- kde(r,ERRORS[[i]],res=1920) # resolution is NOT working right !!! includes outside of bounding box
-        UD <- new.UD(UD,info=list())
-        # plot kernels
-        plot.UD(UD,level.UD=NA,level=NA,DF='PDF',col.DF=col[[i]],col.level=NA,col.grid=NA,add=TRUE,...)
-      } # end kernel plot
-    } # end error plot
-    else # error=FALSE or no info
-    { graphics::points(r, cex=cex[[i]], col=col[[i]], pch=pch[[i]], type=type[[i]],...) }
+        # elliptical circumference
+        if(all(DOP.LIST$horizontal$COV %in% names(x[[i]])))
+        {
+          A2 <- x[[i]][["COV.major"]]
+          B2 <- x[[i]][["COV.minor"]]
+
+          alpha <- (4*z/dist$scale) * sqrt(A2) * pracma::ellipke(sqrt(1-B2/A2))$e
+          rm(A2,B2)
+        }
+        else # circular circumference
+        { alpha <- (2*pi*z)*sqrt(ERROR) }
+
+        # circumference of a pixel in physical units, spread around circumference
+        alpha <- clamp((4/pxpkm) / alpha)
+
+        bg <- NA
+        fg <- scales::alpha(col[[i]],alpha)
+      }
+      else if(error[i]==2) # DISC
+      {
+        if((all(DOP.LIST$horizontal$COV %in% names(x[[i]]))))
+        { alpha <- (pi*z^2/dist$scale^2) * sqrt(x[[i]][["COV.major"]] * x[[i]][["COV.minor"]]) }
+        else
+        { alpha <- (pi*z^2) * ERROR }
+
+        # area of a pixel in physical units, spread over disc
+        alpha <- clamp((1/pxpkm^2) / alpha)
+
+        bg <- scales::alpha(col[[i]],alpha)
+        fg <- scales::alpha(col[[i]],alpha/2)
+      }
+
+      # plot circle
+      if(FLAG<4)
+      {
+        # convert to radii
+        ERROR <- sqrt(ERROR)
+        graphics::symbols(x=r$x,y=r$y,circles=ERROR,fg=fg,bg=bg,inches=FALSE,add=TRUE,lwd=lwd,...)
+      }
+      else if(FLAG==4)
+      { for(j in 1:nrow(r)) { ellipsograph(mu=as.numeric(r[j,]),sigma=ERROR[j,,],level=level.UD,fg=fg[j],bg=bg[j],lwd=lwd,...) } }
+    } # end circle/ellipse plot
+    else if(error[i]==3) # kernels
+    {
+      # setup grid with correct extent
+      EXT <- array( graphics::par("usr") , c(2,2) )
+      GRID <- kde.grid(r,ERROR,res=max(dev.size("px")),EXT=EXT)
+      # calculate kernels
+      UD <- kde(r,ERROR,grid=GRID)
+      UD <- new.UD(UD,info=list())
+      # plot kernels
+      plot.UD(UD,level.UD=NA,level=NA,DF='PDF',col.DF=col[[i]],col.level=NA,col.grid=NA,add=TRUE,...)
+    } # end kernel plot
 
     # also plot velocity vectors at dt scale
     if(velocity && all(c("vx","vy") %in% names(x[[i]])))
@@ -312,10 +279,9 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
         col[[i]] <- scales::alpha(col[[i]],alpha)
       }
 
-      shape::Arrows(x0=r$x, y0=r$y, x1=(r$x+dr$vx), y1=(r$y+dr$vy), col=col[[i]], code=2, segment=T, arr.adj=1, arr.length=arr.length, arr.type="curved")
+      shape::Arrows(x0=r$x, y0=r$y, x1=(r$x+dr$vx), y1=(r$y+dr$vy), col=col[[i]], code=2, segment=T, arr.adj=1, arr.length=arr.length, arr.type="curved", lwd=lwd)
     }
-  }
-
+  } # end telemetry loop
 }
 # SET METHODS FOR PLOT.TELEMETRY
 #methods::setMethod("plot",signature(x="telemetry",y="missing"), function(x,y,...) plot.telemetry(x,...))

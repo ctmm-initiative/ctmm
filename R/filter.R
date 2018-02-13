@@ -21,7 +21,7 @@ median.telemetry <- function(x,na.rm=FALSE,...)
 
 
 # UNFINISHED
-distances <- function(x,y=median(x),error=NULL)
+filter.distances <- function(x,error=NULL)
 {
   x <- listify(x)
   y <- listify(y)
@@ -39,8 +39,8 @@ distances <- function(x,y=median(x),error=NULL)
 }
 
 
-#
-speeds <- function(data,error=NULL,dt=NULL)
+# estimate and assign speeds to times
+filter.speeds <- function(data,error=NULL,dt=NULL)
 {
   if(is.null(error)) { error <- 10 } # GPS default 10 meter error
   if(is.null(dt)) { dt <- time_res(data) }
@@ -49,7 +49,9 @@ speeds <- function(data,error=NULL,dt=NULL)
 
 
 # speeds assigned by blame
-assign_speeds <- function(data,dt=time_res(data),UERE=0,method=c("max","min"))
+# dt is recording interval
+# dt.fix is minimum time between fixes, which can be smaller than dt
+assign_speeds <- function(data,dt=time_res(data),dt.fix=time_fix(data,dt),UERE=0,method=c("max","min"))
 {
   method <- match.arg(method,c("max","min"))
 
@@ -243,6 +245,16 @@ time_res <- function(data)
 
   return(dt)
 }
+
+
+# estimate minimum time between fixes
+time_fix <- function(data,dt=time_res(data))
+{
+  # count max sequential dt=0
+  #
+  return(0)
+}
+
 
 # greatest common divisor of an array
 gcd.vec <- function(vec)

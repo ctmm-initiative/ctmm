@@ -1,5 +1,6 @@
 # global variables for dop/uere/error functions (special axes)
-DOP.LIST <- list(horizontal=list(axes=c("x","y"),DOP="HDOP",VAR="VAR.xy",COV=c("COV.x.x","COV.x.y","COV.y.y")),
+DOP.LIST <- list(unknown=list(axes=NA,DOP=NA,VAR=NA,COV=NA) ,
+                 horizontal=list(axes=c("x","y"),DOP="HDOP",VAR="VAR.xy",COV=c("COV.x.x","COV.x.y","COV.y.y")),
                  vertical=list(axes="z",DOP="VDOP",VAR="VAR.z"),
                  speed=list(axes=c("vx","vy"),DOP="SDOP",VAR="VAR.v",COV=c("COV.vx.vx","COV.vx.vy","COV.vy.vy")) )
 
@@ -7,10 +8,12 @@ DOP.LIST <- list(horizontal=list(axes=c("x","y"),DOP="HDOP",VAR="VAR.xy",COV=c("
 # match DOP type for DOP.LIST by axes argument
 DOP.match <- function(axes)
 {
+  DOP.LIST <- DOP.LIST[-1] # skip unknown case
   NAMES <- names(DOP.LIST)
   for(i in 1:length(DOP.LIST)) { if(all(axes==DOP.LIST[[i]]$axes)) { return(NAMES[i]) } }
   # match was not found
-  stop("axes=",paste(axes,collapse=",")," not of known DOP type.")
+  warning("axes=",paste(axes,collapse=",")," not of known DOP type.")
+  return("unknown")
 }
 
 
