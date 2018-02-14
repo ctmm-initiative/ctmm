@@ -34,7 +34,7 @@ export("%#%")
 #S3method(`projection<-`,telemetry)
 
 #TELEMETRY FUNCTIONS
-export(as.telemetry,SpatialPoints.telemetry,SpatialPointsDataFrame.telemetry)
+export(as.telemetry,outlie,SpatialPoints.telemetry,SpatialPointsDataFrame.telemetry)
 S3method(as.telemetry,character)
 S3method(as.telemetry,data.frame)
 S3method(as.telemetry,Move)

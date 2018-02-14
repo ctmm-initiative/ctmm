@@ -1,14 +1,16 @@
 PRIORITY
 * Error in sinch(nu * dt) * Exp : non-numeric argument to binary operator ??? Random R bug?
+* mention outlie in vignetee
+* hide color code in akde vignettee
+* long-lat aspect ratio from aeqd projection?
 
 ERROR PAPER
+* speed filter Pepper functions
+* use speed filter in ctmm.guess circle=TRUE ???
 * x,y,z simultaneous HDOP,VDOP calibration - calibrate everything that needs it - look for all DOP without VAR/COV (message)
 * UERE error propagation from calibration (do not use as prior!)
 * email ARGOS about McClintock formula
 * kGcluster
-* expose speed filter
-* speed filter Pepper functions
-* use speed filter in ctmm.guess circle=TRUE ???
 
 PROJECTION
 * projection() <- on all plottable objects + plot option

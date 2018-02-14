@@ -20,55 +20,83 @@ median.telemetry <- function(x,na.rm=FALSE,...)
 }
 
 
-# UNFINISHED
-filter.distances <- function(x,error=NULL)
+# estimate and assign speeds to times
+outlie <- function(data,UERE=10,standardize=FALSE,plot=TRUE)
 {
-  x <- listify(x)
-  y <- listify(y)
-  if(length(x)>length(y))
-  y <- rep(y,length(x)/length(y))
+  error <- get.error(data,ctmm(error=UERE,axes=c("x","y")),circle=TRUE)
 
-  d <- list()
-  for(i in 1:length(x))
+  Vs <- assign_speeds(data,UERE=error)
+  v <- Vs$v.t
+
+  mu <- median.telemetry(data)
+
+  d <- get.telemetry(data,axes=c("x","y"))
+  mu <- get.telemetry(mu,axes=c("x","y"))
+
+  # detrend median
+  d <- t(d) - c(mu)
+  # distances from median
+  d <- colSums(d^2)
+  d <- sqrt(d)
+
+  if(plot)
   {
-    n <- length(x[[i]])
+    n <- length(data$t)
+    x <- get.telemetry(data,axes=c('longitude','latitude'))
+    graphics::plot(x,col=grDevices::rgb(1,1,1,0),xlab="Longitude",ylab="Latitude")
 
+    lwd <- Vs$v.dt
+    lwd <- (lwd/max(lwd))
+    col <- grDevices::rgb(0,0,lwd,lwd)
+    lwd <- 2*lwd
+    graphics::segments(x0=data$longitude[-n],y0=data$latitude[-n],x1=data$longitude[-1],y1=data$latitude[-1],col=col,lwd=lwd)
+
+    cex <- (d/max(d))
+    col <- grDevices::rgb(cex,0,0,cex)
+    graphics::points(x,col=col,cex=cex,pch=20)
   }
 
+  if(standardize)
+  {
+    v <- v/stats::mad(v)
+    d <- d/stats::mad(d)
+  }
 
-}
-
-
-# estimate and assign speeds to times
-filter.speeds <- function(data,error=NULL,dt=NULL)
-{
-  if(is.null(error)) { error <- 10 } # GPS default 10 meter error
-  if(is.null(dt)) { dt <- time_res(data) }
-  assign_speeds(data,UERE=error,dt=dt)$v.t
+  return(data.frame(speed=v,distance=d))
 }
 
 
 # speeds assigned by blame
-# dt is recording interval
-# dt.fix is minimum time between fixes, which can be smaller than dt
-assign_speeds <- function(data,dt=time_res(data),dt.fix=time_fix(data,dt),UERE=0,method=c("max","min"))
+# dt[1] is recording interval
+# dt[2] is minimum time between fixes, which can be smaller than dt[1]
+assign_speeds <- function(data,dt=NULL,UERE=0,method=c("max","min"))
 {
   method <- match.arg(method,c("max","min"))
 
-  CTMM <- ctmm(error=UERE,axes=c("x","y"))
+  DT <- diff(data$t)
+  if(is.null(dt)) { dt <- time_res(DT) }
 
   # inner speed estimates
-  v.dt <- speedMLE(data,dt=dt,UERE=UERE,CTMM=CTMM)
+  v.dt <- speedMLE(data,dt=dt,UERE=UERE,DT=DT)
   if(length(v.dt)==1)
   {
     v <- c(v.dt,v.dt)
     return(list(v.t=v,v.dt=v.dt))
   }
 
-  # end point contingency estimates
-  v1 <- speedMLE(data[c(1,3),],dt=dt,UERE=UERE,CTMM=CTMM)
-  n <- length(data$t)
-  v2 <- speedMLE(data[c(n-2,n),],dt=dt,UERE=UERE,CTMM=CTMM)
+  if(length(UERE)==1)
+  {
+    # end point contingency estimates
+    v1 <- speedMLE(data[c(1,3),],dt=dt,UERE=UERE)
+    n <- length(data$t)
+    v2 <- speedMLE(data[c(n-2,n),],dt=dt,UERE=UERE)
+  }
+  else # pull out correct errors for calculation if fed all errors
+  {
+    v1 <- speedMLE(data[c(1,3),],dt=dt,UERE=UERE[c(1,3)])
+    n <- length(data$t)
+    v2 <- speedMLE(data[c(n-2,n),],dt=dt,UERE=UERE[c(n-2,n)])
+  }
 
   # left and right estimates - n estimates, 1 lag apart
   v1 <- c(v1,v.dt)
@@ -108,32 +136,36 @@ assign_speeds <- function(data,dt=time_res(data),dt.fix=time_fix(data,dt),UERE=0
 
 
 # estimate the speed between the two rows of data with error UERE & temporal resolution dt
-speedMLE <- function(data,dt=time_res(data),UERE=0,CTMM=ctmm(error=UERE,axes=c("x","y")))
+# dt[1] is recording interval
+# dt[2] is minimum time between fixes, which can be smaller than dt[1]
+speedMLE <- function(data,dt=NULL,UERE=0,CTMM=ctmm(error=UERE,axes=c("x","y"),circle=TRUE),DT=diff(data$t))
 {
   ######################
   # 1/diff(t) estimate
 
-  DT <- diff(data$t)
-  if(dt) # truncate
-  {
-    # result storage
-    f <- numeric(length(DT))
-
-    # assuming two times are uniformly distributed with roundoff error
-    SUB <- DT>dt
-    DT.SUB <- DT[SUB]
-    if(any(SUB)) { f[SUB] <- ( (DT.SUB+dt)*log(DT.SUB+dt) + (DT.SUB-dt)*log(DT.SUB-dt) - 2*DT.SUB*log(DT.SUB) )/dt^2 }
-
-    # limit of sampling interval == roundoff
-    SUB <- DT==dt
-    if(any(SUB)) { f[SUB] <- log(4)/dt }
-
-    # fall back - totally made up
-    SUB <- DT<dt
-    if(any(SUB)) { f[SUB] <- 2*log(4)/dt }
-  }
-  else
-  { f <- 1/DT }
+  ZERO <- DT==0
+  if(any(ZERO)) { DT[ZERO] <- dt[2] }
+  f <- 1/DT
+  # if(dt) # truncate
+  # {
+  #   # result storage
+  #   f <- numeric(length(DT))
+  #
+  #   # assuming two times are uniformly distributed with roundoff error
+  #   SUB <- DT>dt
+  #   DT.SUB <- DT[SUB]
+  #   if(any(SUB)) { f[SUB] <- ( (DT.SUB+dt)*log(DT.SUB+dt) + (DT.SUB-dt)*log(DT.SUB-dt) - 2*DT.SUB*log(DT.SUB) )/dt^2 }
+  #
+  #   # limit of sampling interval == roundoff
+  #   SUB <- DT==dt
+  #   if(any(SUB)) { f[SUB] <- log(4)/dt }
+  #
+  #   # fall back - totally made up
+  #   SUB <- DT<dt
+  #   if(any(SUB)) { f[SUB] <- 2*log(4)/dt }
+  # }
+  # else
+  # { f <- 1/DT }
 
   ######################
   # distance estimate
@@ -142,24 +174,42 @@ speedMLE <- function(data,dt=time_res(data),UERE=0,CTMM=ctmm(error=UERE,axes=c("
   dr <- sqrt(diff(data$x)^2+diff(data$y)^2)
 
   # point esitmate of distance with error>0
-  if(UERE>0)
+  if(length(UERE)>1 || UERE)
   {
-    # 1-time errors
-    error <- get.error(data,CTMM)
+    if(length(UERE)==1)
+    {
+      # 1-time errors
+      error <- get.error(data,ctmm(error=UERE,axes=c("x","y")),circle=TRUE)
+    }
+    else # full error array was passed
+    {
+      UERE -> error
+      rm(UERE)
+    }
+
     # 2-time errors
     error <- error[-1] + error[-length(error)]
 
-    # coefficient in transcendental Bessel equation
-    # x I0(x) == y I1(x)
-    y <- dr^2/error
-
-    x <- BesselSolver(y)
-
-    SUB <- dr>0
-    if(any(SUB)) { dr[SUB] <- error[SUB]/dr[SUB] * x[SUB] }
+    dr <- distanceMLE(dr,error)
   }
 
   return(dr*f)
+}
+
+
+####################
+distanceMLE <- function(dr,error)
+{
+  # coefficient in transcendental Bessel equation
+  # x I0(x) == y I1(x)
+  y <- dr^2/error
+  x <- BesselSolver(y)
+  # x = dr*dR/error
+
+  SUB <- dr>0
+  if(any(SUB)) { dr[SUB] <- error[SUB]/dr[SUB] * x[SUB] }
+
+  return(dr)
 }
 
 
@@ -227,10 +277,12 @@ BesselSolver <- function(y)
 
 
 # estimate temporal resolution from data
-time_res <- function(data)
+# dt[1] = recording interval (truncation)
+# dt[2] = fix time
+time_res <- function(DT)
 {
-  dt <- diff(data$t)
-  dt <- dt[dt>0]
+  ### recording interval ###
+  dt <- DT[DT>0]
   if(length(dt)==0) { return(0) }
   if(length(dt)==1) { return(dt) }
 
@@ -243,16 +295,19 @@ time_res <- function(data)
   dt <- round(M*dt) # shift decimal place to integers
   dt <- gcd.vec(dt)/M # shift back
 
-  return(dt)
-}
+  ### fix time ###
+  # longest repeating 1
+  DT <- DT==0
+  if(any(DT))
+  {
+    for(i in 2:length(DT)) { if(DT[i]) { DT[i] <- DT[i] + DT[i-1] } }
+    DT <- max(DT)
+    DT <- dt/(1+DT)
+  }
+  else
+  { DT <- 0 }
 
-
-# estimate minimum time between fixes
-time_fix <- function(data,dt=time_res(data))
-{
-  # count max sequential dt=0
-  #
-  return(0)
+  return(c(dt,DT))
 }
 
 

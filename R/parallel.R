@@ -35,7 +35,7 @@ plapply <- function(X,FUN,...,cores=1,fast=TRUE)
   cores <- resolveCores(cores) # I don't need this line
 
   if(cores==1 || (fast && WINDOWS)) { return(lapply(X,FUN,...)) }
-  else if(!WINDOWS) { return(mclapply(X,FUN,...,mc.cores=cores)) }
+  else if(!WINDOWS) { return(parallel::mclapply(X,FUN,...,mc.cores=cores)) }
 
   ### Windows parallel code below ###
   win_init = expression({requireNamespace("ctmm",quietly=TRUE)})

@@ -254,7 +254,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
     {
       # setup grid with correct extent
       EXT <- array( graphics::par("usr") , c(2,2) )
-      GRID <- kde.grid(r,ERROR,res=max(dev.size("px")),EXT=EXT)
+      GRID <- kde.grid(r,ERROR,res=max(grDevices::dev.size("px")),EXT=EXT)
       # calculate kernels
       UD <- kde(r,ERROR,grid=GRID)
       UD <- new.UD(UD,info=list())
@@ -453,7 +453,7 @@ plot.ctmm <- function(model,alpha=0.05,col="blue",bg=NA,...)
 }
 
 ###################
-ellipsograph <- function(mu,sigma,level=0.95,fg=par("col"),bg=NA,...)
+ellipsograph <- function(mu,sigma,level=0.95,fg=graphics::par("col"),bg=NA,...)
 {
   Eigen <- eigen(sigma)
   std <- sqrt(Eigen$values)
