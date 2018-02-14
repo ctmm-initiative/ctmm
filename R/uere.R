@@ -166,7 +166,7 @@ uere <- function(data,axes=c("x","y"),diagnostic=FALSE)
 # 2 : proportional error parameter fit to DOP value
 # 3 : full error no fit (circle)
 # 4 : " " (ellipse)
-get.error <- function(DATA,CTMM,flag=FALSE)
+get.error <- function(DATA,CTMM,flag=FALSE,circle=FALSE)
 {
   n <- length(DATA$t)
   axes <- CTMM$axes
@@ -182,7 +182,7 @@ get.error <- function(DATA,CTMM,flag=FALSE)
     VAR <- TYPE$VAR
     DOP <- TYPE$DOP
 
-    if(all(COV %in% COLS)) # calibrated error ellipses - ARGOS
+    if(all(COV %in% COLS) && !circle) # calibrated error ellipses - ARGOS
     {
       error <- get.telemetry(DATA,COV[c(1,2,2,3)]) # pull matrix elements
       dim(error) <- c(nrow(error),2,2) # array of matrices

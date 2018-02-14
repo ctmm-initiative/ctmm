@@ -119,7 +119,7 @@ genD.numDeriv <- function(par,fn,zero=0,lower=-Inf,upper=Inf,step=NULL,r=2,covar
 
 ################################
 # multi-core second-order derivatives
-genD.mcDeriv <- function(par,fn,zero=0,lower=-Inf,upper=Inf,PERIOD=F,step=NULL,covariance=NULL,mc.cores=detectCores(),cheap=FALSE)
+genD.mcDeriv <- function(par,fn,zero=0,lower=-Inf,upper=Inf,PERIOD=F,step=NULL,covariance=NULL,cores=detectCores(),cheap=FALSE)
 {
   DIM <- length(par)
 
@@ -220,7 +220,7 @@ genD.mcDeriv <- function(par,fn,zero=0,lower=-Inf,upper=Inf,PERIOD=F,step=NULL,c
   else # doesn't require zero argument
   { func <- function(p) { fn(p) } }
 
-  FN <- unlist(mclapply(split(P,col(P)),func,mc.cores=mc.cores))
+  FN <- unlist(plapply(split(P,col(P)),func,cores=cores))
 
   MIN <- which.min(FN)
   par.best <- P[,MIN]
