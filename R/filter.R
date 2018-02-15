@@ -21,7 +21,7 @@ median.telemetry <- function(x,na.rm=FALSE,...)
 
 
 # estimate and assign speeds to times
-outlie <- function(data,UERE=10,standardize=FALSE,plot=TRUE)
+outlie <- function(data,UERE=10,standardize=FALSE,plot=TRUE,...)
 {
   error <- get.error(data,ctmm(error=UERE,axes=c("x","y")),circle=TRUE)
 
@@ -32,28 +32,32 @@ outlie <- function(data,UERE=10,standardize=FALSE,plot=TRUE)
 
   d <- get.telemetry(data,axes=c("x","y"))
   mu <- get.telemetry(mu,axes=c("x","y"))
+  mu <- c(mu)
 
   # detrend median
-  d <- t(d) - c(mu)
+  d <- t(d) - mu
   # distances from median
   d <- colSums(d^2)
   d <- sqrt(d)
+  d <- distanceMLE(d,error)
 
   if(plot)
   {
-    n <- length(data$t)
-    x <- get.telemetry(data,axes=c('longitude','latitude'))
-    graphics::plot(x,col=grDevices::rgb(1,1,1,0),xlab="Longitude",ylab="Latitude")
+    # bounding box
+    new.plot(data,...)
+    # convert units on telemetry object to match base plot
+    data <- unit.telemetry(data,length=get("x.scale",pos=plot.env))
 
     lwd <- Vs$v.dt
     lwd <- (lwd/max(lwd))
     col <- grDevices::rgb(0,0,lwd,lwd)
     lwd <- 2*lwd
-    graphics::segments(x0=data$longitude[-n],y0=data$latitude[-n],x1=data$longitude[-1],y1=data$latitude[-1],col=col,lwd=lwd)
+    n <- length(data$t)
+    graphics::segments(x0=data$x[-n],y0=data$y[-n],x1=data$x[-1],y1=data$y[-1],col=col,lwd=lwd,...)
 
     cex <- (d/max(d))
     col <- grDevices::rgb(cex,0,0,cex)
-    graphics::points(x,col=col,cex=cex,pch=20)
+    graphics::points(data$x,data$y,col=col,cex=cex,pch=20,...)
   }
 
   if(standardize)

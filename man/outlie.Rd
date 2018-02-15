@@ -5,7 +5,7 @@
 \description{Produces a \code{data.frame} of speed and distance estimates to analyze, as well as a plot highlighting potential speed and distance outliers in \code{telemetry} data.
 }
 \usage{
-outlie(data,UERE=10,standardize=FALSE,plot=TRUE)
+outlie(data,UERE=10,standardize=FALSE,plot=TRUE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -13,6 +13,7 @@ outlie(data,UERE=10,standardize=FALSE,plot=TRUE)
   \item{UERE}{Device-dependent telemetry error in meters. Only necessary for uncalibrated data.}
   \item{standardize}{Standardize speed and distance output by their median absolute deviation (MAD).}
   \item{plot}{Output a plot highlighting high speeds (blue) and distant locations (red).}
+  \item{...}{Arguments passed to \code{plot}.}
 }
 
 \details{Distances are calculated from the median longitude & latitude, while speeds are calculated over the timesteps. Both estimates account for telemetry error and condition on as few data points as possible. The speed estimates furthermore account for timestamp truncation and assign each timestep's speed to the most likely offending time, based on its other adjacent speed estimate.

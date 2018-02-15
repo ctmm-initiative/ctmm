@@ -1,7 +1,7 @@
 # global variables for dop/uere/error functions (special axes)
 DOP.LIST <- list(unknown=list(axes=NA,DOP=NA,VAR=NA,COV=NA) ,
                  horizontal=list(axes=c("x","y"),DOP="HDOP",VAR="VAR.xy",COV=c("COV.x.x","COV.x.y","COV.y.y")),
-                 vertical=list(axes="z",DOP="VDOP",VAR="VAR.z"),
+                 vertical=list(axes="z",DOP="VDOP",VAR="VAR.z",COV=NA),
                  speed=list(axes=c("vx","vy"),DOP="SDOP",VAR="VAR.v",COV=c("COV.vx.vx","COV.vx.vy","COV.vy.vy")) )
 
 
@@ -86,7 +86,9 @@ try.assign.uere <- function(data,UERE,TYPE=names(UERE))
 }
 
 # return the UERE from set data or calculate it from calibration data
-uere <- function(data,axes=c("x","y"),diagnostic=FALSE)
+# look for every DOP without a VAR and calculate UERE - override option for all
+# option to integrate HDOP & VDOP if they share the same UERE
+uere <- function(data,override=FALSE,integrate=FALSE,diagnostic=FALSE)
 {
   if(class(data)=="telemetry" || class(data)=="data.frame")
   {
@@ -98,65 +100,93 @@ uere <- function(data,axes=c("x","y"),diagnostic=FALSE)
     data <- list(data)
   }
 
-  # get.error object for pulling UERE-1 variances
-  CTMM <- list(axes=axes,error=1)
-
-  # array of residuals to rbind to
-  z <- NULL
-
-  # calculate mean and residuals
-  for(i in 1:length(data))
+  # types of data present
+  TYPES <- names(DOP.LIST[-1])
+  IN <- sapply(TYPES,function(TYPE) { all(DOP.LIST[[TYPE]]$axes %in% names(data[[1]])) })
+  TYPES <- TYPES[IN]
+  # remove cases where calibration exists
+  if(length(TYPES) && !override)
   {
-    ## regular code
-    # UERE-1 error variances
-    w <- get.error(data[[i]],CTMM)
-    if(attr(w,"flag")==0) { stop("Failed to import DOP column from Movebank file.") }
-    # relative weights
-    w <- 1/w
-    # locations
-    dz <- get.telemetry(data[[i]],axes)
-    # stationary mean
-    mu <- c(w %*% dz)/sum(w)
-    # detrend the mean for error/residuals
-    dz <- dz - mu
-    # UERE-1 standardize residuals
-    dz <- sqrt(w) * dz
-
-    z <- rbind(z,dz)
-
-    ## need special code for simultaneous 3D error calibration with HDOP & VDOP having the same UERE !!!
-    #
-    #
+    OUT <- sapply(TYPES,function(TYPE) {DOP.LIST[[TYPE]]$VAR %in% names(data[[1]])})
+    TYPES <- TYPES[!OUT]
   }
 
-  # total degrees of freedom
-  n <- (nrow(z)-length(data)) * length(axes)
-  # x,y data would be standardized if UERE==1 back from error=1 in CTMM list
-  UERE <- sqrt(sum(z^2)/n)
-
-  # name UERE properly
-  names(UERE) <- DOP.match(axes)
-
-  if(diagnostic)
+  UERE <- NULL
+  N <- NULL
+  for(TYPE in TYPES)
   {
-    r <- c(z) / (UERE)
-    CI <- chisq.ci(1,DOF=n)
+    axes <- DOP.LIST[[TYPE]]$axes
 
-    KDE <- stats::density(r,bw="SJ")
-    graphics::hist(r,breaks="scott",freq=FALSE,main="residual distribution",xlab="standardized error",ylim=c(0,max(KDE$y,1/sqrt(2*pi*CI[1]))))
-    graphics::lines(KDE)
-    DNORM <- Vectorize(function(x){ exp(-x^2/2/CI[2])/sqrt(2*pi*CI[2]) })
-    graphics::curve(DNORM,from=min(r),to=max(r),n=1001,add=TRUE,col="red",lwd=2)
-    DNORM <- Vectorize(function(x){ exp(-x^2/2/CI[1])/sqrt(2*pi*CI[1]) })
-    graphics::curve(DNORM,from=min(r),to=max(r),n=1001,add=TRUE,col="red")
-    DNORM <- Vectorize(function(x){ exp(-x^2/2/CI[3])/sqrt(2*pi*CI[3]) })
-    graphics::curve(DNORM,from=min(r),to=max(r),n=1001,add=TRUE,col="red")
-    # should have used a t-distribution?
+    # get.error object for pulling UERE-1 variances
+    CTMM <- list(axes=axes,error=1)
 
-    return(sqrt(chisq.ci(UERE^2,DOF=n)))
+    # array of residuals to rbind to
+    z <- NULL
+
+    # calculate mean and residuals
+    for(i in 1:length(data))
+    {
+      ## regular code
+      # UERE-1 error variances
+      w <- get.error(data[[i]],CTMM)
+      if(attr(w,"flag")==0) { stop("Failed to import DOP column from Movebank file.") }
+      # relative weights
+      w <- 1/w
+      # locations
+      dz <- get.telemetry(data[[i]],axes)
+      # stationary mean
+      mu <- c(w %*% dz)/sum(w)
+      # detrend the mean for error/residuals
+      dz <- dz - mu
+      # UERE-1 standardize residuals
+      dz <- sqrt(w) * dz
+
+      z <- rbind(z,dz)
+    }
+    # total degrees of freedom
+    N <- c(N,(nrow(z)-length(data)) * length(axes))
+    # x,y data would be standardized if UERE==1 back from error=1 in CTMM list
+    UERE <- c(UERE,sqrt(sum(z^2)/last(N)))
+
+    names(N)[length(N)] <- TYPE
+    names(UERE)[length(UERE)] <- TYPE
+
+    if(diagnostic)
+    {
+      r <- c(z) / (last(UERE))
+      CI <- chisq.ci(1,DOF=N[TYPE])
+
+      KDE <- stats::density(r,bw="SJ")
+      graphics::hist(r,breaks="scott",freq=FALSE,main=paste(TYPE,"residual distribution"),xlab="standardized error",ylim=c(0,max(KDE$y,1/sqrt(2*pi*CI[1]))))
+      graphics::lines(KDE)
+      DNORM <- Vectorize(function(x){ exp(-x^2/2/CI[2])/sqrt(2*pi*CI[2]) })
+      graphics::curve(DNORM,from=min(r),to=max(r),n=1001,add=TRUE,col="red",lwd=2)
+      DNORM <- Vectorize(function(x){ exp(-x^2/2/CI[1])/sqrt(2*pi*CI[1]) })
+      graphics::curve(DNORM,from=min(r),to=max(r),n=1001,add=TRUE,col="red")
+      DNORM <- Vectorize(function(x){ exp(-x^2/2/CI[3])/sqrt(2*pi*CI[3]) })
+      graphics::curve(DNORM,from=min(r),to=max(r),n=1001,add=TRUE,col="red")
+      # should have used a t-distribution?
+
+      ## right-justifying a set of labels: thanks to Uwe Ligges
+      LEG <- sprintf("%.2f",rev(sqrt(chisq.ci(UERE[TYPE]^2,DOF=N[TYPE]))))
+      LEN <- max(graphics::strwidth(LEG))
+      OUT <- graphics::legend("topright",legend=rep(" ",length(LEG)),text.width=LEN,title="UERE",box.col=NA,col='red',bg=grDevices::grey(0.9),lwd=c(1,2,1),xjust=1,yjust=1)
+      graphics::text(OUT$rect$left+OUT$rect$w,OUT$text$y,LEG,pos=2)
+    }
   }
-  else
-  { return( UERE ) }
+
+  if(integrate && all(c('horizontal','vertical') %in% TYPES) && all(c("HDOP","VDOP") %in% names(data[[1]])))
+  {
+    P <- (UERE['horizontal']/UERE['vertical'])^2
+    # F-test
+    P <- min( pf(P,N['horizontal'],N['vertical'],lower.tail=TRUE) , pf(P,N['horizontal'],N['vertical'],lower.tail=FALSE) )
+    message("p[UERE] = ",P)
+
+    UNITY <- sqrt((2*UERE['horizontal']^2 + UERE['vertical']^2)/3)
+    UERE['horizontal'] <- UERE['vertical'] <- UNITY
+  }
+
+  return(UERE)
 }
 
 

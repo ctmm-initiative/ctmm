@@ -79,11 +79,16 @@ new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,fracti
 
     # empty base layer plot
     plot(ext, xlab=xlab, ylab=ylab, col=grDevices::rgb(1,1,1,0), asp=1, ...)
+    assign("x.dim","length",pos=plot.env)
+    assign("y.dim","length",pos=plot.env)
+    assign("x.scale",dist$scale,pos=plot.env)
+    assign("y.scale",dist$scale,pos=plot.env)
   }
 
   return(dist)
 }
-
+# setup environment
+plot.env <- new.env()
 
 #######################################
 # PLOT TELEMETRY DATA
