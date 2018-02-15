@@ -102,7 +102,7 @@
     <p>Produces a <code>data.frame</code> of speed and distance estimates to analyze, as well as a plot highlighting potential speed and distance outliers in <code>telemetry</code> data.</p>
     
 
-    <pre class="usage"><span class='fu'>outlie</span>(<span class='no'>data</span>,<span class='kw'>UERE</span><span class='kw'>=</span><span class='fl'>10</span>,<span class='kw'>standardize</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>plot</span><span class='kw'>=</span><span class='fl'>TRUE</span>)</pre>
+    <pre class="usage"><span class='fu'>outlie</span>(<span class='no'>data</span>,<span class='kw'>UERE</span><span class='kw'>=</span><span class='fl'>10</span>,<span class='kw'>standardize</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>plot</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
@@ -122,6 +122,10 @@
     <tr>
       <th>plot</th>
       <td><p>Output a plot highlighting high speeds (blue) and distant locations (red).</p></td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td><p>Arguments passed to <code>plot</code>.</p></td>
     </tr>
     </table>
     

@@ -1,3 +1,6 @@
+# global variable
+DATA.EARTH <- list(R.EQ=6378137,R.PL=6356752.3142) # equatorial & polar radii
+
 # range of telemetry data
 projection.telemetry <- function(x,asText=TRUE)
 {
@@ -71,8 +74,8 @@ setMethod('projection<-', signature(x='telemetry'), `projection<-.telemetry`)
 northing <- function(x,proj)
 {
   # WGS-84 ellipsoid
-  R.EQ <- 6378137
-  R.PL <- 6356752.3142
+  R.EQ <- DATA.EARTH$R.EQ
+  R.PL <- DATA.EARTH$R.PL
   # approximate 1-meter-North latitude displacements
   d.lambda <- 1/sqrt((R.EQ*sin(x$latitude))^2+(R.PL*cos(x$latitude))^2)
   # could use grad() but would be slowwwww....

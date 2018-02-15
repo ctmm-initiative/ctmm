@@ -75,7 +75,7 @@
       <h1>Autocorrelated Kernel Density Estimation</h1>
                         <h4 class="author">Christen H. Fleming and Justin M. Calabrese</h4>
             
-            <h4 class="date">2018-02-14</h4>
+            <h4 class="date">2018-02-15</h4>
           </div>
 
     
@@ -95,26 +95,17 @@ UD2 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/akde.ht
 UD2w &lt;-<span class="st"> </span><span class="kw"><a href="../reference/akde.html">akde</a></span>(Pepper,M.OUF,<span class="dt">weights=</span><span class="ot">TRUE</span>)
 <span class="co"># calculate one extent for all UDs</span>
 EXT &lt;-<span class="st"> </span><span class="kw">extent</span>(<span class="kw">list</span>(UD0,UD2,UD2w),<span class="dt">level=</span><span class="fl">0.95</span>)</code></pre></div>
-<p>With this next code we highlight Pepper’s collar malfunction, where the sampling interval abruptly changed from (roughly) 1-hour to 2-hours per fix.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># sampling intervals in hours</span>
-col &lt;-<span class="st"> "hr"</span> <span class="op">%#%</span><span class="st"> </span><span class="kw">diff</span>(Pepper<span class="op">$</span>t)
-<span class="co"># minimum adjacent sampling interval</span>
-col &lt;-<span class="st"> </span><span class="kw">pmin</span>(<span class="kw">c</span>(<span class="ot">Inf</span>,col),<span class="kw">c</span>(col,<span class="ot">Inf</span>))
-<span class="co"># sampling intervals under 1.5 hours</span>
-col &lt;-<span class="st"> </span>(col <span class="op">&lt;</span><span class="st"> </span><span class="fl">1.5</span>)
-<span class="co"># red (low-frequency) or yellow (high-frequency)</span>
-col &lt;-<span class="st"> </span>grDevices<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/grDevices/topics/rgb">rgb</a></span>(<span class="dv">1</span>,col,<span class="dv">0</span>)</code></pre></div>
 <p>Finally we calculate UDs with and with out accounting for autocorrelation (<code>M.OUF</code> versus <code>M.IID</code>), with and without optimal weighting of the data (<code>weights=TRUE</code>). Now let us plot the results.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(Pepper,<span class="dt">UD=</span>UD0,<span class="dt">xlim=</span>EXT<span class="op">$</span>x,<span class="dt">ylim=</span>EXT<span class="op">$</span>y,<span class="dt">col=</span>col)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(Pepper,<span class="dt">UD=</span>UD0,<span class="dt">xlim=</span>EXT<span class="op">$</span>x,<span class="dt">ylim=</span>EXT<span class="op">$</span>y)
 <span class="kw">title</span>(<span class="kw">expression</span>(<span class="st">"IID KDE"</span>[<span class="st">"C"</span>]))
-<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(Pepper,<span class="dt">UD=</span>UD2,<span class="dt">xlim=</span>EXT<span class="op">$</span>x,<span class="dt">ylim=</span>EXT<span class="op">$</span>y,<span class="dt">col=</span>col)
+<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(Pepper,<span class="dt">UD=</span>UD2,<span class="dt">xlim=</span>EXT<span class="op">$</span>x,<span class="dt">ylim=</span>EXT<span class="op">$</span>y)
 <span class="kw">title</span>(<span class="kw">expression</span>(<span class="st">"OUF AKDE"</span>[<span class="st">"C"</span>]))
-<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(Pepper,<span class="dt">UD=</span>UD2w,<span class="dt">xlim=</span>EXT<span class="op">$</span>x,<span class="dt">ylim=</span>EXT<span class="op">$</span>y,<span class="dt">col=</span>col)
+<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(Pepper,<span class="dt">UD=</span>UD2w,<span class="dt">xlim=</span>EXT<span class="op">$</span>x,<span class="dt">ylim=</span>EXT<span class="op">$</span>y)
 <span class="kw">title</span>(<span class="kw">expression</span>(<span class="st">"weighted OUF AKDE"</span>[<span class="st">"C"</span>]))</code></pre></div>
 <p><img src="akde_files/figure-html/unnamed-chunk-4-1.png" width="672"><img src="akde_files/figure-html/unnamed-chunk-4-2.png" width="672"><img src="akde_files/figure-html/unnamed-chunk-4-3.png" width="672"></p>
 <p>By default both the density function and its 95% contours are plotted along with the location data. The middle contour represent the maximum likelihood area where the animal spends 95% of its time. This percentage can be changed with the <code>level.UD</code> option (see <code>help(plot.telemetry)</code>). The inner and outer contours correspond to confidence intervals on the magnitude of the area, which can be adjusted with the <code>level</code> option.</p>
 <p>The optimal bandwidth determines the “resolution” of the kernel density estimate. By default we plot grid lines with dimensions matching the standard deviations of the individual kernels. This gives a rough guideline as to what spatial details are and are not important in the density estimate. One can see that the IID KDE<sub>C</sub> estimate fits tightly to the data and reports many significant details in the buffalo’s home range. The autocorrelated estimates predict future space use more accurately, based on the diffusion model, and yield a more honest account of their uncertainties.</p>
-<p>In the case of Pepper, the GPS collar malfunctioned during data collection and the sampling interval mysteriously changed from 1 hour to 2 hours. This irregularity makes Pepper a good candidate for optimally weighted AKDE (<code>weights=TRUE</code>). The optimally weighted estimate features smaller error, finer resolution, and mitigation of sampling bias. You can see that the uniformly weighted estimates place excessive emphasis on the oversampled data (yellow).</p>
+<p>In the case of Pepper, the GPS collar malfunctioned during data collection and the sampling interval mysteriously changed from 1 hour (yellow) to 2 hours (red). This irregularity makes Pepper a good candidate for optimally weighted AKDE (<code>weights=TRUE</code>). The optimally weighted estimate features smaller error, finer resolution, and mitigation of sampling bias. You can see that the uniformly weighted estimates place excessive emphasis on the oversampled data (yellow).</p>
 <p>Finally, we can compare the area estimates and effective sample sizes.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(UD0)</code></pre></div>
 <pre><code>## $DOF

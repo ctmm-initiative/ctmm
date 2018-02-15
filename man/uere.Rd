@@ -7,15 +7,16 @@
 \description{Functions for estimating and assigning the User Equivalent Range Error (UERE) of a GPS device from calibration data.}
 
 \usage{
-uere(data,axes=c("x","y"),diagnostic=FALSE)
+uere(data,override=FALSE,integrate=FALSE,diagnostic=FALSE)
 
 uere(data) <- value
 }
 
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{data}{Telemetry object or list of telemetry objects with Movebank column \code{GPS.HDOP}.}
-  \item{axes}{Set of axes to estimate the UERE from. Other options include the vertical \code{"z"} and velocity \code{c("v.x","v.y")}.}
+  \item{data}{Telemetry object or list of telemetry objects, preferably with DOP columns.}
+  \item{override}{Return a UERE estimate even for data that are calibrated.}
+  \item{integrate}{Consider HDOP and VDOP as being specified by the same UERE value.}
   \item{diagnostic}{Return extra details, such as the UERE's 95\% confidence interval and a plot.}
   \item{value}{UERE value(s) to assign to telemetry data (see details).}
 }
