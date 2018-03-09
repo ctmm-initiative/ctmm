@@ -510,8 +510,8 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
     H <- array(0,c(K,AXES))
     for(i in 1:n)
     {
-      # generate standardized process
-      H <- sapply(1:AXES,function(X){ c(Green[i,,] %*% H[,X] + Sigma[i,,] %*% stats::rnorm(K)) })
+      # generate standardized process - R arrays are something awful... awful
+      H[] <- cbind(Green[i,,]) %*% H[,,drop=FALSE] + cbind(Sigma[i,,]) %*% array(stats::rnorm(K*AXES),c(K,AXES))
       # pull out location from hidden state
       z[i,] <- H[1,]
       if(K>1) { v[i,] <- H[2,] }
