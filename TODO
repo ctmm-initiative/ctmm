@@ -4,6 +4,7 @@ PRIORITY
 * weights references
 
 ERROR PAPER
+* simulate elliptical errors
 * simulate & predict velocities are missing re-trend contribution for non-stationary means
 * error checkbox in variogram.fit for calibrated errors
 * functionalize detrend & retrend in simulate/predict
@@ -28,6 +29,8 @@ PARALLELIZATION
 * parallel derivatives with upper/lower/etc.
 
 MISC WORK
+* variogram discrepancy rank function
+* color array -> spatial segregation
 * plot axes=c('x','y') by default or axes=c('t','z')
 * catch optimizer failure (last best) in global variable and finish optimize() with warning
 * specify grid partially/totally in akde/occurrence
