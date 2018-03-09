@@ -1,4 +1,11 @@
-0.4.2 2017-02-12
+0.5.0 2018-03-09
+================
+
+  * ARGOS error ellipse support in ctmm.fit()
+
+  * anisotropic models with circulation and error now exact with 2D Kalman filter
+
+0.4.2 2018-02-12
 ================
   
   * new speed() method

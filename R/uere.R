@@ -121,12 +121,14 @@ uere <- function(data,override=FALSE,integrate=FALSE,diagnostic=FALSE)
     CTMM <- list(axes=axes,error=1)
 
     # array of residuals to rbind to
-    z <- NULL
+    # x <- NULL # residuals
+    z <- NULL # standardized residuals
+    # DOP <- NULL # DOP values
 
     # calculate mean and residuals
     for(i in 1:length(data))
     {
-      ## regular code
+      # DOP <- c(DOP,data[[i]][[DOP.LIST[[TYPE]]$DOP]])
       # UERE-1 error variances
       w <- get.error(data[[i]],CTMM)
       if(attr(w,"flag")==0) { stop("Failed to import DOP column from Movebank file.") }
@@ -138,9 +140,9 @@ uere <- function(data,override=FALSE,integrate=FALSE,diagnostic=FALSE)
       mu <- c(w %*% dz)/sum(w)
       # detrend the mean for error/residuals
       dz <- dz - mu
+      # x <- rbind(x,dz)
       # UERE-1 standardize residuals
       dz <- sqrt(w) * dz
-
       z <- rbind(z,dz)
     }
     # total degrees of freedom
@@ -153,24 +155,31 @@ uere <- function(data,override=FALSE,integrate=FALSE,diagnostic=FALSE)
 
     if(diagnostic)
     {
-      r <- c(z) / (last(UERE))
+      lwd <- c(1,2,1)
       CI <- chisq.ci(1,DOF=N[TYPE])
 
+      # r <- sqrt(rowSums(x^2))
+      # graphics::plot(DOP,r,xlab=paste(TYPE,"DOP"),ylab=paste0("|",TYPE," error|"),log="xy")
+      # for(i in 1:3)
+      # {
+      #   LINE <- Vectorize(function(d){UERE[TYPE]*sqrt(CI[i])*d})
+      #   graphics::curve(LINE,from=min(r),to=max(r),n=1001,add=TRUE,col='red',lwd=lwd[i])
+      # }
+
+      r <- c(z) / (UERE[TYPE])
       KDE <- stats::density(r,bw="SJ")
       graphics::hist(r,breaks="scott",freq=FALSE,main=paste(TYPE,"residual distribution"),xlab="standardized error",ylim=c(0,max(KDE$y,1/sqrt(2*pi*CI[1]))))
       graphics::lines(KDE)
-      DNORM <- Vectorize(function(x){ exp(-x^2/2/CI[2])/sqrt(2*pi*CI[2]) })
-      graphics::curve(DNORM,from=min(r),to=max(r),n=1001,add=TRUE,col="red",lwd=2)
-      DNORM <- Vectorize(function(x){ exp(-x^2/2/CI[1])/sqrt(2*pi*CI[1]) })
-      graphics::curve(DNORM,from=min(r),to=max(r),n=1001,add=TRUE,col="red")
-      DNORM <- Vectorize(function(x){ exp(-x^2/2/CI[3])/sqrt(2*pi*CI[3]) })
-      graphics::curve(DNORM,from=min(r),to=max(r),n=1001,add=TRUE,col="red")
-      # should have used a t-distribution?
-
+      for(i in 1:3)
+      {
+        DNORM <- Vectorize(function(x){ exp(-x^2/2/CI[i])/sqrt(2*pi*CI[i]) })
+        # should have used a t-distribution?
+        graphics::curve(DNORM,from=min(r),to=max(r),n=1001,add=TRUE,col="red",lwd=lwd[i])
+      }
       ## right-justifying a set of labels: thanks to Uwe Ligges
       LEG <- sprintf("%.2f",rev(sqrt(chisq.ci(UERE[TYPE]^2,DOF=N[TYPE]))))
       LEN <- max(graphics::strwidth(LEG))
-      OUT <- graphics::legend("topright",legend=rep(" ",length(LEG)),text.width=LEN,title="UERE",box.col=NA,col='red',bg=grDevices::grey(0.9),lwd=c(1,2,1),xjust=1,yjust=1)
+      OUT <- graphics::legend("topright",legend=rep(" ",length(LEG)),text.width=LEN,title="UERE",box.col=NA,col='red',bg=grDevices::grey(0.9),lwd=lwd,xjust=1,yjust=1)
       graphics::text(OUT$rect$left+OUT$rect$w,OUT$text$y,LEG,pos=2)
     }
   }
@@ -179,7 +188,7 @@ uere <- function(data,override=FALSE,integrate=FALSE,diagnostic=FALSE)
   {
     P <- (UERE['horizontal']/UERE['vertical'])^2
     # F-test
-    P <- min( pf(P,N['horizontal'],N['vertical'],lower.tail=TRUE) , pf(P,N['horizontal'],N['vertical'],lower.tail=FALSE) )
+    P <- min( stats::pf(P,N['horizontal'],N['vertical'],lower.tail=TRUE) , stats::pf(P,N['horizontal'],N['vertical'],lower.tail=FALSE) )
     message("p[UERE] = ",P)
 
     UNITY <- sqrt((2*UERE['horizontal']^2 + UERE['vertical']^2)/3)
@@ -196,7 +205,9 @@ uere <- function(data,override=FALSE,integrate=FALSE,diagnostic=FALSE)
 # 2 : proportional error parameter fit to DOP value
 # 3 : full error no fit (circle)
 # 4 : " " (ellipse)
-get.error <- function(DATA,CTMM,flag=FALSE,circle=FALSE)
+# circle : force variance   scalar output
+# DIM : force covariance matrix output with dim [DIM,DIM]
+get.error <- function(DATA,CTMM,flag=FALSE,circle=FALSE,DIM=FALSE)
 {
   n <- length(DATA$t)
   axes <- CTMM$axes
@@ -239,6 +250,9 @@ get.error <- function(DATA,CTMM,flag=FALSE,circle=FALSE)
     FLAG <- 0
     error <- rep(0,n)
   }
+
+  # upgrade variance scalar to covariance matrix
+  if(FLAG<4 && DIM) { error <- outer(error,diag(DIM)) } # [n,d,d] }
 
   if(flag) { return(FLAG) }
   else

@@ -30,7 +30,7 @@ methods::setMethod("raster",signature(x="UD"), function(x,DF="CDF",...) raster.U
 ##########################
 writeRaster.UD <- function(x,filename,format,DF="CDF",...)
 {
-  x <- raster(x,DF="CDF") # ... here seems much less useful
+  x <- raster(x,DF=DF)
   writeRaster(x,filename,format,...)
 }
 methods::setMethod("writeRaster",signature(x="UD",filename="character"), function(x,filename,format,DF="CDF",...) writeRaster.UD(x,filename,format,DF=DF,...))

@@ -143,16 +143,6 @@ is.even <- Vectorize(function(x) {x %% 2 == 0})
 is.odd <- Vectorize(function(x) {x %% 2 != 0})
 
 
-# 2D rotation matrix
-rotate <- function(theta)
-{
-  COS <- cos(theta)
-  SIN <- sin(theta)
-  R <- rbind( c(COS,-SIN), c(SIN,COS) )
-  return(R)
-}
-
-
 # generalized covariance from -likelihood derivatives
 cov.loglike <- function(hess,grad=rep(0,nrow(hess)))
 {

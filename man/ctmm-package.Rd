@@ -20,8 +20,8 @@ Fleming et al (2017) <doi:10.1016/j.ecoinf.2017.04.008>.
 \tabular{ll}{
 Package: \tab ctmm\cr
 Type: \tab Package\cr
-Version: \tab 0.4.2 \cr
-Date: \tab 2018-02-12 \cr
+Version: \tab 0.5.0 \cr
+Date: \tab 2018-03-09 \cr
 License: \tab GPL-3 \cr
 }
 

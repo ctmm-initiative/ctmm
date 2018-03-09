@@ -24,7 +24,6 @@ ctmm.select(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE,...)
   \item{isotropic}{A Boolean denoting whether or not the animal's covariance is circular or elliptical.}
   \item{range}{A Boolean denoting whether or not the movement model has a finite range.}
   \item{circle}{The period it takes the animal to stochastically circle its mean location.}
-%  \item{CPF}{A Boolean denoting whether to consider an oscillatory CPF model.}
   \item{error}{A Boolean denoting whether or not to use annotated telemetry error estimates or an estimate of the error's standard deviation if the data are not annotated with error estimates or when \eqn{HDOP=1}.}
   \item{axes}{Spatial dimensions of the movement model.}
   \item{data}{ Timeseries data represented as a \code{telemetry} object. }
@@ -108,7 +107,7 @@ Therefore, fitting without telemetry errors, if possible, can provide improved i
 The default \code{\link{optim}} method here is \code{"Nelder-Mead"} with the largest allowable number of maximum iterations. Annecdotally, the faster \code{"BFGS"} and \code{"L-BFGS-B"} methods often perform poorly on these types of problems.
 However, Nelder Mead is not ideal and you may want to attempt a second fit, using the first fit as its initial guess.
 
-The AICs of endlessly diffusing models like BM and IOU cannot be easily compared to the AICs of range resident models like bivariate Gaussian, OU, and OUF. Endlessly diffusing models have to be conditioned off of an initial state, which we derive in \code{ctmm} by taking the large range limit of a range-restricted process. I.e., BM is the limit OU(\code{Inf}) and IOU(\code{tau}) is the limit OUF(\code{Inf},\code{tau}). Using comparable likelihood functions would give up statistical efficiency and the objective prior.
+The AICs of endlessly diffusing models like BM and IOU cannot be easily compared to the AICs of range resident models like bivariate Gaussian, OU, and OUF. Endlessly diffusing models have to be conditioned off of an initial state, which we derive in \code{ctmm} by taking the large range limit of a range-restricted process. I.e., BM is the limit OU(\code{Inf}) and IOU(\code{tau}) is the limit OUF(\code{Inf},\code{tau}). Using comparable likelihood functions gives up statistical efficiency and the objective prior. Moreover, comparing conditional likelihoods---with the objective prior taken from the joint likelihood---does not appear to select the true model with a likelihood ratio test. Therefore, there does not appear to be any obvious way to select between range resident and endlessly diffusing movement models.
 
 Prior to v0.3.6, the univariate AICc formula was (mis)used, with the full parameter count treated as degrees of freedom in the mean. As of v.0.3.6, the mean and autocovariance parameters are treated separately in the approximate multivariate AICc formula (Burnham & Anderson, Eq. 7.91). Still, this improved formula is only exact for IID data.
 

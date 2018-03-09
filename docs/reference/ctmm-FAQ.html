@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>ctmm FAQ � ctmm-FAQ • ctmm</title>
+<title>ctmm FAQ — ctmm-FAQ • ctmm</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -18,6 +18,8 @@
 <!-- Font Awesome icons -->
 <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
 
+<!-- clipboard.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" integrity="sha384-cV+rhyOuRHc9Ub/91rihWcGmMmCXDeksTtCihMupQHSsi8GIIRDG0ThDc3HGQFJ3" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
@@ -25,6 +27,10 @@
 <script src="../pkgdown.js"></script>
   
   
+<meta property="og:title" content="ctmm FAQ — ctmm-FAQ" />
+
+<meta property="og:description" content="Frequently asked questions for the ctmm package." />
+<meta name="twitter:card" content="summary" />
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -117,8 +123,8 @@
 <li><p>See Xianghui Dong's installation tips <a href='https://github.com/ctmm-initiative/ctmm-webapp/blob/master/README-install.md'>here</a>.</p></li>
 </ul><p><b><code>ctmm.select</code> only returns one model with <code>verbose=TRUE</code></b>
     The newer version of <code>ctmm.select</code> is much more intelligent, necessitated by the exploding number of new model permutations. Any simpler models were judged to be so unlikely that they were not attempted. You can set <code>level=1</code> to force alternative model fitting, but the additional models should lose badly in model selection (please contact me if I am wrong).</p>
-<p><b>Database corruption, missing functions, and other weird errors</b>
-    <code>R</code> likely did not install the package correctly. I.e., some files may have failed to overwrite previous versions. Uninstall <code>ctmm</code>, restart <code>R</code>, and install <code>ctmm</code> again.</p>
+<p><b>rdb database corruption, "could not find function", and other weird errors</b>
+    <code>R</code> likely did not install or load the package correctly. E.g., some files may have failed to overwrite previous versions. Uninstall <code>ctmm</code>, restart <code>R</code> without saving the workspace/session, and install <code>ctmm</code> again.</p>
 <p><b>Infinite recursion and stack overflow errors</b>
     <code>ctmm</code> has no recursive functions, so I am not exactly sure what causes this error, but it only occurs with certain versions of <code>R</code> on certain computer architectures. There are several solutions that have worked for people, including restarting <code>R</code> in a fresh session and updating their software. Alternatively:
 <ol>
@@ -155,7 +161,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="http://hadley.github.io/pkgdown/">pkgdown</a>.</p>
+  <p>Site built with <a href="http://pkgdown.r-lib.org/">pkgdown</a>.</p>
 </div>
 
       </footer>
@@ -163,3 +169,4 @@
 
   </body>
 </html>
+

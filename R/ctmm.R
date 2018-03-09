@@ -88,10 +88,7 @@ ctmm.ctmm <- function(CTMM)
 # 2D covariance matrix universal format
 covm <- function(pars,isotropic=FALSE,axes=c("x","y"))
 {
-  if(is.null(pars))
-  { return(NULL) }
-  else if(class(pars)=="covm")
-  { return(pars) }
+  if(is.null(pars)) { return(NULL) }
 
   if(length(axes)==1)
   {
@@ -112,7 +109,8 @@ covm <- function(pars,isotropic=FALSE,axes=c("x","y"))
     else if(length(pars)==4)
     {
       sigma <- pars
-      pars <- sigma.destruct(sigma,isotropic=isotropic)
+      if(class(pars)=="covm") { pars <- attr(pars,'par') }
+      else { pars <- sigma.destruct(sigma,isotropic=isotropic) }
     }
 
     # isotropic error check
@@ -250,52 +248,62 @@ pars.tauv <- function(tau,tauc=tau)
 ############################
 # coarce infinite parameters into finite parameters appropriate for numerics
 ###########################
-ctmm.prepare <- function(data,CTMM,REML=FALSE,precompute=TRUE)
+ctmm.prepare <- function(data,CTMM,precompute=TRUE,tau=TRUE)
 {
-  K <- length(CTMM$tau)  # dimension of hidden state per spatial dimension
-  axes <- CTMM$axes
-  range <- TRUE
-
-  if(K>0)
+  # prepare timescale related info
+  if(tau)
   {
-    # numerical limit for rangeless processes
-    if(CTMM$tau[1]==Inf)
+    K <- length(CTMM$tau)  # dimension of hidden state per spatial dimension
+    axes <- CTMM$axes
+    range <- TRUE
+
+    if(K>0)
     {
-      range <- FALSE
-      # aim for OU/OUF decay that is half way to machine epsilon
-      CTMM$tau[1] <- log(2^((.Machine$double.digits-1)/2))*(last(data$t)-data$t[1])
-      # CTMM$tau[1] <- (last(data$t)-data$t[1]) / (.Machine$double.eps)^(1/4)
-
-      # diffusion -> variance
-      if(!is.null(CTMM$sigma))
+      # numerical limit for rangeless processes
+      if(CTMM$tau[1]==Inf)
       {
-        TAU <- CTMM$tau[1]
-        CTMM$sigma <- CTMM$sigma*TAU
-        CTMM$sigma@par[1] <- CTMM$sigma@par[1]*TAU
+        range <- FALSE
+        # aim for OU/OUF decay that is half way to machine epsilon
+        CTMM$tau[1] <- log(2^((.Machine$double.digits-1)/2))*(last(data$t)-data$t[1])
+        # CTMM$tau[1] <- (last(data$t)-data$t[1]) / (.Machine$double.eps)^(1/4)
+
+        # diffusion -> variance
+        if(!is.null(CTMM$sigma))
+        {
+          TAU <- CTMM$tau[1]
+          CTMM$sigma <- CTMM$sigma*TAU
+          CTMM$sigma@par[1] <- CTMM$sigma@par[1]*TAU
+        }
       }
+
+      # continuity reduction
+      CTMM$tau = CTMM$tau[CTMM$tau!=0]
+      K <- length(CTMM$tau)
     }
+    # I am this lazy
+    # if(K==0) { K <- 1 ; CTMM$tau <- 0 }
 
-    # continuity reduction
-    CTMM$tau = CTMM$tau[CTMM$tau!=0]
-    K <- length(CTMM$tau)
+    CTMM$range <- range
   }
-  # I am this lazy
-  # if(K==0) { K <- 1 ; CTMM$tau <- 0 }
-
-  CTMM$range <- range
 
   # evaluate mean function for this data set if no vector is provided
-  if(precompute && is.null(CTMM$mean.vec))
+  if(precompute && (is.null(CTMM$mean.vec) || is.null(CTMM$error.mat)))
   {
     drift <- get(CTMM$mean)
     U <- drift(data$t,CTMM)
     CTMM$mean.vec <- U
 
-    if(REML)
-    {
-      UU <- t(U) %*% U
-      CTMM$REML.loglike <- (length(axes)/2)*(log(det(UU)) + ncol(U)*log(2*pi))
-    }
+    UU <- t(U) %*% U
+    CTMM$UU <- UU
+    CTMM$REML.loglike <- length(CTMM$axes)/2*log(det(UU)) # extra term for REML likelihood
+
+    # necessary spatial dimension of Kalman filter
+    if(CTMM$error && CTMM$circle && !CTMM$isotropic) { DIM <- 2 } else { DIM <- 1 }
+    # construct error matrix, if UERE is unknown construct error matrix @ UERE=1
+    ERROR <- CTMM
+    ERROR$error <- as.logical(ERROR$error)
+    CTMM$error.mat <- get.error(data,ERROR,DIM=DIM) # store error matrix (modulo UERE if fit)
+    # this is more of an error structure matrix (modulo variance)
   }
 
   return(CTMM)
@@ -326,6 +334,9 @@ ctmm.repair <- function(CTMM,K=length(CTMM$tau))
 
   # erase evaluated mean vector from ctmm.prepare
   CTMM$mean.vec <- NULL
+  CTMM$UU <- NULL
+  CTMM$REML.loglike <- NULL # deleted in ctmm.fit
+  CTMM$error.mat <- NULL
 
   return(CTMM)
 }

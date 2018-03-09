@@ -1,3 +1,82 @@
+# 2D rotation matrix
+rotate <- function(theta)
+{
+  COS <- cos(theta)
+  SIN <- sin(theta)
+  R <- rbind( c(COS,-SIN), c(SIN,COS) )
+  return(R)
+}
+
+
+rotate.vec <- function(z,theta)
+{
+  R <- rotate(theta)
+  z <- z %*% t(R)
+  return(z)
+}
+
+
+rotate.mat <- function(M,theta)
+{
+  R <- rotate(theta)
+  tR <- t(R)
+  n <- dim(M)[1]
+  M <- vapply(1:n,function(i){R %*% M[i,,] %*% tR},diag(2)) # (2,2,n)
+  M <- aperm(M,c(3,1,2))
+  return(M)
+}
+
+
+# rotation matrices array for multiple angles
+rotates <- function(theta)
+{
+  R <- vapply(1:length(theta),function(i){rotate(theta[i])},diag(2)) # (2,2,n)
+  R <- aperm(R,c(3,1,2)) # (n,2,2)
+  return(R)
+}
+
+
+# apply rotation matrices R to vectors z
+rotates.vec <- function(z,R)
+{
+  DIM <- dim(z) # (n,2*M) or (n,2,M)
+  dim(z) <- c(DIM[1],2,prod(DIM[-1])/2) # (n,2,M)
+  z <- vapply(1:nrow(z),function(i){R[i,,] %*% z[i,,]},array(0,dim(z)[-1])) # (2,M,n)
+  z <- aperm(z,c(3,1,2)) # (n,2,M)
+  dim(z) <- DIM
+  return(z)
+}
+
+
+# apply rotation matrices R to matrices M
+rotates.mat <- function(M,R) # could add tR=t(R) argument for small cost savings
+{
+  M <- vapply(1:dim(M)[1],function(i){R[i,,] %*% M[i,,] %*% t(R[i,,])},diag(2)) # (2,2,n)
+  M <- aperm(M,c(3,1,2)) # (n,2,2)
+  return(M)
+}
+
+# eccentricity squeeze transformation
+squeeze <- function(z,ecc)
+{
+  z[,1] <- z[,1] * exp(-ecc/4)
+  z[,2] <- z[,2] * exp(+ecc/4)
+  return(z)
+}
+
+# eccentricity transform matrices
+squeeze.mat <- function(M,ecc) # (n,2,2)
+{
+  R <- exp(c(-1,1)*ecc/4)
+  M <- aperm(M,c(2,3,1)) # (2,2,n)
+  M <- R * M # (2',2,n)
+  M <- aperm(M,c(2,3,1)) # (2,n,2')
+  M <- R * M # (2',n,2')
+  M <- aperm(M,c(2,3,1)) # (n,2',2')
+  return(M)
+}
+
+
 ##### det shouldn't fail because R dropped indices
 det.numeric <- function(x,...) { x }
 determinant.numeric <- function(x,logarithm=TRUE,...)
@@ -14,8 +93,21 @@ determinant.numeric <- function(x,logarithm=TRUE,...)
   return(det)
 }
 
+
 # dyadic product default
 outer <- function(X,Y=X,FUN="*",...) { base::outer(X,Y,FUN=FUN,...) }
+
+
+# riffle columns of two matrices
+riffle <- function(u,v,by=1)
+{
+  DIM <- dim(u) # (row,col)
+  SUB <- 0:(by-1)
+  u <- vapply(seq(1,DIM[2],by),function(i){cbind(u[,i+SUB],v[,i+SUB])},array(0,c(DIM[1],2*by))) # (row,2*by,col/by)
+  dim(u) <- c(DIM[1],2*DIM[2])
+  return(u)
+}
+
 
 # adjoint of matrix
 Adj <- function(M) { t(Conj(M)) }
@@ -61,11 +153,24 @@ PDfunc <-function(M,func=function(m){1/m},force=FALSE,pseudo=FALSE,tol=.Machine$
 PDsolve <- function(M,force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
 {
   DIM <- dim(M)
-  if(is.null(DIM)) { DIM <- 1 }
+  if(is.null(DIM))
+  {
+    M <- as.matrix(M)
+    DIM <- dim(M)
+  }
+
+  # check for Inf & invert those to 0
+  INF <- diag(M)==Inf
+  if(any(INF))
+  {
+    M[INF,INF] <- 0 # inverting the Inf dimensions
+    if(any(!INF)) { M[!INF,!INF] <- PDsolve(M[!INF,!INF]) } # regular inverse of remaining dimensions
+    return(M)
+  }
 
   if(!force && !pseudo)
   {
-    if(DIM[1]==1) { return(1/M) }
+    if(DIM[1]==1) { return(matrix(1/M,c(1,1))) }
     if(DIM[1]==2)
     {
       DET <- M[1,1]*M[2,2]-M[1,2]*M[2,1]
@@ -110,6 +215,14 @@ PDsolve <- function(M,force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
 # also, my matrices are PSD
 sqrtm <- function(M,force=FALSE,pseudo=FALSE)
 {
+  if(class(M)=="covm")
+  {
+    par <- attr(M,"par")
+    par['area'] <- sqrt(par['area'])
+    M <- covm(par,isotropic=attr(M,'isotropic'),axes=dimnames(M)[[1]])
+    return(M)
+  }
+
   DIM <- dim(M)
   if(is.null(DIM)) { DIM <- 1 }
   TOL <- DIM[1]*.Machine$double.eps

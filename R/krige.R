@@ -3,9 +3,10 @@
 ################################
 # Return hidden state estimates or simulations
 ################################
-smoother <- function(DATA,CTMM,precompute=FALSE,...)
+smoother <- function(DATA,CTMM,precompute=FALSE,sample=FALSE,residual=FALSE,...)
 {
-  if(is.null(CTMM$mean.vec)) { CTMM <- ctmm.prepare(DATA,CTMM) }
+  if(is.null(CTMM$error.mat)) { CTMM <- ctmm.prepare(DATA,CTMM) }
+  if(is.null(DATA$record)) { DATA$record <- TRUE } # real recorded data or blank/empty timestamps from fill-data
   AXES <- length(CTMM$axes)
 
   t <- DATA$t
@@ -16,6 +17,7 @@ smoother <- function(DATA,CTMM,precompute=FALSE,...)
   isotropic <- CTMM$isotropic
   sigma <- CTMM$sigma
   area <- sigma@par[1]
+  COVM <- function(...) { covm(...,isotropic=CTMM$isotropic,axes=CTMM$axes) } # enforce model structure
   if(AXES > 1)
   {
     ecc <- sigma@par[2]
@@ -32,24 +34,71 @@ smoother <- function(DATA,CTMM,precompute=FALSE,...)
   circle <- CTMM$circle
 
   ####################################
-  # PRECOMPUTE AVOIDS WASTEFUL ROTATION
-  STUFF <- c("R","u","mu","M","ROTATE")
+  # PRECOMPUTE AVOIDS WASTEFUL ROTATIONS & TRANSFORMATIONS
+  STUFF <- c("z","ROTATE","SQUEEZE","error","UERE","DIM","R")
   if(precompute>=0) # calculate new
   {
-    R <- get.telemetry(DATA,CTMM$axes)
-    u <- CTMM$mean.vec
-    mu <- CTMM$mu
+    # get the error information
+    error <- CTMM$error.mat # note for fitted errors, this is error matrix @ UERE=1 (CTMM$error)
+    UERE <- attr(error,"flag")
+    # are we fitting the error, then the above is not yet normalized
+    if(UERE && UERE<3) { error <- error * CTMM$error } # set UERE value if necessary
 
-    # do we need to orient the data along the major an minor axes of sigma
-    ROTATE <- !isotropic && (CTMM$error || circle)
+    if(UERE>=4 || (!isotropic && circle && UERE)) { DIM <- 2 } # requires 2D smoother
+    else if(!isotropic & UERE) { DIM <- 1/2 } # requires 2x1D smoothers
+    else { DIM <- 1 } # can use 1x1D smoother
+
+    z <- get.telemetry(DATA,CTMM$axes)
+    # u <- CTMM$mean.vec
+    # mu <- CTMM$mu
+
+    # do we need to orient the data along the major an minor axes of sigma for 1D smoothers (or elliptical circulation)
+    ROTATE <- !isotropic && (circle || (UERE && UERE<4))
     if(ROTATE)
     {
-      M <- rotate(-theta)
-      R <- R %*% t(M)
-      mu <- M %*% as.numeric(CTMM$mu) # not being used?
+      z <- rotate.vec(z,-theta)
+
+      sigma <- attr(sigma,"par")
+      sigma["angle"] <- 0
+      sigma <- COVM(sigma)
+
+      if(UERE>=4) { error <- rotate.mat(error,-theta) } # rotate error ellipses
+    }
+
+    # squeeze from ellipse to circle for circulation model transformation
+    SQUEEZE <- (!isotropic && circle)
+    if(SQUEEZE)
+    {
+      z <- squeeze(z,ecc)
+
+      sigma <- attr(sigma,"par")
+      sigma["eccentricity"] <- 0
+      sigma <- COVM(sigma)
+
+      if(UERE) { error <- squeeze.mat(error,ecc) } # squeeze error circles into ellipses
+    }
+
+    if(circle) ## COROTATING FRAME FOR circle=TRUE ##
+    {
+      R <- rotates(-circle*(t-t[1])) # rotation matrices
+      z <- rotates.vec(z,R)
+      if(UERE>=4 || (UERE && SQUEEZE)) { error <- rotates.mat(error,R) }
+      # prepare R for inverse transformation
+      R <- aperm(R,c(1,3,2))
     }
     else
-    { M <- 1 }
+    { R <- NULL }
+
+    # fix variances of empty timestamps - set from fill.data
+    if(!residual)
+    {
+      empty <- which(!DATA$record)
+      if(length(empty)) { error[empty,,] <- aperm( array(diag(Inf,dim(error)[2]),c(dim(error)[2:3],length(empty))) ,c(3,1,2)) } # R is weird
+      rm(empty)
+    }
+
+    # in case of SQUEEZE & rotate
+    CTMM$sigma <- sigma
   }
   else # pull from old
   { for(thing in STUFF) { assign(thing,get(thing,pos=Kalman.env)) } }
@@ -59,156 +108,129 @@ smoother <- function(DATA,CTMM,precompute=FALSE,...)
   # END PRECOMPUTE
   ################################
 
-  V <- array(0,dim=c(n,AXES))
-  COV <- array(0,dim=c(n,AXES,AXES))
-  VCOV <- array(0,dim=c(n,AXES,AXES)) # velocity covariance
-
-  if(circle)
+  if(!residual)
   {
-    #### PRECOMPUTE AVOIDS WASTEFUL RESCALE & ROTATION
-    if(precompute>=0)
-    {
-      # proportional standardization from ellipse to circle
-      if(ecc)
-      {
-        R[,1] <- R[,1] * exp(-ecc/4)
-        R[,2] <- R[,2] * exp(+ecc/4)
-      }
-      R <- cbind(R[,1] + 1i*R[,2])
-
-      # corotating frame
-      M <- exp(-1i*circle*(t-t[1]))
-      R <- M * R
-      u <- M * u
-    }
-    # else this was already pulled out of Kalman.env
-    # store this stuff for good (last time was excess)
-    if(precompute>0) { for(thing in STUFF) { assign(thing,get(thing),pos=Kalman.env) } }
-    ### END PRECOMPUTE
-
-    CTMM$sigma <- area
-    KALMAN <- kalman(R,u,dt=dt,CTMM=CTMM,error=DATA$error,precompute=precompute,...)
-
-    R <- KALMAN$Z[,"position",1]
-    COV[,1,1] <- KALMAN$S[,"position","position"]
-    COV[,2,2] <- KALMAN$S[,"position","position"]
+    COV <- array(0,dim=c(n,AXES,AXES)) # position covariance
     if(K>1)
     {
-      V <- KALMAN$Z[,"velocity",1]
-      VCOV[,1,1] <- KALMAN$S[,"velocity","velocity"]
-      VCOV[,2,2] <- KALMAN$S[,"velocity","velocity"]
-    }
-
-    # spin back + velocity of frame
-    M <- Conj(M)
-    R <- M * R
-    mu <- mu[1] + 1i*mu[2]
-    R <- cbind(Re(R),Im(R))
-
-    if(K>1)
-    {
-      V <- (M * V) + 1i*circle*(R-mu)
-      V <- cbind(Re(V),Im(V))
-    }
-
-    # unstandardize
-    if(ecc)
-    {
-      R[,1] <- R[,1] * exp(+ecc/4)
-      R[,2] <- R[,2] * exp(-ecc/4)
-
-      COV[,1,1] <- COV[,1,1] * exp(+ecc/2)
-      COV[,2,2] <- COV[,2,2] * exp(-ecc/2)
-
-      if(K>1)
-      {
-        V[,1] <- V[,1] * exp(+ecc/4)
-        V[,2] <- V[,2] * exp(-ecc/4)
-
-        VCOV[,1,1] <- VCOV[,1,1] * exp(+ecc/2)
-        VCOV[,2,2] <- VCOV[,2,2] * exp(-ecc/2)
-      }
+      v <- array(0,dim=c(n,AXES))
+      vCOV <- array(0,dim=c(n,AXES,AXES)) # velocity covariance
     }
   }
-  else if(CTMM$isotropic || !CTMM$error)
-  {
-    CTMM$sigma <- area
-    KALMAN <- kalman(R,u,dt=dt,CTMM=CTMM,error=DATA$error,precompute=precompute,...)
 
-    R <- KALMAN$Z[,"position",]
-    R <- cbind(R) # R drops dimension-1
-    COV <- KALMAN$S[,"position","position"] %o% covm(c(1,ecc,theta),isotropic,axes=CTMM$axes)
-    if(K>1)
-    {
-      V <- KALMAN$Z[,"velocity",]
-      V <- cbind(V) # R drops dimension-1
-      VCOV <- KALMAN$S[,"velocity","velocity"] %o% covm(c(1,ecc,theta),isotropic,axes=CTMM$axes)
-    }
-  }
-  else
+  # rotated data with circular errors - 2x1D kalman smoother
+  if(DIM==1/2) # diagonalize data and then run two 1D Kalman filters with separate means
   {
-    #diagonalize data and then run two 1D Kalman filters with separate means
     # major axis likelihood
-    CTMM$sigma <- area * exp(+ecc/2)
-    KALMAN <- kalman(cbind(R[,1]),u,dt=dt,CTMM=CTMM,error=DATA$error,precompute=precompute,...)
-
-    R[,1] <- KALMAN$Z[,"position",1]
-    COV[,1,1] <- KALMAN$S[,"position","position"]
-    if(K>1)
-    {
-      V[,1] <- KALMAN$Z[,"velocity",1]
-      VCOV[,1,1] <- KALMAN$S[,"velocity","velocity"]
-    }
-
+    CTMM$sigma <- area * exp(+ecc/2) # major variance
+    KALMAN1 <- kalman(z[,1,drop=FALSE],u=NULL,dt=dt,CTMM=CTMM,error=error,precompute=precompute,sample=sample,residual=residual,...)
     # minor axis likelihood
-    CTMM$sigma <- area * exp(-ecc/2)
-    KALMAN <- kalman(cbind(R[,2]),u,dt=dt,CTMM=CTMM,error=DATA$error,precompute=precompute,...)
+    CTMM$sigma <- area * exp(-ecc/2) # minor variance
+    KALMAN2 <- kalman(z[,2,drop=FALSE],u=NULL,dt=dt,CTMM=CTMM,error=error,precompute=precompute,sample=sample,residual=residual,...)
 
-    R[,2] <- KALMAN$Z[,"position",1]
-    COV[,2,2] <- KALMAN$S[,"position","position"]
+    if(residual) { return(cbind(KALMAN1,KALMAN2)) }
+
+    z[,1] <- KALMAN1$Z[,1,]
+    z[,2] <- KALMAN2$Z[,1,]
+    if(!sample)
+    {
+      COV[,1,1] <- KALMAN1$S[,1,1]
+      COV[,2,2] <- KALMAN2$S[,1,1]
+    }
     if(K>1)
     {
-      V[,2] <- KALMAN$Z[,"velocity",1]
-      VCOV[,2,2] <- KALMAN$S[,"velocity","velocity"]
+      v[,1] <- KALMAN1$Z[,2,]
+      v[,2] <- KALMAN2$Z[,2,]
+      if(!sample)
+      {
+        vCOV[,1,1] <- KALMAN1$S[,2,2]
+        vCOV[,2,2] <- KALMAN2$S[,2,2]
+      }
     }
   }
-
-  if(ROTATE)
+  else # use 1 Kalman filter - may be 1D or 2D
   {
-    # transform results back
-    M <- rotate(+theta)
+    if(DIM==1) { CTMM$sigma <- area } # isotropic variance
+    KALMAN <- kalman(z,u=NULL,dt=dt,CTMM=CTMM,error=error,precompute=precompute,sample=sample,residual=residual,...)
 
-    COV <- aperm(COV,perm=c(2,1,3))
-    COV <- M %.% COV %.% t(M)
-    COV <- aperm(COV,perm=c(2,1,3))
+    if(residual) { return(KALMAN) }
 
-    R <- t(M %*% t(R))
+    # position and velocity entries
+    POS <- VEL <- array(FALSE,c(K,DIM))
+    POS[1,] <- TRUE ; POS <- c(POS)
+    if(K>1) { VEL[2,] <- TRUE ; VEL <- c(VEL) }
 
+    z <- cbind(KALMAN$Z[,POS,])
+    if(!sample) { COV <- KALMAN$S[,POS,POS,drop=FALSE] }
     if(K>1)
     {
-      V <- t(M %*% t(V))
+      v <- cbind(KALMAN$Z[,VEL,])
+      if(!sample) { vCOV <- KALMAN$S[,VEL,VEL,drop=FALSE] }
+    }
 
-      VCOV <- aperm(VCOV,perm=c(2,1,3))
-      VCOV <- M %.% VCOV %.% t(M)
-      VCOV <- aperm(VCOV,perm=c(2,1,3))
+    if(DIM<AXES && !sample) # promote from VAR to COV (2,2)
+    {
+      COV <- drop(COV) %o% diag(AXES)
+      if(K>1) { vCOV <- drop(vCOV) %o% diag(AXES) }
     }
   }
 
-  colnames(R) <- CTMM$axes
-  RETURN <- list(t=t,R=R,COV=COV)
-  if(K>1) { RETURN$V <- V ; RETURN$VCOV <- VCOV }
+  if(circle) # circulate
+  {
+    z <- rotates.vec(z,R)
+    if(!sample) { COV <- rotates.mat(COV,R) }
+    if(K>1)
+    {
+      # includes non-inertial frame component: Omega x r
+      v <- rotates.vec(v,R) + circle*cbind(-z[,2],z[,1])
+      if(!sample) { vCOV <- rotates.mat(vCOV,R) }
+    }
+  }
+
+  if(SQUEEZE) # unsqueeze the distribution
+  {
+    z <- squeeze(z,-ecc)
+    if(!sample) { COV <- squeeze.mat(COV,-ecc) }
+    if(K>1)
+    {
+      v <- squeeze(v,-ecc)
+      if(!sample) { vCOV <- squeeze.mat(vCOV,-ecc) }
+    }
+  }
+
+  if(ROTATE) # transform results back
+  {
+    z <- rotate.vec(z,+theta)
+    if(!sample) { COV <- rotate.mat(COV,theta) }
+    if(K>1)
+    {
+      v <- rotate.vec(v,theta)
+      if(!sample) { vCOV <- rotate.mat(vCOV,theta) }
+    }
+  }
+
+  colnames(z) <- CTMM$axes
+  dimnames(COV) <- list(NULL,colnames(z),colnames(z))
+  RETURN <- list(t=t,R=z,COV=COV)
+  if(K>1)
+  {
+    colnames(v) <- paste0('v',CTMM$axes)
+    dimnames(vCOV) <- list(NULL,colnames(v),colnames(v))
+    RETURN$V <- v
+    RETURN$VCOV <- vCOV
+  }
 
   return(RETURN)
 }
 
 
 ########################################
-# fill in data gaps with missing observations of infinite error
+# fill in data gaps with missing observations of infinite error !!!
 ########################################
 fill.data <- function(data,CTMM=ctmm(tau=Inf),verbose=FALSE,t=NULL,dt=NULL,res=1,cor.min=0,dt.max=NULL)
 {
-  # prepare data error
-  data$error <- get.error(data,CTMM)
+  # is this recorded data or empty gap
+  data$record <- TRUE
 
   # FIX THE TIME GRID TO AVOID TINY DT
   if(is.null(t))
@@ -258,7 +280,7 @@ fill.data <- function(data,CTMM=ctmm(tau=Inf),verbose=FALSE,t=NULL,dt=NULL,res=1
 
   # empty observation row for these times
   blank <- data[1,]
-  blank$error <- Inf
+  blank$record <- FALSE # these are not TRUE records
   blank <- blank[rep(1,length(t.new)),]
   blank$t <- t.new
 
@@ -269,8 +291,7 @@ fill.data <- function(data,CTMM=ctmm(tau=Inf),verbose=FALSE,t=NULL,dt=NULL,res=1
   data <- data[sort.list(data$t,na.last=NA,method="quick"),]
   # this is now our fake data set to feed into the kalman smoother
 
-  if(verbose)
-  { data <- list(data=data,t.grid=t.grid,dt.grid=dt.grid,w.grid=w.grid) }
+  if(verbose) { data <- list(data=data,t.grid=t.grid,dt.grid=dt.grid,w.grid=w.grid) }
 
   return(data)
 }
@@ -292,8 +313,8 @@ occurrence <- function(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=
   info <- attr(data,"info")
   SIGMA <- CTMM$sigma # diffusion matrix for later
   CTMM <- ctmm.prepare(data,CTMM,precompute=FALSE) # not the final t for calculating u
-  error <- get.error(data,CTMM)
-  MIN.ERR <- min(error)
+  error <- get.error(data,CTMM,circle=TRUE)
+  MIN.ERR <- min(error) # !!! FIX ME !!!
 
   # format data to be relatively evenly spaced with missing observations
   data <- fill.data(data,CTMM,verbose=TRUE,res=res.time,cor.min=cor.min,dt.max=dt.max)
@@ -325,21 +346,12 @@ occurrence <- function(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=
 
   # some covariances are slightly negative due to roundoff error
   # so here I clamp the negative singular values to zero
-  COV <- lapply(1:n,function(i){ PDclamp(COV[i,,]) })
-  COV <- unlist(COV)
-  dim(COV) <- c(2,2,n)
-  COV <- aperm(COV,perm=c(3,1,2))
+  COV <- vapply(1:n,function(i){ PDclamp(COV[i,,]) },COV[1,,]) # (d,d,n)
+  COV <- aperm(COV,perm=c(3,1,2)) # (n,d,d)
 
   # uncertainties/bandwidths for this data
-  h <- H # extra smoothing
-  H <- array(0,c(n,2,2))
-  for(i in 1:n)
-  {
-    # total covariance is bandwidth + krige uncertainty + kinetic numerical correction
-    H[i,,] <- h + COV[i,,] + dt.grid[i]^2/12*(V[i,] %o% V[i,])
-    # maybe publish the last part as a technical note
-  }
-  # there is probably a faster way to do that
+  H <- vapply(1:n,function(i){ H + COV[i,,] + dt.grid[i]^2/12*(V[i,] %o% V[i,]) },H) # (2,2,n)
+  H <- aperm(H,c(3,1,2)) # (n,2,2)
 
   # estimate size of data blob
   dr <- diag(SIGMA)
@@ -390,12 +402,20 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
 
   if(CONDITIONAL)
   {
-    STUFF <- c('object','data')
+    STUFF <- c('object','data','drift')
     if(precompute>=0) # prepare model and data frame
     {
       object <- ctmm.prepare(data,object,precompute=FALSE) # u calculated here with unfilled t
       data <- fill.data(data,CTMM=object,t=t,dt=dt,res=res,...)
-      object$error <- TRUE # avoids unit variance algorithm, data already contains fixed errors from fill.data
+      # object$error <- TRUE # avoids unit variance algorithm - data contains fixed errors from fill.data
+
+      # calculate trend
+      drift <- get(object$mean)
+      drift <- drift(data$t,object) %*% object$mu
+
+      # detrend for simulation - retrend later
+      z <- get.telemetry(data,axes=object$axes)
+      data[,object$axes] <- z - drift
     }
     else # recycle model and data frame
     { for(thing in STUFF){ assign(thing,get(thing,pos=Kalman.env)) } }
@@ -405,8 +425,11 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
 
     data <- smoother(data,object,sample=TRUE,precompute=precompute)
 
-    # properly name speeds !! move up to smoother ?
-    if(length(object$tau)>1) { colnames(data$V) <- paste0("v.",axes) }
+    # retrend data
+    data$R <- data$R + drift
+    rm(drift)
+    # trend velocity
+    # !!!
 
     data <- cbind(t=data$t,data$R,data$V)
     data <- data.frame(data)
@@ -567,16 +590,30 @@ predict.ctmm <- function(object,data=NULL,t=NULL,dt=NULL,res=1,...)
     # object <- ctmm.prepare(data,object) # mean.vec here is calculated with pre-filled t
     K <- length(object$tau)
     data <- fill.data(data,CTMM=object,t=t,dt=dt,res=res)
-    object$error <- TRUE # avoids unit variance algorithm
+    # object$error <- TRUE # avoids unit variance algorithm
+
+    # calculate trend
+    drift <- get(object$mean)
+    drift <- drift(data$t,object) %*% object$mu
+
+    # detrend for simulation - retrend later
+    z <- get.telemetry(data,axes=axes)
+    data[,axes] <- z - drift
+
+    # smooth mean-zero data
     data <- smoother(data,object,smooth=TRUE)
+
+    # detrend for simulation - retrend later
+    data$R <- data$R + drift
+    # trend velocity
+    # !!!
 
     NAMES <- colnames(data$R)
     COV <- data$COV
 
     if(K>1)
     {
-      VNAMES <- paste0("v",NAMES)
-      VNAMES -> colnames(data$V)
+      VNAMES <- colnames(data$V)
       VCOV <- data$VCOV
     }
 

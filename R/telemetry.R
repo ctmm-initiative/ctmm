@@ -331,7 +331,8 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     DATA$speed <- COL
     COL <- c("heading","GPS.heading","Course")
     COL <- pull.column(object,COL)
-    DATA$heading <- COL
+    if(length(COL)) { DATA$heading <- COL }
+    else { DATA$speed <- NULL }
 
     ####################
     # SPEED ERE

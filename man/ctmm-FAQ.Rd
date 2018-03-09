@@ -29,9 +29,9 @@
 {The newer version of \code{ctmm.select} is much more intelligent, necessitated by the exploding number of new model permutations. Any simpler models were judged to be so unlikely that they were not attempted. You can set \code{level=1} to force alternative model fitting, but the additional models should lose badly in model selection (please contact me if I am wrong).}
 
 
-\bold{Database corruption, missing functions, and other weird errors}
+\bold{rdb database corruption, "could not find function", and other weird errors}
 
-{\code{R} likely did not install the package correctly. I.e., some files may have failed to overwrite previous versions. Uninstall \code{ctmm}, restart \code{R}, and install \code{ctmm} again.}
+{\code{R} likely did not install or load the package correctly. E.g., some files may have failed to overwrite previous versions. Uninstall \code{ctmm}, restart \code{R} without saving the workspace/session, and install \code{ctmm} again.}
 
 
 \bold{Infinite recursion and stack overflow errors}
