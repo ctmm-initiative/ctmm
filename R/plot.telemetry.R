@@ -93,7 +93,7 @@ plot.env <- new.env()
 #######################################
 # PLOT TELEMETRY DATA
 #######################################
-plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF",error=TRUE,velocity=FALSE,col="red",col.level="black",col.DF="blue",col.grid="white",pch=1,type='p',labels=NULL,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,cex=NULL,lwd=1,lwd.level=1,...)
+plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF",error=TRUE,velocity=FALSE,col="red",col.level="black",col.DF="blue",col.grid="white",transparency.error=0.25,pch=1,type='p',labels=NULL,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,cex=NULL,lwd=1,lwd.level=1,...)
 {
   alpha <- 1-level
   alpha.UD <- 1-level.UD
@@ -135,7 +135,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
       plot.ctmm(CTMM[[i]],alpha.UD,col=col.level[[i]],lwd=lwd.level,...)
 
       # plot CIs dashed if present
-      if(!is.null(CTMM[[i]]$COV) & !is.na(level))
+      if("COV" %in% names(CTMM[[i]]) && !is.na(level))
       {
         # proportionality constants for outer CIs
         const <- confint.ctmm(CTMM[[i]],alpha)["area",]
@@ -197,7 +197,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
     r <- x[[i]][,c('x','y')]/dist$scale
 
     # scaled error info
-    ERROR <- get.error(x[[i]],list(error=TRUE,axes=c('x','y')))/dist$scale^2
+    ERROR <- get.error(x[[i]],list(error=TRUE,axes=c('x','y'))) / dist$scale^2
     # don't want to throw z in here yet, in case of kernels
     FLAG <- attr(ERROR,"flag") # nothing, circle or ellipse?
     # we aren't plotting if UERE is missing
@@ -208,7 +208,13 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
     else if(error[i]<3) # CIRCLE/ELLIPSE
     {
       # scale radii
-      ERROR <- z^2 * ERROR
+      # ERROR <- z^2 * ERROR
+
+      if("COV.major" %in% names(x[[i]]))
+      {
+        x[[i]][["COV.major"]] <- x[[i]][["COV.major"]]*(z/dist$scale)^2
+        x[[i]][["COV.minor"]] <- x[[i]][["COV.minor"]]*(z/dist$scale)^2
+      }
 
       # set coloring to outer rim or solid disc
       if(error[i]==1) # RIM
@@ -216,17 +222,27 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
         # elliptical circumference
         if(all(DOP.LIST$horizontal$COV %in% names(x[[i]])))
         {
-          A2 <- x[[i]][["COV.major"]]
-          B2 <- x[[i]][["COV.minor"]]
+          if("COV.major" %in% names(x[[i]])) # eigen-values already present
+          {
+            A2 <- x[[i]][["COV.major"]]
+            B2 <- x[[i]][["COV.minor"]]
+          }
+          else
+          {
+            B2 <- vapply(1:(dim(ERROR)[1]),function(i){ eigen(ERROR[i,,],only.values=TRUE)$values },numeric(2)) # (big/small,n)
+            A2 <- B2[1,]
+            B2 <- B2[2,]
+          }
 
-          alpha <- (4*z/dist$scale) * sqrt(A2) * pracma::ellipke(sqrt(1-B2/A2))$e
+          B2 <- ifelse(B2<A2,B2/A2,1) # prevent 0/0
+          alpha <- (4*z) * sqrt(A2) * pracma::ellipke(sqrt(1-B2))$e
           rm(A2,B2)
         }
         else # circular circumference
         { alpha <- (2*pi*z)*sqrt(ERROR) }
 
         # circumference of a pixel in physical units, spread around circumference
-        alpha <- clamp((4/pxpkm) / alpha)
+        alpha <- clamp((4/pxpkm) / alpha)^transparency.error
 
         bg <- NA
         fg <- scales::alpha(col[[i]],alpha)
@@ -234,12 +250,17 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
       else if(error[i]==2) # DISC
       {
         if((all(DOP.LIST$horizontal$COV %in% names(x[[i]]))))
-        { alpha <- (pi*z^2/dist$scale^2) * sqrt(x[[i]][["COV.major"]] * x[[i]][["COV.minor"]]) }
+        {
+          if("COV.major" %in% names(x[[i]]))
+          { alpha <- (pi*z^2) * sqrt(x[[i]][["COV.major"]] * x[[i]][["COV.minor"]]) }
+          else
+          { alpha <- (pi*z^2) * sqrt(apply(ERROR,1,det)) }
+        }
         else
         { alpha <- (pi*z^2) * ERROR }
 
         # area of a pixel in physical units, spread over disc
-        alpha <- clamp((1/pxpkm^2) / alpha)
+        alpha <- clamp((1/pxpkm^2) / alpha)^transparency.error
 
         bg <- scales::alpha(col[[i]],alpha)
         fg <- scales::alpha(col[[i]],alpha/2)
@@ -249,7 +270,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
       if(FLAG<4)
       {
         # convert to radii
-        ERROR <- sqrt(ERROR)
+        ERROR <- z * sqrt(ERROR)
         graphics::symbols(x=r$x,y=r$y,circles=ERROR,fg=fg,bg=bg,inches=FALSE,add=TRUE,lwd=lwd,...)
       }
       else if(FLAG==4)
@@ -279,7 +300,8 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
       if(DOP.LIST$speed$VAR %in% names(x[[i]]))
       {
         # magnitude of estimate relative to uncertainty
-        alpha <- sqrt(rowSums(get.telemetry(x[[i]],axes=c("vx","vy"))^2)/x[[i]][[DOP.LIST$speed$VAR]])
+        ERROR <- get.error(x[[i]],ctmm(axes=c("vx","vy")),circle=TRUE)
+        alpha <- sqrt(rowSums(get.telemetry(x[[i]],axes=c("vx","vy"))^2)/ERROR)
         alpha <- clamp(alpha)
         col[[i]] <- scales::alpha(col[[i]],alpha)
       }

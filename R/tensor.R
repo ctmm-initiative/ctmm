@@ -1,3 +1,11 @@
+# x[i,*] <- value
+# where * includes the remaining indices
+Assign <- function(x,i,value,index=1)
+{
+  #
+}
+
+
 # tensor (inner) product
 '%.%' <- function(x,y)
 {
@@ -7,12 +15,12 @@
   dx <- length(DIMx)
   dy <- 1
 
-  x <- array(x,c(prod(DIMx[-dx]),DIMx[dx]))
-  y <- array(y,c(DIMy[dy],prod(DIMy[-dy])))
+  dim(x) <- c(prod(DIMx[-dx]),DIMx[dx])
+  dim(y) <- c(DIMy[dy],prod(DIMy[-dy]))
   xy <- x %*% y
 
   DIM <- c(DIMx[-dx],DIMy[-dy])
-  if(length(DIM)>2) { xy <- array(xy,DIM) }
+  if(length(DIM)>2) { dim(xy) <- DIM }
 
   return(xy)
 }
@@ -23,15 +31,15 @@
   DIMx <- dim(x)
   DIMy <- dim(y)
 
-  dx <- length(DIMx) - (0:1)
+  dx <- length(DIMx) - (1:0)
   dy <- 1:2
 
-  x <- array(x,c(prod(DIMx[-dx]),prod(DIMx[dx])))
-  y <- array(y,c(prod(DIMy[dy]),prod(DIMy[-dy])))
+  dim(x) <- c(prod(DIMx[-dx]),prod(DIMx[dx]))
+  dim(y) <- c(prod(DIMy[dy]),prod(DIMy[-dy]))
   xy <- x %*% y
 
   DIM <- c(DIMx[-dx],DIMy[-dy])
-  if(length(DIM)>2) { xy <- array(xy,DIM) }
+  if(length(DIM)>2) { dim(xy) <- DIM }
 
   return(xy)
 }

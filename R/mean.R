@@ -5,9 +5,13 @@ drift.init <- function(data,CTMM)
   z <- get.telemetry(data,CTMM$axes)
 
   # weights from errors
-  error <- get.error(data,CTMM)
-  if(CTMM$error) { w <- 1/error }
-  else { w <- rep(1,length(data$t)) }
+  if(CTMM$error)
+  {
+    error <- get.error(data,CTMM,circle=TRUE)
+    w <- 1/error
+  }
+  else
+  { w <- rep(1,length(data$t)) }
   # normalize weights
   # w <- w/sum(w)
 
@@ -16,22 +20,21 @@ drift.init <- function(data,CTMM)
   # IID estimate for (error + 0 movement) || (movement + 0 error)
   CTMM$mu <- PDsolve(t(u) %*% (w * u)) %*% (t(u) %*% (w * z))
 
+  n <- length(data$t)
   z <- z - (u %*% CTMM$mu)
-
-  CTMM$sigma <- t(z) %*% z
+  CTMM$sigma <- (t(z) %*% z) / (n-1)
 
   # remove error from variability
-  error <- sum(error)
-  if(CTMM$error) { CTMM$sigma <- CTMM$sigma - error * diag(length(CTMM$axes)) }
+  if(CTMM$error)
+  {
+    error <- sum(error) / (n-1)
+    CTMM$sigma <- CTMM$sigma - error * diag(length(CTMM$axes))
 
-  n <- length(data$t)
-  CTMM$sigma <- CTMM$sigma / (n-1)
-  error <- error/(n-1)
-
-  # don't let variance estimate go below error estimate (or can become negative)
-  STUFF <- eigen(CTMM$sigma)
-  STUFF$values <- pmax(STUFF$values,error)
-  CTMM$sigma <- STUFF$vectors %*% diag(STUFF$values) %*% t(STUFF$vectors)
+    # don't let variance estimate go below error estimate (or can become negative)
+    STUFF <- eigen(CTMM$sigma)
+    STUFF$values <- pmax(STUFF$values,error)
+    CTMM$sigma <- STUFF$vectors %*% diag(STUFF$values,nrow=length(STUFF$values)) %*% t(STUFF$vectors)
+  }
 
   CTMM$sigma <- covm(CTMM$sigma,isotropic=CTMM$isotropic,axes=CTMM$axes)
 

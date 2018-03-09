@@ -96,6 +96,8 @@ variogram.fit <- function(variogram,CTMM=ctmm(),name="GUESS",fraction=0.5,intera
   manlist <- lapply(1:nrow(DF),function(r){ manipulate::slider(min=DF$min[r],max=DF$max[r],initial=DF$initial[r],label=DF$label[r],step=DF$step[r]) })
   names(manlist) <- rownames(DF)
 
+  # !!! put eror checkbox option here?
+
   # R CHECK CRAN BUG BYPASS
   store <- NULL ; rm(store)
   # storage button

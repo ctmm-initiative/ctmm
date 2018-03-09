@@ -47,7 +47,7 @@ extent.ctmm <- function(x,level=0.95,level.UD=0.95,...)
   # capture outer contour if present
   const <- 1
   if(is.na(level)) { alpha <- 1 } # will use ML contour
-  if(!is.null(x$COV))
+  if("COV" %in% names(x))
   {
     K <- length(x$tau)
     const <- confint.ctmm(x,alpha)[1,3]/sqrt(det(sigma))

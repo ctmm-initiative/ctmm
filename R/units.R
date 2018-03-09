@@ -108,7 +108,7 @@ unit.ctmm <- function(CTMM,length=1,time=1)
     CTMM$sigma@par["area"] <- CTMM$sigma@par["area"]*time
   }
 
-  if(!is.null(CTMM$COV))
+  if("COV" %in% names(CTMM))
   {
     CTMM$COV.mu <- CTMM$COV.mu/length^2
 

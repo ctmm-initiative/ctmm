@@ -1,12 +1,18 @@
 PRIORITY
 * Error in sinch(nu * dt) * Exp : non-numeric argument to binary operator ??? Random R bug?
-* x,y,z simultaneous HDOP,VDOP calibration - calibrate everything that needs it - look for all DOP without VAR/COV (message)
+* reference Guillaume's paper at the beginning of the periodogram vignette
+* weights references
 
 ERROR PAPER
+* simulate & predict velocities are missing re-trend contribution for non-stationary means
+* error checkbox in variogram.fit for calibrated errors
+* functionalize detrend & retrend in simulate/predict
+* predict can return VAR.xy for isotropic with UERE<4
+* FFT & n^2 error variogram : 2*Re[Adj(W)*WX]
+* exact 4x4 matrix inverse relations in PDsolve()
 * UERE error propagation from calibration (do not use as prior!)
 * email ARGOS about McClintock formula
-* kGcluster
-* use speed filter in ctmm.guess circle=TRUE
+* kGcluster with tpeqd projection suggestion
 
 PROJECTION
 * projection() <- on all plottable objects + plot option
@@ -22,6 +28,22 @@ PARALLELIZATION
 * parallel derivatives with upper/lower/etc.
 
 MISC WORK
+* plot axes=c('x','y') by default or axes=c('t','z')
+* catch optimizer failure (last best) in global variable and finish optimize() with warning
+* specify grid partially/totally in akde/occurrence
+* pre-standardize length data in ctmm.fit & ctmm.loglike (if not already) - ctmm.prepare?
+* times can be pre-standardized according to tau_velocity as well?
+* opacity option for plot
+* predict isotropic VAR.xy output
+* units=FALSE option for speed()
+* SpatialPolygonsDataFrame.ctmm
+* writeShapefile.ctmm
+* define print.ctmm and see if that works
+* simulate prior=FALSE
+* remove mean from kalman smoother - detrend, then add back
+* change all sapply to vapply
+* make sure terms of kalman filter are sorted by |magnitude|
+* resort all arrays to put time in last index
 * FAQ entry on automated time format reading in as.telemetry breaking with R update
 * non-range resident in vignette
 * default labels not working for UD contours

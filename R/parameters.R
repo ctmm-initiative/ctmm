@@ -31,7 +31,7 @@ clean.parameters <- function(par)
 
 
 # identify autocovariance parameters in ctmm object
-# if profile==TRUE, some parameters can be solved exactly and so aren't identified
+# if profile=TRUE, some parameters can be solved exactly and so aren't identified
 # if linear=TRUE, only return linear non-problematic parameters
 id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,UERE=FALSE,dt=0,df=0)
 {
@@ -39,9 +39,9 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,UERE=FALSE,dt=0,df=0)
   NAMES <- NULL
 
   sigma <- attr(CTMM$sigma,"par")
-  if(!profile || (CTMM$error && UERE==3)) # must fit all 1-3 covariance parameters
+  if(!profile || (CTMM$error && UERE>=3)) # must fit all 1-3 covariance parameters
   { if(CTMM$isotropic) { NAMES <- c(NAMES,"area") } else { NAMES <- c(NAMES,names(sigma)) } }
-  else if(CTMM$error || CTMM$circle) # must fit shape, but scale free
+  else if(CTMM$error || CTMM$circle) # must fit shape, but scale/area/var can be profiled for free
   { if(!CTMM$isotropic) { NAMES <- c(NAMES,names(sigma[2:3])) } }
 
   if(!linear) # nonlinear autocorrelation parameters

@@ -13,8 +13,9 @@ Produces simple plots of \code{telemetry} objects, possibly overlayed with a Gau
 plot(x,y,...)
 
 \S3method{plot}{telemetry}(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF",error=TRUE,velocity=FALSE,
-     col="red",col.level="black",col.DF="blue",col.grid="white",pch=1,type='p',
-     labels=NULL,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,cex=NULL,lwd=1,lwd.level=1,...)
+     col="red",col.level="black",col.DF="blue",col.grid="white",transparency.error=0.25,
+     pch=1,type='p',labels=NULL,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,cex=NULL,lwd=1,
+     lwd.level=1,...)
 
 \S4method{zoom}{list}(x,...)
 
@@ -37,6 +38,7 @@ plot(x,y,...)
   \item{col.level}{Color option for home-range contours. Can be an array.}
   \item{col.DF}{Color option for the density function. Can be an array.}
   \item{col.grid}{Color option for the maximum likelihood \code{akde} bandwidth grid.}
+  \item{transparency.error}{Transparency scaling for erroneous locations when \code{error=1:2}. \code{trans=0} disables transparancy. Should be no greater than \code{1}.}
   \item{pch}{Plotting symbol. Can be an array or list of arrays.}
   \item{type}{How plot points are connected. Can be an array.}
   \item{labels}{Labels for UD contours. Can be an array or list of arrays.}

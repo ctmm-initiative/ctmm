@@ -72,8 +72,8 @@ plot(RES)
 # increase the res argument to account for sampling variability
 ACF <- correlogram(RES,res=10)
 
-#plot a day's worth of lags
-plot(ACF[ACF$lag<=1 \%#\% 'day',],fraction=1)
+#plot 4 day's worth of lags
+plot(ACF[ACF$lag<=4 \%#\% 'day',],fraction=1)
 }}
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the
