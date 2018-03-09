@@ -323,7 +323,7 @@ plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",col.level="black",col.DF
 {
   x <- listify(x)
 
-  dist <- new.plot(UD=x,fraction=fraction,add=add,xlim=xlim,ylim=ylim,...)
+  dist <- new.plot(UD=x,fraction=fraction,add=add,xlim=xlim,ylim=ylim,level.UD=level.UD,level=level,...)
 
   # contours colour
   if(length(col.level)==length(level.UD) && length(col.level) != length(x))
