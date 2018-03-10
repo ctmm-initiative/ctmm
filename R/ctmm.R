@@ -178,6 +178,7 @@ COV.covm <- function(sigma,n,k=1)
   isotropic <- sigma@isotropic
   par <- sigma@par
   sigma <- methods::getDataPart(sigma)
+  DIM <- sqrt(length(sigma))
 
   A <- par["area"]
   ecc <- par["eccentricity"]
@@ -186,26 +187,30 @@ COV.covm <- function(sigma,n,k=1)
   DOF.mu <- n
   COV.mu <- sigma/n
 
-  if(isotropic || length(sigma)==1)
+  n <- n-k
+
+  if(isotropic || DIM==1)
   {
-    COV <- cbind( A^2/n )
+    COV <- cbind( 2*A^2/(n*DIM) )
     dimnames(COV) <- list("area","area")
   }
-  else
+  else # 2D
   {
     # orient eccentricity
-    ecc <- sign(sigma[1,1]-sigma[2,2]) * ecc
+    # ecc <- sign(sigma[1,1]-sigma[2,2]) * ecc
 
     # covariance matrix for c( sigma_xx , sigma_yy , sigma_xy )
-    n <- n-k
     COV <- diag(0,3)
     COV[1:2,1:2] <- 2/n * sigma^2
     COV[3,] <- c( 2*sigma[1,1]*sigma[1,2] , 2*sigma[2,2]*sigma[1,2] , sigma[1,1]*sigma[2,2]+sigma[1,2]^2 )/n
     COV[,3] <- COV[3,]
 
     # gradient matrix d sigma / d par
+    # d matrix / d area
     grad <- c( sigma[1,1] , sigma[2,2] , sigma[1,2] )/A
+    # d matrix / d eccentricity
     grad <- cbind( grad, A/2*c( sinh(ecc/2)+cosh(ecc/2)*cos(2*theta) , sinh(ecc/2)-cosh(ecc/2)*cos(2*theta) , cosh(ecc/2)*sin(2*theta) ) )
+    # d matrix / d angle
     grad <- cbind( grad, c( -2*sigma[1,2] , 2*sigma[1,2] , A*sinh(ecc/2)*2*cos(2*theta) ) )
 
     # gradient matrix d par / d sigma via inverse function theorem
