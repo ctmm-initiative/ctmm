@@ -480,6 +480,8 @@ plot.ctmm <- function(model,alpha=0.05,col="blue",bg=NA,...)
 }
 
 ###################
+# mu - mean vector
+# sigma - covariance matrix
 ellipsograph <- function(mu,sigma,level=0.95,fg=graphics::par("col"),bg=NA,...)
 {
   Eigen <- eigen(sigma)
