@@ -2,7 +2,7 @@
 emulate.ctmm <- function(object,data=NULL,fast=FALSE,...)
 {
   CTMM <- object
-  if(!fast) { return( emulate(data,CTMM,fast=fast,...) ) }
+  if(!fast) { return( emulate.telemetry(data,CTMM,fast=fast,...) ) }
 
   # needs to be updated for periodic stuff
   Sigma <- CTMM$COV.mu
@@ -55,7 +55,7 @@ emulate.ctmm <- function(object,data=NULL,fast=FALSE,...)
 # simulate an estimated model by simulating data and then fitting a model to that data
 emulate.telemetry <- function(object,CTMM,fast=FALSE,...)
 {
-  if(fast) { return( emulate(CTMM,data=object,fast=fast,...) ) }
+  if(fast) { return( emulate.ctmm(CTMM,data=object,fast=fast,...) ) }
 
   # copy over time and error structure
   FRAME <- object
