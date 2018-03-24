@@ -29,9 +29,9 @@
 {The newer version of \code{ctmm.select} is much more intelligent, necessitated by the exploding number of new model permutations. Any simpler models were judged to be so unlikely that they were not attempted. You can set \code{level=1} to force alternative model fitting, but the additional models should lose badly in model selection (please contact me if I am wrong).}
 
 
-\bold{rdb database corruption, "could not find function", and other weird errors}
+\bold{rdb database corruption, "could not find function", "cannot coerce class", and other weird errors}
 
-{\code{R} likely did not install or load the package correctly. E.g., some files may have failed to overwrite previous versions. Uninstall \code{ctmm}, restart \code{R} without saving the workspace/session, and install \code{ctmm} again.}
+{\code{R} might not have installed or loaded the package correctly---e.g., some files may have failed to overwrite previous versions---or the workspace/session might be corrupted. Uninstall \code{ctmm}, restart \code{R} without saving the workspace/session, and install \code{ctmm} again.}
 
 
 \bold{Infinite recursion and stack overflow errors}
@@ -46,7 +46,7 @@
 
 \bold{\code{manipulate::isAvailable} is not found}
 
-{You probably have an outdated copy of the \code{manipulate} package installed. Update \code{R} to the latest version and then update all of your packages. This seems to happen frequently with the MacOS release of R.}
+{You probably have an outdated copy of the \code{manipulate} package installed. Update \code{R} to the latest version and then update all of your packages. This seems to happen frequently with the MacOS release of \code{R}.}
 
 
 \bold{\code{manipulate} panel does not popup in \code{\link{variogram.fit}} or \code{\link{zoom}}}

@@ -742,6 +742,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
         par <- par.all[,MIN]
         fn.par <- fn.all[MIN]
 
+        # DEBUG.LIST <<- list(par.all=par.all,fn.all=fn.all,parscale=parscale)
         if(trace) { message(sprintf("%s %s search",format(zero+fn.par,digits=16),LINE.TYPE)) }
 
         if(DEBUG)

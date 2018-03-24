@@ -75,15 +75,17 @@ attr(prototype.drift,"refine") <- drift.refine
 attr(prototype.drift,"scale") <- drift.scale
 attr(prototype.drift,"shift") <- stationary.shift
 attr(prototype.drift,"summary") <- drift.summary
+attr(prototype.drift,"velocity") <- function(t,CTMM) { rep(0,length(t)) }
 
 new.drift <- methods::setClass("drift",
-              representation("function",speed="function",svf="function",init="function",name="function",refine="function",scale="function",shift="function",summary="function"),
+              representation("function",speed="function",svf="function",init="function",name="function",refine="function",scale="function",shift="function",summary="function",velocity="function"),
               prototype=prototype.drift)
 
 #################################
 # stationary mean/drift function
 #################################
 stationary.drift <- function(t,CTMM) { cbind( array(1,length(t)) ) }
+stationary.velocity <- function(t,CTMM) { cbind( array(0,length(t)) ) }
 
 # svf of mean function
 stationary.svf <- function(CTMM)
@@ -99,7 +101,7 @@ stationary.svf <- function(CTMM)
 stationary.speed <- function(CTMM) { list(EST=0,VAR=0) }
 
 # combine this all together for convenience
-stationary <- new.drift(stationary.drift,svf=stationary.svf,speed=stationary.speed)
+stationary <- new.drift(stationary.drift,svf=stationary.svf,speed=stationary.speed,velocity=stationary.velocity)
 
 ############################
 # Periodic drift function
@@ -111,13 +113,32 @@ periodic.drift <- function(t,CTMM)
   period <- CTMM$period
 
   # constant term
-  U <- cbind( stationary.drift(t,CTMM) )
+  U <- stationary.drift(t,CTMM)
 
   omega <- periodic.omega(CTMM)
   if(length(omega))
   {
     omega <- t %o% omega
     U <- cbind( U , cos(omega) , sin(omega) )
+  }
+
+  return(U)
+}
+
+# periodic velocity mean
+periodic.velocity <- function(t,CTMM)
+{
+  harmonic <- CTMM$harmonic
+  period <- CTMM$period
+
+  # constant term
+  U <- stationary.velocity(t,CTMM)
+
+  omega <- periodic.omega(CTMM)
+  if(length(omega))
+  {
+    theta <- omega %o% t # backwards for multiplication by first dimension
+    U <- cbind( U , -t(omega*sin(theta)) , t(omega*cos(theta)) )
   }
 
   return(U)
@@ -359,7 +380,7 @@ periodic.stuff <- function(CTMM)
 }
 
 # combine this all together for convenience
-periodic <- new.drift(periodic.drift,init=periodic.init,scale=periodic.scale,svf=periodic.svf,refine=periodic.refine,name=periodic.name,speed=periodic.speed,summary=periodic.summary)
+periodic <- new.drift(periodic.drift,init=periodic.init,scale=periodic.scale,svf=periodic.svf,refine=periodic.refine,name=periodic.name,speed=periodic.speed,summary=periodic.summary,velocity=periodic.velocity)
 
 #################################
 # continuous uniform spline mean functions

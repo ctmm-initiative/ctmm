@@ -402,7 +402,7 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
 
   if(CONDITIONAL)
   {
-    STUFF <- c('object','data','drift')
+    STUFF <- c('object','data','drift','velocity')
     if(precompute>=0) # prepare model and data frame
     {
       object <- ctmm.prepare(data,object,precompute=FALSE) # u calculated here with unfilled t
@@ -411,6 +411,7 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
 
       # calculate trend
       drift <- get(object$mean)
+      velocity <- drift@velocity(data$t,object) %*% object$mu
       drift <- drift(data$t,object) %*% object$mu
 
       # detrend for simulation - retrend later
@@ -429,7 +430,7 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
     data$R <- data$R + drift
     rm(drift)
     # trend velocity
-    # !!!
+    if("V" %in% names(data)) { data$V <- data$V + velocity }
 
     data <- cbind(t=data$t,data$R,data$V)
     data <- data.frame(data)
@@ -456,10 +457,11 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
   }
   else # Gaussian simulation not conditioned off of any data
   {
-    STUFF <- c('Green','Sigma','error','object','mu','Lambda','n','K','z','v','circle','R')
+    STUFF <- c('Green','Sigma','error','object','mu','Lambda','n','K','z','v','circle','R','UERE')
     if(precompute>=0)
     {
-      if(is.null(data)) { error <- FALSE } else { error <- get.error(data,object) } # get error if provided
+      if(is.null(data)) { error <- UERE <- FALSE }
+      else { error <- get.error(data,object) ; UERE <- attr(error,'flag') } # get error if provided
       object <- ctmm.prepare(list(t=t),object) # mean.vec calculated here
 
       tau <- object$tau
@@ -489,7 +491,7 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
       for(i in 1:n)
       {
         # tabulate propagators if necessary
-        if((i==1)||(dt[i]!=dt[i-1])) { Langevin <- langevin(dt=dt[i],CTMM=object) }
+        if((i==1)||(dt[i]!=dt[i-1])) { Langevin <- langevin(dt=dt[i],CTMM=object,K=K) }
         Green[i,,] <- Langevin$Green
         Sigma[i,,] <- Langevin$Sigma
         # Sigma is now standardization matrix
@@ -499,6 +501,15 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
       # circulation stuff
       circle <- object$circle
       R <- exp(1i*circle*(t-t[1]))
+
+      # pre-compute error matrices
+      if(UERE && UERE<=3) # circular errors
+      { error <- sqrt(error) }
+      else if(UERE) # eliptical errors
+      {
+        error <- vapply(1:n, function(i){sqrtm(error[i,,])}, diag(2)) # (2,2,n)
+        error <- aperm(error,c(3,1,2)) # (n,2,2)
+      }
     } # END precompute
     else # precomputed objects from previous run
     { for(thing in STUFF) { assign(thing,get(thing,pos=Kalman.env)) } }
@@ -532,20 +543,27 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
       }
     }
 
-    z <- z %*% Lambda
-    if(K>1) { v <- v %*% Lambda }
-
     # calculate mean function
-    mu <- object$mean.vec %*% mu
-    z <- z + mu
+    z <- (z %*% Lambda) + (object$mean.vec %*% mu)
     colnames(z) <- axes
-    if(K>1) { colnames(v) <- paste0("v.",axes) }
+    if(K>1)
+    {
+      v <- (v %*% Lambda) + (get(object$mean)@velocity(t,object) %*% mu)
+      colnames(v) <- paste0("v",axes)
+    }
 
     # throw in error
-    if(any(as.logical(error)))
+    if(UERE)
     {
-      for(i in 1:length(axes))
-      { z[,i] <- z[,i] + stats::rnorm(n,sd=sqrt(error)) } # what about v?
+      if(UERE<=3) # circular errors
+      { error <- error * array(stats::rnorm(n*length(axes)),c(n,length(axes))) }
+      else # eliptical errors # can we do this with one 2n column product?
+      {
+        error <- vapply(1:n, function(i){error[i,,] %*% stats::rnorm(2)}, c(0,0) )
+        error <- t(error)
+      }
+      z[] <- z + error # error became (dim,n)
+      # velocity error?
     }
 
     data <- cbind(t=t,z,v)
@@ -580,9 +598,12 @@ predict.ctmm <- function(object,data=NULL,t=NULL,dt=NULL,res=1,...)
     r <- object$mean.vec %*% mu
     colnames(r) <- axes
 
-    # missing COV !!!
+    v <- get(object$mean)@velocity(t,object) %*% mu
+    colnames(v) <- paste0("v",axes)
 
-    data <- data.frame(r)
+    # missing COVs !!!
+
+    data <- data.frame(r,v)
     data$t <- t
   }
   else # condition off of the data
@@ -594,6 +615,7 @@ predict.ctmm <- function(object,data=NULL,t=NULL,dt=NULL,res=1,...)
 
     # calculate trend
     drift <- get(object$mean)
+    velocity <- drift@velocity(data$t,object) %*% object$mu
     drift <- drift(data$t,object) %*% object$mu
 
     # detrend for simulation - retrend later
@@ -606,7 +628,7 @@ predict.ctmm <- function(object,data=NULL,t=NULL,dt=NULL,res=1,...)
     # detrend for simulation - retrend later
     data$R <- data$R + drift
     # trend velocity
-    # !!!
+    if("V" %in% names(data)) { data$V <- data$V + velocity }
 
     NAMES <- colnames(data$R)
     COV <- data$COV

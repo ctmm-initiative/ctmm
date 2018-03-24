@@ -1,12 +1,11 @@
 ###############################
 # Propagator/Green's function and Two-time correlation from Langevin equation for Kalman filter and simulations
-langevin <- function(dt,CTMM)
+langevin <- function(dt,CTMM,K=continuity(CTMM))
 {
   tau <- CTMM$tau
   sigma <- methods::getDataPart(CTMM$sigma)
-  K <- continuity(CTMM)
 
-  if(K==0)
+  if(K<=1 && (is.null(tau) || tau[1]==0))
   {
     Green <- array(0,c(1,1))
     Sigma <- array(1,c(1,1))
@@ -151,7 +150,7 @@ kalman <- function(z,u,dt,CTMM,error=NULL,smooth=FALSE,sample=FALSE,residual=FAL
     {
       # does the time lag change values? Then update the propagators.
       if(i==1 || dt[i] != dt[i-1])
-      { Langevin <- langevin(dt=dt[i],CTMM=CTMM) }
+      { Langevin <- langevin(dt=dt[i],CTMM=CTMM,K=K) }
 
       Green[i,,] <- Langevin$Green # (K*DIM,K*DIM)
       Sigma[i,,] <- Langevin$Sigma # (K*DIM,K*DIM)

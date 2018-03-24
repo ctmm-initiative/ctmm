@@ -88,10 +88,7 @@ summary.ctmm <- function(object,level=0.95,level.UD=0.95,units=TRUE,IC="AICc",..
 summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, ...)
 {
   # do we convert units
-  if(units)
-  { thresh <- 1 }
-  else
-  { thresh <- Inf }
+  if(units) { thresh <- 1 } else { thresh <- Inf }
 
   alpha <- 1-level
   alpha.UD <- 1-level.UD

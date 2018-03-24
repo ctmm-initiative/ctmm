@@ -1,7 +1,7 @@
-speed.telemetry <- function(object,CTMM,level=0.95,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,cores=1,...)
+speed.telemetry <- function(object,CTMM,level=0.95,units=TRUE,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,cores=1,...)
 { speed.ctmm(CTMM,data=object,level=level,prior=prior,error=error,cores=cores,...) }
 
-speed.ctmm <- function(object,data=NULL,level=0.95,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,cores=1,...)
+speed.ctmm <- function(object,data=NULL,level=0.95,units=TRUE,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,cores=1,...)
 {
   if(length(object$tau)<2 || object$tau[2]<=.Machine$double.eps)
   { stop("Movement model is fractal. Speed cannot be estimated.") }
@@ -118,7 +118,8 @@ speed.ctmm <- function(object,data=NULL,level=0.95,prior=TRUE,fast=TRUE,cor.min=
     close(pb)
   }
 
-  UNITS <- unit(CI,"speed")
+  if(units) { thresh <- 1 } else { thresh <- Inf }
+  UNITS <- unit(CI,"speed",thresh=thresh)
   CI <- rbind(CI)/UNITS$scale
   rownames(CI) <- paste0("speed (",UNITS$name,")")
 
