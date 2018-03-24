@@ -1,19 +1,17 @@
 PRIORITY
 * Error in sinch(nu * dt) * Exp : non-numeric argument to binary operator ??? Random R bug?
 * reference Guillaume's paper at the beginning of the periodogram vignette
-* weights references
 
 ERROR PAPER
-* simulate elliptical errors
-* simulate & predict velocities are missing re-trend contribution for non-stationary means
-* error checkbox in variogram.fit for calibrated errors
-* functionalize detrend & retrend in simulate/predict
-* predict can return VAR.xy for isotropic with UERE<4
+* get.error circle=TRUE return trace
+* variogram.slow
 * FFT & n^2 error variogram : 2*Re[Adj(W)*WX]
 * exact 4x4 matrix inverse relations in PDsolve()
 * UERE error propagation from calibration (do not use as prior!)
 * email ARGOS about McClintock formula
 * kGcluster with tpeqd projection suggestion
+* predict can return VAR.xy for isotropic with UERE<4
+* error checkbox in variogram.fit for calibrated errors
 
 PROJECTION
 * projection() <- on all plottable objects + plot option
@@ -29,6 +27,9 @@ PARALLELIZATION
 * parallel derivatives with upper/lower/etc.
 
 MISC WORK
+* functionalize detrend & retrend in simulate/predict
+* predict.ctmm cov
+* spline velocity mean function
 * variogram discrepancy rank function
 * color array -> spatial segregation
 * plot axes=c('x','y') by default or axes=c('t','z')
@@ -38,7 +39,6 @@ MISC WORK
 * times can be pre-standardized according to tau_velocity as well?
 * opacity option for plot
 * predict isotropic VAR.xy output
-* units=FALSE option for speed()
 * SpatialPolygonsDataFrame.ctmm
 * writeShapefile.ctmm
 * define print.ctmm and see if that works

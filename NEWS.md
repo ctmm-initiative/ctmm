@@ -1,9 +1,19 @@
-0.5.0 2018-03-09
+0.5.0 2018-03-23
 ================
 
-  * ARGOS error ellipse support in ctmm.fit()
+  * Extensive re-write of the Kalman filter & smoother, now supporting an arbitrary number of spatial dimensions, necessary for ARGOS error ellipse support. (Previously, all multi-dimensional problems were transformed into multiple one-dimensional problems.) Many new models will be supported going forward, based on the v0.5.0 code.
 
-  * anisotropic models with circulation and error now exact with 2D Kalman filter
+  * ARGOS error ellipse support in ctmm.fit() and simulate()
+
+  * (anisotropic & circulation & error) models now exact with 2D Kalman filter & smoother
+  
+  * simulate() & predict() velocities now correct with mean="periodic"
+  
+  * units argument in speed()
+  
+  * REML and related methods fixed from 0.4.X 1/2 bug
+  
+  * parameter boundary bugfix in ctmm.fit() and ctmm.loglike()
 
 0.4.2 2018-02-12
 ================

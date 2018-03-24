@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Calculate the optimal bandwidth matrix of movement data � bandwidth • ctmm</title>
+<title>Calculate the optimal bandwidth matrix of movement data — bandwidth • ctmm</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -18,12 +18,19 @@
 <!-- Font Awesome icons -->
 <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
 
+<!-- clipboard.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" integrity="sha384-cV+rhyOuRHc9Ub/91rihWcGmMmCXDeksTtCihMupQHSsi8GIIRDG0ThDc3HGQFJ3" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
+  
+  
+<meta property="og:title" content="Calculate the optimal bandwidth matrix of movement data — bandwidth" />
 
+<meta property="og:description" content="This function calculates the optimal bandwidth matrix (kernel covariance) for a two-dimensional animal tracking dataset, given an autocorrelated movement model (Fleming et al, 2015). This optimal bandwidth can fully take into account all autocorrelation in the data, assuming it is captured by the movement model." />
+<meta name="twitter:card" content="summary" />
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -173,7 +180,10 @@ SIAM Journal on Scientific and Statistical Computing, 9:4, 766-771 (1988).</p>
 <p>D. Marcotte. Fast variogram computation with FFT. <em>Computers and Geosciences</em> 22:10, 1175-1186 (1996).</p>
 <p>C. H. Fleming, W. F. Fagan, T. Mueller, K. A. Olson, P. Leimgruber, J. M. Calabrese.
 Rigorous home-range estimation with movement data: A new autocorrelated kernel-density estimator.
-<a href = 'http://www.esajournals.org/doi/abs/10.1890/14-2010.1'>Ecology, 96:5, 1182-1188 (2015)</a>.</p>
+<a href='http://www.esajournals.org/doi/abs/10.1890/14-2010.1'>Ecology, 96:5, 1182-1188 (2015)</a>.</p>
+<p>C. H. Fleming, D. Sheldon, W. F. Fagan, P. Leimgruber, T. Mueller, D. Nandintsetseg, M. J. Noonan, K. A. Olson, E. Setyawan, A. Sianipar, J. M. Calabrese.
+Correcting for missing and irregular data in home‐range estimation.
+<a href='https://esajournals.onlinelibrary.wiley.com/doi/abs/10.1002/eap.1704'>Ecological Applications, 10.1002/eap.1704 (2018)</a>.</p>
     
     <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
 
@@ -212,7 +222,7 @@ Rigorous home-range estimation with movement data: A new autocorrelated kernel-d
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="http://hadley.github.io/pkgdown/">pkgdown</a>.</p>
+  <p>Site built with <a href="http://pkgdown.r-lib.org/">pkgdown</a>.</p>
 </div>
 
       </footer>
@@ -220,3 +230,4 @@ Rigorous home-range estimation with movement data: A new autocorrelated kernel-d
 
   </body>
 </html>
+
