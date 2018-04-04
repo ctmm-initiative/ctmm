@@ -5,7 +5,7 @@ langevin <- function(dt,CTMM,K=continuity(CTMM))
   tau <- CTMM$tau
   sigma <- methods::getDataPart(CTMM$sigma)
 
-  if(K<=1 && (is.null(tau) || tau[1]==0))
+  if(K<=1 && (length(tau)==0 || tau[1]==0))
   {
     Green <- array(0,c(1,1))
     Sigma <- array(1,c(1,1))

@@ -1,9 +1,11 @@
-0.5.0 2018-03-23
+0.5.0 2018-04-03
 ================
 
   * Extensive re-write of the Kalman filter & smoother, now supporting an arbitrary number of spatial dimensions, necessary for ARGOS error ellipse support. (Previously, all multi-dimensional problems were transformed into multiple one-dimensional problems.) Many new models will be supported going forward, based on the v0.5.0 code.
 
   * ARGOS error ellipse support in ctmm.fit() and simulate()
+
+  * plotted variogram errors now estimated from HDOP and no longer assumed to be homoskedastic
 
   * (anisotropic & circulation & error) models now exact with 2D Kalman filter & smoother
   

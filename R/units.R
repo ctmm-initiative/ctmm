@@ -97,7 +97,7 @@ unit.ctmm <- function(CTMM,length=1,time=1)
   drift <- get(CTMM$mean)
   CTMM <- drift@scale(CTMM,time)
 
-  CTMM$error <- CTMM$error/length
+  if(class(CTMM$error)=='numeric') { CTMM$error <- CTMM$error/length } # don't divide logicals
   CTMM$sigma <- CTMM$sigma/length^2
   CTMM$sigma@par["area"] <- CTMM$sigma@par["area"]/length^2
 
@@ -154,6 +154,16 @@ unit.UD <- function(UD,length=1)
   return(UD)
 }
 
+
+##################
+unit.variogram <- function(SVF,time=1,area=1)
+{
+  SVF$lag <- SVF$lag / time
+  SVF$SVF <- SVF$SVF / area
+  if("MSE" %in% names(SVF)) { SVF$MSE <- SVF$MSE / area }
+
+  return(SVF)
+}
 
 
 # convert units

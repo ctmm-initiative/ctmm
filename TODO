@@ -3,9 +3,9 @@ PRIORITY
 * reference Guillaume's paper at the beginning of the periodogram vignette
 
 ERROR PAPER
-* get.error circle=TRUE return trace
-* variogram.slow
-* FFT & n^2 error variogram : 2*Re[Adj(W)*WX]
+* how does error change DOF calculation?
+* errors on x,y,z variograms
+* errors on periodograms?
 * exact 4x4 matrix inverse relations in PDsolve()
 * UERE error propagation from calibration (do not use as prior!)
 * email ARGOS about McClintock formula

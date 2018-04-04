@@ -223,11 +223,14 @@ get.error <- function(DATA,CTMM,flag=FALSE,circle=FALSE,DIM=FALSE)
     VAR <- TYPE$VAR
     DOP <- TYPE$DOP
 
-    if(all(COV %in% COLS) && !circle) # calibrated error ellipses - ARGOS
+    if(all(COV %in% COLS)) # calibrated error ellipses - ARGOS
     {
       error <- get.telemetry(DATA,COV[c(1,2,2,3)]) # pull matrix elements
       dim(error) <- c(nrow(error),2,2) # array of matrices
       FLAG <- 4
+
+      # reduce to VAR
+      if(circle) { error <- (error[,1,1]+error[,2,2])/2 }
     }
     else if(VAR %in% COLS) # calibrated error circles - VAR=(UERE*HDOP)^2/2
     {
