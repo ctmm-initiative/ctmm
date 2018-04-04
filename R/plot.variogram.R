@@ -1,21 +1,8 @@
 #########
-# error argument is <VAR> (fixed) or <VAR>/UERE^2 (fitted) passed from SVF object
 # CTMM$error is logical (fixed) or UERE (fitted)
-svf.func <- function(CTMM,moment=FALSE,error=0)
+# error (modulo UERE) is now an argument of the output functions in addition to lag
+svf.func <- function(CTMM,moment=FALSE)
 {
-  # # adjust model error to incorporate data HDOP average
-  # if(CTMM$error)
-  # {
-  #   error <- sqrt(length(CTMM$axes)*error) # <HDOP>
-  #   # UERE adjustment
-  #   CTMM$error <- CTMM$error * error # UERE * <HDOP> stored in CTMM$error
-  #   if(!is.null(CTMM$COV) && "error" %in% dimnames(CTMM$COV)[1])
-  #   {
-  #     CTMM$COV["error",] <- CTMM$COV["error",] * error
-  #     CTMM$COV[,"error"] <- CTMM$COV[,"error"] * error
-  #   }
-  # }
-
   # pull out relevant model parameters
   tau <- CTMM$tau
 
@@ -70,39 +57,37 @@ svf.func <- function(CTMM,moment=FALSE,error=0)
     acf.grad <- function(t) { c(1,-1)*((1+t/tau)*exp(-t/tau)-acf(t))/diff(tau) }
   }
 
-  # !!! this is all hard-coded dumb to the ordering of COV !!!
-
   # finish off svf function including circulation if present
   if(!circle)
   {
     ACF <- function(t) { acf(t) }
     svf <- function(t) { sigma*(1-acf(t)) }
-    grad <- function(t) { c(svf(t)/sigma, -sigma*acf.grad(t)) }
+    grad <- function(t,...) { c(svf(t)/sigma, -sigma*acf.grad(t)) }
   }
   else
   {
     NAMES <- c(NAMES,"circle")
     ACF <- function(t) { cos(circle*t)*acf(t) }
     svf <- function(t) { sigma*(1-cos(circle*t)*acf(t)) }
-    grad <- function(t) { c(svf(t)/sigma, -sigma*cos(circle*t)*acf.grad(t), +sigma*t*sin(circle*t)*acf(t)) }
+    grad <- function(t,...) { c(svf(t)/sigma, -sigma*cos(circle*t)*acf.grad(t), +sigma*t*sin(circle*t)*acf(t)) }
   }
   NAMES <- c("variance",NAMES)
 
   # add error term
   if(CTMM$error)
   {
-    err.svf <- function(t) { (if(t==0) {0} else {CTMM$error^2 * error}) }
+    err.svf <- function(t,error=0) { ifelse(t>0,CTMM$error^2*error,0) }
     if("error" %in% dimnames(CTMM$COV)[[1]]) # fit or fixed error?
     {
       NAMES <- c(NAMES,"error")
-      GRAD <- function(t) { c(grad(t) , (if(t==0) {0} else {2 * CTMM$error * error}) ) }
+      GRAD <- function(t,error=0) { c(grad(t) , ifelse(t>0,2*CTMM$error*error,0) ) }
     }
     else
     { GRAD <- grad }
   }
   else
   {
-    err.svf <- function(t) { 0 }
+    err.svf <- function(t,error=0) { 0 }
     GRAD <- grad
   }
 
@@ -112,20 +97,24 @@ svf.func <- function(CTMM,moment=FALSE,error=0)
   { drift <- stationary }
   MEAN <- drift@svf(CTMM)
 
-  SVF <- function(t) { svf(t) + err.svf(t) + MEAN$EST(t) }
+  SVF <- function(t,error=0) { svf(t) + err.svf(t,error=error) + MEAN$EST(t) }
 
   # no error provided
   if(is.null(COV)) { COV <- diag(0,nrow=length(GRAD(0))) }
 
+  # sort COV matrix by NAMES : should be coded in the correct order, but future proof
+  IND <- order(match(dimnames(COV)[[1]],NAMES))
+  COV <- COV[IND,IND] # assumes everything is there...
+
   # variance of SVF
-  VAR <- function(t)
+  VAR <- function(t,error=0)
   {
-    g <- GRAD(t)
+    g <- GRAD(t,error=error)
     return( c(g %*% COV %*% g) + MEAN$VAR(t) )
   }
 
   # chi-square effective degrees of freedom
-  DOF <- function(t) { return( 2*SVF(t)^2/VAR(t) ) }
+  DOF <- function(t,error=0) { return( 2*SVF(t,error=error)^2/VAR(t,error=error) ) }
 
   return(list(svf=SVF,VAR=VAR,DOF=DOF,ACF=ACF))
 }
@@ -133,27 +122,38 @@ svf.func <- function(CTMM,moment=FALSE,error=0)
 
 ##########
 # error argument is average variance of data's error passed from SVF object
-plot.svf <- function(lag,CTMM,error=0,alpha=0.05,col="red",type="l",...)
+plot.svf <- function(lag,CTMM,error=NULL,alpha=0.05,col="red",type="l",...)
 {
-  SVF <- svf.func(CTMM,moment=TRUE,error=error)
+  # changed from max lag to all lags
+  # changed from error=0 or number/logical to error=NULL or array
+
+  # number of pixels across diagonal of display
+  PX <- ceiling(sqrt(sum(grDevices::dev.size("px")^2)))
+
+  # are we including errors?
+  ERROR <- !is.null(error) && CTMM$error
+  # can we plot a smooth curve?
+  if(!ERROR) { lag <- seq(0,last(lag),length.out=PX) }
+
+  SVF <- svf.func(CTMM,moment=TRUE)
   svf <- SVF$svf
   DOF <- SVF$DOF
 
   # point estimate plot
-  SVF <- Vectorize(function(t) { svf(t) })
-  graphics::curve(SVF,from=0,to=lag,n=1000,add=TRUE,col=col,type=type,...)
+  SVF <- Vectorize(function(t,error=0) { svf(t,error=error) })
+
+  if(!ERROR) { graphics::curve(SVF,from=0,to=last(lag),n=PX,add=TRUE,col=col,...) }
+  else { graphics::points(lag,SVF(lag),col=col,type=type,...) }
 
   # confidence intervals if COV provided
   if(any(diag(CTMM$COV)>0))
   {
-    Lags <- seq(0,lag,lag/1000)
-
     for(j in 1:length(alpha))
     {
-      svf.lower <- Vectorize(function(t){ svf(t) * CI.lower(DOF(t),alpha[j]) })
-      svf.upper <- Vectorize(function(t){ svf(t) * CI.upper(DOF(t),alpha[j]) })
+      svf.lower <- Vectorize(function(t,error=0){ svf(t,error=error) * CI.lower(DOF(t,error=error),alpha[j]) })
+      svf.upper <- Vectorize(function(t,error=0){ svf(t,error=error) * CI.upper(DOF(t,error=error),alpha[j]) })
 
-      graphics::polygon(c(Lags,rev(Lags)),c(svf.lower(Lags),rev(svf.upper(Lags))),col=scales::alpha(col,0.1/length(alpha)),border=NA,...)
+      graphics::polygon(c(lag,rev(lag)),c(svf.lower(lag),rev(svf.upper(lag))),col=scales::alpha(col,0.1/length(alpha)),border=NA,...)
     }
   }
 
@@ -162,13 +162,16 @@ plot.svf <- function(lag,CTMM,error=0,alpha=0.05,col="red",type="l",...)
 ###########################################################
 # PLOT VARIOGRAM
 ###########################################################
-plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", col.CTMM="red", xlim=NULL, ylim=NULL, ...)
+plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, diagnostic=FALSE, col="black", col.CTMM="red", xlim=NULL, ylim=NULL, ...)
 {
   alpha <- 1-level
 
-  # number of variograms
+  # empirical variograms
   x <- listify(x)
   n <- length(x)
+  # theoretical models
+  CTMM <- listify(CTMM)
+  m <- length(CTMM)
 
   # default single comparison model
   # if(is.null(CTMM) && n==1 && !is.null(attr(x[[1]],"info")$CTMM)) { CTMM <- attr(x[[1]],"info")$CTMM }
@@ -194,7 +197,7 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", 
     xlim <- c(0,max.lag)
   }
 
-  # calculate ylimits from all variograms
+  # calculate ylimits from all variograms !!!
   if(is.null(ylim)) { ylim <- extent(x,level=max(level))$y }
 
   if(!ACF) # SVF plot
@@ -263,17 +266,44 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", 
 
   # color array for plots
   col <- array(col,n)
+  # color array for plots
+  col.CTMM <- array(col.CTMM,m)
+
+  # units conversions
+  x <- lapply(x,function(X){unit.variogram(X,time=lag.scale,area=SVF.scale)})
+  CTMM <- lapply(CTMM,function(M){unit.ctmm(M,length=sqrt(SVF.scale),time=lag.scale)})
 
   for(i in 1:n)
   {
-    lag <- x[[i]]$lag/lag.scale
-    SVF <- x[[i]]$SVF/SVF.scale
+    SVF <- x[[i]]$SVF
+    if(!ACF)
+    {
+      if("MSE" %in% names(x[[i]])) # calibrated errors
+      { MSE <- x[[i]]$MSE }
+      else # uncalibrated errors
+      {
+        # not calibrated
+        MSE <- x[[i]]$MSDOP
+
+        # look in CTMM for UERE
+        if(length(CTMM)==length(x))
+        { UERE <- CTMM[[i]]$error }
+        else if(length(CTMM))
+        { UERE <- CTMM[[1]]$error }
+        else # otherwise default to 10 meters
+        { UERE <- 10 }
+
+        # calibrate
+        MSE <- MSE * UERE
+      }
+    }
+    lag <- x[[i]]$lag
     DOF <- x[[i]]$DOF
 
     # make sure plot looks nice and appropriate for data resolution
-    type <- "l"
-    if(length(lag) < 100) { type <- "p" }
+    if(length(lag) < 100) { type <- "p" } else { type <- "l" }
 
+    if(diagnostic && !ACF) { graphics::points(lag, MSE, type=type, col=scales::alpha(col[[i]],alpha=0.5) , lty=3, pch=16) }
     graphics::points(lag, SVF, type=type, col=col[[i]])
 
     for(j in 1:length(alpha))
@@ -281,8 +311,17 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", 
       # chi-square CIs for semi-variance
       if(!ACF)
       {
-        SVF.lower <- SVF * CI.lower(DOF,alpha[j])
-        SVF.upper <- SVF * CI.upper(DOF,alpha[j])
+        LOW <- CI.lower(DOF,alpha[j])
+        HIGH <- CI.upper(DOF,alpha[j])
+
+        SVF.lower <- SVF * LOW
+        SVF.upper <- SVF * HIGH
+
+        # if(diagnostic)
+        # {
+        #   MSE.lower <- MSE * LOW
+        #   MSE.upper <- MSE * HIGH
+        # }
       }
       else # Fisher CIs for autocorrelation
       {
@@ -301,42 +340,15 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", 
         graphics::abline(h=c(-1,0,1)/sqrt(DOF[1])*stats::qnorm(1-alpha[j]/2),col="red",lty=c(2,1,2))
       }
 
+      # if(diagnostic && !ACF) { graphics::polygon(c(lag,rev(lag)),c(MSE.lower,rev(MSE.upper)),col=scales::alpha('red',alpha=0.1),border=NA) }
       graphics::polygon(c(lag,rev(lag)),c(SVF.lower,rev(SVF.upper)),col=scales::alpha(col[[i]],alpha=0.1),border=NA)
     }
+
+    # PLOT CORRESPONDING MODEL
+    if(i<=m) { plot.svf(lag,CTMM[[i]],error=MSE,alpha=alpha,type=type,col=col.CTMM[[i]]) }
   }
-
-  # NOW PLOT THE MODELS
-  if(!is.null(CTMM))
-  {
-    CTMM <- listify(CTMM)
-    n <- length(CTMM)
-
-    # color array for plots
-    col <- array(col.CTMM,n)
-    type <- "l"
-
-    for(i in 1:n)
-    {
-      # units conversion
-      CTMM[[i]] <- unit.ctmm(CTMM[[i]],length=sqrt(SVF.scale),time=lag.scale)
-
-      # include errors in svf plot
-      error <- FALSE
-      if(CTMM[[i]]$error)
-      {
-        j <- FALSE
-        # choose relevant data
-        if(length(x)==1) { j <- 1 }
-        else if(length(x)==n) { j <- i }
-        else warning("Ambiguity in who's error to plot.")
-
-        if(j) { error <- attr(x[[j]],"info")$error }
-      }
-
-      plot.svf(xlim[2],CTMM[[i]],error=error,alpha=alpha,type=type,col=col[[i]])
-    }
-  }
-
+  # PLOT LEFTOVER MODELS USING THE LAST DATA
+  if(n<m) { for(i in n:m) { plot.svf(lag,CTMM[[i]],error=MSE,alpha=alpha,type=type,col=col.CTMM[[i]]) } }
 }
 # PLOT.VARIOGRAM METHODS
 #methods::setMethod("plot",signature(x="variogram",y="missing"), function(x,y,...) plot.variogram(x,...))

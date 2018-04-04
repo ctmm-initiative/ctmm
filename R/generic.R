@@ -273,3 +273,10 @@ listify <- function(x)
   if(class(x) != "list") { x <- list(x) }
   return(x)
 }
+
+rename <- function(object,name1,name2)
+{
+  IND <- which(names(object)==name1)
+  names(object)[IND] <- name2
+  return(object)
+}
