@@ -45,6 +45,8 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,precisi
 {
   PC <- match.arg(PC,c("Markov","circulant","IID","direct"))
 
+  if(length(CTMM$tau)==0 || all(CTMM$tau==0)) { weights <- FALSE }
+
   n <- length(data$t)
   error <- 2^(log(.Machine$double.eps,2)*precision)
 

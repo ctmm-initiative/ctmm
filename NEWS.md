@@ -16,6 +16,8 @@
   * REML and related methods fixed from 0.4.X 1/2 bug
   
   * parameter boundary bugfix in ctmm.fit() and ctmm.loglike()
+  
+  * fixed bandwidth() bug when weights=TRUE on IID process
 
 0.4.2 2018-02-12
 ================
