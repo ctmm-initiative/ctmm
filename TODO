@@ -1,6 +1,7 @@
 PRIORITY
 * Error in sinch(nu * dt) * Exp : non-numeric argument to binary operator ??? Random R bug?
 * reference Guillaume's paper at the beginning of the periodogram vignette
+* turn weights off if IID in akde()
 
 ERROR PAPER
 * how does error change DOF calculation?
