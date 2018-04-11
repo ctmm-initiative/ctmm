@@ -97,6 +97,12 @@ variogram.fit <- function(variogram,CTMM=ctmm(),name="GUESS",fraction=0.5,intera
   names(manlist) <- rownames(DF)
 
   # !!! put eror checkbox option here?
+  CHECK <- DF$min==0 & DF$max==1 & DF$step==1
+  if(any(CHECK))
+  {
+    CHECK <- which(CHECK)
+    for(r in CHECK) { manlist[[r]] <- manipulate::checkbox(initial=as.logical(DF$initial[r]),label=DF$label[r]) }
+  }
 
   # R CHECK CRAN BUG BYPASS
   store <- NULL ; rm(store)
@@ -205,8 +211,13 @@ variogram.fit.backend <- function(variogram,CTMM=ctmm(),fraction=0.5,b=4)
   }
 
   # error
-  e2 <- max(100,2*error)
-  DF <- rbind(DF,data.frame(min=0,max=e2,initial=as.numeric(error),label="error (m)",step=e2/RES/2,stringsAsFactors=FALSE))
+  if("MSDOP" %in% names(variogram)) # uncalibrated error
+  {
+    e2 <- max(100,2*error)
+    DF <- rbind(DF,data.frame(min=0,max=e2,initial=as.numeric(error),label="error (m)",step=e2/RES/2,stringsAsFactors=FALSE))
+  }
+  else if("MSE" %in% names(variogram)) # calibrated error
+  { DF <- rbind(DF,data.frame(min=0,max=1,initial=sign(error),label="error (logical)",step=1,stringsAsFactors=FALSE)) }
   NAMES <- c(NAMES,"error")
 
   rownames(DF) <- NAMES

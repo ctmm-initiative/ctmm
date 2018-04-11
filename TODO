@@ -12,7 +12,6 @@ ERROR PAPER
 * email ARGOS about McClintock formula
 * kGcluster with tpeqd projection suggestion
 * predict can return VAR.xy for isotropic with UERE<4
-* error checkbox in variogram.fit for calibrated errors
 
 PROJECTION
 * projection() <- on all plottable objects + plot option

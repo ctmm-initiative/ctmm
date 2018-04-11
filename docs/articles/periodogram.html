@@ -78,7 +78,7 @@
       <h1>Periodic movement models</h1>
                         <h4 class="author">Guillaume Péron, Christen H. Fleming, and Justin M. Calabrese</h4>
             
-            <h4 class="date">2018-03-24</h4>
+            <h4 class="date">2018-04-10</h4>
           </div>
 
     
@@ -160,12 +160,12 @@ FITS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.f
 ## 
 ## $CI
 ##                                 low        ML      high
-## rotation/deviation %     23.6228691 29.019474 35.648925
-## rotation/speed %         24.3431626 29.868660 36.648355
-## area (square kilometers) 41.1021781 47.844462 55.091281
-## tau position (hours)      7.2925135  9.568355 12.554438
+## rotation/deviation %     23.6228688 29.019474 35.648924
+## rotation/speed %         24.3431631 29.868661 36.648355
+## area (square kilometers) 41.1021789 47.844463 55.091283
+## tau position (hours)      7.2925134  9.568355 12.554439
 ## tau velocity (hours)      0.9699887  1.423753  2.089789
-## speed (kilometers/day)   14.7247950 16.056839 17.387434</code></pre>
+## speed (kilometers/day)   14.7247949 16.056838 17.387434</code></pre>
 <ul>
 <li>
 <code>rotation/deviation %</code> corresponds to <span class="math inline">\(100 \eta_P\)</span> from the paper. It is interpreted as the proportion of the variance in the animal`s location that is caused by the periodicity in the mean.</li>
@@ -197,14 +197,14 @@ FITS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.f
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(FITS,<span class="dt">IC=</span><span class="st">"MSPE"</span>)</code></pre></div>
 <pre><code>##                              dRMSPE (m) DOF[mean] method
 ## OUF anisotropic harmonic 2 0   0.000000  106.1204     ML
-## OUF anisotropic harmonic 3 0   2.508596  107.1803     ML
-## OUF anisotropic harmonic 4 0   2.531369  107.1268     ML
-## OUF anisotropic harmonic 1 0   3.832063  108.2142     ML
-## OUF anisotropic harmonic 2 1   6.085746  107.9071     ML
-## OUF anisotropic harmonic 3 1   8.285129  108.9836     ML
-## OUF anisotropic harmonic 1 1   9.542714  110.0647     ML
-## OUF anisotropic harmonic 0 0 101.913086  132.4812     ML
-## OUF anisotropic harmonic 0 1 104.265398  134.7361     ML</code></pre>
+## OUF anisotropic harmonic 3 0   2.508570  107.1803     ML
+## OUF anisotropic harmonic 4 0   2.531334  107.1268     ML
+## OUF anisotropic harmonic 1 0   3.832029  108.2142     ML
+## OUF anisotropic harmonic 2 1   6.085718  107.9071     ML
+## OUF anisotropic harmonic 3 1   8.285101  108.9836     ML
+## OUF anisotropic harmonic 1 1   9.542680  110.0647     ML
+## OUF anisotropic harmonic 0 0 101.913151  132.4812     ML
+## OUF anisotropic harmonic 0 1 104.265372  134.7361     ML</code></pre>
 <p>Finally, a good model wins out, with the 2 harmonic model beating the 3 harmonic model by 2.5 meters of RMS predictive error (RMSPE). Unlike likelihood based ICs (AIC &amp; BIC), MSPE has units and an absolute scale, though in summary we only show differences in the RMSPE for simplicity. Note that MSPE should only be used to select among models with the same autocorrelation structure.</p>
 </div>
 <div id="home-range-estimation" class="section level3">
