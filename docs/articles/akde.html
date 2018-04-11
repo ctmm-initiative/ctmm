@@ -78,13 +78,13 @@
       <h1>Autocorrelated Kernel Density Estimation</h1>
                         <h4 class="author">Christen H. Fleming and Justin M. Calabrese</h4>
             
-            <h4 class="date">2018-03-24</h4>
+            <h4 class="date">2018-04-10</h4>
           </div>
 
     
     
 <div class="contents">
-<p>In this vignette we walk through autocorrelated kernel density estimation. We will assume that you have already estimated a good <code>ctmm</code> movement model for your data. For demonstration purposes we will be working from the results of the “Variograms and Model Selection” vignette (see <code><a href="../articles/variogram.html">vignette("variogram")</a></code>). Here we will use the buffalo “Pepper” instead of “Cilla”, because Pepper has a GPS collar malfunction that can be mitigated with optimal weighting.</p>
+<p>In this vignette we walk through autocorrelated kernel density estimation. We will assume that you have already estimated a good <code>ctmm</code> movement model for your data. For demonstration purposes we will be working from the results of the “Variograms and Model Selection” vignette (see <code>vignette("variogram")</code>). Here we will use the buffalo “Pepper” instead of “Cilla”, because Pepper has a GPS collar malfunction that can be mitigated with optimal weighting.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ctmm)
 <span class="kw">data</span>(buffalo)
 Pepper &lt;-<span class="st"> </span>buffalo<span class="op">$</span>Pepper

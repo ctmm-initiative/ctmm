@@ -1,4 +1,4 @@
-0.5.0 2018-04-03
+0.5.0 2018-04-10
 ================
 
   * Extensive re-write of the Kalman filter & smoother, now supporting an arbitrary number of spatial dimensions, necessary for ARGOS error ellipse support. (Previously, all multi-dimensional problems were transformed into multiple one-dimensional problems.) Many new models will be supported going forward, based on the v0.5.0 code.
@@ -18,6 +18,8 @@
   * parameter boundary bugfix in ctmm.fit() and ctmm.loglike()
   
   * fixed bandwidth() bug when weights=TRUE on IID process
+  
+  * variogram.fit() manipulate more appropriate with calibrated errors
 
 0.4.2 2018-02-12
 ================
