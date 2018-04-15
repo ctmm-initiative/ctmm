@@ -108,31 +108,38 @@ unit.ctmm <- function(CTMM,length=1,time=1)
     CTMM$sigma@par["area"] <- CTMM$sigma@par["area"]*time
   }
 
+  if("COV.mu" %in% names(CTMM)) { CTMM$COV.mu <- CTMM$COV.mu/length^2 }
+
   if("COV" %in% names(CTMM))
   {
-    CTMM$COV.mu <- CTMM$COV.mu/length^2
+    NAMES <- dimnames(CTMM$COV)[[1]]
 
-    CTMM$COV["area",] <- CTMM$COV["area",]/length^2
-    CTMM$COV[,"area"] <- CTMM$COV[,"area"]/length^2
-
-    if(!CTMM$range)
+    if("area" %in% NAMES)
     {
-      CTMM$COV["area",] <- CTMM$COV["area",]*time
-      CTMM$COV[,"area"] <- CTMM$COV[,"area"]*time
+      CTMM$COV["area",] <- CTMM$COV["area",]/length^2
+      CTMM$COV[,"area"] <- CTMM$COV[,"area"]/length^2
+
+      if(!CTMM$range)
+      {
+        CTMM$COV["area",] <- CTMM$COV["area",]*time
+        CTMM$COV[,"area"] <- CTMM$COV[,"area"]*time
+      }
     }
 
     tau <- CTMM$tau
     tau <- tau[tau<Inf]
     if(length(tau))
     {
-      tau <- names(tau)
-      tau <- paste("tau",tau)
-
-      CTMM$COV[tau,] <- CTMM$COV[tau,]/time
-      CTMM$COV[,tau] <- CTMM$COV[,tau]/time
+      tau <- paste("tau",names(tau))
+      tau <- tau[tau %in% NAMES]
+      if(length(tau))
+      {
+        CTMM$COV[tau,] <- CTMM$COV[tau,]/time
+        CTMM$COV[,tau] <- CTMM$COV[,tau]/time
+      }
     }
 
-    if(CTMM$circle)
+    if("circle" %in% NAMES)
     {
       CTMM$COV["circle",] <- CTMM$COV["circle",] * time
       CTMM$COV[,"circle"] <- CTMM$COV[,"circle"] * time

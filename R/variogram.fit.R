@@ -31,20 +31,7 @@ variogram.guess <- function(variogram,CTMM=ctmm())
   # average f-rate
   f <- -log(D/(sigma*Omega))/tauD
 
-  CPF <- CTMM$CPF
-  if(CPF) # frequency, rate esitmate
-  {
-    omega2 <- Omega2 - f^2
-    if(f>0 && omega2>0)
-    { tau <- c(2*pi/sqrt(omega2),1/f) }
-    else # bad backup estimate
-    {
-      tau <- sqrt(2)/Omega
-      tau <- c(2*pi*tau , tau)
-    }
-  }
-  else # position, velocity timescale estimate
-  { tau <- c(sigma/D,D/v2)}
+  tau <- c(sigma/D,D/v2)
 
   if(!CTMM$range) { sigma <- D ; tau[1] <- Inf }
 

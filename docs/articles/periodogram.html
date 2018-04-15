@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Periodic movement models • ctmm</title>
-<!-- jquery --><script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<!-- jquery --><script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script><!-- Font Awesome icons --><link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" integrity="sha384-cV+rhyOuRHc9Ub/91rihWcGmMmCXDeksTtCihMupQHSsi8GIIRDG0ThDc3HGQFJ3" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script><script src="../pkgdown.js"></script><meta property="og:title" content="Periodic movement models">
@@ -18,7 +18,7 @@
 <![endif]-->
 </head>
 <body>
-    <div class="container template-vignette">
+    <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
@@ -27,8 +27,12 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="../index.html">ctmm</a>
+      <span class="navbar-brand">
+        <a class="navbar-link" href="../index.html">ctmm</a>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.5.0</span>
+      </span>
     </div>
+
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
 <li>
@@ -73,23 +77,26 @@
 
       
       </header><div class="row">
-  <div class="col-md-9">
+  <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1>Periodic movement models</h1>
                         <h4 class="author">Guillaume Péron, Christen H. Fleming, and Justin M. Calabrese</h4>
             
-            <h4 class="date">2018-04-10</h4>
-          </div>
+            <h4 class="date">2018-04-11</h4>
+      
+      <small>Source: <a href="https://github.com/ctmm-initiative/ctmm/blob/master/vignettes/periodogram.Rmd"><code>vignettes/periodogram.Rmd</code></a></small>
+      <div class="hidden name"><code>periodogram.Rmd</code></div>
+
+    </div>
 
     
     
-<div class="contents">
 <p>In this vignette, we walk through periodogram for movement data and periodic movement model fitting and selection. It is assumed that you are already familiar with data preparation with ctmm, as well as the maximum likelihood procedure described in the <code>variogram</code> vignette. Our example maned wolf data is already prepared into a <code>telemetry</code> object.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ctmm)
 <span class="kw">data</span>(wolf)
 Gamba &lt;-<span class="st"> </span>wolf<span class="op">$</span>Gamba
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(Gamba)</code></pre></div>
-<p><img src="periodogram_files/figure-html/unnamed-chunk-1-1.png" width="672"></p>
+<p><img src="periodogram_files/figure-html/unnamed-chunk-1-1.png" width="700"></p>
 <div id="non-parametric-approach-periodograms" class="section level3">
 <h3 class="hasAnchor">
 <a href="#non-parametric-approach-periodograms" class="anchor"></a>Non-parametric approach: Periodograms</h3>
@@ -97,7 +104,7 @@ Gamba &lt;-<span class="st"> </span>wolf<span class="op">$</span>Gamba
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">LSP &lt;-<span class="st"> </span><span class="kw"><a href="../reference/periodogram.html">periodogram</a></span>(Gamba,<span class="dt">fast=</span><span class="dv">2</span>,<span class="dt">res.time=</span><span class="dv">2</span>)</code></pre></div>
 <p>The <code>fast=2</code> option requests the use of the (much) faster FFT-based algorithm and furthermore samples a highly composite number of times. Set the argument to FALSE to revert to Scargle’s original algorithm, which involves fewer numerical approximations. The <code>res.time</code> argument increases the resolution of the temporal grid when <code>fast&gt;0</code>. The algorithm defaults to adequate resolution for regularly scheduled data (permitting gaps), while variable sampling rates require <code>res.time&gt;1</code> to resolve the fine scale spectrum correctly.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(LSP,<span class="dt">max=</span><span class="ot">TRUE</span>,<span class="dt">diagnostic=</span><span class="ot">TRUE</span>,<span class="dt">cex=</span><span class="fl">0.5</span>)</code></pre></div>
-<p><img src="periodogram_files/figure-html/unnamed-chunk-3-1.png" width="672"></p>
+<p><img src="periodogram_files/figure-html/unnamed-chunk-3-1.png" width="700"></p>
 <p>The <code>max=TRUE</code> option keeps only local maxima and often yields periodograms that are easier to interpret, especially when the resolution of the periodogram has been increased from the default.</p>
 <p>The <code>diagnostic=TRUE</code> option draws the periodogram of the sampling schedule with red symbols. If the periodogram of the sampling schedule exhibits peaks, this indicates that the corresponding peaks in the movement data could be simply caused by irregularities in the sampling schedule and not by periodicity in the movement. Here the periodogram exhibits a clear peak for the period of one day, but this is also present in the (red) diagnostic.</p>
 <p>Periodograms are a great data exploration tool, but they do not detect everything. In particular circulation processes, those that induce circulatory patterns via a stochastic rotational effect, are often not visible in periodograms. Periodograms are also difficult to compare from one individual to the next, if the aperiodic stochastic movements of these individuals are not the same.</p>
@@ -149,8 +156,8 @@ FITS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.f
 ##                                low         ML       high
 ## rotation/deviation %     74.795669  91.774630 100.000000
 ## rotation/speed %         96.807431  98.987421 100.000000
-## area (square kilometers) 41.444887  48.269156  55.605890
-## tau position (hours)      6.984418   9.267908  12.297962
+## area (square kilometers) 41.444887  48.269156  55.605889
+## tau position (hours)      6.984418   9.267907  12.297962
 ## tau velocity (hours)      1.126099   1.617410   2.323076
 ## speed (kilometers/day)   12.674828 103.001923 204.382857</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(FITS[[<span class="dv">4</span>]]) <span class="co"># harmonic 2 0</span></code></pre></div>
@@ -160,12 +167,12 @@ FITS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.f
 ## 
 ## $CI
 ##                                 low        ML      high
-## rotation/deviation %     23.6228688 29.019474 35.648924
-## rotation/speed %         24.3431631 29.868661 36.648355
-## area (square kilometers) 41.1021789 47.844463 55.091283
-## tau position (hours)      7.2925134  9.568355 12.554439
+## rotation/deviation %     23.6228691 29.019474 35.648925
+## rotation/speed %         24.3431627 29.868660 36.648355
+## area (square kilometers) 41.1021782 47.844462 55.091281
+## tau position (hours)      7.2925135  9.568355 12.554438
 ## tau velocity (hours)      0.9699887  1.423753  2.089789
-## speed (kilometers/day)   14.7247949 16.056838 17.387434</code></pre>
+## speed (kilometers/day)   14.7247950 16.056839 17.387434</code></pre>
 <ul>
 <li>
 <code>rotation/deviation %</code> corresponds to <span class="math inline">\(100 \eta_P\)</span> from the paper. It is interpreted as the proportion of the variance in the animal`s location that is caused by the periodicity in the mean.</li>
@@ -180,7 +187,7 @@ FITS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.f
 <span class="kw">title</span>(<span class="st">"3 Harmonics"</span>)
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>FITS[[<span class="dv">4</span>]],<span class="dt">xlim=</span>xlim)
 <span class="kw">title</span>(<span class="st">"2 Harmonics"</span>)</code></pre></div>
-<p><img src="periodogram_files/figure-html/unnamed-chunk-10-1.png" width="672"><img src="periodogram_files/figure-html/unnamed-chunk-10-2.png" width="672"></p>
+<p><img src="periodogram_files/figure-html/unnamed-chunk-10-1.png" width="700"><img src="periodogram_files/figure-html/unnamed-chunk-10-2.png" width="700"></p>
 <p>While the confidence bands encompass the empirical variogram, the 3 harmonic model has clearly overfit in attempting to match the Nyquist period (3/day) with less than ideal data. A more stringent infromation criteria would not necessarily select the 3 harmonic model.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(FITS,<span class="dt">IC=</span><span class="st">"BIC"</span>)</code></pre></div>
 <pre><code>##                                      dBIC DOF[mean] method
@@ -197,21 +204,20 @@ FITS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.f
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(FITS,<span class="dt">IC=</span><span class="st">"MSPE"</span>)</code></pre></div>
 <pre><code>##                              dRMSPE (m) DOF[mean] method
 ## OUF anisotropic harmonic 2 0   0.000000  106.1204     ML
-## OUF anisotropic harmonic 3 0   2.508570  107.1803     ML
-## OUF anisotropic harmonic 4 0   2.531334  107.1268     ML
-## OUF anisotropic harmonic 1 0   3.832029  108.2142     ML
-## OUF anisotropic harmonic 2 1   6.085718  107.9071     ML
-## OUF anisotropic harmonic 3 1   8.285101  108.9836     ML
-## OUF anisotropic harmonic 1 1   9.542680  110.0647     ML
-## OUF anisotropic harmonic 0 0 101.913151  132.4812     ML
-## OUF anisotropic harmonic 0 1 104.265372  134.7361     ML</code></pre>
+## OUF anisotropic harmonic 3 0   2.508592  107.1803     ML
+## OUF anisotropic harmonic 4 0   2.531326  107.1268     ML
+## OUF anisotropic harmonic 1 0   3.832060  108.2142     ML
+## OUF anisotropic harmonic 2 1   6.085748  107.9071     ML
+## OUF anisotropic harmonic 3 1   8.285124  108.9836     ML
+## OUF anisotropic harmonic 1 1   9.542720  110.0647     ML
+## OUF anisotropic harmonic 0 0 101.913159  132.4812     ML
+## OUF anisotropic harmonic 0 1 104.265397  134.7361     ML</code></pre>
 <p>Finally, a good model wins out, with the 2 harmonic model beating the 3 harmonic model by 2.5 meters of RMS predictive error (RMSPE). Unlike likelihood based ICs (AIC &amp; BIC), MSPE has units and an absolute scale, though in summary we only show differences in the RMSPE for simplicity. Note that MSPE should only be used to select among models with the same autocorrelation structure.</p>
 </div>
 <div id="home-range-estimation" class="section level3">
 <h3 class="hasAnchor">
 <a href="#home-range-estimation" class="anchor"></a>Home-range estimation</h3>
 <p>This is not coded yet!</p>
-</div>
 </div>
   </div>
 
@@ -231,6 +237,8 @@ FITS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.f
 
       </footer>
 </div>
+
+  
 
   </body>
 </html>

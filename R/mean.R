@@ -265,7 +265,7 @@ periodic.summary <- function(CTMM,level,level.UD)
   if(length(CTMM$tau)>1)
   {
     ROT <- sum((omega*A)^2)/2 # sine and cosine average 1/2
-    Omega <- if(CTMM$circle) { 2*pi/CTMM$circle } else { 0 }
+    Omega <- CTMM$circle
     RAN <- 2*area*cosh(ecc/2) * ( 1/prod(CTMM$tau) + Omega^2 )
     MLE <- ROT/(ROT+RAN)
 
@@ -281,7 +281,7 @@ periodic.summary <- function(CTMM,level,level.UD)
     }
     if(CTMM$circle)
     {
-      GRAD <- c(GRAD,-4*area*cosh(ecc/2)*Omega^2/CTMM$circle)
+      GRAD <- c(GRAD,4*area*cosh(ecc/2)*Omega)
       PARS <- c(PARS,"circle")
     }
     COV.RAN <- CTMM$COV[PARS,PARS]
