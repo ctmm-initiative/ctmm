@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Variograms and Model Selection • ctmm</title>
-<!-- jquery --><script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<!-- jquery --><script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script><!-- Font Awesome icons --><link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" integrity="sha384-cV+rhyOuRHc9Ub/91rihWcGmMmCXDeksTtCihMupQHSsi8GIIRDG0ThDc3HGQFJ3" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script><script src="../pkgdown.js"></script><meta property="og:title" content="Variograms and Model Selection">
@@ -18,7 +18,7 @@
 <![endif]-->
 </head>
 <body>
-    <div class="container template-vignette">
+    <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
@@ -27,8 +27,12 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="../index.html">ctmm</a>
+      <span class="navbar-brand">
+        <a class="navbar-link" href="../index.html">ctmm</a>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.5.0</span>
+      </span>
     </div>
+
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
 <li>
@@ -73,17 +77,20 @@
 
       
       </header><div class="row">
-  <div class="col-md-9">
+  <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1>Variograms and Model Selection</h1>
                         <h4 class="author">Christen H. Fleming and Justin M. Calabrese</h4>
             
-            <h4 class="date">2018-04-10</h4>
-          </div>
+            <h4 class="date">2018-04-11</h4>
+      
+      <small>Source: <a href="https://github.com/ctmm-initiative/ctmm/blob/master/vignettes/variogram.Rmd"><code>vignettes/variogram.Rmd</code></a></small>
+      <div class="hidden name"><code>variogram.Rmd</code></div>
+
+    </div>
 
     
     
-<div class="contents">
 <p>In this vignette, we walk through data preparation, variogram analysis, and maximum likelihood estimation.</p>
 <div id="data-preparation" class="section level1">
 <h1 class="hasAnchor">
@@ -105,7 +112,7 @@ Cilla &lt;-<span class="st"> </span>buffalo<span class="op">$</span>Cilla
 <span class="kw">title</span>(<span class="st">"1 Buffalo"</span>)
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(buffalo,<span class="dt">col=</span><span class="kw">rainbow</span>(<span class="kw">length</span>(buffalo)))
 <span class="kw">title</span>(<span class="st">"5 Buffalo"</span>)</code></pre></div>
-<p><img src="variogram_files/figure-html/unnamed-chunk-1-1.png" width="672"><img src="variogram_files/figure-html/unnamed-chunk-1-2.png" width="672"></p>
+<p><img src="variogram_files/figure-html/unnamed-chunk-1-1.png" width="700"><img src="variogram_files/figure-html/unnamed-chunk-1-2.png" width="700"></p>
 <p>Looking at the raw movement tracks is a good way to pick out any obvious migratory behaviors. In the future, we will have migration models to select, but for now all of our models are range resident and so only those portions of the data should be selected. These buffalo all look fairly range resident, and so we can move on to variograms.</p>
 </div>
 <div id="variograms" class="section level1">
@@ -119,7 +126,7 @@ xlim &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0<
 <span class="kw">title</span>(<span class="st">"zoomed in"</span>)
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level)
 <span class="kw">title</span>(<span class="st">"zoomed out"</span>)</code></pre></div>
-<p><img src="variogram_files/figure-html/unnamed-chunk-2-1.png" width="672"><img src="variogram_files/figure-html/unnamed-chunk-2-2.png" width="672"></p>
+<p><img src="variogram_files/figure-html/unnamed-chunk-2-1.png" width="700"><img src="variogram_files/figure-html/unnamed-chunk-2-2.png" width="700"></p>
 <p>The first plot is zoomed in to the short lag behavior, while the second plot is zoomed out. You can do this on the fly with <code>zoom(Cilla)</code> in R-studio. The variogram represents the average square distance traveled (vertical axis) within some time lag (horizontal axis).</p>
 <p>For the long range behavior we can see that the variogram flattens (asymptotes) at approximately 20 days. This is, roughly, how coarse you need to make the timeseries so that methods assuming independence (no autocorrelation) can be valid. This includes, conventional kernel density estimation (KDE), minimum convex polygon (MCP), conventional species distribution modeling (SDM), and a host of other analyses.</p>
 <p>The asymptote of our variogram is around 23 square km, and the fact that it takes roughly 20 days for the variogram to asymptote is indicative of the fact that the buffalo’s location appears continuous at this timescale. This is also, roughly, the time it takes for the buffalo to cross its home range several times.</p>
@@ -134,7 +141,7 @@ m.ou &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.f
 <span class="kw">title</span>(<span class="st">"Independent and identically distributed data"</span>)
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>m.ou,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">"purple"</span>)
 <span class="kw">title</span>(<span class="st">"Ornstein-Uhlenbeck movement"</span>)</code></pre></div>
-<p><img src="variogram_files/figure-html/unnamed-chunk-3-1.png" width="672"><img src="variogram_files/figure-html/unnamed-chunk-3-2.png" width="672"></p>
+<p><img src="variogram_files/figure-html/unnamed-chunk-3-1.png" width="700"><img src="variogram_files/figure-html/unnamed-chunk-3-2.png" width="700"></p>
 <p>where for both the models <code>m.iid</code> and <code>m.ou</code>, <code>sigma</code> is the asymptotic variance. In the Ornstein-Uhlenbeck (OU) model <code>m.ou</code>, <code>tau</code> is a single timescale that governs the autocorrelation in position and dictates the animal’s home-range crossing time. The independent and identically distributed (IID) null model <code>m.iid</code> has no autocorrelation. Notice that all units are in meters and seconds, as output by the utility function <code>%#%</code> (see <code>help("%#%")</code>.</p>
 <p>The IID model <code>m.iid</code> is obviously incorrect and in the zoomed in plot we can also see that the OU model <code>m.ou</code> is incorrectly linear at short lags, whereas the empirical variogram actually curves up for an hour or two before it becomes linear. Let us introduce a model that incorporates this behavior.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">m.ouf &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">sigma=</span><span class="dv">23</span> <span class="op">%#%</span><span class="st"> "km^2"</span>,<span class="dt">tau=</span><span class="kw">c</span>(<span class="dv">6</span> <span class="op">%#%</span><span class="st"> "day"</span>,<span class="dv">1</span> <span class="op">%#%</span><span class="st"> "hour"</span>))
@@ -142,13 +149,13 @@ m.ou &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.f
 <span class="kw">title</span>(<span class="st">"Ornstein-Uhlenbeck movement"</span>)
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>m.ouf,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">"blue"</span>,<span class="dt">xlim=</span>xlim)
 <span class="kw">title</span>(<span class="st">"Ornstein-Uhlenbeck-F movement"</span>)</code></pre></div>
-<p><img src="variogram_files/figure-html/unnamed-chunk-4-1.png" width="672"><img src="variogram_files/figure-html/unnamed-chunk-4-2.png" width="672"></p>
+<p><img src="variogram_files/figure-html/unnamed-chunk-4-1.png" width="700"><img src="variogram_files/figure-html/unnamed-chunk-4-2.png" width="700"></p>
 <p>The confidence intervals at short lags are also very narrow, though both of these models look the same at coarser scales and so the discrepancy is only revealed by high resolution data.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>m.ou,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">"purple"</span>)
 <span class="kw">title</span>(<span class="st">"Ornstein-Uhlenbeck movement"</span>)
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>m.ouf,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">"blue"</span>)
 <span class="kw">title</span>(<span class="st">"Ornstein-Uhlenbeck-F movement"</span>)</code></pre></div>
-<p><img src="variogram_files/figure-html/unnamed-chunk-5-1.png" width="672"><img src="variogram_files/figure-html/unnamed-chunk-5-2.png" width="672"></p>
+<p><img src="variogram_files/figure-html/unnamed-chunk-5-1.png" width="700"><img src="variogram_files/figure-html/unnamed-chunk-5-2.png" width="700"></p>
 <p>The Ornstein-Uhlenbeck-F (OUF) model <code>m.ouf</code> introduces an additional autocorrelation timescale for the animal’s velocity, so that it more closely matches the initial behavior of the variogram. The initial curve upwards tells us that there is continuity in the animal’s velocity at this timescale. Conventional Markovian animal movement models do not capture this, which leads to the same kind of bias and underestimation of confidence intervals as when ignoring autocorrelation entirely.</p>
 <p>The linear regime of the variogram (regular diffusion) is just as important as the asymptotic regime. In the linear regime it is reasonable to assume a Markovian model as with step selection functions (SSF) and Brownian bridges (BB). Therefore, the variogram has informed us as to how much we need to coarsen our data for it to be appropriate in many common analyses that neglect various aspects of movement.</p>
 </div>
@@ -168,7 +175,7 @@ willa &lt;-<span class="st"> </span><span class="kw"><a href="../reference/simul
 SVF2 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.html">variogram</a></span>(willa)
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF2,<span class="dt">CTMM=</span>m.ouf,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">"blue"</span>)
 <span class="kw">title</span>(<span class="st">"simulation"</span>)</code></pre></div>
-<p><img src="variogram_files/figure-html/unnamed-chunk-6-1.png" width="672"><img src="variogram_files/figure-html/unnamed-chunk-6-2.png" width="672"></p>
+<p><img src="variogram_files/figure-html/unnamed-chunk-6-1.png" width="700"><img src="variogram_files/figure-html/unnamed-chunk-6-2.png" width="700"></p>
 <p>In this case, the blue curve is the true model, while the (black) empirical variogram is our estimate calculated from the data. The undulations in the empirical variogram are caused by autocorrelation between its errors and are not features of the underlying model.</p>
 </div>
 <div id="irregular-sampling-schedules" class="section level3">
@@ -184,7 +191,7 @@ dt &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</s
 SVF3 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.html">variogram</a></span>(gazelle[[<span class="dv">18</span>]],<span class="dt">dt=</span>dt)
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF3,<span class="dt">fraction=</span><span class="fl">0.85</span>,<span class="dt">level=</span>level)
 <span class="kw">title</span>(<span class="st">"Multi method"</span>)</code></pre></div>
-<p><img src="variogram_files/figure-html/unnamed-chunk-7-1.png" width="672"><img src="variogram_files/figure-html/unnamed-chunk-7-2.png" width="672"></p>
+<p><img src="variogram_files/figure-html/unnamed-chunk-7-1.png" width="700"><img src="variogram_files/figure-html/unnamed-chunk-7-2.png" width="700"></p>
 <p>With small amounts of highly irregular data, you may also want to try <code>fast=FALSE</code>.</p>
 </div>
 <div id="pooling-variograms" class="section level3">
@@ -196,7 +203,7 @@ SVF4 &lt;-<span class="st"> </span><span class="kw">lapply</span>(buffalo[<span 
 SVF4 &lt;-<span class="st"> </span><span class="kw">mean</span>(SVF4)
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF4,<span class="dt">fraction=</span><span class="fl">0.35</span>,<span class="dt">level=</span>level)
 <span class="kw">title</span>(<span class="st">"Population variogram"</span>)</code></pre></div>
-<p><img src="variogram_files/figure-html/unnamed-chunk-8-1.png" width="672"></p>
+<p><img src="variogram_files/figure-html/unnamed-chunk-8-1.png" width="700"></p>
 </div>
 <div id="non-stationarity-in-stationary-variograms" class="section level3">
 <h3 class="hasAnchor">
@@ -212,7 +219,7 @@ SVF4 &lt;-<span class="st"> </span><span class="kw">mean</span>(SVF4)
 <h3 class="hasAnchor">
 <a href="#telemetry-error" class="anchor"></a>Telemetry Error</h3>
 <p>The GPS buffalo example do not exhibit telemetry errors that are significant enough to notice in our variograms. If we were working with ARGOS data or the high-resolution and unfiltered GPS data of a small animal, then we get a “nugget” effect that looks like an initial discontinuity at short time lags.</p>
-<p><img src="variogram_files/figure-html/unnamed-chunk-9-1.png" width="672"><img src="variogram_files/figure-html/unnamed-chunk-9-2.png" width="672"></p>
+<p><img src="variogram_files/figure-html/unnamed-chunk-9-1.png" width="700"><img src="variogram_files/figure-html/unnamed-chunk-9-2.png" width="700"></p>
 <p>The height of this initial discontinuity corresponds to the variance of uncorrelated location errors. The second plot is the kind of initial discontinuity one has with detector array data. The end of the (slope) discontinuity is highlighted with a circle. This discontinuity is smooth because the movement and detection are correlated. The height of this initial discontinuity is also (at least roughly) the variance of the location errors.</p>
 <p>If your tracking data is GPS and is annotated with a “DOP” column, then this information is automatically imported into the <code>telemetry</code> object and only has to be flagged in the <code>ctmm</code> model by setting <code>error=TRUE</code>. Because of some convenient mathematical relations, fitting without telemetry errors involves 1-4 fewer parameters and is, therefore, faster and more reliable than fitting with telemetry error. So if your data are not swamped by error and do not contain bursts of high-frequency fixes (which would also be relatively swamped by 5-10 meter GPS error), then you might want to apply a two stage fitting method, first from the variogram guess without telemetry error and then from that output with telemetry error. Here we demonstrate this method with Leroy the fisher cat from the <code>move</code> package:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">DATA &lt;-<span class="st"> </span><span class="kw"><a href="../reference/as.telemetry.html">as.telemetry</a></span>(<span class="kw">system.file</span>(<span class="st">"extdata"</span>,<span class="st">"leroy.csv.gz"</span>,<span class="dt">package=</span><span class="st">"move"</span>))</code></pre></div>
@@ -309,10 +316,9 @@ and the independent and identically distributed (IID) model has no autocorrelati
 <span class="kw">title</span>(<span class="st">"zoomed out"</span>)
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>FITS,<span class="dt">col.CTMM=</span><span class="kw">c</span>(<span class="st">"red"</span>,<span class="st">"purple"</span>,<span class="st">"blue"</span>),<span class="dt">xlim=</span>xlim,<span class="dt">level=</span><span class="fl">0.5</span>)
 <span class="kw">title</span>(<span class="st">"zoomed in"</span>)</code></pre></div>
-<p><img src="variogram_files/figure-html/unnamed-chunk-16-1.png" width="672"><img src="variogram_files/figure-html/unnamed-chunk-16-2.png" width="672"></p>
+<p><img src="variogram_files/figure-html/unnamed-chunk-16-1.png" width="700"><img src="variogram_files/figure-html/unnamed-chunk-16-2.png" width="700"></p>
 <p>Notice that the purple OU model <code>M.OU</code> is significantly biased downward and is underestimating diffusion. This is because the continuous-velocity behavior at short time lags, which <code>M.OU</code> does not account for, is throwing off the estimate. The IID model <code>M.IID</code> is ignoring autocorrelation completely, while the OU model <code>M.OU</code> is ignoring autocorrelation in the buffalo’s velocity.</p>
 <p>While the OUF <code>M.OUF</code> is the selected model among all candidates, <code>M.OUF</code> looks slightly biased upwards in comparison to the variogram fit <code>m.ouf</code>. Some of this is due to sampling variability, which be (partially) remedied in the <code>variogram</code> method by increasing the <code>res</code> argument. Differences here can also arise from not accounting for telemetry error, which is unfortunately not annotated in this data.</p>
-</div>
 </div>
 </div>
   </div>
@@ -354,6 +360,8 @@ and the independent and identically distributed (IID) model has no autocorrelati
 
       </footer>
 </div>
+
+  
 
   </body>
 </html>

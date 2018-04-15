@@ -178,9 +178,10 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
       area <- attr(sigma,'par')['area']
     }
 
-    COV.mu <- array(c(KALMAN1$iW,diag(M),diag(M),KALMAN2$iW),c(M,M,2,2)) # -1/Hessian
+    # combine uncorrelated estimates
+    COV.mu <- array(c(KALMAN1$iW,diag(0,M),diag(0,M),KALMAN2$iW),c(M,M,2,2)) # -1/Hessian
     if(PROFILE) { COV.mu <- COV.mu * area }
-    DOF.mu <- array(c(SIGMA[1]*KALMAN1$W,diag(M),diag(M),SIGMA[2]*KALMAN2$W),c(M,M,2,2))
+    DOF.mu <- array(c(SIGMA[1]*KALMAN1$W,diag(0,M),diag(0,M),SIGMA[2]*KALMAN2$W),c(M,M,2,2))
 
     # put in first canonical form (2*M,2*M)
     COV.mu <- aperm(COV.mu,c(3,1,4,2)) ; dim(COV.mu) <- c(2*M,2*M)
@@ -695,8 +696,8 @@ ctmm.guess <- function(data,CTMM=ctmm(),variogram=NULL,name="GUESS",interactive=
   mu <- CTMM$mu
   u <- drift(data$t,CTMM)
 
-  # estimate circulation period
-  if(CTMM$circle==1)
+  # estimate circulation period if circle=TRUE
+  if(CTMM$circle && class(CTMM$circle)=="logical")
   {
     n <- length(data$t)
 
@@ -704,13 +705,16 @@ ctmm.guess <- function(data,CTMM=ctmm(),variogram=NULL,name="GUESS",interactive=
     z <- get.telemetry(data,CTMM$axes)
     z <- z - (u %*% CTMM$mu)
 
+    dt <- diff(data$t)
+    SUB <- dt>0
+
     # velocities !!! update this to minimally filtered estimate
-    v <- cbind(diff(z[,1]),diff(z[,2])) / diff(data$t)
+    v <- cbind(diff(z[,1]),diff(z[,2])) / dt
     # midpoint locations during velocity v
     z <- cbind(z[-1,1]+z[-n,1],z[-1,2]+z[-n,2])/2
 
     # average angular momentum
-    L <- c(z[,1]%*%v[,2] - z[,2]%*%v[,1]) / (n-1)
+    L <- c(z[SUB,1]%*%v[SUB,2] - z[SUB,2]%*%v[SUB,1]) / (n-1)
 
     circle <- L / mean(diag(CTMM$sigma))
     # circle <- 2*pi/circle

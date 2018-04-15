@@ -102,9 +102,16 @@ svf.func <- function(CTMM,moment=FALSE)
   # no error provided
   if(is.null(COV)) { COV <- diag(0,nrow=length(GRAD(0))) }
 
-  # sort COV matrix by NAMES : should be coded in the correct order, but future proof
-  IND <- order(match(dimnames(COV)[[1]],NAMES))
-  COV <- COV[IND,IND] # assumes everything is there...
+  # empty covariance matrix
+  BLANK <- array(0,length(NAMES)*c(1,1))
+  dimnames(BLANK) <- list(NAMES,NAMES)
+
+  # information that we have from CTMM
+  NAMES <- NAMES[NAMES %in% dimnames(COV)[[1]]]
+  # store that information appropriately
+  if(length(NAMES)) { BLANK[NAMES,NAMES] <- COV[NAMES,NAMES] }
+  # copy over
+  BLANK -> COV
 
   # variance of SVF
   VAR <- function(t,error=0)
