@@ -82,7 +82,7 @@
       <h1>Variograms and Model Selection</h1>
                         <h4 class="author">Christen H. Fleming and Justin M. Calabrese</h4>
             
-            <h4 class="date">2018-04-17</h4>
+            <h4 class="date">2018-04-21</h4>
       
       <small>Source: <a href="https://github.com/ctmm-initiative/ctmm/blob/master/vignettes/variogram.Rmd"><code>vignettes/variogram.Rmd</code></a></small>
       <div class="hidden name"><code>variogram.Rmd</code></div>
@@ -95,7 +95,7 @@
 <div id="data-preparation" class="section level1">
 <h1 class="hasAnchor">
 <a href="#data-preparation" class="anchor"></a>Data Preparation</h1>
-<p>We highly recommend that you get your data onto <a href="http://www.movebank.org/">Movebank</a>. This will help ensure that your data are of the correct format for <code>ctmm</code>, help you identify outliers, and you can keep your data completely private if you wish. <code>ctmm</code> requires that your dataframe conforms to <a href="http://rstudio.com">Movebank naming conventions</a> (see <code>help(as.telemetry)</code>). The next step is then to import your MoveBank csv file:</p>
+<p>We highly recommend that you get your data onto <a href="http://www.movebank.org/">Movebank</a>. This will help ensure that your data are of the correct format for <code>ctmm</code>, help you identify outliers, and you can keep your data completely private if you wish. <code>ctmm</code> requires that your dataframe conforms to <a href="https://www.movebank.org/node/2381">Movebank naming conventions</a> (see <code>help(as.telemetry)</code>). The next step is then to import your MoveBank csv file:</p>
 <pre><code>yourAnimals &lt;- as.telemetry("yourAnimalsMoveBank.csv")</code></pre>
 <p>Alternatively, if you want to clean your csv file first, you can import it as a data frame</p>
 <pre><code>yourAnimalsDF &lt;- read.csv("yourAnimalsMoveBank.csv")</code></pre>
@@ -241,7 +241,7 @@ FITS<span class="op">$</span>ERROR &lt;-<span class="st"> </span><span class="kw
 <span class="kw">summary</span>(FITS)</code></pre></div>
 <pre><code>##          dAICc DOF[mean] method
 ## ERROR  0.00000  16.39669     ML
-## NOERR 21.58305  15.74074     ML</code></pre>
+## NOERR 21.58307  15.74074     ML</code></pre>
 <p>Also, see <code>help(uere)</code> if you have the benefit of calibration data.</p>
 </div>
 </div>
@@ -276,11 +276,11 @@ FITS<span class="op">$</span>ERROR &lt;-<span class="st"> </span><span class="kw
 <span class="kw">summary</span>(M.OUF)</code></pre></div>
 <pre><code>## $DOF
 ##     mean     area 
-## 11.54404 22.48617 
+## 11.54404 22.48618 
 ## 
 ## $CI
 ##                                 low         ML      high
-## area (square kilometers) 234.930049 372.751530 541.87275
+## area (square kilometers) 234.930061 372.751530 541.87273
 ## tau position (days)        4.040128   6.926154  11.87379
 ## tau velocity (minutes)    39.621344  42.124613  44.78604
 ## speed (kilometers/day)    13.818849  14.053489  14.28808</code></pre>
