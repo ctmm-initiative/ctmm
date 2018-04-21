@@ -29,6 +29,10 @@
 {The newer version of \code{ctmm.select} is much more intelligent, necessitated by the exploding number of new model permutations. Any simpler models were judged to be so unlikely that they were not attempted. You can set \code{level=1} to force alternative model fitting, but the additional models should lose badly in model selection (please contact me if I am wrong).}
 
 
+\bold{\code{as.telemetry} reports abnormal sampling intervals and speeds}
+
+{Make sure that you have the correct \code{timezone} and \code{timeformat} arguments specified. Also, see \code{\link{outlie}}.}
+
 \bold{rdb database corruption, "could not find function", "cannot coerce class", and other weird errors}
 
 {\code{R} might not have installed or loaded the package correctly---e.g., some files may have failed to overwrite previous versions---or the workspace/session might be corrupted. Uninstall \code{ctmm}, restart \code{R} without saving the workspace/session, and install \code{ctmm} again.}
