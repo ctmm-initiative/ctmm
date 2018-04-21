@@ -1,4 +1,4 @@
-0.5.0 2018-04-15
+ctmm 0.5.0 (2018-04-15)
 ================
 
   * Extensive re-write of the Kalman filter & smoother, now supporting an arbitrary number of spatial dimensions, necessary for ARGOS error ellipse support. (Previously, all multi-dimensional problems were transformed into multiple one-dimensional problems.) Many new models will be supported going forward, based on the v0.5.0 code.
@@ -25,7 +25,7 @@
   
   * variogram.fit() manipulate more appropriate with calibrated errors
 
-0.4.2 2018-02-12
+ctmm 0.4.2 (2018-02-12)
 ================
   
   * new speed() method
@@ -74,12 +74,12 @@
   
   * outlier removed from buffalo$Cilla
 
-0.4.1 2017-08-30
+ctmm 0.4.1 (2017-08-30)
 ================
 
   * projection method for ctmm objects
 
-0.4.0 2017-08-29
+ctmm 0.4.0 (2017-08-29)
 ================
 
   * periodigram vignette
@@ -110,7 +110,7 @@
   
   * SI speeds & diffusion fixed with units=FALSE
 
-0.3.6 2017-04-23
+ctmm 0.3.6 (2017-04-23)
 ================
 
   * AICc formulas updated from univariate to multivariate
@@ -147,7 +147,7 @@
   
   * chi-square CIs (area, semi-variance, etc.) more robust when DOF<1
 
-0.3.5 2017-02-01
+ctmm 0.3.5 (2017-02-01)
 ================
 
   * added a FAQ page to the documentation help("ctmm-FAQ")
@@ -166,7 +166,7 @@
 
   * Kalman filter & smoother upgraded to Joseph form covariance updates
 
-0.3.4 2016-11-28
+ctmm 0.3.4 (2016-11-28)
 ================
 
   * weighted AKDE implemented, fast option, covered in vignette
@@ -197,7 +197,7 @@
   
   * as.telemetry defined for MoveStack objects
 
-0.3.3 2016-09-05
+ctmm 0.3.3 (2016-09-05)
 ================
 
   * improved import of 'move' objects
@@ -218,7 +218,7 @@
   
   * res.space fixed in occurrence
 
-0.3.2 2016-05-12
+ctmm 0.3.2 (2016-05-12)
 ================
 
   * new function overlap for stationary Gaussian distributions and KDEs
@@ -257,7 +257,7 @@
   
   * bad location removed from buffalo "Pepper"
 
-0.3.1 2016-02-23
+ctmm 0.3.1 (2016-02-23)
 ================
 
   * variogram.fit now stores global variables of any name
@@ -282,7 +282,7 @@
   
   * occurrence() now works when some timesteps are tiny
   
-0.3.0 2015-11-26
+ctmm 0.3.0 (2015-11-26)
 ================
 
   * new function "occurrence" to estimate occurrence distributions
@@ -305,7 +305,7 @@
 
   * ctmm.fit now has a backup for when Brent fails
 
-0.2.9 2015-10-13
+ctmm 0.2.9 (2015-10-13)
 ================
 
   * fixed a rare condition in ctmm.fit where solve would fail on correlated errors
@@ -326,7 +326,7 @@
   
   * alpha, alpha.HR, res arguments made consistent across all functions
 
-0.2.8 2015-08-25
+ctmm 0.2.8 (2015-08-25)
 ================
 
   * efficiency gains in as.telemetry with multiple animals
@@ -335,7 +335,7 @@
 
   * bugfix in variogram for rare condition when fast=TRUE
 
-0.2.7 2015-07-27
+ctmm 0.2.7 (2015-07-27)
 ================
 
   * CRAN check compliance achieved.
@@ -344,17 +344,17 @@
   
   * argument names no longer clash with function names and are more explicit about their object class
 
-0.2.6 2015-07-17
+ctmm 0.2.6 (2015-07-17)
 ================
 
   * export bugfixes
 
-0.2.5 2015-07-14
+ctmm 0.2.5 (2015-07-14)
 ================
 
   * IOU bug fixes in ctmm.fit and plot.variogram
   
-0.2.4 2015-06-28
+ctmm 0.2.4 (2015-06-28)
 ================
 
   * cleaned up and labeled tau parameter arrays
@@ -363,7 +363,7 @@
 
   * plot.telemetry now enforces asp=1 even with xlim/ylim arguments
 
-0.2.3 2015-06-19
+ctmm 0.2.3 (2015-06-19)
 ================
 
   * new function summary.telemetry
@@ -376,12 +376,12 @@
   
   * minimal support for BM and IOU motion
 
-0.2.2 2015-05-21
+ctmm 0.2.2 (2015-05-21)
 ================
 
   * new functions periodogram, plot.periodogram
 
-0.2.1 2015-05-08
+ctmm 0.2.1 (2015-05-08)
 ================
 
   * new function SpatialPoints.telemetry returns SpatialPoints object from telemetry data
@@ -400,7 +400,7 @@
 
   * telemetry, ctmm, and akde objects now have idenification and projection information slotted, with consistent naming throughout
 
-0.2.0 2015-04-27
+ctmm 0.2.0 (2015-04-27)
 ================
 
   * vignettes "variogram" and "akde"
