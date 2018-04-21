@@ -70,25 +70,25 @@ get.telemetry <- function(data,axes=c("x","y"))
 
 #######################
 # Generic import function
-as.telemetry <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,drop=TRUE,...) UseMethod("as.telemetry")
+as.telemetry <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,na.rm="row",drop=TRUE,...) UseMethod("as.telemetry")
 
 # MoveStack object
-as.telemetry.MoveStack <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,drop=TRUE,...)
+as.telemetry.MoveStack <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,na.rm="row",drop=TRUE,...)
 {
   # need to first conglomerate to MoveBank format, then run as.telemetry
   object <- move::split(object)
   DATA <- lapply(object,function(mv){ Move2CSV(mv,timeformat=timeformat,timezone=timezone,projection=projection,UERE=UERE) })
   DATA <- do.call(rbind,DATA)
-  DATA <- as.telemetry.data.frame(DATA,timeformat=timeformat,timezone=timezone,projection=projection,UERE=UERE,drop=drop)
+  DATA <- as.telemetry.data.frame(DATA,timeformat=timeformat,timezone=timezone,projection=projection,UERE=UERE,na.rm=na.rm,drop=drop)
   return(DATA)
 }
 
 # Move object
-as.telemetry.Move <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,drop=TRUE,...)
+as.telemetry.Move <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,na.rm="row",drop=TRUE,...)
 {
   DATA <- Move2CSV(object,timeformat=timeformat,timezone=timezone,projection=projection,UERE=UERE)
   # can now treat this as a MoveBank object
-  DATA <- as.telemetry.data.frame(DATA,timeformat=timeformat,timezone=timezone,projection=projection,UERE=UERE,drop=drop)
+  DATA <- as.telemetry.data.frame(DATA,timeformat=timeformat,timezone=timezone,projection=projection,UERE=UERE,na.rm=na.rm,drop=drop)
   return(DATA)
 }
 
@@ -141,7 +141,7 @@ pull.column <- function(object,NAMES,FUNC=as.numeric)
 
 
 # read in a MoveBank object file
-as.telemetry.character <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,drop=TRUE,...)
+as.telemetry.character <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,na.rm="row",drop=TRUE,...)
 {
   # read with 3 methods: fread, temp_unzip, read.csv, fall back to next if have error.
   # fread error message is lost, we can use print(e) for debugging.
@@ -157,14 +157,16 @@ as.telemetry.character <- function(object,timeformat="",timezone="UTC",projectio
       data <- utils::read.csv(object,...)
     }
   }
-  data <- as.telemetry.data.frame(data,timeformat=timeformat,timezone=timezone,projection=projection,UERE=UERE,drop=drop)
+  data <- as.telemetry.data.frame(data,timeformat=timeformat,timezone=timezone,projection=projection,UERE=UERE,na.rm=na.rm,drop=drop)
   return(data)
 }
 
 
 # this assumes a MoveBank data.frame
-as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,drop=TRUE,...)
+as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,na.rm="row",drop=TRUE,...)
 {
+  na.rm <- match.arg(na.rm,c("row","col"))
+
   # make column names canonicalish
   names(object) <- tolower(names(object))
 
@@ -371,7 +373,17 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
 
     # delete empty columns in case collars/tags are different
     for(COL in names(telist[[i]]))
-    { if(any(is.na(telist[[i]][[COL]]))) { telist[[i]][[COL]] <- NULL } }
+    {
+      BAD <- is.na(telist[[i]][[COL]])
+      if(all(BAD) || (na.rm=="col" && any(BAD))) { telist[[i]][[COL]] <- NULL } # delete the whole column
+      else if(na.rm=="row" && any(BAD)) { telist[[i]] <- telist[[i]][!BAD,] } # only delete the rows
+    }
+
+    # delete incomplete vector data (caused by partial NAs)
+    COL <- c("speed","heading")
+    telist[[i]] <- rm.incomplete(telist[[i]],COL)
+    COL <- c("COV.angle","COV.major","COV.minor")
+    telist[[i]] <- rm.incomplete(telist[[i]],COL)
   }
   names(telist) <- id
 
@@ -383,6 +395,17 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   else { return(telist[[1]]) }
 }
 
+
+# delete all columns of set if some columns of set are missing
+rm.incomplete <- function(DF,COL)
+{
+  IN <- sum(COL %in% names(DF))
+  if(IN==0 || IN==length(COL)) { return(DF) }
+  # need to delete present COLs
+  IN <- names(DF) %in% COL # COLs to delete
+  DF <- DF[,!IN]
+  return(DF)
+}
 
 #################
 # clean up data

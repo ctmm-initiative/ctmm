@@ -12,7 +12,14 @@ setMethod('projection', signature(x='telemetry'), projection.telemetry)
 setMethod('projection', signature(x='ctmm'), projection.telemetry)
 setMethod('projection', signature(x='UD'), projection.telemetry)
 
+# change the projection on a list of objects
+"projection<-.list" <- function(x,value)
+{
+  lapply(x,function(y){methods::getMethod("projection<-",signature=class(y))(y,value)})
+}
+setMethod('projection<-', signature(x='list'), `projection<-.list`)
 
+# change the projection of one telemetry object
 "projection<-.telemetry" <- function(x,value)
 {
   NAMES <- names(x)
