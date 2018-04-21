@@ -1,6 +1,8 @@
 PRIORITY
 * Error in sinch(nu * dt) * Exp : non-numeric argument to binary operator ??? Random R bug?
 * reference Guillaume's paper at the beginning of the periodogram vignette
+* UERE needs to return an AIC value
+* bandwidth() weights logical array argument
 
 ERROR PAPER
 * how does error change DOF calculation?
@@ -72,6 +74,7 @@ VIGNETTES & EXAMPLES
 * explain effective sample sizes (DOF of summary)
 
 OPTIMIZER
+* split-parameter optimization (for periodic parameters like angle) with funnelling error target
 * convex perimeter tracker
 * Somehow optimizer can stop on stage 1 without proceeding to stage 2
 * Stop on encapsulated
