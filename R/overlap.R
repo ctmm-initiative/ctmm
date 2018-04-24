@@ -221,10 +221,20 @@ akde.list <- function(data,CTMM,VMM=NULL,debias=TRUE,smooth=TRUE,error=0.001,res
     n.samples <- length(instance$x)
     n.samples.total <- n.samples.total + n.samples
 
-    ## START BACK HERE ##
+    # weights array argument (feature request from Dong)
+    ARGS <- list(...)
+    weights <- ARGS$weights
+    if(is.null(weights))
+    { weights <- array(FALSE,n.instances) }
+    else
+    {
+      weights <- rep(weights,n.instances)
+      ARGS <- ARGS[names(ARGS)!="weights"]
+    }
 
     #bandwidth calculations for this instance
-    HP.list[[i.instance]] <- bandwidth(data = instance, CTMM = CTMM[[i.instance]], VMM=VMM[[i.instance]], verbose = TRUE,...)
+    # HP.list[[i.instance]] <- bandwidth(data = instance, CTMM = CTMM[[i.instance]], VMM=VMM[[i.instance]], verbose = TRUE,...)
+    HP.list[[i.instance]] <- do.call(bandwidth,c(list(data=instance,CTMM=CTMM[[i.instance]],VMM=VMM[[i.instance]],weights=weights[i.instance],verbose=TRUE),ARGS))
     H.list[[i.instance]]  <- prepare.H(HP.list[[i.instance]]$H,length(instance$t))
     #reshape H
     H.list[[i.instance]]  <- array(H.list[[i.instance]], c(n.samples, COL * COL)) #TODO: magic numbers
