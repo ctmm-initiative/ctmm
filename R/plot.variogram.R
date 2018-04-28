@@ -184,6 +184,9 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, diagnostic=FA
   # if(is.null(CTMM) && n==1 && !is.null(attr(x[[1]],"info")$CTMM)) { CTMM <- attr(x[[1]],"info")$CTMM }
   ACF <- !is.null(attr(x[[1]],"info")$ACF)
 
+  # don't plot if DOF<1
+  x <- lapply(x,function(y){ y[y$DOF>=1,] })
+
   # subset the data if xlim or fraction provided
   if(!is.null(xlim))
   {
