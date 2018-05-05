@@ -65,31 +65,6 @@ SVF4 <- mean(SVF4)
 plot(SVF4,fraction=0.35,level=level)
 title("Population variogram")
 
-## ----  fig.show='hold', echo=FALSE---------------------------------------
-# ARGOS type errors
-curve(1+x,0,5,xlab="Short time lag",ylab="Semi-variance",ylim=c(0,6))
-points(c(0,0),c(0,1))
-title("ARGOS")
-# detector array type errors (qualitatively only)
-curve((1-exp(-2*x))/(1-exp(-2/4)),0,1/4,xlab="Short time lag",ylab="Semi-variance",ylim=c(0,6),xlim=c(0,5),add=FALSE)
-curve(3/4+x,1/4,5,xlab="Short time lag",ylab="Semi-variance",ylim=c(0,6),add=TRUE,xlim=c(0,5))
-points(1/4,1)
-title("Detector Array")
-
-## ------------------------------------------------------------------------
-DATA <- as.telemetry(system.file("extdata","leroy.csv.gz",package="move"))
-# default model guess
-GUESS <- ctmm.guess(DATA,interactive=FALSE)
-# first fit without telemetry error
-FITS <- list()
-FITS$NOERR <- ctmm.fit(DATA,GUESS)
-# second fit based on first with telemetry error
-GUESS <- FITS$NOERR
-GUESS$error <- TRUE
-FITS$ERROR <- ctmm.fit(DATA,GUESS)
-# model improvement
-summary(FITS)
-
 ## ----  fig.show='hold'---------------------------------------------------
 M.IID <- ctmm.fit(Cilla,m.iid)
 summary(M.IID)

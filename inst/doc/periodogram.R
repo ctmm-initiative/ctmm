@@ -20,7 +20,8 @@ SVF <- variogram(Gamba,res=3)
 GUESS <- ctmm.guess(Gamba,PROTO,variogram=SVF,interactive=FALSE)
 
 ## ------------------------------------------------------------------------
-control <- list(method="pNewton") # beta optimizer is much faster here
+# ctmm beta optimizer is more reliable here
+# control <- list(method="pNewton",cores=-1) # use all but 1 core
 control <- list(method="pNewton",cores=2) # CRAN policy limits to 2 processes
 FITS <- ctmm.select(Gamba,GUESS,verbose=TRUE,control=control)
 

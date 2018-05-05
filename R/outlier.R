@@ -7,14 +7,23 @@ median.telemetry <- function(x,na.rm=FALSE,...)
   tz <- attr(x[[1]],'info')$timezone
   x <- do.call(rbind,x)
 
-  long <- stats::median(x$longitude)
-  lat <- stats::median(x$latitude)
   t <- stats::median(x$t)
   timestamp <- as.character(as.POSIXct(t,tz=tz,origin="1970/01/01"))
 
-  x <- data.frame(timestamp=timestamp,t=t,longitude=long,latitude=lat)
-  x <- new.telemetry(x,info=list(identity=id,projection=proj,timezone=tz))
-  projection(x) <- proj
+  if(all(c("longitude","latitude") %in% names(x)))
+  {
+    long <- stats::median(x$longitude)
+    lat <- stats::median(x$latitude)
+
+    x <- data.frame(timestamp=timestamp,t=t,longitude=long,latitude=lat)
+    x <- new.telemetry(x,info=list(identity=id,projection=proj,timezone=tz))
+    projection(x) <- proj
+  }
+  else
+  {
+    x <- data.frame(timestamp=timestamp,t=t,x=stats::median(x$x),y=stats::median(x$y))
+    x <- new.telemetry(x,info=list(identity=id,projection=proj,timezone=tz))
+  }
 
   return(x)
 }
@@ -53,7 +62,7 @@ outlie <- function(data,UERE=10,standardize=FALSE,plot=TRUE,...)
     col <- grDevices::rgb(0,0,lwd,lwd)
     lwd <- 2*lwd
     n <- length(data$t)
-    graphics::segments(x0=data$x[-n],y0=data$y[-n],x1=data$x[-1],y1=data$y[-1],col=col,lwd=lwd,...)
+    graphics::segments(x0=data$x[-n],y0=data$y[-n],x1=data$x[-1],y1=data$y[-1],col=col,lwd=lwd,asp=1,...)
 
     cex <- (d/max(d))
     col <- grDevices::rgb(cex,0,0,cex)

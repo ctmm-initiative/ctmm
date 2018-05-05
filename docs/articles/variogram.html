@@ -82,7 +82,7 @@
       <h1>Variograms and Model Selection</h1>
                         <h4 class="author">Christen H. Fleming and Justin M. Calabrese</h4>
             
-            <h4 class="date">2018-04-21</h4>
+            <h4 class="date">2018-05-05</h4>
       
       <small>Source: <a href="https://github.com/ctmm-initiative/ctmm/blob/master/vignettes/variogram.Rmd"><code>vignettes/variogram.Rmd</code></a></small>
       <div class="hidden name"><code>variogram.Rmd</code></div>
@@ -212,39 +212,6 @@ SVF4 &lt;-<span class="st"> </span><span class="kw">mean</span>(SVF4)
 <p>Alternatively, you can also break up the data by hand into multiple behaviors and fit each behavior individually. This is highly recommended for migratory species, at present.</p>
 </div>
 </div>
-<div id="more-models" class="section level2">
-<h2 class="hasAnchor">
-<a href="#more-models" class="anchor"></a>More Models</h2>
-<div id="telemetry-error" class="section level3">
-<h3 class="hasAnchor">
-<a href="#telemetry-error" class="anchor"></a>Telemetry Error</h3>
-<p>The GPS buffalo example do not exhibit telemetry errors that are significant enough to notice in our variograms. If we were working with ARGOS data or the high-resolution and unfiltered GPS data of a small animal, then we get a “nugget” effect that looks like an initial discontinuity at short time lags.</p>
-<p><img src="variogram_files/figure-html/unnamed-chunk-9-1.png" width="700"><img src="variogram_files/figure-html/unnamed-chunk-9-2.png" width="700"></p>
-<p>The height of this initial discontinuity corresponds to the variance of uncorrelated location errors. The second plot is the kind of initial discontinuity one has with detector array data. The end of the (slope) discontinuity is highlighted with a circle. This discontinuity is smooth because the movement and detection are correlated. The height of this initial discontinuity is also (at least roughly) the variance of the location errors.</p>
-<p>If your tracking data is GPS and is annotated with a “DOP” column, then this information is automatically imported into the <code>telemetry</code> object and only has to be flagged in the <code>ctmm</code> model by setting <code>error=TRUE</code>. Because of some convenient mathematical relations, fitting without telemetry errors involves 1-4 fewer parameters and is, therefore, faster and more reliable than fitting with telemetry error. So if your data are not swamped by error and do not contain bursts of high-frequency fixes (which would also be relatively swamped by 5-10 meter GPS error), then you might want to apply a two stage fitting method, first from the variogram guess without telemetry error and then from that output with telemetry error. Here we demonstrate this method with Leroy the fisher cat from the <code>move</code> package:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">DATA &lt;-<span class="st"> </span><span class="kw"><a href="../reference/as.telemetry.html">as.telemetry</a></span>(<span class="kw">system.file</span>(<span class="st">"extdata"</span>,<span class="st">"leroy.csv.gz"</span>,<span class="dt">package=</span><span class="st">"move"</span>))</code></pre></div>
-<pre><code>## Warning in as.telemetry.data.frame(data, timeformat = timeformat, timezone
-## = timezone, : VDOP not found. HDOP used as an approximate VDOP, which will
-## require a separate UERE. See help("uere").</code></pre>
-<pre><code>## Maximum speed of 1.05 m/s observed in Leroy</code></pre>
-<pre><code>## Minimum sampling interval of 13.3 minutes in Leroy</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># default model guess</span>
-GUESS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.fit.html">ctmm.guess</a></span>(DATA,<span class="dt">interactive=</span><span class="ot">FALSE</span>)
-<span class="co"># first fit without telemetry error</span>
-FITS &lt;-<span class="st"> </span><span class="kw">list</span>()
-FITS<span class="op">$</span>NOERR &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(DATA,GUESS)
-<span class="co"># second fit based on first with telemetry error</span>
-GUESS &lt;-<span class="st"> </span>FITS<span class="op">$</span>NOERR
-GUESS<span class="op">$</span>error &lt;-<span class="st"> </span><span class="ot">TRUE</span>
-FITS<span class="op">$</span>ERROR &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(DATA,GUESS)
-<span class="co"># model improvement</span>
-<span class="kw">summary</span>(FITS)</code></pre></div>
-<pre><code>##          dAICc DOF[mean] method
-## ERROR  0.00000  16.39669     ML
-## NOERR 21.58307  15.74074     ML</code></pre>
-<p>Also, see <code>help(uere)</code> if you have the benefit of calibration data.</p>
-</div>
-</div>
 </div>
 <div id="maximum-likelihood" class="section level1">
 <h1 class="hasAnchor">
@@ -316,7 +283,7 @@ and the independent and identically distributed (IID) model has no autocorrelati
 <span class="kw">title</span>(<span class="st">"zoomed out"</span>)
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>FITS,<span class="dt">col.CTMM=</span><span class="kw">c</span>(<span class="st">"red"</span>,<span class="st">"purple"</span>,<span class="st">"blue"</span>),<span class="dt">xlim=</span>xlim,<span class="dt">level=</span><span class="fl">0.5</span>)
 <span class="kw">title</span>(<span class="st">"zoomed in"</span>)</code></pre></div>
-<p><img src="variogram_files/figure-html/unnamed-chunk-16-1.png" width="700"><img src="variogram_files/figure-html/unnamed-chunk-16-2.png" width="700"></p>
+<p><img src="variogram_files/figure-html/unnamed-chunk-14-1.png" width="700"><img src="variogram_files/figure-html/unnamed-chunk-14-2.png" width="700"></p>
 <p>Notice that the purple OU model <code>M.OU</code> is significantly biased downward and is underestimating diffusion. This is because the continuous-velocity behavior at short time lags, which <code>M.OU</code> does not account for, is throwing off the estimate. The IID model <code>M.IID</code> is ignoring autocorrelation completely, while the OU model <code>M.OU</code> is ignoring autocorrelation in the buffalo’s velocity.</p>
 <p>While the OUF <code>M.OUF</code> is the selected model among all candidates, <code>M.OUF</code> looks slightly biased upwards in comparison to the variogram fit <code>m.ouf</code>. Some of this is due to sampling variability, which be (partially) remedied in the <code>variogram</code> method by increasing the <code>res</code> argument. Differences here can also arise from not accounting for telemetry error, which is unfortunately not annotated in this data.</p>
 </div>
@@ -333,7 +300,6 @@ and the independent and identically distributed (IID) model has no autocorrelati
 <a href="#variograms">Variograms</a><ul class="nav nav-pills nav-stacked">
 <li><a href="#variogram-fitting-the-hard-way">Variogram Fitting the Hard Way</a></li>
       <li><a href="#variogram-fitting-the-easy-way">Variogram Fitting the Easy Way</a></li>
-      <li><a href="#more-models">More Models</a></li>
       </ul>
 </li>
       <li>
