@@ -158,12 +158,15 @@ uere <- function(data,override=FALSE,integrate=FALSE,diagnostic=FALSE)
       lwd <- c(1,2,1)
       CI <- chisq.ci(1,DOF=N[TYPE])
 
-      # r <- sqrt(rowSums(x^2))
-      # graphics::plot(DOP,r,xlab=paste(TYPE,"DOP"),ylab=paste0("|",TYPE," error|"),log="xy")
+      # r <- sqrt(rowSums(z^2)) / (UERE[TYPE])
+      # r <- c(-r,r) # reflection symmetry
+      # KDE <- stats::density(r,bw="SJ")
+      # graphics::hist(r,breaks="scott",freq=FALSE,main=paste(TYPE,"residual distribution"),xlab="standardized error",ylim=c(0,max(KDE$y,exp(-1/2)/sqrt(CI[1]))),xlim=c(0,max(r)))
+      # graphics::lines(KDE)
       # for(i in 1:3)
       # {
-      #   LINE <- Vectorize(function(d){UERE[TYPE]*sqrt(CI[i])*d})
-      #   graphics::curve(LINE,from=min(r),to=max(r),n=1001,add=TRUE,col='red',lwd=lwd[i])
+      #   DNORM <- Vectorize(function(x){x/CI[i]*exp(-x^2/2/CI[i])})
+      #   graphics::curve(DNORM,from=0,to=max(r),n=1001,add=TRUE,col='red',lwd=lwd[i])
       # }
 
       r <- c(z) / (UERE[TYPE])

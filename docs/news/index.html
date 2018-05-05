@@ -109,9 +109,9 @@
       <small>Source: <a href='https://github.com/ctmm-initiative/ctmm/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
     </div>
 
-    <div id="ctmm-0-5-0-2018-04-15" class="section level1">
+    <div id="ctmm-0-5-0-2018-04-27" class="section level1">
 <h1 class="page-header">
-<a href="#ctmm-0-5-0-2018-04-15" class="anchor"></a>ctmm 0.5.0 (2018-04-15)<small> Unreleased </small>
+<a href="#ctmm-0-5-0-2018-04-27" class="anchor"></a>ctmm 0.5.0 (2018-04-27)<small> Unreleased </small>
 </h1>
 <ul>
 <li><p>Extensive re-write of the Kalman filter &amp; smoother, now supporting an arbitrary number of spatial dimensions, necessary for ARGOS error ellipse support. (Previously, all multi-dimensional problems were transformed into multiple one-dimensional problems.) Many new models will be supported going forward, based on the v0.5.0 code.</p></li>
@@ -126,6 +126,7 @@
 <li><p>parameter boundary bugfix in ctmm.fit() and ctmm.loglike()</p></li>
 <li><p>fixed bandwidth() bug when weights=TRUE on IID process</p></li>
 <li><p>variogram.fit() manipulate more appropriate with calibrated errors</p></li>
+<li><p>fixed rare bug in plot.variogram() from stats::qchisq() with k&lt;&lt;1</p></li>
 </ul>
 </div>
     <div id="ctmm-0-4-2-2018-02-12" class="section level1">
@@ -442,7 +443,7 @@
     <div id="tocnav">
       <h2>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
-        <li><a href="#ctmm-0-5-0-2018-04-15">0.5.0</a></li>
+        <li><a href="#ctmm-0-5-0-2018-04-27">0.5.0</a></li>
         <li><a href="#ctmm-0-4-2-2018-02-12">0.4.2</a></li>
         <li><a href="#ctmm-0-4-1-2017-08-30">0.4.1</a></li>
         <li><a href="#ctmm-0-4-0-2017-08-29">0.4.0</a></li>

@@ -16,7 +16,7 @@ In this vignette, we walk through data preparation, variogram analysis, and maxi
 
 We highly recommend that you get your data onto [Movebank](http://www.movebank.org/).
 This will help ensure that your data are of the correct format for `ctmm`, help you identify outliers, and you can keep your data completely private if you wish.
-`ctmm` requires that your dataframe conforms to [Movebank naming conventions](http://rstudio.com) (see `help(as.telemetry)`).
+`ctmm` requires that your dataframe conforms to [Movebank naming conventions](https://www.movebank.org/node/2381) (see `help(as.telemetry)`).
 The next step is then to import your MoveBank csv file:
 ```
 yourAnimals <- as.telemetry("yourAnimalsMoveBank.csv")
@@ -176,45 +176,6 @@ title("Population variogram")
 Non-stationary behaviors, like a seasonal change in variance, is averaged over in the variogram. Moreover, if we fit a stationary model to non-stationary data, we are estimating an average effect. For instance, if an animal rests at night and diffuses at some rate `D` during the day, then without modeling the rest behavior we estimate an average of zero and `D`. Its not terribly detrimental to average over frequently repeated non-stationarity, but if an animal migrates once in a dataset then this behavior really needs to be in the model. These kinds of models will be included in future versions of `ctmm`.
 
 Alternatively, you can also break up the data by hand into multiple behaviors and fit each behavior individually. This is highly recommended for migratory species, at present.
-
-## More Models
-
-### Telemetry Error
-
-The GPS buffalo example do not exhibit telemetry errors that are significant enough to notice in our variograms. If we were working with ARGOS data or the high-resolution and unfiltered GPS data of a small animal, then we get a "nugget" effect that looks like an initial discontinuity at short time lags.
-
-```{r,  fig.show='hold', echo=FALSE}
-# ARGOS type errors
-curve(1+x,0,5,xlab="Short time lag",ylab="Semi-variance",ylim=c(0,6))
-points(c(0,0),c(0,1))
-title("ARGOS")
-# detector array type errors (qualitatively only)
-curve((1-exp(-2*x))/(1-exp(-2/4)),0,1/4,xlab="Short time lag",ylab="Semi-variance",ylim=c(0,6),xlim=c(0,5),add=FALSE)
-curve(3/4+x,1/4,5,xlab="Short time lag",ylab="Semi-variance",ylim=c(0,6),add=TRUE,xlim=c(0,5))
-points(1/4,1)
-title("Detector Array")
-```
-
-The height of this initial discontinuity corresponds to the variance of uncorrelated location errors. The second plot is the kind of initial discontinuity one has with detector array data. The end of the (slope) discontinuity is highlighted with a circle. This discontinuity is smooth because the movement and detection are correlated. The height of this initial discontinuity is also (at least roughly) the variance of the location errors.
-
-If your tracking data is GPS and is annotated with a "DOP" column, then this information is automatically imported into the `telemetry` object and only has to be flagged in the `ctmm` model by setting `error=TRUE`. Because of some convenient mathematical relations, fitting without telemetry errors involves 1-4 fewer parameters and is, therefore, faster and more reliable than fitting with telemetry error. So if your data are not swamped by error and do not contain bursts of high-frequency fixes (which would also be relatively swamped by 5-10 meter GPS error), then you might want to apply a two stage fitting method, first from the variogram guess without telemetry error and then from that output with telemetry error. Here we demonstrate this method with Leroy the fisher cat from the `move` package:
-
-```{r}
-DATA <- as.telemetry(system.file("extdata","leroy.csv.gz",package="move"))
-# default model guess
-GUESS <- ctmm.guess(DATA,interactive=FALSE)
-# first fit without telemetry error
-FITS <- list()
-FITS$NOERR <- ctmm.fit(DATA,GUESS)
-# second fit based on first with telemetry error
-GUESS <- FITS$NOERR
-GUESS$error <- TRUE
-FITS$ERROR <- ctmm.fit(DATA,GUESS)
-# model improvement
-summary(FITS)
-```
-
-Also, see `help(uere)` if you have the benefit of calibration data.
 
 # Maximum Likelihood
 

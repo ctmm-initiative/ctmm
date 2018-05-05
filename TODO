@@ -4,7 +4,7 @@ PRIORITY
 * UERE needs to return an AIC value
 
 ERROR PAPER
-* how does error change DOF calculation?
+* how does error change variogram DOF calculation?
 * errors on x,y,z variograms
 * errors on periodograms?
 * exact 4x4 matrix inverse relations in PDsolve()

@@ -177,45 +177,6 @@ Non-stationary behaviors, like a seasonal change in variance, is averaged over i
 
 Alternatively, you can also break up the data by hand into multiple behaviors and fit each behavior individually. This is highly recommended for migratory species, at present.
 
-## More Models
-
-### Telemetry Error
-
-The GPS buffalo example do not exhibit telemetry errors that are significant enough to notice in our variograms. If we were working with ARGOS data or the high-resolution and unfiltered GPS data of a small animal, then we get a "nugget" effect that looks like an initial discontinuity at short time lags.
-
-```{r,  fig.show='hold', echo=FALSE}
-# ARGOS type errors
-curve(1+x,0,5,xlab="Short time lag",ylab="Semi-variance",ylim=c(0,6))
-points(c(0,0),c(0,1))
-title("ARGOS")
-# detector array type errors (qualitatively only)
-curve((1-exp(-2*x))/(1-exp(-2/4)),0,1/4,xlab="Short time lag",ylab="Semi-variance",ylim=c(0,6),xlim=c(0,5),add=FALSE)
-curve(3/4+x,1/4,5,xlab="Short time lag",ylab="Semi-variance",ylim=c(0,6),add=TRUE,xlim=c(0,5))
-points(1/4,1)
-title("Detector Array")
-```
-
-The height of this initial discontinuity corresponds to the variance of uncorrelated location errors. The second plot is the kind of initial discontinuity one has with detector array data. The end of the (slope) discontinuity is highlighted with a circle. This discontinuity is smooth because the movement and detection are correlated. The height of this initial discontinuity is also (at least roughly) the variance of the location errors.
-
-If your tracking data is GPS and is annotated with a "DOP" column, then this information is automatically imported into the `telemetry` object and only has to be flagged in the `ctmm` model by setting `error=TRUE`. Because of some convenient mathematical relations, fitting without telemetry errors involves 1-4 fewer parameters and is, therefore, faster and more reliable than fitting with telemetry error. So if your data are not swamped by error and do not contain bursts of high-frequency fixes (which would also be relatively swamped by 5-10 meter GPS error), then you might want to apply a two stage fitting method, first from the variogram guess without telemetry error and then from that output with telemetry error. Here we demonstrate this method with Leroy the fisher cat from the `move` package:
-
-```{r}
-DATA <- as.telemetry(system.file("extdata","leroy.csv.gz",package="move"))
-# default model guess
-GUESS <- ctmm.guess(DATA,interactive=FALSE)
-# first fit without telemetry error
-FITS <- list()
-FITS$NOERR <- ctmm.fit(DATA,GUESS)
-# second fit based on first with telemetry error
-GUESS <- FITS$NOERR
-GUESS$error <- TRUE
-FITS$ERROR <- ctmm.fit(DATA,GUESS)
-# model improvement
-summary(FITS)
-```
-
-Also, see `help(uere)` if you have the benefit of calibration data.
-
 # Maximum Likelihood
 
 ## Maximum Likelihood Fitting the Hard Way 
