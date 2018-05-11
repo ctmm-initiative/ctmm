@@ -148,7 +148,8 @@ as.telemetry.character <- function(object,timeformat="",timezone="UTC",projectio
   data <- tryCatch(data.table::fread(object,data.table=FALSE,check.names=TRUE,nrows=5),
                    error = function(e) "error")
   # if fread fails, then decompress zip to temp file, read data, remove temp file
-  if (class(data) == "data.frame") { data <- data.table::fread(object,data.table=FALSE,check.names=TRUE,...) }
+  # previous data.table will generate error when reading zip, now it's warning and result is an empty data.frame.
+  if (class(data) == "data.frame" && nrow(data) > 0) { data <- data.table::fread(object,data.table=FALSE,check.names=TRUE,...) }
   else {
     data <- tryCatch(temp_unzip(object, data.table::fread, data.table=FALSE,check.names=TRUE,...),
                      error = function(e) "error")
