@@ -128,7 +128,6 @@ svf.func <- function(CTMM,moment=FALSE)
 
 
 ##########
-# error argument is average variance of data's error passed from SVF object
 plot.svf <- function(lag,CTMM,error=NULL,alpha=0.05,col="red",type="l",...)
 {
   # changed from max lag to all lags
@@ -140,7 +139,11 @@ plot.svf <- function(lag,CTMM,error=NULL,alpha=0.05,col="red",type="l",...)
   # are we including errors?
   ERROR <- !is.null(error) && CTMM$error
   # can we plot a smooth curve?
-  if(!ERROR) { lag <- seq(0,last(lag),length.out=PX) }
+  if(!ERROR)
+  {
+    lag <- seq(0,last(lag),length.out=PX)
+    error <- 0
+  }
 
   SVF <- svf.func(CTMM,moment=TRUE)
   svf <- SVF$svf
@@ -150,17 +153,20 @@ plot.svf <- function(lag,CTMM,error=NULL,alpha=0.05,col="red",type="l",...)
   SVF <- Vectorize(function(t,error=0) { svf(t,error=error) })
 
   if(!ERROR) { graphics::curve(SVF,from=0,to=last(lag),n=PX,add=TRUE,col=col,...) }
-  else { graphics::points(lag,SVF(lag),col=col,type=type,...) }
+  else { graphics::points(lag,SVF(lag,error),col=col,type=type,...) }
 
   # confidence intervals if COV provided
   if(any(diag(CTMM$COV)>0))
   {
+    SVF <- Vectorize(function(t,error=0){ svf(t,error=error) })(lag,error)
+
     for(j in 1:length(alpha))
     {
-      svf.lower <- Vectorize(function(t,error=0){ svf(t,error=error) * CI.lower(DOF(t,error=error),alpha[j]) })
-      svf.upper <- Vectorize(function(t,error=0){ svf(t,error=error) * CI.upper(DOF(t,error=error),alpha[j]) })
+      dof <- Vectorize(function(t,error=0) { DOF(t,error=error) })(lag,error)
+      svf.lower <- Vectorize(function(df){ CI.lower(df,alpha[j]) })(dof)
+      svf.upper <- Vectorize(function(df){ CI.upper(df,alpha[j]) })(dof)
 
-      graphics::polygon(c(lag,rev(lag)),c(svf.lower(lag),rev(svf.upper(lag))),col=scales::alpha(col,0.1/length(alpha)),border=NA,...)
+      graphics::polygon(c(lag,rev(lag)),c(SVF*svf.lower,rev(SVF*svf.upper)),col=scales::alpha(col,0.1/length(alpha)),border=NA,...)
     }
   }
 

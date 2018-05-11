@@ -23,7 +23,7 @@
 \bold{Help installing packages on Linux}
 \itemize{
 \item{These are the packages I needed in Ubuntu: \code{sudo apt install fftw3 fftw3-dev libgdal1-dev libproj-dev libgeos-dev r-base-core}}
-\item{See Xianghui Dong's installation tips \href{https://github.com/ctmm-initiative/ctmm-webapp/blob/master/README-install.md}{here}.}
+\item{See Xianghui Dong's installation tips \href{https://github.com/ctmm-initiative/ctmmweb/blob/master/README-install.md}{here}.}
 }
 
 \bold{\code{ctmm.select} only returns one model with \code{verbose=TRUE}}

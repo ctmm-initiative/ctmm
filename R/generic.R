@@ -274,6 +274,8 @@ listify <- function(x)
   return(x)
 }
 
+
+# rename elements of an object
 rename <- function(object,name1,name2)
 {
   IND <- which(names(object)==name1)
