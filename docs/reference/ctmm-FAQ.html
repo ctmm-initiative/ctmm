@@ -25,6 +25,9 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
+
+
+
 <meta property="og:title" content="ctmm FAQ — ctmm-FAQ" />
 
 <meta property="og:description" content="Frequently asked questions for the ctmm package." />
@@ -38,8 +41,6 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
-
-
 
 
   </head>
@@ -83,6 +84,9 @@
       <a href="../articles/akde.html">Autocorrelated Kernel Density Estimation</a>
     </li>
     <li>
+      <a href="../articles/error.html">Telemetry Error</a>
+    </li>
+    <li>
       <a href="../articles/periodogram.html">Periodograms and Periodicities</a>
     </li>
   </ul>
@@ -113,9 +117,11 @@
     <div class="hidden name"><code>ctmm-FAQ.Rd</code></div>
     </div>
 
+    <div class="ref-description">
     
     <p>Frequently asked questions for the <code>ctmm</code> package.</p>
     
+    </div>
 
         
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
@@ -132,7 +138,7 @@
 </ol>
     <p><b>Help installing packages on Linux</b></p><ul>
 <li><p>These are the packages I needed in Ubuntu: <code>sudo apt install fftw3 fftw3-dev libgdal1-dev libproj-dev libgeos-dev r-base-core</code></p></li>
-<li><p>See Xianghui Dong's installation tips <a href='https://github.com/ctmm-initiative/ctmm-webapp/blob/master/README-install.md'>here</a>.</p></li>
+<li><p>See Xianghui Dong's installation tips <a href='https://github.com/ctmm-initiative/ctmmweb/blob/master/README-install.md'>here</a>.</p></li>
 </ul>
     <p><b><code>ctmm.select</code> only returns one model with <code>verbose=TRUE</code></b></p>
 <p>The newer version of <code>ctmm.select</code> is much more intelligent, necessitated by the exploding number of new model permutations. Any simpler models were judged to be so unlikely that they were not attempted. You can set <code>level=1</code> to force alternative model fitting, but the additional models should lose badly in model selection (please contact me if I am wrong).</p>
