@@ -4,8 +4,8 @@ PRIORITY
 * UERE needs to return an AIC value
 
 OPTIMIZER
-* store best parameter in package env and restart on optimizer crash... with message.
 * check that line search can handle Inf
+* check that target comparisons in beginning can handle Inf target (bad targets)
 
 ERROR PAPER
 * how does error change variogram DOF calculation?

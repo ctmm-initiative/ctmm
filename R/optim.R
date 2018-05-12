@@ -348,8 +348,15 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
     if(class(FN)=="numeric") { FN <- FN/fnscale }
     else
     {
-      par <- par*parscale # store to environmental variable so that I can debug?
-      warning("Objective function failure at c(",paste(names(par),collapse=','),') = c(',paste(par,collapse=','),')')
+      # store to environmental variable so that I can debug?
+      # par <- par*parscale
+      # warning("Objective function failure at c(",paste(names(par),collapse=','),') = c(',paste(par,collapse=','),')')
+
+      # strangely, the above is not working???
+      # debug(ctmm:::kalman)
+      # fn(par*parscale,zero=zero*fnscale,...) -> FN
+      # undebug(ctmm:::kalman)
+
       FN <- Inf
     }
 
@@ -678,8 +685,6 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
           { par.diff <- c(gradient %*% par.dir) / c(par.dir %*% hessian %*% par.dir) * par.dir }
           else # don't divide by zero
           { par.diff <- par.dir }
-
-          # DEBUG <<- list(par.diff=par.diff,gradient=gradient,par.dir=par.dir,hessian=hessian,covariance=covariance,beta=beta,gradient.old=gradient.old)
         }
         else if(any(!TEST))
         {

@@ -66,9 +66,11 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   ZERO <- which(dt==0)
   if(length(ZERO))
   {
+    if(CTMM$error==FALSE) { return(-Inf) }
+    # check for HDOP==1 just in case
     ZERO <- error[ZERO,,,drop=FALSE]
     ZERO <- apply(ZERO,1,det)
-    if(any(ZERO<=0)) { return(Inf) } else { ZERO <- 0 }
+    if(any(ZERO<=0)) { return(-Inf) } else { ZERO <- 0 }
   }
 
   ### what kind of profiling is possible
