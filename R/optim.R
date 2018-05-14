@@ -349,8 +349,8 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
     else
     {
       # store to environmental variable so that I can debug?
-      # par <- par*parscale
-      # warning("Objective function failure at c(",paste(names(par),collapse=','),') = c(',paste(par,collapse=','),')')
+      par <- par*parscale
+      warning("Objective function failure at c(",paste(names(par),collapse=','),') = c(',paste(par,collapse=','),')')
 
       # strangely, the above is not working???
       # debug(ctmm:::kalman)

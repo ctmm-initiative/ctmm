@@ -153,14 +153,16 @@
 <li><p>Increase the allowed number of nested expressions within <code>R</code> via <code>options(expressions=10000)</code> or some other large number.</p></li>
 <li><p>Try a different computer.</p></li>
 </ol></p>
-    <p><b><code><a href='http://www.rdocumentation.org/packages/manipulate/topics/isAvailable'>manipulate::isAvailable</a></code> is not found</b></p>
+    <p><b><code>plot</code> complains about the datatype or has weird errors</b></p>
+<p>Namespace collision sometimes occurs from <code>raster</code> or <code>sp</code> against <code>move</code> and <code>ctmm</code>. Restart <code>R</code> and only load the <code>ctmm</code> package.</p>
+<p><b>North is no longer up after importing data</b></p>
+<p>The default projection in <code>ctmm</code> does not preserve the direction of North, but better preserves distances for elongated distributions. See the <code>projection</code> argument in <code><a href='as.telemetry.html'>as.telemetry</a></code> and the example in <code><a href='projection.html'>projection,telemetry-method</a></code>.</p>
+<p><b><code><a href='variogram.fit.html'>variogram.fit</a></code> has no save button</b></p>
+<p>Maximize the plot window and/or increase your screen resolution.</p>
+<p><b><code><a href='http://www.rdocumentation.org/packages/manipulate/topics/isAvailable'>manipulate::isAvailable</a></code> is not found</b></p>
 <p>You probably have an outdated copy of the <code>manipulate</code> package installed. Update <code>R</code> to the latest version and then update all of your packages. This seems to happen frequently with the MacOS release of <code>R</code>.</p>
     <p><b><code>manipulate</code> panel does not popup in <code><a href='variogram.fit.html'>variogram.fit</a></code> or <code>zoom</code></b></p>
 <p>Click the gear icon in the upper-left corner of the plot window.</p>
-    <p><b><code>plot</code> complains about the datatype or has weird errors</b></p>
-<p>Namespace collision sometimes occurs from <code>raster</code> or <code>sp</code> against <code>move</code> and <code>ctmm</code>. Restart <code>R</code> and only load the <code>ctmm</code> package.</p>
-    <p><b><code><a href='variogram.fit.html'>variogram.fit</a></code> has no save button</b></p>
-<p>Maximize the plot window and/or increase your screen resolution.</p>
     
 
   </div>

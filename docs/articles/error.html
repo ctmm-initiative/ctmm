@@ -85,7 +85,7 @@
       <h1>Telemetry error</h1>
                         <h4 class="author">Christen H. Fleming</h4>
             
-            <h4 class="date">2018-05-11</h4>
+            <h4 class="date">2018-05-13</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/ctmm-initiative/ctmm/blob/master/vignettes/error.Rmd"><code>vignettes/error.Rmd</code></a></small>
       <div class="hidden name"><code>error.Rmd</code></div>
@@ -106,45 +106,44 @@
 <pre><code>## Warning in as.telemetry.data.frame(data, timeformat = timeformat, timezone
 ## = timezone, : VDOP not found. HDOP used as an approximate VDOP, which will
 ## require a separate UERE. See help("uere").</code></pre>
-<pre><code>## Maximum speed of 1.05 m/s observed in Leroy</code></pre>
 <pre><code>## Minimum sampling interval of 13.3 minutes in Leroy</code></pre>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" data-line-number="1"><span class="kw">names</span>(fisher) <span class="co"># imported column names</span></a></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" data-line-number="1"><span class="kw">names</span>(fisher) <span class="co"># imported column names</span></a></code></pre></div>
 <pre><code>##  [1] "timestamp" "longitude" "latitude"  "t"         "HDOP"     
 ##  [6] "VAR.xy"    "z"         "VDOP"      "speed"     "heading"  
 ## [11] "VAR.v"     "x"         "y"         "vx"        "vy"</code></pre>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" data-line-number="1"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(fisher,<span class="dt">error=</span><span class="dv">2</span>) <span class="co"># fisher plot with 95% error discs</span></a></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" data-line-number="1"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(fisher,<span class="dt">error=</span><span class="dv">2</span>) <span class="co"># fisher plot with 95% error discs</span></a></code></pre></div>
 <p><img src="error_files/figure-html/unnamed-chunk-1-1.png" width="700"></p>
 <p>Most GPS devices will only have an <code>HDOP</code> column, which is only proportional to the <code>x</code> and <code>y</code> error standard deviations. The proportionality constant between the HDOP and error standard deviation is known as the user equivalent range error (UERE). The UERE should be estimated from calibration data if not provided by the manufacturer. Without the option of pre-calibrated errors or calibration data, the UERE must be fit simultaneously with the movement model, which is not as reliable. We will cover simultaneous fitting at the end of this vignette.</p>
 <p>In the following wood turtle dataset, we have some calibration data and a turtle track. Note that the calibration data must be collected from the same model device as the tracking data.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" data-line-number="1"><span class="kw">library</span>(ctmm)</a>
-<a class="sourceLine" id="cb9-2" data-line-number="2"><span class="kw">data</span>(turtle)</a>
-<a class="sourceLine" id="cb9-3" data-line-number="3"><span class="kw">names</span>(turtle)</a></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" data-line-number="1"><span class="kw">library</span>(ctmm)</a>
+<a class="sourceLine" id="cb8-2" data-line-number="2"><span class="kw">data</span>(turtle)</a>
+<a class="sourceLine" id="cb8-3" data-line-number="3"><span class="kw">names</span>(turtle)</a></code></pre></div>
 <pre><code>## [1] "Calibration.1" "Calibration.2" "turtle"</code></pre>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" data-line-number="1"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(turtle[<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>],<span class="dt">col=</span><span class="kw">rainbow</span>(<span class="dv">2</span>)) <span class="co"># calibration data only</span></a></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" data-line-number="1"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(turtle[<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>],<span class="dt">col=</span><span class="kw">rainbow</span>(<span class="dv">2</span>)) <span class="co"># calibration data only</span></a></code></pre></div>
 <p><img src="error_files/figure-html/unnamed-chunk-2-1.png" width="700"></p>
 <p>The <code>uere</code> command is used to estimate the UERE parameter from calibration data. Do not use this command on animal tracking data.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" data-line-number="1">UERE &lt;-<span class="st"> </span><span class="kw"><a href="../reference/uere.html">uere</a></span>(turtle[<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>]) <span class="co"># only using calibration data</span></a>
-<a class="sourceLine" id="cb12-2" data-line-number="2">UERE</a></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" data-line-number="1">UERE &lt;-<span class="st"> </span><span class="kw"><a href="../reference/uere.html">uere</a></span>(turtle[<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>]) <span class="co"># only using calibration data</span></a>
+<a class="sourceLine" id="cb11-2" data-line-number="2">UERE</a></code></pre></div>
 <pre><code>## horizontal 
 ##   10.62713</code></pre>
 <p>For GPS data, the UERE will typically be 10-15 meters. The UERE can be assigned to a dataset with the <code>uere&lt;-</code> command.</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" data-line-number="1"><span class="kw"><a href="../reference/uere.html">uere</a></span>(turtle) &lt;-<span class="st"> </span>UERE</a>
-<a class="sourceLine" id="cb14-2" data-line-number="2"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(turtle[[<span class="dv">3</span>]],<span class="dt">error=</span><span class="dv">2</span>) <span class="co"># turtle plot with 95% error discs</span></a></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" data-line-number="1"><span class="kw"><a href="../reference/uere.html">uere</a></span>(turtle) &lt;-<span class="st"> </span>UERE</a>
+<a class="sourceLine" id="cb13-2" data-line-number="2"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(turtle[[<span class="dv">3</span>]],<span class="dt">error=</span><span class="dv">2</span>) <span class="co"># turtle plot with 95% error discs</span></a></code></pre></div>
 <p><img src="error_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
 </div>
 <div id="outlier-detection" class="section level1">
 <h1 class="hasAnchor">
 <a href="#outlier-detection" class="anchor"></a>Outlier detection</h1>
 <p>Now we come to the task of identifying outliers. The <code>outlie</code> function uses error information to estimate straight-line speeds between sampled times and distances from the bulk of the data.</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" data-line-number="1"><span class="kw"><a href="../reference/outlie.html">outlie</a></span>(turtle[[<span class="dv">3</span>]]) -&gt;<span class="st"> </span>OUT</a></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" data-line-number="1"><span class="kw"><a href="../reference/outlie.html">outlie</a></span>(turtle[[<span class="dv">3</span>]]) -&gt;<span class="st"> </span>OUT</a></code></pre></div>
 <p><img src="error_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
 <p>High-speed segments are colored in blue, while distant locations are colored in red. More emphasis is placed on the more extreme locations in the <code>outlie</code> plot. Visually we can see at least one outlier in the wood turtle data. The output of <code>outlie</code> also contains the error-informed speed and distance estimates (in SI units) used to generate the plot.</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" data-line-number="1"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(OUT)</a></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" data-line-number="1"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(OUT)</a></code></pre></div>
 <p><img src="error_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
 <p>A sustained speed of 0.1 m/s is not biologically implausible for a wood turtle, but this location is highly suspicious. After removing the outlier, we can check the data again.</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" data-line-number="1">BAD &lt;-<span class="st"> </span><span class="kw">which.max</span>(OUT<span class="op">$</span>speed)</a>
-<a class="sourceLine" id="cb17-2" data-line-number="2">turtle[[<span class="dv">3</span>]] &lt;-<span class="st"> </span>turtle[[<span class="dv">3</span>]][<span class="op">-</span>BAD,]</a>
-<a class="sourceLine" id="cb17-3" data-line-number="3"><span class="kw"><a href="../reference/outlie.html">outlie</a></span>(turtle[[<span class="dv">3</span>]]) -&gt;<span class="st"> </span>OUT</a></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" data-line-number="1">BAD &lt;-<span class="st"> </span><span class="kw">which.max</span>(OUT<span class="op">$</span>speed)</a>
+<a class="sourceLine" id="cb16-2" data-line-number="2">turtle[[<span class="dv">3</span>]] &lt;-<span class="st"> </span>turtle[[<span class="dv">3</span>]][<span class="op">-</span>BAD,]</a>
+<a class="sourceLine" id="cb16-3" data-line-number="3"><span class="kw"><a href="../reference/outlie.html">outlie</a></span>(turtle[[<span class="dv">3</span>]]) -&gt;<span class="st"> </span>OUT</a></code></pre></div>
 <p><img src="error_files/figure-html/unnamed-chunk-7-1.png" width="700"></p>
 <p>Datasets may have multiple outliers. In pathological situations, there may be no clear separation between the normative data and the outliers. This necessitates a better error model, either by improving inadequate (or absent) HDOP estimates or by employing a heavier tailed error distribution (not yet supported).</p>
 </div>
@@ -166,115 +165,115 @@
 <h3 class="hasAnchor">
 <a href="#fitting-with-small-errors" class="anchor"></a>Fitting with small errors</h3>
 <p>When telemetry errors are relatively small compared to the scale of movement over the sampled time intervals, we can first fit a model without error and use this fit as an initial guess for fitting a model with error. Here we demonstrate this method with Leroy the fisher.</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" data-line-number="1"><span class="co"># ctmm beta optimizer is more reliable here</span></a>
-<a class="sourceLine" id="cb18-2" data-line-number="2"><span class="co"># control &lt;- list(method='pNewton',cores=-1) # use all but 1 core</span></a>
-<a class="sourceLine" id="cb18-3" data-line-number="3">control &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">method=</span><span class="st">'pNewton'</span>,<span class="dt">cores=</span><span class="dv">2</span>) <span class="co"># CRAN policy limits us to 2 processes</span></a>
-<a class="sourceLine" id="cb18-4" data-line-number="4"></a>
-<a class="sourceLine" id="cb18-5" data-line-number="5"><span class="co"># default model guess without error</span></a>
-<a class="sourceLine" id="cb18-6" data-line-number="6">GUESS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.fit.html">ctmm.guess</a></span>(fisher,<span class="dt">interactive=</span><span class="ot">FALSE</span>)</a>
-<a class="sourceLine" id="cb18-7" data-line-number="7"><span class="co"># first fit without telemetry error</span></a>
-<a class="sourceLine" id="cb18-8" data-line-number="8">FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(fisher,GUESS,<span class="dt">control=</span>control)</a>
-<a class="sourceLine" id="cb18-9" data-line-number="9"><span class="kw">summary</span>(FIT)</a></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" data-line-number="1"><span class="co"># ctmm beta optimizer is more reliable here</span></a>
+<a class="sourceLine" id="cb17-2" data-line-number="2"><span class="co"># control &lt;- list(method='pNewton',cores=-1) # use all but 1 core</span></a>
+<a class="sourceLine" id="cb17-3" data-line-number="3">control &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">method=</span><span class="st">'pNewton'</span>,<span class="dt">cores=</span><span class="dv">2</span>) <span class="co"># CRAN policy limits us to 2 processes</span></a>
+<a class="sourceLine" id="cb17-4" data-line-number="4"></a>
+<a class="sourceLine" id="cb17-5" data-line-number="5"><span class="co"># default model guess without error</span></a>
+<a class="sourceLine" id="cb17-6" data-line-number="6">GUESS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.fit.html">ctmm.guess</a></span>(fisher,<span class="dt">interactive=</span><span class="ot">FALSE</span>)</a>
+<a class="sourceLine" id="cb17-7" data-line-number="7"><span class="co"># first fit without telemetry error</span></a>
+<a class="sourceLine" id="cb17-8" data-line-number="8">FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(fisher,GUESS,<span class="dt">control=</span>control)</a>
+<a class="sourceLine" id="cb17-9" data-line-number="9"><span class="kw">summary</span>(FIT)</a></code></pre></div>
 <pre><code>## $DOF
 ##     mean     area 
-## 15.74707 28.38284 
+## 15.74707 28.38283 
 ## 
 ## $CI
 ##                               low       ML     high
-## area (square kilometers) 32.95717 49.44646 69.22741
-## tau position (hours)     10.12899 16.43810 26.67701
+## area (square kilometers) 32.95717 49.44647 69.22742
+## tau position (hours)     10.12898 16.43810 26.67702
 ## tau velocity (minutes)   10.50829 11.97002 13.63509
 ## speed (kilometers/day)   29.60930 30.62564 31.64153</code></pre>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb20-1" data-line-number="1"><span class="co"># second fit based on first, but with telemetry error activated</span></a>
-<a class="sourceLine" id="cb20-2" data-line-number="2">GUESS &lt;-<span class="st"> </span>FIT</a>
-<a class="sourceLine" id="cb20-3" data-line-number="3">GUESS<span class="op">$</span>error &lt;-<span class="st"> </span><span class="ot">TRUE</span></a>
-<a class="sourceLine" id="cb20-4" data-line-number="4">FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(fisher,GUESS,<span class="dt">control=</span>control)</a>
-<a class="sourceLine" id="cb20-5" data-line-number="5"><span class="kw">summary</span>(FIT)</a></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" data-line-number="1"><span class="co"># second fit based on first, but with telemetry error activated</span></a>
+<a class="sourceLine" id="cb19-2" data-line-number="2">GUESS &lt;-<span class="st"> </span>FIT</a>
+<a class="sourceLine" id="cb19-3" data-line-number="3">GUESS<span class="op">$</span>error &lt;-<span class="st"> </span><span class="ot">TRUE</span></a>
+<a class="sourceLine" id="cb19-4" data-line-number="4">FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(fisher,GUESS,<span class="dt">control=</span>control)</a>
+<a class="sourceLine" id="cb19-5" data-line-number="5"><span class="kw">summary</span>(FIT)</a></code></pre></div>
 <pre><code>## $DOF
 ##     mean     area 
-## 16.61247 29.61525 
+## 16.61247 29.61524 
 ## 
 ## $CI
-##                                low       ML     high
-## area (square kilometers) 32.778870 48.71956 67.76888
-## tau position (hours)      9.603142 15.45319 24.86698
-## tau velocity (minutes)   11.781377 13.47104 15.40303
-## speed (kilometers/day)   28.583662 29.61325 30.64235</code></pre>
+##                               low       ML     high
+## area (square kilometers) 32.77887 48.71956 67.76888
+## tau position (hours)      9.60314 15.45319 24.86697
+## tau velocity (minutes)   11.78138 13.47104 15.40303
+## speed (kilometers/day)   28.58366 29.61325 30.64234</code></pre>
 </div>
 <div id="fitting-with-large-errors" class="section level3">
 <h3 class="hasAnchor">
 <a href="#fitting-with-large-errors" class="anchor"></a>Fitting with large errors</h3>
 <p>When telemetry errors are relatively large, we might fit an isotropic (circular) model first and then use that fit to construct an initial guess for an anisotropic (elliptical) model. Here we demonstrate this method with a wood turtle.</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb22-1" data-line-number="1"><span class="co"># automated guestimates with circular covariance and calibrated errors</span></a>
-<a class="sourceLine" id="cb22-2" data-line-number="2">GUESS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.fit.html">ctmm.guess</a></span>(turtle[[<span class="dv">3</span>]],<span class="dt">CTMM=</span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">error=</span><span class="ot">TRUE</span>,<span class="dt">isotropic=</span><span class="ot">TRUE</span>),<span class="dt">interactive=</span><span class="ot">FALSE</span>)</a>
-<a class="sourceLine" id="cb22-3" data-line-number="3"><span class="co"># first fit circular model</span></a>
-<a class="sourceLine" id="cb22-4" data-line-number="4">FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(turtle[[<span class="dv">3</span>]],GUESS,<span class="dt">control=</span>control)</a>
-<a class="sourceLine" id="cb22-5" data-line-number="5"><span class="kw">summary</span>(FIT)</a></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb21-1" data-line-number="1"><span class="co"># automated guestimates with circular covariance and calibrated errors</span></a>
+<a class="sourceLine" id="cb21-2" data-line-number="2">GUESS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.fit.html">ctmm.guess</a></span>(turtle[[<span class="dv">3</span>]],<span class="dt">CTMM=</span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">error=</span><span class="ot">TRUE</span>,<span class="dt">isotropic=</span><span class="ot">TRUE</span>),<span class="dt">interactive=</span><span class="ot">FALSE</span>)</a>
+<a class="sourceLine" id="cb21-3" data-line-number="3"><span class="co"># first fit circular model</span></a>
+<a class="sourceLine" id="cb21-4" data-line-number="4">FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(turtle[[<span class="dv">3</span>]],GUESS,<span class="dt">control=</span>control)</a>
+<a class="sourceLine" id="cb21-5" data-line-number="5"><span class="kw">summary</span>(FIT)</a></code></pre></div>
 <pre><code>## $DOF
 ##     mean     area 
 ## 11.02207 21.75032 
 ## 
 ## $CI
 ##                               low         ML      high
-## area (hectares)         20.994061  33.600050  49.12254
-## tau position (days)      4.020575   7.298895  13.25031
-## tau velocity (minutes)   0.000000  33.520590  91.58042
-## speed (meters/day)     118.899635 458.395553 814.35952</code></pre>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb24-1" data-line-number="1"><span class="co"># create elliptical model guess</span></a>
-<a class="sourceLine" id="cb24-2" data-line-number="2">GUESS &lt;-<span class="st"> </span>FIT</a>
-<a class="sourceLine" id="cb24-3" data-line-number="3">GUESS<span class="op">$</span>isotropic &lt;-<span class="st"> </span><span class="ot">FALSE</span></a>
-<a class="sourceLine" id="cb24-4" data-line-number="4"><span class="co"># populate eccentricity and orientation with guesstimates</span></a>
-<a class="sourceLine" id="cb24-5" data-line-number="5">GUESS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.fit.html">ctmm.guess</a></span>(turtle[[<span class="dv">3</span>]],<span class="dt">CTMM=</span>GUESS,<span class="dt">interactive=</span><span class="ot">FALSE</span>)</a>
-<a class="sourceLine" id="cb24-6" data-line-number="6"><span class="co"># second fit elliptical model</span></a>
-<a class="sourceLine" id="cb24-7" data-line-number="7">FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(turtle[[<span class="dv">3</span>]],GUESS,<span class="dt">control=</span>control)</a>
-<a class="sourceLine" id="cb24-8" data-line-number="8"><span class="co"># velocity does not appear supported</span></a>
-<a class="sourceLine" id="cb24-9" data-line-number="9"><span class="kw">summary</span>(FIT)</a></code></pre></div>
+## area (hectares)         20.994062  33.600049  49.12254
+## tau position (days)      4.020575   7.298894  13.25031
+## tau velocity (minutes)   0.000000  33.520594  91.58043
+## speed (meters/day)     118.899664 458.395528 814.35943</code></pre>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb23-1" data-line-number="1"><span class="co"># create elliptical model guess</span></a>
+<a class="sourceLine" id="cb23-2" data-line-number="2">GUESS &lt;-<span class="st"> </span>FIT</a>
+<a class="sourceLine" id="cb23-3" data-line-number="3">GUESS<span class="op">$</span>isotropic &lt;-<span class="st"> </span><span class="ot">FALSE</span></a>
+<a class="sourceLine" id="cb23-4" data-line-number="4"><span class="co"># populate eccentricity and orientation with guesstimates</span></a>
+<a class="sourceLine" id="cb23-5" data-line-number="5">GUESS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.fit.html">ctmm.guess</a></span>(turtle[[<span class="dv">3</span>]],<span class="dt">CTMM=</span>GUESS,<span class="dt">interactive=</span><span class="ot">FALSE</span>)</a>
+<a class="sourceLine" id="cb23-6" data-line-number="6"><span class="co"># second fit elliptical model</span></a>
+<a class="sourceLine" id="cb23-7" data-line-number="7">FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(turtle[[<span class="dv">3</span>]],GUESS,<span class="dt">control=</span>control)</a>
+<a class="sourceLine" id="cb23-8" data-line-number="8"><span class="co"># velocity does not appear supported</span></a>
+<a class="sourceLine" id="cb23-9" data-line-number="9"><span class="kw">summary</span>(FIT)</a></code></pre></div>
 <pre><code>## $DOF
 ##     mean     area 
-## 13.04392 25.20265 
+## 13.04392 25.20268 
 ## 
 ## $CI
 ##                              low         ML       high
-## area (hectares)        12.272167  18.926634   26.99957
-## tau position (days)     3.482668   6.068069   10.57278
-## tau velocity (minutes)  0.000000  24.001770   90.70232
-## speed (meters/day)     22.733260 541.524011 1188.56292</code></pre>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb26-1" data-line-number="1"><span class="co"># proceed with model selection</span></a>
-<a class="sourceLine" id="cb26-2" data-line-number="2">FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.select</a></span>(turtle[[<span class="dv">3</span>]],FIT,<span class="dt">control=</span>control)</a>
-<a class="sourceLine" id="cb26-3" data-line-number="3"><span class="co"># velocity was not supported by this data</span></a>
-<a class="sourceLine" id="cb26-4" data-line-number="4"><span class="kw">summary</span>(FIT)</a></code></pre></div>
+## area (hectares)        12.272166  18.926628   26.99955
+## tau position (days)     3.482668   6.068068   10.57277
+## tau velocity (minutes)  0.000000  24.001744   90.70230
+## speed (meters/day)     22.733115 541.524259 1188.56408</code></pre>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb25-1" data-line-number="1"><span class="co"># proceed with model selection</span></a>
+<a class="sourceLine" id="cb25-2" data-line-number="2">FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.select</a></span>(turtle[[<span class="dv">3</span>]],FIT,<span class="dt">control=</span>control)</a>
+<a class="sourceLine" id="cb25-3" data-line-number="3"><span class="co"># velocity was not supported by this data</span></a>
+<a class="sourceLine" id="cb25-4" data-line-number="4"><span class="kw">summary</span>(FIT)</a></code></pre></div>
 <pre><code>## $DOF
 ##     mean     area 
-## 12.60023 24.41847 
+## 12.60023 24.41845 
 ## 
 ## $CI
-##                          low        ML     high
-## area (hectares)     12.19313 18.949533 27.17159
-## tau position (days)  3.69292  6.318502 10.81081</code></pre>
+##                           low        ML     high
+## area (hectares)     12.193129 18.949539 27.17160
+## tau position (days)  3.692919  6.318503 10.81082</code></pre>
 <p>Note also that we performed model selection with a fit (which would then be re-fit) as our initial guess, rather than the raw guess output of <code>ctmm.guess</code> or <code>variogram.fit</code>. This helps ensure convergence in the optimizer.</p>
 </div>
 <div id="fitting-with-unknown-errors" class="section level3">
 <h3 class="hasAnchor">
 <a href="#fitting-with-unknown-errors" class="anchor"></a>Fitting with unknown errors</h3>
 <p>Fitting with unknown errors is a method of last resort. Let’s consider the turtle data again, but without calibrated UERE.</p>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb28-1" data-line-number="1"><span class="co"># delete UERE information</span></a>
-<a class="sourceLine" id="cb28-2" data-line-number="2"><span class="kw"><a href="../reference/uere.html">uere</a></span>(turtle[[<span class="dv">3</span>]]) &lt;-<span class="st"> </span><span class="ot">NULL</span></a></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb27-1" data-line-number="1"><span class="co"># delete UERE information</span></a>
+<a class="sourceLine" id="cb27-2" data-line-number="2"><span class="kw"><a href="../reference/uere.html">uere</a></span>(turtle[[<span class="dv">3</span>]]) &lt;-<span class="st"> </span><span class="ot">NULL</span></a></code></pre></div>
 <p>The only difference is that you have to provide an initial guess for the UERE. Otherwise, the steps are the same.</p>
-<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb29-1" data-line-number="1"><span class="co"># cheat and use previous fit as initial guess</span></a>
-<a class="sourceLine" id="cb29-2" data-line-number="2">GUESS &lt;-<span class="st"> </span>FIT</a>
-<a class="sourceLine" id="cb29-3" data-line-number="3">GUESS<span class="op">$</span>error &lt;-<span class="st"> </span><span class="dv">10</span> <span class="co"># 10 meter error guess</span></a>
-<a class="sourceLine" id="cb29-4" data-line-number="4"><span class="co"># fit parameter estimates</span></a>
-<a class="sourceLine" id="cb29-5" data-line-number="5">FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(turtle[[<span class="dv">3</span>]],GUESS,<span class="dt">control=</span>control)</a>
-<a class="sourceLine" id="cb29-6" data-line-number="6"><span class="kw">summary</span>(FIT)</a></code></pre></div>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb28-1" data-line-number="1"><span class="co"># cheat and use previous fit as initial guess</span></a>
+<a class="sourceLine" id="cb28-2" data-line-number="2">GUESS &lt;-<span class="st"> </span>FIT</a>
+<a class="sourceLine" id="cb28-3" data-line-number="3">GUESS<span class="op">$</span>error &lt;-<span class="st"> </span><span class="dv">10</span> <span class="co"># 10 meter error guess</span></a>
+<a class="sourceLine" id="cb28-4" data-line-number="4"><span class="co"># fit parameter estimates</span></a>
+<a class="sourceLine" id="cb28-5" data-line-number="5">FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(turtle[[<span class="dv">3</span>]],GUESS,<span class="dt">control=</span>control)</a>
+<a class="sourceLine" id="cb28-6" data-line-number="6"><span class="kw">summary</span>(FIT)</a></code></pre></div>
 <pre><code>## $DOF
 ##     mean     area 
-## 13.46151 25.98178 
+## 13.46152 25.98179 
 ## 
 ## $CI
-##                           low        ML     high
-## area (hectares)     12.604531 19.298798 27.39617
-## tau position (days)  3.467312  5.882936  9.98149
-## error (meters)       7.804842  9.317617 10.82763</code></pre>
+##                           low        ML      high
+## area (hectares)     12.604531 19.298796 27.396168
+## tau position (days)  3.467312  5.882935  9.981487
+## error (meters)       7.804842  9.317617 10.827627</code></pre>
 </div>
 </div>
 </div>

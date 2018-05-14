@@ -74,12 +74,18 @@ unit <- function(data,dimension,thresh=1,concise=FALSE)
 ## rescale the units of telemetry object
 unit.telemetry <- function(data,length=1,time=1)
 {
-  data$x <- data$x/length
-  data$y <- data$y/length
-  data$t <- data$t/length
+  convert <- function(NAMES,scale) { for(NAME in NAMES) { if(NAME %in% names(data)) { data[[NAME]] <<- data[[NAME]]/scale } } }
 
-  # error in meters
-  if("HERE" %in% names(data)) { data$HERE <- data$HERE/length }
+  convert(DOP.LIST$horizontal$axes,length)
+  convert('t',time)
+  convert(DOP.LIST$speed$axes,length/time)
+
+  convert(DOP.LIST$horizontal$VAR,length^2)
+  convert(DOP.LIST$horizontal$COV,length^2)
+
+  convert(DOP.LIST$speed$VAR,(length/time)^2)
+  convert(DOP.LIST$speed$COV,(length/time)^2)
+
   # HDOP is unitless
 
   return(data)

@@ -1,34 +1,3 @@
-median.telemetry <- function(x,na.rm=FALSE,...)
-{
-  x <- listify(x)
-
-  id <- paste0("median of ",mean.info(x)$identity)
-  proj <- projection(x[[1]])
-  tz <- attr(x[[1]],'info')$timezone
-  x <- do.call(rbind,x)
-
-  t <- stats::median(x$t)
-  timestamp <- as.character(as.POSIXct(t,tz=tz,origin="1970/01/01"))
-
-  if(all(c("longitude","latitude") %in% names(x)))
-  {
-    long <- stats::median(x$longitude)
-    lat <- stats::median(x$latitude)
-
-    x <- data.frame(timestamp=timestamp,t=t,longitude=long,latitude=lat)
-    x <- new.telemetry(x,info=list(identity=id,projection=proj,timezone=tz))
-    projection(x) <- proj
-  }
-  else
-  {
-    x <- data.frame(timestamp=timestamp,t=t,x=stats::median(x$x),y=stats::median(x$y))
-    x <- new.telemetry(x,info=list(identity=id,projection=proj,timezone=tz))
-  }
-
-  return(x)
-}
-
-
 # estimate and assign speeds to times
 outlie <- function(data,UERE=10,standardize=FALSE,plot=TRUE,...)
 {

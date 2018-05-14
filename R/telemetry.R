@@ -210,10 +210,6 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
 
   DATA$t <- as.numeric(DATA$timestamp)
 
-  if(class(projection)=="CRS") { projection <- as.character(projection) }
-  if(is.null(projection)) { projection <- suggest.projection(DATA) }
-  else { validate.projection(projection) }
-
   ###################################
   # ERROR INFORMATION
 
@@ -349,9 +345,6 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     }
   } # END SPEED IMPORT
 
-  # now enforce projection
-  DATA <- "projection<-.telemetry"(DATA,projection)
-
   #######################################
   # do this or possibly get empty animals from subset
   DATA <- droplevels(DATA)
@@ -386,7 +379,13 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     COL <- c("COV.angle","COV.major","COV.minor")
     telist[[i]] <- rm.incomplete(telist[[i]],COL)
   }
+  rm(DATA)
   names(telist) <- id
+
+  # determine projection without bias towards individuals
+  if(is.null(projection)) { proj <- median.telemetry(telist,k=2) }
+  # enforce projection
+  telist <- "projection<-.list"(telist,proj)
 
   # finally set the UERE if present
   if(!is.null(UERE)) { uere(telist) <- UERE }
@@ -429,9 +428,9 @@ telemetry.clean <- function(data,id)
   data <- droplevels(data)
 
   dt <- diff(data$t)
-  v <- sqrt(diff(data$x)^2+diff(data$y)^2)/dt
-  v <- max(v)
-  message("Maximum speed of ",format(v,digits=3)," m/s observed in ",id)
+  # v <- sqrt(diff(data$x)^2+diff(data$y)^2)/dt
+  # v <- max(v)
+  # message("Maximum speed of ",format(v,digits=3)," m/s observed in ",id)
   dt <- min(dt)
   units <- unit(dt,dimension='time')
   message("Minimum sampling interval of ",format(dt/units$scale,digits=3)," ",units$name," in ",id)

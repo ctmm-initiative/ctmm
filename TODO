@@ -3,10 +3,6 @@ PRIORITY
 * reference Guillaume's paper at the beginning of the periodogram vignette
 * UERE needs to return an AIC value
 
-OPTIMIZER
-* check that line search can handle Inf
-* check that target comparisons in beginning can handle Inf target (bad targets)
-
 ERROR PAPER
 * how does error change variogram DOF calculation?
 * errors on x,y,z variograms

@@ -50,6 +50,18 @@
 }}
 
 
+\bold{\code{plot} complains about the datatype or has weird errors}
+
+{Namespace collision sometimes occurs from \code{raster} or \code{sp} against \code{move} and \code{ctmm}. Restart \code{R} and only load the \code{ctmm} package.}
+
+\bold{North is no longer up after importing data}
+
+{The default projection in \code{ctmm} does not preserve the direction of North, but better preserves distances for elongated distributions. See the \code{projection} argument in \code{\link{as.telemetry}} and the example in \code{\link[ctmm]{projection,telemetry-method}}.}
+
+\bold{\code{\link{variogram.fit}} has no save button}
+
+{Maximize the plot window and/or increase your screen resolution.}
+
 \bold{\code{manipulate::isAvailable} is not found}
 
 {You probably have an outdated copy of the \code{manipulate} package installed. Update \code{R} to the latest version and then update all of your packages. This seems to happen frequently with the MacOS release of \code{R}.}
@@ -58,17 +70,6 @@
 \bold{\code{manipulate} panel does not popup in \code{\link{variogram.fit}} or \code{\link{zoom}}}
 
 {Click the gear icon in the upper-left corner of the plot window.}
-
-
-\bold{\code{plot} complains about the datatype or has weird errors}
-
-{Namespace collision sometimes occurs from \code{raster} or \code{sp} against \code{move} and \code{ctmm}. Restart \code{R} and only load the \code{ctmm} package.}
-
-
-\bold{\code{\link{variogram.fit}} has no save button}
-
-{Maximize the plot window and/or increase your screen resolution.}
-
 }
 
 
