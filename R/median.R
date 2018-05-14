@@ -53,6 +53,8 @@ median.telemetry <- function(x,na.rm=FALSE,...)
       id <- mean.info(x)$identity
       # is there a common projection to preserve
       proj <- sapply(x,projection.telemetry)
+      proj <- unlist(proj) # need for multiple NULLs
+
       if(length(proj)<length(x))
       { proj <- NULL }
       else
