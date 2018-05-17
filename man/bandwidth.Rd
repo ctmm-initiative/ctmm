@@ -49,7 +49,7 @@ Rigorous home-range estimation with movement data: A new autocorrelated kernel-d
 \href{http://www.esajournals.org/doi/abs/10.1890/14-2010.1}{Ecology, 96:5, 1182-1188 (2015)}.
 
 C. H. Fleming, D. Sheldon, W. F. Fagan, P. Leimgruber, T. Mueller, D. Nandintsetseg, M. J. Noonan, K. A. Olson, E. Setyawan, A. Sianipar, J. M. Calabrese.
-Correcting for missing and irregular data in home-range estimation.
+Correcting for missing and irregular data in home‐range estimation.
 \href{https://esajournals.onlinelibrary.wiley.com/doi/abs/10.1002/eap.1704}{Ecological Applications, 10.1002/eap.1704 (2018)}.
 }
 

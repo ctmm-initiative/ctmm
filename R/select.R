@@ -129,12 +129,7 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
   {
     for(i in 2:P)
     {
-      # set scale by upper CI if point estimate is zero
-      PAR <- par[i,2:3]
-      PAR <- PAR[PAR>0]
-      if(length(PAR)) { PAR <- min(PAR) } else { PAR <- 0 }
-
-      unit.list <- unit(PAR,"time",thresh=thresh)
+      unit.list <- unit(par[i,2],"time",thresh=thresh)
       name[i] <- unit.list$name
       scale[i] <- unit.list$scale
     }

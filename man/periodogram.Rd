@@ -5,7 +5,7 @@
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Calculate the Lomb-Scargle periodogram of animal-tracking data}
 \description{
-This function calculates isotropic Lomb-Scargle periodogram (LSP, Scargle, 1982) from a telemetry object. One of two algorithms is used. The slow \eqn{O(n^2)} algorithm vectorizes the exact relations of Scargle (1982), while the fast \eqn{O(n \log n)} algorithm uses the FFT method described in Péron & Fleming et al (2016). The latter method is exact if the data are evenly scheduled, permitting gaps, and otherwise it can be made arbitrarily precise via the \code{res.time} option.
+This function calculates isotropic Lomb-Scargle periodogram (LSP, Scargle, 1982) from a telemetry object. One of two algorithms is used. The slow \eqn{O(n^2)} algorithm vectorizes the exact relations of Scargle (1982), while the fast \eqn{O(n \log n)} algorithm uses the FFT method described in Péron et al (2016). The latter method is exact if the data are evenly scheduled, permitting gaps, and otherwise it can be made arbitrarily precise via the \code{res.time} option.
 }
 \usage{
 periodogram(data,CTMM=NULL,dt=NULL,res.freq=1,res.time=1,fast=NULL,axes=c("x","y"))
@@ -37,7 +37,7 @@ At default resolution the frequency grid interval is given by \code{1/(2*(range(
 
 If a \code{CTMM} argument is provided, the ML mean will be detrended from the data prior to calculating the periodogram. Otherwise, the sample mean will be detrended.
 
-If a list of \code{telemetry} objects are fed into \code{periodogram}, then a mean \code{periodogram} object will be returned with the default \code{dt} and base frequency resolution selected on a worst case basis according to the method described by Péron & Fleming et al (2016).
+If a list of \code{telemetry} objects are fed into \code{periodogram}, then a mean \code{periodogram} object will be returned with the default \code{dt} and base frequency resolution selected on a worst case basis according to the method described by Péron et al (2016).
 }
 
 \value{

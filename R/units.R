@@ -6,27 +6,27 @@ unit <- function(data,dimension,thresh=1,concise=FALSE)
 {
   if(dimension=="length")
   {
-    name.list <- c("microns","milimeters","centimeters","meters","kilometers")
-    abrv.list <- c("\u03BCm","mm","cm","m","km")
-    scale.list <- c(1E-6,1/1000,1/100,1,1000)
+    name.list <- c("meters","kilometers")
+    abrv.list <- c("m","km")
+    scale.list <- c(1,1000)
   }
   else if(dimension=="area")
   {
-    name.list <- c("square microns","square milimeters","square centimeters","square meters","hectares","square kilometers")
-    abrv.list <- c("\u03BCm\u00B2","mm\u00B2","cm\u00B2","m\u00B2","hm\u00B2","km\u00B2")
-    scale.list <- c(1E-12,1/1000^2,1/100^2,1,100^2,1000^2)
+    name.list <- c("square meters","hectares","square kilometers")
+    abrv.list <- c("m\u00B2","hm\u00B2","km\u00B2")
+    scale.list <- c(1,100^2,1000^2)
   }
   else if(dimension=="time")
   {
-    name.list <- c("microseconds","miliseconds","seconds","minutes","hours","days","months","years")
-    abrv.list <- c("\u03BCs","ms","sec","min","hr","day","mon","yr")
-    scale.list <- c(1E-6,1/1000,1,60*c(1,60*c(1,24*c(1,29.53059,365.24))))
+    name.list <- c("seconds","minutes","hours","days","months","years")
+    abrv.list <- c("sec","min","hr","day","mon","yr")
+    scale.list <- c(1,60*c(1,60*c(1,24*c(1,29.53059,365.24))))
   }
   else if(dimension=="speed")
   {
-    name.list <- c("microns/day","milimeters/day","centimeters/day","meters/day","kilometers/day")
-    abrv.list <- c("\u03BCm/day","mm/day","cm/day","m/day","km/day")
-    scale.list <- c(1E-6,1/1000,1/100,1,1000)/(60*60*24)
+    name.list <- c("meters/day","kilometers/day")
+    abrv.list <- c("m/day","km/day")
+    scale.list <- c(1,1000)/(60*60*24)
 
     # SI units fix
     if(thresh==Inf)
@@ -38,9 +38,9 @@ unit <- function(data,dimension,thresh=1,concise=FALSE)
   }
   else if(dimension=="diffusion")
   {
-    name.list <- c("square microns/day","square milimeters/day","square centimeters/day","square meters/day","hectares/day","square kilometers/day")
-    abrv.list <- c("\u03BCm\u00B2/day","mm\u00B2/day","cm\u00B2/day","m\u00B2/day","hm\u00B2/day","km\u00B2/day")
-    scale.list <- c(1E-12,1/1000^2,1/100^2,1,100^2,1000^2)/(60*60*24)
+    name.list <- c("square meters/day","hectares/day","square kilometers/day")
+    abrv.list <- c("m\u00B2/day","hm\u00B2/day","km\u00B2/day")
+    scale.list <- c(1,100^2,1000^2)/(60*60*24)
 
     # SI units fix
     if(thresh==Inf)
@@ -207,8 +207,6 @@ unit.variogram <- function(SVF,time=1,area=1)
   }
 
   # TIME
-  add(c("\u03BCs","\u03BCs.","microsecond","microseconds"),1E-6)
-  add(c("ms","ms.","milisecond","miliseconds"),1/1000)
   add(c("s","s.","sec","sec.","second","seconds"),1)
   add(c("min","min.","minute","minutes"),60)
   add(c("h","h.","hr","hr.","hour","hours"),60^2)
@@ -218,9 +216,6 @@ unit.variogram <- function(SVF,time=1,area=1)
   add(c("yr","yr.","year","years"),365.24*7*24*60^2)
 
   # Distance conversions
-  add(c("\u03BCm","\u03BCm.","micron","microns","micrometer","micrometers"),1E-6)
-  add(c("mm","mm.","milimeter","milimeters"),1/1000)
-  add(c("cm","cm.","centimeter","centimeters"),1/100)
   add(c("m","m.","meter","meters"),1)
   add(c("km","km.","kilometer","kilometers"),1000)
   add(c("in","in.","inch","inches"),0.3048/12)
@@ -229,9 +224,6 @@ unit.variogram <- function(SVF,time=1,area=1)
   add(c("mi","mi.","mile","miles"),0.3048*5280)
 
   # Area conversions
-  add(c("\u03BCm\u00B2","\u03BCm.\u00B2","micron\u00B2","microns\u00B2","micrometer\u00B2","micrometers\u00B2","\u03BCm^2","\u03BCm.^2","micron^2","microns^2","micrometer^2","micrometers^2","square micron","square microns","square micrometer","square micrometers","micron squared","microns squared","micrometer squared","micrometers squared"),1E-12)
-  add(c("mm\u00B2","mm.\u00B2","milimeter\u00B2","milimeters\u00B2","mm^2","mm.^2","milimeter^2","milimeters^2","square milimeter","square milimeters","milimeter squared","milimeters squared"),1/1000^2)
-  add(c("cm\u00B2","cm.\u00B2","centimeter\u00B2","centimeters\u00B2","cm^2","cm.^2","centimeter^2","centimeters^2","square centimeter","square centimeters","centimeter squared","centimeters squared"),1/100^2)
   add(c("m\u00B2","m.\u00B2","meter\u00B2","meters\u00B2","m^2","m.^2","meter^2","meters^2","square meter","square meters","meter squared","meters squared"),1)
   add(c("ha","hectare","hectares","hm\u00B2","hectometer\u00B2","hectometre\u00B2","hectometers\u00B2","hectometres\u00B2","hm^2","hectometer^2","hectometre^2","hectometers^2","hectometres^2","square hm","square hectometer","square hectometre","square hectometers","square hectometres"),100^2)
   add(c("km\u00B2","km.\u00B2","kilometer\u00B2","kilometers\u00B2","km^2","km.^2","kilometer^2","kilometers^2","square kilometer","square kilometers","kilometer squared","kilometers squared"),1000^2)

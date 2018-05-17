@@ -526,7 +526,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
     if(COV || method %in% c("pREML","pHREML","HREML"))
     {
       if(trace) { message("Calculating Hessian.") }
-      DIFF <- genD(par=pars,fn=fn,zero=-CTMM$loglike,lower=lower,upper=upper,parscale=parscale,Richardson=2,mc.cores=1)
+      DIFF <- genD(par=pars,fn=fn,zero=-CTMM$loglike,lower=lower,upper=upper,covariance=covariance(),parscale=parscale,Richardson=2,mc.cores=1)
       hess <- DIFF$hessian
       grad <- DIFF$gradient
 
@@ -548,7 +548,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
       REML <- TRUE
       #ML.grad <- grad # save old ML gradient
       if(trace) { message("Calculating REML gradient.") }
-      DIFF <- genD(par=pars,fn=fn,zero=-CTMM$loglike,lower=lower,upper=upper,parscale=parscale,Richardson=2,order=1,mc.cores=1)
+      DIFF <- genD(par=pars,fn=fn,zero=-CTMM$loglike,lower=lower,upper=upper,covariance=CTMM$COV,parscale=parscale,Richardson=2,order=1,mc.cores=1,jacobian=FALSE)
 
       # trying to make this robust here
       # COV is -1/Hessian, grad is of -loglike
@@ -610,7 +610,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
 
       if(trace) { message("Calculating REML Hessian.") }
       # calcualte REML Hessian at pREML parameters
-      DIFF <- genD(par=pars,fn=fn,zero=-CTMM$loglike,lower=lower,upper=upper,parscale=parscale,Richardson=2,mc.cores=1)
+      DIFF <- genD(par=pars,fn=fn,zero=-CTMM$loglike,lower=lower,upper=upper,covariance=covariance(),parscale=parscale,Richardson=2,mc.cores=1)
       # Using MLE gradient, which should be zero off boundary
       CTMM$COV <- cov.loglike(DIFF$hessian,grad)
     }

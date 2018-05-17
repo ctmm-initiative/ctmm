@@ -10,20 +10,18 @@ Fleming et al (2014) <doi:10.1086/675504>,
 Fleming et al (2014) <doi:10.1111/2041-210X.12176>,
 Fleming et al (2015) <doi:10.1890/14-2010.1>,
 Fleming et al (2016) <doi:10.1890/15-1607>,
-Péron & Fleming et al (2016) <doi:10.1186/s40462-016-0084-7>,
+Péron et al (2016) <doi:10.1186/s40462-016-0084-7>,
 Fleming & Calabrese (2016) <doi:10.1111/2041-210X.12673>,
 Péron et al (2017) <doi:10.1002/ecm.1260>,
-Fleming et al (2017) <doi:10.1016/j.ecoinf.2017.04.008>,
-Fleming et al (2018) <doi:10.1002/eap.1704>,
 and
-Winner & Noonan et al (2018) <doi:10.1111/2041-210X.13027>.
+Fleming et al (2017) <doi:10.1016/j.ecoinf.2017.04.008>.
 }
 \details{
 \tabular{ll}{
 Package: \tab ctmm\cr
 Type: \tab Package\cr
-Version: \tab 0.5.1 \cr
-Date: \tab 2018-05-17 \cr
+Version: \tab 0.5.0 \cr
+Date: \tab 2018-05-13 \cr
 License: \tab GPL-3 \cr
 }
 
@@ -84,15 +82,8 @@ Periodic continuous-time movement models uncover behavioral changes of wild cani
 C. H. Fleming, D. Sheldon, E. Gurarie, W. F. Fagan, S. LaPoint, J. M. Calabrese.
 Kálmán filters for continuous-time movement models.
 \href{http://www.sciencedirect.com/science/article/pii/S1574954117301115}{Ecological Informatics, 40, 8-21 (2017)}.
-
-C. H. Fleming, D. Sheldon, W. F. Fagan, P. Leimgruber, T. Mueller, D. Nandintsetseg, M. J. Noonan, K. A. Olson, E. Setyawan, A. Sianipar, J. M. Calabrese.
-Correcting for missing and irregular data in home-range estimation.
-\href{https://esajournals.onlinelibrary.wiley.com/doi/10.1002/eap.1704}{Ecological Applications, DOI:10.1002/eap.1704 (2018)}.
-
-K. Winner, M. J. Noonan, C. H. Fleming, K. Olson, T. Mueller, D. Sheldon, J. M. Calabrese.
-Statistical inference for home range overlap.
-\href{https://besjournals.onlinelibrary.wiley.com/doi/10.1111/2041-210X.13027}{Methods in Ecology and Evolution, DOI:10.1111/2041-210X.13027 (2018)}.
 }
+
 
 %~~ Optionally other standard keywords, one per line, from file KEYWORDS in ~~
 %~~ the R documentation directory ~~

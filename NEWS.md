@@ -1,9 +1,4 @@
-ctmm 0.5.1 (2018-05-17)
-================
-
-  * Units of measurement down to microns and microseconds now supported.
-
-ctmm 0.5.0 (2018-05-15)
+ctmm 0.5.0 (2018-05-13)
 ================
 
   * Extensive re-write of the Kalman filter & smoother, now supporting an arbitrary number of spatial dimensions, necessary for ARGOS error ellipse support. (Previously, all multi-dimensional problems were transformed into multiple one-dimensional problems.) Many new models will be supported going forward, based on the v0.5.0 code.

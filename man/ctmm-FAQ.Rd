@@ -21,10 +21,10 @@
 }
 
 \bold{Help installing packages on Linux}
-
-{These are the packages I needed in Ubuntu:
-
-\code{sudo apt install fftw3 fftw3-dev libgdal1-dev libproj-dev libgeos-dev r-base-core}}
+\itemize{
+\item{These are the packages I needed in Ubuntu: \code{sudo apt install fftw3 fftw3-dev libgdal1-dev libproj-dev libgeos-dev r-base-core}}
+\item{See Xianghui Dong's installation tips \href{https://github.com/ctmm-initiative/ctmmweb/blob/master/README-install.md}{here}.}
+}
 
 \bold{\code{ctmm.select} only returns one model with \code{verbose=TRUE}}
 
@@ -56,7 +56,7 @@
 
 \bold{North is no longer up after importing data}
 
-{The default projection in \code{ctmm} does not preserve the direction of North, but better preserves distances for elongated distributions. See the \code{projection} argument in \code{\link{as.telemetry}} and the example in \code{\link[ctmm]{projection}}.}
+{The default projection in \code{ctmm} does not preserve the direction of North, but better preserves distances for elongated distributions. See the \code{projection} argument in \code{\link{as.telemetry}} and the example in \code{\link[ctmm]{projection,telemetry-method}}.}
 
 \bold{\code{\link{variogram.fit}} has no save button}
 
