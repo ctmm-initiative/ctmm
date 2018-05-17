@@ -194,14 +194,17 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
   # now plot individually
   for(i in 1:length(x))
   {
-    r <- x[[i]][,c('x','y')]/dist$scale
+    x[[i]] <- unit.telemetry(x[[i]],length=dist$scale)
+
+    r <- x[[i]][,c('x','y')]
 
     # scaled error info
-    ERROR <- get.error(x[[i]],list(error=TRUE,axes=c('x','y'))) / dist$scale^2
+    ERROR <- get.error(x[[i]],list(error=TRUE,axes=c('x','y')))
     # don't want to throw z in here yet, in case of kernels
     FLAG <- attr(ERROR,"flag") # nothing, circle or ellipse?
-    # we aren't plotting if UERE is missing
+    if(FLAG && FLAG<=2) { ERROR <- ERROR * (10/dist$scale)^2 } # 10 meter default error
 
+    # we aren't plotting if UERE is missing
     # error=FALSE or no UERE
     if(!error[i] || FLAG<=1) # DEFAULT POINTS
     { graphics::points(r, cex=cex[[i]], col=col[[i]], pch=pch[[i]], type=type[[i]], lwd=lwd, ...) }
@@ -212,8 +215,8 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
 
       if("COV.major" %in% names(x[[i]]))
       {
-        x[[i]][["COV.major"]] <- x[[i]][["COV.major"]]*(z/dist$scale)^2
-        x[[i]][["COV.minor"]] <- x[[i]][["COV.minor"]]*(z/dist$scale)^2
+        x[[i]][["COV.major"]] <- x[[i]][["COV.major"]]*(z)^2
+        x[[i]][["COV.minor"]] <- x[[i]][["COV.minor"]]*(z)^2
       }
 
       # set coloring to outer rim or solid disc
@@ -291,7 +294,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
     # also plot velocity vectors at dt scale
     if(velocity && all(c("vx","vy") %in% names(x[[i]])))
     {
-      dr <- x[[i]][,c("vx","vy")]/dist$scale*dt
+      dr <- x[[i]][,c("vx","vy")]*dt
 
       arr.length <- sqrt(rowSums(dr^2))
       arr.length <- 0.1*cmpkm*arr.length

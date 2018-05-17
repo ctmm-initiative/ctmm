@@ -25,6 +25,9 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
+
+
+
 <meta property="og:title" content="Calculate an empirical variogram from movement data — variogram" />
 
 <meta property="og:description" content="This function calculates the empirical variogram of multi-dimensional tracking data for visualizing stationary (time-averaged) autocorrelation structure.
@@ -42,8 +45,6 @@ Both methods reduce to the unbiased &#8220;method of moments&#8221; estimator in
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
-
-
 
 
   </head>
@@ -87,6 +88,9 @@ Both methods reduce to the unbiased &#8220;method of moments&#8221; estimator in
       <a href="../articles/akde.html">Autocorrelated Kernel Density Estimation</a>
     </li>
     <li>
+      <a href="../articles/error.html">Telemetry Error</a>
+    </li>
+    <li>
       <a href="../articles/periodogram.html">Periodograms and Periodicities</a>
     </li>
   </ul>
@@ -117,6 +121,7 @@ Both methods reduce to the unbiased &#8220;method of moments&#8221; estimator in
     <div class="hidden name"><code>variogram.Rd</code></div>
     </div>
 
+    <div class="ref-description">
     
     <p>This function calculates the empirical variogram of multi-dimensional tracking data for visualizing stationary (time-averaged) autocorrelation structure.
 One of two algorithms is used. The slow \(O(n^2)\) algorithm is based upon Fleming et al (2014), but with interval-weights instead of lag-weights.
@@ -124,6 +129,7 @@ Additional modifications have also been included to accommodate drift in the sam
 The fast \(O(n \log n)\) algorithm is based upon the FFT method of Marcotte (1996), with some tweaks to better handle irregularly sampled data.
 Both methods reduce to the unbiased &#8220;method of moments&#8221; estimator in the case of evenly <em>scheduled</em> data, even with missing observations, but they produce slightly different outputs for irregularly sampled data.</p>
     
+    </div>
 
     <pre class="usage"><span class='fu'>variogram</span>(<span class='no'>data</span>,<span class='kw'>dt</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>fast</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>res</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>CI</span><span class='kw'>=</span><span class='st'>"Markov"</span>,<span class='kw'>axes</span><span class='kw'>=</span><span class='fu'>c</span>(<span class='st'>"x"</span>,<span class='st'>"y"</span>))</pre>
     

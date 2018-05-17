@@ -62,6 +62,17 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   # are we fitting the error, then the above is not yet normalized
   UERE <- attr(error,"flag")
 
+  # check for bad time intervals
+  ZERO <- which(dt==0)
+  if(length(ZERO))
+  {
+    if(CTMM$error==FALSE) { return(-Inf) }
+    # check for HDOP==1 just in case
+    ZERO <- error[ZERO,,,drop=FALSE]
+    ZERO <- apply(ZERO,1,det)
+    if(any(ZERO<=0)) { return(-Inf) } else { ZERO <- 0 }
+  }
+
   ### what kind of profiling is possible
   if((!UERE && !(circle && !isotropic)) || (UERE<3 && isotropic)) # can profile full covariance matrix with unit-variance filter
   {
@@ -656,8 +667,10 @@ area2var <- function(CTMM,MEAN=TRUE)
   VAR <- mean(diag(CTMM$sigma))
   COV <- CTMM$COV
 
+  NAMES <- rownames(COV)
   if(!CTMM$isotropic)
   {
+    NAMES <- c("variance",NAMES[-(1:3)])
     area <- CTMM$sigma@par["area"]
     ecc <- CTMM$sigma@par["eccentricity"]
 
@@ -671,11 +684,12 @@ area2var <- function(CTMM,MEAN=TRUE)
       grad <- rbind( grad , array(0,c(P-3,3)) )
       grad <- cbind( grad , rbind( rep(0,P-3) , diag(1,P-3) ) )
     }
-    colnames(grad) <- rownames(COV)
-    rownames(grad) <- c("variance",rownames(COV)[-(1:3)])
 
     COV <- grad %*% COV %*% t(grad)
   }
+  else
+  { NAMES <- c("variance",NAMES[-1]) }
+  dimnames(COV) <- list(NAMES,NAMES)
 
   return(COV)
 }

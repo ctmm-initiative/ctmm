@@ -1,6 +1,7 @@
 # global variable
 DATA.EARTH <- list(R.EQ=6378137,R.PL=6356752.3142) # equatorial & polar radii
 
+
 # range of telemetry data
 projection.telemetry <- function(x,asText=TRUE)
 {
@@ -12,6 +13,7 @@ setMethod('projection', signature(x='telemetry'), projection.telemetry)
 setMethod('projection', signature(x='ctmm'), projection.telemetry)
 setMethod('projection', signature(x='UD'), projection.telemetry)
 
+
 # change the projection on a list of objects
 "projection<-.list" <- function(x,value)
 {
@@ -19,9 +21,23 @@ setMethod('projection', signature(x='UD'), projection.telemetry)
 }
 setMethod('projection<-', signature(x='list'), `projection<-.list`)
 
+
 # change the projection of one telemetry object
 "projection<-.telemetry" <- function(x,value)
 {
+  # delete projection information
+  if(is.null(value))
+  {
+    DELETE <- c(DOP.LIST$horizontal$axes,DOP.LIST$horizontal$VAR,DOP.LIST$horizontal$COV,DOP.LIST$speed$axes,DOP.LIST$speed$VAR,DOP.LIST$speed$COV)
+    for(NAME in DELETE) { x[[NAME]] <- NULL }
+
+    attr(x,'info')$projection <- NULL
+    return(x)
+  }
+
+  # convert to PROJ4 format if location
+  value <- format.projection(value)
+
   NAMES <- names(x)
   n <- nrow(x)
 
@@ -112,133 +128,35 @@ rotate.north <- function(u,heading)
 }
 
 
-########################################
-# Suggest a good projection
-########################################
-suggest.projection <- function(data,PROJ="tpeqd",datum="WGS84")
+# put projection into character format
+format.projection <- function(proj,datum="WGS84")
 {
-  # projections that we will populate/automate
-  PROJS <- c("aeqd","tpeqd")
-  if(!(PROJ %in% PROJS)) { return(PROJ) }
-
-  # assume Movebank data.frame
-  lon <- data$longitude
-  lat <- data$latitude
-
-  # as a first approximation use one-point equidistant at average geolocation
-  lon_0 <- stats::median(lon)
-  lat_0 <- stats::median(lat)
-  proj <- paste0("+proj=aeqd +lon_0=",lon_0," +lat_0=",lat_0," +datum=",datum)
-
-  if(PROJ=="aeqd") { return(proj) }
-
-  xy <- rgdal::project(cbind(lon,lat),proj)
-
-  # # calculate and detrend average
-  # mu <- c(stats::median(xy[,1]),stats::median(xy[,2]))
-  # xy <- t(t(xy) - mu)
-  # colnames(xy) <- c("x","y")
-
-  ## non-robust orientation
-  # cross correlation
-  COV <- mean(xy[,1]*xy[,2])
-  # covariance matrix
-  COV <- rbind( c( mean(xy[,1]^2) , COV ) , c( COV , mean(xy[,2]^2) ) )
-
-  # figure out long axis (always first dim)
-  R <- eigen(COV)$vectors
-  # rotate data to long axis
-  xy <- xy %*% R
-
-  ## robust centrality & covariation
-  COV <- Gmedian::GmedianCov(xy,init=c(0,0),score=0)
-  mu <- c(COV$median)
-  COV <- COV$covmedian
-
-  # detrend average
-  xy <- t(t(xy) - mu)
-  colnames(xy) <- c("x","y")
-  mu <- c(mu %*% solve(R)) # value of mu pre-R-rotation
-
-  # figure out long axis (always first dim)
-  Rm <- eigen(COV)$vectors
-  # rotate data to long axis
-  xy <- xy %*% Rm
-  R <- R %*% Rm
-
-  # bi-modal split of data
-  xy1 <- xy[xy[,1]<0,]
-  xy2 <- xy[xy[,1]>0,]
-
-  # long split modes
-  mu1 <- c(stats::median(xy1[,1]),stats::median(xy1[,2]))
-  mu2 <- c(stats::median(xy2[,1]),stats::median(xy2[,2]))
-
-  mu1 <- c(Gmedian::Gmedian(xy1,init=mu1))
-  mu2 <- c(Gmedian::Gmedian(xy2,init=mu2))
-
-  # # cluster modes # not sure that this could ever help
-  # muk <- Gmedian::kGmedian(xy,ncenters=rbind(mu1,mu2))$centers
-  # # use the most separated
-  # if(sum((mu1-mu2)^2)<sum((muk[1,]-muk[2,])^2))
-  # {
-  #   mu1 <- muk[1,]
-  #   mu2 <- muk[2,]
-  # }
-
-  # reverse rotation
-  R <- solve(R)
-  mu1 <- mu1 %*% R
-  mu2 <- mu2 %*% R
-
-  # re-trend mean
-  mu1 <- mu1 + mu
-  mu2 <- mu2 + mu
-
-  # get long lat
-  mu1 <- rgdal::project(mu1,proj,inv=TRUE)[1,]
-  mu2 <- rgdal::project(mu2,proj,inv=TRUE)[1,]
-
-  # did east and west get mixed up?
-  if(mu1[1] > mu2[1])
+  if(class(proj)=="CRS")
+  { proj <- as.character(proj) }
+  else if(class(proj)!="character")
   {
-    mu <- mu1
-    mu1 <- mu2
-    mu2 <- mu
+    # pull out geodesic coordinates and format into matrix
+    proj <- as.matrix(rbind(proj)[,c("longitude","latitude")])
+
+    if(nrow(proj)==1)
+    { proj <- paste0("+proj=aeqd  +lon_0=",proj[1,1]," +lat_0=",proj[1,2]," +datum=",datum) }
+    else if(nrow(proj)==2)
+    { proj <- paste0("+proj=tpeqd +lon_1=",proj[1,1]," +lat_1=",proj[1,2]," +lon_2=",proj[2,1]," +lat_2=",proj[2,2]," +datum=",datum) }
+    else if(nrow(proj)==3)
+    { proj <- paste0("+proj=chamb +lon_1=",proj[1,1]," +lat_1=",proj[1,2]," +lon_2=",proj[2,1]," +lat_2=",proj[2,2]," +lon_3=",proj[3,1]," +lat_3=",proj[3,2]," +datum=",datum) }
+    else
+    { stop("PROJ4 does not support ",nrow(proj)," foci projections.") }
   }
 
-  proj <- paste0("+proj=tpeqd +lon_1=",mu1[1]," +lat_1=",mu1[2]," +lon_2=",mu2[1]," +lat_2=",mu2[2]," +datum=",datum)
-
+  validate.projection(proj)
   return(proj)
-  #################
-  #STOP HERE
-
-  # NON-FUNCTIONAL NORTH ROTATION CODE
-  # This doesn't seem to do anything. I don't think the +axis and +towgs84 options are fully implemented in PROJ4.
-  # keeping this code here for later.
-
-  # project origin back
-  mu <- rgdal::project(rbind(c(0,0)),proj,inv=TRUE)[1,]
-
-  # add a touch of north
-  mu <- mu + rbind(c(0,0.001))
-
-  # project forward
-  mu <- rgdal::project(mu,proj)[1,]
-
-  # solve for rotation angle to get north vector
-  theta <- atan2(mu[2],mu[1])
-
-  # generate rotated projection...
-  # abusing PROj4 small-angle rotation + rescaling = true rotation
-  # this would ruin z data if we had any
-  proj <- paste(proj," +towgs84=0,0,0,0,0,",tan(theta),",",cos(theta),sep="")
 }
 
 
+# only allow compatible projections
 validate.projection <- function(projection)
 {
-  if(grepl("latlong",projection,fixed=TRUE) || grepl("latlong",projection,fixed=TRUE))
+  if(grepl("longlat",projection,fixed=TRUE) || grepl("latlong",projection,fixed=TRUE))
   { stop("A projected coordinate system must be specified.") }
 
   if(grepl("units=",projection,fixed=TRUE) && !grepl("units=m",projection,fixed=TRUE))

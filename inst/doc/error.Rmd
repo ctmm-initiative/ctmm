@@ -1,5 +1,5 @@
 ---
-title: "Dealing with telemetry error"
+title: "Telemetry error"
 author: "Christen H. Fleming"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette

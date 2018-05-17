@@ -1,13 +1,17 @@
-ctmm 0.5.0 (2018-05-05)
+ctmm 0.5.0 (2018-05-13)
 ================
 
   * Extensive re-write of the Kalman filter & smoother, now supporting an arbitrary number of spatial dimensions, necessary for ARGOS error ellipse support. (Previously, all multi-dimensional problems were transformed into multiple one-dimensional problems.) Many new models will be supported going forward, based on the v0.5.0 code.
   
-  * error vignette
+  * telemetry error vignette "error"
 
   * ARGOS error ellipse support in ctmm.fit() and simulate()
 
   * plotted variogram errors now estimated from HDOP and no longer assumed to be homoskedastic
+  
+  * as.telemetry() default projections now use robust ellipsoidal statistics
+  
+  * new median.telemetry() method for help with projecting data
 
   * (anisotropic & circulation & error) models now exact with 2D Kalman filter & smoother
   
@@ -27,7 +31,11 @@ ctmm 0.5.0 (2018-05-05)
   
   * variogram.fit() manipulate more appropriate with calibrated errors
   
-  * fixed rare bug in plot.variogram() from stats::qchisq() with k<<1
+  * fixed bug in plot.variogram for isotropic model fits
+  
+  * fixed bug in ctmm.fit with fitted errors and any(diff(t)==0)
+  
+  * fixed bug in plot.variogram() from stats::qchisq() with k<<1
 
 ctmm 0.4.2 (2018-02-12)
 ================

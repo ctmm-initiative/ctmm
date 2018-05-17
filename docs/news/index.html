@@ -25,6 +25,9 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
+
+
+
 <meta property="og:title" content="Changelog" />
 
 
@@ -35,8 +38,6 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
-
-
 
 
   </head>
@@ -80,6 +81,9 @@
       <a href="../articles/akde.html">Autocorrelated Kernel Density Estimation</a>
     </li>
     <li>
+      <a href="../articles/error.html">Telemetry Error</a>
+    </li>
+    <li>
       <a href="../articles/periodogram.html">Periodograms and Periodicities</a>
     </li>
   </ul>
@@ -109,14 +113,17 @@
       <small>Source: <a href='https://github.com/ctmm-initiative/ctmm/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
     </div>
 
-    <div id="ctmm-0-5-0-2018-04-27" class="section level1">
+    <div id="ctmm-0-5-0-2018-05-13" class="section level1">
 <h1 class="page-header">
-<a href="#ctmm-0-5-0-2018-04-27" class="anchor"></a>ctmm 0.5.0 (2018-04-27)<small> Unreleased </small>
+<a href="#ctmm-0-5-0-2018-05-13" class="anchor"></a>ctmm 0.5.0 (2018-05-13)<small> Unreleased </small>
 </h1>
 <ul>
 <li><p>Extensive re-write of the Kalman filter &amp; smoother, now supporting an arbitrary number of spatial dimensions, necessary for ARGOS error ellipse support. (Previously, all multi-dimensional problems were transformed into multiple one-dimensional problems.) Many new models will be supported going forward, based on the v0.5.0 code.</p></li>
+<li><p>telemetry error vignette “error”</p></li>
 <li><p>ARGOS error ellipse support in ctmm.fit() and simulate()</p></li>
 <li><p>plotted variogram errors now estimated from HDOP and no longer assumed to be homoskedastic</p></li>
+<li><p>as.telemetry() default projections now use robust ellipsoidal statistics</p></li>
+<li><p>new median.telemetry() method for help with projecting data</p></li>
 <li><p>(anisotropic &amp; circulation &amp; error) models now exact with 2D Kalman filter &amp; smoother</p></li>
 <li><p>simulate() &amp; predict() velocities now correct with mean=“periodic”</p></li>
 <li><p>units argument in speed()</p></li>
@@ -126,7 +133,9 @@
 <li><p>parameter boundary bugfix in ctmm.fit() and ctmm.loglike()</p></li>
 <li><p>fixed bandwidth() bug when weights=TRUE on IID process</p></li>
 <li><p>variogram.fit() manipulate more appropriate with calibrated errors</p></li>
-<li><p>fixed rare bug in plot.variogram() from stats::qchisq() with k&lt;&lt;1</p></li>
+<li><p>fixed bug in plot.variogram for isotropic model fits</p></li>
+<li><p>fixed bug in ctmm.fit with fitted errors and any(diff(t)==0)</p></li>
+<li><p>fixed bug in plot.variogram() from stats::qchisq() with k&lt;&lt;1</p></li>
 </ul>
 </div>
     <div id="ctmm-0-4-2-2018-02-12" class="section level1">
@@ -443,7 +452,7 @@
     <div id="tocnav">
       <h2>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
-        <li><a href="#ctmm-0-5-0-2018-04-27">0.5.0</a></li>
+        <li><a href="#ctmm-0-5-0-2018-05-13">0.5.0</a></li>
         <li><a href="#ctmm-0-4-2-2018-02-12">0.4.2</a></li>
         <li><a href="#ctmm-0-4-1-2017-08-30">0.4.1</a></li>
         <li><a href="#ctmm-0-4-0-2017-08-29">0.4.0</a></li>

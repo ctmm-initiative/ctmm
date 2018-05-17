@@ -73,7 +73,7 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,UERE=FALSE,dt=0,df=0)
   if("eccentricity" %in% NAMES)
   {
     parscale <- c(parscale,log(2),pi/2)
-    lower <- c(lower,0,-Inf)
+    lower <- c(lower,-Inf,-Inf)
     upper <- c(upper,Inf,Inf)
     period <- c(period,FALSE,pi)
   }
@@ -99,7 +99,7 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,UERE=FALSE,dt=0,df=0)
 
   if(CTMM$error && UERE<3)
   {
-    parscale <- c(parscale,min(1,CTMM$error)) # minimum of 1-meter error parscale
+    parscale <- c(parscale,max(10,CTMM$error)) # minimum of 10-meter error parscale
     lower <- c(lower,0)
     upper <- c(upper,Inf)
     period <- c(period,FALSE)

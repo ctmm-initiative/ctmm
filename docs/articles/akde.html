@@ -55,6 +55,9 @@
       <a href="../articles/akde.html">Autocorrelated Kernel Density Estimation</a>
     </li>
     <li>
+      <a href="../articles/error.html">Telemetry Error</a>
+    </li>
+    <li>
       <a href="../articles/periodogram.html">Periodograms and Periodicities</a>
     </li>
   </ul>
@@ -82,9 +85,9 @@
       <h1>Autocorrelated Kernel Density Estimation</h1>
                         <h4 class="author">Christen H. Fleming and Justin M. Calabrese</h4>
             
-            <h4 class="date">2018-05-05</h4>
+            <h4 class="date">2018-05-13</h4>
       
-      <small>Source: <a href="https://github.com/ctmm-initiative/ctmm/blob/master/vignettes/akde.Rmd"><code>vignettes/akde.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ctmm-initiative/ctmm/blob/master/vignettes/akde.Rmd"><code>vignettes/akde.Rmd</code></a></small>
       <div class="hidden name"><code>akde.Rmd</code></div>
 
     </div>
@@ -92,32 +95,32 @@
     
     
 <p>In this vignette we walk through autocorrelated kernel density estimation. We will assume that you have already estimated a good <code>ctmm</code> movement model for your data. For demonstration purposes we will be working from the results of the “Variograms and Model Selection” vignette (see <code><a href="../articles/variogram.html">vignette("variogram")</a></code>). Here we will use the buffalo “Pepper” instead of “Cilla”, because Pepper has a GPS collar malfunction that can be mitigated with optimal weighting.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ctmm)
-<span class="kw">data</span>(buffalo)
-Pepper &lt;-<span class="st"> </span>buffalo<span class="op">$</span>Pepper
-M.IID &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(Pepper) <span class="co"># no autocorrelation timescales</span>
-m.ouf &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.fit.html">ctmm.guess</a></span>(Pepper,<span class="dt">interactive=</span><span class="ot">FALSE</span>) <span class="co"># automated model guess</span>
-M.OUF &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(Pepper,m.ouf)</code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="kw">library</span>(ctmm)</a>
+<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="kw">data</span>(buffalo)</a>
+<a class="sourceLine" id="cb1-3" data-line-number="3">Pepper &lt;-<span class="st"> </span>buffalo<span class="op">$</span>Pepper</a>
+<a class="sourceLine" id="cb1-4" data-line-number="4">M.IID &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(Pepper) <span class="co"># no autocorrelation timescales</span></a>
+<a class="sourceLine" id="cb1-5" data-line-number="5">m.ouf &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.fit.html">ctmm.guess</a></span>(Pepper,<span class="dt">interactive=</span><span class="ot">FALSE</span>) <span class="co"># automated model guess</span></a>
+<a class="sourceLine" id="cb1-6" data-line-number="6">M.OUF &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(Pepper,m.ouf)</a></code></pre></div>
 <p><code>M.IID</code> is the innapropriate, IID model, which will result in a conventional kernel-density estimate, while <code>M.OUF</code> is the superior, continuous-velocity OUF model. Note that you want the best model for each individual, even if that differs by individual. Different movement behaviors and sampling schedules will reveal different autocorrelation structures in the data.</p>
 <p>Now we can calculate an <code>akde</code> object for each model.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">UD0 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/akde.html">akde</a></span>(Pepper,M.IID)
-UD2 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/akde.html">akde</a></span>(Pepper,M.OUF)
-UD2w &lt;-<span class="st"> </span><span class="kw"><a href="../reference/akde.html">akde</a></span>(Pepper,M.OUF,<span class="dt">weights=</span><span class="ot">TRUE</span>)
-<span class="co"># calculate one extent for all UDs</span>
-EXT &lt;-<span class="st"> </span><span class="kw">extent</span>(<span class="kw">list</span>(UD0,UD2,UD2w),<span class="dt">level=</span><span class="fl">0.95</span>)</code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1">UD0 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/akde.html">akde</a></span>(Pepper,M.IID)</a>
+<a class="sourceLine" id="cb2-2" data-line-number="2">UD2 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/akde.html">akde</a></span>(Pepper,M.OUF)</a>
+<a class="sourceLine" id="cb2-3" data-line-number="3">UD2w &lt;-<span class="st"> </span><span class="kw"><a href="../reference/akde.html">akde</a></span>(Pepper,M.OUF,<span class="dt">weights=</span><span class="ot">TRUE</span>)</a>
+<a class="sourceLine" id="cb2-4" data-line-number="4"><span class="co"># calculate one extent for all UDs</span></a>
+<a class="sourceLine" id="cb2-5" data-line-number="5">EXT &lt;-<span class="st"> </span><span class="kw">extent</span>(<span class="kw">list</span>(UD0,UD2,UD2w),<span class="dt">level=</span><span class="fl">0.95</span>)</a></code></pre></div>
 <p>Finally we calculate UDs with and with out accounting for autocorrelation (<code>M.OUF</code> versus <code>M.IID</code>), with and without optimal weighting of the data (<code>weights=TRUE</code>). Now let us plot the results.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(Pepper,<span class="dt">UD=</span>UD0,<span class="dt">xlim=</span>EXT<span class="op">$</span>x,<span class="dt">ylim=</span>EXT<span class="op">$</span>y)
-<span class="kw">title</span>(<span class="kw">expression</span>(<span class="st">"IID KDE"</span>[<span class="st">"C"</span>]))
-<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(Pepper,<span class="dt">UD=</span>UD2,<span class="dt">xlim=</span>EXT<span class="op">$</span>x,<span class="dt">ylim=</span>EXT<span class="op">$</span>y)
-<span class="kw">title</span>(<span class="kw">expression</span>(<span class="st">"OUF AKDE"</span>[<span class="st">"C"</span>]))
-<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(Pepper,<span class="dt">UD=</span>UD2w,<span class="dt">xlim=</span>EXT<span class="op">$</span>x,<span class="dt">ylim=</span>EXT<span class="op">$</span>y)
-<span class="kw">title</span>(<span class="kw">expression</span>(<span class="st">"weighted OUF AKDE"</span>[<span class="st">"C"</span>]))</code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(Pepper,<span class="dt">UD=</span>UD0,<span class="dt">xlim=</span>EXT<span class="op">$</span>x,<span class="dt">ylim=</span>EXT<span class="op">$</span>y)</a>
+<a class="sourceLine" id="cb3-2" data-line-number="2"><span class="kw">title</span>(<span class="kw">expression</span>(<span class="st">"IID KDE"</span>[<span class="st">"C"</span>]))</a>
+<a class="sourceLine" id="cb3-3" data-line-number="3"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(Pepper,<span class="dt">UD=</span>UD2,<span class="dt">xlim=</span>EXT<span class="op">$</span>x,<span class="dt">ylim=</span>EXT<span class="op">$</span>y)</a>
+<a class="sourceLine" id="cb3-4" data-line-number="4"><span class="kw">title</span>(<span class="kw">expression</span>(<span class="st">"OUF AKDE"</span>[<span class="st">"C"</span>]))</a>
+<a class="sourceLine" id="cb3-5" data-line-number="5"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(Pepper,<span class="dt">UD=</span>UD2w,<span class="dt">xlim=</span>EXT<span class="op">$</span>x,<span class="dt">ylim=</span>EXT<span class="op">$</span>y)</a>
+<a class="sourceLine" id="cb3-6" data-line-number="6"><span class="kw">title</span>(<span class="kw">expression</span>(<span class="st">"weighted OUF AKDE"</span>[<span class="st">"C"</span>]))</a></code></pre></div>
 <p><img src="akde_files/figure-html/unnamed-chunk-4-1.png" width="700"><img src="akde_files/figure-html/unnamed-chunk-4-2.png" width="700"><img src="akde_files/figure-html/unnamed-chunk-4-3.png" width="700"></p>
 <p>By default both the density function and its 95% contours are plotted along with the location data. The middle contour represent the maximum likelihood area where the animal spends 95% of its time. This percentage can be changed with the <code>level.UD</code> option (see <code>help(plot.telemetry)</code>). The inner and outer contours correspond to confidence intervals on the magnitude of the area, which can be adjusted with the <code>level</code> option.</p>
 <p>The optimal bandwidth determines the “resolution” of the kernel density estimate. By default we plot grid lines with dimensions matching the standard deviations of the individual kernels. This gives a rough guideline as to what spatial details are and are not important in the density estimate. One can see that the IID KDE<sub>C</sub> estimate fits tightly to the data and reports many significant details in the buffalo’s home range. The autocorrelated estimates predict future space use more accurately, based on the diffusion model, and yield a more honest account of their uncertainties.</p>
 <p>In the case of Pepper, the GPS collar malfunctioned during data collection and the sampling interval mysteriously changed from 1 hour (yellow) to 2 hours (red). This irregularity makes Pepper a good candidate for optimally weighted AKDE (<code>weights=TRUE</code>). The optimally weighted estimate features smaller error, finer resolution, and mitigation of sampling bias. You can see that the uniformly weighted estimates place excessive emphasis on the oversampled data (yellow).</p>
 <p>Finally, we can compare the area estimates and effective sample sizes.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(UD0)</code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="kw">summary</span>(UD0)</a></code></pre></div>
 <pre><code>## $DOF
 ##      area bandwidth 
 ##      1724      1725 
@@ -125,7 +128,7 @@ EXT &lt;-<span class="st"> </span><span class="kw">extent</span>(<span class="kw
 ## $CI
 ##                              low       ML     high
 ## area (square kilometers) 436.672 458.0407 479.9126</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(UD2w)</code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" data-line-number="1"><span class="kw">summary</span>(UD2w)</a></code></pre></div>
 <pre><code>## $DOF
 ##      area bandwidth 
 ##  20.02346  31.67125 

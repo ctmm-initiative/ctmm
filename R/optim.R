@@ -81,7 +81,7 @@ line.boxer <- function(dp,p0=dp[,1],lower=-Inf,upper=Inf,period=F,period.max=1/2
     if(any(UP)) { t.up <- (upper-p0)[UP]/dp[UP] } else { t.up <- 1 }
     t <- min(t.lo,t.up)
 
-    # don't go more than period.max fraction of a period in one step
+    # circular parameters prevented from going more than half a period
     PERIOD <- as.logical(period)
     if(any(PERIOD)) { t <- min(t,abs(period/dp)[PERIOD]*period.max) }
 
@@ -237,6 +237,7 @@ mc.min <- function(min,cores=detectCores())
 mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
 {
   DEBUG <- FALSE
+  PMAP <- TRUE
   # check complains about visible bindings
   fnscale <- parscale <- maxit <- precision <- trace <- cores <- hessian <- covariance <- NULL
   # fix default control arguments
@@ -298,10 +299,69 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
   }
 
   # what we will actually be evaluating
-  # this objective function has the ability to approximately zero its objective value
-  if(ZERO) { func <- function(par,...) fn(par*parscale,zero=zero*fnscale,...)/fnscale }
-  else { func <- function(par,...) fn(par*parscale,...)/fnscale }
-  # ordinary objective function
+  PERIOD <- as.logical(period)
+  if(PMAP && any(PERIOD))
+  {
+    PSCALE <- period[PERIOD]/pi
+
+    # locally-tangent tangent transform that maps periods to infinity
+    pmap <- function(p,theta,inverse=FALSE)
+    {
+      if(inverse) { p[PERIOD] <- atan(p[PERIOD]/PSCALE)*PSCALE + theta }
+      else { p[PERIOD] <- tan((p[PERIOD]-theta)/PSCALE)*PSCALE }
+      return(p)
+    }
+
+    # extract better theta from better par (under tangent transformation)
+    get.theta <- function(p,theta) # theta here is old theta
+    {
+      p <- pmap(p,theta,inverse=TRUE)
+      return(p[PERIOD])
+    }
+
+    # update old theta to new theta (under tangent transformation)
+    put.theta <- function(p,theta.old,theta.new)
+    {
+      p <- pmap(p,theta.old,inverse=TRUE)
+      p <- pmap(p,theta.new)
+      return(p)
+    }
+
+    period <- rep(FALSE,length(period)) # don't treat parameters as periodic from now on
+
+    # all coordinates are now transformed coordinates
+    theta <- par[PERIOD]
+    par <- pmap(par,theta)
+  }
+  else
+  { PMAP <- FALSE }
+
+  func <- function(par,...)
+  {
+    if(PMAP) { par <- pmap(par,theta,inverse=TRUE) }
+
+    # this objective function has the ability to approximately zero its objective value
+    if(ZERO) { FN <- try(fn(par*parscale,zero=zero*fnscale,...)) }
+    else { FN <- try(fn(par*parscale,...)) }
+    # ordinary objective function
+
+    if(class(FN)=="numeric") { FN <- FN/fnscale }
+    else
+    {
+      # store to environmental variable so that I can debug?
+      par <- par*parscale
+      warning("Objective function failure at c(",paste(names(par),collapse=','),') = c(',paste(par,collapse=','),')')
+
+      # strangely, the above is not working???
+      # debug(ctmm:::kalman)
+      # fn(par*parscale,zero=zero*fnscale,...) -> FN
+      # undebug(ctmm:::kalman)
+
+      FN <- Inf
+    }
+
+    return(FN)
+  }
 
   ##################
   # am I on a boundary and if so, align DIR
@@ -384,6 +444,18 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
   {
     # adjust zero shift
     if(ZERO && fn.par<Inf) { zero <- zero + fn.par }
+
+    # update local tangent frame
+    if(PMAP)
+    {
+      # update tangent origins
+      theta -> theta.old
+      theta <- get.theta(par,theta)
+      # update tangent variables
+      par <- put.theta(par,theta.old,theta)
+      par.target <- put.theta(par.target,theta.old,theta)
+      par.target.old <- put.theta(par.target.old,theta.old,theta)
+    }
 
     DIR <- diag(1,DIM)
     BOX <- is.boxed(par.target,fix.dir=TRUE)
@@ -613,8 +685,6 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
           { par.diff <- c(gradient %*% par.dir) / c(par.dir %*% hessian %*% par.dir) * par.dir }
           else # don't divide by zero
           { par.diff <- par.dir }
-
-          # DEBUG <<- list(par.diff=par.diff,gradient=gradient,par.dir=par.dir,hessian=hessian,covariance=covariance,beta=beta,gradient.old=gradient.old)
         }
         else if(any(!TEST))
         {
@@ -941,6 +1011,8 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
 
   if(counts<maxit) { convergence <- 0} else { convergence <- 1 }
   if(trace) { message(sprintf("%s in %d parallel function evaluations.",ifelse(convergence,"No convergence","Convergence"),counts)) }
+
+  if(PMAP) { par <- pmap(par,theta,inverse=TRUE) }
 
   # return stuff in similar format to optim
   RETURN <- list()

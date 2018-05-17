@@ -462,7 +462,7 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
     {
       if(is.null(data)) { error <- UERE <- FALSE }
       else { error <- get.error(data,object) ; UERE <- attr(error,'flag') } # get error if provided
-      object <- ctmm.prepare(list(t=t),object) # mean.vec calculated here
+      object <- ctmm.prepare(data.frame(t=t),object) # mean.vec calculated here
 
       tau <- object$tau
       if(is.null(tau)) { tau = 0 }
@@ -589,7 +589,7 @@ predict.ctmm <- function(object,data=NULL,t=NULL,dt=NULL,res=1,...)
   # Gaussian simulation not conditioned off of any data
   if(is.null(data))
   {
-    object <- ctmm.prepare(list(t=t),object)
+    object <- ctmm.prepare(data.frame(t=t),object)
 
     mu <- object$mu
     if(is.null(mu)) { mu <- array(0,c(1,length(axes))) }

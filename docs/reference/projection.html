@@ -25,9 +25,12 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
+
+
+
 <meta property="og:title" content="Projection — projection" />
 
-<meta property="og:description" content="Get the coordinate reference system (CRS) of a ctmm object" />
+<meta property="og:description" content="Functions to manipulate the coordinate reference system (CRS) of ctmm objects" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -38,8 +41,6 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
-
-
 
 
   </head>
@@ -83,6 +84,9 @@
       <a href="../articles/akde.html">Autocorrelated Kernel Density Estimation</a>
     </li>
     <li>
+      <a href="../articles/error.html">Telemetry Error</a>
+    </li>
+    <li>
       <a href="../articles/periodogram.html">Periodograms and Periodicities</a>
     </li>
   </ul>
@@ -113,9 +117,11 @@
     <div class="hidden name"><code>projection.Rd</code></div>
     </div>
 
+    <div class="ref-description">
     
-    <p>Get the coordinate reference system (CRS) of a ctmm object</p>
+    <p>Functions to manipulate the coordinate reference system (CRS) of ctmm objects</p>
     
+    </div>
 
     <pre class="usage"><!-- %projection(x,...) -->
 # S4 method for telemetry
@@ -131,7 +137,10 @@ projection(x,asText=TRUE)
 projection(x) <- value
 
 # S4 method for list
-projection(x) <- value</pre>
+projection(x) <- value
+
+# S3 method for telemetry
+median(x,na.rm=FALSE,...)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -146,19 +155,40 @@ projection(x) <- value</pre>
     </tr>
     <tr>
       <th>value</th>
-      <td><p>Projection to apply.</p></td>
+      <td><p>Projection to apply. Can also be a data.frame of longitude-latitude foci.</p></td>
+    </tr>
+    <tr>
+      <th>na.rm</th>
+      <td><p>Not used.</p></td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td><p>Arguments passed to <code><a href='http://www.rdocumentation.org/packages/Gmedian/topics/Gmedian'>Gmedian</a></code>.</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p><code>projection(x)</code> returns the projection information from ctmm object <code>x</code>, while <code>projection(x) &lt;- value</code> applies the projection <code>value</code> to object <code>x</code>.</p>
+    <p><code>projection(x)</code> returns the projection information from ctmm object <code>x</code>, while <code>projection(x) &lt;- value</code> applies the projection <code>value</code> to object <code>x</code>.
+<code>median(x)</code> returns the ellipsoidal geometric median of a telemetry object.</p>
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code><a href='as.telemetry.html'>as.telemetry</a></code>.</p></div>
     
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='co'># Load package and data</span>
+<span class='fu'>library</span>(<span class='no'>ctmm</span>)
+<span class='fu'>data</span>(<span class='no'>buffalo</span>)
+
+<span class='co'># Apply a 1-point projection that preserves North==up</span>
+<span class='fu'>projection</span>(<span class='no'>buffalo</span>) <span class='kw'>&lt;-</span> <span class='fu'>median</span>(<span class='no'>buffalo</span>)
+<span class='fu'><a href='plot.telemetry.html'>plot</a></span>(<span class='no'>buffalo</span>)</div><div class='img'><img src='projection-1.png' alt='' width='700' height='433' /></div><div class='input'>
+<span class='co'># Apply a 2-point projection better for elongated disributions</span>
+<span class='fu'>projection</span>(<span class='no'>buffalo</span>) <span class='kw'>&lt;-</span> <span class='fu'>median</span>(<span class='no'>buffalo</span>,<span class='kw'>k</span><span class='kw'>=</span><span class='fl'>2</span>)
+<span class='fu'><a href='plot.telemetry.html'>plot</a></span>(<span class='no'>buffalo</span>)</div><div class='img'><img src='projection-2.png' alt='' width='700' height='433' /></div><div class='input'># This is the default projection for ctmm
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
@@ -168,7 +198,9 @@ projection(x) <- value</pre>
       <li><a href="#details">Details</a></li>
 
       <li><a href="#see-also">See also</a></li>
-          </ul>
+      
+      <li><a href="#examples">Examples</a></li>
+    </ul>
 
     <h2>Author</h2>
     C. H. Fleming

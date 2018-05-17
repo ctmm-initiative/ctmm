@@ -25,6 +25,9 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
+
+
+
 <meta property="og:title" content="Calculate model fit residuals and assess their autocorrelation — residuals.ctmm" />
 
 <meta property="og:description" content="These functions calculate the residuals of a CTMM model, which should be standardized and IID if the model correctly specified.
@@ -40,8 +43,6 @@ This function is analogous to acf, but can handle missing data and multiple dime
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
-
-
 
 
   </head>
@@ -85,6 +86,9 @@ This function is analogous to acf, but can handle missing data and multiple dime
       <a href="../articles/akde.html">Autocorrelated Kernel Density Estimation</a>
     </li>
     <li>
+      <a href="../articles/error.html">Telemetry Error</a>
+    </li>
+    <li>
       <a href="../articles/periodogram.html">Periodograms and Periodicities</a>
     </li>
   </ul>
@@ -115,11 +119,13 @@ This function is analogous to acf, but can handle missing data and multiple dime
     <div class="hidden name"><code>residuals.Rd</code></div>
     </div>
 
+    <div class="ref-description">
     
     <p>These functions calculate the residuals of a CTMM model, which should be standardized and IID if the model correctly specified.
 A correlogram method is also provided to assess remaining autocorrelation.
 This function is analogous to <code>acf</code>, but can handle missing data and multiple dimensions.</p>
     
+    </div>
 
     <pre class="usage"><span class='co'># S3 method for ctmm</span>
 <span class='fu'>residuals</span>(<span class='no'>object</span>,<span class='no'>data</span>,<span class='no'>...</span>)

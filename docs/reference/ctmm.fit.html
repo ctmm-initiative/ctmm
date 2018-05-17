@@ -25,6 +25,9 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
+
+
+
 <meta property="og:title" content="Specify, fit, and select continuous-time movement models — ctmm" />
 
 <meta property="og:description" content="These functions allow one to propose hypothethical movement models (with initial estimates), fit those models to the data, and select among those models via an information criteria.
@@ -39,8 +42,6 @@ The fitting functions wrap around optim and ctmm.loglike to fit continuous-time 
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
-
-
 
 
   </head>
@@ -84,6 +85,9 @@ The fitting functions wrap around optim and ctmm.loglike to fit continuous-time 
       <a href="../articles/akde.html">Autocorrelated Kernel Density Estimation</a>
     </li>
     <li>
+      <a href="../articles/error.html">Telemetry Error</a>
+    </li>
+    <li>
       <a href="../articles/periodogram.html">Periodograms and Periodicities</a>
     </li>
   </ul>
@@ -114,10 +118,12 @@ The fitting functions wrap around optim and ctmm.loglike to fit continuous-time 
     <div class="hidden name"><code>ctmm.fit.Rd</code></div>
     </div>
 
+    <div class="ref-description">
     
     <p>These functions allow one to propose hypothethical movement models (with initial estimates), fit those models to the data, and select among those models via an information criteria.
 The fitting functions wrap around <code>optim</code> and <code>ctmm.loglike</code> to fit continuous-time movement models to 2D animal tracking data as described in Fleming et al (2014) and Fleming et al (2015), and Fleming et al (2017).</p>
     
+    </div>
 
     <pre class="usage"><span class='fu'>ctmm</span>(<span class='kw'>tau</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>isotropic</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>range</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>circle</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>error</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>axes</span><span class='kw'>=</span><span class='fu'>c</span>(<span class='st'>"x"</span>,<span class='st'>"y"</span>),<span class='no'>...</span>)
 

@@ -25,6 +25,9 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
+
+
+
 <meta property="og:title" content="Estimate the average speed of a tracked animal — speed" />
 
 <meta property="og:description" content="Given a ctmm movement model and telemetry data, speed simulates multiple realizations of the animal's trajectory and estimates the average speed, which is proportional to distance traveled. Both tortuosity (non straight-line motion between the data) and telemetry error can be accounted for. Given only a ctmm movement model and no data, speed calculates the average speed of the Gaussian movement process." />
@@ -38,8 +41,6 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
-
-
 
 
   </head>
@@ -83,6 +84,9 @@
       <a href="../articles/akde.html">Autocorrelated Kernel Density Estimation</a>
     </li>
     <li>
+      <a href="../articles/error.html">Telemetry Error</a>
+    </li>
+    <li>
       <a href="../articles/periodogram.html">Periodograms and Periodicities</a>
     </li>
   </ul>
@@ -113,9 +117,11 @@
     <div class="hidden name"><code>speed.Rd</code></div>
     </div>
 
+    <div class="ref-description">
     
     <p>Given a <code>ctmm</code> movement model and <code>telemetry</code> data, <code>speed</code> simulates multiple realizations of the animal's trajectory and estimates the average speed, which is proportional to distance traveled. Both tortuosity (non straight-line motion between the data) and telemetry error can be accounted for. Given only a <code>ctmm</code> movement model and no data, <code>speed</code> calculates the average speed of the Gaussian movement process.</p>
     
+    </div>
 
     <pre class="usage"><span class='fu'>speed</span>(<span class='no'>object</span>,<span class='no'>...</span>)
 

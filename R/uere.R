@@ -212,7 +212,7 @@ uere <- function(data,override=FALSE,integrate=FALSE,diagnostic=FALSE)
 # DIM : force covariance matrix output with dim [DIM,DIM]
 get.error <- function(DATA,CTMM,flag=FALSE,circle=FALSE,DIM=FALSE)
 {
-  n <- length(DATA$t)
+  n <- nrow(DATA)
   axes <- CTMM$axes
   COLS <- names(DATA)
 
