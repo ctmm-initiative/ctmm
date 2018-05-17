@@ -1,49 +1,31 @@
-# convenience wrapper for numDeriv::genD on scalar functions
-###########################################################
-genD.numDeriv <- function(par,fn,zero=0,lower=-Inf,upper=Inf,step=NULL,r=2,covariance=NULL,order=2,jacobian=FALSE,...)
+###############
+# calculate first and second derivatives efficiently
+# assumes to start with approximant of maximum (par) and inverse hessian (covariance)
+####################
+genD <- function(par,fn,zero=FALSE,lower=-Inf,upper=Inf,step=NULL,precision=1/2,parscale=NULL,mc.cores=detectCores(),Richardson=2,order=2,...)
 {
-  # # square root of covariance
-  # stddev <- sqrtm(covariance)
-  # parscale <- diag(stddev)
-  # # approximate standardization
-  # stdize <- PDsolve(stddev)
-  #
-  # lower <- lower/parscale
-  # upper <- upper/parscale
-  #
-  # # fn in terms of approximately standardized variable and possibly zeroed
-  # if(zero)
-  # {
-  #   fn.std <- function(p) { fn(par + c(stddev %*% p),zero=zero) }
-  #   fn.scl <- function(p) { fn(par + c(parscale * p),zero=zero) } # preserves boundaries
-  # }
-  # else # doesn't require zero argument
-  # {
-  #   fn.std <- function(p) { fn(par + c(stddev %*% p)) }
-  #   fn.scl <- function(p) { fn(par + c(parscale * p)) } # preserves boundaries
-  # }
-  #
-  # # numDeriv arguments to use
-  # # eps <- max(step,sqrt(32*r*.Machine$double.eps))
-  # # 32 checked by hand at precision=1... strangely magic number...
-  # eps <- 1e-4 # default
-  # d <- sqrt(eps) # relative step fraction
-  # # can't make these too small for some reason
-  # zero.tol <- max(sqrt(2*.Machine$double.eps),2*d) # fixes step to eps (absolute)
-  # method.args <- list(r=r,eps=eps,zero.tol=zero.tol,d=d)
+  DIM <- length(par)
 
-  # differentiate standardized function
-  # D <- numDeriv::genD(fn.std,rep(0,n),method.args=method.args,...)$D
+  if(is.null(parscale)) { parscale <- pmin(abs(par),abs(par-lower),abs(upper-par)) }
+  if(any(parscale==0)) { parscale[parscale==0] <- 1 }
 
-  # default numDeriv arguments except r=2... seems very sensitive otherwise
+  if(is.null(step)) { step <- sqrt(2*.Machine$double.eps^precision) }
+
+  # convert to natural units - prevents confusion with zero tolerance (bacterium)
+  par <- par/parscale
+  func <- function(par) { fn(parscale*par) }
+
+  ### nuDeriv specific code ###
+
   d <- 0.01
-  zero.tol <- sqrt(.Machine$double.eps/7e-7) # this can bug up for microscopic sigma !!!
+  zero.tol <- sqrt(.Machine$double.eps/7e-7)
   n <- length(par)
 
   # calculate hessian and gradient simultaneously
   if(order==2)
   {
-    D <- numDeriv::genD(fn,par,method.args=list(eps=1e-4,d=d,zero.tol=zero.tol,r=r,v=2,show.details=FALSE),...)$D
+    method.args <- list(eps=1e-4,d=d,zero.tol=zero.tol,r=Richardson,v=2,show.details=FALSE)
+    D <- numDeriv::genD(func,par,method.args=method.args,...)$D
 
     grad <- D[1:n]
     D <- D[-(1:n)]
@@ -62,16 +44,9 @@ genD.numDeriv <- function(par,fn,zero=0,lower=-Inf,upper=Inf,step=NULL,r=2,covar
     hess <- hess + t(hess) - diag(diag(hess))
     hess[] <- D[hess]
     # seems like there should have been a more consise way to do that
-
-    # garbage for now
-    condition <- diag(hess)
-    condition <- min(sign(condition))*max(abs(condition),1)/min(abs(condition),1)
   }
   else
-  {
-    hess <- array(NA,c(n,n))
-    condition <- array(NA,n)
-  }
+  { hess <- array(NA,c(n,n)) }
 
   # gradient directions: NA is symmetric
   side <- rep(NA,n)
@@ -97,24 +72,29 @@ genD.numDeriv <- function(par,fn,zero=0,lower=-Inf,upper=Inf,step=NULL,r=2,covar
   HI <- TEST & upper<=par+d
   if(any(HI)) { side[HI] <- -1 }
 
-  # transform back from pre-conditioning
-  # hess <- stdize %*% hess %*% t(stdize)
-
   # avoiding this gives us a small speed up
   if(any(!is.na(side)) || order==1)
   {
-    # grad <- numDeriv::grad(fn.scl,rep(0,n),side=side,method.args=method.args,...)
-    if(!jacobian)
-    { grad <- numDeriv::grad(fn,par,side=side,method.args=list(eps=1e-4,d=0.0001,zero.tol=zero.tol,r=r,v=2,show.details=FALSE),...) }
-    else
-    { grad <- numDeriv::jacobian(fn,par,side=side,method.args=list(eps=1e-4,d=0.0001,zero.tol=zero.tol,r=r,v=2,show.details=FALSE),...) }
-    # grad <- grad/parscale
+    method.args <- list(eps=1e-4,d=0.0001,zero.tol=zero.tol,r=Richardson,v=2,show.details=FALSE)
+    grad <- numDeriv::grad(func,par,side=side,method.args=method.args,...)
   }
-  # else
-  # { grad <- stdize %*% grad }
 
-  return(list(gradient=grad,hessian=hess,condition=condition))
+  # convert back from natural units
+  grad <- grad / parscale
+  hess <- t(hess / parscale) / parscale
+
+  return(list(gradient=grad,hessian=hess))
 }
+
+
+
+
+
+
+
+
+
+
 
 
 ################################
@@ -319,26 +299,3 @@ genD.mcDeriv <- function(par,fn,zero=0,lower=-Inf,upper=Inf,PERIOD=F,step=NULL,c
   return(RETURN)
 }
 
-
-###############
-# calculate first and second derivatives efficiently
-# assumes to start with approximant of maximum (par) and inverse hessian (covariance)
-####################
-genD <- function(par,fn,zero=FALSE,lower=-Inf,upper=Inf,step=NULL,precision=1/2,covariance=NULL,parscale=NULL,mc.cores=detectCores(),Richardson=2,order=2,jacobian=FALSE)
-{
-  DIM <- length(par)
-
-  if(is.null(parscale)) { parscale <- pmin(abs(par),abs(par-lower),abs(upper-par)) }
-  if(any(parscale==0)) { parscale[parscale==0] <- 1 }
-
-  if(is.null(covariance)) { covariance <- diag(parscale^2) }
-
-  if(is.null(step)) { step <- sqrt(2*.Machine$double.eps^precision) }
-
-  # if(Richardson==1) # parallelized, but no Richardson extrapolation (2nd order)
-  # { RETURN <- genD.mcDeriv(par,fn,zero=zero,lower=lower,upper=upper,step=step,covariance=covariance,mc.cores=mc.cores) }
-  #else # Richardson extrapolation, but no parallelization
-  { RETURN <- genD.numDeriv(par,fn,zero=zero,lower=lower,upper=upper,step=step,covariance=covariance,r=Richardson,order=order,jacobian=jacobian) }
-
-  return(RETURN)
-}
