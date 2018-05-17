@@ -145,7 +145,9 @@ as.telemetry.character <- function(object,timeformat="",timezone="UTC",projectio
 {
   # read with 3 methods: fread, temp_unzip, read.csv, fall back to next if have error.
   # fread error message is lost, we can use print(e) for debugging.
-  data <- tryCatch(data.table::fread(object,data.table=FALSE,check.names=TRUE,nrows=5),
+  data <- tryCatch(suppressWarnings(
+    data.table::fread(object,data.table=FALSE,check.names=TRUE,nrows=5)
+  ),
                    error = function(e) "error")
   # if fread fails, then decompress zip to temp file, read data, remove temp file
   # previous data.table will generate error when reading zip, now it's warning and result is an empty data.frame.
