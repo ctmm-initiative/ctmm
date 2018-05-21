@@ -229,7 +229,7 @@ variogram.fast <- function(data,error=NULL,dt=NULL,res=1,CI="Markov",axes=c("x",
   zz <- FFT(rpad(zz,N))
 
   # indicator pair number (integer - stable FFT*)
-  DOF <- COL*round(Re(IFFT(abs(w)^2)[1:n]))
+  DOF <- round(Re(IFFT(abs(w)^2)[1:n]))
   # SVF un-normalized
   if(!ACF)
   {
@@ -240,8 +240,9 @@ variogram.fast <- function(data,error=NULL,dt=NULL,res=1,CI="Markov",axes=c("x",
   { SVF <- Re(IFFT(rowSums(abs(z)^2))[1:n]) }
 
   # normalize SVF
+  if(!ACF) { error <- error/DOF } # already averaged over dimensions
+  DOF <- COL*DOF
   SVF <- SVF/DOF
-  if(!ACF) { error <- error/DOF }
 
   # prevent NaNs
   ZERO <- DOF==0
@@ -434,12 +435,10 @@ variogram.slow <- function(data,error=NULL,dt=NULL,CI="Markov",axes=c("x","y"),A
   SVF <- SVF[DOF>0,]
   rm(DOF,DOF2,lag)
 
-  TEMP <- 1/((2*COL)*SVF$DOF)
   # normalize SVF before we correct DOF
-  SVF$SVF <- SVF$SVF * TEMP
+  SVF$SVF <- SVF$SVF /((2*COL)*SVF$DOF)
   #error <- error/DOF
-  if(!ACF) { SVF$MSE <- SVF$MSE * TEMP }
-  rm(TEMP)
+  if(!ACF) { SVF$MSE <- SVF$MSE /((2)*SVF$DOF) } # error already averaged over dimension
 
   # effective DOF from weights, non-overlapping lags, take the most conservative of the 3 estimates
   SVF$DOF <- pmin(SVF$DOF,SVF$DOF^2/SVF$DOF2) ; SVF$DOF2 <- NULL

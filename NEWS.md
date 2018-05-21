@@ -2,6 +2,10 @@ ctmm 0.5.1 (2018-05-17)
 ================
 
   * Units of measurement down to microns and microseconds now supported.
+  
+  * fixed bug in new variogram error calculations (v0.5.0) used for plotting
+  
+  * simultaneously fitted UERE's from ctmm slot "error" can now be assigned to data for plotting
 
 ctmm 0.5.0 (2018-05-15)
 ================

@@ -20,6 +20,8 @@ DOP.match <- function(axes)
 # try to assign one UERE to one data
 try.assign.uere <- function(data,UERE,TYPE=names(UERE))
 {
+  if(!is.null(TYPE) && TYPE=="error") { TYPE <- NULL } # generic fitted UERE
+
   if(is.null(TYPE)) # universal assignment from unnamed UERE
   {
     # try every UERE type assignment if those axes are present in the data

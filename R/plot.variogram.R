@@ -138,31 +138,38 @@ plot.svf <- function(lag,CTMM,error=NULL,alpha=0.05,col="red",type="l",...)
 
   # are we including errors?
   ERROR <- !is.null(error) && CTMM$error
+  e0 <- 0
   # can we plot a smooth curve?
   if(!ERROR)
   {
     lag <- seq(0,last(lag),length.out=PX)
-    error <- 0
+    error <- 0 -> e0
   }
+  else if(all(diff(error[-1])==0))
+  { error <- error[2] -> e0 } # can still plot curve because all errors it the same
 
   SVF <- svf.func(CTMM,moment=TRUE)
   svf <- SVF$svf
   DOF <- SVF$DOF
 
   # point estimate plot
-  SVF <- Vectorize(function(t,error=0) { svf(t,error=error) })
+  SVF <- Vectorize(function(t,error=e0) { svf(t,error=error) })
 
-  if(!ERROR) { graphics::curve(SVF,from=0,to=last(lag),n=PX,add=TRUE,col=col,...) }
-  else { graphics::points(lag,SVF(lag,error),col=col,type=type,...) }
+  lag[1] <- lag[2]/1000 # almost go to origin, but not quite to avoid nugget
+
+  if(length(error)==1) # can plot curve
+  { graphics::curve(SVF,from=0,to=last(lag),n=PX,add=TRUE,col=col,...) }
+  else
+  { graphics::points(lag,SVF(lag,error),col=col,type=type,...) }
 
   # confidence intervals if COV provided
   if(any(diag(CTMM$COV)>0))
   {
-    SVF <- Vectorize(function(t,error=0){ svf(t,error=error) })(lag,error)
+    SVF <- Vectorize(function(t,error=e0){ svf(t,error=error) })(lag,error)
 
     for(j in 1:length(alpha))
     {
-      dof <- Vectorize(function(t,error=0) { DOF(t,error=error) })(lag,error)
+      dof <- Vectorize(function(t,error=e0) { DOF(t,error=error) })(lag,error)
       svf.lower <- Vectorize(function(df){ CI.lower(df,alpha[j]) })(dof)
       svf.upper <- Vectorize(function(df){ CI.upper(df,alpha[j]) })(dof)
 
@@ -175,7 +182,7 @@ plot.svf <- function(lag,CTMM,error=NULL,alpha=0.05,col="red",type="l",...)
 ###########################################################
 # PLOT VARIOGRAM
 ###########################################################
-plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, diagnostic=FALSE, col="black", col.CTMM="red", xlim=NULL, ylim=NULL, ...)
+plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", col.CTMM="red", xlim=NULL, ylim=NULL, ...)
 {
   alpha <- 1-level
 
@@ -296,22 +303,8 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, diagnostic=FA
     {
       if("MSE" %in% names(x[[i]])) # calibrated errors
       { MSE <- x[[i]]$MSE }
-      else # uncalibrated errors
-      {
-        # not calibrated
-        MSE <- x[[i]]$MSDOP
-
-        # look in CTMM for UERE
-        if(length(CTMM)==length(x))
-        { UERE <- CTMM[[i]]$error }
-        else if(length(CTMM))
-        { UERE <- CTMM[[1]]$error }
-        else # otherwise default to 10 meters
-        { UERE <- 10 }
-
-        # calibrate
-        MSE <- MSE * UERE
-      }
+      else # uncalibrated errors - needs fitted error in model
+      { MSE <- x[[i]]$MSDOP }
     }
     lag <- x[[i]]$lag
     DOF <- x[[i]]$DOF
@@ -319,7 +312,6 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, diagnostic=FA
     # make sure plot looks nice and appropriate for data resolution
     if(length(lag) < 100) { type <- "p" } else { type <- "l" }
 
-    if(diagnostic && !ACF) { graphics::points(lag, MSE, type=type, col=scales::alpha(col[[i]],alpha=0.5) , lty=3, pch=16) }
     graphics::points(lag, SVF, type=type, col=col[[i]])
 
     for(j in 1:length(alpha))
@@ -332,12 +324,6 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, diagnostic=FA
 
         SVF.lower <- SVF * LOW
         SVF.upper <- SVF * HIGH
-
-        # if(diagnostic)
-        # {
-        #   MSE.lower <- MSE * LOW
-        #   MSE.upper <- MSE * HIGH
-        # }
       }
       else # Fisher CIs for autocorrelation
       {
@@ -356,7 +342,6 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, diagnostic=FA
         graphics::abline(h=c(-1,0,1)/sqrt(DOF[1])*stats::qnorm(1-alpha[j]/2),col="red",lty=c(2,1,2))
       }
 
-      # if(diagnostic && !ACF) { graphics::polygon(c(lag,rev(lag)),c(MSE.lower,rev(MSE.upper)),col=scales::alpha('red',alpha=0.1),border=NA) }
       graphics::polygon(c(lag,rev(lag)),c(SVF.lower,rev(SVF.upper)),col=scales::alpha(col[[i]],alpha=0.1),border=NA)
     }
 

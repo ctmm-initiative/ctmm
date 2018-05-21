@@ -26,7 +26,6 @@ Most GPS devices will only have an `HDOP` column, which is only proportional to 
 In the following wood turtle dataset, we have some calibration data and a turtle track. Note that the calibration data must be collected from the same model device as the tracking data.
 
 ```{r}
-library(ctmm)
 data(turtle)
 names(turtle)
 plot(turtle[1:2],col=rainbow(2)) # calibration data only
