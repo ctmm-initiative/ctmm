@@ -254,6 +254,8 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     DATA$COV.major <- ARGOS.major[COL]
     DATA[[DOP.LIST$horizontal$VAR]] <- ARGOS.radii[COL]
     DATA$HDOP <- sqrt(2*ARGOS.radii)[COL]
+
+    UERE['horizontal'] <- TRUE # flag UERE as fixed
   }
 
   ############
@@ -264,6 +266,8 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   {
     DATA$HDOP <- sqrt(2)*COL # use this for later (proxy on missing axis DOP)
     DATA[[DOP.LIST$horizontal$VAR]] <- COL^2
+
+    UERE['horizontal'] <- TRUE # flag UERE as fixed
   }
   # I emailed them, but they didn't know if there needed to be a sqrt(2) factor here
   # Do I assume this is an HDOP sigma_H=sqrt(VAR[x]+VAR[y]) ?
@@ -339,7 +343,11 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     # SPEED ERE
     COL <- "eobs.speed.accuracy.estimate"
     COL <- pull.column(object,COL)
-    if(length(COL)) { DATA[[DOP.LIST$speed$VAR]] <- COL^2 } # assuming same form as EOBS horizontal accuracy estimate
+    if(length(COL)) # assuming same form as EOBS horizontal accuracy estimate
+    {
+      DATA[[DOP.LIST$speed$VAR]] <- COL^2
+      UERE['speed'] <- TRUE # flag UERE as fixed
+    }
     else if("HDOP" %in% names(DATA)) # USE HDOP as approximate SDOP
     {
       DATA$SDOP <- DATA$HDOP
@@ -389,8 +397,8 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   # enforce projection
   telist <- "projection<-.list"(telist,proj)
 
-  # finally set the UERE if present
-  if(!is.null(UERE)) { uere(telist) <- UERE }
+  # finally set the UERE if present and precalibrated
+  if(!is.null(UERE) && any(UERE!=TRUE)) { uere(telist) <- UERE }
 
   # return single or list
   if (n>1 || !drop) { return(telist) }
