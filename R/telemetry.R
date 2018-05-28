@@ -393,9 +393,9 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   names(telist) <- id
 
   # determine projection without bias towards individuals
-  if(is.null(projection)) { proj <- median.telemetry(telist,k=2) }
+  if(is.null(projection)) { projection <- median.telemetry(telist,k=2) }
   # enforce projection
-  telist <- "projection<-.list"(telist,proj)
+  telist <- "projection<-.list"(telist,projection)
 
   # finally set the UERE if present and precalibrated
   if(!is.null(UERE) && any(UERE!=TRUE)) { uere(telist) <- UERE }
