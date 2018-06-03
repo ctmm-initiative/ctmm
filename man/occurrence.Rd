@@ -31,7 +31,7 @@ The arguments \code{cor.min} or \code{dt.max} are used to prevent the interpolat
 \references{
 C. H. Fleming, W. F. Fagan, T. Mueller, K. A. Olson, P. Leimgruber, J. M. Calabrese.
 Estimating where and how animals travel: An optimal framework for path reconstruction from autocorrelated tracking data.
-\href{http://onlinelibrary.wiley.com/doi/10.1890/15-1607/full}{Ecology, DOI:10.1890/15-1607 (2016)}.
+\href{http://onlinelibrary.wiley.com/doi/10.1890/15-1607/full}{Ecology, 97:3, 576-582 (2016)}.
 
 C. H. Fleming, D. Sheldon, E. Gurarie, W. F. Fagan, S. LaPoint, J. M. Calabrese.
 Kálmán filters for continuous-time movement models.

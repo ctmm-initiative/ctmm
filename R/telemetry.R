@@ -255,7 +255,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     DATA[[DOP.LIST$horizontal$VAR]] <- ARGOS.radii[COL]
     DATA$HDOP <- sqrt(2*ARGOS.radii)[COL]
 
-    UERE['horizontal'] <- TRUE # flag UERE as fixed
+    # UERE['horizontal'] <- TRUE # flag UERE as fixed
   }
 
   ############
@@ -267,7 +267,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     DATA$HDOP <- sqrt(2)*COL # use this for later (proxy on missing axis DOP)
     DATA[[DOP.LIST$horizontal$VAR]] <- COL^2
 
-    UERE['horizontal'] <- TRUE # flag UERE as fixed
+    # UERE['horizontal'] <- TRUE # flag UERE as fixed
   }
   # I emailed them, but they didn't know if there needed to be a sqrt(2) factor here
   # Do I assume this is an HDOP sigma_H=sqrt(VAR[x]+VAR[y]) ?
@@ -346,7 +346,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     if(length(COL)) # assuming same form as EOBS horizontal accuracy estimate
     {
       DATA[[DOP.LIST$speed$VAR]] <- COL^2
-      UERE['speed'] <- TRUE # flag UERE as fixed
+      # UERE['speed'] <- TRUE # flag UERE as fixed
     }
     else if("HDOP" %in% names(DATA)) # USE HDOP as approximate SDOP
     {
@@ -371,8 +371,16 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     # clean through duplicates, etc..
     telist[[i]] <- telemetry.clean(telist[[i]],id=id[i])
 
+    # check that error columns are present for UERE=TRUE
+    UERE.ID <- NULL
+    for(j in 2:length(DOP.LIST))
+    {
+      if(DOP.LIST[[j]]$VAR %in% names(telist[[i]]) || all(DOP.LIST[[j]]$COV %in% names(telist[[i]])))
+      { UERE.ID[ names(DOP.LIST)[j] ] <- TRUE }
+    }
+
     # combine data.frame with ancillary info
-    info <- list(identity=id[i], timezone=timezone, projection=projection, UERE=UERE)
+    info <- list(identity=id[i], timezone=timezone, projection=projection, UERE=UERE.ID)
     telist[[i]] <- new.telemetry( telist[[i]] , info=info )
 
     # delete empty columns in case collars/tags are different
@@ -398,7 +406,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   telist <- "projection<-.list"(telist,projection)
 
   # finally set the UERE if present and precalibrated
-  if(!is.null(UERE) && any(UERE!=TRUE)) { uere(telist) <- UERE }
+  if(!is.null(UERE)) { uere(telist) <- UERE }
 
   # return single or list
   if (n>1 || !drop) { return(telist) }

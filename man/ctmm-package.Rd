@@ -23,7 +23,7 @@ Winner & Noonan et al (2018) <doi:10.1111/2041-210X.13027>.
 Package: \tab ctmm\cr
 Type: \tab Package\cr
 Version: \tab 0.5.1 \cr
-Date: \tab 2018-05-28 \cr
+Date: \tab 2018-06-03 \cr
 License: \tab GPL-3 \cr
 }
 
@@ -68,7 +68,7 @@ ctmm: an R package for analyzing animal relocation data as a continuous-time sto
 
 C. H. Fleming, W. F. Fagan, T. Mueller, K. A. Olson, P. Leimgruber, J. M. Calabrese.
 Estimating where and how animals travel: An optimal framework for path reconstruction from autocorrelated tracking data.
-\href{http://onlinelibrary.wiley.com/doi/10.1890/15-1607/full}{Ecology, DOI:10.1890/15-1607 (2016)}.
+\href{https://esajournals.onlinelibrary.wiley.com/doi/abs/10.1890/15-1607.1}{Ecology, 97:3, 576-582 (2016)}.
 
 G. Péron, C. H. Fleming,  R. C. de Paula, J. M. Calabrese.
 Uncovering periodic patterns of space use in animal tracking data with periodograms, including a new algorithm for the Lomb-Scargle periodogram and improved randomization tests.
@@ -87,7 +87,7 @@ Kálmán filters for continuous-time movement models.
 
 C. H. Fleming, D. Sheldon, W. F. Fagan, P. Leimgruber, T. Mueller, D. Nandintsetseg, M. J. Noonan, K. A. Olson, E. Setyawan, A. Sianipar, J. M. Calabrese.
 Correcting for missing and irregular data in home-range estimation.
-\href{https://esajournals.onlinelibrary.wiley.com/doi/10.1002/eap.1704}{Ecological Applications, DOI:10.1002/eap.1704 (2018)}.
+\href{https://esajournals.onlinelibrary.wiley.com/doi/10.1002/eap.1704}{Ecological Applications, 28:4, 1003-1010 (2018)}.
 
 K. Winner, M. J. Noonan, C. H. Fleming, K. Olson, T. Mueller, D. Sheldon, J. M. Calabrese.
 Statistical inference for home range overlap.

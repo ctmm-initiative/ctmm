@@ -1,6 +1,7 @@
 PRIORITY
 * reference Guillaume's paper at the beginning of the periodogram vignette
-* UERE needs to return an AIC value
+* residuals() for calibrated calibration data
+* error categories imported and supported by uere()
 * error vignette - check back on variogram
 
 ERROR PAPER
