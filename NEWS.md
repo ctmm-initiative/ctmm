@@ -3,6 +3,10 @@ ctmm 0.5.1 (2018-05-28)
 
   * Units of measurement down to microns and microseconds now supported
   
+  * residuals() can not be calculated from (calibrated) calibration data---diagnostic argument removed from uere()
+  
+  * E-OBS errors adjusted by empirical results of Scott LaPoint's calibration data
+  
   * fixed bug in as.telemetry with projection argument
   
   * fixed bug in new variogram error calculations (v0.5.0) used for plotting

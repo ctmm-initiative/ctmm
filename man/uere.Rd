@@ -7,7 +7,7 @@
 \description{Functions for estimating and assigning the User Equivalent Range Error (UERE) of a GPS device from calibration data.}
 
 \usage{
-uere(data,override=FALSE,integrate=FALSE,diagnostic=FALSE)
+uere(data,override=FALSE,integrate=FALSE,trace=FALSE)
 
 uere(data) <- value
 }
@@ -17,7 +17,8 @@ uere(data) <- value
   \item{data}{Telemetry object or list of telemetry objects, preferably with DOP columns.}
   \item{override}{Return a UERE estimate even for data that are calibrated.}
   \item{integrate}{Consider HDOP and VDOP as being specified by the same UERE value.}
-  \item{diagnostic}{Return extra details, such as the UERE's 95\% confidence interval and a plot.}
+  %\item{diagnostic}{Return extra details, such as the UERE's 95\% confidence interval and a plot.}
+  \item{trace}{Print extra details, such as the UERE's 95\% confidence interval.}
   \item{value}{UERE value(s) to assign to telemetry data (see details).}
 }
 
@@ -44,19 +45,36 @@ Proper names include \code{"horizontal"}, \code{"vertical"}, and \code{"speed"}.
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
-\seealso{ \code{\link{as.telemetry}}.  }
+\seealso{ \code{\link{as.telemetry}}, \code{\link{residuals.telemetry}}.  }
 
-%\examples{\donttest{
-%# Load package and data
-%library(ctmm)
-%data(buffalo)
+\examples{
+# Load package and data
+library(ctmm)
+data(turtle)
 
-%# Extract movement data for a single animal
-%billy <- buffalo[[1]]
+# the first two datasets are calibration data
+names(turtle)
 
-%# Plot the data
-%plot(billy)
-%}}
+# estimate UERE from calibration data
+UERE <- uere(turtle[1:2])
+
+# apply UERE to entire dataset
+uere(turtle) <- UERE
+
+# calculate residuals of calibration data
+RES <- lapply(turtle[1:2],residuals)
+
+# scatter plot of residuals with 50\% and 95\% quantiles
+plot(RES,col.DF=NA,level.UD=c(0.50,0.95))
+
+# check calibration data for autocorrelation using fast=FALSE because samples are small
+ACFS <- lapply(RES,function(R){correlogram(R,fast=FALSE,dt=10 \%#\% 'min')})
+
+# pooling ACFs
+ACF <- mean(ACFS)
+
+plot(ACF)
+}
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

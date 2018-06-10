@@ -502,18 +502,19 @@ mean.variogram <- function(x,...)
   }
 
   # delete missing lags
-  variogram <- data.frame(lag=lag,SVF=SVF,MSE=MSE,DOF=DOF)
+  variogram <- data.frame(lag=lag,SVF=SVF,DOF=DOF)
+  if(ERR %in% names(x[[1]])) { variogram$MSE <- MSE }
   variogram <- variogram[DOF>0,]
 
   # normalize SVF
   variogram$SVF <- variogram$SVF / variogram$DOF
-  variogram$MSE <- variogram$MSE / variogram$DOF
+  if(ERR %in% names(x[[1]])) { variogram$MSE <- variogram$MSE / variogram$DOF }
 
   # drop unused levels
   variogram <- droplevels(variogram)
 
   # correct name if not calibrated
-  rename(variogram,"MSE",ERR)
+  if(ERR %in% names(x[[1]])) { rename(variogram,"MSE",ERR) }
 
   variogram <- new.variogram(variogram,info=mean.info(x))
   return(variogram)

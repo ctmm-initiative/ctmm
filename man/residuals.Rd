@@ -6,23 +6,22 @@
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Calculate model fit residuals and assess their autocorrelation}
 \description{
-These functions calculate the residuals of a CTMM model, which should be standardized and IID if the model correctly specified.
-A correlogram method is also provided to assess remaining autocorrelation.
+These functions calculate the residuals of a CTMM or UERE calibration model, which should be standardized and IID if the model correctly specified.
+A correlogram method is also provided to assess autocorrelation.
 This function is analogous to \code{acf}, but can handle missing data and multiple dimensions.
 }
 \usage{
 \S3method{residuals}{ctmm}(object,data,...)
 
-\S3method{residuals}{telemetry}(object,CTMM,...)
+\S3method{residuals}{telemetry}(object,CTMM=NULL,...)
 
 correlogram(data,dt=NULL,fast=TRUE,res=1,axes=c("x","y"))
-
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{object}{\code{ctmm} model object or \code{telemetry} data object for calculating residuals.}
   \item{data}{\code{telemetry} data object or \code{data.frame} with time column \code{t} and data columns \code{axes}.}
-  \item{CTMM}{\code{ctmm} model object.}
+  \item{CTMM}{\code{ctmm} model object. If \code{NULL}, the data is treated as (calibrated) calibration data.}
   \item{...}{Unused arguments.}
   \item{dt}{ Lag bin width. An ordered array will yield a progressive coarsening of the lags. Defaults to the median sampling interval.}
   \item{fast}{ Use the lag-weighted algorithm if \code{FALSE} or the FFT algorithm if \code{TRUE}. The slow algorithm outputs a progress bar.}
@@ -65,8 +64,8 @@ FIT <- ctmm.fit(Cilla,GUESS)
 #calculate residuals
 RES <- residuals(Cilla,FIT)
 
-#scatter plot of residuals
-plot(RES)
+#scatter plot of residuals with 50\% and 95\% quantiles
+plot(RES,col.DF=NA,level.UD=c(.50,.95))
 
 #calculate correlogram of residuals
 # increase the res argument to account for sampling variability

@@ -87,66 +87,56 @@ try.assign.uere <- function(data,UERE,TYPE=names(UERE))
   return(data)
 }
 
-# return the UERE from set data or calculate it from calibration data
-# look for every DOP without a VAR and calculate UERE - override option for all
-# option to integrate HDOP & VDOP if they share the same UERE
-uere <- function(data,override=FALSE,integrate=FALSE,diagnostic=FALSE)
+
+# what DOP types are in the data
+get.dop.types <- function(data)
 {
-  if(class(data)=="telemetry" || class(data)=="data.frame")
-  {
-    # return present UERE
-    UERE <- attr(data,"info")$UERE
-    if(!is.null(UERE)) { return(UERE) }
-
-    # promote to list of calibration data and proceed
-    data <- list(data)
-  }
-
   # types of data present
   TYPES <- names(DOP.LIST[-1])
   IN <- sapply(TYPES,function(TYPE) { all(DOP.LIST[[TYPE]]$axes %in% names(data[[1]])) })
   TYPES <- TYPES[IN]
+
+  return(TYPES)
+}
+
+
+# return the UERE from set data or calculate it from calibration data
+# look for every DOP without a VAR and calculate UERE - override option for all
+# option to integrate HDOP & VDOP if they share the same UERE
+uere <- function(data,override=FALSE,integrate=FALSE,trace=FALSE)
+{
+  data <- listify(data)
+
+  if(!override)
+  {
+    UERE <- sapply(data,function(d){attr(d,"info")$UERE}) # (dim,tag)
+    if(class(UERE)!="list")
+    {
+      UERE <- apply(UERE,1,unique)
+      if(class(UERE)!="list" && is.null(dim(UERE))) { return(attr(data[[1]],"info")$UERE) } # unique UERE array to return
+    }
+  }
+
+  TYPES <- get.dop.types(data) # types of DOP data present
   # remove cases where calibration exists
   if(length(TYPES) && !override)
   {
-    OUT <- sapply(TYPES,function(TYPE) {DOP.LIST[[TYPE]]$VAR %in% names(data[[1]])})
+    OUT <- sapply(TYPES,function(TYPE) {DOP.LIST[[TYPE]]$VAR %in% names(data[[1]]) || all(DOP.LIST[[TYPE]]$COV %in% names(data[[1]]))})
     TYPES <- TYPES[!OUT]
   }
 
+  # calculate residuals with UERE=1
+  data <- residuals.calibration(data,TYPES)
+  # data <- do.call(rbind,data)
+  # estimate UERE from residuals
   UERE <- NULL
   N <- NULL
   for(TYPE in TYPES)
   {
     axes <- DOP.LIST[[TYPE]]$axes
+    z <- NULL
+    for(i in 1:length(data)) { z <- rbind(z,get.telemetry(data[[i]],axes)) }
 
-    # get.error object for pulling UERE-1 variances
-    CTMM <- list(axes=axes,error=1)
-
-    # array of residuals to rbind to
-    # x <- NULL # residuals
-    z <- NULL # standardized residuals
-    # DOP <- NULL # DOP values
-
-    # calculate mean and residuals
-    for(i in 1:length(data))
-    {
-      # DOP <- c(DOP,data[[i]][[DOP.LIST[[TYPE]]$DOP]])
-      # UERE-1 error variances
-      w <- get.error(data[[i]],CTMM)
-      if(attr(w,"flag")==0) { stop("Failed to import DOP column from Movebank file.") }
-      # relative weights
-      w <- 1/w
-      # locations
-      dz <- get.telemetry(data[[i]],axes)
-      # stationary mean
-      mu <- c(w %*% dz)/sum(w)
-      # detrend the mean for error/residuals
-      dz <- dz - mu
-      # x <- rbind(x,dz)
-      # UERE-1 standardize residuals
-      dz <- sqrt(w) * dz
-      z <- rbind(z,dz)
-    }
     # total degrees of freedom
     N <- c(N,(nrow(z)-length(data)) * length(axes))
     # x,y data would be standardized if UERE==1 back from error=1 in CTMM list
@@ -155,40 +145,14 @@ uere <- function(data,override=FALSE,integrate=FALSE,diagnostic=FALSE)
     names(N)[length(N)] <- TYPE
     names(UERE)[length(UERE)] <- TYPE
 
-    if(diagnostic)
+    if(trace)
     {
-      lwd <- c(1,2,1)
-      CI <- chisq.ci(1,DOF=N[TYPE])
-
-      # r <- sqrt(rowSums(z^2)) / (UERE[TYPE])
-      # r <- c(-r,r) # reflection symmetry
-      # KDE <- stats::density(r,bw="SJ")
-      # graphics::hist(r,breaks="scott",freq=FALSE,main=paste(TYPE,"residual distribution"),xlab="standardized error",ylim=c(0,max(KDE$y,exp(-1/2)/sqrt(CI[1]))),xlim=c(0,max(r)))
-      # graphics::lines(KDE)
-      # for(i in 1:3)
-      # {
-      #   DNORM <- Vectorize(function(x){x/CI[i]*exp(-x^2/2/CI[i])})
-      #   graphics::curve(DNORM,from=0,to=max(r),n=1001,add=TRUE,col='red',lwd=lwd[i])
-      # }
-
-      r <- c(z) / (UERE[TYPE])
-      KDE <- stats::density(r,bw="SJ")
-      graphics::hist(r,breaks="scott",freq=FALSE,main=paste(TYPE,"residual distribution"),xlab="standardized error",ylim=c(0,max(KDE$y,1/sqrt(2*pi*CI[1]))))
-      graphics::lines(KDE)
-      for(i in 1:3)
-      {
-        DNORM <- Vectorize(function(x){ exp(-x^2/2/CI[i])/sqrt(2*pi*CI[i]) })
-        # should have used a t-distribution?
-        graphics::curve(DNORM,from=min(r),to=max(r),n=1001,add=TRUE,col="red",lwd=lwd[i])
-      }
-      ## right-justifying a set of labels: thanks to Uwe Ligges
-      LEG <- sprintf("%.2f",rev(sqrt(chisq.ci(UERE[TYPE]^2,DOF=N[TYPE]))))
-      LEN <- max(graphics::strwidth(LEG))
-      OUT <- graphics::legend("topright",legend=rep(" ",length(LEG)),text.width=LEN,title="UERE",box.col=NA,col='red',bg=grDevices::grey(0.9),lwd=lwd,xjust=1,yjust=1)
-      graphics::text(OUT$rect$left+OUT$rect$w,OUT$text$y,LEG,pos=2)
+      CI <- sqrt(chisq.ci(UERE[TYPE]^2,DOF=N[TYPE]))
+      message("UERE[",TYPE,"] = ", sprintf("%.4f - %.4f",CI[1],CI[3]) )
     }
   }
 
+  # Do x,y,z axes all share the same UERE?
   if(integrate && all(c('horizontal','vertical') %in% TYPES) && all(c("HDOP","VDOP") %in% names(data[[1]])))
   {
     P <- (UERE['horizontal']/UERE['vertical'])^2
@@ -201,6 +165,47 @@ uere <- function(data,override=FALSE,integrate=FALSE,diagnostic=FALSE)
   }
 
   return(UERE)
+}
+
+
+# calculate residuals of calibration data
+# add axes argument for other uses?
+residuals.calibration <- function(data,TYPES=get.dop.types(data),...)
+{
+  # enforce list structure
+  data <- listify(data)
+
+  for(TYPE in TYPES)
+  {
+    axes <- DOP.LIST[[TYPE]]$axes
+
+    # get.error object for pulling UERE-1 variances
+    CTMM <- list(axes=axes,error=1)
+
+    # calculate mean and residuals
+    for(i in 1:length(data))
+    {
+      # DOP <- c(DOP,data[[i]][[DOP.LIST[[TYPE]]$DOP]])
+      # UERE-1 error variances
+      w <- get.error(data[[i]],CTMM)
+      if(attr(w,"flag")==0) { stop("Failed to import DOP column from Movebank file.") }
+      # now these are the weights
+      w <- 1/w
+      # locations
+      z <- get.telemetry(data[[i]],axes)
+      # stationary mean
+      mu <- c(w %*% z)/sum(w)
+      # detrend the mean for error/residuals
+      z <- t(t(z) - mu)
+      # x <- rbind(x,dz)
+      # UERE-1 standardize residuals
+      z <- sqrt(w) * z
+      # store back in the object
+      data[[i]][,axes] <- z
+    }
+  }
+
+  return(data)
 }
 
 

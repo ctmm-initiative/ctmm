@@ -120,8 +120,7 @@ pull.column <- function(object,NAMES,FUNC=as.numeric)
 {
   # consider alternative spellings of NAMES, but preserve order (preference) of NAMES
   COPY <- NULL
-  for(NAME in NAMES)
-  { COPY <- c(COPY,unique(c(NAME,gsub("[.: ]","_",NAME)))) }
+  for(NAME in NAMES) { COPY <- c(COPY,unique(c(NAME,gsub("[.:_ ]","",NAME)))) }
   NAMES <- tolower(COPY) # all lower case
 
   COLS <- names(object) # already lower case
@@ -145,18 +144,15 @@ as.telemetry.character <- function(object,timeformat="",timezone="UTC",projectio
 {
   # read with 3 methods: fread, temp_unzip, read.csv, fall back to next if have error.
   # fread error message is lost, we can use print(e) for debugging.
-  data <- tryCatch(suppressWarnings(
-    data.table::fread(object,data.table=FALSE,check.names=TRUE,nrows=5)
-  ),
-                   error = function(e) "error")
+  data <- tryCatch( suppressWarnings( data.table::fread(object,data.table=FALSE,check.names=TRUE,nrows=5) ) , error=function(e){"error"} )
   # if fread fails, then decompress zip to temp file, read data, remove temp file
   # previous data.table will generate error when reading zip, now it's warning and result is an empty data.frame.
-  if (class(data) == "data.frame" && nrow(data) > 0) { data <- data.table::fread(object,data.table=FALSE,check.names=TRUE,...) }
+  if(class(data) == "data.frame" && nrow(data) > 0) { data <- data.table::fread(object,data.table=FALSE,check.names=TRUE,...) }
   else {
-    data <- tryCatch(temp_unzip(object, data.table::fread, data.table=FALSE,check.names=TRUE,...),
-                     error = function(e) "error")
-    if (identical(data, "error")) {
-      cat("fread failed, fall back to read.csv", "\n")
+    data <- tryCatch( temp_unzip(object, data.table::fread, data.table=FALSE,check.names=TRUE,...) , error=function(e){"error"} )
+    if(identical(data,"error"))
+    {
+      cat("fread failed, fall back to read.csv","\n")
       data <- utils::read.csv(object,...)
     }
   }
@@ -173,13 +169,16 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   # make column names canonicalish
   names(object) <- tolower(names(object))
 
+  # timestamp column
+  COL <- c('timestamp','Acquisition.Start.Time','time')
+  COL <- pull.column(object,COL,FUNC=as.character)
   # fastPOSIXct doesn't have a timeformat argument and as.POSIXct doesn't accept this argument if empty/NA/NULL ???
-  if(class(object$timestamp)=="character" && timeformat=="") { DATA <- fasttime::fastPOSIXct(object$timestamp,tz=timezone) }
-  else if(timeformat=="") { DATA <- as.POSIXct(object$timestamp,tz=timezone) }
-  else { DATA <- as.POSIXct(object$timestamp,tz=timezone,format=timeformat) }
-  DATA <- data.frame(timestamp=DATA)
+  if(class(COL)=="character" && timeformat=="") { COL <- fasttime::fastPOSIXct(COL,tz=timezone) }
+  else if(timeformat=="") { COL <- as.POSIXct(COL,tz=timezone) }
+  else { COL <- as.POSIXct(COL,tz=timezone,format=timeformat) }
+  DATA <- data.frame(timestamp=COL)
 
-  COL <- c("animal.ID","individual.local.identifier","local.identifier","Name","ID","tag.local.identifier","tag.ID","deployment.ID","trackId")
+  COL <- c("animal.ID","individual.local.identifier","local.identifier","Name","ID","tag.local.identifier","tag.ID","deployment.ID","track.ID")
   COL <- pull.column(object,COL,as.factor)
   if(length(COL)==0)
   {
@@ -188,11 +187,11 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   }
   DATA$id <- COL
 
-  COL <- c("location.long","Longitude","long","lon")
+  COL <- c("location.long","Longitude","long","lon","GPS.Longitude")
   COL <- pull.column(object,COL)
   DATA$longitude <- COL
 
-  COL <- c("location.lat","Latitude","lat")
+  COL <- c("location.lat","Latitude","lat","GPS.Latitude")
   COL <- pull.column(object,COL)
   DATA$latitude <- COL
 
@@ -254,29 +253,33 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     DATA$COV.major <- ARGOS.major[COL]
     DATA[[DOP.LIST$horizontal$VAR]] <- ARGOS.radii[COL]
     DATA$HDOP <- sqrt(2*ARGOS.radii)[COL]
-
-    # UERE['horizontal'] <- TRUE # flag UERE as fixed
   }
 
   ############
-  # EOBS calibrated GPS ERRORS
+  # EOBS calibrated GPS errors
   COL <- c("eobs.horizontal.accuracy.estimate")
   COL <- pull.column(object,COL)
   if(length(COL))
   {
-    DATA$HDOP <- sqrt(2)*COL # use this for later (proxy on missing axis DOP)
+    COL <- 1.1778678310260233*COL # estimated from Scott's calibration data
+    DATA$HDOP <- sqrt(2)*COL
     DATA[[DOP.LIST$horizontal$VAR]] <- COL^2
-
-    # UERE['horizontal'] <- TRUE # flag UERE as fixed
   }
-  # I emailed them, but they didn't know if there needed to be a sqrt(2) factor here
-  # Do I assume this is an HDOP sigma_H=sqrt(VAR[x]+VAR[y]) ?
-  # Do I assume this is an x-y standard deviation STD[x]=STD[y] ?
-  # Scott's calibration data is more like the latter
+
+  ###########
+  # Telonics calibrated GPS errors
+  COL <- c("GPS.Horizontal.Error")
+  COL <- pull.column(object,COL)
+  if(length(COL))
+  {
+    #
+    #
+    #
+  }
 
   ###################################
   # HDOP
-  COL <- c("GPS.HDOP","HDOP","DOP")
+  COL <- c("GPS.HDOP","HDOP","DOP","GPS.Horizontal.Dilution")
   COL <- pull.column(object,COL)
   if(length(COL))
   {
@@ -289,21 +292,34 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   {
     COL <- c("GPS.satellite.count","satellite.count","NumSats","Sats") # Counts? Messages?
     COL <- pull.column(object,COL)
-
     if(length(COL))
     {
-      warning("HDOP values not found. Approximating with # satellites.")
+      warning("HDOP values not found. Approximating via # satellites.")
       COL <- 10/(COL-2)
       DATA$HDOP <- COL
 
       if(is.null(UERE)) { warning("HDOP values approximated, but UERE not specified and will have to be fit. See help(\"uere\").") }
     }
+
+    # location class data to be supported here...
+    # fix time is fall back only
+
+    # COL <- c("GPS.time.to.fix","time.to.fix","fix.time","time.to.get.fix")
+    # COL <- pull.column(object,COL)
+    # if(length(COL))
+    # {
+    #   warning("HDOP values not found. Approximating via fix time. See help(\"uere\").")
+    #   MAX <- max(COL)
+    #   COL <- (COL==MAX)
+    #   COL <- as.factor(COL)
+    #   DATA$class <- COL
+    # }
   }
 
   ################################
   # HEIGHT
   # Import third axis if available
-  COL <- c("height.above.ellipsoid","height.above.msl","height.above.mean.sea.level","height.raw","height.(raw)","barometric.height","height","Argos.altitude","altitude","barometric.depth","depth")
+  COL <- c("height.above.ellipsoid","height.above.msl","height.above.mean.sea.level","height.raw","height.(raw)","barometric.height","height","Argos.altitude","GPS.Altitude","altitude","barometric.depth","depth")
   COL <- pull.column(object,COL)
   if(length(COL))
   {

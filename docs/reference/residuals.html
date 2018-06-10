@@ -30,8 +30,8 @@
 
 <meta property="og:title" content="Calculate model fit residuals and assess their autocorrelation — residuals.ctmm" />
 
-<meta property="og:description" content="These functions calculate the residuals of a CTMM model, which should be standardized and IID if the model correctly specified.
-A correlogram method is also provided to assess remaining autocorrelation.
+<meta property="og:description" content="These functions calculate the residuals of a CTMM or UERE calibration model, which should be standardized and IID if the model correctly specified.
+A correlogram method is also provided to assess autocorrelation.
 This function is analogous to acf, but can handle missing data and multiple dimensions." />
 <meta name="twitter:card" content="summary" />
 
@@ -60,7 +60,7 @@ This function is analogous to acf, but can handle missing data and multiple dime
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.5.0</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.5.1</span>
       </span>
     </div>
 
@@ -121,8 +121,8 @@ This function is analogous to acf, but can handle missing data and multiple dime
 
     <div class="ref-description">
     
-    <p>These functions calculate the residuals of a CTMM model, which should be standardized and IID if the model correctly specified.
-A correlogram method is also provided to assess remaining autocorrelation.
+    <p>These functions calculate the residuals of a CTMM or UERE calibration model, which should be standardized and IID if the model correctly specified.
+A correlogram method is also provided to assess autocorrelation.
 This function is analogous to <code>acf</code>, but can handle missing data and multiple dimensions.</p>
     
     </div>
@@ -131,7 +131,7 @@ This function is analogous to <code>acf</code>, but can handle missing data and 
 <span class='fu'>residuals</span>(<span class='no'>object</span>,<span class='no'>data</span>,<span class='no'>...</span>)
 
 <span class='co'># S3 method for telemetry</span>
-<span class='fu'>residuals</span>(<span class='no'>object</span>,<span class='no'>CTMM</span>,<span class='no'>...</span>)
+<span class='fu'>residuals</span>(<span class='no'>object</span>,<span class='kw'>CTMM</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='no'>...</span>)
 
 <span class='fu'>correlogram</span>(<span class='no'>data</span>,<span class='kw'>dt</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>fast</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>res</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>axes</span><span class='kw'>=</span><span class='fu'>c</span>(<span class='st'>"x"</span>,<span class='st'>"y"</span>))</pre>
     
@@ -148,7 +148,7 @@ This function is analogous to <code>acf</code>, but can handle missing data and 
     </tr>
     <tr>
       <th>CTMM</th>
-      <td><p><code>ctmm</code> model object.</p></td>
+      <td><p><code>ctmm</code> model object. If <code>NULL</code>, the data is treated as (calibrated) calibration data.</p></td>
     </tr>
     <tr>
       <th>...</th>
@@ -209,8 +209,8 @@ Kálmán filters for continuous-time movement models.
 <span class='co'>#calculate residuals</span>
 <span class='no'>RES</span> <span class='kw'>&lt;-</span> <span class='fu'>residuals</span>(<span class='no'>Cilla</span>,<span class='no'>FIT</span>)
 
-<span class='co'>#scatter plot of residuals</span>
-<span class='fu'><a href='plot.telemetry.html'>plot</a></span>(<span class='no'>RES</span>)</div><div class='img'><img src='residuals-1.png' alt='' width='700' height='433' /></div><div class='input'>
+<span class='co'>#scatter plot of residuals with 50% and 95% quantiles</span>
+<span class='fu'><a href='plot.telemetry.html'>plot</a></span>(<span class='no'>RES</span>,<span class='kw'>col.DF</span><span class='kw'>=</span><span class='fl'>NA</span>,<span class='kw'>level.UD</span><span class='kw'>=</span><span class='fu'>c</span>(<span class='fl'>.50</span>,<span class='fl'>.95</span>))</div><div class='img'><img src='residuals-1.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'>#calculate correlogram of residuals</span>
 <span class='co'># increase the res argument to account for sampling variability</span>
 <span class='no'>ACF</span> <span class='kw'>&lt;-</span> <span class='fu'>correlogram</span>(<span class='no'>RES</span>,<span class='kw'>res</span><span class='kw'>=</span><span class='fl'>10</span>)

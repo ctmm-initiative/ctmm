@@ -30,7 +30,7 @@
 
 <meta property="og:title" content="Calculate the Lomb-Scargle periodogram of animal-tracking data — periodogram" />
 
-<meta property="og:description" content="This function calculates isotropic Lomb-Scargle periodogram (LSP, Scargle, 1982) from a telemetry object. One of two algorithms is used. The slow \(O(n^2)\) algorithm vectorizes the exact relations of Scargle (1982), while the fast \(O(n \log n)\) algorithm uses the FFT method described in Péron et al (2016). The latter method is exact if the data are evenly scheduled, permitting gaps, and otherwise it can be made arbitrarily precise via the res.time option." />
+<meta property="og:description" content="This function calculates isotropic Lomb-Scargle periodogram (LSP, Scargle, 1982) from a telemetry object. One of two algorithms is used. The slow \(O(n^2)\) algorithm vectorizes the exact relations of Scargle (1982), while the fast \(O(n \log n)\) algorithm uses the FFT method described in Péron &amp; Fleming et al (2016). The latter method is exact if the data are evenly scheduled, permitting gaps, and otherwise it can be made arbitrarily precise via the res.time option." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -58,7 +58,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.5.0</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.5.1</span>
       </span>
     </div>
 
@@ -119,7 +119,7 @@
 
     <div class="ref-description">
     
-    <p>This function calculates isotropic Lomb-Scargle periodogram (LSP, Scargle, 1982) from a telemetry object. One of two algorithms is used. The slow \(O(n^2)\) algorithm vectorizes the exact relations of Scargle (1982), while the fast \(O(n \log n)\) algorithm uses the FFT method described in Péron et al (2016). The latter method is exact if the data are evenly scheduled, permitting gaps, and otherwise it can be made arbitrarily precise via the <code>res.time</code> option.</p>
+    <p>This function calculates isotropic Lomb-Scargle periodogram (LSP, Scargle, 1982) from a telemetry object. One of two algorithms is used. The slow \(O(n^2)\) algorithm vectorizes the exact relations of Scargle (1982), while the fast \(O(n \log n)\) algorithm uses the FFT method described in Péron &amp; Fleming et al (2016). The latter method is exact if the data are evenly scheduled, permitting gaps, and otherwise it can be made arbitrarily precise via the <code>res.time</code> option.</p>
     
     </div>
 
@@ -195,7 +195,7 @@
 <!-- %If no \code{T} is specified, the full sampling period is used. --></p>
 <p>At default resolution the frequency grid interval is given by <code>1/(2*(range(data$t)+dt))</code> and the frequency cutoff is given by <code>1/(2*dt)</code>, both in accordance with the DFT periodogram. Increasing <code>res.freq</code> beyond <code>res.freq=1</code> will make for a smooth periodogram, but sequential frequencies will be highly correlated. The <code>max=TRUE</code> option to <code>plot.periodogram</code> may be useful for <code>res.freq&gt;1</code>. Increasing <code>res.time</code> beyond <code>res.time=1</code> is helpful if there is variability in the sampling rate and <code>fast&gt;0</code>.</p>
 <p>If a <code>CTMM</code> argument is provided, the ML mean will be detrended from the data prior to calculating the periodogram. Otherwise, the sample mean will be detrended.</p>
-<p>If a list of <code>telemetry</code> objects are fed into <code>periodogram</code>, then a mean <code>periodogram</code> object will be returned with the default <code>dt</code> and base frequency resolution selected on a worst case basis according to the method described by Péron et al (2016).</p>
+<p>If a list of <code>telemetry</code> objects are fed into <code>periodogram</code>, then a mean <code>periodogram</code> object will be returned with the default <code>dt</code> and base frequency resolution selected on a worst case basis according to the method described by Péron &amp; Fleming et al (2016).</p>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 

@@ -119,37 +119,52 @@ median.longlat <- function(data,k=1,...)
     mu <- cartesian2ellipsoid(mu)
     return(mu)
   }
+
   # k==2 below
-
-  # find the longest axis of variation
-  COV <- eigen(COV)$vectors[,1]
-  # distances along long axis
-  COV <- t(t(data)-mu) %*% COV
-  # centroid along long axis
-  mu <- stats::median(COV)
-  # detrended distances along long axis
-  COV <- c(COV) - mu
-
-  # positive half
-  SUB <- data[COV>0,]
-  mu1 <- apply(SUB,2,stats::median)
-  mu1 <- c(Gmedian::Gmedian(SUB,init=mu1))
-
-  # negative half
-  SUB <- data[COV<0,]
-  mu2 <- apply(SUB,2,stats::median)
-  mu2 <- c(Gmedian::Gmedian(SUB,init=mu2))
-
-  # 2-mode cluster
-  mu <- rbind(mu1,mu2)
-  mu <- Gmedian::kGmedian(data,ncenters=mu,...)$centers
-  # make sure separation is not reduced by clustering
-  if(sum((mu1-mu2)^2)>sum((mu[1,]-mu[2,])^2))
+  if(nrow(data)==1)
+  { mu <- rbind(data,data) }
+  else if(nrow(data)==2)
+  { mu <- data }
+  else
   {
-    mu1 -> mu[1,]
-    mu2 -> mu[2,]
-  }
+    # find the longest axis of variation
+    COV <- eigen(COV)$vectors[,1]
+    # distances along long axis
+    COV <- t(t(data)-mu) %*% COV
+    # centroid along long axis
+    mu <- stats::median(COV)
+    # detrended distances along long axis
+    COV <- c(COV) - mu
 
+    # positive half
+    SUB <- data[COV>0,,drop=FALSE]
+    if(nrow(SUB)==1) { mu1 <- SUB }
+    else
+    {
+      mu1 <- apply(SUB,2,stats::median)
+      mu1 <- c(Gmedian::Gmedian(SUB,init=mu1))
+    }
+
+    # negative half
+    SUB <- data[COV<0,,drop=FALSE]
+    if(nrow(SUB)==1) { mu2 <- SUB }
+    else
+    {
+      mu2 <- apply(SUB,2,stats::median)
+      mu2 <- c(Gmedian::Gmedian(SUB,init=mu2))
+    }
+
+    # 2-mode cluster
+    mu <- rbind(mu1,mu2)
+    if(nrow(mu)>3) { mu <- Gmedian::kGmedian(data,ncenters=mu,...)$centers }
+
+    # make sure separation is not reduced by clustering
+    if(sum((mu1-mu2)^2)>sum((mu[1,]-mu[2,])^2))
+    {
+      mu1 -> mu[1,]
+      mu2 -> mu[2,]
+    }
+  }
   mu <- cartesian2ellipsoid(mu)
 
   # order from west to east

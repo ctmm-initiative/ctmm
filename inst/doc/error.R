@@ -5,7 +5,6 @@ names(fisher) # imported column names
 plot(fisher,error=2) # fisher plot with 95% error discs
 
 ## ------------------------------------------------------------------------
-library(ctmm)
 data(turtle)
 names(turtle)
 plot(turtle[1:2],col=rainbow(2)) # calibration data only

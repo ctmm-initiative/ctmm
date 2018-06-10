@@ -58,7 +58,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.5.0</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.5.1</span>
       </span>
     </div>
 
@@ -123,7 +123,7 @@
     
     </div>
 
-    <pre class="usage"><span class='fu'>overlap</span>(<span class='no'>object</span>,<span class='kw'>CTMM</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>debias</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>overlap</span>(<span class='no'>object</span>,<span class='kw'>CTMM</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>debias</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -142,7 +142,7 @@
     </tr>
     <tr>
       <th>debias</th>
-      <td><p>Approximate debiasing of the overlap. (TESTING!)</p></td>
+      <td><p>Approximate debiasing of the overlap.</p></td>
     </tr>
     <tr>
       <th>...</th>
@@ -153,6 +153,12 @@
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>A table of confidence intervals on the overlap estimate. A value of <code>1</code> implies that the two distributions are identical, while a value of <code>0</code> implies that the two distributions share no area in common. Corresponding <code>ctmm</code> objects are necessary to provide confidence intervals and debiasing for the point esitmates.</p>
+    
+    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
+
+    <p>K. Winner, M. J. Noonan, C. H. Fleming, K. Olson, T. Mueller, D. Sheldon, J. M. Calabrese.
+Statistical inference for home range overlap.
+<a href='https://besjournals.onlinelibrary.wiley.com/doi/10.1111/2041-210X.13027'>Methods in Ecology and Evolution, DOI:10.1111/2041-210X.13027 (2018)</a>.</p>
     
     <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
 
@@ -177,14 +183,14 @@
 <span class='fu'>overlap</span>(<span class='no'>FITS</span>)</div><div class='output co'>#&gt; , , low
 #&gt; 
 #&gt;           Cilla      Gabs
-#&gt; Cilla 1.0000000 0.8877895
-#&gt; Gabs  0.8877895 1.0000000
+#&gt; Cilla 1.0000000 0.9322524
+#&gt; Gabs  0.9322524 1.0000000
 #&gt; 
 #&gt; , , ML
 #&gt; 
 #&gt;           Cilla      Gabs
-#&gt; Cilla 1.0000000 0.9840319
-#&gt; Gabs  0.9840319 1.0000000
+#&gt; Cilla 1.0000000 0.9986094
+#&gt; Gabs  0.9986094 1.0000000
 #&gt; 
 #&gt; , , high
 #&gt; 
@@ -196,20 +202,20 @@
 <span class='fu'>overlap</span>(<span class='no'>buffalo</span>[<span class='fl'>1</span>:<span class='fl'>2</span>],<span class='no'>FITS</span>)</div><div class='output co'>#&gt; , , low
 #&gt; 
 #&gt;           Cilla      Gabs
-#&gt; Cilla 1.0000000 0.8639276
-#&gt; Gabs  0.8639276 1.0000000
+#&gt; Cilla 1.0000000 0.9286668
+#&gt; Gabs  0.9286668 1.0000000
 #&gt; 
 #&gt; , , ML
 #&gt; 
 #&gt;           Cilla      Gabs
-#&gt; Cilla 1.0000000 0.9411288
-#&gt; Gabs  0.9411288 1.0000000
+#&gt; Cilla 1.0000000 0.9947686
+#&gt; Gabs  0.9947686 1.0000000
 #&gt; 
 #&gt; , , high
 #&gt; 
-#&gt;           Cilla      Gabs
-#&gt; Cilla 1.0000000 0.9876048
-#&gt; Gabs  0.9876048 1.0000000
+#&gt;       Cilla Gabs
+#&gt; Cilla     1    1
+#&gt; Gabs      1    1
 #&gt; </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
@@ -218,6 +224,8 @@
       <li><a href="#arguments">Arguments</a></li>
       
       <li><a href="#value">Value</a></li>
+
+      <li><a href="#references">References</a></li>
 
       <li><a href="#note">Note</a></li>
 

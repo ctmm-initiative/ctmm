@@ -1,17 +1,34 @@
 ############
 residuals.ctmm <- function(object,data,...)
 {
-  object <- ctmm.prepare(data,object)
-  axes <- object$axes
+  if(is.null(object))
+  {
+    data <- residuals.calibration(data,...)
 
-  # detrend mean
-  drift <- get(object$mean)
-  drift <- drift(data$t,object) %*% object$mu
-  data[,axes] <- get.telemetry(data,axes=axes) - drift
-  rm(drift)
+    # axes to keep
+    axes <- get.dop.types(data)
+    axes <- lapply(axes,function(A){DOP.LIST[[A]]$axes})
+    axes <- unlist(axes)
 
-  # calculate residuals
-  data[,axes] <- smoother(data,object,residual=TRUE)
+    # generalize in future
+    data <- data[[1]]
+  }
+  else
+  {
+    object <- ctmm.prepare(data,object)
+    axes <- object$axes
+
+    # detrend mean
+    drift <- get(object$mean)
+    drift <- drift(data$t,object) %*% object$mu
+    data[,axes] <- get.telemetry(data,axes=axes) - drift
+    rm(drift)
+
+    # calculate residuals
+    data[,axes] <- smoother(data,object,residual=TRUE)
+  }
+
+  # keep only axes
   data <- data[,c("t",axes)]
 
   attr(data,"info")$UERE <- NULL
@@ -25,7 +42,7 @@ residuals.ctmm <- function(object,data,...)
 
   return(data) # check class of this object: data.frame or telemetry
 }
-residuals.telemetry <- function(object,CTMM,...) { residuals.ctmm(CTMM,object,...) }
+residuals.telemetry <- function(object,CTMM=NULL,...) { residuals.ctmm(CTMM,object,...) }
 
 # acf function
 correlogram <- function(data,dt=NULL,fast=TRUE,res=1,axes=c("x","y"))
