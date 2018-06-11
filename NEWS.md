@@ -1,11 +1,13 @@
-ctmm 0.5.1 (2018-05-28)
+ctmm 0.5.1 (2018-06-11)
 ================
 
   * Units of measurement down to microns and microseconds now supported
   
-  * residuals() can not be calculated from (calibrated) calibration data---diagnostic argument removed from uere()
+  * residuals() can now be calculated from (calibrated) calibration data---diagnostic argument removed from uere()
   
   * E-OBS errors adjusted by empirical results of Scott LaPoint's calibration data
+  
+  * Telonics Gen4 errors estimates imported with results of Patricia Medici's calibration data --- Quick Fixes not yet fully supported
   
   * fixed bug in as.telemetry with projection argument
   

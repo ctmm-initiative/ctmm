@@ -1,8 +1,9 @@
 PRIORITY
 * reference Guillaume's paper at the beginning of the periodogram vignette
-* Telonics error calibration - ignore HDOP
+* uere() return doesn't check for missing UEREs (in as.telemetry too)
 * error vignette - check back on variogram
 * quiet uere() example
+* is.calibrated()
 
 ERROR PAPER
 * how does error change variogram DOF calculation?

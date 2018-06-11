@@ -246,6 +246,7 @@ pad <- function(vec,size,padding=0,side="right")
 # row pad for data frames / matrices
 rpad <- function(mat,size,padding=0,side="right")
 {
+  mat <- cbind(mat)
   size <- size - nrow(mat)
   COL <- ncol(mat)
   padding <- array(padding,c(size,COL))

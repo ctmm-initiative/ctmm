@@ -261,30 +261,49 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   COL <- pull.column(object,COL)
   if(length(COL))
   {
-    COL <- 1.1778678310260233*COL # estimated from Scott's calibration data
+    COL <- 1.1778678310260233 * COL # estimated from Scott's calibration data
     DATA$HDOP <- sqrt(2)*COL
     DATA[[DOP.LIST$horizontal$VAR]] <- COL^2
   }
 
   ###########
   # Telonics calibrated GPS errors
-  COL <- c("GPS.Horizontal.Error")
+  COL <- c("GPS.Horizontal.Error","Telonics.Horizontal.Error")
   COL <- pull.column(object,COL)
   if(length(COL))
   {
-    #
-    #
-    #
+    COL <- 0.14699275951173810 * COL # estimated from Patricia's calibration data
+
+    # derive UERE lower bound for cases where NA error and !NA HDOP
+    # !!! NOT FINISHED !!!
+    HDOP <- c("GPS.HDOP","HDOP","DOP","GPS.Horizontal.Dilution")
+    HDOP <- pull.column(object,HDOP)
+    if(length(HDOP))
+    {
+      A <- log(COL)-log(HDOP) # assuming multiplicative errors
+      A <- mean(A,na.rm=TRUE) # (multiplicative) intercept
+      A <- exp(A) # proportionality constant
+      HDOP <- A*HDOP # converted to error
+      A <- is.na(COL) # errors that need to be imputed
+      COL[A] <- HDOP[A] # errors imputed
+      rm(A,HDOP)
+    }
+
+    DATA$HDOP <- sqrt(2)*COL
+    DATA[[DOP.LIST$horizontal$VAR]] <- COL^2
   }
 
   ###################################
   # HDOP
-  COL <- c("GPS.HDOP","HDOP","DOP","GPS.Horizontal.Dilution")
-  COL <- pull.column(object,COL)
-  if(length(COL))
+  if(!("HDOP" %in% names(DATA)))
   {
-    DATA$HDOP <- COL
-    if(is.null(UERE)) { warning("HDOP values found, but UERE not specified and will have to be fit. See help(\"uere\").") }
+    COL <- c("GPS.HDOP","HDOP","DOP","GPS.Horizontal.Dilution")
+    COL <- pull.column(object,COL)
+    if(length(COL))
+    {
+      DATA$HDOP <- COL
+      if(is.null(UERE)) { warning("HDOP values found, but UERE not specified and will have to be fit. See help(\"uere\").") }
+    }
   }
 
   # approximate DOP from # satellites if necessary

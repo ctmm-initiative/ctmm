@@ -112,6 +112,7 @@ uere <- function(data,override=FALSE,integrate=FALSE,trace=FALSE)
     UERE <- sapply(data,function(d){attr(d,"info")$UERE}) # (dim,tag)
     if(class(UERE)!="list")
     {
+      UERE <- array(UERE,c(length(UERE)/length(data),length(data))) # sapply will not return consistent shape array
       UERE <- apply(UERE,1,unique)
       if(class(UERE)!="list" && is.null(dim(UERE))) { return(attr(data[[1]],"info")$UERE) } # unique UERE array to return
     }
