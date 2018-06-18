@@ -1,9 +1,10 @@
 # CHOOSE BEST UNITS FOR A LIST OF DATA
 # thresh is threshold for switching to coarser unit
-#   thresh==Inf is a special value that returns SI units
 # concise gives abbreviated names
-unit <- function(data,dimension,thresh=1,concise=FALSE)
+unit <- function(data,dimension,thresh=1,concise=FALSE,SI=FALSE)
 {
+  if(SI) { data <- 1.1 ; thresh <- 1 } # will always choose base units
+
   if(dimension=="length")
   {
     name.list <- c("microns","milimeters","centimeters","meters","kilometers")
@@ -29,7 +30,7 @@ unit <- function(data,dimension,thresh=1,concise=FALSE)
     scale.list <- c(1E-6,1/1000,1/100,1,1000)/(60*60*24)
 
     # SI units fix
-    if(thresh==Inf)
+    if(SI)
     {
       name.list <- "meters/second"
       abrv.list <- "m/s"
@@ -43,7 +44,7 @@ unit <- function(data,dimension,thresh=1,concise=FALSE)
     scale.list <- c(1E-12,1/1000^2,1/100^2,1,100^2,1000^2)/(60*60*24)
 
     # SI units fix
-    if(thresh==Inf)
+    if(SI)
     {
       name.list <- "square meters/second"
       abrv.list <- "m\u00B2/s"

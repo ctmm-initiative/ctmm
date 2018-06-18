@@ -1,9 +1,16 @@
 PRIORITY
 * reference Guillaume's paper at the beginning of the periodogram vignette
+* MLE slot of pREML fits not being updated on manual changes --- discard?
+* automate refitting of errors
+* kitchen sink fit methods
+* reduce uere() warning in as.telemetry to once... remove other crap... too much
+* properly fillout UERE & UERE.DOF on the fly
 * uere() return doesn't check for missing UEREs (in as.telemetry too)
+* is.calibrated()
+* uere() factor estimation
+* get.error, get/set params, fit, summary, etc..
 * error vignette - check back on variogram
 * quiet uere() example
-* is.calibrated()
 
 ERROR PAPER
 * how does error change variogram DOF calculation?

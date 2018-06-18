@@ -138,3 +138,30 @@ lognorm.ci <- function(MLE,COV,alpha=0.05)
 
   return(CI)
 }
+
+# robust central tendency & dispersal estimates with high breakdown threshold
+# nstart should probably be increased from default of 1
+rcov <- function(x,...)
+{
+  DIM <- dim(x)
+  if(DIM[1]>DIM[2]) { x <- t(x) }
+
+  # first estimate
+  AVE <- apply(x,1,stats::median)
+  # MAD esitmate of standard deviation (robust)
+  MAD <- abs(x-AVE)
+  CONST <- 1/stats::qnorm(3/4)
+  MAD <- CONST * apply(MAD,1,stats::median)
+
+  # standardize before calculating geometric median
+  if(length(AVE)>1)
+  {
+    STUFF <- Gmedian::GmedianCov(t((x-AVE)/MAD),init=rep(0,length(AVE)),scores=0,nstart=10,...)
+    AVE <- c(STUFF$median * MAD + AVE)
+    COV <- t(STUFF$covmedian * MAD) * MAD
+  }
+  else
+  { COV <- MAD^2 * diag(length(AVE)) }
+
+  return(list(median=AVE,COV=COV))
+}

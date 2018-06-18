@@ -85,7 +85,7 @@
       <h1>Telemetry error</h1>
                         <h4 class="author">Christen H. Fleming</h4>
             
-            <h4 class="date">2018-06-09</h4>
+            <h4 class="date">2018-06-18</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/ctmm-initiative/ctmm/blob/master/vignettes/error.Rmd"><code>vignettes/error.Rmd</code></a></small>
       <div class="hidden name"><code>error.Rmd</code></div>
@@ -172,13 +172,13 @@
 <a class="sourceLine" id="cb16-9" data-line-number="9"><span class="kw">summary</span>(FIT)</a></code></pre></div>
 <pre><code>## $DOF
 ##     mean     area 
-## 15.74707 28.38282 
+## 15.74706 28.38277 
 ## 
 ## $CI
 ##                               low       ML     high
-## area (square kilometers) 32.95717 49.44647 69.22743
-## tau position (hours)     10.12899 16.43810 26.67702
-## tau velocity (minutes)   10.50829 11.97002 13.63509
+## area (square kilometers) 32.95717 49.44649 69.22748
+## tau position (hours)     10.12899 16.43811 26.67706
+## tau velocity (minutes)   10.50828 11.97002 13.63508
 ## speed (kilometers/day)   29.60930 30.62564 31.64153</code></pre>
 <div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" data-line-number="1"><span class="co"># second fit based on first, but with telemetry error activated</span></a>
 <a class="sourceLine" id="cb18-2" data-line-number="2">GUESS &lt;-<span class="st"> </span>FIT</a>
@@ -191,9 +191,9 @@
 ## 
 ## $CI
 ##                                low       ML     high
-## area (square kilometers) 32.742347 48.54534 67.41096
-## tau position (hours)      9.460985 15.19263 24.39660
-## tau velocity (minutes)   12.162119 13.92175 15.93598
+## area (square kilometers) 32.742346 48.54534 67.41095
+## tau position (hours)      9.460984 15.19262 24.39660
+## tau velocity (minutes)   12.162120 13.92176 15.93598
 ## speed (kilometers/day)   28.310037 29.34320 30.37587</code></pre>
 </div>
 <div id="fitting-with-large-errors" class="section level3">
@@ -210,11 +210,11 @@
 ## 11.02192 21.74994 
 ## 
 ## $CI
-##                               low         ML      high
-## area (hectares)         20.993902  33.599951  49.12255
-## tau position (days)      4.020604   7.298981  13.25053
-## tau velocity (minutes)   0.000000  33.555659  91.61318
-## speed (meters/day)     119.129220 458.152575 813.55090</code></pre>
+##                               low        ML      high
+## area (hectares)         20.993902  33.59995  49.12254
+## tau position (days)      4.020604   7.29898  13.25053
+## tau velocity (minutes)   0.000000  33.55567  91.61318
+## speed (meters/day)     119.129298 458.15251 813.55067</code></pre>
 <div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb22-1" data-line-number="1"><span class="co"># create elliptical model guess</span></a>
 <a class="sourceLine" id="cb22-2" data-line-number="2">GUESS &lt;-<span class="st"> </span>FIT</a>
 <a class="sourceLine" id="cb22-3" data-line-number="3">GUESS<span class="op">$</span>isotropic &lt;-<span class="st"> </span><span class="ot">FALSE</span></a>
@@ -226,25 +226,25 @@
 <a class="sourceLine" id="cb22-9" data-line-number="9"><span class="kw">summary</span>(FIT)</a></code></pre></div>
 <pre><code>## $DOF
 ##     mean     area 
-## 13.04353 25.20181 
+## 13.04353 25.20180 
 ## 
 ## $CI
 ##                              low         ML       high
-## area (hectares)        12.271792  18.926207   26.99910
-## tau position (days)     3.482745   6.068235   10.57312
-## tau velocity (minutes)  0.000000  24.038666   90.73084
-## speed (meters/day)     22.954454 541.107846 1186.71261</code></pre>
+## area (hectares)        12.271792  18.926210   26.99911
+## tau position (days)     3.482745   6.068236   10.57312
+## tau velocity (minutes)  0.000000  24.038683   90.73084
+## speed (meters/day)     22.954571 541.107672 1186.71175</code></pre>
 <div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb24-1" data-line-number="1"><span class="co"># proceed with model selection</span></a>
 <a class="sourceLine" id="cb24-2" data-line-number="2">FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.select</a></span>(turtle[[<span class="dv">3</span>]],FIT,<span class="dt">control=</span>control)</a>
 <a class="sourceLine" id="cb24-3" data-line-number="3"><span class="co"># velocity was not supported by this data</span></a>
 <a class="sourceLine" id="cb24-4" data-line-number="4"><span class="kw">summary</span>(FIT)</a></code></pre></div>
 <pre><code>## $DOF
 ##     mean     area 
-## 12.59923 24.41652 
+## 12.59923 24.41651 
 ## 
 ## $CI
 ##                           low        ML     high
-## area (hectares)     12.192644 18.949152 27.17140
+## area (hectares)     12.192645 18.949154 27.17140
 ## tau position (days)  3.693129  6.319045 10.81206</code></pre>
 <p>Note also that we performed model selection with a fit (which would then be re-fit) as our initial guess, rather than the raw guess output of <code>ctmm.guess</code> or <code>variogram.fit</code>. This helps ensure convergence in the optimizer.</p>
 </div>
@@ -263,12 +263,12 @@
 <a class="sourceLine" id="cb27-6" data-line-number="6"><span class="kw">summary</span>(FIT)</a></code></pre></div>
 <pre><code>## $DOF
 ##     mean     area 
-## 13.46152 25.98179 
+## 13.46152 25.98178 
 ## 
 ## $CI
 ##                           low        ML      high
-## area (hectares)     12.604531 19.298796 27.396169
-## tau position (days)  3.467312  5.882936  9.981487
+## area (hectares)     12.604531 19.298797 27.396172
+## tau position (days)  3.467312  5.882936  9.981489
 ## error (meters)       7.804842  9.317617 10.827627</code></pre>
 </div>
 </div>

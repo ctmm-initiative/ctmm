@@ -1,5 +1,5 @@
 speed.telemetry <- function(object,CTMM,level=0.95,units=TRUE,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,cores=1,...)
-{ speed.ctmm(CTMM,data=object,level=level,prior=prior,error=error,cores=cores,...) }
+{ speed.ctmm(CTMM,data=object,level=level,units=units,prior=prior,fast=fast,cor.min=cor.min,dt.max=dt.max,error=error,cores=cores,...) }
 
 speed.ctmm <- function(object,data=NULL,level=0.95,units=TRUE,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,cores=1,...)
 {
@@ -118,8 +118,7 @@ speed.ctmm <- function(object,data=NULL,level=0.95,units=TRUE,prior=TRUE,fast=TR
     close(pb)
   }
 
-  if(units) { thresh <- 1 } else { thresh <- Inf }
-  UNITS <- unit(CI,"speed",thresh=thresh)
+  UNITS <- unit(CI,"speed",SI=!units)
   CI <- rbind(CI)/UNITS$scale
   rownames(CI) <- paste0("speed (",UNITS$name,")")
 
@@ -175,7 +174,7 @@ speed.rand <- function(CTMM,data=NULL,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NU
   if(is.null(dt.max)) { dt.max <- Inf }
 
   # instantaneous speeds
-  data <- sqrt(data$v.x^2+data$v.y^2)
+  data <- sqrt(data$vx^2+data$vy^2)
 
   # weights for Riemmann sum
   w <- diff(t)

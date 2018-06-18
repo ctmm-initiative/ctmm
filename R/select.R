@@ -87,9 +87,6 @@ summary.ctmm <- function(object,level=0.95,level.UD=0.95,units=TRUE,IC="AICc",..
 # Summarize results
 summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, ...)
 {
-  # do we convert units
-  if(units) { thresh <- 1 } else { thresh <- Inf }
-
   alpha <- 1-level
   alpha.UD <- 1-level.UD
 
@@ -118,8 +115,8 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
   # standard area to home-range area
   par[1,] <- -2*log(alpha.UD)*pi*par[1,]
 
-  # pretty area units
-  unit.list <- unit(par[1,2],"area",thresh=thresh)
+  # pretty area units   # do we convert units
+  unit.list <- unit(par[1,2],"area",SI=!units)
   name[1] <- unit.list$name
   scale[1] <- unit.list$scale
 
@@ -134,7 +131,7 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
       PAR <- PAR[PAR>0]
       if(length(PAR)) { PAR <- min(PAR) } else { PAR <- 0 }
 
-      unit.list <- unit(PAR,"time",thresh=thresh)
+      unit.list <- unit(PAR,"time",SI=!units)
       name[i] <- unit.list$name
       scale[i] <- unit.list$scale
     }
@@ -180,7 +177,7 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
     # root mean square velocity
     # pretty units
     rms <- sqrt(ms)
-    unit.list <- unit(rms,"speed",thresh=thresh)
+    unit.list <- unit(rms,"speed",SI=!units)
     name <- c(name,unit.list$name)
     scale <- c(scale,unit.list$scale)
 
@@ -203,7 +200,7 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
     error <- chisq.ci(error,COV=VAR,alpha=alpha)
     # back to meters/distance
     error <- sqrt(error)
-    unit.list <- unit(error,"length",thresh=thresh)
+    unit.list <- unit(error,"length",SI=!units)
     name <- c(name,unit.list$name)
     scale <- c(scale,unit.list$scale)
 

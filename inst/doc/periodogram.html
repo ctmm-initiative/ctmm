@@ -12,7 +12,7 @@
 
 <meta name="author" content="Guillaume Péron, Christen H. Fleming, and Justin M. Calabrese" />
 
-<meta name="date" content="2018-06-09" />
+<meta name="date" content="2018-06-18" />
 
 <title>Periodic movement models</title>
 
@@ -280,7 +280,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 
 <h1 class="title toc-ignore">Periodic movement models</h1>
 <h4 class="author"><em>Guillaume Péron, Christen H. Fleming, and Justin M. Calabrese</em></h4>
-<h4 class="date"><em>2018-06-09</em></h4>
+<h4 class="date"><em>2018-06-18</em></h4>
 
 
 
@@ -349,7 +349,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## rotation/deviation %     74.795669  91.774630 100.000000
 ## rotation/speed %         96.807431  98.987421 100.000000
 ## area (square kilometers) 41.444887  48.269156  55.605890
-## tau position (hours)      6.984418   9.267907  12.297962
+## tau position (hours)      6.984418   9.267908  12.297962
 ## tau velocity (hours)      1.126099   1.617410   2.323076
 ## speed (kilometers/day)   12.674828 103.001923 204.382857</code></pre>
 <div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" data-line-number="1"><span class="kw">summary</span>(FITS[[<span class="dv">4</span>]]) <span class="co"># harmonic 2 0</span></a></code></pre></div>
@@ -360,8 +360,8 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## $CI
 ##                                 low        ML      high
 ## rotation/deviation %     23.6228691 29.019474 35.648925
-## rotation/speed %         24.3431626 29.868660 36.648355
-## area (square kilometers) 41.1021782 47.844462 55.091281
+## rotation/speed %         24.3431627 29.868660 36.648355
+## area (square kilometers) 41.1021781 47.844462 55.091281
 ## tau position (hours)      7.2925135  9.568355 12.554438
 ## tau velocity (hours)      0.9699887  1.423753  2.089789
 ## speed (kilometers/day)   14.7247950 16.056839 17.387434</code></pre>
@@ -393,14 +393,14 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" data-line-number="1"><span class="kw">summary</span>(FITS,<span class="dt">IC=</span><span class="st">&quot;MSPE&quot;</span>)</a></code></pre></div>
 <pre><code>##                              dRMSPE (m) DOF[mean] method
 ## OUF anisotropic harmonic 2 0   0.000000  106.1204     ML
-## OUF anisotropic harmonic 3 0   2.508593  107.1803     ML
-## OUF anisotropic harmonic 4 0   2.531332  107.1268     ML
-## OUF anisotropic harmonic 1 0   3.832039  108.2142     ML
-## OUF anisotropic harmonic 2 1   6.085753  107.9071     ML
-## OUF anisotropic harmonic 3 1   8.285124  108.9836     ML
-## OUF anisotropic harmonic 1 1   9.542713  110.0647     ML
-## OUF anisotropic harmonic 0 0 101.913161  132.4812     ML
-## OUF anisotropic harmonic 0 1 104.265394  134.7361     ML</code></pre>
+## OUF anisotropic harmonic 3 0   2.508595  107.1803     ML
+## OUF anisotropic harmonic 4 0   2.531359  107.1268     ML
+## OUF anisotropic harmonic 1 0   3.832016  108.2142     ML
+## OUF anisotropic harmonic 2 1   6.085744  107.9071     ML
+## OUF anisotropic harmonic 3 1   8.285126  108.9836     ML
+## OUF anisotropic harmonic 1 1   9.542778  110.0647     ML
+## OUF anisotropic harmonic 0 0 101.913171  132.4812     ML
+## OUF anisotropic harmonic 0 1 104.265400  134.7361     ML</code></pre>
 <p>Finally, a good model wins out, with the 2 harmonic model beating the 3 harmonic model by 2.5 meters of RMS predictive error (RMSPE). Unlike likelihood based ICs (AIC &amp; BIC), MSPE has units and an absolute scale, though in summary we only show differences in the RMSPE for simplicity. Note that MSPE should only be used to select among models with the same autocorrelation structure.</p>
 </div>
 <div id="home-range-estimation" class="section level3">

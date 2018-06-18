@@ -123,7 +123,8 @@
     
     </div>
 
-    <pre class="usage"><span class='fu'>ctmm.boot</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>method</span><span class='kw'>=</span><span class='fu'>c</span>(<span class='st'>'HREML'</span>,<span class='st'>'pREML'</span>,<span class='st'>'pHREML'</span>),<span class='kw'>error</span><span class='kw'>=</span><span class='fl'>0.01</span>,<span class='kw'>cores</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>trace</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>ctmm.boot</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>method</span><span class='kw'>=</span><span class='no'>CTMM</span>$<span class='no'>method</span>,<span class='kw'>multiplicative</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>robust</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>error</span><span class='kw'>=</span><span class='fl'>0.01</span>,
+          <span class='kw'>cores</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>trace</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -139,6 +140,14 @@
     <tr>
       <th>method</th>
       <td><p>Fitting method(s) to use: <code>"ML"</code>, <code>"HREML"</code>, <code>"pREML"</code>, <code>"pHREML"</code>, or <code>"REML"</code>. See "Description" below.</p></td>
+    </tr>
+    <tr>
+      <th>multiplicative</th>
+      <td><p>Removes multiplicative bias (rather than additive) bias from positive scale parameters like area.</p></td>
+    </tr>
+    <tr>
+      <th>robust</th>
+      <td><p>Uses robust estimates of the average and covariation for debiasing. Useful when <code>multiplicative=TRUE</code> and yet parameters are near boundaries.</p></td>
     </tr>
     <tr>
       <th>error</th>
@@ -160,11 +169,11 @@
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p><code>ctmm.boot</code> can leverage multiple estimators via the <code>method</code> argument (see <code><a href='ctmm.fit.html'>ctmm.fit</a></code>) and as described in Fleming et al (2018), though generally this is only useful if the specified estimators deviate substantially from each other realtive to the prescribed <code>error</code>.</p>
+    <p><code>ctmm.boot</code> can leverage multiple estimators via the <code>method</code> argument (see <code><a href='ctmm.fit.html'>ctmm.fit</a></code>) and as described in Fleming et al (2018), though generally this is only useful if the specified estimators deviate substantially from each other realtive to the target <code>error</code>.</p>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A model fit object with relatively unbiased estimates of home-range area, diffusion rate, and RMS speed (and more accurate CIs than <code>ctmm.fit</code>).</p>
+    <p>A model fit object with relatively unbiased estimates of home-range area, location variance, diffusion rate, and mean-square speed (and more accurate CIs than <code>ctmm.fit</code>).</p>
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 

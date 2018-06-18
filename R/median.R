@@ -110,7 +110,7 @@ median.longlat <- function(data,k=1,...)
 
   # what is the centroid of the data in 3D
   mu <- apply(data,2,stats::median)
-  STAT <- Gmedian::GmedianCov(data,init=mu,scores=0,...)
+  STAT <- Gmedian::GmedianCov(data,init=mu,scores=0,nstart=10,...)
   mu <- c(STAT$median)
   COV <- STAT$covmedian
 

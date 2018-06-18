@@ -10,17 +10,17 @@
 \description{Functions to import MoveBank csv files, \code{data.frame}, and \code{Move} objects, coerce them into \code{telemetry} objects, and summarize them.}
 
 \usage{
-as.telemetry(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,na.rm="row",
-             drop=TRUE,...)
+as.telemetry(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,timeout=Inf,
+             na.rm="row",drop=TRUE,...)
 
-\S3method{as.telemetry}{character}(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,na.rm="row",
-             drop=TRUE,...)
+\S3method{as.telemetry}{character}(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,timeout=Inf,
+             na.rm="row",drop=TRUE,...)
 
-\S3method{as.telemetry}{data.frame}(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,na.rm="row",
-             drop=TRUE,...)
+\S3method{as.telemetry}{data.frame}(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,timeout=Inf,
+             na.rm="row",drop=TRUE,...)
 
-\S3method{as.telemetry}{Move}(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,na.rm="row",
-             drop=TRUE,...)
+\S3method{as.telemetry}{Move}(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,timeout=Inf,
+             na.rm="row",drop=TRUE,...)
 
 \S3method{summary}{telemetry}(object,...)
 }
@@ -31,6 +31,7 @@ as.telemetry(object,timeformat="",timezone="UTC",projection=NULL,UERE=NULL,na.rm
   \item{timezone}{Timezone argument for \code{\link{strptime}}.}
   \item{projection}{Optional PROJ.4 projection argument to be fed to \code{\link[rgdal]{project}}.}
   \item{UERE}{"User equivalent range errors" needed to translate DOP values into location uncertainty.}
+  \item{timeout}{GPS location fix timeout value (seconds). Potentially useful for categorizing accuracy. \code{timeout=max} will use the maximum value.}
   \item{na.rm}{If some values are \code{NA} in the data frame, are the rows (times) deleted or are the columns (data types) deleted.}
   \item{drop}{Only return a \code{telemetry} object for one individual if \code{TRUE}. Always return a \code{list} of telemetry objects if \code{FALSE}.}
   \item{...}{Optional arguments to be fed to \code{\link{fread}} or \code{\link{read.csv}}, in the case of compressed files.}
@@ -41,10 +42,9 @@ If no projection argument is specified, a two-point equidistant projection is ca
 Global migrations that are not along one geodesic (locally straight line) will probably suffer distortion.
 
 \code{as.telemetry} assumes \href{https://www.movebank.org/node/2381}{Movebank naming conventions}.
-Sufficient MoveBank columns include \code{individual.local.identifier} (or \code{tag.local.identifier}), \code{timestamp}, \code{location.long} and \code{location.lat}, while the optional Movebank columns are \code{eobs.horizontal.accuracy.estimate} and \code{GPS.HDOP}.
-In the future, we will be supporting more GPS and ARGOS columns, including speed, heading, further error classifications, etc.
+Sufficient MoveBank columns include \code{individual.local.identifier} (or \code{tag.local.identifier}), \code{timestamp}, \code{location.long} and \code{location.lat}, while the optional Movebank columns include (E-OBS) \code{eobs.horizontal.accuracy.estimate}, (Telonics) \code{GPS.Horizontal.Error}, \code{GPS.HDOP}, (ARGOS) \code{Argos.orientation}, \code{Argos.semi.minor} and \code{Argos.semi.major} or \code{Argos.location.class}, etc..
 
-The \code{GPS.HDOP} value requires the device's \code{UERE} value to be translated into telemetry errors. The \code{UERE} represents the RMS error given ideal (\eqn{HDOP=1}) satellite conditions. Therefore, if your device is purported to have an accuracy of 2-10 meters, then the \code{UERE} is likely around 2 meters. Consult your device manual and manufacturer for a specific value or see \code{\link{uere}} for UERE calibration.
+The \code{GPS.HDOP} value requires the device's \code{UERE} value to be translated into telemetry errors. The \code{UERE} represents the RMS error given ideal (\eqn{HDOP=1}) satellite conditions. Therefore, if your device is purported to have an accuracy of 10 meters, then the \code{UERE} is likely around 10 meters. Consult your device manual and manufacturer for a specific value or see \code{\link{uere}} for UERE calibration.
 }
 
 \value{\code{as.telemetry} returns a single \code{telemetry} object or list of \code{telemetry} objects if multiple animals are identified.}

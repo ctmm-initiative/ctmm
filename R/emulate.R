@@ -74,7 +74,7 @@ emulate.telemetry <- function(object,CTMM,fast=FALSE,...)
 #####################################
 # multi-estimator parametric bootstrap
 # + concurrent double-bootstrap AICc
-ctmm.boot <- function(data,CTMM,method=c('HREML','pREML','pHREML'),error=0.01,cores=1,trace=TRUE,...)
+ctmm.boot <- function(data,CTMM,method=CTMM$method,multiplicative=TRUE,robust=FALSE,error=0.01,cores=1,trace=TRUE,...)
 {
   method <- match.arg(method,c('ML','HREML','pREML','pHREML','REML'),several.ok=TRUE)
   cores <- resolveCores(cores,fast=FALSE)
@@ -88,9 +88,20 @@ ctmm.boot <- function(data,CTMM,method=c('HREML','pREML','pHREML'),error=0.01,co
   DIM <- length(NAMES) * length(method)
 
   # positive variables (potential)
-  POS <- c("area","tau position","tau velocity","error")
+  POS <- c("area","eccentricity","tau position","tau velocity","error")
   # included variables that are positive
   POS <- POS[POS %in% NAMES]
+
+  # eccentricity
+  if("eccentricity" %in% NAMES)
+  {
+    # ensure eccentricity is positive
+    if(attr(CTMM$sigma,'par')['eccentricity']<0)
+    {
+      attr(CTMM$sigma,'par')['eccentricity'] <- abs( attr(CTMM$sigma,'par')['eccentricity'] )
+      attr(CTMM$sigma,'par')['angle'] <- ( (attr(CTMM$sigma,'par')['angle'] + pi/2) %% pi ) - pi/2
+    }
+  }
 
   # log transform positive parameters
   Transform <- function(p,inverse=FALSE)
@@ -102,10 +113,43 @@ ctmm.boot <- function(data,CTMM,method=c('HREML','pREML','pHREML'),error=0.01,co
       p <- cbind(p)
     }
 
-    if(length(POS))
+    # which slot will contain the variance
+    if("eccentricity" %in% NAMES) { VAR <- "eccentricity" } else { VAR <- "area" }
+
+    # transform to parameters of interest
+    if(!inverse)
     {
-      if(inverse) { p[POS,] <- exp(p[POS,]) }
-      else { p[POS,] <- log(p[POS,]) }
+      # transform eccentricity to variance (not area)
+      if("eccentricity" %in% NAMES) { p["eccentricity",] <- p['area',]*cosh(p["eccentricity",]/2) }
+      # transform tau velocity to MS speed
+      if("tau velocity" %in% NAMES)
+      {
+        if(CTMM$range) { p["tau velocity",] <- p[VAR,]/(p["tau position",]*p["tau velocity",]) }
+        else { p["tau velocity",] <- p[VAR,]/(p["tau velocity",]) }
+      }
+      # transform tau position to diffusion rate
+      if("tau position" %in% NAMES) { p["tau position",] <- p[VAR,]/p["tau position",] }
+
+      # log transform
+      if(multiplicative && length(POS))
+      {
+        if(any(p[POS,]<=0)) { stop('Some parameter estimates are zero. Requires multiplicative=FALSE or robust=TRUE.') }
+        p[POS,] <- log(p[POS,])
+      }
+    }
+
+    # transform back from parameters of interest
+    if(inverse)
+    {
+      if(multiplicative && length(POS)) { p[POS,] <- exp(p[POS,]) }
+
+      if("tau position" %in% NAMES) { p["tau position",] <- p[VAR,]/p["tau position",] }
+      if("tau velocity" %in% NAMES)
+      {
+        if(CTMM$range) { p["tau velocity",] <- p[VAR,]/(p["tau position",]*p["tau velocity",]) }
+        else { p["tau velocity",] <- p[VAR,]/(p["tau velocity",]) }
+      }
+      if("eccentricity" %in% NAMES) { p['eccentricity',] <- 2*acosh(max(p['eccentricity',]/p['area',],1)) }
     }
 
     # restore dimensionality and array names
@@ -132,7 +176,6 @@ ctmm.boot <- function(data,CTMM,method=c('HREML','pREML','pHREML'),error=0.01,co
     rownames(FIT) <- NAMES
     colnames(FIT) <- method
 
-    # log transform positive parameters
     FIT <- Transform(FIT)
 
     return(FIT)
@@ -142,44 +185,59 @@ ctmm.boot <- function(data,CTMM,method=c('HREML','pREML','pHREML'),error=0.01,co
   # rolling mean and variance
   rolling_update <- function(ADD) # [par*method,run]
   {
-    # update sums
-    S1 <<- S1 + rowSums(ADD) # sum over runs
-    S2 <<- S2 + (ADD %.% t(ADD)) # inner product over runs
-    # update sample size
-    N <<- N + cores
-    # normalize sums
-    MEAN <<- S1/N
-    COV <<- (S2-N*outer(MEAN))/max(1,N-1)
+    N <<- N + cores # update sample size
+    SAMPLE <<- cbind(SAMPLE,ADD) # update sample (transformed)
+    if(!robust)
+    {
+      # update sums
+      S1 <<- S1 + rowSums(ADD) # sum over runs
+      S2 <<- S2 + (ADD %.% t(ADD)) # inner product over runs
+      # normalize sums
+      AVE <<- S1/N
+      COV <<- (S2-N*outer(AVE))/max(1,N-1)
+    }
+    else if(N>=DIM+1)
+    {
+      STUFF <- rcov(SAMPLE)
+      AVE <<- STUFF$median
+      COV <<- STUFF$COV
+    }
   }
 
   W <- array(1/length(method),c(length(NAMES),length(method))) # weights
   J <- array(1,c(length(method),1)) # de-projection matrix
 
   ### outer loop: designing the weight matrix until estimate converges
-  EST <- Replicate(0,DATA=data) # fundamental estimates to weight (ultimately)
-  dim(EST) <- DIM
+  EST <- Replicate(0,DATA=data) # original estimates that we are working with to optimally weight (transformed)
+  dim(EST) <- DIM # (NAMES*methods)
   P0 <- Transform(get.parameters(CTMM,NAMES)) -> P1 # null model for parametric bootstrap
   if(trace>1) { print(P0) }
   ERROR <- Inf -> ERROR.OLD
   tol <- error*sqrt(length(NAMES)) # eigen-value tolerance for pseudo-inverse
+  MAX <- max(1/error^2,DIM+1) # maximum sample size
   if(trace) { pb <- utils::txtProgressBar(style=3) }
   while(ERROR>error)
   {
     # initialize results
-    MEAN <- S1 <- array(0,DIM)
-    COV <- S2 <- array(0,c(DIM,DIM))
+    SAMPLE <- NULL # sampling distribution sample (transformed)
+    AVE <- array(0,DIM) # average of EST
+    COV <-  array(0,c(DIM,DIM)) # covariation of EST
+    if(!robust) # more efficient computation with moment accumulation
+    {
+      S1 <- AVE
+      S2 <- COV
+    }
     ERROR <- Inf
     N <- 0
 
     # INITIAL simulation precomputes Kalman filter matrix
     precompute <- TRUE
-    ADD <- Replicate() # [par,method]
+    ADD <- Replicate() # [par,method] (transformed)
     dim(ADD) <- c(DIM,1) # [par*method,1]
     rolling_update(ADD)
 
     # inner loop: adding to ensemble until average converges
     precompute <- -1 # now use precomputed Kalman filter matrices
-    MAX <- 1/error^2
     while(N<=MAX && ERROR>=error) # standard error ratio criterias
     {
       # calculate burst of cores estimates
@@ -189,16 +247,18 @@ ctmm.boot <- function(data,CTMM,method=c('HREML','pREML','pHREML'),error=0.01,co
       rolling_update(ADD)
 
       # alternative test if bias is relatively well resolved
-      if(N>20)
+      if(N>=DIM+1)
       {
-        BIAS <- MEAN - EST
+        BIAS <- AVE - EST
         ERROR <- sqrt(sum(BIAS^2/diag(COV))/N/DIM)
+        if(is.nan(ERROR)) { ERROR <- Inf }
       }
 
       if(trace) { utils::setTxtProgressBar(pb,clamp(max(N/MAX,(error/ERROR)^2))) }
     } # END INNER LOOP
 
     ## recalculate weighted estimator
+    ## !!! add optimal method to use cross-parameter estimate covariance
     JACOB <- array(0,c(length(NAMES),DIM))
     for(i in 1:length(NAMES))
     {
@@ -217,17 +277,17 @@ ctmm.boot <- function(data,CTMM,method=c('HREML','pREML','pHREML'),error=0.01,co
     COV.W <- JACOB %*% COV %*% t(JACOB)
 
     ## recalculate error & store best model
-    BIAS <- P1 - P0 # how much does best estimate change?
-    # previous error estimate
-    ERROR <- sqrt(abs(c(BIAS %*% PDsolve(COV.W) %*% BIAS))/length(NAMES)/2) # 2-point comparison correction
+    ERROR <- P1 - P0 # how much does best estimate change?
+    ERROR <- sqrt(abs(c(ERROR %*% PDsolve(COV.W) %*% ERROR))/length(NAMES)/2) # 2-point comparison correction
+    if(is.nan(ERROR)) { ERROR <- Inf }
 
     # check to make sure relative error is decreasing
     if(ERROR>ERROR.OLD)
     {
-      if(trace>1) { sprintf("Iterative convergence ceased at error=%f over tolerance of %f",ERROR.OLD,error)  }
+      # maybe allow this once or twice with a count???
+      if(trace>1) { warning("Iterative convergence ceased at error=",ERROR.OLD," over tolerance of ",error)  }
       break
     }
-    COV.W -> COV.OLD
     ERROR -> ERROR.OLD
 
     # order of current error, which we do not know
@@ -239,18 +299,41 @@ ctmm.boot <- function(data,CTMM,method=c('HREML','pREML','pHREML'),error=0.01,co
     P1 -> P0
   } # END OUTER LOOP
 
-  COV.W -> COV
-  dimnames(COV) <- list(NAMES,NAMES)
+  ## calculate COV (somewhat robustly in untransformed basis)
+  # calculate all weighted esitmates in sample
+  SAMPLE <- SAMPLE - c(BIAS) # debiased estimates
+  dim(SAMPLE) <- c(length(NAMES),length(method),N)
+  SAMPLE <- sapply(1:length(NAMES),function(p) W[p,] %*% array(SAMPLE[p,,],c(length(method),N)) ) # R arrays are insane
+  dim(SAMPLE) <- c(N,length(NAMES)) # R arrays are insane, part 2
+  SAMPLE <- t(SAMPLE)
+  # transform weighted estimates to canonical coordinates
+  rownames(SAMPLE) <- NAMES
+  SAMPLE <- Transform(SAMPLE,inverse=TRUE)
 
-  # transform COV
-  if(length(POS))
+  # do we need to trim boundary for good curvature estimate?
+  PS <- c("tau position","tau velocity")
+  for(P in PS)
   {
-    COV[POS,] <- COV[POS,] * P[POS]
-    COV[,POS] <- t(t(COV[,POS]) * P[POS])
+    if(P %in% NAMES)
+    {
+      ZEROS <- which(SAMPLE[P,]<=0)
+      if(ncol(SAMPLE)-2*length(ZEROS)<=length(NAMES)+1) { stop("error target too large for boundary sensitivity.") }
+      if(length(ZEROS))
+      {
+        HIGHS <- sort(SAMPLE[P,],decreasing=TRUE,index.return=TRUE)$ix
+        HIGHS <- HIGHS[1:length(ZEROS)] # counter balancing high estimates to trim
+        SAMPLE <- SAMPLE[,-c(ZEROS,HIGHS)] # trimming low and high esitmates to get good local curvature estimate of sampling density
+      }
+    }
   }
+
+  # robust covariance estimate
+  # if(!robust) { COV <- cov(t(SAMPLE)) } else { COV <- rcov(SAMPLE) }
+  COV <- stats::cov(t(SAMPLE))
+  dimnames(COV) <- list(NAMES,NAMES)
   CTMM$COV <- COV
 
-  # fix COV[mean] with one last likelihood evaluation
+  # fix COV[mean] with a verbose likelihood evaluation
   CTMM <- ctmm.loglike(data,CTMM,profile=FALSE,verbose=TRUE)
 
   if(trace) { close(pb) }

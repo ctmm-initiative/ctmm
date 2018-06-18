@@ -1,4 +1,4 @@
-ctmm 0.5.1 (2018-06-11)
+ctmm 0.5.1 (2018-06-18)
 ================
 
   * Units of measurement down to microns and microseconds now supported
@@ -8,6 +8,10 @@ ctmm 0.5.1 (2018-06-11)
   * E-OBS errors adjusted by empirical results of Scott LaPoint's calibration data
   
   * Telonics Gen4 errors estimates imported with results of Patricia Medici's calibration data --- Quick Fixes not yet fully supported
+  
+  * options multiplicative & robust added to ctmm.boot to help with parameters near boundaries
+  
+  * fixed critical bug in speed()
   
   * fixed bug in as.telemetry with projection argument
   
