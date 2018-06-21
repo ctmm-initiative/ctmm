@@ -1,7 +1,6 @@
 PRIORITY
 * reference Guillaume's paper at the beginning of the periodogram vignette
-* MLE slot of pREML fits not being updated on manual changes --- discard?
-* automate refitting of errors
+* automate refitting of errors - coarsen data until errors smaller than variogram - fit - consider all permutations
 * kitchen sink fit methods
 * reduce uere() warning in as.telemetry to once... remove other crap... too much
 * properly fillout UERE & UERE.DOF on the fly

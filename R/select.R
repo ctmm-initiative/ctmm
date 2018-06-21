@@ -323,8 +323,6 @@ alpha.ctmm <- function(CTMM,alpha)
 ctmm.select <- function(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE,...)
 {
   alpha <- 1-level
-  method <- list(...)$method
-  pREML <- !is.null(method) && method=="pREML"
 
   drift <- get(CTMM$mean)
   if(CTMM$mean=="periodic")
@@ -336,7 +334,7 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE
     # fit the intital guess
   if(trace) { message("* Fitting models ",name.ctmm(CTMM)) }
 
-  CTMM <- ctmm.fit(data,(if(!pREML || is.null(CTMM$MLE)) { CTMM } else { CTMM$MLE }),trace=trace,...)
+  CTMM <- ctmm.fit(data,CTMM,trace=trace,...)
   OLD <- ctmm()
   MODELS <- list(CTMM)
   # while progress is being made, keep going, keep going, ...
@@ -344,8 +342,15 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE
   {
     GUESS <- list()
     beta <- alpha.ctmm(CTMM,alpha)
+
     # initial guess in case of pREML (better for optimization)
-    MLE <- (if(pREML && !is.null(CTMM$MLE)) { CTMM$MLE } else { CTMM })
+    MLE <- CTMM
+    if(!get("EMPTY",pos=MLE.env)) # will have been set from ctmm.fit first run
+    {
+      MLE <- get("MLE",pos=MLE.env)
+      # check that structure is consistent
+      if(is.null(MLE) || name.ctmm(MLE)!=name.ctmm(CTMM)) { MLE <- CTMM }
+    }
 
     # consider if some timescales are actually zero
     CI <- confint.ctmm(CTMM,alpha=beta)

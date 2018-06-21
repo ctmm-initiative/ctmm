@@ -381,6 +381,10 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
 }
 
 
+# environment for storing MLE when using pREML/pHREML/HREML
+MLE.env <- new.env()
+empty.env(MLE.env) # default to empty
+
 ###########################################################
 # FIT MODEL WITH LIKELIHOOD FUNCTION (convenience wrapper to optim)
 ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=FALSE)
@@ -400,9 +404,6 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
 
   if(method=="REML") { REML <- TRUE }
   else { REML <- FALSE }
-
-  # fit from MLE and not perturbed MLE
-  if(!is.null(CTMM$MLE)) { CTMM <- CTMM$MLE }
 
   # clean/validate
   CTMM <- ctmm.ctmm(CTMM)
@@ -535,15 +536,14 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
       dimnames(CTMM$COV) <- list(NAMES,NAMES)
     }
 
+    # store MLE for faster model selection (ML is what is optimized, not pREML or HREML)
+    if(method %in% c("pREML","pHREML","HREML")) { assign("MLE",CTMM,pos=MLE.env) } else { empty.env(MLE.env) }
+
     # pREML correction ############################### only do pREML if sufficiently away from boundaries
     TEST <- method %in% c("pREML","pHREML")
     if(TEST) { TEST <- all( eigen(hess,only.values=TRUE)$values > .Machine$double.eps*length(NAMES) ) }
     if(TEST)
     {
-      # store MLE for faster model selection (ML is what is optimized, not pREML or REML)
-      CTMM$MLE <- CTMM
-      CTMM$MLE$method <- "ML"
-
       # parameter correction
       REML <- TRUE
       #ML.grad <- grad # save old ML gradient
@@ -618,7 +618,6 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
     { CTMM$COV <- NULL }
 
     if(COV) { dimnames(CTMM$COV) <- list(NAMES,NAMES) }
-    if(COV && !is.null(CTMM$MLE)) { dimnames(CTMM$MLE$COV) <- list(NAMES,NAMES) }
   }
 
   # model likelihood
