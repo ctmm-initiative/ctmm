@@ -21,9 +21,11 @@
 <!-- clipboard.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" integrity="sha384-cV+rhyOuRHc9Ub/91rihWcGmMmCXDeksTtCihMupQHSsi8GIIRDG0ThDc3HGQFJ3" crossorigin="anonymous"></script>
 
+<!-- sticky kit -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script>
+
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
-<script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
 
 
@@ -32,6 +34,7 @@
 
 <meta property="og:description" content="This function returns a list of biologically interesting parameters in human readable format, as derived from a continuous-time movement model." />
 <meta name="twitter:card" content="summary" />
+
 
 
 <!-- mathjax -->
@@ -139,7 +142,7 @@
     </tr>
     <tr>
       <th>level.UD</th>
-      <td><p>Confidence level for the Gaussian home-range area.</p></td>
+      <td><p>Coverage level for the Gaussian home-range area.</p></td>
     </tr>
     <tr>
       <th>units</th>
@@ -157,10 +160,12 @@
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>If summary is called with a single <code>ctmm</code> object output from <code><a href='ctmm.fit.html'>ctmm.fit</a></code>, then a list is returned with effective sample size array <code>DOF</code> and parameter estimate table <code>CI</code>, with low, maximum likelihood, and high estimates for the following possible parameters:</p><dl class='dl-horizontal'>
-<dt><code>tau</code></dt><dd><p>The autocorrelation timescales.</p></dd>
+    <p>If summary is called with a single <code>ctmm</code> object output from <code><a href='ctmm.fit.html'>ctmm.fit</a></code>, then a list is returned with the effective sample sizes of various parameter estimates (<code>DOF</code>) and a parameter estimate table <code>CI</code>, with low, maximum likelihood, and high estimates for the following possible parameters:</p><dl class='dl-horizontal'>
+<dt><code>tau</code></dt><dd><p>The autocorrelation timescales. <code>tau position</code> is also the home-range crossing timescale.</p></dd>
 <dt><code>area</code></dt><dd><p>The Gaussian home-range area, where the point estimate has a significance level of <code>level.UD</code>. I.e., the core home range is where the animal is located 50% of the time with <code>level.UD=0.50</code>.
-This point estimate itself is subject to uncertainty, and is given confidence intervals derived from <code>level</code>.</p></dd>
+This point estimate itself is subject to uncertainty, and is given confidence intervals derived from <code>level</code>.
+
+This Gaussian estimate differs from the kernel density estimate of <code><a href='summary.UD.html'>summary.UD</a></code>. The Gaussian estimate has more statistical efficiency, but is less related to space use for non-Gaussian processes.</p></dd>
 <dt><code>speed</code></dt><dd><p>The Gaussian root-mean-square (RMS) velocity, which is a convenient measure of average speed but not the conventional measure of average speed (see <code><a href='speed.html'>speed</a></code>).</p></dd>
 </dl><p>If summary is called on a list of <code>ctmm</code> objects output from <code><a href='ctmm.fit.html'>ctmm.select</a></code>, then a table is returned with the model names and AIC differences, where "IID" denotes the uncorrelated bi-variate Gaussian model, "OU" denotes the continuous-position Ornstein-Uhlenbeck model, and "OUF" denotes the continuous-velocity Ornstein-Uhlenbeck-F model.</p>
     
