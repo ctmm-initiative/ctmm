@@ -4,13 +4,13 @@
 \title{Summarize a range distribution}
 \description{ This function returns a list of biologically interesting parameters in human readable format, as derived from an autocorrelated kernel density estimate.}
 \usage{
-\S3method{summary}{UD}(object,level.UD=0.95,level=0.95,units=TRUE,...)
+\S3method{summary}{UD}(object,level=0.95,level.UD=0.95,units=TRUE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{object}{ An \code{akde} autocorrelated kernel-density estimate from the output of \code{akde}. }
-  \item{level.UD}{ Confidence level for the home-range area. E.g., the 50\% core area. }
   \item{level}{ Confidence level for the above area estimate. E.g., the 95\% confidence interval of the 50\% core area.}
+  \item{level.UD}{ Coverage level for the home-range area. E.g., the 50\% core area. }
   \item{units}{Convert result to natural units.}
   \item{...}{Unused options.}
 }
@@ -20,7 +20,9 @@
 \value{
 A \code{matrix} with low, maximum likelihood, and high estimates for the following parameters:
 \describe{
-\item{\code{area}}{The home-range area with fraction of inclusion \code{level.UD}. E.g., the 50\% core home range is estimated with \code{level.UD=0.50}, and 95\% confidence intervals are placed on that area estimate with \code{level=0.95}.}
+\item{\code{area}}{The home-range area with fraction of inclusion \code{level.UD}. E.g., the 50\% core home range is estimated with \code{level.UD=0.50}, and 95\% confidence intervals are placed on that area estimate with \code{level=0.95}.
+
+This kernel density estimate differs from the Gaussian estimate of \code{\link{summary.ctmm}}. The Gaussian estimate has more statistical efficiency, but is less related to space use for non-Gaussian processes.}
 }
 }
 

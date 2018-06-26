@@ -10,7 +10,7 @@
 \arguments{
   \item{object}{ A \code{ctmm} movement-model object from the output of \code{ctmm.fit}. }
   \item{level}{ Confidence level for parameter estimates. }
-  \item{level.UD}{ Confidence level for the Gaussian home-range area. }
+  \item{level.UD}{ Coverage level for the Gaussian home-range area. }
   \item{units}{Convert result to natural units.}
   \item{IC}{Information criteria for sorting lists of \code{ctmm} objects. Options include \code{"AIC"}, \code{"AICc"}, \code{"BIC"}, and \code{"MSPE"}.}
   \item{...}{Unused options.}
@@ -19,11 +19,13 @@
 %\details{}
 
 \value{
-If summary is called with a single \code{ctmm} object output from \code{\link{ctmm.fit}}, then a list is returned with effective sample size array \code{DOF} and parameter estimate table \code{CI}, with low, maximum likelihood, and high estimates for the following possible parameters:
+If summary is called with a single \code{ctmm} object output from \code{\link{ctmm.fit}}, then a list is returned with the effective sample sizes of various parameter estimates (\code{DOF}) and a parameter estimate table \code{CI}, with low, maximum likelihood, and high estimates for the following possible parameters:
 \describe{
-\item{\code{tau}}{The autocorrelation timescales.}
+\item{\code{tau}}{The autocorrelation timescales. \code{tau position} is also the home-range crossing timescale.}
 \item{\code{area}}{The Gaussian home-range area, where the point estimate has a significance level of \code{level.UD}. I.e., the core home range is where the animal is located 50\% of the time with \code{level.UD=0.50}.
-This point estimate itself is subject to uncertainty, and is given confidence intervals derived from \code{level}.}
+This point estimate itself is subject to uncertainty, and is given confidence intervals derived from \code{level}.
+
+This Gaussian estimate differs from the kernel density estimate of \code{\link{summary.UD}}. The Gaussian estimate has more statistical efficiency, but is less related to space use for non-Gaussian processes.}
 \item{\code{speed}}{The Gaussian root-mean-square (RMS) velocity, which is a convenient measure of average speed but not the conventional measure of average speed (see \code{\link{speed}}).}
 }
 If summary is called on a list of \code{ctmm} objects output from \code{\link{ctmm.select}}, then a table is returned with the model names and AIC differences, where "IID" denotes the uncorrelated bi-variate Gaussian model, "OU" denotes the continuous-position Ornstein-Uhlenbeck model, and "OUF" denotes the continuous-velocity Ornstein-Uhlenbeck-F model.

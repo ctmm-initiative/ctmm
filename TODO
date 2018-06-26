@@ -1,5 +1,6 @@
 PRIORITY
 * reference Guillaume's paper at the beginning of the periodogram vignette
+* summary.ctmm filling in COV with diag(0,nrow=length(parameters))
 * automate refitting of errors - coarsen data until errors smaller than variogram - fit - consider all permutations
 * kitchen sink fit methods
 * reduce uere() warning in as.telemetry to once... remove other crap... too much

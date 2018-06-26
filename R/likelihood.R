@@ -385,14 +385,33 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
 MLE.env <- new.env()
 empty.env(MLE.env) # default to empty
 
+
+# smallest resolutions in data (for soft bounding parameter guesstimates)
+telemetry.mins <- function(data,axes=c('x','y'))
+{
+  dt <- stats::median(diff(data$t)) # median time difference
+
+  df <- 2*pi/(last(data$t)-data$t[1]) # smallest frequency
+
+  dz <- get.telemetry(data,axes)
+  dz <- apply(dz,2,diff)
+  dz <- rowSums( dz^2 )
+  dz <- sqrt(min(dz[dz>0])) # smallest nonzero distance
+
+  return(list(dt=dt,df=df,dz=dz))
+}
+
 ###########################################################
 # FIT MODEL WITH LIKELIHOOD FUNCTION (convenience wrapper to optim)
 ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=FALSE)
 {
   # used for minimum scale of parameter inspection
   n <- length(data$t)
-  dt <- stats::median(diff(data$t))
-  df <- 2*pi/(last(data$t)-data$t[1])
+  axes <- CTMM$axes
+  MINS <- telemetry.mins(data,axes)
+  dt <- MINS$dt
+  df <- MINS$df
+  dz <- MINS$dz
 
   method <- match.arg(method,c("ML","pREML","pHREML","HREML","REML"))
 
@@ -409,7 +428,6 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
   CTMM <- ctmm.ctmm(CTMM)
   drift <- get(CTMM$mean)
   CTMM$mu <- NULL # can always profile mu analytically
-  axes <- CTMM$axes
   range <- CTMM$range
   if(is.null(CTMM$sigma)) { CTMM$sigma <- covm(stats::cov(get.telemetry(data,axes)),isotropic=CTMM$isotropic,axes=axes) }
 
@@ -433,7 +451,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
   pars <- NAMES <- parscale <- lower <- upper <- period <- NULL
   setup.parameters <- function(CTMM,profile=TRUE,linear=FALSE)
   {
-    STUFF <- id.parameters(CTMM,profile=profile,linear=linear,UERE=UERE,dt=dt,df=df)
+    STUFF <- id.parameters(CTMM,profile=profile,linear=linear,UERE=UERE,dt=dt,df=df,dz=dz)
     NAMES <<- STUFF$NAMES
     parscale <<- STUFF$parscale
     lower <<- STUFF$lower
@@ -685,6 +703,15 @@ area2var <- function(CTMM,MEAN=TRUE)
     }
 
     COV <- grad %*% COV %*% t(grad)
+    # backup for infinite covariances
+    for(i in 1:nrow(COV))
+    {
+      if(any(is.nan(COV[i,]) || any(is.nan(COV[,i]))))
+      {
+        COV[i,] <- COV[,i] <- 0
+        COV[i,i] <- Inf
+      }
+    }
   }
   else
   { NAMES <- c("variance",NAMES[-1]) }

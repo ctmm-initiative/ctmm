@@ -92,10 +92,9 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
 
   drift <- get(object$mean)
 
-  CPF <- object$CPF
   circle <- object$circle
   tau <- object$tau
-  if(length(tau)>0 && tau[1]==Inf) { range <- FALSE } else { range <- TRUE }
+  range <- object$range
   tau <- tau[tau<Inf]
   K <- length(tau)
 
@@ -104,7 +103,20 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
   ecc <- object$sigma@par["eccentricity"]
 
   COV <- object$COV
+  if(is.null(COV)) # fill in with infinite covariance
+  {
+    P <- id.parameters(object,profile=FALSE)$NAMES
+    COV <- diag(Inf,nrow=length(P))
+    dimnames(COV) <- list(P,P)
+    object$COV <- COV
+  }
   P <- nrow(COV)
+
+  if(is.null(object$COV.mu))
+  {
+    object$COV.mu <- diag(Inf,nrow=length(object$mu))
+    object$DOF.mu <- diag(0,nrow=length(object$mu))
+  }
 
   # where to store unit information
   name <- character(K+1)
@@ -144,16 +156,8 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
     COV <- rm.name(COV,"error")
 
     # RMS velocity
-    if(CPF)
-    {
-      Omega2 <- sum(c(2*pi,1)^2/tau^2)
-      grad <- -2*c(2*pi,1)^2/tau^3
-    }
-    else
-    {
-      Omega2 <- 1/prod(tau)
-      grad <- -Omega2/tau
-    }
+    Omega2 <- 1/prod(tau)
+    grad <- -Omega2/tau
 
     # contribution from circulation
     omega2 <- 0
