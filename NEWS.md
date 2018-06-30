@@ -1,4 +1,4 @@
-ctmm 0.5.1 (2018-06-20)
+ctmm 0.5.1 (2018-06-29)
 ================
 
   * Units of measurement down to microns and microseconds now supported

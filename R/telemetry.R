@@ -116,14 +116,13 @@ Move2CSV <- function(object,timeformat="",timezone="UTC",projection=NULL,UERE=NU
 }
 
 # pull out a column with different possible names
+# consider alternative spellings of NAMES, but preserve order (preference) of NAMES
 pull.column <- function(object,NAMES,FUNC=as.numeric)
 {
-  # consider alternative spellings of NAMES, but preserve order (preference) of NAMES
-  COPY <- NULL
-  for(NAME in NAMES) { COPY <- c(COPY,unique(c(NAME,gsub("[.:_ ]","",NAME)))) }
-  NAMES <- tolower(COPY) # all lower case
+  canonical <- function(NAME) { unique(tolower(gsub("[.:_ ]","",NAME))) }
 
-  COLS <- names(object) # already lower case
+  NAMES <- canonical(NAMES)
+  names(object) <- canonical(names(object)) -> COLS
 
   for(NAME in NAMES)
   {
@@ -178,7 +177,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   else { COL <- as.POSIXct(COL,tz=timezone,format=timeformat) }
   DATA <- data.frame(timestamp=COL)
 
-  COL <- c("animal.ID","individual.local.identifier","local.identifier","Name","ID","tag.local.identifier","tag.ID","deployment.ID","track.ID")
+  COL <- c("animal.ID","individual.local.identifier","local.identifier","individual.ID","Name","ID","tag.local.identifier","tag.ID","deployment.ID","track.ID")
   COL <- pull.column(object,COL,as.factor)
   if(length(COL)==0)
   {
