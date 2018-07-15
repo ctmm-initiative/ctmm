@@ -1,4 +1,6 @@
 PRIORITY
+* make sure WolfeTest can handle infinities
+* speed: default cor.min overriding dt.max
 * reference Guillaume's paper at the beginning of the periodogram vignette
 * use perturb.ctmm in ctmm.guess / variogram.fit ?
 * automate refitting of errors - coarsen data until errors smaller than variogram - fit - consider all permutations

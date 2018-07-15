@@ -35,7 +35,7 @@ ctmm.select(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE,...)
   \item{method}{Fitting method to use: \code{"ML"}, \code{"HREML"}, \code{"pREML"}, \code{"pHREML"}, or \code{"REML"}. See "Description" below.}
   \item{COV}{Estimate the autocorrelation parameter covariance matrix.}
   \item{control}{An optional argument list with standardized numerical arguments.}
-  \item{trace}{Report progress updates.}
+  \item{trace}{Report progress updates. Can be among \code{0:2} with increasing detail.}
   \item{level}{Attempt to simplify a model if a feature's non-existence falls within this level of confidence interval.}
   \item{IC}{Information criteria used. Only \code{"AICc"} is currently supported.}
   \item{...}{Further arguments passed to \code{ctmm.fit}.}

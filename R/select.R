@@ -102,8 +102,9 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
   GM.sigma <- object$sigma@par["area"]
   ecc <- object$sigma@par["eccentricity"]
 
-  COV <- object$COV
-  if(is.null(COV)) # fill in with infinite covariance
+  if("COV" %in% names(object))
+  { COV <- object$COV }
+  else # fill in with infinite covariance
   {
     P <- id.parameters(object,profile=FALSE)$NAMES
     COV <- diag(Inf,nrow=length(P))
@@ -335,10 +336,11 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE
     message("Nyquist frequency estimated at harmonic ",paste(Nyquist,collapse=" ")," of the period.")
   }
 
-    # fit the intital guess
+  trace2 <- if(trace) { trace-1 } else { 0 }
+  # fit the intital guess
   if(trace) { message("* Fitting models ",name.ctmm(CTMM)) }
 
-  CTMM <- ctmm.fit(data,CTMM,trace=trace,...)
+  CTMM <- ctmm.fit(data,CTMM,trace=trace2,...)
   OLD <- ctmm()
   MODELS <- list(CTMM)
   # while progress is being made, keep going, keep going, ...
@@ -418,7 +420,7 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE
 
     # fit every model
     if(trace && length(GUESS)) { message("* Fitting models ",paste(sapply(GUESS,name.ctmm),collapse=", ")) }
-    GUESS <- lapply(GUESS,function(g){ctmm.fit(data,g,trace=trace,...)})
+    GUESS <- lapply(GUESS,function(g){ctmm.fit(data,g,trace=trace2,...)})
     MODELS <- c(MODELS,GUESS)
 
     # what is the new best model?

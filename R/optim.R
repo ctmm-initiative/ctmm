@@ -151,6 +151,9 @@ QuadTest <- function(x,y,MIN=which.min(y),thresh=0.5)
 # does the line search satisfy the some Wolfe-like conditions
 WolfeTest <- function(x,y,grad.i,i=1,MIN=which.min(y),const=c(1,1),thresh=0.1)
 {
+  # test for any Inf near MIN
+  if(any(y[MIN + -1:1]==Inf)) { return(FALSE) }
+
   # gradient information at minimum (approximate)
   DIFF <- QuadSolve(x[MIN],x[MIN-1],x[MIN+1],1,y[MIN],y[MIN-1],y[MIN+1])
 
@@ -879,7 +882,6 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
         TEST <- (MIN<=2) || (MIN>=length(fn.all)-1)
         # did we do a good search
         if(!TEST) { TEST <- !WolfeTest(x=c(DIR.STEP %*% par.all),y=fn.all,grad.i=c(DIR.STEP%*%gradient),i=which.min(c(DIR.STEP%*%(par.all-par.start))^2),MIN=MIN) }
-        # if(!TEST) { TEST <- !QuadTest(c(DIR.STEP %*% par.all),fn.all,MIN=MIN) }
         # in either case, we need refinement
         if(TEST)
         {

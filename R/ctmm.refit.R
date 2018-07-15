@@ -1,12 +1,11 @@
 # Try to fit a couple of different ways to ensure convergence to MLE
-ctmm.refit <- function(data,CTMM,method="ML",trace=FALSE,control=list(),...)
+ctmm.refit <- function(data,CTMM,method="ML",COV=TRUE,control=list(),trace=FALSE,...)
 {
-  # if no error, we don't need to do this
-  if(!CTMM$error && !(CTMM$circle && !CTMM$isotropic)) { return(ctmm.fit(data,CTMM,method=method,trace=trace,control=control,...)) }
-
   method <- match.arg(method,c("ML","pREML","pHREML","HREML","REML"))
-  if(method!="REML") { REML <- FALSE } else { REML <- TRUE }
+  REML <- (method=="REML")
   int.method <- if(REML) { "REML" } else { "ML" }
+
+  trace2 <- if(trace) { trace-1 } else { 0 }
 
   cores <- control$cores
   if(is.null(cores)){ cores <- 1 }
@@ -19,7 +18,7 @@ ctmm.refit <- function(data,CTMM,method="ML",trace=FALSE,control=list(),...)
   dz <- MINS$dz
 
   # error variance per time
-  ERROR <- get.error(data,M,circle=TRUE)
+  ERROR <- get.error(data,CTMM,circle=TRUE)
   UERE <- attr(ERROR,"flag") # UERE flag
 
   # give partial fit a bit of parameter to make sure of subsequent fit attempt
@@ -36,6 +35,16 @@ ctmm.refit <- function(data,CTMM,method="ML",trace=FALSE,control=list(),...)
     return(M)
   }
 
+  # just try to fit straight
+  fit.all <- function(M,COV=FALSE,method=int.method)
+  {
+    if(trace) { message("Attempting direct fit.") }
+
+    M <- ctmm.fit(data,M,method=method,COV=COV,control=control,trace=trace2)
+
+    return(M)
+  }
+
   # try to fit without error, but otherwise the same as M
   fit.no.error <- function(M)
   {
@@ -45,24 +54,79 @@ ctmm.refit <- function(data,CTMM,method="ML",trace=FALSE,control=list(),...)
     GUESS <- M
     GUESS$error <- FALSE
 
-    SVF <- svf.func(GUESS,moment=TRUE)
-    SVF <- SVF$svf(diff$data$t)
+    svf.func <- svf.func(GUESS,moment=TRUE)$svf
+    SVF <- svf.func(diff(data$t))
     # maximum semi-variance to/from a time
     SVF <- pmax(c(SVF[1],SVF),c(SVF,last(SVF)))
 
-    # coarsen data
-    DATA <- (ERROR < SVF)
-    DATA <- data[DATA,]
+    # LOOP THIS???
 
-    # fit to coarsened data without error
-    FIT <- ctmm.fit(DATA,GUESS,method=int.method,COV=FALSE,control=control,trace=trace)
-    # re-include error
-    FIT$error <- M$error
-    # find best combination of parameters
+    # quality index
+    Q <- ERROR/SVF
+    BAD <- which(Q>1) # subset of bad times to (potentially) remove
+    QBAD <- Q[BAD] # bad quality values
+    IND <- sort(QBAD,index.return=TRUE)$ix
+    IND <- BAD[IND] # sorted indices of bad Q
+    for(i in IND)
+    {
+      if(Q[i]<=1) { break }
+      # quality index after deletion
+      ###############!!!!!!!!!!!!!!!!!!!!!!
+    }
+
+    MAX <- which.max(Q)
+    # thin data until errors are relatively small
+    while(Q[MAX]>=1)
+    {
+      data <- data[-MAX,]
+      Q <- Q[-MAX]
+      ERROR <- ERROR[-MAX]
+
+      SVF <- if(MAX==1) { diff(data$t[1:2]) }
+      else if (MAX==length(data$t)) { max(diff(data$t[length(data$t) + -1:1])) }
+      else { diff(data$t[MAX + 0:1]) }
+      SVF <- svf.func(SVF)
+      #
+    }
+
+    # error catch for above removing all data
+
+    # coarsen data
+    data <- (ERROR < SVF)
+    data <- data[data,]
+
+    # if circulation && !isotropic, then refit those
+    if(CTMM$circle && !CTMM$isotropic)
+    { FIT <- ctmm.refit(data,GUESS,method=int.method,COV=FALSE,control=control,trace=trace) }
+    else
+    { FIT <- ctmm.fit(data,GUESS,method=int.method,COV=FALSE,control=control,trace=trace2) }
+
+    # find best combination of parameters - re-including error
+    if(trace) { message("Combining fits.") }
     M <- permute.ctmm(data,list(M,FIT),UERE=UERE,cores=cores,REML=REML)
 
-    # enforce minimum parameter so they still get fit attempt
+    # enforce minimum parameter so they still get fit attempt - in case original error estimate was too large or too small (tau->0)
     M <- perturb.ctmm(M)
+
+    # re-fit with errors
+    M <- ctmm.fit(data,M,method=int.method,COV=FALSE,control=control,trace=trace2)
+
+    return(M)
+  }
+
+  # try to fit without circulation
+  fit.no.circle <- function(M)
+  {
+    if(trace) { message("Attempting to fit without circulation.") }
+
+    GUESS <- M
+    GUESS$circle <- 0
+
+    FIT <- ctmm.fit(data,GUESS,method=int.method,COV=FALSE,control=control,trace=trace2)
+    M <- permute.ctmm(data,list(M,FIT),UERE=UERE,cores=cores,REML=REML)
+
+    # re-fit with circulation
+    M <- ctmm.fit(data,M,method=int.method,COV=FALSE,control=control,trace=trace2)
 
     return(M)
   }
@@ -78,50 +142,41 @@ ctmm.refit <- function(data,CTMM,method="ML",trace=FALSE,control=list(),...)
     GUESS$sigma <- covm(GUESS$sigma,isotropic=TRUE,axes=M$axes)
 
     # fit without anisotropy
-    FIT <- ctmm.fit(data,GUESS,method=int.method,COV=FALSE,control=control,trace=trace)
+    FIT <- ctmm.fit(data,GUESS,method=int.method,COV=FALSE,control=control,trace=trace2)
     # re-include anisotropy
     FIT$sigma <- covm( c( attr(FIT$sigma,"par")[1] , attr(M$sigma,"par")[2:3] ) , isotropic=FALSE, axes=M$axes )
     # find best combination of parameters
     M <- permute.ctmm(data,list(M,FIT),UERE=UERE,cores=cores,REML=REML)
 
-    return(M)
-  }
-
-  # try to fit without circulation
-  fit.no.circle <- function(M)
-  {
-    if(trace) { message("Attempting to fit without circulation.") }
-
-    GUESS <- M
-    GUESS$circle <- 0
-
-    FIT <- ctmm.fit(data,GUESS,method=int.method,COV=FALSE,control=control,trace=trace)
-    M <- permute.ctmm(data,list(M,FIT),UERE=UERE,cores=cores,REML=REML)
+    # re-fit with anisotropy
+    M <- ctmm.fit(data,M,method=int.method,COV=FALSE,control=control,trace=trace2)
 
     return(M)
   }
 
   ############
-  # ATTEMPT 1 -- coarsen data and turn error off
+  FITS <- list()
+  FITS[[1]] <- fit.all(CTMM)
+
   if(CTMM$error)
+  { FITS[[2]] <- fit.no.error(CTMM) }
+  else if(CTMM$circle && !CTMM$isotropic)
+  { FITS[[2]] <- fit.no.circle(CTMM) }
+  else
   {
-    CTMM <- fit.no.error(CTMM)
+    FIT <- ctmm.fit(data,FITS[[1]],method=method,COV=COV,control=control,trace=trace2)
+    return(FIT)
   }
 
-  if(CTMM$circle) { }
+  if(!CTMM$isotropic) { FITS[[3]] <- fit.no.anisotropy(CTMM) }
 
-  ############
-  # ATTEMPT 2 -- consider isotropic model
-  if(!CTMM$isotropic) { CTMM <- fit.no.anisotropy(CTMM) }
-
-  # what about circulation
-  # circle && !isotropic
-  # circle && error
-  # circle && error && !isotropic
-
+  # permute all results
+  if(trace) { message("Combining all fits.") }
+  FIT <- permute.ctmm(data,FITS,UERE=UERE,cores=cores,REML=REML)
   # final attempt
-  #
-  #
+  if(trace) { message("Final fit attempt.") }
+  FIT <- ctmm.fit(data,FIT,method=method,COV=COV,control=control,trace=trace2)
+  return(FIT)
 }
 
 
@@ -135,18 +190,17 @@ permute.ctmm <- function(data,CTMM,UERE,cores=cores,REML=FALSE)
 
   m <- length(CTMM)
 
-  # all possible parameter combinations
+  # all possible parameter values
   P <- sapply(CTMM,function(M){ get.parameters(M,NAMES) }) # (n,m)
-  # delete redundant parameters
-  RED <- logical(n)
-  for(i in 1:n) { RED[i] <- all(P[i,]==P[i,1]) }
-  if(all(RED)) { return(CTMM[[1]]) } # all models are the same
-  P <- P[!RED,]
-  n <- nrow(P)
+  # unique parameter values
+  P <- lapply(1:n,function(i){ unique(P[i,]) })
+  M <- sapply(P,length)
+  m <- max(M)
 
   FITS <- list()
   # iterate through all m^n combinations
-  for(i in 1:(m^n))
+  # not sure of a faster way to do this than base-m counting
+  for(i in 1:prod(M))
   {
     p <- P[,1]
     # resolve each digit in n-digit base-m number
@@ -154,11 +208,14 @@ permute.ctmm <- function(data,CTMM,UERE,cores=cores,REML=FALSE)
     {
       # last digit
       k <- i %% m
-      p[j] <- P[j,k]
+
+      FILL <- (k<=M[j])
+      if(FILL) { p[j] <- P[[j]][k] }
+
       # remove last digit and shift to next digit
       i <- (i-k)/m
     }
-    FITS[[length(FITS)+1]] <- set.parameters(CTMM[[1]],p)
+    if(FILL) { FITS[[length(FITS)+1]] <- set.parameters(CTMM[[1]],p) }
   }
 
   # use ML or REML
