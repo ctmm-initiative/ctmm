@@ -48,7 +48,21 @@ The \code{cor.min} or \code{dt.max} arguments are used to constrain the estimate
 
 \seealso{ \code{\link{emulate}}, \code{\link{simulate}} }
 
-%\examples{}
+\examples{
+# Load package and data
+library(ctmm)
+data(buffalo)
+Cilla <- buffalo$Cilla
+
+GUESS <- ctmm.guess(Cilla,interactive=FALSE)
+FIT <- ctmm.fit(Cilla,GUESS)
+
+# stationary Gaussian estimate
+speed(FIT)
+
+# conditional estimate
+\donttest{speed(FIT,Cilla)}
+}
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

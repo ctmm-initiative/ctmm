@@ -107,7 +107,7 @@ speed.ctmm <- function(object,data=NULL,level=0.95,units=TRUE,prior=TRUE,fast=TR
     if(is.na(level) || is.null(level)) { return(SPEEDS) }
 
     MEAN <- mean(SPEEDS)
-    # calculate variance under log transform, where data is more normal
+    # calculate variance under log transform, where data are more normal
     VAR <- stats::var(log(SPEEDS))
     # transform back
     VAR <- MEAN^2 * VAR
@@ -167,7 +167,7 @@ speed.rand <- function(CTMM,data=NULL,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NU
       }
     }
 
-    if(cor.min) { dt.max <- -log(cor.min)*CTMM$tau[2] }
+    if(is.null(dt.max)) { dt.max <- -log(cor.min)*CTMM$tau[2] }
     data <- simulate(CTMM,data=data,dt=dt,precompute=precompute,dt.max=dt.max)
     t <- data$t
   }

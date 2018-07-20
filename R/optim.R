@@ -348,17 +348,12 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
     else { FN <- try(fn(par*parscale,...)) }
     # ordinary objective function
 
-    if(class(FN)=="numeric") { FN <- FN/fnscale }
+    if(class(FN)=="numeric" && !is.nan(FN)) { FN <- FN/fnscale }
     else
     {
       # store to environmental variable so that I can debug?
       par <- par*parscale
       warning("Objective function failure at c(",paste(names(par),collapse=','),') = c(',paste(par,collapse=','),')')
-
-      # strangely, the above is not working???
-      # debug(ctmm:::kalman)
-      # fn(par*parscale,zero=zero*fnscale,...) -> FN
-      # undebug(ctmm:::kalman)
 
       FN <- Inf
     }
