@@ -1,7 +1,7 @@
-speed.telemetry <- function(object,CTMM,level=0.95,units=TRUE,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,cores=1,...)
-{ speed.ctmm(CTMM,data=object,level=level,units=units,prior=prior,fast=fast,cor.min=cor.min,dt.max=dt.max,error=error,cores=cores,...) }
+speed.telemetry <- function(object,CTMM,level=0.95,robust=FALSE,units=TRUE,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,cores=1,...)
+{ speed.ctmm(CTMM,data=object,level=level,robust=robust,units=units,prior=prior,fast=fast,cor.min=cor.min,dt.max=dt.max,error=error,cores=cores,...) }
 
-speed.ctmm <- function(object,data=NULL,level=0.95,units=TRUE,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,cores=1,...)
+speed.ctmm <- function(object,data=NULL,level=0.95,robust=FALSE,units=TRUE,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,cores=1,...)
 {
   if(length(object$tau)<2 || object$tau[2]<=.Machine$double.eps)
   { stop("Movement model is fractal. Speed cannot be estimated.") }
@@ -9,8 +9,11 @@ speed.ctmm <- function(object,data=NULL,level=0.95,units=TRUE,prior=TRUE,fast=TR
   if(prior && fast && any(eigen(object$COV,only.values=TRUE)$values<=.Machine$double.eps))
   { stop("Indefinite covariance matrix in sampling distribution.") }
 
+  if(is.null(data) && prior && !fast)
+  { stop("Parametric boostrap cannot be performed without data.") }
+
   # analytically solvable cases
-  if(is.null(data) && object$mean=="stationary" && (!prior || fast))
+  if(!robust && is.null(data) && object$mean=="stationary" && (!prior || fast))
   {
     if(object$isotropic) # chi_2 : circular velocity distribution
     { CI <- summary(object,level=level,units=FALSE)$CI['speed (meters/second)',] * sqrt(pi/2/2) }
@@ -68,34 +71,44 @@ speed.ctmm <- function(object,data=NULL,level=0.95,units=TRUE,prior=TRUE,fast=TR
     pb <- utils::txtProgressBar(style=3)
     ERROR <- Inf
     N <- length(SPEEDS)
-    S1 <- sum(SPEEDS)
-    S2 <- sum(SPEEDS^2)
+    if(!robust)
+    {
+      S1 <- sum(SPEEDS)
+      S2 <- sum(SPEEDS^2)
+    }
     while(ERROR>=error || length(SPEEDS)<=20)
     {
       ADD <- unlist(plapply(1:cores,spd.fn,cores=cores,fast=FALSE))
       SPEEDS <- c(SPEEDS,ADD)
       # rolling mean & variance
       N <- N + cores
-      S1 <- S1 + sum(ADD)
-      S2 <- S2 + sum(ADD^2)
+      if(!robust) # rolling sums to keep complexity O(N)
+      {
+        if(any(ADD==Inf)) { stop("Sampling distribution does not always resolve velocity, c") }
+        S1 <- S1 + sum(ADD)
+        S2 <- S2 + sum(ADD^2)
+      }
+      else # use insort sort to keep SPEEDS sorted
+      { SPEEDS <- sort(SPEEDS,method="radix") }
 
       # standard_error(mean) / mean
       if(length(SPEEDS)>1)
       {
-        MEAN <- S1/N
-        VAR <- abs(S2 - N*MEAN^2)/(N-1)
-        ERROR <- sqrt(VAR/N) / MEAN
-
-        # fallback on quantiles if some Inf speeds
-        if((is.na(level) || is.null(level)))
+        # calculate averages and their standard errors
+        if(!robust)
         {
-          SPEEDS <- sort(SPEEDS,method='quick')
+          AVE <- S1/N
+          VAR <- abs(S2 - N*AVE^2)/(N-1)
+          ERROR <- sqrt(VAR/N) / AVE
+        }
+        else
+        {
           # median
-          M <- SPEEDS[round(N/2)]
+          AVE <- SPEEDS[round(N/2)]
           # standard error on the median
           Q1 <- SPEEDS[round((N-sqrt(N))/2)]
           Q2 <- SPEEDS[round((1+N+sqrt(N))/2)]
-          ERROR <- max(M-Q1,Q2-M) / M
+          ERROR <- max(AVE-Q1,Q2-AVE) / AVE
         }
 
         # update progress bar
@@ -106,14 +119,24 @@ speed.ctmm <- function(object,data=NULL,level=0.95,units=TRUE,prior=TRUE,fast=TR
     # return raw data (undocumented)
     if(is.na(level) || is.null(level)) { return(SPEEDS) }
 
-    MEAN <- mean(SPEEDS)
-    # calculate variance under log transform, where data are more normal
-    VAR <- stats::var(log(SPEEDS))
-    # transform back
-    VAR <- MEAN^2 * VAR
-    # chi^2 square speed
-    CI <- chisq.ci(MEAN^2,(2*MEAN)^2*VAR,alpha=1-level)
-    CI <- sqrt(CI)
+    # calculate averages and variances
+    if(!robust)
+    {
+      AVE <- mean(SPEEDS)
+      # calculate variance under log transform, where data are more normal and variance estimator is more MVU
+      VAR <- stats::var(log(SPEEDS))
+      # transform back
+      VAR <- AVE^2 * VAR
+      # chi^2 speed^2
+      CI <- chisq.ci(AVE^2,(2*AVE)^2*VAR,alpha=1-level)
+      CI <- sqrt(CI)
+    }
+    else
+    {
+      alpha <- (1-level)/2
+      CI <- stats::quantile(SPEEDS,c(alpha,0.5,1-alpha))
+      names(CI) <- c("low","ML","high")
+    }
 
     close(pb)
   }
@@ -133,14 +156,14 @@ speed.rand <- function(CTMM,data=NULL,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NU
   # fail state for fractal process
   if(length(CTMM$tau)==1 || CTMM$tau[2]<=.Machine$double.eps) { return(Inf) }
 
-  dt <- CTMM$tau[2]*sqrt(error) # how thin should this be, exactly?
+  dt <- CTMM$tau[2]*(error/10)^(1/3) # this gives O(error/10) instantaneous error
 
   if(is.null(data))
   {
     # analytic result possible here
     if(data$mean=="stationary") { return(speed.deterministic(CTMM)) }
     # else do a sufficient length simulation
-    t <- seq(0,CTMM$tau[2]/error^2,dt)
+    t <- seq(0,CTMM$tau[2]/error^2,dt) # is this right for error dependence?
     data <- simulate(CTMM,t=t,precompute=precompute)
   }
   else

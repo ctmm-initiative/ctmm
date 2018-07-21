@@ -1,9 +1,11 @@
-ctmm 0.5.1 (2018-06-29)
+ctmm 0.5.1 (2018-07-20)
 ================
 
   * Units of measurement down to microns and microseconds now supported
   
   * residuals() can now be calculated from (calibrated) calibration data---diagnostic argument removed from uere()
+  
+  * new speed() argument robust for coarse data
   
   * E-OBS errors adjusted by empirical results of Scott LaPoint's calibration data
   
@@ -64,6 +66,8 @@ ctmm 0.4.2 (2018-02-12)
   * new speed() method
   
   * new ctmm.boot() method
+  
+  * new outlie() method
   
   * new export functionality for telemetry class
 
