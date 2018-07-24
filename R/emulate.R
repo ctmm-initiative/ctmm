@@ -26,8 +26,8 @@ emulate.ctmm <- function(object,data=NULL,fast=FALSE,...)
 
   COV <- CTMM$COV
   NAMES <- dimnames(COV)[[1]]
-  par <- get.parameters(CTMM,NAMES)
 
+  par <- get.parameters(CTMM,NAMES)
   # positive variables (potential)
   PAR <- c("area","tau position","tau velocity","error")
   # included variables that are positive
@@ -41,10 +41,17 @@ emulate.ctmm <- function(object,data=NULL,fast=FALSE,...)
     par[P] <- log(par[P])
   }
 
+  # variances should be comparable after transformation --- better condition number
+  TEST <- c(diag(COV),eigen(COV,only.values=TRUE)$values) <= .Machine$double.eps
+  if(any(TEST)) { stop("Hessian not negative semidefinite. Try fast=FALSE.") }
+
   par <- MASS::mvrnorm(mu=par,Sigma=COV)
 
   # transform log back to positive parameters
   par[PAR] <- exp(par[PAR])
+  # keep tau sorted
+  PAR <- c('tau position','tau velocity')
+  if(all(PAR %in% NAMES)) { par[PAR] <- sort(par[PAR],decreasing=TRUE) }
 
   CTMM <- set.parameters(CTMM,par)
 
@@ -62,10 +69,12 @@ emulate.telemetry <- function(object,CTMM,fast=FALSE,...)
   FRAME[,CTMM$axes] <- NULL # delete location information
 
   # simulate data of the same model and sampling
-  data <- simulate(CTMM,data=FRAME)
+  object[,CTMM$axes] <- simulate(CTMM,data=FRAME)[,CTMM$axes]
+  # error columns are copied over this way
 
   # fit model to simulated data
-  CTMM <- ctmm.fit(data,CTMM,method=CTMM$method,...)
+  CTMM <- ctmm.fit(object,CTMM,method=CTMM$method,COV=FALSE,...)
+  # would never need COV matrix
 
   return(CTMM)
 }

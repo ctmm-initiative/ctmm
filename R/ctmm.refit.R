@@ -54,24 +54,109 @@ ctmm.refit <- function(data,CTMM,method="ML",COV=TRUE,control=list(),trace=FALSE
     GUESS <- M
     GUESS$error <- FALSE
 
+    # go through all repeated times and aggregate location & error
+    i <- 1
+    while(i<length(data$t))
+    {
+      j <- 0 # number of later times that are the same
+      while(data$t[i]==data$t[i+j+1]) { j <- j + 1 }
+      if(j)
+      {
+        w <- 1/ERROR[i+0:j] # weights
+        W <- sum(w)
+        w <- w/W
+
+        ERROR[i] <- 1/W
+        data[i,axes] <- w %*% data[i+0:j,axes]
+        # don't need to restore error in data, because not going to use it
+
+        ERROR <- ERROR[-(i+1:j)]
+        data <- data[-(i+1:j)]
+      }
+      i <- i + 1
+    }
+
+    # worst case quality index
+    Q <- ERROR/mean(diag(M$sigma))
+    # remove terrible times
+    BAD <- which(Q>1)
+    # check to make sure there is enough data to fit model to
+    # !!!
+    if(length(BAD)) { data <- data[-BAD,] }
+
     svf.func <- svf.func(GUESS,moment=TRUE)$svf
     SVF <- svf.func(diff(data$t))
     # maximum semi-variance to/from a time
     SVF <- pmax(c(SVF[1],SVF),c(SVF,last(SVF)))
 
-    # LOOP THIS???
-
-    # quality index
+    # current quality index
     Q <- ERROR/SVF
     BAD <- which(Q>1) # subset of bad times to (potentially) remove
+    # good Q do not need to be sorted
     QBAD <- Q[BAD] # bad quality values
-    IND <- sort(QBAD,index.return=TRUE)$ix
-    IND <- BAD[IND] # sorted indices of bad Q
-    for(i in IND)
+    while(length(QBAD))
     {
-      if(Q[i]<=1) { break }
-      # quality index after deletion
-      ###############!!!!!!!!!!!!!!!!!!!!!!
+      # check to make sure there is enough data to fit model to
+      # !!!
+
+      # worst time
+      i <- which.max(QBAD) # worst time among bad times
+      I <- BAD[i] # worst time among all times
+
+      # will we need to update before and after times?
+      if(i>1 && BAD[i-1]+1==I) { LEFT <- TRUE } else { LEFT <- FALSE }
+      if(i<length(BAD) && I+1==BAD[i+1]) { RIGHT <- TRUE } else { RIGHT <- FALSE }
+
+      # delete worst time
+      data <- data[-I,]
+      ERROR <- ERROR[-I]
+      SVF <- SVF[-I]
+      Q <- Q[-I]
+      BAD <- BAD[-i]
+      QBAD <- QBAD[-i]
+
+      # recalculate adjacent times (if necessary)
+      # i,I is now left of deleted time
+      # j,J are right of deleted time (if necessary)
+      j <- i+1
+      J <- I+1
+      if(LEFT)
+      {
+        SVF[I] <- max(svf.func(diff(data$t[max(1,I-1):(I+1)])))
+        Q[I] <- ERROR[I]/SVF[I]
+        if(Q[I]>1)  # update quality
+        { QBAD[i] <- Q[I] }
+        else # this time is now good
+        {
+          # remove from BAD
+          BAD <- BAD[-i]
+          QBAD <- QBAD[-i]
+          # shift right times
+          j <- j-1
+          # J is unchanged
+        }
+      }
+      if(RIGHT)
+      {
+        SVF[J] <- max(svf.func(diff(data$t[(J-1):min(J+1,length(Q))])))
+        Q[J] <- ERROR[J]/SVF[J]
+        if(Q[J]>1)
+        {
+          #
+        }
+        else
+        {
+          #
+        }
+      }
+
+      # worst updated Q
+
+      # loop until we exceed worst updated Q
+
+      # resort bad Qs
+
+      # loop
     }
 
     MAX <- which.max(Q)

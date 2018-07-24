@@ -17,6 +17,8 @@ ctmm 0.5.1 (2018-07-20)
   
   * fixed bug in as.telemetry with projection argument
   
+  * fixed bug in emulate when fast=FALSE and error=TRUE
+  
   * fixed bug in new variogram error calculations (v0.5.0) used for plotting
   
   * simultaneously fitted UERE's from ctmm slot "error" can now be assigned to data for plotting

@@ -88,7 +88,7 @@ speed.ctmm <- function(object,data=NULL,level=0.95,robust=FALSE,units=TRUE,prior
         S1 <- S1 + sum(ADD)
         S2 <- S2 + sum(ADD^2)
       }
-      else # use insort sort to keep SPEEDS sorted
+      else # use insert sort to keep SPEEDS sorted
       { SPEEDS <- sort(SPEEDS,method="radix") }
 
       # standard_error(mean) / mean
@@ -109,6 +109,12 @@ speed.ctmm <- function(object,data=NULL,level=0.95,robust=FALSE,units=TRUE,prior
           Q1 <- SPEEDS[round((N-sqrt(N))/2)]
           Q2 <- SPEEDS[round((1+N+sqrt(N))/2)]
           ERROR <- max(AVE-Q1,Q2-AVE) / AVE
+          # correct for Inf AVE
+          if(is.nan(ERROR))
+          {
+            ERROR <- Inf
+            warning("Speeds accumulating on boundary and expectation value may not converge.")
+          }
         }
 
         # update progress bar
@@ -155,6 +161,7 @@ speed.rand <- function(CTMM,data=NULL,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NU
   if(prior) { CTMM <- emulate(CTMM,data=data,fast=fast,...) }
   # fail state for fractal process
   if(length(CTMM$tau)==1 || CTMM$tau[2]<=.Machine$double.eps) { return(Inf) }
+  if(CTMM$tau[2]==Inf) { return(0) }
 
   dt <- CTMM$tau[2]*(error/10)^(1/3) # this gives O(error/10) instantaneous error
 
