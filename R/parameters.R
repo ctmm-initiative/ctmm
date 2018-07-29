@@ -31,8 +31,8 @@ clean.parameters <- function(par)
 
 
 # identify autocovariance parameters in ctmm object
-# if profile=TRUE, some parameters can be solved exactly and so aren't identified
-# if linear=TRUE, only return linear non-problematic parameters
+# if profile==TRUE, some parameters can be solved exactly and so aren't identified
+# if linear==TRUE, only return linear non-problematic parameters
 id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,UERE=FALSE,dt=0,df=0,dz=10)
 {
   # identify and name autocovariance parameters

@@ -1,21 +1,27 @@
-ctmm 0.5.1 (2018-07-20)
+ctmm 0.5.1 (2018-07-29)
 ================
 
   * Units of measurement down to microns and microseconds now supported
   
+  * ctmm.select() now builds up autocovariance features stepwise to help with fit convergence
+  
   * residuals() can now be calculated from (calibrated) calibration data---diagnostic argument removed from uere()
   
+  * summary.ctmm() now returns DOF[speed] information
+  
   * new speed() argument robust for coarse data
+  
+  * options multiplicative & robust added to ctmm.boot to help with parameters near boundaries
   
   * E-OBS errors adjusted by empirical results of Scott LaPoint's calibration data
   
   * Telonics Gen4 errors estimates imported with results of Patricia Medici's calibration data --- Quick Fixes not yet fully supported
   
-  * options multiplicative & robust added to ctmm.boot to help with parameters near boundaries
-  
   * fixed critical bug in speed()
   
   * fixed bug in as.telemetry with projection argument
+  
+  * fixed bugs in ctmm.loglike when !isotropic && error && circle
   
   * fixed bug in emulate when fast=FALSE and error=TRUE
   

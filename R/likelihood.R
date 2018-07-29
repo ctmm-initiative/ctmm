@@ -139,17 +139,25 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     M.sigma["eccentricity"] <- 0
     M.sigma <- COVM(M.sigma)
 
-    if(UERE) { error <- squeeze.mat(error,ecc) } # squeeze error circles into ellipses
+    # squeeze error circles into ellipses
+    if(UERE) { error <- squeeze.mat(error,ecc) }
+
+    # mean functions can requires squeezing (below)
+    # how does !error && circle && !isotropic avoid this?
   }
 
-  ## some cases need separate x & y meen functions
+  ## some cases need separate x & y mean functions
   if(DIM==2) # u -> cbind( (u,0) , (0,u) )
   {
-    u <- vapply(1:ncol(u),function(i){cbind(u[,i],rep(0,n),rep(0,n),u[,i])},array(0,c(n,4))) # (n,2,2*M)
-    dim(u) <- c(n,4*M)
+    if(!SQUEEZE)
+    { u <- vapply(1:ncol(u),function(i){cbind(u[,i],rep(0,n),rep(0,n),u[,i])},array(0,c(n,4))) }
+    else
+    { u <- vapply(1:ncol(u),function(i){cbind(u[,i]*exp(-ecc/4),rep(0,n),rep(0,n),u[,i]*exp(+ecc/4))},array(0,c(n,4))) }
+    dim(u) <- c(n,4*M) # <- (n,2,2*M)
   }
   else if(circle) # 1D circle can use symmetry with just u -> (u,0) mean function for x
   {
+    # this relies on trickery later on, because of no SQUEEZE
     u <- vapply(1:ncol(u),function(i){cbind(u[,i],rep(0,n))},array(0,c(n,2))) # (n,2,M)
     dim(u) <- c(n,2*M)
   }
@@ -205,8 +213,8 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   {
     # prepare variance/covariance of 1D/2D Kalman filters
     if(PROFILE==2 || (PROFILE && DIM==1)) { CTMM$sigma <- 1 } # could be rotated & squeezed
-    else if(PROFILE && DIM==2) { CTMM$sigma <- COVM(c(1,if(SQUEEZE){0}else{ecc},if(ROTATE){0}else{theta})) } # circle, !isotropic, UERE=1,2
     else if(DIM==1) { CTMM$sigma <- area }
+    else if(DIM==2) { CTMM$sigma <- COVM(c(if(PROFILE){1}else{area},if(SQUEEZE){0}else{ecc},if(ROTATE){0}else{theta})) } # circle, !isotropic, UERE=1,2
     # else sigma is full covariance matrix
 
     KALMAN <- kalman(z,u,dt=dt,CTMM=CTMM,error=error)
@@ -272,20 +280,23 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
 
   if(SQUEEZE) # de-squeeze
   {
-    R <- exp(c(+1,-1)*ecc/4)
-    mu <- t(R * t(mu)) # (M,2)
-
     sigma <- attr(sigma,"par")
     sigma["eccentricity"] <- ecc
     sigma <- COVM(sigma)
 
-    dim(COV.mu) <- c(2,M*2*M)
-    COV.mu <- R * COV.mu
-    dim(COV.mu) <- c(2,M,2,M)
-    COV.mu <- aperm(COV.mu,c(3,4,1,2))
-    dim(COV.mu) <- c(2,M*2*M)
-    COV.mu <- R * COV.mu
-    dim(COV.mu) <- c(2*M,2*M)
+    if(DIM==1) # DIM==2 squeezed u(t), so beta and COV[beta] have normal scale already
+    {
+      R <- exp(c(+1,-1)*ecc/4)
+      mu <- t(R * t(mu)) # (M,2)
+
+      dim(COV.mu) <- c(2,M*2*M)
+      COV.mu <- R * COV.mu
+      dim(COV.mu) <- c(2,M,2,M)
+      COV.mu <- aperm(COV.mu,c(3,4,1,2))
+      dim(COV.mu) <- c(2,M*2*M)
+      COV.mu <- R * COV.mu
+      dim(COV.mu) <- c(2*M,2*M)
+    }
   }
 
   if(ROTATE) # transform results back
@@ -555,7 +566,13 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
     }
 
     # store MLE for faster model selection (ML is what is optimized, not pREML or HREML)
-    if(method %in% c("pREML","pHREML","HREML")) { assign("MLE",CTMM,pos=MLE.env) } else { empty.env(MLE.env) }
+    if(method %in% c("pREML","pHREML","HREML"))
+    {
+      assign("EMPTY",FALSE,pos=MLE.env)
+      assign("MLE",CTMM,pos=MLE.env)
+    }
+    else
+    { empty.env(MLE.env) }
 
     # pREML correction ############################### only do pREML if sufficiently away from boundaries
     TEST <- method %in% c("pREML","pHREML")

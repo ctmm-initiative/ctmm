@@ -54,6 +54,9 @@ ctmm.refit <- function(data,CTMM,method="ML",COV=TRUE,control=list(),trace=FALSE
     GUESS <- M
     GUESS$error <- FALSE
 
+    # how many model parameters do we need to fit
+    K <- length(id.parameters(GUESS,profile=FALSE)$NAMES) + length(GUESS$mu)
+
     # go through all repeated times and aggregate location & error
     i <- 1
     while(i<length(data$t))
@@ -80,11 +83,12 @@ ctmm.refit <- function(data,CTMM,method="ML",COV=TRUE,control=list(),trace=FALSE
     Q <- ERROR/mean(diag(M$sigma))
     # remove terrible times
     BAD <- which(Q>1)
-    # check to make sure there is enough data to fit model to
-    # !!!
     if(length(BAD)) { data <- data[-BAD,] }
 
-    svf.func <- svf.func(GUESS,moment=TRUE)$svf
+    # check to make sure there is enough data to fit model to
+    if(length(data$t)<=K) { return(NULL) }
+
+    svf.func <- Vectorize(svf.func(GUESS,moment=TRUE)$svf)
     SVF <- svf.func(diff(data$t))
     # maximum semi-variance to/from a time
     SVF <- pmax(c(SVF[1],SVF),c(SVF,last(SVF)))
@@ -93,12 +97,9 @@ ctmm.refit <- function(data,CTMM,method="ML",COV=TRUE,control=list(),trace=FALSE
     Q <- ERROR/SVF
     BAD <- which(Q>1) # subset of bad times to (potentially) remove
     # good Q do not need to be sorted
-    QBAD <- Q[BAD] # bad quality values
+    if(length(BAD)) { QBAD <- Q[BAD] } else { QBAD <- NULL } # bad quality values
     while(length(QBAD))
     {
-      # check to make sure there is enough data to fit model to
-      # !!!
-
       # worst time
       i <- which.max(QBAD) # worst time among bad times
       I <- BAD[i] # worst time among all times
@@ -117,9 +118,10 @@ ctmm.refit <- function(data,CTMM,method="ML",COV=TRUE,control=list(),trace=FALSE
 
       # recalculate adjacent times (if necessary)
       # i,I is now left of deleted time
+      if(i>=1) { I <- BAD[i] } # update I to left
       # j,J are right of deleted time (if necessary)
-      j <- i+1
-      J <- I+1
+      j <- i+1 # right time among bad times (potentially)
+      J <- I+1 # right time among all times (potentially)
       if(LEFT)
       {
         SVF[I] <- max(svf.func(diff(data$t[max(1,I-1):(I+1)])))
@@ -141,59 +143,34 @@ ctmm.refit <- function(data,CTMM,method="ML",COV=TRUE,control=list(),trace=FALSE
         SVF[J] <- max(svf.func(diff(data$t[(J-1):min(J+1,length(Q))])))
         Q[J] <- ERROR[J]/SVF[J]
         if(Q[J]>1)
-        {
-          #
-        }
+        { QBAD[j] <- Q[J] }
         else
         {
-          #
+          # remove from BAD
+          BAD <- BAD[-j]
+          QBAD <- QBAD[-j]
         }
       }
 
-      # worst updated Q
-
-      # loop until we exceed worst updated Q
-
-      # resort bad Qs
-
-      # loop
+      # check to make sure there is enough data to fit model to
+      if(length(data$t)<=K) { return(NULL) }
     }
-
-    MAX <- which.max(Q)
-    # thin data until errors are relatively small
-    while(Q[MAX]>=1)
-    {
-      data <- data[-MAX,]
-      Q <- Q[-MAX]
-      ERROR <- ERROR[-MAX]
-
-      SVF <- if(MAX==1) { diff(data$t[1:2]) }
-      else if (MAX==length(data$t)) { max(diff(data$t[length(data$t) + -1:1])) }
-      else { diff(data$t[MAX + 0:1]) }
-      SVF <- svf.func(SVF)
-      #
-    }
-
-    # error catch for above removing all data
-
-    # coarsen data
-    data <- (ERROR < SVF)
-    data <- data[data,]
 
     # if circulation && !isotropic, then refit those
     if(CTMM$circle && !CTMM$isotropic)
-    { FIT <- ctmm.refit(data,GUESS,method=int.method,COV=FALSE,control=control,trace=trace) }
+    { FIT <- ctmm.refit(data,GUESS,method=int.method,COV=FALSE,control=control,trace=trace2) }
     else
     { FIT <- ctmm.fit(data,GUESS,method=int.method,COV=FALSE,control=control,trace=trace2) }
 
     # find best combination of parameters - re-including error
-    if(trace) { message("Combining fits.") }
+    if(trace) { message("Combining fits (with and without error).") }
     M <- permute.ctmm(data,list(M,FIT),UERE=UERE,cores=cores,REML=REML)
 
     # enforce minimum parameter so they still get fit attempt - in case original error estimate was too large or too small (tau->0)
     M <- perturb.ctmm(M)
 
     # re-fit with errors
+    if(trace) { message("Fitting combined error model.") }
     M <- ctmm.fit(data,M,method=int.method,COV=FALSE,control=control,trace=trace2)
 
     return(M)
@@ -208,9 +185,12 @@ ctmm.refit <- function(data,CTMM,method="ML",COV=TRUE,control=list(),trace=FALSE
     GUESS$circle <- 0
 
     FIT <- ctmm.fit(data,GUESS,method=int.method,COV=FALSE,control=control,trace=trace2)
+
+    if(trace) { message("Combining fits (with and without circulation).") }
     M <- permute.ctmm(data,list(M,FIT),UERE=UERE,cores=cores,REML=REML)
 
     # re-fit with circulation
+    if(trace) { message("Fitting combined circulation model.") }
     M <- ctmm.fit(data,M,method=int.method,COV=FALSE,control=control,trace=trace2)
 
     return(M)
@@ -228,12 +208,16 @@ ctmm.refit <- function(data,CTMM,method="ML",COV=TRUE,control=list(),trace=FALSE
 
     # fit without anisotropy
     FIT <- ctmm.fit(data,GUESS,method=int.method,COV=FALSE,control=control,trace=trace2)
+
     # re-include anisotropy
-    FIT$sigma <- covm( c( attr(FIT$sigma,"par")[1] , attr(M$sigma,"par")[2:3] ) , isotropic=FALSE, axes=M$axes )
+    # FIT$sigma <- covm( c( attr(FIT$sigma,"par")[1] , attr(M$sigma,"par")[2:3] ) , isotropic=FALSE, axes=M$axes )
+
     # find best combination of parameters
+    if(trace) { message("Combining fits (with and without anisotropy).") }
     M <- permute.ctmm(data,list(M,FIT),UERE=UERE,cores=cores,REML=REML)
 
     # re-fit with anisotropy
+    if(trace) { message("Fitting combined anisotropic model.") }
     M <- ctmm.fit(data,M,method=int.method,COV=FALSE,control=control,trace=trace2)
 
     return(M)
@@ -241,19 +225,19 @@ ctmm.refit <- function(data,CTMM,method="ML",COV=TRUE,control=list(),trace=FALSE
 
   ############
   FITS <- list()
-  FITS[[1]] <- fit.all(CTMM)
+  #FITS[[1]] <- fit.all(CTMM)
 
   if(CTMM$error)
-  { FITS[[2]] <- fit.no.error(CTMM) }
+  { FITS[[1]] <- fit.no.error(CTMM) }
   else if(CTMM$circle && !CTMM$isotropic)
-  { FITS[[2]] <- fit.no.circle(CTMM) }
-  else
+  { FITS[[1]] <- fit.no.circle(CTMM) }
+  else # what would be here?
   {
-    FIT <- ctmm.fit(data,FITS[[1]],method=method,COV=COV,control=control,trace=trace2)
+    FIT <- ctmm.fit(data,CTMM,method=method,COV=COV,control=control,trace=trace2)
     return(FIT)
   }
 
-  if(!CTMM$isotropic) { FITS[[3]] <- fit.no.anisotropy(CTMM) }
+  if(!CTMM$isotropic) { FITS[[2]] <- fit.no.anisotropy(CTMM) }
 
   # permute all results
   if(trace) { message("Combining all fits.") }
@@ -269,6 +253,9 @@ ctmm.refit <- function(data,CTMM,method="ML",COV=TRUE,control=list(),trace=FALSE
 # consider every combination of model parameters and return the best combination
 permute.ctmm <- function(data,CTMM,UERE,cores=cores,REML=FALSE)
 {
+  # can't permute 1 model alone
+  if(length(CTMM)==1) { return(CTMM) }
+
   P <- id.parameters(CTMM[[1]],UERE=UERE)
   NAMES <- P$NAMES
   n <- length(NAMES)
@@ -278,14 +265,14 @@ permute.ctmm <- function(data,CTMM,UERE,cores=cores,REML=FALSE)
   # all possible parameter values
   P <- sapply(CTMM,function(M){ get.parameters(M,NAMES) }) # (n,m)
   # unique parameter values
-  P <- lapply(1:n,function(i){ unique(P[i,]) })
-  M <- sapply(P,length)
+  PS <- lapply(1:n,function(i){ unique(P[i,]) })
+  M <- sapply(PS,length)
   m <- max(M)
 
   FITS <- list()
   # iterate through all m^n combinations
   # not sure of a faster way to do this than base-m counting
-  for(i in 1:prod(M))
+  for(i in 1:(m^n))
   {
     p <- P[,1]
     # resolve each digit in n-digit base-m number
@@ -294,8 +281,9 @@ permute.ctmm <- function(data,CTMM,UERE,cores=cores,REML=FALSE)
       # last digit
       k <- i %% m
 
-      FILL <- (k<=M[j])
-      if(FILL) { p[j] <- P[[j]][k] }
+      FILL <- (k+1<=M[j])
+      if(FILL) { p[j] <- PS[[j]][k+1] }
+      else { break }
 
       # remove last digit and shift to next digit
       i <- (i-k)/m
@@ -304,7 +292,7 @@ permute.ctmm <- function(data,CTMM,UERE,cores=cores,REML=FALSE)
   }
 
   # use ML or REML
-  FITS <- plapply(FITS,function(M){ ctmm.loglike(data,M,verbose=TRUE,REML=REML) },cores=cores,FAST=TRUE)
+  FITS <- plapply(FITS,function(M){ ctmm.loglike(data,M,verbose=TRUE,REML=REML) },cores=cores,fast=TRUE)
   MAX <- sapply(FITS,function(M){ M$loglike })
   MAX <- which.max(MAX)
   # best model

@@ -365,13 +365,13 @@ kalman <- function(z,u,dt,CTMM,error=NULL,smooth=FALSE,sample=FALSE,residual=FAL
 
   ###############
   # CAN START WITH PRECOMPUTE HERE
-  if(precompute){ STUFF <- c('n','K','u','mu','DATA','zCon','sCon','zFor','L','SQRT') }
+  if(precompute){ STUFF <- c('n','K','DIM','DATA','zCon','sCon','zFor','L','SQRT') }
   # STORE PRECOMPUTED STUFF FOR LATER EVALUATIONS || PULL PRECOMPUTED STUFF FOR FAST EVALUATIONS
   if(precompute>0) { for(thing in STUFF) { assign(thing,get(thing),pos=Kalman.env) } }
   else if(precompute<0) { for(thing in STUFF) { assign(thing,get(thing,pos=Kalman.env)) } }
 
   #################
-  # RANDOM SAMPLER: end point !!! FIX z dim and review all + retest !!!
+  # RANDOM SAMPLER: end point
   #################
   if(sample) { zCon[n,,] <- zCon[n,,] + SQRT[n,,] %*% array(stats::rnorm(K*DIM*length(DATA)),c(K*DIM,length(DATA))) } # (K*DIM,length(DATA))
 

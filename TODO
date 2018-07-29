@@ -1,5 +1,7 @@
 PRIORITY
+* should we consider error, taus, etc. as features to build up?
 * tau velocity and other turned off parameters in variogram.fit --- have an all parameters option
+* link FAQ in DESCRIPTION
 * reference Guillaume's paper at the beginning of the periodogram vignette
 * use perturb.ctmm in ctmm.guess / variogram.fit ?
 * automate refitting of errors - coarsen data until errors smaller than variogram - fit - consider all permutations
@@ -71,6 +73,7 @@ MISC WORK
 * effective DOF for diffusion rate?
 
 PERIODIC 0.4.X
+* DOF[mean] should just be the stationary mean
 * AIC/MSPE hybrid model selection
 * mean derivative not included in simulate/predict/etc?
 * T-test on high frequency amplitudes

@@ -224,6 +224,12 @@ first <- function(vec) { vec[1] }
 #   return(vec)
 # }
 
+
+# prepend to a vector
+prepend <- function(x,values,before=1)
+{ append(x,values,after=before-1) }
+
+
 # CLAMP A NUMBER
 clamp <- Vectorize(function(num,min=0,max=1) { if(num<min) {min} else if(num<max) {num} else {max} })
 

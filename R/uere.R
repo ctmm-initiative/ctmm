@@ -236,42 +236,48 @@ get.error <- function(DATA,CTMM,flag=FALSE,circle=FALSE,DIM=FALSE)
 
     if(all(COV %in% COLS)) # calibrated error ellipses - ARGOS
     {
+      FLAG <- 4
+      if(flag) { return(FLAG) }
+
       error <- get.telemetry(DATA,COV[c(1,2,2,3)]) # pull matrix elements
       dim(error) <- c(nrow(error),2,2) # array of matrices
-      FLAG <- 4
 
       # reduce to VAR
       if(circle) { error <- (error[,1,1]+error[,2,2])/2 }
     }
     else if(VAR %in% COLS) # calibrated error circles - VAR=(UERE*HDOP)^2/2
     {
-      error <- DATA[[VAR]]
       FLAG <- 3
+      if(flag) { return(FLAG) }
+
+      error <- DATA[[VAR]]
     }
     else if(DOP %in% COLS) # fitted errors - HDOP
     {
-      error <- (CTMM$error*DATA[[DOP]])^2/length(axes)
       FLAG <- 2
+      if(flag) { return(FLAG) }
+
+      error <- (CTMM$error*DATA[[DOP]])^2/length(axes)
     }
     else # fitted errors - no HDOP
     {
-      error <- rep(CTMM$error^2/length(axes),n)
       FLAG <- 1
+      if(flag) { return(FLAG) }
+
+      error <- rep(CTMM$error^2/length(axes),n)
     }
-  } # END error
+  } # END errors
   else # no error
   {
     FLAG <- 0
+    if(flag) { return(FLAG) }
+
     error <- rep(0,n)
   }
 
   # upgrade variance scalar to covariance matrix
   if(FLAG<4 && DIM) { error <- outer(error,diag(DIM)) } # [n,d,d] }
 
-  if(flag) { return(FLAG) }
-  else
-  {
-    attr(error,"flag") <- FLAG
-    return(error)
-  }
+  attr(error,"flag") <- FLAG
+  return(error)
 }
