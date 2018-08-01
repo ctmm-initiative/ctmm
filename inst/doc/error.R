@@ -1,12 +1,13 @@
 ## ------------------------------------------------------------------------
 library(ctmm)
-fisher <- as.telemetry(system.file("extdata","leroy.csv.gz",package="move"))
-names(fisher) # imported column names
-plot(fisher,error=2) # fisher plot with 95% error discs
+data('coati')
+names(coati[[1]]) # imported column names
+plot(coati[[1]],col=rainbow(2),error=2,trans=0.4) # coati plot with 95% error discs
 
 ## ------------------------------------------------------------------------
 data(turtle)
-names(turtle)
+names(turtle[[1]]) # data are not yet calibrated
+names(turtle) # some calibration data and some turtle data
 plot(turtle[1:2],col=rainbow(2)) # calibration data only
 
 ## ------------------------------------------------------------------------
@@ -15,6 +16,7 @@ UERE
 
 ## ------------------------------------------------------------------------
 uere(turtle) <- UERE
+names(turtle[[3]]) # now the data are calibrated
 plot(turtle[[3]],error=2) # turtle plot with 95% error discs
 
 ## ------------------------------------------------------------------------
@@ -40,42 +42,13 @@ points(1/4,1)
 title("Detector Array")
 
 ## ------------------------------------------------------------------------
-# ctmm beta optimizer is more reliable here
-# control <- list(method='pNewton',cores=-1) # use all but 1 core
-control <- list(method='pNewton',cores=2) # CRAN policy limits us to 2 processes
-
-# default model guess without error
-GUESS <- ctmm.guess(fisher,interactive=FALSE)
-# first fit without telemetry error
-FIT <- ctmm.fit(fisher,GUESS,control=control)
-summary(FIT)
-
-# second fit based on first, but with telemetry error activated
-GUESS <- FIT
-GUESS$error <- TRUE
-FIT <- ctmm.fit(fisher,GUESS,control=control)
-summary(FIT)
-
-## ------------------------------------------------------------------------
 # automated guestimates with circular covariance and calibrated errors
-GUESS <- ctmm.guess(turtle[[3]],CTMM=ctmm(error=TRUE,isotropic=TRUE),interactive=FALSE)
-# first fit circular model
-FIT <- ctmm.fit(turtle[[3]],GUESS,control=control)
-summary(FIT)
-
-# create elliptical model guess
-GUESS <- FIT
-GUESS$isotropic <- FALSE
-# populate eccentricity and orientation with guesstimates
-GUESS <- ctmm.guess(turtle[[3]],CTMM=GUESS,interactive=FALSE)
-# second fit elliptical model
-FIT <- ctmm.fit(turtle[[3]],GUESS,control=control)
-# velocity does not appear supported
-summary(FIT)
-
-# proceed with model selection
-FIT <- ctmm.select(turtle[[3]],FIT,control=control)
-# velocity was not supported by this data
+GUESS <- ctmm.guess(turtle[[3]],CTMM=ctmm(error=TRUE),interactive=FALSE)
+# the beta optimizer is more reliable than the default optimizer
+# control <- list(method='pNewton',cores=-1) # will use all but one cores
+control <- list(method='pNewton',cores=2) # CRAN policy limits us to 2 cores
+# stepwise fitting
+FIT <- ctmm.select(turtle[[3]],GUESS,control=control,trace=TRUE)
 summary(FIT)
 
 ## ------------------------------------------------------------------------
@@ -84,9 +57,8 @@ uere(turtle[[3]]) <- NULL
 
 ## ------------------------------------------------------------------------
 # cheat and use previous fit as initial guess
-GUESS <- FIT
 GUESS$error <- 10 # 10 meter error guess
 # fit parameter estimates
-FIT <- ctmm.fit(turtle[[3]],GUESS,control=control)
+FIT <- ctmm.select(turtle[[3]],GUESS,control=control)
 summary(FIT)
 

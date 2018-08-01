@@ -1,6 +1,5 @@
 PRIORITY
-* should we consider error, taus, etc. as features to build up?
-* tau velocity and other turned off parameters in variogram.fit --- have an all parameters option
+* <UU> needs to be used in MSPE and not tr[UU]/n
 * link FAQ in DESCRIPTION
 * reference Guillaume's paper at the beginning of the periodogram vignette
 * use perturb.ctmm in ctmm.guess / variogram.fit ?

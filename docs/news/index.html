@@ -116,18 +116,23 @@
       <small>Source: <a href='https://github.com/ctmm-initiative/ctmm/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
     </div>
 
-    <div id="ctmm-0-5-1-2018-06-20" class="section level1">
+    <div id="ctmm-0-5-1-2018-07-29" class="section level1">
 <h1 class="page-header">
-<a href="#ctmm-0-5-1-2018-06-20" class="anchor"></a>ctmm 0.5.1 (2018-06-20)<small> Unreleased </small>
+<a href="#ctmm-0-5-1-2018-07-29" class="anchor"></a>ctmm 0.5.1 (2018-07-29)<small> Unreleased </small>
 </h1>
 <ul>
 <li><p>Units of measurement down to microns and microseconds now supported</p></li>
+<li><p>ctmm.select() now builds up autocovariance features stepwise to help with fit convergence</p></li>
 <li><p>residuals() can now be calculated from (calibrated) calibration data—diagnostic argument removed from uere()</p></li>
+<li><p>summary.ctmm() now returns DOF[speed] information</p></li>
+<li><p>new speed() argument robust for coarse data</p></li>
+<li><p>options multiplicative &amp; robust added to ctmm.boot to help with parameters near boundaries</p></li>
 <li><p>E-OBS errors adjusted by empirical results of Scott LaPoint’s calibration data</p></li>
 <li><p>Telonics Gen4 errors estimates imported with results of Patricia Medici’s calibration data — Quick Fixes not yet fully supported</p></li>
-<li><p>options multiplicative &amp; robust added to ctmm.boot to help with parameters near boundaries</p></li>
 <li><p>fixed critical bug in speed()</p></li>
 <li><p>fixed bug in as.telemetry with projection argument</p></li>
+<li><p>fixed bugs in ctmm.loglike when !isotropic &amp;&amp; error &amp;&amp; circle</p></li>
+<li><p>fixed bug in emulate when fast=FALSE and error=TRUE</p></li>
 <li><p>fixed bug in new variogram error calculations (v0.5.0) used for plotting</p></li>
 <li><p>simultaneously fitted UERE’s from ctmm slot “error” can now be assigned to data for plotting</p></li>
 </ul>
@@ -164,6 +169,7 @@
 <ul>
 <li><p>new speed() method</p></li>
 <li><p>new ctmm.boot() method</p></li>
+<li><p>new outlie() method</p></li>
 <li><p>new export functionality for telemetry class</p></li>
 <li><p>overlap debias=TRUE option (approximate)</p></li>
 <li><p>pHREML, pREML, HREML ctmm.fit methods implemented and documented</p></li>
@@ -471,7 +477,7 @@
     <div id="tocnav">
       <h2>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
-        <li><a href="#ctmm-0-5-1-2018-06-20">0.5.1</a></li>
+        <li><a href="#ctmm-0-5-1-2018-07-29">0.5.1</a></li>
         <li><a href="#ctmm-0-5-0-2018-05-15">0.5.0</a></li>
         <li><a href="#ctmm-0-4-2-2018-02-12">0.4.2</a></li>
         <li><a href="#ctmm-0-4-1-2017-08-30">0.4.1</a></li>

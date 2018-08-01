@@ -21,9 +21,11 @@
 <!-- clipboard.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" integrity="sha384-cV+rhyOuRHc9Ub/91rihWcGmMmCXDeksTtCihMupQHSsi8GIIRDG0ThDc3HGQFJ3" crossorigin="anonymous"></script>
 
+<!-- sticky kit -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script>
+
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
-<script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
 
 
@@ -34,8 +36,9 @@
 One of two algorithms is used. The slow \(O(n^2)\) algorithm is based upon Fleming et al (2014), but with interval-weights instead of lag-weights.
 Additional modifications have also been included to accommodate drift in the sampling rate.
 The fast \(O(n \log n)\) algorithm is based upon the FFT method of Marcotte (1996), with some tweaks to better handle irregularly sampled data.
-Both methods reduce to the unbiased &#8220;method of moments&#8221; estimator in the case of evenly scheduled data, even with missing observations, but they produce slightly different outputs for irregularly sampled data." />
+Both methods reduce to the unbiased &amp;#8220;method of moments&amp;#8221; estimator in the case of evenly scheduled data, even with missing observations, but they produce slightly different outputs for irregularly sampled data." />
 <meta name="twitter:card" content="summary" />
+
 
 
 <!-- mathjax -->

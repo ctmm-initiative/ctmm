@@ -21,9 +21,11 @@
 <!-- clipboard.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" integrity="sha384-cV+rhyOuRHc9Ub/91rihWcGmMmCXDeksTtCihMupQHSsi8GIIRDG0ThDc3HGQFJ3" crossorigin="anonymous"></script>
 
+<!-- sticky kit -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script>
+
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
-<script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
 
 
@@ -33,6 +35,7 @@
 <meta property="og:description" content="These functions allow one to propose hypothethical movement models (with initial estimates), fit those models to the data, and select among those models via an information criteria.
 The fitting functions wrap around optim and ctmm.loglike to fit continuous-time movement models to 2D animal tracking data as described in Fleming et al (2014) and Fleming et al (2015), and Fleming et al (2017)." />
 <meta name="twitter:card" content="summary" />
+
 
 
 <!-- mathjax -->
@@ -198,7 +201,7 @@ The fitting functions wrap around <code>optim</code> and <code>ctmm.loglike</cod
     </tr>
     <tr>
       <th>trace</th>
-      <td><p>Report progress updates.</p></td>
+      <td><p>Report progress updates. Can be among <code>0:2</code> with increasing detail.</p></td>
     </tr>
     <tr>
       <th>level</th>
@@ -289,15 +292,15 @@ This is no longer feasible with current versions of <code>ctmm</code>, as the nu
 
 <span class='co'># some human-readable information</span>
 <span class='fu'>summary</span>(<span class='no'>FIT</span>)</div><div class='output co'>#&gt; $DOF
-#&gt;     mean     area 
-#&gt; 11.54854 22.49909 
+#&gt;       mean       area      speed 
+#&gt;   11.55152   22.52394 3445.95166 
 #&gt; 
 #&gt; $CI
-#&gt;                                 low        ML      high
-#&gt; area (square kilometers) 234.954080 372.73449 541.79530
-#&gt; tau position (days)        4.039193   6.92318  11.86634
-#&gt; tau velocity (minutes)    39.636583  42.14108  44.80384
-#&gt; speed (kilometers/day)    13.818785  14.05342  14.28799
+#&gt;                                 low         ML      high
+#&gt; area (square kilometers) 234.954310 372.628907 541.54066
+#&gt; tau position (days)        4.039641   6.921215  11.85828
+#&gt; tau velocity (minutes)    39.636589  42.141085  44.80383
+#&gt; speed (kilometers/day)    13.818790  14.053421  14.28800
 #&gt; </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">

@@ -12,13 +12,13 @@ vignette: >
 
 # Error calibration
 
-The first step to handling errors is to quantify them. Make sure that your data's "dilution of precision" (DOP) and error columns import correctly into `ctmm`. Some tracking device manufacturers provide pre-calibrated errors. This fisher was tracked with an e-obs GPS collar that features calibrated errors for the location, imported by `ctmm` into the `VAR.xy` column, which represents the `x` and `y` error variances.
+The first step to handling errors is to quantify them. Make sure that your data's "dilution of precision" (DOP) and error columns import correctly into `ctmm`. Some tracking device manufacturers provide pre-calibrated errors. These coati were tracked with e-obs GPS collars that features calibrated errors for the location, imported by `ctmm` into the `VAR.xy` column, which represents the `x` and `y` error variances.
 
 ```{r}
 library(ctmm)
-fisher <- as.telemetry(system.file("extdata","leroy.csv.gz",package="move"))
-names(fisher) # imported column names
-plot(fisher,error=2) # fisher plot with 95% error discs
+data('coati')
+names(coati[[1]]) # imported column names
+plot(coati[[1]],col=rainbow(2),error=2,trans=0.4) # coati plot with 95% error discs
 ```
 
 Most GPS devices will only have an `HDOP` column, which is only proportional to the `x` and `y` error standard deviations. The proportionality constant between the HDOP and error standard deviation is known as the user equivalent range error (UERE). The UERE should be estimated from calibration data if not provided by the manufacturer. Without the option of pre-calibrated errors or calibration data, the UERE must be fit simultaneously with the movement model, which is not as reliable. We will cover simultaneous fitting at the end of this vignette.
@@ -27,7 +27,8 @@ In the following wood turtle dataset, we have some calibration data and a turtle
 
 ```{r}
 data(turtle)
-names(turtle)
+names(turtle[[1]]) # data are not yet calibrated
+names(turtle) # some calibration data and some turtle data
 plot(turtle[1:2],col=rainbow(2)) # calibration data only
 ```
 
@@ -42,6 +43,7 @@ For GPS data, the UERE will typically be 10-15 meters. The UERE can be assigned 
 
 ```{r}
 uere(turtle) <- UERE
+names(turtle[[3]]) # now the data are calibrated
 plot(turtle[[3]],error=2) # turtle plot with 95% error discs
 ```
 
@@ -59,7 +61,7 @@ High-speed segments are colored in blue, while distant locations are colored in 
 plot(OUT)
 ```
 
-A sustained speed of 0.1 m/s is not biologically implausible for a wood turtle, but this location is highly suspicious. After removing the outlier, we can check the data again.
+A sustained speed of 0.1 m/s is not biologically implausible for a wood turtle, but this location is highly suspicious, both in terms of speed and lack of proximity. After removing the outlier, we can check the data again.
 
 ```{r}
 BAD <- which.max(OUT$speed)
@@ -91,62 +93,29 @@ The height of this initial discontinuity corresponds to the variance of uncorrel
 
 ## Model fitting
 
-Because of some convenient mathematical relations, fitting with telemetry errors involves numerically fitting 1-4 more parameters and is, therefore, slower and less reliable at converging on the MLE than fitting without telemetry error. By default, telemetry error is not turned on in `ctmm` models (`error=FALSE`). For calibrated errors, we have to set `error=TRUE` in the model guess to fit with telemetry error accounted for. For uncalibrated errors, we have to provide an initial guess for `error`, which will be the device's UERE. `error=10` is usually a good guess for GPS data.
+Because of some convenient mathematical relations, fitting with telemetry errors involves numerically fitting 1-4 more parameters and is, therefore, slower and less reliable at converging on the MLE than fitting without telemetry error. Therefore, by default, telemetry error is not turned on in `ctmm` models (`error=FALSE`).
+Furthermore, in cases with an error model, `ctmm.select()` is safer to use than direct applicaiton of `ctmm.fit()`, because `ctmm.select()` will start with the simplest "compatible" model and then consider further model features that require numerical optimization in stepwise fashion.
 
-### Fitting with small errors
+### Fitting with calibrated data
 
-When telemetry errors are relatively small compared to the scale of movement over the sampled time intervals, we can first fit a model without error and use this fit as an initial guess for fitting a model with error. Here we demonstrate this method with Leroy the fisher.
-
-```{r}
-# ctmm beta optimizer is more reliable here
-# control <- list(method='pNewton',cores=-1) # use all but 1 core
-control <- list(method='pNewton',cores=2) # CRAN policy limits us to 2 processes
-
-# default model guess without error
-GUESS <- ctmm.guess(fisher,interactive=FALSE)
-# first fit without telemetry error
-FIT <- ctmm.fit(fisher,GUESS,control=control)
-summary(FIT)
-
-# second fit based on first, but with telemetry error activated
-GUESS <- FIT
-GUESS$error <- TRUE
-FIT <- ctmm.fit(fisher,GUESS,control=control)
-summary(FIT)
-```
-
-### Fitting with large errors
-
-When telemetry errors are relatively large, we might fit an isotropic (circular) model first and then use that fit to construct an initial guess for an anisotropic (elliptical) model. Here we demonstrate this method with a wood turtle.
+For calibrated errors, we have to set `error=TRUE` in the model guess to fit with telemetry error accounted for.
 
 ```{r}
 # automated guestimates with circular covariance and calibrated errors
-GUESS <- ctmm.guess(turtle[[3]],CTMM=ctmm(error=TRUE,isotropic=TRUE),interactive=FALSE)
-# first fit circular model
-FIT <- ctmm.fit(turtle[[3]],GUESS,control=control)
-summary(FIT)
-
-# create elliptical model guess
-GUESS <- FIT
-GUESS$isotropic <- FALSE
-# populate eccentricity and orientation with guesstimates
-GUESS <- ctmm.guess(turtle[[3]],CTMM=GUESS,interactive=FALSE)
-# second fit elliptical model
-FIT <- ctmm.fit(turtle[[3]],GUESS,control=control)
-# velocity does not appear supported
-summary(FIT)
-
-# proceed with model selection
-FIT <- ctmm.select(turtle[[3]],FIT,control=control)
-# velocity was not supported by this data
+GUESS <- ctmm.guess(turtle[[3]],CTMM=ctmm(error=TRUE),interactive=FALSE)
+# the beta optimizer is more reliable than the default optimizer
+# control <- list(method='pNewton',cores=-1) # will use all but one cores
+control <- list(method='pNewton',cores=2) # CRAN policy limits us to 2 cores
+# stepwise fitting
+FIT <- ctmm.select(turtle[[3]],GUESS,control=control,trace=TRUE)
 summary(FIT)
 ```
 
-Note also that we performed model selection with a fit (which would then be re-fit) as our initial guess, rather than the raw guess output of `ctmm.guess` or `variogram.fit`. This helps ensure convergence in the optimizer.
+`trace=TRUE` allows us to see the models considered. `verbose=TRUE` would save each model.
 
-### Fitting with unknown errors
+### Fitting with uncalibrated data
 
-Fitting with unknown errors is a method of last resort. Let's consider the turtle data again, but without calibrated UERE.
+Fitting with unknown errors is a method of last resort. We have to provide an initial guess for `error`, which will be the device's UERE. `error=10` is usually a good guess for GPS data. Let's consider the turtle data again, but without calibrated UERE.
 
 ```{r}
 # delete UERE information
@@ -157,11 +126,11 @@ The only difference is that you have to provide an initial guess for the UERE. O
 
 ```{r}
 # cheat and use previous fit as initial guess
-GUESS <- FIT
 GUESS$error <- 10 # 10 meter error guess
 # fit parameter estimates
-FIT <- ctmm.fit(turtle[[3]],GUESS,control=control)
+FIT <- ctmm.select(turtle[[3]],GUESS,control=control)
 summary(FIT)
 ```
 
-
+Here, fitting the UERE simultaneously with the movement model produced a good result.
+This will not always be the case.

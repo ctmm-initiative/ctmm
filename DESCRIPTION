@@ -1,7 +1,7 @@
 Encoding: UTF-8
 Package: ctmm
 Version: 0.5.1
-Date: 2018-07-29
+Date: 2018-07-31
 Title: Continuous-Time Movement Modeling
 Authors@R: c(person(c("Christen","H."),"Fleming",email="flemingc@si.edu",role=c("aut","cre")),
              person(c("Justin","M."),"Calabrese",email="calabresej@si.edu",role="aut"),
@@ -37,4 +37,4 @@ Description: Functions for identifying, fitting, and applying continuous-space, 
 License: GPL-3
 VignetteBuilder: knitr
 NeedsCompilation: no
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0

@@ -183,7 +183,10 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
     if(!is.list(pchar))
     {
       if(length(x)>1)
-      { pchar <- array(pchar,length(x)) }
+      {
+        pchar <- array(pchar,length(x))
+        pchar <- as.list(pchar)
+      }
       else if(!all)
       { pchar <- list(array(pchar,length(x[[1]]$t))) }
     }
@@ -318,7 +321,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
       if(DOP.LIST$speed$VAR %in% names(x[[i]]))
       {
         # magnitude of estimate relative to uncertainty
-        ERROR <- get.error(x[[i]],ctmm(axes=c("vx","vy")),circle=TRUE)
+        ERROR <- get.error(x[[i]],ctmm(axes=c("vx","vy"),error=TRUE),circle=TRUE)
         alpha <- sqrt(rowSums(get.telemetry(x[[i]],axes=c("vx","vy"))^2)/ERROR)
         alpha <- clamp(alpha)
         col[[i]] <- scales::alpha(col[[i]],alpha)

@@ -679,17 +679,40 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
   { CTMM$AICc <- -2*CTMM$loglike + (q*n-q*k.mean) * 2*k/(q*n-k-nu) }
 
   # Mean square prediction error
-  MSPE <- CTMM$COV.mu
-  if(length(dim(MSPE))==2) # only 1 mean vector
-  { MSPE <- sum(diag(MSPE)) * c(UU) }
-  else if(length(dim(MSPE))==4) # k mean vectors
+  mspe <- function(K=1)
   {
-    MSPE <- lapply(1:length(axes),function(i) MSPE[i,,,i])
-    MSPE <- Reduce("+",MSPE)
-    MSPE <- sum(diag(MSPE %*% UU))
+    if(K==2) # velocity MSPE
+    {
+      U <- drift@velocity(data$t,CTMM)
+      UU <- t(U) %*% U
+    }
+
+    MSPE <- CTMM$COV.mu
+    if(length(dim(MSPE))==2 && length(UU)==1) # multiple spatial dimensions and one trend component
+    { MSPE <- sum(diag(MSPE)) * c(UU) }
+    else if(length(dim(MSPE))==2 && length(UU)>1) # one spatial dimension and many trend components
+    { MSPE <- sum(diag(MSPE %*% UU)) }
+    else if(length(dim(MSPE))==4) # k trend components in multiple dimensions
+    {
+      MSPE <- lapply(1:length(axes),function(i) MSPE[i,,,i])
+      MSPE <- Reduce("+",MSPE)
+      MSPE <- sum(diag(MSPE %*% UU))
+    }
+    MSPE <- MSPE/n
+
+    VAR <- sum(diag(CTMM$sigma))
+    if(K==2) { VAR <- VAR * (1/prod(CTMM$tau) + CTMM$circle^2) }
+
+    MSPE <- MSPE + VAR
+    return(MSPE)
   }
-  MSPE <- MSPE/n + sum(diag(CTMM$sigma))
-  CTMM$MSPE <- MSPE
+  # Mean square prediction error in locations
+  CTMM$MSPE <- mspe(K=1)
+  # mean suare predicton error in velocities
+  if(length(CTMM$tau)>1)
+  { CTMM$MSPEV <- mspe(K=2) }
+  else
+  { CTMM$MSPEV <- Inf }
 
   return(CTMM)
 }

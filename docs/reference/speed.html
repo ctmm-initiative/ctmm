@@ -129,12 +129,12 @@
     <pre class="usage"><span class='fu'>speed</span>(<span class='no'>object</span>,<span class='no'>...</span>)
 
 <span class='co'># S3 method for ctmm</span>
-<span class='fu'>speed</span>(<span class='no'>object</span>,<span class='kw'>data</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>units</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>prior</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>fast</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>cor.min</span><span class='kw'>=</span><span class='fl'>0.5</span>,<span class='kw'>dt.max</span><span class='kw'>=</span><span class='kw'>NULL</span>,
-      <span class='kw'>error</span><span class='kw'>=</span><span class='fl'>0.01</span>,<span class='kw'>cores</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='no'>...</span>)
+<span class='fu'>speed</span>(<span class='no'>object</span>,<span class='kw'>data</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>robust</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>units</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>prior</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>fast</span><span class='kw'>=</span><span class='fl'>TRUE</span>,
+      <span class='kw'>cor.min</span><span class='kw'>=</span><span class='fl'>0.5</span>,<span class='kw'>dt.max</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>error</span><span class='kw'>=</span><span class='fl'>0.01</span>,<span class='kw'>cores</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='no'>...</span>)
 
 <span class='co'># S3 method for telemetry</span>
-<span class='fu'>speed</span>(<span class='no'>object</span>,<span class='no'>CTMM</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>units</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>prior</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>fast</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>cor.min</span><span class='kw'>=</span><span class='fl'>0.5</span>,<span class='kw'>dt.max</span><span class='kw'>=</span><span class='kw'>NULL</span>,
-      <span class='kw'>error</span><span class='kw'>=</span><span class='fl'>0.01</span>,<span class='kw'>cores</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='no'>...</span>)</pre>
+<span class='fu'>speed</span>(<span class='no'>object</span>,<span class='no'>CTMM</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>robust</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>units</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>prior</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>fast</span><span class='kw'>=</span><span class='fl'>TRUE</span>,
+      <span class='kw'>cor.min</span><span class='kw'>=</span><span class='fl'>0.5</span>,<span class='kw'>dt.max</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>error</span><span class='kw'>=</span><span class='fl'>0.01</span>,<span class='kw'>cores</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -154,6 +154,10 @@
     <tr>
       <th>level</th>
       <td><p>Confidence level to report on the estimated average speed.</p></td>
+    </tr>
+    <tr>
+      <th>robust</th>
+      <td><p>Use robust statistics for the ensemble average and its confidence intervals (see Details).</p></td>
     </tr>
     <tr>
       <th>units</th>
@@ -192,6 +196,7 @@
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>The <code>cor.min</code> or <code>dt.max</code> arguments are used to constrain the estimate to be derived from simulations near the data, and therefore ensure that the estimate is more reflective of the data than the model.</p>
+<p>If data quality is poor and velocity can barely be resolved, then the sampling distribution may occassionally include impersistent motion and the ensemble mean will be infinite. In these cases <code>robust=TRUE</code> can be used to report the ensemble median rather than the ensemble mean. The time average, in either case, is still the mean and the resulting quantity is still proportional to distance traveled. Furthermore, note that medians should be compared to medians and means to means, so the <code>robust</code> option should be the same for all compared individuals.</p>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
@@ -206,6 +211,21 @@
     <div class='dont-index'><p><code><a href='emulate.ctmm.html'>emulate</a></code>, <code><a href='simulate.ctmm.html'>simulate</a></code></p></div>
     
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='co'># Load package and data</span>
+<span class='fu'>library</span>(<span class='no'>ctmm</span>)
+<span class='fu'>data</span>(<span class='no'>buffalo</span>)
+<span class='no'>Cilla</span> <span class='kw'>&lt;-</span> <span class='no'>buffalo</span>$<span class='no'>Cilla</span>
+
+<span class='no'>GUESS</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='variogram.fit.html'>ctmm.guess</a></span>(<span class='no'>Cilla</span>,<span class='kw'>interactive</span><span class='kw'>=</span><span class='fl'>FALSE</span>)
+<span class='no'>FIT</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='ctmm.fit.html'>ctmm.fit</a></span>(<span class='no'>Cilla</span>,<span class='no'>GUESS</span>)
+
+<span class='co'># stationary Gaussian estimate</span>
+<span class='fu'>speed</span>(<span class='no'>FIT</span>)</div><div class='output co'>#&gt;                             low      ML     high
+#&gt; speed (kilometers/day) 12.23187 12.4386 12.64528</div><div class='input'>
+# conditional estimate
+</div><div class='input'><span class='fu'>speed</span>(<span class='no'>FIT</span>,<span class='no'>Cilla</span>)</div><div class='output co'>#&gt;   |                                                                              |                                                                      |   0%  |                                                                              |=======                                                               |  10%  |                                                                              |==========                                                            |  15%  |                                                                              |==============                                                        |  20%  |                                                                              |==================                                                    |  25%  |                                                                              |=====================                                                 |  30%  |                                                                              |========================                                              |  35%  |                                                                              |============================                                          |  40%  |                                                                              |================================                                      |  45%  |                                                                              |===================================                                   |  50%  |                                                                              |======================================                                |  55%  |                                                                              |==========================================                            |  60%  |                                                                              |==============================================                        |  65%  |                                                                              |=================================================                     |  70%  |                                                                              |====================================================                  |  75%  |                                                                              |========================================================              |  80%  |                                                                              |============================================================          |  85%  |                                                                              |===============================================================       |  90%  |                                                                              |==================================================================    |  95%  |                                                                              |======================================================================| 100%</div><div class='output co'>#&gt;                             low       ML     high
+#&gt; speed (kilometers/day) 10.93688 11.10952 11.28213</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
@@ -219,7 +239,9 @@
       <li><a href="#note">Note</a></li>
 
       <li><a href="#see-also">See also</a></li>
-          </ul>
+      
+      <li><a href="#examples">Examples</a></li>
+    </ul>
 
     <h2>Author</h2>
      C. H. Fleming. 
