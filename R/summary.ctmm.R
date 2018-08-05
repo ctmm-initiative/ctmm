@@ -74,13 +74,13 @@ ci.tau <- function(tau,COV,alpha=0.05,min=0,max=Inf)
 }
 
 ###
-summary.ctmm <- function(object,level=0.95,level.UD=0.95,units=TRUE,IC="AICc",...)
+summary.ctmm <- function(object,level=0.95,level.UD=0.95,units=TRUE,IC="AICc",MSPE=TRUE,...)
 {
   CLASS <- class(object)
   if(CLASS=="ctmm")
   { return(summary.ctmm.single(object,level=level,level.UD=level.UD,units=units)) }
   else if(CLASS=="list")
-  { return(summary.ctmm.list(object,level=level,level.UD=level.UD,IC=IC)) }
+  { return(summary.ctmm.list(object,level=level,level.UD=level.UD,IC=IC,MSPE=MSPE,units=units)) }
 }
 
 ######################################################
@@ -250,22 +250,6 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
 #DOF of area
 DOF.area <- function(CTMM) { CTMM$sigma@par["area"]^2/abs(CTMM$COV["area","area"]) }
 
-########
-sort.ctmm <- function(x, decreasing=FALSE, IC="AICc", ...)
-{
-  ICS <- sapply(x,function(m){m[[IC]]})
-  IND <- sort(ICS,method="quick",index.return=TRUE,decreasing=decreasing)$ix
-  x <- x[IND]
-  return(x)
-}
-
-min.ctmm <- function(x,IC="AICc",...)
-{
-  ICS <- sapply(x,function(m){m[[IC]]})
-  MIN <- which.min(ICS)
-  return(x[[MIN]])
-}
-
 #########
 DOF.mean <- function(CTMM)
 {
@@ -281,46 +265,4 @@ DOF.mean <- function(CTMM)
   }
 
   return(DOF)
-}
-
-########
-summary.ctmm.list <- function(object, IC="AICc", ...)
-{
-  IC <- match.arg(IC,c("AIC","AICc","BIC","MSPE"))
-
-  object <- sort.ctmm(object,IC=IC)
-  ICS <- sapply(object,function(m){m[[IC]]})
-
-  CNAME <- IC
-
-  # convert to RMS
-  if(IC=="MSPE")
-  {
-    ICS <- sqrt(ICS)
-    CNAME <- paste0("R",CNAME)
-  }
-
-  # show relative IC
-  ICS <- ICS - ICS[[1]]
-  CNAME <- paste0("d",CNAME)
-
-  # convert to meters/kilometers
-  if(IC=="MSPE")
-  {
-    if(length(ICS)>1) { MIN <- ICS[2] } else { MIN <- ICS[1] }
-    UNIT <- unit(MIN,"length",concise=TRUE)
-    ICS <- ICS/UNIT$scale
-    CNAME <- paste0(CNAME," (",UNIT$name,")")
-  }
-
-  ICS <- cbind(ICS)
-  rownames(ICS) <- names(object)
-
-  DOF <- sapply(object,DOF.mean)
-  METH <- sapply(object,function(m){m$method})
-  ICS <- data.frame(ICS,DOF,METH)
-
-  colnames(ICS) <- c(CNAME,"DOF[mean]","method")
-
-  return(ICS)
 }

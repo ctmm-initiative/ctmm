@@ -85,7 +85,7 @@
       <h1>Periodic movement models</h1>
                         <h4 class="author">Guillaume Péron, Christen H. Fleming, and Justin M. Calabrese</h4>
             
-            <h4 class="date">2018-06-18</h4>
+            <h4 class="date">2018-08-04</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/ctmm-initiative/ctmm/blob/master/vignettes/periodogram.Rmd"><code>vignettes/periodogram.Rmd</code></a></small>
       <div class="hidden name"><code>periodogram.Rmd</code></div>
@@ -112,15 +112,13 @@
 <p>The <code>diagnostic=TRUE</code> option draws the periodogram of the sampling schedule with red symbols. If the periodogram of the sampling schedule exhibits peaks, this indicates that the corresponding peaks in the movement data could be simply caused by irregularities in the sampling schedule and not by periodicity in the movement. Here the periodogram exhibits a clear peak for the period of one day, but this is also present in the (red) diagnostic.</p>
 <p>Periodograms are a great data exploration tool, but they do not detect everything. In particular circulation processes, those that induce circulatory patterns via a stochastic rotational effect, are often not visible in periodograms. Periodograms are also difficult to compare from one individual to the next, if the aperiodic stochastic movements of these individuals are not the same.</p>
 </div>
-<div id="parametric-approach-fitting-movement-models-with-circulatory-patterns" class="section level3">
+<div id="parametric-approach-fitting-movement-models-with-periodic-and-circulatory-patterns" class="section level3">
 <h3 class="hasAnchor">
-<a href="#parametric-approach-fitting-movement-models-with-circulatory-patterns" class="anchor"></a>Parametric approach: Fitting movement models with circulatory patterns</h3>
+<a href="#parametric-approach-fitting-movement-models-with-periodic-and-circulatory-patterns" class="anchor"></a>Parametric approach: Fitting movement models with periodic and circulatory patterns</h3>
 <p>Circulatory patterns can be incorporated into stochastic continuous time movement models in two ways: via the mean of the process, modelling that the animal reverts to a point that moves periodically through time, or via the stochastic component, by including a rotation effect. The first is called a periodic-mean process, and the second is called a circulation process.</p>
 <p>For periodic-mean processes, you need to specify one or more period values that you want <code>ctmm</code> to consider.</p>
 <p>In our example, we are going to specify a period of a day, which is what the periodogram was saying. Other individuals in this population were also exhibiting a weekly periodicity, and in similar species, lunar cycles are well-known to affect ranging behaviors.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="co"># circle=TRUE takes longer to fit and gives optim more problems</span></a>
-<a class="sourceLine" id="cb4-2" data-line-number="2"><span class="co"># PROTO &lt;- ctmm(mean="periodic",period=c(1 %#% "day",1 %#% "month"),circle=TRUE)</span></a>
-<a class="sourceLine" id="cb4-3" data-line-number="3">PROTO &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">mean=</span><span class="st">"periodic"</span>,<span class="dt">period=</span><span class="kw">c</span>(<span class="dv">1</span> <span class="op">%#%</span><span class="st"> "day"</span>,<span class="dv">1</span> <span class="op">%#%</span><span class="st"> "month"</span>))</a></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" data-line-number="1">PROTO &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">mean=</span><span class="st">"periodic"</span>,<span class="dt">period=</span><span class="kw">c</span>(<span class="dv">1</span> <span class="op">%#%</span><span class="st"> "day"</span>,<span class="dv">1</span> <span class="op">%#%</span><span class="st"> "month"</span>),<span class="dt">circle=</span><span class="ot">TRUE</span>)</a></code></pre></div>
 <p>The <code>mean="periodic"</code> option tells <code>ctmm</code> that you want a periodic-mean process. The default is <code>mean="stationary"</code>. The period values are all specified in seconds (SI unit) by the <code>%#%</code> function (see <code>help("%#%")</code> for more information).</p>
 <p>The <code>circle=TRUE</code> option tells ctmm that you want to try and fit a model in which there is stochastic circulation on top of the periodicity in the process mean. For circulation processes, you do not need to specify candidate period values. The period of the circulation is estimated from the data.</p>
 <p>As with other uses of ctmm, the next step is to generate an initial guess of the parameter values to feed to the likelihood optimization routine. You can do this using your intuition, by visually examining the variogram, or by letting <code>ctmm</code> do it for you.</p>
@@ -133,50 +131,93 @@
 <a class="sourceLine" id="cb6-3" data-line-number="3">control &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">method=</span><span class="st">"pNewton"</span>,<span class="dt">cores=</span><span class="dv">2</span>) <span class="co"># CRAN policy limits to 2 processes</span></a>
 <a class="sourceLine" id="cb6-4" data-line-number="4">FITS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.select</a></span>(Gamba,GUESS,<span class="dt">verbose=</span><span class="ot">TRUE</span>,<span class="dt">control=</span>control)</a></code></pre></div>
 <pre><code>## Nyquist frequency estimated at harmonic 3 88.5917638888889 of the period.</code></pre>
-<p>The non-default <code>control</code> list here specifies our prototype optimization code that has been tested to be faster and more accurate on this example. With <code>verbose=TRUE</code>, we obtain a list fitted <code>ctmm</code> objects, one for each relevant combination of effects, in order of increasing AICc. The first element of that list is the preferred model.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" data-line-number="1"><span class="kw">summary</span>(FITS)</a></code></pre></div>
-<pre><code>##                                   dAICc DOF[mean] method
-## OUF anisotropic harmonic 3 0   0.000000  107.1804     ML
-## OUF anisotropic harmonic 4 0   4.818792  107.1268     ML
-## OUF anisotropic harmonic 3 1   5.599727  108.9836     ML
-## OUF anisotropic harmonic 2 0  17.064596  106.1204     ML
-## OUF anisotropic harmonic 2 1  22.627079  107.9071     ML
-## OUF anisotropic harmonic 1 0  37.618897  108.2142     ML
-## OUF anisotropic harmonic 1 1  43.040203  110.0647     ML
-## OUF anisotropic harmonic 0 0 140.521989  132.4812     ML
-## OUF anisotropic harmonic 0 1 145.259592  134.7361     ML</code></pre>
-<p>We see that the velocity autocorrelation (OUF), anisotropy, and circulation were unambiguously selected using the level option and were present in all the candidate models. In this maned wolf, there is rather strong support (Delta AIC &gt; 4) for the preferred model (the first of the list). Given how we specified the prototype, <code>harmonic 3 0</code> means that this preferred model has no lunar periodicity, but has three harmonics of the one-day periodicity. This fittingly corresponds to what the periodogram was saying. If there was some moon-related pattern of space use and given how we specified our prototype, we would have had a non-zero value as the second <code>harmonic</code> value. Circulation would also be selected if included.</p>
+<p>The non-default <code>control</code> list here specifies our prototype optimization code that has been tested to be faster and more accurate on this example. With <code>verbose=TRUE</code>, we obtain a list fitted <code>ctmm</code> objects, one for each relevant combination of effects, where the first element of that list is the preferred model.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" data-line-number="1"><span class="kw">summary</span>(FITS,<span class="dt">units=</span><span class="ot">FALSE</span>)</a></code></pre></div>
+<pre><code>##                                               dAICc  dRMSPE (m) DOF[mean]
+## OUF anisotropic harmonic 2 0               0.000000    0.000000  106.1204
+## OUF anisotropic harmonic 1 0              20.554301    3.829244  108.2142
+## OUF anisotropic harmonic 2 1               5.562484    6.341108  107.9071
+## OUF anisotropic harmonic 1 1              25.975607    9.790401  110.0647
+## OUF anisotropic harmonic 0 0             123.457393  101.908229  132.4812
+## OUF anisotropic harmonic 0 1             128.194996  104.472528  134.7361
+## OUF anisotropic harmonic 3 0             -17.064596 2416.027185  107.1803
+## OUF anisotropic circulation harmonic 0 0 124.199987  101.826123  132.9631
+## OUF isotropic harmonic 0 0               229.937343  266.697250  120.9668
+## OUF isotropic circulation harmonic 0 0   230.906720  266.639777  121.3771
+##                                          method
+## OUF anisotropic harmonic 2 0                 ML
+## OUF anisotropic harmonic 1 0                 ML
+## OUF anisotropic harmonic 2 1                 ML
+## OUF anisotropic harmonic 1 1                 ML
+## OUF anisotropic harmonic 0 0                 ML
+## OUF anisotropic harmonic 0 1                 ML
+## OUF anisotropic harmonic 3 0                 ML
+## OUF anisotropic circulation harmonic 0 0     ML
+## OUF isotropic harmonic 0 0                   ML
+## OUF isotropic circulation harmonic 0 0       ML</code></pre>
+<p>From the first model, We see that the velocity autocorrelation (OUF), anisotropy, and <code>2</code> harmonics of daily periodicity were all selected. Given how we specified the prototype, <code>harmonic 2 0</code> means that this preferred model has no lunar periodicity, but has two harmonics of the one-day periodicity. This fittingly corresponds to what the periodogram was saying. If there was some moon-related pattern of space use and given how we specified our prototype, we would have had a non-zero value as the second <code>harmonic</code> value.</p>
+<p>The sorting of our candidate models is more complex than in previous stationary examples. For a given autocovariance model, the different non-stationary models are sorted by mean square predictive error (MSPE) and not the information criteria. As we will demonstrate, likelihood-based model selection can badly overfit with these types of models. For sorting between the autocovariance models (each with best non-stationary model), the information criteria is used. MSPE is not valid for general purpose selection.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" data-line-number="1"><span class="co"># sorted by MSPE</span></a>
+<a class="sourceLine" id="cb10-2" data-line-number="2"><span class="kw">summary</span>(FITS[<span class="dv">1</span><span class="op">:</span><span class="dv">7</span>])</a></code></pre></div>
+<pre><code>##                               dRMSPE (m) DOF[mean] method
+## OUF anisotropic harmonic 2 0    0.000000  106.1204     ML
+## OUF anisotropic harmonic 1 0    3.829244  108.2142     ML
+## OUF anisotropic harmonic 2 1    6.341108  107.9071     ML
+## OUF anisotropic harmonic 1 1    9.790401  110.0647     ML
+## OUF anisotropic harmonic 0 0  101.908229  132.4812     ML
+## OUF anisotropic harmonic 0 1  104.472528  134.7361     ML
+## OUF anisotropic harmonic 3 0 2416.027185  107.1803     ML</code></pre>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" data-line-number="1"><span class="co"># sorted by IC</span></a>
+<a class="sourceLine" id="cb12-2" data-line-number="2"><span class="kw">summary</span>(FITS[<span class="kw">c</span>(<span class="dv">5</span>,<span class="dv">8</span><span class="op">:</span><span class="dv">10</span>)])</a></code></pre></div>
+<pre><code>##                                                dAICc DOF[mean] method
+## OUF anisotropic harmonic 0 0               0.0000000  132.4812     ML
+## OUF anisotropic circulation harmonic 0 0   0.7425933  132.9631     ML
+## OUF isotropic harmonic 0 0               106.4799500  120.9668     ML
+## OUF isotropic circulation harmonic 0 0   107.4493271  121.3771     ML</code></pre>
+<p>If only the information criteria was used, we would have selected <code>harmonic 3 0</code> over <code>harmonic 2 0</code>.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" data-line-number="1"><span class="kw">summary</span>(FITS,<span class="dt">MSPE=</span><span class="ot">FALSE</span>)</a></code></pre></div>
+<pre><code>##                                              dAICc DOF[mean] method
+## OUF anisotropic harmonic 3 0               0.00000  107.1803     ML
+## OUF anisotropic harmonic 2 0              17.06460  106.1204     ML
+## OUF anisotropic harmonic 2 1              22.62708  107.9071     ML
+## OUF anisotropic harmonic 1 0              37.61890  108.2142     ML
+## OUF anisotropic harmonic 1 1              43.04020  110.0647     ML
+## OUF anisotropic harmonic 0 0             140.52199  132.4812     ML
+## OUF anisotropic circulation harmonic 0 0 141.26458  132.9631     ML
+## OUF anisotropic harmonic 0 1             145.25959  134.7361     ML
+## OUF isotropic harmonic 0 0               247.00194  120.9668     ML
+## OUF isotropic circulation harmonic 0 0   247.97132  121.3771     ML</code></pre>
 <p>Next we do some sanity checking on our results. The sampling interval for Gamba is fairly steady at</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" data-line-number="1"><span class="st">"hour"</span> <span class="op">%#%</span><span class="st"> </span>stats<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/stats/topics/median">median</a></span>(<span class="kw">diff</span>(Gamba<span class="op">$</span>t))</a></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" data-line-number="1"><span class="st">"hour"</span> <span class="op">%#%</span><span class="st"> </span>stats<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/stats/topics/median">median</a></span>(<span class="kw">diff</span>(Gamba<span class="op">$</span>t))</a></code></pre></div>
 <pre><code>## [1] 4</code></pre>
 <p>4 hours, which (ideally) corresponds to a Nyquist period of 8 (2 <span class="math inline">\(\times\)</span> 4) hours, or 3 (24/8) times per day, or 3 harmonics of the day. The Nyquist period/frequency is an information limit on discretely sampled data. We expect to be able to extract a maximum of 3 harmonics from uniformly sampled data. Therefore, we should limit our consideration to harmonics of the day <span class="math inline">\(\leq\)</span> 3, while for lower quality data, we might have to limit our consideration even further.</p>
 <p>Consistent with these considerations, let us look at harmonics 3 and 2 of the day.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" data-line-number="1"><span class="kw">summary</span>(FITS[[<span class="dv">1</span>]]) <span class="co"># harmonic 3 0</span></a></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" data-line-number="1"><span class="kw">summary</span>(FITS[[<span class="dv">7</span>]]) <span class="co"># harmonic 3 0 # selected by IC</span></a></code></pre></div>
 <pre><code>## $DOF
-##     mean     area 
-## 107.1804 178.3531 
+##        mean        area       speed 
+## 107.1803479 178.3530942   0.8606009 
 ## 
 ## $CI
 ##                                low         ML       high
 ## rotation/deviation %     74.795669  91.774630 100.000000
 ## rotation/speed %         96.807431  98.987421 100.000000
-## area (square kilometers) 41.444886  48.269155  55.605888
+## area (square kilometers) 41.444887  48.269156  55.605889
 ## tau position (hours)      6.984418   9.267907  12.297961
 ## tau velocity (hours)      1.126099   1.617410   2.323076
-## speed (kilometers/day)   12.674828 103.001923 204.382856</code></pre>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" data-line-number="1"><span class="kw">summary</span>(FITS[[<span class="dv">4</span>]]) <span class="co"># harmonic 2 0</span></a></code></pre></div>
+## speed (kilometers/day)   12.674828 103.001923 204.382857</code></pre>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb20-1" data-line-number="1"><span class="kw">summary</span>(FITS[[<span class="dv">1</span>]]) <span class="co"># harmonic 2 0 # selected by MSPE</span></a></code></pre></div>
 <pre><code>## $DOF
-##     mean     area 
-## 106.1204 179.5625 
+##     mean     area    speed 
+## 106.1204 179.5625 139.5357 
 ## 
 ## $CI
 ##                                 low        ML      high
 ## rotation/deviation %     23.6228691 29.019474 35.648925
-## rotation/speed %         24.3431626 29.868660 36.648355
-## area (square kilometers) 41.1021783 47.844462 55.091282
-## tau position (hours)      7.2925136  9.568355 12.554438
+## rotation/speed %         24.3431628 29.868660 36.648355
+## area (square kilometers) 41.1021781 47.844462 55.091281
+## tau position (hours)      7.2925134  9.568355 12.554438
 ## tau velocity (hours)      0.9699887  1.423753  2.089789
-## speed (kilometers/day)   14.7247950 16.056839 17.387435</code></pre>
+## speed (kilometers/day)   14.7247950 16.056839 17.387434</code></pre>
 <ul>
 <li>
 <code>rotation/deviation %</code> corresponds to <span class="math inline">\(100 \eta_P\)</span> from the paper. It is interpreted as the proportion of the variance in the animal`s location that is caused by the periodicity in the mean.</li>
@@ -186,37 +227,13 @@
 <code>circulation period</code> is the period of the stochastic circulations. On average, the animal re-pass through the same neighborhoods every estimated number of months (or days, or hours, depending on the automated unit specification).</li>
 </ul>
 <p>Note that, aside from the rotational indices, these two models are largely consistent, and the 3 harmonic model has an extrordinarily uncertain speed estimate. We can get a better idea of what is happening by comparing the variograms.</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" data-line-number="1">xlim &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span><span class="op">/</span><span class="dv">2</span>) <span class="op">%#%</span><span class="st"> "month"</span></a>
-<a class="sourceLine" id="cb16-2" data-line-number="2"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>FITS[[<span class="dv">1</span>]],<span class="dt">xlim=</span>xlim)</a>
-<a class="sourceLine" id="cb16-3" data-line-number="3"><span class="kw">title</span>(<span class="st">"3 Harmonics"</span>)</a>
-<a class="sourceLine" id="cb16-4" data-line-number="4"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>FITS[[<span class="dv">4</span>]],<span class="dt">xlim=</span>xlim)</a>
-<a class="sourceLine" id="cb16-5" data-line-number="5"><span class="kw">title</span>(<span class="st">"2 Harmonics"</span>)</a></code></pre></div>
-<p><img src="periodogram_files/figure-html/unnamed-chunk-10-1.png" width="700"><img src="periodogram_files/figure-html/unnamed-chunk-10-2.png" width="700"></p>
-<p>While the confidence bands encompass the empirical variogram, the 3 harmonic model has clearly overfit in attempting to match the Nyquist period (3/day) with less than ideal data. A more stringent infromation criteria would not necessarily select the 3 harmonic model.</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" data-line-number="1"><span class="kw">summary</span>(FITS,<span class="dt">IC=</span><span class="st">"BIC"</span>)</a></code></pre></div>
-<pre><code>##                                      dBIC DOF[mean] method
-## OUF anisotropic harmonic 3 0   0.00000000  107.1804     ML
-## OUF anisotropic harmonic 2 0   0.02420079  106.1204     ML
-## OUF anisotropic harmonic 1 0   3.47828338  108.2142     ML
-## OUF anisotropic harmonic 4 0  21.79870746  107.1268     ML
-## OUF anisotropic harmonic 3 1  22.57964253  108.9836     ML
-## OUF anisotropic harmonic 2 1  22.62707927  107.9071     ML
-## OUF anisotropic harmonic 1 1  25.99980779  110.0647     ML
-## OUF anisotropic harmonic 0 0  89.22197845  132.4812     ML
-## OUF anisotropic harmonic 0 1 111.11897842  134.7361     ML</code></pre>
-<p>But still, it is troubling that a bad model has the lowest BIC. Last, we turn to the mean square predictive error (MSPE), which explicitly penalizes highly-variable trend predictions like the ones we see here.</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" data-line-number="1"><span class="kw">summary</span>(FITS,<span class="dt">IC=</span><span class="st">"MSPE"</span>)</a></code></pre></div>
-<pre><code>##                              dRMSPE (m) DOF[mean] method
-## OUF anisotropic harmonic 2 0   0.000000  106.1204     ML
-## OUF anisotropic harmonic 3 0   2.508566  107.1804     ML
-## OUF anisotropic harmonic 4 0   2.531331  107.1268     ML
-## OUF anisotropic harmonic 1 0   3.831992  108.2142     ML
-## OUF anisotropic harmonic 2 1   6.085742  107.9071     ML
-## OUF anisotropic harmonic 3 1   8.285138  108.9836     ML
-## OUF anisotropic harmonic 1 1   9.542715  110.0647     ML
-## OUF anisotropic harmonic 0 0 101.913139  132.4812     ML
-## OUF anisotropic harmonic 0 1 104.265390  134.7361     ML</code></pre>
-<p>Finally, a good model wins out, with the 2 harmonic model beating the 3 harmonic model by 2.5 meters of RMS predictive error (RMSPE). Unlike likelihood based ICs (AIC &amp; BIC), MSPE has units and an absolute scale, though in summary we only show differences in the RMSPE for simplicity. Note that MSPE should only be used to select among models with the same autocorrelation structure.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb22-1" data-line-number="1">xlim &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span><span class="op">/</span><span class="dv">2</span>) <span class="op">%#%</span><span class="st"> "month"</span></a>
+<a class="sourceLine" id="cb22-2" data-line-number="2"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>FITS[[<span class="dv">7</span>]],<span class="dt">xlim=</span>xlim)</a>
+<a class="sourceLine" id="cb22-3" data-line-number="3"><span class="kw">title</span>(<span class="st">"3 Harmonics"</span>)</a>
+<a class="sourceLine" id="cb22-4" data-line-number="4"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>FITS[[<span class="dv">1</span>]],<span class="dt">xlim=</span>xlim)</a>
+<a class="sourceLine" id="cb22-5" data-line-number="5"><span class="kw">title</span>(<span class="st">"2 Harmonics"</span>)</a></code></pre></div>
+<p><img src="periodogram_files/figure-html/unnamed-chunk-12-1.png" width="700"><img src="periodogram_files/figure-html/unnamed-chunk-12-2.png" width="700"></p>
+<p>While the confidence bands encompass the empirical variogram, the 3 harmonic model has clearly overfit in attempting to match the Nyquist period (3/day) with less than ideal data.</p>
 </div>
 <div id="home-range-estimation" class="section level3">
 <h3 class="hasAnchor">

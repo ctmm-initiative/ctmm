@@ -1,4 +1,4 @@
-ctmm 0.5.1 (2018-07-31)
+ctmm 0.5.1 (2018-08-04)
 ================
 
   * Units of measurement down to microns and microseconds now supported
@@ -7,7 +7,11 @@ ctmm 0.5.1 (2018-07-31)
   
   * residuals() can now be calculated from (calibrated) calibration data---diagnostic argument removed from uere()
   
-  * summary.ctmm() now returns DOF[speed] information
+  * summary.ctmm() now returns DOF[speed] information on individuals
+  
+  * MSPE of ctmm objects was previously w.r.t. in-sample times and is now time averaged
+  
+  * summary.list.ctmm() now returns MSPE when useful
   
   * new speed() argument robust for coarse data
   

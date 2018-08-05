@@ -16,7 +16,7 @@ ctmm.loglike(data,CTMM,REML=FALSE,profile=TRUE,zero=0,verbose=FALSE)
 
 ctmm.fit(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=FALSE)
 
-ctmm.select(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE,...)
+ctmm.select(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",MSPE=TRUE,trace=FALSE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -38,6 +38,7 @@ ctmm.select(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",trace=FALSE,...)
   \item{trace}{Report progress updates. Can be among \code{0:2} with increasing detail.}
   \item{level}{Attempt to simplify a model if a feature's non-existence falls within this level of confidence interval.}
   \item{IC}{Information criteria used. Only \code{"AICc"} is currently supported.}
+  \item{MSPE}{Reject non-stationary features that increase MSPE. \code{MSPE=2} uses the velocity MSPE, rather than the position MSPE.}
   \item{...}{Further arguments passed to \code{ctmm.fit}.}
 }
 

@@ -455,7 +455,6 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
 
   # evaluate mean function and error matrices for this data once upfront
   CTMM <- ctmm.prepare(data,CTMM,tau=FALSE) # don't muck with taus
-  UU <- CTMM$UU # always need this for MSPE
   UERE <- attr(CTMM$error.mat,"flag") # do we fit the error? Need to know for optimization
 
   # id and characterize parameters for profiling
@@ -681,10 +680,11 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
   # Mean square prediction error
   mspe <- function(K=1)
   {
-    if(K==2) # velocity MSPE
+    # velocity MSPE
+    if(K==2)
     {
-      U <- drift@velocity(data$t,CTMM)
-      UU <- t(U) %*% U
+      if(length(CTMM$tau)==1) { return(Inf) }
+      UU <- VV
     }
 
     MSPE <- CTMM$COV.mu
@@ -698,7 +698,6 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
       MSPE <- Reduce("+",MSPE)
       MSPE <- sum(diag(MSPE %*% UU))
     }
-    MSPE <- MSPE/n
 
     VAR <- sum(diag(CTMM$sigma))
     if(K==2) { VAR <- VAR * (1/prod(CTMM$tau) + CTMM$circle^2) }
@@ -706,13 +705,13 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
     MSPE <- MSPE + VAR
     return(MSPE)
   }
+  STUFF <- drift@energy(CTMM)
+  UU <- STUFF$UU
+  VV <- STUFF$VV
   # Mean square prediction error in locations
   CTMM$MSPE <- mspe(K=1)
   # mean suare predicton error in velocities
-  if(length(CTMM$tau)>1)
-  { CTMM$MSPEV <- mspe(K=2) }
-  else
-  { CTMM$MSPEV <- Inf }
+  CTMM$MSPEV <- mspe(K=2)
 
   return(CTMM)
 }

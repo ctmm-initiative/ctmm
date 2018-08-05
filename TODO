@@ -1,10 +1,8 @@
 PRIORITY
-* <UU> needs to be used in MSPE and not tr[UU]/n
+* summary.UD() error for occurrence distributions
 * link FAQ in DESCRIPTION
 * reference Guillaume's paper at the beginning of the periodogram vignette
 * use perturb.ctmm in ctmm.guess / variogram.fit ?
-* automate refitting of errors - coarsen data until errors smaller than variogram - fit - consider all permutations
-* kitchen sink fit methods
 * reduce uere() warning in as.telemetry to once... remove other crap... too much
 * properly fillout UERE & UERE.DOF on the fly
 * uere() return doesn't check for missing UEREs (in as.telemetry too)

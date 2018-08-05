@@ -78,7 +78,7 @@ attr(prototype.drift,"summary") <- drift.summary
 attr(prototype.drift,"velocity") <- function(t,CTMM) { rep(0,length(t)) }
 
 new.drift <- methods::setClass("drift",
-              representation("function",speed="function",svf="function",init="function",name="function",refine="function",scale="function",shift="function",summary="function",velocity="function"),
+              representation("function",energy="function",init="function",name="function",refine="function",scale="function",shift="function",speed="function",summary="function",svf="function",velocity="function"),
               prototype=prototype.drift)
 
 #################################
@@ -100,8 +100,11 @@ stationary.svf <- function(CTMM)
 # mean square speed function: point estimate and variance
 stationary.speed <- function(CTMM) { list(EST=0,VAR=0) }
 
+# <t(U)%*%(U)> and <t(U')%*%(U')>
+stationary.energy <- function(CTMM) { list(UU=1,VV=0) }
+
 # combine this all together for convenience
-stationary <- new.drift(stationary.drift,svf=stationary.svf,speed=stationary.speed,velocity=stationary.velocity)
+stationary <- new.drift(stationary.drift,energy=stationary.energy,speed=stationary.speed,svf=stationary.svf,velocity=stationary.velocity)
 
 ############################
 # Periodic drift function
@@ -171,7 +174,7 @@ periodic.scale <- function(CTMM,time)
 # SVF of mean function
 periodic.svf <- function(CTMM)
 {
-  if(sum(CTMM$harmonic)==0) { return( stationary.svf(CTMM) ) }
+  if(all(CTMM$harmonic==0)) { return( stationary.svf(CTMM) ) }
 
   STUFF <- periodic.stuff(CTMM)
   omega <- STUFF$omega
@@ -202,7 +205,7 @@ periodic.name <- function(CTMM)
 # calculate deterministic mean square speed and its variance
 periodic.speed <- function(CTMM)
 {
-  if(sum(CTMM$harmonic)==0) { return(stationary.speed(CTMM)) }
+  if(all(CTMM$harmonic==0)) { return(stationary.speed(CTMM)) }
 
   STUFF <- periodic.stuff(CTMM)
   omega <- STUFF$omega
@@ -218,13 +221,36 @@ periodic.speed <- function(CTMM)
   return(list(EST=EST,VAR=VAR))
 }
 
+# UU and VV terms
+periodic.energy <- function(CTMM)
+{
+  if(all(CTMM$harmonic==0)) { return(stationary.energy(CTMM)) }
+  omega <- periodic.omega(CTMM)
+  K <- length(omega)
+  if(is.null(omega)) { return( stationary.speed(CTMM) ) }
+
+  # potential energy (modulo amplitudes)
+  # <1>==1
+  # <sin^2>==<cos^2>==1/2
+  UU <- c(1,rep(1/2,2*K))
+  UU <- diag(UU)
+
+  # kinetic energy(modulo amplitudes)
+  VV <- omega^2/2
+  VV <- c(0,VV,VV)
+  VV <- diag(VV)
+
+  return(list(UU=UU,VV=VV))
+}
+
+
 # calculate rotational indices
 periodic.summary <- function(CTMM,level,level.UD)
 {
   alpha <- 1-level
   SUM <- NULL
 
-  if(sum(CTMM$harmonic)==0) { return(SUM) }
+  if(all(CTMM$harmonic==0)) { return(SUM) }
 
   STUFF <- periodic.stuff(CTMM)
   omega <- STUFF$omega
@@ -380,7 +406,7 @@ periodic.stuff <- function(CTMM)
 }
 
 # combine this all together for convenience
-periodic <- new.drift(periodic.drift,init=periodic.init,scale=periodic.scale,svf=periodic.svf,refine=periodic.refine,name=periodic.name,speed=periodic.speed,summary=periodic.summary,velocity=periodic.velocity)
+periodic <- new.drift(periodic.drift,energy=periodic.energy,init=periodic.init,name=periodic.name,refine=periodic.refine,scale=periodic.scale,speed=periodic.speed,summary=periodic.summary,svf=periodic.svf,velocity=periodic.velocity)
 
 #################################
 # continuous uniform spline mean functions

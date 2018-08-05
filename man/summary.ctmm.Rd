@@ -4,7 +4,7 @@
 \title{Summarize a continuous-time movement model}
 \description{ This function returns a list of biologically interesting parameters in human readable format, as derived from a continuous-time movement model.}
 \usage{
-\S3method{summary}{ctmm}(object,level=0.95,level.UD=0.95,units=TRUE,IC="AICc",...)
+\S3method{summary}{ctmm}(object,level=0.95,level.UD=0.95,units=TRUE,IC="AICc",MSPE=TRUE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -12,7 +12,8 @@
   \item{level}{ Confidence level for parameter estimates. }
   \item{level.UD}{ Coverage level for the Gaussian home-range area. }
   \item{units}{Convert result to natural units.}
-  \item{IC}{Information criteria for sorting lists of \code{ctmm} objects. Options include \code{"AIC"}, \code{"AICc"}, \code{"BIC"}, and \code{"MSPE"}.}
+  \item{IC}{Information criteria for sorting lists of \code{ctmm} objects. Options include \code{"AICc"}, \code{"AIC"}, or \code{"BIC"}.}
+  \item{MSPE}{Sort models with the same autocovariance structure by MSPE. \code{MSPE=2} will sort by the velocity MSPE, rather than the position MSPE.}
   \item{...}{Unused options.}
 }
 
@@ -28,7 +29,7 @@ This point estimate itself is subject to uncertainty, and is given confidence in
 This Gaussian estimate differs from the kernel density estimate of \code{\link{summary.UD}}. The Gaussian estimate has more statistical efficiency, but is less related to space use for non-Gaussian processes.}
 \item{\code{speed}}{The Gaussian root-mean-square (RMS) velocity, which is a convenient measure of average speed but not the conventional measure of average speed (see \code{\link{speed}}).}
 }
-If summary is called on a list of \code{ctmm} objects output from \code{\link{ctmm.select}}, then a table is returned with the model names and AIC differences, where "IID" denotes the uncorrelated bi-variate Gaussian model, "OU" denotes the continuous-position Ornstein-Uhlenbeck model, and "OUF" denotes the continuous-velocity Ornstein-Uhlenbeck-F model.
+If summary is called on a list of \code{ctmm} objects output from \code{\link{ctmm.select}}, then a table is returned with the model names and IC differences for comparison across autocovariance structures. Given non-stationary models and \code{MSPE>0}, the mean square prediction error (MSPE) is also returned for comparison across trend structures (with autocovariance structure fixed). For the model names, "IID" denotes the uncorrelated bi-variate Gaussian model, "OU" denotes the continuous-position Ornstein-Uhlenbeck model, and "OUF" denotes the continuous-velocity Ornstein-Uhlenbeck-F model.
 }
 
 %\references{}
@@ -36,6 +37,8 @@ If summary is called on a list of \code{ctmm} objects output from \code{\link{ct
 \author{ C. H. Fleming. }
 
 \note{ Confidence intervals on the autocorrelation timescales assume they are sufficiently greater than zero and less than infinity.
+
+In \code{ctmm} v0.5.1 the MSPE was averaged over all possible times instead of over all sampled times.
 
 In \code{ctmm} v0.3.4 the speed estimate was fixed to be the RMS velocity and not \eqn{1/\sqrt{2}} times the RMS velocity.
 }

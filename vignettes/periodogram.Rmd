@@ -42,7 +42,7 @@ Here the periodogram exhibits a clear peak for the period of one day, but this i
 
 Periodograms are a great data exploration tool, but they do not detect everything. In particular circulation processes, those that induce circulatory patterns via a stochastic rotational effect, are often not visible in periodograms. Periodograms are also difficult to compare from one individual to the next, if the aperiodic stochastic movements of these individuals are not the same.  
 
-### Parametric approach: Fitting movement models with circulatory patterns
+### Parametric approach: Fitting movement models with periodic and circulatory patterns
 Circulatory patterns can be incorporated into stochastic continuous time movement models in two ways: via the mean of the process, modelling that the animal reverts to a point that moves periodically through time, or via the stochastic component, by including a rotation effect.
 The first is called a periodic-mean process, and the second is called a circulation process.
 
@@ -51,9 +51,7 @@ For periodic-mean processes, you need to specify one or more period values that 
 In our example, we are going to specify a period of a day, which is what the periodogram was saying. Other individuals in this population were also exhibiting a weekly periodicity, and in similar species, lunar cycles are well-known to affect ranging behaviors.
 
 ```{r}
-# circle=TRUE takes longer to fit and gives optim more problems
-# PROTO <- ctmm(mean="periodic",period=c(1 %#% "day",1 %#% "month"),circle=TRUE)
-PROTO <- ctmm(mean="periodic",period=c(1 %#% "day",1 %#% "month"))
+PROTO <- ctmm(mean="periodic",period=c(1 %#% "day",1 %#% "month"),circle=TRUE)
 ```
 
 The `mean="periodic"` option tells `ctmm` that you want a periodic-mean process. The default is `mean="stationary"`.
@@ -82,18 +80,32 @@ FITS <- ctmm.select(Gamba,GUESS,verbose=TRUE,control=control)
 ```
 
 The non-default `control` list here specifies our prototype optimization code that has been tested to be faster and more accurate on this example.
-With `verbose=TRUE`, we obtain a list fitted `ctmm` objects, one for each relevant combination of effects, in order of increasing AICc.
-The first element of that list is the preferred model.
+With `verbose=TRUE`, we obtain a list fitted `ctmm` objects, one for each relevant combination of effects, where the first element of that list is the preferred model.
 
 ```{r}
-summary(FITS)
+summary(FITS,units=FALSE)
 ```
 
-We see that the velocity autocorrelation (OUF), anisotropy, and circulation were unambiguously selected using the level option and were present in all the candidate models. 
-In this maned wolf, there is rather strong support (Delta AIC > 4) for the preferred model (the first of the list).
-Given how we specified the prototype, `harmonic 3 0` means that this preferred model has no lunar periodicity, but has three harmonics of the one-day periodicity. This fittingly corresponds to what the periodogram was saying.
+From the first model, We see that the velocity autocorrelation (OUF), anisotropy, and `2` harmonics of daily periodicity were all selected.
+Given how we specified the prototype, `harmonic 2 0` means that this preferred model has no lunar periodicity, but has two harmonics of the one-day periodicity. This fittingly corresponds to what the periodogram was saying.
 If there was some moon-related pattern of space use and given how we specified our prototype, we would have had a non-zero value as the second `harmonic` value.
-Circulation would also be selected if included.
+
+The sorting of our candidate models is more complex than in previous stationary examples.
+For a given autocovariance model, the different non-stationary models are sorted by mean square predictive error (MSPE) and not the information criteria. As we will demonstrate, likelihood-based model selection can badly overfit with these types of models.
+For sorting between the autocovariance models (each with best non-stationary model), the information criteria is used. MSPE is not valid for general purpose selection.
+
+```{r}
+# sorted by MSPE
+summary(FITS[1:7])
+# sorted by IC
+summary(FITS[c(5,8:10)])
+```
+
+If only the information criteria was used, we would have selected `harmonic 3 0` over `harmonic 2 0`.
+
+```{r}
+summary(FITS,MSPE=FALSE)
+```
 
 Next we do some sanity checking on our results. The sampling interval for Gamba is fairly steady at
 
@@ -109,8 +121,8 @@ Therefore, we should limit our consideration to harmonics of the day $\leq$ 3, w
 Consistent with these considerations, let us look at harmonics 3 and 2 of the day.
 
 ```{r}
-summary(FITS[[1]]) # harmonic 3 0
-summary(FITS[[4]]) # harmonic 2 0
+summary(FITS[[7]]) # harmonic 3 0 # selected by IC
+summary(FITS[[1]]) # harmonic 2 0 # selected by MSPE
 ```
 
 * `rotation/deviation %` corresponds to $100 \eta_P$ from the paper. It is interpreted as the proportion of the variance in the animal`s location that is caused by the periodicity in the mean.
@@ -122,29 +134,13 @@ We can get a better idea of what is happening by comparing the variograms.
 
 ```{r, fig.show='hold'}
 xlim <- c(0,1/2) %#% "month"
-plot(SVF,CTMM=FITS[[1]],xlim=xlim)
+plot(SVF,CTMM=FITS[[7]],xlim=xlim)
 title("3 Harmonics")
-plot(SVF,CTMM=FITS[[4]],xlim=xlim)
+plot(SVF,CTMM=FITS[[1]],xlim=xlim)
 title("2 Harmonics")
 ```
 
 While the confidence bands encompass the empirical variogram, the 3 harmonic model has clearly overfit in attempting to match the Nyquist period (3/day) with less than ideal data.
-A more stringent infromation criteria would not necessarily select the 3 harmonic model.
-
-```{r}
-summary(FITS,IC="BIC")
-```
-
-But still, it is troubling that a bad model has the lowest BIC.
-Last, we turn to the mean square predictive error (MSPE), which explicitly penalizes highly-variable trend predictions like the ones we see here.
-
-```{r}
-summary(FITS,IC="MSPE")
-```
-
-Finally, a good model wins out, with the 2 harmonic model beating the 3 harmonic model by 2.5 meters of RMS predictive error (RMSPE).
-Unlike likelihood based ICs (AIC & BIC), MSPE has units and an absolute scale, though in summary we only show differences in the RMSPE for simplicity.
-Note that MSPE should only be used to select among models with the same autocorrelation structure.
 
 ### Home-range estimation
 
