@@ -954,6 +954,7 @@ CI.UD <- function(object,level.UD=0.95,level=0.95,P=FALSE)
 summary.UD <- function(object,level=0.95,level.UD=0.95,units=TRUE,...)
 {
   area <- CI.UD(object,level.UD,level)
+  if(length(area)==1) { stop("Object is not a range distribution.") }
 
   # pretty units
   # do we convert base units?

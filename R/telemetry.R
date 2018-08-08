@@ -169,7 +169,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   names(object) <- tolower(names(object))
 
   # timestamp column
-  COL <- c('timestamp','Acquisition.Start.Time','time')
+  COL <- c('timestamp','Acquisition.Start.Time','Acquisition.Time','time')
   COL <- pull.column(object,COL,FUNC=as.character)
   # fastPOSIXct doesn't have a timeformat argument and as.POSIXct doesn't accept this argument if empty/NA/NULL ???
   if(class(COL)=="character" && timeformat=="") { COL <- fasttime::fastPOSIXct(COL,tz=timezone) }
@@ -329,22 +329,25 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   COL <- pull.column(object,COL,FUNC=as.factor)
   if(length(COL)) { DATA$class <- COL }
 
-  COL <- c("GPS.time.to.fix","time.to.fix","fix.time","time.to.get.fix")
-  COL <- pull.column(object,COL)
-  if(length(COL))
+  if(timeout<Inf)
   {
-    if(class(timeout)=="function") { timeout <- timeout(COL) }
-    COL <- (COL<timeout)
-    COL <- as.factor(COL)
-    levels(COL) <- c("timeout","in-time")
-
-    if("class" %in% names(DATA)) # combine with existing class information
+    COL <- c("GPS.time.to.fix","time.to.fix","fix.time","time.to.get.fix")
+    COL <- pull.column(object,COL)
+    if(length(COL))
     {
-      DATA$class <- paste(as.character(DATA$class),as.character(COL))
-      DATA$class <- as.factor(DATA$class)
+      if(class(timeout)=="function") { timeout <- timeout(COL) }
+      COL <- (COL<timeout)
+      COL <- as.factor(COL)
+      levels(COL) <- c("timeout","in-time")
+
+      if("class" %in% names(DATA)) # combine with existing class information
+      {
+        DATA$class <- paste(as.character(DATA$class),as.character(COL))
+        DATA$class <- as.factor(DATA$class)
+      }
+      else # only class information so far
+      { DATA$class <- COL }
     }
-    else # only class information so far
-    { DATA$class <- COL }
   }
 
   ################################

@@ -51,7 +51,7 @@ If data quality is poor and velocity can barely be resolved, then the sampling d
 
 \seealso{ \code{\link{emulate}}, \code{\link{simulate}} }
 
-\examples{
+\examples{\donttest{
 # Load package and data
 library(ctmm)
 data(buffalo)
@@ -64,8 +64,8 @@ FIT <- ctmm.fit(Cilla,GUESS)
 speed(FIT)
 
 # conditional estimate
-\donttest{speed(FIT,Cilla)}
-}
+speed(FIT,Cilla)
+}}
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

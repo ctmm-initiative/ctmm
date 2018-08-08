@@ -23,18 +23,18 @@ Winner & Noonan et al (2018) <doi:10.1111/2041-210X.13027>.
 Package: \tab ctmm\cr
 Type: \tab Package\cr
 Version: \tab 0.5.1 \cr
-Date: \tab 2018-08-04 \cr
+Date: \tab 2018-08-06 \cr
 License: \tab GPL-3 \cr
 }
 
 \itemize{
-\item{ \link{ctmm-FAQ} }
 \item{ \href{http://biology.umd.edu/movement.html}{CTMM Initiative} }
-\item{ \href{http://www2.physics.umd.edu/~hfleming/}{Beta packages} }
-\item{ \href{https://github.com/ctmm-initiative/ctmm}{Github project} }
-\item{ \href{https://ctmm-initiative.github.io/ctmm/}{Github reference} }
 \item{ \href{https://CRAN.R-project.org/package=ctmm}{CRAN package} }
+\item{ \href{https://github.com/ctmm-initiative/ctmm}{Github project} }
+\item{ \href{http://www2.physics.umd.edu/~hfleming/}{Source packages} }
+\item{ \href{https://ctmm-initiative.github.io/ctmm/}{Github reference} }
 \item{ \href{https://groups.google.com/forum/#!forum/ctmm-user}{Google group} }
+\item{ \link{ctmm-FAQ} }
 }
 
 }

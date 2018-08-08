@@ -1,6 +1,4 @@
 PRIORITY
-* summary.UD() error for occurrence distributions
-* link FAQ in DESCRIPTION
 * reference Guillaume's paper at the beginning of the periodogram vignette
 * use perturb.ctmm in ctmm.guess / variogram.fit ?
 * reduce uere() warning in as.telemetry to once... remove other crap... too much
