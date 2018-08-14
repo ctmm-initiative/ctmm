@@ -8,8 +8,8 @@
 <title>Periodic movement models • ctmm</title>
 <!-- jquery --><script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script><!-- Font Awesome icons --><link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
-<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" integrity="sha384-cV+rhyOuRHc9Ub/91rihWcGmMmCXDeksTtCihMupQHSsi8GIIRDG0ThDc3HGQFJ3" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
-<script src="../jquery.sticky-kit.min.js"></script><script src="../pkgdown.js"></script><meta property="og:title" content="Periodic movement models">
+<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" integrity="sha384-cV+rhyOuRHc9Ub/91rihWcGmMmCXDeksTtCihMupQHSsi8GIIRDG0ThDc3HGQFJ3" crossorigin="anonymous"></script><!-- sticky kit --><script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
+<script src="../pkgdown.js"></script><meta property="og:title" content="Periodic movement models">
 <meta property="og:description" content="">
 <meta name="twitter:card" content="summary">
 <!-- mathjax --><script src="https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!--[if lt IE 9]>
@@ -29,7 +29,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.5.1</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.5.2</span>
       </span>
     </div>
 
@@ -85,7 +85,7 @@
       <h1>Periodic movement models</h1>
                         <h4 class="author">Guillaume Péron, Christen H. Fleming, and Justin M. Calabrese</h4>
             
-            <h4 class="date">2018-08-04</h4>
+            <h4 class="date">2018-08-14</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/ctmm-initiative/ctmm/blob/master/vignettes/periodogram.Rmd"><code>vignettes/periodogram.Rmd</code></a></small>
       <div class="hidden name"><code>periodogram.Rmd</code></div>
@@ -135,15 +135,15 @@
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" data-line-number="1"><span class="kw">summary</span>(FITS,<span class="dt">units=</span><span class="ot">FALSE</span>)</a></code></pre></div>
 <pre><code>##                                               dAICc  dRMSPE (m) DOF[mean]
 ## OUF anisotropic harmonic 2 0               0.000000    0.000000  106.1204
-## OUF anisotropic harmonic 1 0              20.554301    3.829244  108.2142
-## OUF anisotropic harmonic 2 1               5.562484    6.341108  107.9071
-## OUF anisotropic harmonic 1 1              25.975607    9.790401  110.0647
-## OUF anisotropic harmonic 0 0             123.457393  101.908229  132.4812
-## OUF anisotropic harmonic 0 1             128.194996  104.472528  134.7361
-## OUF anisotropic harmonic 3 0             -17.064596 2416.027185  107.1803
-## OUF anisotropic circulation harmonic 0 0 124.199987  101.826123  132.9631
-## OUF isotropic harmonic 0 0               229.937343  266.697250  120.9668
-## OUF isotropic circulation harmonic 0 0   230.906720  266.639777  121.3771
+## OUF anisotropic harmonic 1 0              20.554301    3.829228  108.2142
+## OUF anisotropic harmonic 2 1               5.562484    6.341066  107.9071
+## OUF anisotropic harmonic 1 1              25.975607    9.790436  110.0647
+## OUF anisotropic harmonic 0 0             123.457393  101.908199  132.4812
+## OUF anisotropic harmonic 0 1             128.194996  104.472532  134.7361
+## OUF anisotropic harmonic 3 0             -17.064596 2416.027181  107.1803
+## OUF anisotropic circulation harmonic 0 0 124.199987  101.825999  132.9631
+## OUF isotropic harmonic 0 0               229.937343  266.697229  120.9668
+## OUF isotropic circulation harmonic 0 0   230.906720  266.639783  121.3771
 ##                                          method
 ## OUF anisotropic harmonic 2 0                 ML
 ## OUF anisotropic harmonic 1 0                 ML
@@ -161,12 +161,12 @@
 <a class="sourceLine" id="cb10-2" data-line-number="2"><span class="kw">summary</span>(FITS[<span class="dv">1</span><span class="op">:</span><span class="dv">7</span>])</a></code></pre></div>
 <pre><code>##                               dRMSPE (m) DOF[mean] method
 ## OUF anisotropic harmonic 2 0    0.000000  106.1204     ML
-## OUF anisotropic harmonic 1 0    3.829244  108.2142     ML
-## OUF anisotropic harmonic 2 1    6.341108  107.9071     ML
-## OUF anisotropic harmonic 1 1    9.790401  110.0647     ML
-## OUF anisotropic harmonic 0 0  101.908229  132.4812     ML
-## OUF anisotropic harmonic 0 1  104.472528  134.7361     ML
-## OUF anisotropic harmonic 3 0 2416.027185  107.1803     ML</code></pre>
+## OUF anisotropic harmonic 1 0    3.829228  108.2142     ML
+## OUF anisotropic harmonic 2 1    6.341066  107.9071     ML
+## OUF anisotropic harmonic 1 1    9.790436  110.0647     ML
+## OUF anisotropic harmonic 0 0  101.908199  132.4812     ML
+## OUF anisotropic harmonic 0 1  104.472532  134.7361     ML
+## OUF anisotropic harmonic 3 0 2416.027181  107.1803     ML</code></pre>
 <div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" data-line-number="1"><span class="co"># sorted by IC</span></a>
 <a class="sourceLine" id="cb12-2" data-line-number="2"><span class="kw">summary</span>(FITS[<span class="kw">c</span>(<span class="dv">5</span>,<span class="dv">8</span><span class="op">:</span><span class="dv">10</span>)])</a></code></pre></div>
 <pre><code>##                                                dAICc DOF[mean] method
@@ -195,29 +195,29 @@
 <div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" data-line-number="1"><span class="kw">summary</span>(FITS[[<span class="dv">7</span>]]) <span class="co"># harmonic 3 0 # selected by IC</span></a></code></pre></div>
 <pre><code>## $DOF
 ##        mean        area       speed 
-## 107.1803479 178.3530942   0.8606009 
+## 107.1803473 178.3530926   0.8606009 
 ## 
 ## $CI
 ##                                low         ML       high
 ## rotation/deviation %     74.795669  91.774630 100.000000
 ## rotation/speed %         96.807431  98.987421 100.000000
-## area (square kilometers) 41.444887  48.269156  55.605889
-## tau position (hours)      6.984418   9.267907  12.297961
+## area (square kilometers) 41.444887  48.269156  55.605890
+## tau position (hours)      6.984418   9.267908  12.297962
 ## tau velocity (hours)      1.126099   1.617410   2.323076
 ## speed (kilometers/day)   12.674828 103.001923 204.382857</code></pre>
 <div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb20-1" data-line-number="1"><span class="kw">summary</span>(FITS[[<span class="dv">1</span>]]) <span class="co"># harmonic 2 0 # selected by MSPE</span></a></code></pre></div>
 <pre><code>## $DOF
 ##     mean     area    speed 
-## 106.1204 179.5625 139.5357 
+## 106.1204 179.5625 139.5356 
 ## 
 ## $CI
 ##                                 low        ML      high
 ## rotation/deviation %     23.6228691 29.019474 35.648925
-## rotation/speed %         24.3431628 29.868660 36.648355
-## area (square kilometers) 41.1021781 47.844462 55.091281
-## tau position (hours)      7.2925134  9.568355 12.554438
+## rotation/speed %         24.3431626 29.868660 36.648355
+## area (square kilometers) 41.1021783 47.844462 55.091282
+## tau position (hours)      7.2925136  9.568355 12.554438
 ## tau velocity (hours)      0.9699887  1.423753  2.089789
-## speed (kilometers/day)   14.7247950 16.056839 17.387434</code></pre>
+## speed (kilometers/day)   14.7247950 16.056839 17.387435</code></pre>
 <ul>
 <li>
 <code>rotation/deviation %</code> corresponds to <span class="math inline">\(100 \eta_P\)</span> from the paper. It is interpreted as the proportion of the variance in the animal`s location that is caused by the periodicity in the mean.</li>

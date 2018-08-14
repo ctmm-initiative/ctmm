@@ -17,77 +17,6 @@ DOP.match <- function(axes)
 }
 
 
-# try to assign one UERE to one data
-try.assign.uere <- function(data,UERE,TYPE=names(UERE))
-{
-  if(!is.null(TYPE) && TYPE=="error") { TYPE <- NULL } # generic fitted UERE
-
-  if(is.null(TYPE)) # universal assignment from unnamed UERE
-  {
-    # try every UERE type assignment if those axes are present in the data
-    for(TYPE in names(DOP.LIST)) { if(all(DOP.LIST[[TYPE]]$axes %in% names(data))) {data <- try.assign.uere(data,UERE,TYPE) } }
-    attr(data,"info")$UERE <- UERE # overwrite individual UEREs
-  }
-  else # non-destructive assignment from named UERE
-  {
-    NAMES <- names(attr(data,"info")$UERE)
-    # global variable DOP.LIST
-    LIST <- DOP.LIST[[TYPE]]
-    axes <- LIST$axes
-    DOP <- LIST$DOP
-    VAR <- LIST$VAR
-
-    if(is.null(UERE) && (DOP %in% names(data))) # null assignment
-    {
-      data[[VAR]] <- NULL
-
-      # code to delete a possible element seems complicated in R ???
-      if(TYPE %in% NAMES) { attr(data,"info")$UERE <- attr(data,"info")$UERE[-which(NAMES==TYPE)] }
-      # else { attr(data,"info")$UERE <- NULL }
-    }
-    else # numeric assignment
-    {
-      if(DOP %in% names(data))
-      { data[[VAR]] <- (UERE*data[[DOP]])^2/length(axes) }
-      else if(!(VAR %in% names(data)))
-      {
-        data[[VAR]] <- (UERE)^2/length(axes)
-        message("DOP values missing. Assuming DOP=1 homoskedastic errors.")
-      }
-
-      # store specific UERE if it exists already with names
-      if(is.null(attr(data,"info")$UERE) || is.null(NAMES)) { attr(data,"info")$UERE <- UERE }
-      else { attr(data,"info")$UERE[TYPE] <- UERE }
-    }
-  } # END non-destructive assingment
-
-  return(data)
-}
-
-# store the UERE
-# axes determined by name(value) consistent with DOP.LIST global variable above
-# NULL is for universal UERE, else "horizontal", "vertical", "speed"
-"uere<-" <- function(data,value)
-{
-  UERE <- value
-
-  # promote to list and revert back if DROP
-  DROP <- FALSE
-  if(class(data)=="telemetry" || class(data)=="data.frame")
-  {
-    data <- list(data)
-    DROP <- TRUE
-  }
-
-  for(i in 1:length(data)) { for(j in 1:max(1,length(UERE))) { data[[i]] <- try.assign.uere(data[[i]],UERE[j]) } }
-
-  if(DROP) { data <- data[[1]] }
-
-  # demote to data.frame
-  return(data)
-}
-
-
 # what DOP types are in the data
 get.dop.types <- function(data)
 {
@@ -103,66 +32,143 @@ get.dop.types <- function(data)
 # return the UERE from set data or calculate it from calibration data
 # look for every DOP without a VAR and calculate UERE - override option for all
 # option to integrate HDOP & VDOP if they share the same UERE
-uere <- function(data,override=FALSE,integrate=FALSE,trace=FALSE)
+uere <- function(data,override=FALSE,precision=1/2,trace=FALSE)
 {
   data <- listify(data)
 
-  if(!override)
-  {
-    UERE <- sapply(data,function(d){attr(d,"info")$UERE}) # (dim,tag)
-    if(class(UERE)!="list")
-    {
-      UERE <- array(UERE,c(length(UERE)/length(data),length(data))) # sapply will not return consistent shape array
-      UERE <- apply(UERE,1,unique)
-      if(class(UERE)!="list" && is.null(dim(UERE))) { return(attr(data[[1]],"info")$UERE) } # unique UERE array to return
-    }
-  }
-
   TYPES <- get.dop.types(data) # types of DOP data present
-  # remove cases where calibration exists
-  if(length(TYPES) && !override)
-  {
-    OUT <- sapply(TYPES,function(TYPE) {DOP.LIST[[TYPE]]$VAR %in% names(data[[1]]) || all(DOP.LIST[[TYPE]]$COV %in% names(data[[1]]))})
-    TYPES <- TYPES[!OUT]
-  }
 
-  # calculate residuals with UERE=1
-  data <- residuals.calibration(data,TYPES)
-  # data <- do.call(rbind,data)
-  # estimate UERE from residuals
-  UERE <- NULL
-  N <- NULL
-  for(TYPE in TYPES)
-  {
-    axes <- DOP.LIST[[TYPE]]$axes
-    z <- NULL
-    for(i in 1:length(data)) { z <- rbind(z,get.telemetry(data[[i]],axes)) }
+  # loop over axes/types
+  UERE <- lapply(TYPES,function(type){uere.type(data,override=override,precision=precision,trace=trace,type=type)})
+  names(UERE) <- TYPES
 
-    # total degrees of freedom
-    N <- c(N,(nrow(z)-length(data)) * length(axes))
-    # x,y data would be standardized if UERE==1 back from error=1 in CTMM list
-    UERE <- c(UERE,sqrt(sum(z^2)/last(N)))
-
-    names(N)[length(N)] <- TYPE
-    names(UERE)[length(UERE)] <- TYPE
-
-    if(trace)
-    {
-      CI <- sqrt(chisq.ci(UERE[TYPE]^2,DOF=N[TYPE]))
-      message("UERE[",TYPE,"] = ", sprintf("%.4f - %.4f",CI[1],CI[3]) )
-    }
-  }
-
+  # integrate attempt
   # Do x,y,z axes all share the same UERE?
-  if(integrate && all(c('horizontal','vertical') %in% TYPES) && all(c("HDOP","VDOP") %in% names(data[[1]])))
-  {
-    P <- (UERE['horizontal']/UERE['vertical'])^2
-    # F-test
-    P <- min( stats::pf(P,N['horizontal'],N['vertical'],lower.tail=TRUE) , stats::pf(P,N['horizontal'],N['vertical'],lower.tail=FALSE) )
-    message("p[UERE] = ",P)
+  # integrate <- FALSE # never seems to hold
+  # if(integrate && all(c('horizontal','vertical') %in% TYPES) && all(c("HDOP","VDOP") %in% names(data[[1]])))
+  # {
+  #   P <- (UERE['horizontal']/UERE['vertical'])^2
+  #   # F-test
+  #   P <- min( stats::pf(P,N['horizontal'],N['vertical'],lower.tail=TRUE) , stats::pf(P,N['horizontal'],N['vertical'],lower.tail=FALSE) )
+  #   message("p[UERE] = ",P)
+  #
+  #   UNITY <- sqrt((2*UERE['horizontal']^2 + UERE['vertical']^2)/3)
+  #   UERE['horizontal'] <- UERE['vertical'] <- UNITY
+  # }
 
-    UNITY <- sqrt((2*UERE['horizontal']^2 + UERE['vertical']^2)/3)
-    UERE['horizontal'] <- UERE['vertical'] <- UNITY
+  return(UERE)
+}
+
+
+# uere values for one set of axes
+uere.type <- function(data,override=FALSE,trace=FALSE,type='horizontal',precision=1/2,...)
+{
+  TOL <- .Machine$double.eps^precision
+
+  axes <- DOP.LIST[[type]]$axes
+  z <- lapply(1:length(data),function(i){get.telemetry(data[[i]],axes)})
+
+  # location classes
+  if("class" %in% names(data[[1]]))
+  {
+    CLASS <- sapply(data,function(D){levels(D$class)})
+    CLASS <- unique(c(CLASS))
+  }
+  else
+  { CLASS <- "all" }
+
+  # extract UEREs
+  UERE <- lapply(data,function(D){attr(D,"UERE")[[type]]})
+  # test for equivalence
+  if(length(UERE)>1)
+  {
+    SAME <- sapply(UERE[-1],function(U){identical(UERE[[1]],U)})
+    if(all(SAME)) { UERE <- UERE[[1]] }
+    else { UERE <- NULL }
+  }
+  else
+  { UERE <- UERE[[1]] }
+
+  # null UERE structure
+  if(is.null(UERE))
+  {
+    # null UERE structure given location classes
+    UERE <- numeric(length(CLASS))
+    names(UERE) <- CLASS
+  }
+
+  # what class UEREs will we be fitting
+  if(override) { EST <- rep(TRUE,length(UERE)) }
+  else { EST <- !UERE }
+  names(EST) <- CLASS
+
+  # DOP values
+  DOP <- DOP.LIST[[type]]$DOP
+  DOP <- lapply(data,function(D){ if(DOP %in% names(D)) { D[[DOP]] } else { rep(1,length(D$t)) } })
+
+  # weights
+  w <- lapply(DOP,function(D){length(axes)/D^2})
+
+  # class indicators
+  C <- lapply(data,function(D){get.class.mat(D,CLASS)})
+  # ML DOF
+  DOF.ML <- vapply(C,colSums,UERE) # (class,animals)
+  dim(DOF.ML) <- c(length(UERE),length(data))
+  DOF.ML <- rowSums(DOF.ML) # (class)
+
+  # initial guess of UEREs
+  UERE[EST] <- 10
+
+  # iterative fit
+  ERROR <- Inf
+  while(ERROR>TOL)
+  {
+    # precicions
+    P <- vapply(1:length(data),function(i){c(w[[i]] %*% C[[i]]) * (1/UERE)},UERE) # (class,animals)
+    dim(P) <- c(length(UERE),length(data))
+    Pc <- rowSums(P) # (class)
+    Pk <- colSums(P) # (animals)
+
+    # REML degrees of freedom
+    DOF <- DOF.ML - colSums(t(P)/Pk) # (class)
+
+    # means
+    mu <- vapply(1:length(data),function(i){t(w[[i]] * z[[i]]) %*% C[[i]] %*% (1/UERE)},z[[1]][1,]) # (axes,animals)
+    dim(mu) <- c(length(axes),length(data))
+    mu <- t(mu)/Pk # (animals,axes)
+
+    # updated UERE esitmates
+    UERE2 <- vapply(1:length(data),function(i){colSums((t(z[[i]])-mu[i,])^2 %*% (w[[i]] * C[[i]]))},UERE) # (class,animals)
+    dim(UERE2) <- c(length(UERE),length(data))
+    UERE2 <- rowSums(UERE2) / DOF
+    UERE2 <- sqrt(UERE2/length(axes))
+
+    ERROR <- abs(UERE2[EST]-UERE[EST])/UERE2[EST]
+    ERROR <- max(ERROR)
+
+    UERE[EST] <- UERE2[EST]
+
+    # stop after 1 run if 1 location class
+    if(length(CLASS)<=1) { break }
+  }
+
+  attr(UERE,"DOF") <- DOF
+
+  if(trace)
+  {
+    if(length(CLASS)>1)
+    {
+      for(i in 1:length(CLASS))
+      {
+        CI <- sqrt(chisq.ci(UERE[i]^2,DOF=DOF[i]))
+        message("UERE[",type,",",CLASS[i],"] = ", sprintf("%.4f - %.4f",CI[1],CI[3]) )
+      }
+    }
+    else
+    {
+      CI <- sqrt(chisq.ci(UERE^2,DOF=DOF))
+      message("UERE[",type,"] = ", sprintf("%.4f - %.4f",CI[1],CI[3]) )
+    }
   }
 
   return(UERE)
@@ -280,4 +286,92 @@ get.error <- function(DATA,CTMM,flag=FALSE,circle=FALSE,DIM=FALSE)
 
   attr(error,"flag") <- FLAG
   return(error)
+}
+
+
+# try to assign one UERE to one data
+try.assign.uere <- function(data,UERE,TYPE)
+{
+  if(is.null(TYPE)) # universal assignment from unnamed UERE
+  {
+    # try every UERE type assignment if those axes are present in the data
+    for(TYPE in names(DOP.LIST)) { if(all(DOP.LIST[[TYPE]]$axes %in% names(data))) {data <- try.assign.uere(data,UERE,TYPE) } }
+    # attr(data,"UERE")[[TYPE]] <- UERE # overwrite individual UEREs
+  }
+  else # non-destructive assignment from named UERE
+  {
+    NAMES <- names(attr(data,"UERE"))
+    # global variable DOP.LIST
+    LIST <- DOP.LIST[[TYPE]]
+    axes <- LIST$axes
+    DOP <- LIST$DOP
+    VAR <- LIST$VAR
+
+    if(is.null(UERE) && (DOP %in% names(data))) # null assignment
+    {
+      data[[VAR]] <- NULL
+
+      # delete UERE value
+      attr(data,"UERE")[[TYPE]] <- 0
+    }
+    else # numeric assignment
+    {
+      # total UERE
+      U <- c(get.class.mat(data,names(UERE)) %*% UERE)
+
+      if(DOP %in% names(data))
+      { data[[VAR]] <- (U*data[[DOP]])^2/length(axes) }
+      else if(!(VAR %in% names(data)))
+      {
+        data[[VAR]] <- (U)^2/length(axes)
+        message("DOP values missing. Assuming DOP=1.")
+      }
+
+      # overwrite UERE value
+      attr(data,"UERE")[[TYPE]] <- UERE
+    }
+  } # END non-destructive assingment
+
+  return(data)
+}
+
+
+# store the UERE
+# axes determined by name(value) consistent with DOP.LIST global variable above
+# NULL is for universal UERE, else "horizontal", "vertical", "speed"
+"uere<-" <- function(data,value)
+{
+  UERE <- value
+  if(class(UERE)=="numeric") { UERE <- list(horizontal=UERE) }
+
+  # promote to list and revert back if DROP
+  DROP <- FALSE
+  if(class(data)=="telemetry" || class(data)=="data.frame")
+  {
+    data <- list(data)
+    DROP <- TRUE
+  }
+
+  for(i in 1:length(data)) { for(j in 1:max(1,length(UERE))) { data[[i]] <- try.assign.uere(data[[i]],UERE[[j]],TYPE=names(UERE)[j]) } }
+
+  if(DROP) { data <- data[[1]] }
+
+  # demote to data.frame
+  return(data)
+}
+
+
+#####
+# class indicator matrix
+get.class.mat <- function(data,LEVELS=levels(data$class))
+{
+  if("class" %in% names(data))
+  {
+    C <- sapply(LEVELS,function(lc){data$class==lc}) # (time,class)
+    colnames(C) <- LEVELS
+  }
+  else
+  { C <- cbind(rep(1,length(data$t))) }
+
+  return(C)
 }

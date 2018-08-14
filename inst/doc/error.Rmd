@@ -132,5 +132,5 @@ FIT <- ctmm.select(turtle[[3]],GUESS,control=control)
 summary(FIT)
 ```
 
-Here, fitting the UERE simultaneously with the movement model produced a good result.
+Here, fitting the UERE simultaneously with the movement model produced a consistent result.
 This will not always be the case.

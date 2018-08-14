@@ -387,6 +387,7 @@ homerange <- function(data,CTMM,method="AKDE",...)
 # wrap the kde function for our telemetry data format and CIs.
 akde.telemetry <- function(data,CTMM,VMM=NULL,debias=TRUE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
 {
+  CTMM0 <- CTMM # original model fit
   if(class(CTMM)=="ctmm") # calculate bandwidth etc.
   {
     axes <- CTMM$axes
@@ -429,7 +430,9 @@ akde.telemetry <- function(data,CTMM,VMM=NULL,debias=TRUE,smooth=TRUE,error=0.00
 
   KDE <- c(KDE,kde(data,KDE$H,axes=axes,bias=debias,W=KDE$weights,alpha=error,dr=dr,grid=grid))
 
-  KDE <- new.UD(KDE,info=attr(data,"info"))
+  KDE <- new.UD(KDE,info=attr(data,"info"),type='range',CTMM=ctmm())
+  # in case bandwidth is pre-calculated...
+  if(class(CTMM0)=="ctmm") { attr(KDE,"CTMM") <- CTMM0 }
 
   return(KDE)
 }
@@ -953,6 +956,9 @@ CI.UD <- function(object,level.UD=0.95,level=0.95,P=FALSE)
 # summarize details of akde object
 summary.UD <- function(object,level=0.95,level.UD=0.95,units=TRUE,...)
 {
+  type <- attr(object,'type')
+  if(type!='range') { stop(type," area is not generally meaningful, biologically.") }
+
   area <- CI.UD(object,level.UD,level)
   if(length(area)==1) { stop("Object is not a range distribution.") }
 

@@ -425,6 +425,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
   STAGE <- stages[1] # 1-Newton, 2-Conjugate Gradient, 3-Gradient Descent, 4-nothing yet
   ERROR <- Inf
   counts <- 0
+  UPDATE <- TRUE # apply rank-1 updates
   LINE.DO <- TRUE # else do line searches in between Newton-Raphson iterations (always initially)
   LINE.DID <- FALSE # did we do a line search previously
   par.target <- par # where to evaluate around next
@@ -480,7 +481,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
     }
 
     ## update hessian from line-search result (Rank-1 update)
-    if(STAGE==1 && LINE.DID && hessian.LINE>0)
+    if(UPDATE && STAGE==1 && LINE.DID && hessian.LINE>0)
     {
       DIFF <- rank1update(hessian.LINE,DIR.STEP,hessian,covariance)
       hessian <- DIFF$hessian
@@ -577,7 +578,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
     # we do this before the better local derivative update
     # also this provides an objective check on NR step quality
     ########################################
-    if(STAGE==1 && counts>counts.diff)
+    if(UPDATE && STAGE==1 && counts>counts.diff)
     {
       # search direction
       DIFF <- par.target-par.target.old
@@ -732,6 +733,9 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
 
       # check with line search one last time before quiting
       if(ERROR < TOL.STAGE + TOL.ZERO) { LINE.DO <- TRUE }
+
+      # are rank-1 updates safe?
+      if(STAGE==1 && ERROR>sqrt(TOL.STAGE)) { UPDATE <- TRUE } else { UPDATE <- FALSE }
     }
     fn.target.old <- fn.target
     gradient.old <- gradient
@@ -978,7 +982,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
       # will update search direction hessian with this during next iteration
 
       # estimate better location if we didn't hit a boundary
-      if(1<MIN && MIN<length(fn.all) && !is.nan(gradient.LINE) && !is.nan(hessian.LINE) && hessian.LINE>0)
+      if(UPDATE && 1<MIN && MIN<length(fn.all) && !is.nan(gradient.LINE) && !is.nan(hessian.LINE) && hessian.LINE>0)
       {
         # what was our target (closest if boundary)
         MIN.start <- which.min( colSums((par.target-par.all)^2) )
@@ -1002,7 +1006,11 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
         if(ZERO) { ERROR <- abs(fn.target.old-fn.par) }
         else { ERROR <- abs((fn.target.old-fn.par)/fn.par) }
       }
+
+      ### error-check wrapup ###
       if(ERROR < TOL.STAGE + TOL.ZERO) { STAGE <- STAGE + 1 }
+      # stop using interpolation before end of STAGE=1
+      if(STAGE==1 && ERROR>sqrt(TOL.STAGE)) { UPDATE <- TRUE } else { UPDATE <- FALSE }
     } # go back to differentiation
   } # end main loop
 

@@ -182,14 +182,15 @@ speedMLE <- function(data,dt=NULL,UERE=0,CTMM=ctmm(error=UERE,axes=c("x","y"),ci
 ####################
 distanceMLE <- function(dr,error)
 {
+  SUB <- dr>0 & error>0
+
   # coefficient in transcendental Bessel equation
   # x I0(x) == y I1(x)
-  y <- dr^2/error
+  y <- dr[SUB]^2/error[SUB]
   x <- BesselSolver(y)
   # x = dr*dR/error
 
-  SUB <- dr>0
-  if(any(SUB)) { dr[SUB] <- error[SUB]/dr[SUB] * x[SUB] }
+  if(any(SUB)) { dr[SUB] <- error[SUB]/dr[SUB] * x }
 
   return(dr)
 }

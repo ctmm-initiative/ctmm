@@ -1,12 +1,12 @@
 PRIORITY
+* Scott's calibration data: speed UERE & DOF.UERE
+* Patty's calibration data: DOF.UERE
+* re-calculate Tapir calibration with 2 location classes
+* should standardization be moved to ctmm.select?
 * reference Guillaume's paper at the beginning of the periodogram vignette
 * use perturb.ctmm in ctmm.guess / variogram.fit ?
 * reduce uere() warning in as.telemetry to once... remove other crap... too much
-* properly fillout UERE & UERE.DOF on the fly
-* uere() return doesn't check for missing UEREs (in as.telemetry too)
 * is.calibrated()
-* uere() factor estimation
-* get.error, get/set params, fit, summary, etc..
 * error vignette - check back on variogram
 * quiet uere() example
 

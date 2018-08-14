@@ -1,20 +1,21 @@
 # overlap <- function(object,...) UseMethod("overlap") #S3 generic
 
 # forwarding function for list of a particular datatype
-overlap <- function(object,CTMM=NULL,level=0.95,debias=TRUE,...)
+overlap <- function(object,level=0.95,debias=TRUE,...)
 {
   CLASS <- class(object[[1]])
 
   if(CLASS=="ctmm")
   { OverlapFun <- overlap.ctmm }
-  else if(CLASS=="telemetry")
-  {
-    # Generate aligned UDs
-    object <- akde(object,CTMM=CTMM,...)
-    OverlapFun <- overlap.UD
-  }
+  # else if(CLASS=="telemetry")
+  # {
+  #   # Generate aligned UDs
+  #   object <- akde(object,...)
+  #   OverlapFun <- overlap.UD
+  # }
   else if(CLASS=="UD")
   { OverlapFun <- overlap.UD }
+  else { stop(CLASS," object class not supported by overlap.") }
 
   n <- length(object)
   OVER <- array(0,c(n,n,3))
@@ -22,7 +23,7 @@ overlap <- function(object,CTMM=NULL,level=0.95,debias=TRUE,...)
   for(i in 1:n)
   {
     for(j in (i+1):n)
-    { if(j<=n) { OVER[i,j,] <- OverlapFun(object[c(i,j)],CTMM=CTMM[c(i,j)],level=level,debias=debias,...) } }
+    { if(j<=n) { OVER[i,j,] <- OverlapFun(object[c(i,j)],level=level,debias=debias,...) } }
   }
 
   # symmetrize matrix
@@ -39,7 +40,7 @@ overlap <- function(object,CTMM=NULL,level=0.95,debias=TRUE,...)
 
 
 #####################
-overlap.ctmm <- function(object,CTMM,level=0.95,debias=TRUE,...)
+overlap.ctmm <- function(object,level=0.95,debias=TRUE,...)
 {
   CTMM1 <- object[[1]]
   CTMM2 <- object[[2]]
@@ -182,8 +183,13 @@ BhattacharyyaD <- function(CTMM1,CTMM2)
 
 #####################
 #overlap density function
-overlap.UD <- function(object,CTMM,level=0.95,debias=TRUE,...)
+overlap.UD <- function(object,level=0.95,debias=TRUE,...)
 {
+  CTMM <- list(attr(object[[1]],"CTMM"),attr(object[[2]],"CTMM"))
+  type <- c(attr(object[[1]],"type"),attr(object[[2]],"type"))
+  type <- type[type!="range"]
+  if(length(type)) { stop(type," overlap is not generally meaningful, biologically.") }
+
   dr <- object[[1]]$dr
   dA <- prod(dr)
 
@@ -298,6 +304,7 @@ akde.list <- function(data,CTMM,VMM=NULL,debias=TRUE,smooth=TRUE,error=0.001,res
     grid$dH <- dH.orig[sample.position:(sample.position + n.samples - 1),]
 
     UD.list[[i.instance]] <- akde(data[[i.instance]],CTMM=HP.list[[i.instance]],debias=debias,smooth=smooth,error=error,res=res,grid=grid,...)
+    attr(UD.list[[i.instance]],"CTMM") <- CTMM[[i.instance]]
 
     sample.position <- sample.position + n.samples
   }
@@ -333,6 +340,9 @@ mean.UD <- function(x,...)
 
   M <- M*dV # now the average cell PMF
   x$CDF <- pmf2cdf(M)
+
+  # to be continued....
+  attr(x,"CTMM") <- ctmm()
 
   return(x)
 }

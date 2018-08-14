@@ -292,8 +292,10 @@ ctmm.prepare <- function(data,CTMM,precompute=TRUE,tau=TRUE)
   }
 
   # evaluate mean function for this data set if no vector is provided
-  if(precompute && (is.null(CTMM$mean.vec) || is.null(CTMM$error.mat)))
+  if(precompute && (is.null(CTMM$mean.vec) || is.null(CTMM$error.mat) || is.null(CTMM$class.mat)))
   {
+    CTMM$class.mat <- get.class.mat(data)
+
     drift <- get(CTMM$mean)
     U <- drift(data$t,CTMM)
     CTMM$mean.vec <- U
@@ -338,6 +340,7 @@ ctmm.repair <- function(CTMM,K=length(CTMM$tau))
   }
 
   # erase evaluated mean vector from ctmm.prepare
+  CTMM$class.mat <- NULL
   CTMM$mean.vec <- NULL
   CTMM$UU <- NULL
   CTMM$REML.loglike <- NULL # deleted in ctmm.fit

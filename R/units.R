@@ -100,13 +100,19 @@ unit.ctmm <- function(CTMM,length=1,time=1)
   CTMM$circle <- CTMM$circle * time
 
   # all means scale with length the same way... but not time
-  CTMM$mu <- CTMM$mu/length
-  drift <- get(CTMM$mean)
-  CTMM <- drift@scale(CTMM,time)
+  if("mu" %in% names(CTMM))
+  {
+    CTMM$mu <- CTMM$mu/length
+    drift <- get(CTMM$mean)
+    CTMM <- drift@scale(CTMM,time)
+  }
 
   if(class(CTMM$error)=='numeric') { CTMM$error <- CTMM$error/length } # don't divide logicals
-  CTMM$sigma <- CTMM$sigma/length^2
-  CTMM$sigma@par["area"] <- CTMM$sigma@par["area"]/length^2
+  if("sigma" %in% names(CTMM))
+  {
+    CTMM$sigma <- CTMM$sigma/length^2
+    attr(CTMM$sigma,'par')["area"] <- attr(CTMM$sigma,'par')["area"]/length^2
+  }
 
   # variance -> diffusion adjustment
   if(!CTMM$range)

@@ -12,7 +12,7 @@
 
 <meta name="author" content="Christen H. Fleming" />
 
-<meta name="date" content="2018-08-04" />
+<meta name="date" content="2018-08-14" />
 
 <title>Telemetry error</title>
 
@@ -280,7 +280,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 
 <h1 class="title toc-ignore">Telemetry error</h1>
 <h4 class="author"><em>Christen H. Fleming</em></h4>
-<h4 class="date"><em>2018-08-04</em></h4>
+<h4 class="date"><em>2018-08-14</em></h4>
 
 
 
@@ -307,8 +307,11 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <p>The <code>uere</code> command is used to estimate the UERE parameter from calibration data. Do not use this command on animal tracking data.</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" data-line-number="1">UERE &lt;-<span class="st"> </span><span class="kw">uere</span>(turtle[<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>]) <span class="co"># only using calibration data</span></a>
 <a class="sourceLine" id="cb9-2" data-line-number="2">UERE</a></code></pre></div>
-<pre><code>## horizontal 
-##   10.62878</code></pre>
+<pre><code>## $horizontal
+##      all 
+## 10.62878 
+## attr(,&quot;DOF&quot;)
+## [1] 229</code></pre>
 <p>For GPS data, the UERE will typically be 10-15 meters. The UERE can be assigned to a dataset with the <code>uere&lt;-</code> command.</p>
 <div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" data-line-number="1"><span class="kw">uere</span>(turtle) &lt;-<span class="st"> </span>UERE</a>
 <a class="sourceLine" id="cb11-2" data-line-number="2"><span class="kw">names</span>(turtle[[<span class="dv">3</span>]]) <span class="co"># now the data are calibrated</span></a></code></pre></div>
@@ -358,12 +361,12 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb21-1" data-line-number="1"><span class="kw">summary</span>(FIT)</a></code></pre></div>
 <pre><code>## $DOF
 ##     mean     area    speed 
-## 12.59923 24.41653  0.00000 
+## 12.59924 24.41655  0.00000 
 ## 
 ## $CI
 ##                           low        ML     high
-## area (hectares)     12.192644 18.949151 27.17139
-## tau position (days)  3.693129  6.319044 10.81206</code></pre>
+## area (hectares)     12.192644 18.949147 27.17139
+## tau position (days)  3.693129  6.319043 10.81205</code></pre>
 <p><code>trace=TRUE</code> allows us to see the models considered. <code>verbose=TRUE</code> would save each model.</p>
 </div>
 <div id="fitting-with-uncalibrated-data" class="section level3">
@@ -379,14 +382,14 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <a class="sourceLine" id="cb24-5" data-line-number="5"><span class="kw">summary</span>(FIT)</a></code></pre></div>
 <pre><code>## $DOF
 ##     mean     area    speed 
-## 13.46151 25.98177  0.00000 
+## 13.46152 25.98179  0.00000 
 ## 
 ## $CI
 ##                           low        ML      high
-## area (hectares)     12.604532 19.298800 27.396177
-## tau position (days)  3.467312  5.882937  9.981491
-## error (meters)       7.804841  9.317616 10.827627</code></pre>
-<p>Here, fitting the UERE simultaneously with the movement model produced a good result. This will not always be the case.</p>
+## area (hectares)     12.604531 19.298796 27.396169
+## tau position (days)  3.467312  5.882936  9.981488
+## error (meters)       0.000000  9.317618 63.303347</code></pre>
+<p>Here, fitting the UERE simultaneously with the movement model produced a consistent result. This will not always be the case.</p>
 </div>
 </div>
 </div>

@@ -62,7 +62,7 @@ The fitting functions wrap around optim and ctmm.loglike to fit continuous-time 
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.5.1</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.5.2</span>
       </span>
     </div>
 
@@ -134,7 +134,7 @@ The fitting functions wrap around <code>optim</code> and <code>ctmm.loglike</cod
 
 <span class='fu'>ctmm.fit</span>(<span class='no'>data</span>,<span class='kw'>CTMM</span><span class='kw'>=</span><span class='fu'>ctmm</span>(),<span class='kw'>method</span><span class='kw'>=</span><span class='st'>"ML"</span>,<span class='kw'>COV</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>control</span><span class='kw'>=</span><span class='fu'>list</span>(),<span class='kw'>trace</span><span class='kw'>=</span><span class='fl'>FALSE</span>)
 
-<span class='fu'>ctmm.select</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>verbose</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.99</span>,<span class='kw'>IC</span><span class='kw'>=</span><span class='st'>"AICc"</span>,<span class='kw'>trace</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='no'>...</span>)</pre>
+<span class='fu'>ctmm.select</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>verbose</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.99</span>,<span class='kw'>IC</span><span class='kw'>=</span><span class='st'>"AICc"</span>,<span class='kw'>MSPE</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>trace</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -210,6 +210,10 @@ The fitting functions wrap around <code>optim</code> and <code>ctmm.loglike</cod
     <tr>
       <th>IC</th>
       <td><p>Information criteria used. Only <code>"AICc"</code> is currently supported.</p></td>
+    </tr>
+    <tr>
+      <th>MSPE</th>
+      <td><p>Reject non-stationary features that increase MSPE. <code>MSPE=2</code> uses the velocity MSPE, rather than the position MSPE.</p></td>
     </tr>
     <tr>
       <th>...</th>
@@ -293,14 +297,14 @@ This is no longer feasible with current versions of <code>ctmm</code>, as the nu
 <span class='co'># some human-readable information</span>
 <span class='fu'>summary</span>(<span class='no'>FIT</span>)</div><div class='output co'>#&gt; $DOF
 #&gt;       mean       area      speed 
-#&gt;   11.55152   22.52394 3445.95166 
+#&gt;   11.56881   22.74287 3445.15441 
 #&gt; 
 #&gt; $CI
 #&gt;                                 low         ML      high
-#&gt; area (square kilometers) 234.954310 372.628907 541.54066
-#&gt; tau position (days)        4.039641   6.921215  11.85828
-#&gt; tau velocity (minutes)    39.636589  42.141085  44.80383
-#&gt; speed (kilometers/day)    13.818790  14.053421  14.28800
+#&gt; area (square kilometers) 234.881442 371.589536 539.14877
+#&gt; tau position (days)        4.047036   6.909876  11.79787
+#&gt; tau velocity (minutes)    39.590608  42.091315  44.74998
+#&gt; speed (kilometers/day)    13.819031  14.053693  14.28830
 #&gt; </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">

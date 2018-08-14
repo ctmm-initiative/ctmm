@@ -49,8 +49,8 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   M <- ncol(u) # number of linear parameters per spatial dimension
 
   # pre-centering the data reduces later numerical error across models (tested)
-  mu.center <- colMeans(z)
-  z <- t( t(z) - mu.center )
+  # mu.center <- colMeans(z)
+  # z <- t( t(z) - mu.center )
   # add mu.center back to the mean value after kalman filter / mean profiling
   # pre-standardizing the data would also help
 
@@ -373,13 +373,10 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     if(UERE>=3) { CTMM$error <- as.logical(CTMM$error) } # old profile code broke logical error flag - not sure if still necessary
     else if(UERE && UERE<3 && PROFILE) { CTMM$error <- CTMM$error * sqrt(attr(sigma,'par')['area']) } # restore error ratio
 
-    # if(range)
-    {
-      mu <- drift@shift(mu,mu.center) # translate back to origin from center
-      CTMM$mu <- mu
-      CTMM$COV.mu <- COV.mu
-      CTMM$DOF.mu <- DOF.mu
-    }
+    # mu <- drift@shift(mu,mu.center) # translate back to origin from center
+    CTMM$mu <- mu
+    CTMM$COV.mu <- COV.mu
+    CTMM$DOF.mu <- DOF.mu
 
     CTMM$loglike <- loglike
     attr(CTMM,"info") <- attr(data,"info")
@@ -416,9 +413,19 @@ telemetry.mins <- function(data,axes=c('x','y'))
 # FIT MODEL WITH LIKELIHOOD FUNCTION (convenience wrapper to optim)
 ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=FALSE)
 {
+  axes <- CTMM$axes
+  # standardize data for numerical stability
+  # pre-centering the data reduces later numerical error across models (tested)
+  SHIFT <- colMeans(get.telemetry(data,axes))
+  data[,axes] <- t( t(data[,axes,drop=FALSE]) - SHIFT )
+  # add mu.center back to the mean value after kalman filter / mean profiling
+  # pre-standardizing the data should also help
+  SCALE <- sqrt(mean(get.telemetry(data,axes)^2))
+  data <- unit.telemetry(data,length=SCALE)
+  CTMM <- unit.ctmm(CTMM,length=SCALE)
+
   # used for minimum scale of parameter inspection
   n <- length(data$t)
-  axes <- CTMM$axes
   MINS <- telemetry.mins(data,axes)
   dt <- MINS$dt
   df <- MINS$df
@@ -660,6 +667,13 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
 
   # covariance parameters only
   setup.parameters(CTMM,profile=FALSE,linear=FALSE)
+
+  CTMM <- unit.ctmm(CTMM,length=1/SCALE) # unstandardize (includes likelihood adjustment)
+  # log-likelihood adjustment
+  CTMM$loglike <- CTMM$loglike - length(CTMM$axes)*length(data$t)*log(SCALE)
+  # translate back to origin from center
+  CTMM$mu <- drift@shift(CTMM$mu,SHIFT)
+
   nu <- length(NAMES)
   # all parameters
   q <- length(axes)
