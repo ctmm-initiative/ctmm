@@ -1,8 +1,8 @@
 # global variables for dop/uere/error functions (special axes)
-DOP.LIST <- list(unknown=list(axes=NA,DOP=NA,VAR=NA,COV=NA) ,
-                 horizontal=list(axes=c("x","y"),DOP="HDOP",VAR="VAR.xy",COV=c("COV.x.x","COV.x.y","COV.y.y")),
-                 vertical=list(axes="z",DOP="VDOP",VAR="VAR.z",COV=NA),
-                 speed=list(axes=c("vx","vy"),DOP="SDOP",VAR="VAR.v",COV=c("COV.vx.vx","COV.vx.vy","COV.vy.vy")) )
+DOP.LIST <- list(unknown=list(axes=NA,geo=NA,DOP=NA,VAR=NA,COV=NA) ,
+                 horizontal=list(axes=c("x","y"),geo=c("longitude","latitude"),DOP="HDOP",VAR="VAR.xy",COV=c("COV.x.x","COV.x.y","COV.y.y")),
+                 vertical=list(axes="z",geo="z",DOP="VDOP",VAR="VAR.z",COV=NA),
+                 speed=list(axes=c("vx","vy"),geo=c("speed","heading"),DOP="SDOP",VAR="VAR.v",COV=c("COV.vx.vx","COV.vx.vy","COV.vy.vy")) )
 
 
 # is the data calibrated
@@ -46,7 +46,7 @@ get.dop.types <- function(data)
   NAMES <- sapply(data,names)
   NAMES <- unique(c(NAMES))
 
-  IN <- sapply(TYPES,function(type){all(DOP.LIST[[type]]$axes %in% NAMES)})
+  IN <- sapply(TYPES,function(type){all(DOP.LIST[[type]]$axes %in% NAMES) || all(DOP.LIST[[type]]$geo %in% NAMES)})
   TYPES <- TYPES[IN]
 
   return(TYPES)
@@ -110,8 +110,13 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
   for(i in 1:length(data))
   {
     # toss out Inf DOP values (used for missing data types)
-    FIN <- (data[[i]][[DOP]] < Inf)
-    data[[i]] <- data[[i]][FIN,]
+    if(DOP %in% names(data)[[i]])
+    {
+      FIN <- (data[[i]][[DOP]] < Inf)
+      data[[i]] <- data[[i]][FIN,]
+    }
+    else # make sure data has some DOP value
+    { data[[i]][[DOP]] <- 1 }
 
     # null class cannot be NULL
     if("class" %nin% names(data[[i]]))
@@ -120,7 +125,6 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
       data[[i]]$class <- as.factor(data[[i]]$class)
     }
   }
-  rm(FIN)
 
   z <- lapply(1:length(data),function(i){get.telemetry(data[[i]],axes)})
 
@@ -139,8 +143,8 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
   EST <- is.na(UERE)
   names(EST) <- CLASS
 
-  # DOP values
-  DOP <- lapply(data,function(D){ if(DOP %in% names(D)) { D[[DOP]] } else { rep(1,length(D$t)) } })
+  # DOP values # DOP values ensured above
+  DOP <- lapply(data,function(D){ D[[DOP]] })
 
   # weights
   w <- lapply(DOP,function(D){length(axes)/D^2})
