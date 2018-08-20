@@ -4,6 +4,9 @@ is.installed <- function(pkg) is.element(pkg, utils::installed.packages()[,1])
 # does this thing exist and, if so, is it true
 true <- function(x) { !is.null(x) & !is.na(x) & x }
 
+# not in #
+"%nin%" <- function(x, table) { match(x, table, nomatch = 0) == 0 }
+
 # generic FFT functions
 FFT <- function(X,inverse=FALSE)
 {

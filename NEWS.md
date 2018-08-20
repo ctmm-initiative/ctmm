@@ -1,4 +1,4 @@
-ctmm 0.5.2 (2018-08-13)
+ctmm 0.5.2 (2018-08-20)
 ================
 
   * location classes (multiple UEREs) now supported by uere() and uere()<-

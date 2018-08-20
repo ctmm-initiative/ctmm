@@ -66,7 +66,7 @@ median.telemetry <- function(x,na.rm=FALSE,...)
       x <- lapply(x,function(d){ median.telemetry(d,...) }) # this will only ever return long-lat & x-y columns
       x <- do.call(rbind,x)
       x <- as.data.frame(x)
-      x <- new.telemetry(x,info=list(identity=id,projection=proj))
+      x <- new.telemetry(x,info=list(identity=id,projection=proj),UERE=new.UERE())
     }
     else
     { x <- x[[1]] }
@@ -85,7 +85,7 @@ median.telemetry <- function(x,na.rm=FALSE,...)
 
     mu <- median.longlat(x,...)
     x <- data.frame(longitude=mu[,"longitude"],latitude=mu[,"latitude"])
-    x <- new.telemetry(x,info=list(identity=id,projection=proj))
+    x <- new.telemetry(x,info=list(identity=id,projection=proj),UERE=new.UERE())
 
     projection(x) <- proj # NULL is handled
   }
@@ -96,7 +96,7 @@ median.telemetry <- function(x,na.rm=FALSE,...)
     mu <- c(Gmedian::Gmedian(x,init=mu,...))
 
     x <- data.frame(x=mu[1],y=mu[2])
-    x <- new.telemetry(x,info=list(identity=id))
+    x <- new.telemetry(x,info=list(identity=id),UERE=new.UERE())
   }
 
   return(x)

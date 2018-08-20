@@ -77,7 +77,7 @@ extent.UD <- function(x,level=0.95,level.UD=0.95,...)
 
   # capture ML contour
   if(is.null(x$DOF.area) || is.na(level))
-  { P <- level.UD }
+  { P <- max(level.UD) }
   else # capture outer contour
   { P <- CI.UD(x,max(level.UD),max(level),P=TRUE)[3] }
 

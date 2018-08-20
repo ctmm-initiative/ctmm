@@ -7,7 +7,7 @@
 \description{Functions for estimating and assigning the User Equivalent Range Error (UERE) of a GPS device from calibration data.}
 
 \usage{
-uere(data,override=FALSE,precision=1/2,trace=FALSE)
+uere(data,precision=1/2,trace=FALSE)
 
 uere(data) <- value
 }
@@ -15,7 +15,7 @@ uere(data) <- value
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{data}{Telemetry object or list of telemetry objects, preferably with DOP columns.}
-  \item{override}{Return a UERE estimate even for data that are calibrated.}
+%  \item{override}{Return a UERE estimate even for data that are calibrated.}
   \item{precision}{Fraction of maximum possible digits of precision to target in categorical error fitting. \code{precision=1/2} results in about 7 decimal digits of precision.}
   %\item{integrate}{Consider HDOP and VDOP as being specified by the same UERE value.}
   \item{trace}{Print extra details, such as the UERE's 95\% confidence interval.}

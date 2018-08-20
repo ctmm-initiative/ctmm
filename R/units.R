@@ -3,7 +3,7 @@
 # concise gives abbreviated names
 unit <- function(data,dimension,thresh=1,concise=FALSE,SI=FALSE)
 {
-  if(SI) { data <- 1.1 ; thresh <- 1 } # will always choose base units
+  if(SI) { data <- 1.01 ; thresh <- 1 } # will always choose base units
 
   if(dimension=="length")
   {
@@ -57,7 +57,7 @@ unit <- function(data,dimension,thresh=1,concise=FALSE,SI=FALSE)
   if(concise) { name.list <- abrv.list }
 
   # choose most parsimonious units
-  I <- max.data > thresh * scale.list
+  I <- (max.data >= thresh * scale.list)
   if(any(I))
   {
     I <- (1:length(I))[I]

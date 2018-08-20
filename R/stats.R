@@ -14,7 +14,7 @@ CI.lower <- Vectorize(function(k,Alpha){stats::qchisq(Alpha/2,k,lower.tail=TRUE)
 
 
 # calculate chi^2 confidence intervals from MLE and COV estimates
-chisq.ci <- function(MLE,COV=NULL,alpha=0.05,DOF=2*MLE^2/COV,fast=TRUE)
+chisq.ci <- function(MLE,COV=NULL,level=0.95,alpha=1-level,DOF=2*MLE^2/COV,fast=TRUE)
 {
   # try to do something reasonable on failure cases
   if(DOF==0)

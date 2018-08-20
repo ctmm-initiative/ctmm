@@ -90,6 +90,7 @@ S3method(speed,telemetry)
 
 #UERE FUNCTIONS
 export(uere,"uere<-")
+S3method(summary,UERE)
 
 #OVERLAP FUNCTIONS
 export(overlap)
