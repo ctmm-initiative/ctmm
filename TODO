@@ -1,9 +1,6 @@
 PRIORITY
-* is.calibrated()
+* multi-class UERE in ctmm(), ctmm.guess(), ctmm.fit(), variogram.fit(), etc., etc.
 * uere() select for identical UEREs (location class , axes) ?
-* Scott's calibration data: speed UERE & DOF.UERE
-* Patty's calibration data: DOF.UERE
-* re-calculate Tapir calibration with 2 location classes
 * should standardization be moved to ctmm.select?
 * reference Guillaume's paper at the beginning of the periodogram vignette
 * use perturb.ctmm in ctmm.guess / variogram.fit ?
@@ -35,6 +32,7 @@ PARALLELIZATION
 * parallel derivatives with upper/lower/etc.
 
 MISC WORK
+* akde/occurrence grid=UD/raster
 * p-value test for trend terms using variance of mu_alt-mu_null
 * significant digits argument to summary()
 * functionalize detrend & retrend in simulate/predict

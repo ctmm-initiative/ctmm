@@ -11,8 +11,8 @@ names(turtle) # some calibration data and some turtle data
 plot(turtle[1:2],col=rainbow(2)) # calibration data only
 
 ## ------------------------------------------------------------------------
-UERE <- uere(turtle[1:2]) # only using calibration data
-UERE
+UERE <- uere.fit(turtle[1:2]) # only using calibration data
+summary(UERE)
 
 ## ------------------------------------------------------------------------
 uere(turtle) <- UERE

@@ -126,42 +126,50 @@
     
     </div>
 
-    <pre class="usage"><span class='fu'>uere</span>(<span class='no'>data</span>,<span class='kw'>precision</span><span class='kw'>=</span><span class='fl'>1</span>/<span class='fl'>2</span>,<span class='kw'>trace</span><span class='kw'>=</span><span class='fl'>FALSE</span>)
+    <pre class="usage"><span class='fu'>uere</span>(<span class='no'>data</span>)
 
-<span class='fu'>uere</span>(<span class='no'>data</span>) <span class='kw'>&lt;-</span> <span class='no'>value</span></pre>
+<span class='fu'>uere</span>(<span class='no'>data</span>) <span class='kw'>&lt;-</span> <span class='no'>value</span>
+
+<span class='fu'>uere.fit</span>(<span class='no'>data</span>,<span class='kw'>precision</span><span class='kw'>=</span><span class='fl'>1</span>/<span class='fl'>2</span>)
+
+<span class='co'># S3 method for UERE</span>
+<span class='fu'>summary</span>(<span class='no'>object</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>data</th>
-      <td><p>Telemetry object or list of telemetry objects, preferably with DOP columns.</p></td>
+      <td><p><code>telemetry</code> object or list of telemetry objects, preferably with DOP columns.</p></td>
+    </tr>
+    <tr>
+      <th>value</th>
+      <td><p>UERE value(s) to assign to telemetry data (see details).</p></td>
     </tr>
     <tr>
       <th>precision</th>
       <td><p>Fraction of maximum possible digits of precision to target in categorical error fitting. <code>precision=1/2</code> results in about 7 decimal digits of precision.</p></td>
     </tr>
     <tr>
-      <th>trace</th>
-      <td><p>Print extra details, such as the UERE's 95% confidence interval.</p></td>
+      <th>object</th>
+      <td><p><code>UERE</code> object to summarize.</p></td>
     </tr>
     <tr>
-      <th>value</th>
-      <td><p>UERE value(s) to assign to telemetry data (see details).</p></td>
+      <th>level</th>
+      <td><p>Confidence level for UERE estimate confidence intervals.</p></td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td><p>Further arguments are ignored.</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>Often times GPS animal tracking devices return HDOP values but do not specifiy the device's UERE necessary to transform the HDOP values into absolute errors.
-<code>uere()</code> allows users to estimate the UERE from calibration data, where the device was left fixed over a period of time.
+<code>uere.fit()</code> allows users to estimate the UERE from calibration data, where the device was left fixed over a period of time.
+The calibration UERE can then be applied to tracking data with the <code>uere()&lt;-</code> assignment method.
 Otherwise, when <code>error=TRUE</code> in <code><a href='ctmm.fit.html'>ctmm</a></code>, <code><a href='ctmm.fit.html'>ctmm.fit</a></code> will estimate the UERE simultaneously with the movement model, which is less reliable than using calibration data.</p>
-<p>The calibration UERE can then be applied to tracking data during import, with <code><a href='as.telemetry.html'>as.telemetry</a></code>, or after import with the <code>uere()&lt;-</code> assignment method.</p>
-<p>Ideally, device HDOP and VDOP values are scaled to the same UERE.
-However, in many cases not all DOP values are supplied and some must be approximated.
-In such cases, different UERE values need to be estimated for each set of DOP values, via the <code>axes</code> argument of <code>uere</code>.
-A <code>c</code> combination of properly named UERE values can then be used in assignment via <code>uere&lt;-</code>.
-Proper names include <code>"horizontal"</code>, <code>"vertical"</code>, and <code>"speed"</code>.</p>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
@@ -184,9 +192,14 @@ Proper names include <code>"horizontal"</code>, <code>"vertical"</code>, and <co
 <span class='co'># the first two datasets are calibration data</span>
 <span class='fu'>names</span>(<span class='no'>turtle</span>)</div><div class='output co'>#&gt; [1] "Calibration.1" "Calibration.2" "Turtle.1"      "Turtle.2"     </div><div class='input'>
 <span class='co'># estimate UERE from calibration data</span>
-<span class='no'>UERE</span> <span class='kw'>&lt;-</span> <span class='fu'>uere</span>(<span class='no'>turtle</span>[<span class='fl'>1</span>:<span class='fl'>2</span>])
-
-<span class='co'># apply UERE to entire dataset</span>
+<span class='no'>UERE</span> <span class='kw'>&lt;-</span> <span class='fu'>uere.fit</span>(<span class='no'>turtle</span>[<span class='fl'>1</span>:<span class='fl'>2</span>])
+<span class='co'># inspect UERE estimate</span>
+<span class='fu'>summary</span>(<span class='no'>UERE</span>)</div><div class='output co'>#&gt; , , horizontal
+#&gt; 
+#&gt;          low       ML     high
+#&gt; all 9.940412 10.62878 11.31654
+#&gt; </div><div class='input'>
+<span class='co'># assign UERE to entire dataset</span>
 <span class='fu'>uere</span>(<span class='no'>turtle</span>) <span class='kw'>&lt;-</span> <span class='no'>UERE</span>
 
 <span class='co'># calculate residuals of calibration data</span>

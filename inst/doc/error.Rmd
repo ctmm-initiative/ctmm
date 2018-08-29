@@ -35,8 +35,8 @@ plot(turtle[1:2],col=rainbow(2)) # calibration data only
 The `uere` command is used to estimate the UERE parameter from calibration data. Do not use this command on animal tracking data.
 
 ```{r}
-UERE <- uere(turtle[1:2]) # only using calibration data
-UERE
+UERE <- uere.fit(turtle[1:2]) # only using calibration data
+summary(UERE)
 ```
 
 For GPS data, the UERE will typically be 10-15 meters. The UERE can be assigned to a dataset with the `uere<-` command.

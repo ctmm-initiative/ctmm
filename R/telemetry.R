@@ -316,18 +316,18 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   COL <- pull.column(object,COL)
   if(length(COL))
   {
-    COL <- 1.1778678310260233 * COL # estimated from Scott's calibration data
-    DATA$HDOP <- sqrt(2)*COL
-    DATA[[DOP.LIST$horizontal$VAR]] <- COL^2
+    # estimated from Scott's calibration data
+    DATA$HDOP <- COL
+    DATA[[DOP.LIST$horizontal$VAR]] <- 1.2304709680947150^2/2*COL^2
   }
 
   ###########
   # Telonics Gen4 GPS errors
   COL <- c("Horizontal.Error","GPS.Horizontal.Error","Telonics.Horizontal.Error")
   COL <- pull.column(object,COL)
-  if(length(COL))
+  if(length(COL) && FALSE)
   {
-    # COL <- 0.14699275951173810 * COL # estimated from Patricia's calibration data
+    COL <- COL/10 # put on similar scale with HDOP
 
     DATA$HDOP <- sqrt(2)*COL
     # DATA[[DOP.LIST$horizontal$VAR]] <- COL^2
@@ -354,7 +354,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   # HDOP
   if(!("HDOP" %in% names(DATA)))
   {
-    COL <- c("GPS.HDOP","HDOP","DOP","GPS.Horizontal.Dilution")
+    COL <- c("GPS.HDOP","HDOP","DOP","Horizontal.Dilution","GPS.Horizontal.Dilution")
     COL <- pull.column(object,COL)
     if(length(COL))
     {
@@ -456,9 +456,8 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     if(length(COL)) # assuming same form as EOBS horizontal accuracy estimate
     {
       # UERE from Scott's calibration data
-      COL <- 0.1089484 * COL
-      DATA[[DOP.LIST$speed$DOP]] <- sqrt(2) * COL
-      DATA[[DOP.LIST$speed$VAR]] <- COL^2
+      DATA[[DOP.LIST$speed$DOP]] <- COL
+      DATA[[DOP.LIST$speed$VAR]] <- 0.0499190708866745^2/2 * COL^2
     }
     else if("HDOP" %in% names(DATA)) # USE HDOP as approximate SDOP
     {
@@ -525,6 +524,9 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
 
     # combine data.frame with ancillary info
     info <- list(identity=id[i], timezone=timezone, projection=projection)
+    AICc <- NA*UERE[1,]
+    names(AICc) <- colnames(UERE) # R drops dimnames...
+    UERE <- new.UERE(UERE,DOF=NA*UERE,AICc=AICc)
     telist[[i]] <- new.telemetry( telist[[i]] , info=info, UERE=UERE )
   }
   rm(DATA)

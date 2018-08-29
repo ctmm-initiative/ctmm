@@ -1,8 +1,8 @@
 # this is stuff that needs to be run first (and in the right order) for S4 crap to work
 
 methods::setOldClass("UERE")
-new.UERE <- methods::setClass("UERE",contains="matrix",representation=methods::representation(DOF="matrix"),
-                              prototype=methods::prototype(matrix(),DOF=matrix()))
+new.UERE <- methods::setClass("UERE",contains="matrix",representation=methods::representation(DOF="matrix",AICc="numeric"),
+                              prototype=methods::prototype(matrix(),DOF=matrix(),AICc=numeric()))
 
 methods::setOldClass("telemetry")
 new.telemetry <- methods::setClass("telemetry",contains="data.frame",representation=methods::representation(info="list",UERE="UERE"),

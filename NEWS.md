@@ -1,11 +1,17 @@
-ctmm 0.5.2 (2018-08-20)
+ctmm 0.5.2 (2018-08-28)
 ================
 
   * location classes (multiple UEREs) now supported by uere() and uere()<-
   
+  * uere() forked into separate uere() and uere.fit() methods
+  
+  * AICc slot included in UERE objects for error model selection
+  
   * overlap() telemetry and CTMM arguments depreciated
   
   * fixed bug in as.telemetry() when importing ARGOS error ellipses
+  
+  * e-obs error calibration updated
   
   * numerical stability increased in ctmm.fit when distance scales are extreme
 

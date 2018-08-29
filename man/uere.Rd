@@ -1,38 +1,37 @@
 \name{uere}
 \alias{uere}
+\alias{uere.fit}
 \alias{uere<-}
+\alias{summary.UERE}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Estimate UERE from calibration data}
 
 \description{Functions for estimating and assigning the User Equivalent Range Error (UERE) of a GPS device from calibration data.}
 
 \usage{
-uere(data,precision=1/2,trace=FALSE)
+uere(data)
 
 uere(data) <- value
+
+uere.fit(data,precision=1/2)
+
+\S3method{summary}{UERE}(object,level=0.95,...)
 }
 
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{data}{Telemetry object or list of telemetry objects, preferably with DOP columns.}
-%  \item{override}{Return a UERE estimate even for data that are calibrated.}
-  \item{precision}{Fraction of maximum possible digits of precision to target in categorical error fitting. \code{precision=1/2} results in about 7 decimal digits of precision.}
-  %\item{integrate}{Consider HDOP and VDOP as being specified by the same UERE value.}
-  \item{trace}{Print extra details, such as the UERE's 95\% confidence interval.}
+  \item{data}{\code{telemetry} object or list of telemetry objects, preferably with DOP columns.}
   \item{value}{UERE value(s) to assign to telemetry data (see details).}
+  \item{precision}{Fraction of maximum possible digits of precision to target in categorical error fitting. \code{precision=1/2} results in about 7 decimal digits of precision.}
+  \item{object}{\code{UERE} object to summarize.}
+  \item{level}{Confidence level for UERE estimate confidence intervals.}
+  \item{...}{Further arguments are ignored.}
 }
 
 \details{Often times GPS animal tracking devices return HDOP values but do not specifiy the device's UERE necessary to transform the HDOP values into absolute errors.
-\code{uere()} allows users to estimate the UERE from calibration data, where the device was left fixed over a period of time.
+\code{uere.fit()} allows users to estimate the UERE from calibration data, where the device was left fixed over a period of time.
+The calibration UERE can then be applied to tracking data with the \code{uere()<-} assignment method.
 Otherwise, when \code{error=TRUE} in \code{\link{ctmm}}, \code{\link{ctmm.fit}} will estimate the UERE simultaneously with the movement model, which is less reliable than using calibration data.
-
-The calibration UERE can then be applied to tracking data during import, with \code{\link{as.telemetry}}, or after import with the \code{uere()<-} assignment method.
-
-Ideally, device HDOP and VDOP values are scaled to the same UERE.
-However, in many cases not all DOP values are supplied and some must be approximated.
-In such cases, different UERE values need to be estimated for each set of DOP values, via the \code{axes} argument of \code{uere}.
-A \code{c} combination of properly named UERE values can then be used in assignment via \code{uere<-}.
-Proper names include \code{"horizontal"}, \code{"vertical"}, and \code{"speed"}.
 }
 
 \value{The UERE estimate.}
@@ -56,9 +55,11 @@ data(turtle)
 names(turtle)
 
 # estimate UERE from calibration data
-UERE <- uere(turtle[1:2])
+UERE <- uere.fit(turtle[1:2])
+# inspect UERE estimate
+summary(UERE)
 
-# apply UERE to entire dataset
+# assign UERE to entire dataset
 uere(turtle) <- UERE
 
 # calculate residuals of calibration data

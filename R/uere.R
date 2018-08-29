@@ -22,7 +22,6 @@ is.calibrated <- function(data,type="horizontal")
   return(UERE)
 }
 
-
 # match DOP type for DOP.LIST by axes argument
 DOP.match <- function(axes)
 {
@@ -53,10 +52,27 @@ get.dop.types <- function(data)
 }
 
 
-# return the UERE from set data or calculate it from calibration data
+# return the UERE from set data
+uere <- function(data)
+{
+  if(class(data)=="list" && length(data)==1)
+  { data <- data[[1]] }
+  if(class(data)=="telemetry")
+  {
+    UERE <- attr(data,"UERE")
+    return(UERE)
+  }
+
+  UERE <- lapply(data,function(d){attr(d,"UERE")})
+  SAME <- sapply(UERE[-1],function(U){identical(U,UERE[[1]])})
+  if(all(SAME)) { return( UERE[[1]] ) }
+  else { return(UERE) }
+}
+
+
+# calculate UERE value from calibration data
 # look for every DOP without a VAR and calculate UERE - override option for all
-# option to integrate HDOP & VDOP if they share the same UERE
-uere <- function(data,precision=1/2,trace=FALSE)
+uere.fit <- function(data,precision=1/2)
 {
   data <- listify(data)
 
@@ -69,6 +85,9 @@ uere <- function(data,precision=1/2,trace=FALSE)
   # passed by slot
   DOF <- lapply(UERE,function(U){attr(U,"DOF")})
   names(DOF) <- TYPES
+  # passed by slot
+  AICc <- vapply(UERE,function(U){attr(U,"AICc")},numeric(1))
+  names(AICc) <- TYPES
 
   CLASS <- names(UERE[[1]])
   if(!length(CLASS)) { CLASS <- "all" }
@@ -79,21 +98,7 @@ uere <- function(data,precision=1/2,trace=FALSE)
   DOF <- matrix( simplify2array(DOF) , length(CLASS) , length(TYPES) )
   dimnames(DOF) <- list(CLASS,TYPES)
 
-  UERE <- new.UERE(UERE,DOF=DOF)
-
-  # integrate attempt
-  # Do x,y,z axes all share the same UERE?
-  # integrate <- FALSE # never seems to hold
-  # if(integrate && all(c('horizontal','vertical') %in% TYPES) && all(c("HDOP","VDOP") %in% names(data[[1]])))
-  # {
-  #   P <- (UERE['horizontal']/UERE['vertical'])^2
-  #   # F-test
-  #   P <- min( stats::pf(P,N['horizontal'],N['vertical'],lower.tail=TRUE) , stats::pf(P,N['horizontal'],N['vertical'],lower.tail=FALSE) )
-  #   message("p[UERE] = ",P)
-  #
-  #   UNITY <- sqrt((2*UERE['horizontal']^2 + UERE['vertical']^2)/3)
-  #   UERE['horizontal'] <- UERE['vertical'] <- UNITY
-  # }
+  UERE <- new.UERE(UERE,DOF=DOF,AICc=AICc)
 
   return(UERE)
 }
@@ -110,10 +115,10 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
   for(i in 1:length(data))
   {
     # toss out Inf DOP values (used for missing data types)
-    if(DOP %in% names(data)[[i]])
+    if(DOP %in% names(data[[i]]))
     {
-      FIN <- (data[[i]][[DOP]] < Inf)
-      data[[i]] <- data[[i]][FIN,]
+      IN <- (data[[i]][[DOP]] < Inf)
+      data[[i]] <- data[[i]][IN,]
     }
     else # make sure data has some DOP value
     { data[[i]][[DOP]] <- 1 }
@@ -150,7 +155,7 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
   w <- lapply(DOP,function(D){length(axes)/D^2})
 
   # class indicators
-  C <- lapply(data,function(D){get.class.mat(D,CLASS)})
+  C <- lapply(data,function(D){get.class.mat(D,CLASS)}) # (animal;time,class)
   # ML DOF
   DOF.ML <- vapply(C,colSums,UERE) # (class,animals)
   dim(DOF.ML) <- c(length(UERE),length(data))
@@ -161,21 +166,23 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
   UERE[EST] <- 10
 
   # check for missing levels/classes
-  P <- (DOF.ML<=0)
-  if(any(P))
+  BAD <- (DOF.ML<=0)
+  if(any(BAD))
   {
-    UERE[P] <- Inf
-    EST[P] <- FALSE
+    # missing UEREs should not impact calculation
+    UERE[BAD] <- Inf
+    EST[BAD] <- FALSE
   }
 
   # iterative fit
+  DEBUG <- FALSE
   ERROR <- Inf
   while(ERROR>TOL)
   {
     if(type=="speed") # known mean
     {
-      # ML/REML degrees of freedom
-      DOF <- DOF.ML
+      # ML/REML degrees of freedom lost
+      Kc <- 0
 
       # known means
       mu <- array(0,c(length(data),length(axes)))
@@ -183,25 +190,37 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
     else # unknown mean
     {
       # precicion weights
-      P <- vapply(1:length(data),function(i){c(w[[i]] %*% C[[i]]) * (1/UERE)},UERE) # (class,animals)
+      P <- vapply(1:length(data),function(i){c(w[[i]] %*% C[[i]]) * (1/UERE^2)},UERE) # (class,animals)
       dim(P) <- c(length(UERE),length(data))
       Pc <- rowSums(P) # (class)
       Pk <- colSums(P) # (animals)
 
-      # REML degrees of freedom
-      DOF <- DOF.ML - colSums(t(P)/Pk) # (class)
+      # REML degrees of freedom lost
+      Kc <- colSums(t(P)/Pk) # (class)
 
       # means
-      mu <- vapply(1:length(data),function(i){t(w[[i]] * z[[i]]) %*% C[[i]] %*% (1/UERE)},z[[1]][1,]) # (axes,animals)
+      mu <- vapply(1:length(data),function(i){t(w[[i]] * z[[i]]) %*% C[[i]] %*% (1/UERE^2)},z[[1]][1,]) # (axes,animals)
       dim(mu) <- c(length(axes),length(data))
       mu <- t(mu)/Pk # (animals,axes)
+
+      if(DEBUG)
+      {
+        loglike <- -(1/2)*vapply(1:length(data),function(i){
+          LL <- length(axes)*(sum(C[[i]] %*% log(UERE^2))-sum(log(w[[i]]) %*% C[[i]]))
+          LL <- LL + sum( (t(z[[i]])-mu[i,])^2 %*% (w[[i]] * C[[i]]) %*% (1/UERE^2) )
+          LL <- LL + length(axes)*log( w[[i]] %*% C[[i]] %*% (1/UERE^2) ) # REML
+          return(LL) },numeric(1))
+        loglike <- sum(loglike)
+        message(type," log(Like) = ",loglike)
+      }
     }
+    DOF <- DOF.ML - Kc # (class)
 
     # updated UERE esitmates
-    UERE2 <- vapply(1:length(data),function(i){colSums((t(z[[i]])-mu[i,])^2 %*% (w[[i]] * C[[i]]))},UERE) # (class,animals)
+    UERE2 <- vapply(1:length(data),function(i){colSums((t(z[[i]])-mu[i,])^2) %*% (w[[i]] * C[[i]])},UERE) # (class,animals)
     dim(UERE2) <- c(length(UERE),length(data))
-    UERE2 <- rowSums(UERE2) / DOF
-    UERE2 <- sqrt(UERE2/length(axes))
+    UERE2 <- rowSums(UERE2) / (length(axes)*DOF)
+    UERE2 <- sqrt(UERE2)
     UERE2 <- UERE2[EST]
 
     ERROR <- abs(UERE2-UERE[EST])/UERE2
@@ -213,14 +232,31 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
     if(length(CLASS)<=1 || type=="speed") { break }
   }
 
-  # fix missing UEREs
-  P <- (UERE==Inf)
-  if(any(P)) { UERE[P] <- NA }
+  # missing UEREs should not impact calculation
+  if(any(BAD)) { UERE[BAD] <- 1 }
 
-  attr(UERE,"DOF") <- DOF
+  AICc <- length(axes) * vapply(1:length(data),function(i){ (sum(C[[i]] %*% log(2*pi*UERE^2)) - sum(log(w[[i]]) %*% C[[i]])) },numeric(1)) # (animals)
+  if(type=="speed")
+  { dof <- DOF.ML }
+  else
+  { dof <- DOF.ML - colSums((t(P)/Pk)^2) } # (class)
+  # missing UEREs should not impact calculation
+  if(any(BAD))
+  {
+    Kc[BAD] <- 0
+    dof[BAD] <- 0
+  }
+  AICc <- sum(AICc) + length(axes)^2*sum( (DOF.ML+Kc)*dof/(length(axes)*dof-2) )
+
+  # fix missing UEREs
+  if(any(BAD)) { UERE[BAD] <- NA }
+
+  attr(UERE,"DOF") <- dof # sampling distribution
+  attr(UERE,"AICc") <- AICc
 
   return(UERE)
 }
+
 
 # summarize uere object
 summary.UERE <- function(object,level=0.95,...)
@@ -233,7 +269,7 @@ summary.UERE <- function(object,level=0.95,...)
   UERE <- sapply(1:length(object),function(i){chisq.ci(object[i]^2,DOF=DOF[i],level=level)}) #(3,class*type)
   UERE <- sqrt(UERE)
   dim(UERE) <- c(3,dim(object)) # (3,class,type)
-  dimnames(UERE)[[1]] <- c("low","ML","hi")
+  dimnames(UERE)[[1]] <- c("low","ML","high")
   dimnames(UERE)[2:3] <- dimnames(object)
   UERE <- aperm(UERE,c(2,1,3))
   return(UERE)
@@ -426,9 +462,8 @@ uere.null <- function(data)
   UERE <- matrix(NA_real_,length(CLASS),length(TYPES))
   rownames(UERE) <- CLASS
   colnames(UERE) <- TYPES
-  DOF <- UERE
 
-  UERE <- new.UERE(UERE,DOF=DOF)
+  UERE <- new.UERE(UERE,DOF=UERE,AICc=UERE[1,])
 
   return(UERE)
 }
@@ -446,7 +481,7 @@ uere.null <- function(data)
     UERE <- cbind(UERE)
     colnames(UERE) <- "horizontal"
     rownames(UERE) <- "all"
-    UERE <- new.UERE(UERE,DOF=NA*UERE)
+    UERE <- new.UERE(UERE,DOF=NA*UERE,AICc=NA*UERE[1,])
   }
 
   DOF <- attr(UERE,"DOF")
@@ -488,6 +523,8 @@ uere.null <- function(data)
     rownames(UERE.NULL) <- CLASS
     colnames(UERE.NULL) <- TYPES
     DOF.NULL <- UERE.NULL
+    AICc.NULL <- UERE.NULL[1,]
+    names(AICc.NULL) <- TYPES # R drops dimnames...
 
     # copy over @UERE slot
     if(length(attr(data[[i]],"UERE")) && length(UERE))
@@ -496,6 +533,7 @@ uere.null <- function(data)
       TYPES <- colnames(attr(data[[i]],"UERE"))
       UERE.NULL[CLASS,TYPES] <- attr(data[[i]],"UERE")
       DOF.NULL[CLASS,TYPES] <- attr(attr(data[[i]],"UERE"),"DOF")
+      AICc.NULL[TYPES] <- attr(attr(data[[i]],"UERE"),"AICc")
     }
 
     # copy over UERE-value (overwriting conflicts)
@@ -505,6 +543,7 @@ uere.null <- function(data)
       TYPES <- colnames(UERE)
       UERE.NULL[CLASS,TYPES] <- methods::getDataPart(UERE)
       DOF.NULL[CLASS,TYPES] <- attr(UERE,"DOF")
+      AICc.NULL[TYPES] <- attr(UERE,"AICc")
     }
 
     # calibrate data
@@ -518,7 +557,7 @@ uere.null <- function(data)
     }
 
     # store UERE that was applied
-    UERE.NULL <- new.UERE(UERE.NULL,DOF=DOF.NULL)
+    UERE.NULL <- new.UERE(UERE.NULL,DOF=DOF.NULL,AICc=AICc.NULL)
     attr(data[[i]],"UERE") <- UERE.NULL
   }
 
