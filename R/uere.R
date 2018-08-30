@@ -131,12 +131,6 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
     }
   }
 
-  z <- lapply(1:length(data),function(i){get.telemetry(data[[i]],axes)})
-
-  # make sure axes present in dataset (e.g., only 2D fixes)
-  IN <- as.logical(sapply(z,length))
-  z <- z[IN]
-
   # all location classes
   CLASS <- lapply(data,function(D){levels(D$class)})
   CLASS <- unique(unlist(CLASS))
@@ -144,6 +138,25 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
   # null UERE structure given location classes
   UERE <- rep(NA_real_,length(CLASS))
   names(UERE) <- CLASS
+
+  z <- lapply(1:length(data),function(i){get.telemetry(data[[i]],axes)})
+
+  # make sure axes present in dataset (e.g., only 2D fixes)
+  IN <- as.logical(sapply(z,length))
+  data <- data[IN]
+  z <- z[IN]
+
+  # don't have enough data to estimate any UERE
+  if(!length(data) || length(data)>=sum(sapply(data,nrow)))
+  {
+    dof <- UERE
+    AICc <- NA_real_
+
+    attr(UERE,"DOF") <- dof # sampling distribution
+    attr(UERE,"AICc") <- AICc
+
+    return(UERE)
+  }
 
   EST <- is.na(UERE)
   names(EST) <- CLASS

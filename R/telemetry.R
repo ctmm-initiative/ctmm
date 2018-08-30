@@ -137,7 +137,7 @@ pull.column <- function(object,NAMES,FUNC=as.numeric)
     {
       # preference non-empty columns
       COL <- FUNC(object[,NAME])
-      if(any(!is.na(COL))) {return(COL) }
+      if(!all(is.na(COL))) {return(COL) }
     }
   }
   # nothing non-empty matched
@@ -325,30 +325,31 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   # Telonics Gen4 GPS errors
   COL <- c("Horizontal.Error","GPS.Horizontal.Error","Telonics.Horizontal.Error")
   COL <- pull.column(object,COL)
-  if(length(COL) && FALSE)
+  if(length(COL))
   {
-    COL <- COL/10 # put on similar scale with HDOP
+    TELONICS <- TRUE
 
-    DATA$HDOP <- sqrt(2)*COL
-    # DATA[[DOP.LIST$horizontal$VAR]] <- COL^2
-
-    # approximate UERE lower bound for cases where NA error and !NA HDOP
-    COL <- c("GPS.HDOP","HDOP","DOP","Horizontal.Dilution","GPS.Horizontal.Dilution")
-    COL <- pull.column(object,COL)
-    if(length(COL))
+    if(FALSE) # this information does not seem worthwhile often
     {
-      NAS <- is.na(DATA$HDOP) & !is.na(COL) # errors that need to be calibrated
-      if(any(NAS))
+      COL <- COL/10 # put on similar scale with HDOP
+
+      DATA$HDOP <- sqrt(2)*COL
+
+      # approximate UERE lower bound for cases where NA error and !NA HDOP
+      COL <- c("GPS.HDOP","HDOP","DOP","Horizontal.Dilution","GPS.Horizontal.Dilution")
+      COL <- pull.column(object,COL)
+      if(length(COL))
       {
-        # DATA[[DOP.LIST$horizontal$VAR]][NAS] <- Inf # not yet calibrated
-        DATA$HDOP[NAS] <- COL[NAS] # could use further calibration data to rescale
-        # message("Telonics quick-fix HDOPs found; UERE will have to be fit. See help(\"uere\").")
+        NAS <- is.na(DATA$HDOP) & !is.na(COL) # errors that need to be calibrated
+        if(any(NAS)) { DATA$HDOP[NAS] <- COL[NAS] }
+        rm(NAS)
       }
-      rm(NAS)
+      else
+      { stop("Telonics data detected, but missing HDOP column.") }
     }
-    else
-    { stop("Telonics data detected, but missing HDOP column.") }
   }
+  else
+  { TELONICS <- FALSE }
 
   ###################################
   # HDOP
@@ -383,6 +384,17 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   COL <- c("GPS.fix.type","fix.type","Fix.Attempt","GPS.Fix.Attempt","Telonics.Fix.Attempt")
   COL <- pull.column(object,COL,FUNC=as.factor)
   if(length(COL)) { DATA$class <- COL }
+
+  # consolidate Telonics location classes as per manual
+  if(TELONICS && "class" %in% names(DATA))
+  {
+    CLASS <- levels(DATA$class)
+    SUB <- CLASS %in% c("Succeeded (3D)","Succeeded (2D)")
+    if(any(SUB)) { CLASS[SUB] <- "Succeeded" }
+    SUB <- CLASS %in% c("Resolved QFP","Resolved QFP (Uncertain)","Unresolved QFP")
+    if(any(SUB)) { CLASS[SUB] <- "QFP" }
+    levels(DATA$class) <- CLASS
+  }
 
   #######################
   # timed-out fixes
