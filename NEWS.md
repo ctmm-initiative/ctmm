@@ -1,7 +1,12 @@
-ctmm 0.5.2 (2018-08-28)
+ctmm 0.5.3 (2018-09-11)
 ================
 
-  * location classes (multiple UEREs) now supported by uere() and uere()<-
+  * 
+
+ctmm 0.5.2 (2018-09-10)
+================
+
+  * location classes (multiple UEREs) now supported by uere.fit() and uere()<-
   
   * uere() forked into separate uere() and uere.fit() methods
   

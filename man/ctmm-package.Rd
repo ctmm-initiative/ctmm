@@ -22,8 +22,8 @@ Winner & Noonan et al (2018) <doi:10.1111/2041-210X.13027>.
 \tabular{ll}{
 Package: \tab ctmm\cr
 Type: \tab Package\cr
-Version: \tab 0.5.2 \cr
-Date: \tab 2018-08-28 \cr
+Version: \tab 0.5.3 \cr
+Date: \tab 2018-09-11 \cr
 License: \tab GPL-3 \cr
 }
 
