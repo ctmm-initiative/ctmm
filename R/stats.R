@@ -165,3 +165,29 @@ rcov <- function(x,...)
 
   return(list(median=AVE,COV=COV))
 }
+
+
+# minimally trimmed mean
+# could make O(n) without full sort
+mtmean <- function(x,lower=-Inf,upper=Inf,func=mean)
+{
+  x <- sort(x)
+
+  # lower trim necessary
+  n <- sum(x<=lower)
+  # fallbacks
+  if(n==length(x)) { return(lower) }
+  if(2*n>=length(x)) { return(x[n+1]) }
+
+  # upper trim necessary
+  m <- sum(x>=upper)
+  # fallbacks
+  if(m==length(x)) { return(upper) }
+  if(2*m>=length(x)) { return(x[length(x)-m-1]) }
+
+  n <- max(n,m)
+  x <- x[(1+n):(length(x)-n)]
+
+  x <- func(x)
+  return(x)
+}

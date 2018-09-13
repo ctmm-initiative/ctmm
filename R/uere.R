@@ -88,6 +88,9 @@ uere.fit <- function(data,precision=1/2)
   # passed by slot
   AICc <- vapply(UERE,function(U){attr(U,"AICc")},numeric(1))
   names(AICc) <- TYPES
+  # passed by slot
+  Z2 <- vapply(UERE,function(U){attr(U,"Zsq")},numeric(1))
+  names(Z2) <- TYPES
 
   CLASS <- names(UERE[[1]])
   if(!length(CLASS)) { CLASS <- "all" }
@@ -98,7 +101,7 @@ uere.fit <- function(data,precision=1/2)
   DOF <- matrix( simplify2array(DOF) , length(CLASS) , length(TYPES) )
   dimnames(DOF) <- list(CLASS,TYPES)
 
-  UERE <- new.UERE(UERE,DOF=DOF,AICc=AICc)
+  UERE <- new.UERE(UERE,DOF=DOF,AICc=AICc,Zsq=Z2)
 
   return(UERE)
 }
@@ -149,11 +152,9 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
   # don't have enough data to estimate any UERE
   if(!length(data) || length(data)>=sum(sapply(data,nrow)))
   {
-    dof <- UERE
-    AICc <- NA_real_
-
-    attr(UERE,"DOF") <- dof # sampling distribution
-    attr(UERE,"AICc") <- AICc
+    attr(UERE,"DOF") <- numeric(length(UERE)) # sampling distribution
+    attr(UERE,"AICc") <- NA_real_
+    attr(UERE,"Zsq") <- NA_real_
 
     return(UERE)
   }
@@ -168,9 +169,11 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
   w <- lapply(DOP,function(D){length(axes)/D^2})
 
   # class indicators
-  C <- lapply(data,function(D){get.class.mat(D,CLASS)}) # (animal;time,class)
+  Ci <- lapply(data,function(D){get.class(D,CLASS)}) # (animal;time)
+  Cim <- lapply(data,function(D){get.class.mat(D,CLASS)}) # (animal;time,class)
+
   # ML DOF
-  DOF.ML <- vapply(C,colSums,UERE) # (class,animals)
+  DOF.ML <- vapply(Cim,colSums,UERE) # (class,animals)
   dim(DOF.ML) <- c(length(UERE),length(data))
   DOF.ML <- rowSums(DOF.ML) # (class)
   names(DOF.ML) <- CLASS
@@ -189,13 +192,13 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
 
   # iterative fit
   DEBUG <- FALSE
-  ERROR <- Inf
-  while(ERROR>TOL)
+  BREAK <- FALSE
+  repeat
   {
     if(type=="speed") # known mean
     {
       # ML/REML degrees of freedom lost
-      Kc <- 0
+      Kc <- numeric(length(CLASS))
 
       # known means
       mu <- array(0,c(length(data),length(axes)))
@@ -203,25 +206,26 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
     else # unknown mean
     {
       # precicion weights
-      P <- vapply(1:length(data),function(i){c(w[[i]] %*% C[[i]]) * (1/UERE^2)},UERE) # (class,animals)
-      dim(P) <- c(length(UERE),length(data))
-      Pc <- rowSums(P) # (class)
-      Pk <- colSums(P) # (animals)
+      Pck <- vapply(1:length(data),function(i){c(w[[i]] %*% Cim[[i]]) * (1/UERE^2)},UERE) # (class,animals)
+      dim(Pck) <- c(length(UERE),length(data))
+      Pc <- rowSums(Pck) # (class)
+      Pk <- colSums(Pck) # (animals)
 
       # REML degrees of freedom lost
-      Kc <- colSums(t(P)/Pk) # (class)
+      Kc <- colSums(t(Pck)/Pk) # (class)
 
       # means
-      mu <- vapply(1:length(data),function(i){t(w[[i]] * z[[i]]) %*% C[[i]] %*% (1/UERE^2)},z[[1]][1,]) # (axes,animals)
+      CdUERE2 <- lapply(1:length(data),function(i){ 1/UERE[Ci[[i]]]^2 }) # (animals;time,class)
+      mu <- vapply(1:length(data),function(i){t(w[[i]] * z[[i]]) %*% CdUERE2[[i]]},z[[1]][1,]) # (axes,animals)
       dim(mu) <- c(length(axes),length(data))
       mu <- t(mu)/Pk # (animals,axes)
 
       if(DEBUG)
       {
         loglike <- -(1/2)*vapply(1:length(data),function(i){
-          LL <- length(axes)*(sum(C[[i]] %*% log(UERE^2))-sum(log(w[[i]]) %*% C[[i]]))
-          LL <- LL + sum( (t(z[[i]])-mu[i,])^2 %*% (w[[i]] * C[[i]]) %*% (1/UERE^2) )
-          LL <- LL + length(axes)*log( w[[i]] %*% C[[i]] %*% (1/UERE^2) ) # REML
+          LL <- length(axes) * sum( log(UERE[Ci[[i]]]^2/w[[i]]) )
+          LL <- LL + sum( (t(z[[i]])-mu[i,])^2 %*% (w[[i]] * CdUERE2[[i]]) )
+          LL <- LL + length(axes)*log( w[[i]] %*% CdUERE2[[i]] ) # REML
           return(LL) },numeric(1))
         loglike <- sum(loglike)
         message(type," log(Like) = ",loglike)
@@ -229,8 +233,10 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
     }
     DOF <- DOF.ML - Kc # (class)
 
+    if(BREAK) { break }
+
     # updated UERE esitmates
-    UERE2 <- vapply(1:length(data),function(i){colSums((t(z[[i]])-mu[i,])^2) %*% (w[[i]] * C[[i]])},UERE) # (class,animals)
+    UERE2 <- vapply(1:length(data),function(i){colSums((t(z[[i]])-mu[i,])^2) %*% (w[[i]] * Cim[[i]])},UERE) # (class,animals)
     dim(UERE2) <- c(length(UERE),length(data))
     UERE2 <- rowSums(UERE2) / (length(axes)*DOF)
     UERE2 <- sqrt(UERE2)
@@ -241,31 +247,57 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
 
     UERE[EST] <- UERE2
 
-    # stop after 1 run if 1 location class
-    if(length(CLASS)<=1 || type=="speed") { break }
+    if(ERROR<TOL) { BREAK <- TRUE }
   }
 
   # missing UEREs should not impact calculation
   if(any(BAD)) { UERE[BAD] <- 1 }
 
-  AICc <- length(axes) * vapply(1:length(data),function(i){ (sum(C[[i]] %*% log(2*pi*UERE^2)) - sum(log(w[[i]]) %*% C[[i]])) },numeric(1)) # (animals)
+  ### AICc values ###
+  AICc <- vapply(1:length(data),function(i){ sum( log( (2*pi)*(UERE[Ci[[i]]]^2 / w[[i]]) ) ) },numeric(1)) # (animals)
+  AICc <- length(axes) * sum(AICc)
   if(type=="speed")
   { dof <- DOF.ML }
   else
-  { dof <- DOF.ML - colSums((t(P)/Pk)^2) } # (class)
+  { dof <- DOF.ML - colSums((t(Pck)/Pk)^2) } # (class)
   # missing UEREs should not impact calculation
   if(any(BAD))
   {
     Kc[BAD] <- 0
     dof[BAD] <- 0
   }
-  AICc <- sum(AICc) + length(axes)^2*sum( (DOF.ML+Kc)*dof/(length(axes)*dof-2) )
+  AICc <- AICc + length(axes)^2*sum( (DOF.ML+Kc)*dof/(length(axes)*dof-2) )
+
+  ### Z_reduced^2 ###
+  Pi <- lapply(1:length(data),function(k){c( w[[k]] / UERE[Ci[[k]]]^2 )}) # (animal;time)
+  u2 <- lapply(1:length(data),function(k){c( colMeans((t(z[[k]])-mu[k,])^2) * Pi[[k]] )}) # (animal;time)
+  if(type=="speed") # known mean
+  {
+    alpha <- lapply(1:length(data),function(k){ array(1,length(Pi[[k]])) }) # (animal;time)
+    beta <- lapply(1:length(data),function(k){ ( DOF.ML[Ci[[k]]] - 1 ) / DOF[Ci[[k]]] }) # (animal;time)
+    dofi <- lapply(1:length(data),function(k){ DOF.ML[Ci[[k]]] - 1 }) # (animal;time)
+  }
+  else
+  {
+    alpha <- lapply(1:length(data),function(k){ R <- Pck[Ci[[k]],k] ; ( R - Pi[[k]] )/R }) # (animal;time)
+    gamma <- lapply(1:length(data),function(k){ t(Pck[Ci[[k]],,drop=FALSE] - Pi[[k]])/outer(Pk,Pi[[k]],'-') }) # (animal;animal',time)
+    beta <- lapply(1:length(data),function(k){ ( DOF.ML[Ci[[k]]] - 1 - colSums(gamma[[k]]) ) / DOF[Ci[[k]]] }) # (animal;time)
+    dofi <- lapply(1:length(data),function(k){ DOF.ML[Ci[[k]]] - 1 - colSums(gamma[[k]]^2) }) # (animal;time)
+  }
+  t2 <- lapply(1:length(data),function(k){ beta[[k]] * u2[[k]] / ( alpha[[k]]^2 - alpha[[k]]*u2[[k]]/DOF[Ci[[k]]] ) }) # (animal,time)
+  Z <- log(unlist(t2))/2
+  dofi <- unlist(dofi)
+  M <- -(dofi-1)/dofi/(2*length(axes))
+  VAR <- (dofi+1)/dofi/(2*length(axes))
+  ERR <- VAR + M^2
+  Z2 <- (Z^2/ERR)
 
   # fix missing UEREs
   if(any(BAD)) { UERE[BAD] <- NA }
 
   attr(UERE,"DOF") <- dof # sampling distribution
   attr(UERE,"AICc") <- AICc
+  attr(UERE,"Zsq") <- mtmean(Z2) # minimally trimmed mean in case of weird speed=0 estimates
 
   return(UERE)
 }
@@ -413,8 +445,8 @@ try.assign.uere <- function(data,UERE,TYPE="horizontal")
   VAR <- LIST$VAR
   COV <- LIST$COV
 
-  # total UERE
-  U <- get.class.mat(data,names(UERE))
+  # class indices
+  Ci <- get.class(data,names(UERE))
   # partition in to NA-UERE and UERE>0
   NAS <- is.na(UERE)
   POS <- !NAS
@@ -427,8 +459,9 @@ try.assign.uere <- function(data,UERE,TYPE="horizontal")
   }
   else
   {
-    # apply UERE>0
-    U.POS <- c(U[,POS,drop=FALSE] %*% UERE[POS]) # sigh...
+    # UERE[time] > 0
+    if(any(NAS)) { UERE[NAS] <- 0 }
+    U.POS <- UERE[Ci]
 
     if(DOP %in% names(data))
     { data[[VAR]] <- (U.POS*data[[DOP]])^2/length(axes) }
@@ -442,10 +475,7 @@ try.assign.uere <- function(data,UERE,TYPE="horizontal")
     if(any(NAS))
     {
       # indication of NA time
-      U.NAS <- U[,NAS,drop=FALSE]
-      U.NAS <- rowSums(U.NAS)
-      U.NAS <- as.logical(U.NAS)
-
+      U.NAS <- NAS[Ci]
       data[[VAR]][U.NAS] <- Inf
     }
 
@@ -578,6 +608,32 @@ uere.null <- function(data)
 
   # demote to data.frame
   return(data)
+}
+
+
+#####
+# class index at times
+# make robust to LEVELS being different from levels
+get.class <- function(data,LEVELS=levels(data$class))
+{
+  if("class" %in% names(data))
+  {
+    Ci <- as.integer(data$class)
+
+    Levels <- levels(data$class)
+    if(any(LEVELS != Levels)) # some LEVELS not in data
+    {
+      MISS <- LEVELS[LEVELS %nin% Levels]
+      Levels <- c(Levels,MISS) # append missing LEVELS
+
+      LEVELS <- sapply(Levels,function(L){ which(LEVELS==L) })
+      Ci <- LEVELS[Ci]
+    }
+  }
+  else
+  { Ci <- rep(1,length(data$t)) }
+
+  return(Ci)
 }
 
 

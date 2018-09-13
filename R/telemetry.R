@@ -329,7 +329,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   {
     TELONICS <- TRUE
 
-    if(FALSE) # this information does not seem worthwhile often
+    if(FALSE) # this information does not generally perform well
     {
       COL <- COL/10 # put on similar scale with HDOP
 
@@ -465,16 +465,16 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     # SPEED ERE
     COL <- "eobs.speed.accuracy.estimate"
     COL <- pull.column(object,COL)
-    if(length(COL)) # assuming same form as EOBS horizontal accuracy estimate
+    if(length(COL) && FALSE) # e-obs column is terrible for error estimation, location error estimates are better
     {
       # UERE from Scott's calibration data
       DATA[[DOP.LIST$speed$DOP]] <- COL
-      DATA[[DOP.LIST$speed$VAR]] <- 0.0499190708866745^2/2 * COL^2
+      DATA[[DOP.LIST$speed$VAR]] <- 0.115475648329319^2/2 * COL^2
     }
     else if("HDOP" %in% names(DATA)) # USE HDOP as approximate SDOP
     {
       DATA$SDOP <- DATA$HDOP
-      message("HDOP used as an approximate speed DOP.")
+      # message("HDOP used as an approximate speed DOP.")
     }
 
     # do we need a location class for missing speeds?

@@ -7,7 +7,7 @@ plot(coati[[1]],col=rainbow(2),error=2,trans=0.4) # coati plot with 95% error di
 ## ------------------------------------------------------------------------
 data(turtle)
 names(turtle[[1]]) # data are not yet calibrated
-names(turtle) # some calibration data and some turtle data
+names(turtle) # two calibration datasets and two turtle datasets
 plot(turtle[1:2],col=rainbow(2)) # calibration data only
 
 ## ------------------------------------------------------------------------

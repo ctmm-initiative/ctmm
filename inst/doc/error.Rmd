@@ -28,7 +28,7 @@ In the following wood turtle dataset, we have some calibration data and a turtle
 ```{r}
 data(turtle)
 names(turtle[[1]]) # data are not yet calibrated
-names(turtle) # some calibration data and some turtle data
+names(turtle) # two calibration datasets and two turtle datasets
 plot(turtle[1:2],col=rainbow(2)) # calibration data only
 ```
 
@@ -39,7 +39,7 @@ UERE <- uere.fit(turtle[1:2]) # only using calibration data
 summary(UERE)
 ```
 
-For GPS data, the UERE will typically be 10-15 meters. The UERE can be assigned to a dataset with the `uere<-` command.
+For GPS data, the UERE will typically be 10-15 meters. The UERE can be assigned to a dataset with the `uere()<-` command.
 
 ```{r}
 uere(turtle) <- UERE

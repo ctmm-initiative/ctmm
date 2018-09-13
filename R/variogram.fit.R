@@ -32,11 +32,14 @@ variogram.guess <- function(variogram,CTMM=ctmm())
   f <- -log(D/(sigma*Omega))/tauD
 
   tau <- c(sigma/D,D/v2)
+  names(tau) <- c("position","velocity")
+
+  if(length(CTMM$tau)==0)
+  { CTMM$tau <- tau }
+  else if(length(CTMM$tau)==1)
+  { CTMM$tau[2] <- min(CTMM$tau[1],tau[2]) }
 
   if(!CTMM$range) { sigma <- D ; tau[1] <- Inf }
-
-  if(length(CTMM$tau)==0) { CTMM$tau <- tau }
-  #else if(length(CTMM$tau)==1) { CTMM$tau[2] <- tau[2] }
 
   # preserve orientation and eccentricity if available/necessary
   if(is.null(CTMM$sigma))
@@ -150,7 +153,8 @@ variogram.fit.backend <- function(variogram,CTMM=ctmm(),fraction=0.5,b=4)
   NAMES <- c("z")
 
   K <- length(CTMM$tau)
-  if(K==1) { CTMM$tau[2] <- 0 }
+  if(K==0) { CTMM$tau <- c(0,0) }
+  else if(K==1) { CTMM$tau[2] <- 0 }
 
   range <- CTMM$range
   sigma <- mean(diag(CTMM$sigma))
@@ -218,7 +222,15 @@ variogram.fit.backend <- function(variogram,CTMM=ctmm(),fraction=0.5,b=4)
     tau1 <- Inf
   }
 
-  if(K==1)
+  if(K<1)
+  {
+    NAMES <- rownames(DF)
+    DELETE <- which(NAMES=="tau1")
+    DF <- DF[-DELETE,]
+    tau1 <- 0
+  }
+
+  if(K<2)
   {
     NAMES <- rownames(DF)
     DELETE <- which(NAMES=="tau2")

@@ -25,7 +25,7 @@ anonymize <- function(data)
 
 
 # give false origin, orientation, dispatch epoch
-pseudonymize <- function(data,center=c(0,0),datum="WGS84",origin="0000-01-01 00:00.00 UTC",tz="GMT")
+pseudonymize <- function(data,center=c(0,0),datum="WGS84",origin="1111-11-11 11:11.11 UTC",tz="GMT")
 {
   DROP <- class(data)=="telemetry"
   data <- listify(data)

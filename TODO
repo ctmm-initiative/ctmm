@@ -1,4 +1,10 @@
 PRIORITY
+* emualte with fast=FALSE needs to return an error with no data
+* IID ML area DOF is wrong
+* Telonics HDOP conversion factor
+* summary UERE list for model selection help
+* overlap needs to return DOFs in an overlap object - and then define a summary function for the overlap object
+* overlaps' correlated errors
 * multi-class UERE in ctmm(), ctmm.guess(), ctmm.fit(), variogram.fit(), etc., etc.
 * uere() select for identical UEREs (location class , axes) ?
 * should standardization be moved to ctmm.select?
