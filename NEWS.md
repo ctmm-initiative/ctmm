@@ -1,8 +1,10 @@
-ctmm 0.5.3 (2018-09-15)
+ctmm 0.5.3 (2018-09-16)
 ================
 
-  * overlap() now robust to bad model fits
+  * now avoiding fastPOSIXct timezone and epoch issues in as.telemetry
 
+  * overlap() now robust to bad model fits
+  
 ctmm 0.5.2 (2018-09-10)
 ================
 

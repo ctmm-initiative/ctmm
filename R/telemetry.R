@@ -220,6 +220,27 @@ as.telemetry.character <- function(object,timeformat="",timezone="UTC",projectio
 }
 
 
+# fastPOSIXct doesn't have a timeformat argument
+# fastPOSIXct requires GMT timezone
+# fastPOSIXct only works on times after the 1970 epoch !!!
+# as.POSIXct doesn't accept this argument if empty/NA/NULL ???
+asPOSIXct <- function(x,timeformat="",timezone="UTC",...)
+{
+  # try fastPOSIXct
+  if(class(x)=="character" && timeformat=="" && timezone %in% c("UTC","GMT"))
+  {
+    y <- fasttime::fastPOSIXct(x,tz=timezone)
+    # did fastPOSIXct fail?
+    if(!any(!is.na(x) & is.na(y))) { return(y) }
+  }
+
+  if(timeformat=="") { x <- as.POSIXct(x,tz=timezone) }
+  else { x <- as.POSIXct(x,tz=timezone,format=timeformat) }
+
+  return(x)
+}
+
+
 # this assumes a MoveBank data.frame
 as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projection=NULL,timeout=Inf,na.rm="row",drop=TRUE,...)
 {
@@ -231,10 +252,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   # timestamp column
   COL <- c('timestamp','Acquisition.Start.Time','Acquisition.Time','time')
   COL <- pull.column(object,COL,FUNC=as.character)
-  # fastPOSIXct doesn't have a timeformat argument and as.POSIXct doesn't accept this argument if empty/NA/NULL ???
-  if(class(COL)=="character" && timeformat=="") { COL <- fasttime::fastPOSIXct(COL,tz=timezone) }
-  else if(timeformat=="") { COL <- as.POSIXct(COL,tz=timezone) }
-  else { COL <- as.POSIXct(COL,tz=timezone,format=timeformat) }
+  COL <- asPOSIXct(COL,timeformat=timeformat,timezone=timezone)
   DATA <- data.frame(timestamp=COL)
 
   COL <- c("animal.ID","individual.local.identifier","local.identifier","individual.ID","Name","ID","tag.local.identifier","tag.ID","deployment.ID","track.ID")
