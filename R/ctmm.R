@@ -173,7 +173,7 @@ sigma.destruct <- function(sigma,isotropic=FALSE) # last arg not implemented
 }
 
 # return the COV matrix for covm par representation
-COV.covm <- function(sigma,n,k=1)
+COV.covm <- function(sigma,n,k=1,REML=TRUE)
 {
   isotropic <- sigma@isotropic
   par <- sigma@par
@@ -187,7 +187,7 @@ COV.covm <- function(sigma,n,k=1)
   DOF.mu <- n
   COV.mu <- sigma/n
 
-  n <- n-k
+  if(REML) { n <- n-k }
 
   if(isotropic || DIM==1)
   {

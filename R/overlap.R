@@ -5,6 +5,11 @@ overlap <- function(object,level=0.95,debias=TRUE,...)
 {
   CLASS <- class(object[[1]])
 
+  # check for consistent projections
+  PROJ <- projection(object)
+  if(length(PROJ)==0) { stop("Missing projection.") }
+  if(length(PROJ)>1) { stop("Inconsistent projections.") }
+
   if(CLASS=="ctmm")
   { OverlapFun <- overlap.ctmm }
   # else if(CLASS=="telemetry")

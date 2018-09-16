@@ -129,7 +129,7 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
   par[1,] <- -2*log(alpha.UD)*pi*par[1,]
 
   # pretty area units   # do we convert units
-  unit.list <- unit(par[1,2],"area",SI=!units)
+  unit.list <- unit.par(par,"area",SI=!units)
   name[1] <- unit.list$name
   scale[1] <- unit.list$scale
 
@@ -140,11 +140,7 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
     for(i in 2:P)
     {
       # set scale by upper CI if point estimate is zero
-      PAR <- par[i,2:3]
-      PAR <- PAR[PAR>0]
-      if(length(PAR)) { PAR <- min(PAR) } else { PAR <- 0 }
-
-      unit.list <- unit(PAR,"time",SI=!units)
+      unit.list <- unit.par(par[i,],"time",SI=!units)
       name[i] <- unit.list$name
       scale[i] <- unit.list$scale
     }
@@ -184,13 +180,10 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
 
     # root mean square velocity
     # pretty units
-    rms <- sqrt(ms)
-    unit.list <- unit(rms,"speed",SI=!units)
+    rms <- sqrt(chisq.ci(ms,COV=var.ms,alpha=alpha))
+    unit.list <- unit.par(rms,"speed",SI=!units)
     name <- c(name,unit.list$name)
     scale <- c(scale,unit.list$scale)
-
-    rms <- sqrt(chisq.ci(ms,COV=var.ms,alpha=alpha))
-    # rms <- sqrt(norm.ci(ms,var.ms,alpha=alpha))
 
     par <- rbind(par,rms)
     rownames(par)[nrow(par)] <- "speed"
@@ -210,7 +203,7 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
     error <- chisq.ci(error,COV=VAR,alpha=alpha)
     # back to meters/distance
     error <- sqrt(error)
-    unit.list <- unit(error,"length",SI=!units)
+    unit.list <- unit.par(error,"length",SI=!units)
     name <- c(name,unit.list$name)
     scale <- c(scale,unit.list$scale)
 

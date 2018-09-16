@@ -1,6 +1,5 @@
 PRIORITY
-* emualte with fast=FALSE needs to return an error with no data
-* IID ML area DOF is wrong
+* export turtle and then import turtle
 * Telonics HDOP conversion factor
 * summary UERE list for model selection help
 * overlap needs to return DOFs in an overlap object - and then define a summary function for the overlap object
@@ -38,6 +37,7 @@ PARALLELIZATION
 * parallel derivatives with upper/lower/etc.
 
 MISC WORK
+* significant digits function (MLE+CI) for summary functions
 * akde/occurrence grid=UD/raster
 * p-value test for trend terms using variance of mu_alt-mu_null
 * significant digits argument to summary()

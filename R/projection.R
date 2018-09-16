@@ -13,6 +13,17 @@ setMethod('projection', signature(x='telemetry'), projection.telemetry)
 setMethod('projection', signature(x='ctmm'), projection.telemetry)
 setMethod('projection', signature(x='UD'), projection.telemetry)
 
+projection.list <- function(x,asText=TRUE)
+{
+  PROJS <- sapply(x,projection)
+  PROJ <- unique(PROJS)
+
+  if(is.null(PROJS[[1]])) { return(NULL) }
+  if(length(PROJ)==1) { return(PROJ) }
+  return(PROJS)
+}
+setMethod('projection',signature(x='list'),projection.list)
+
 
 # change the projection on a list of objects
 "projection<-.list" <- function(x,value)

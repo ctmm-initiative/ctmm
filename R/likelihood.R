@@ -514,7 +514,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
   profile <- TRUE
   if(length(NAMES)==0) # EXACT
   {
-    if(method %in% c("pHREML","HREML")) { REML <- TRUE } # IID limit pHREML -> REML
+    if(method %in% c("pHREML","HREML")) { REML <- TRUE } # IID limit pHREML/HREML -> REML
 
     # Bi-variate Gaussian with zero error
     CTMM <- ctmm.loglike(data,CTMM=CTMM,REML=REML,verbose=TRUE)
@@ -528,8 +528,10 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
       CTMM$COV.mu <- VAR.MULT * CTMM$COV.mu
     }
 
+    if(method=="pREML") { REML <- TRUE } # uses REML COV formula
+
     # fast calculation of sigma covariance
-    COVSTUFF <- COV.covm(CTMM$sigma,n=n,k=k.mean)
+    COVSTUFF <- COV.covm(CTMM$sigma,n=n,k=k.mean,REML=REML)
     CTMM$COV <- COVSTUFF$COV
   }
   else # all further cases require optimization
@@ -659,7 +661,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
     { CTMM$COV <- NULL }
 
     if(COV) { dimnames(CTMM$COV) <- list(NAMES,NAMES) }
-  }
+  } # end optimized estimates
 
   # model likelihood
   if(method!='ML') { CTMM$loglike <- ctmm.loglike(data,CTMM=CTMM,REML=FALSE,profile=FALSE) }

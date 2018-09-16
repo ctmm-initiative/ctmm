@@ -1,6 +1,8 @@
 # simulate an estimated model from the parameter estimate covariances
 emulate.ctmm <- function(object,data=NULL,fast=FALSE,...)
 {
+  if(!fast && is.null(data)) { stop("fast=FALSE requires data.") }
+
   CTMM <- object
   if(!fast) { return( emulate.telemetry(data,CTMM,fast=fast,...) ) }
 

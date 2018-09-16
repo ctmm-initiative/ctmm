@@ -4,6 +4,7 @@
 \alias{projection<-,telemetry-method}
 \alias{projection,ctmm-method}
 \alias{projection,UD-method}
+\alias{projection,list-method}
 \alias{projection<-,list-method}
 \alias{median}
 \alias{median.telemetry}
@@ -17,6 +18,8 @@
 \S4method{projection}{ctmm}(x,asText=TRUE)
 
 \S4method{projection}{UD}(x,asText=TRUE)
+
+\S4method{projection}{list}(x,asText=TRUE)
 
 \S4method{projection}{telemetry}(x) <- value
 

@@ -71,6 +71,17 @@ unit <- function(data,dimension,thresh=1,concise=FALSE,SI=FALSE)
   return(list(scale=scale,name=name))
 }
 
+### determine parsimonious units for parameter CIs
+# preference point estimate, but fall back on high-CI if point estimate is zero
+unit.par <- function(par,...)
+{
+  PAR <- par[2:3]
+  PAR <- PAR[PAR>0]
+  if(length(PAR)) { PAR <- min(PAR) } else { PAR <- 0 }
+
+  return( unit(PAR,...) )
+}
+
 
 ## rescale the units of telemetry object
 unit.telemetry <- function(data,length=1,time=1)

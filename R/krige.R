@@ -29,7 +29,7 @@ smoother <- function(DATA,CTMM,precompute=FALSE,sample=FALSE,residual=FALSE,...)
     theta <- 0
   }
 
-  K <- length(CTMM$tau)
+  K <- max(length(CTMM$tau),1)
 
   circle <- CTMM$circle
 
@@ -232,6 +232,8 @@ fill.data <- function(data,CTMM=ctmm(tau=Inf),verbose=FALSE,t=NULL,dt=NULL,res=1
   # is this recorded data or empty gap
   data$record <- TRUE
 
+  if(!length(CTMM$tau) || CTMM$tau[1]==0) { t <- data$t } # don't add further times
+
   # FIX THE TIME GRID TO AVOID TINY DT
   if(is.null(t))
   {
@@ -276,6 +278,10 @@ fill.data <- function(data,CTMM=ctmm(tau=Inf),verbose=FALSE,t=NULL,dt=NULL,res=1
   else # use a pre-specified time grid
   {
     t.new <- t[!(t %in% data$t)]
+    t.grid <- t
+    dt.grid <- diff(t)
+    dt.grid <- pmin(c(Inf,dt.grid),c(dt.grid,Inf))
+    w.grid <- rep(1,length(t))
   }
 
   # empty observation row for these times
@@ -315,7 +321,7 @@ occurrence <- function(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=
   SIGMA <- CTMM$sigma # diffusion matrix for later
   CTMM <- ctmm.prepare(data,CTMM,precompute=FALSE) # not the final t for calculating u
   error <- get.error(data,CTMM,circle=TRUE)
-  MIN.ERR <- min(error) # !!! FIX ME !!!
+  MIN.ERR <- min(error) # Fix something here?
 
   # format data to be relatively evenly spaced with missing observations
   data <- fill.data(data,CTMM,verbose=TRUE,res=res.time,cor.min=cor.min,dt.max=dt.max)
@@ -356,20 +362,13 @@ occurrence <- function(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=
 
   # estimate size of data blob
   dr <- diag(SIGMA)
-  if(CTMM$range)
-  {
-    if(length(CTMM$tau)==1) #OU
-    { dr <- dt/4 * dr/CTMM$tau[1] }
-    else if(length(CTMM$tau)==2) #OUF
-    { dr <- dt^2/24 * dr/prod(CTMM$tau)}
-  }
-  else # these sigmas are var/tau[1] diffusion limits
-  {
-    if(length(CTMM$tau)==1) #BM
-    { dr <- dt/4 * dr }
-    else if(length(CTMM$tau)==2) #IOU
-    { dr <- dt^2/24 * dr/CTMM$tau[2] }
-  }
+  if(CTMM$range && length(CTMM$tau)) { dr <- dr/CTMM$tau[1] }
+  # prefactors from mid-bridge variance
+  if(length(CTMM$tau)==1) #BM/OU
+  { dr <- dt/4 * dr }
+  else if(length(CTMM$tau)==2) #IOU/OUF
+  { dr <- dt^2/24 * dr/CTMM$tau[2] }
+
   if(CTMM$error){ dr <- dr + MIN.ERR }
   dr <- sqrt(dr)
 
