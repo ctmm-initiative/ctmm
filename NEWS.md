@@ -1,4 +1,4 @@
-ctmm 0.5.3 (2018-09-16)
+ctmm 0.5.3 (2018-09-18)
 ================
 
   * now avoiding fastPOSIXct timezone and epoch issues in as.telemetry

@@ -13,7 +13,7 @@ methods::setMethod("zoom",signature(x="UD"), function(x,fraction=1,...) zoom.tel
 
 
 ##############
-new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,...)
+new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,units=TRUE,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,...)
 {
   RESIDUALS <- !is.null(data) && !is.null(attr(data[[1]],"info")$residual)
 
@@ -73,7 +73,7 @@ new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,fracti
     }
 
     # Get best unit scale
-    dist <- unit(unlist(ext),"length")
+    dist <- unit(unlist(ext),"length",SI=!units)
 
     xlab <- paste("x ", "(", dist$name, ")", sep="")
     ylab <- paste("y ", "(", dist$name, ")", sep="")
@@ -103,7 +103,7 @@ plot.env <- new.env()
 #######################################
 # PLOT TELEMETRY DATA
 #######################################
-plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF",error=TRUE,velocity=FALSE,col="red",col.level="black",col.DF="blue",col.grid="white",transparency.error=0.25,pch=1,type='p',labels=NULL,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,cex=NULL,lwd=1,lwd.level=1,...)
+plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF",error=TRUE,velocity=FALSE,units=TRUE,col="red",col.level="black",col.DF="blue",col.grid="white",transparency.error=0.25,pch=1,type='p',labels=NULL,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,cex=NULL,lwd=1,lwd.level=1,...)
 {
   alpha <- 1-level
   alpha.UD <- 1-level.UD
@@ -122,7 +122,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
   # standard normal model
   if(RESIDUALS) { CTMM <- list(ctmm(sigma=1,mu=c(0,0))) }
 
-  dist <- new.plot(data=x,CTMM=CTMM,UD=UD,level.UD=level.UD,level=level,fraction=fraction,add=add,xlim=xlim,ylim=ylim,...)
+  dist <- new.plot(data=x,CTMM=CTMM,UD=UD,level.UD=level.UD,level=level,units=units,fraction=fraction,add=add,xlim=xlim,ylim=ylim,...)
 
   # plot cm per unit of distance plotted (m or km)
   cmpkm <- 2.54*mean(graphics::par("fin")*diff(graphics::par("plt"))[-2]/diff(graphics::par("usr"))[-2])
@@ -340,11 +340,11 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
 
 
 ##############
-plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",col.level="black",col.DF="blue",col.grid="white",labels=NULL,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,cex=NULL,lwd=1,...)
+plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",units=TRUE,col.level="black",col.DF="blue",col.grid="white",labels=NULL,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,cex=NULL,lwd=1,...)
 {
   x <- listify(x)
 
-  dist <- new.plot(UD=x,fraction=fraction,add=add,xlim=xlim,ylim=ylim,level.UD=level.UD,level=level,...)
+  dist <- new.plot(UD=x,units=units,fraction=fraction,add=add,xlim=xlim,ylim=ylim,level.UD=level.UD,level=level,...)
 
   # contours colour
   if(length(col.level)==length(level.UD) && length(col.level) != length(x))

@@ -1,5 +1,8 @@
 PRIORITY
+* IOU/BM ctmm.select not working
+* summary(ctmm) return model name
 * export turtle and then import turtle
+* simulate with emulate=TRUE
 * Telonics HDOP conversion factor
 * summary UERE list for model selection help
 * overlap needs to return DOFs in an overlap object - and then define a summary function for the overlap object

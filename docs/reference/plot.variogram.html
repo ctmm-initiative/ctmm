@@ -61,7 +61,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.5.1</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.5.3</span>
       </span>
     </div>
 
@@ -127,8 +127,8 @@
     </div>
 
     <pre class="usage"><span class='co'># S3 method for variogram</span>
-<span class='fu'><a href='plot.telemetry.html'>plot</a></span>(<span class='no'>x</span>,<span class='kw'>CTMM</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>fraction</span><span class='kw'>=</span><span class='fl'>0.5</span>,<span class='kw'>col</span><span class='kw'>=</span><span class='st'>"black"</span>,<span class='kw'>col.CTMM</span><span class='kw'>=</span><span class='st'>"red"</span>,<span class='kw'>xlim</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>ylim</span><span class='kw'>=</span><span class='kw'>NULL</span>,
-     <span class='no'>...</span>)
+<span class='fu'><a href='plot.telemetry.html'>plot</a></span>(<span class='no'>x</span>,<span class='kw'>CTMM</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>units</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>fraction</span><span class='kw'>=</span><span class='fl'>0.5</span>,<span class='kw'>col</span><span class='kw'>=</span><span class='st'>"black"</span>,<span class='kw'>col.CTMM</span><span class='kw'>=</span><span class='st'>"red"</span>,<span class='kw'>xlim</span><span class='kw'>=</span><span class='kw'>NULL</span>,
+     <span class='kw'>ylim</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='no'>...</span>)
 
 <span class='co'># S4 method for variogram</span>
 <span class='fu'>zoom</span>(<span class='no'>x</span>,<span class='kw'>fraction</span><span class='kw'>=</span><span class='fl'>0.5</span>,<span class='no'>...</span>)</pre>
@@ -147,6 +147,10 @@
     <tr>
       <th>level</th>
       <td><p>Confidence level of confidence bands (95% default CIs). Can be an array.</p></td>
+    </tr>
+    <tr>
+      <th>units</th>
+      <td><p>Convert axes to natural units.</p></td>
     </tr>
     <tr>
       <th>fraction</th>

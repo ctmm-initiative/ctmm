@@ -182,7 +182,7 @@ plot.svf <- function(lag,CTMM,error=NULL,alpha=0.05,col="red",type="l",...)
 ###########################################################
 # PLOT VARIOGRAM
 ###########################################################
-plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", col.CTMM="red", xlim=NULL, ylim=NULL, ...)
+plot.variogram <- function(x, CTMM=NULL, level=0.95, units=TRUE, fraction=0.5, col="black", col.CTMM="red", xlim=NULL, ylim=NULL, ...)
 {
   alpha <- 1-level
 
@@ -226,11 +226,11 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", 
   if(!ACF) # SVF plot
   {
     # choose SVF units
-    SVF.scale <- unit(ylim,"area")
+    SVF.scale <- unit(ylim,"area",SI=!units)
     SVF.name <- SVF.scale$name
     SVF.scale <- SVF.scale$scale
 
-    SVF.name <- c(SVF.name,unit(ylim,"area",concise=TRUE)$name)
+    SVF.name <- c(SVF.name,unit(ylim,"area",concise=TRUE,SI=!units)$name)
     SVF.name[3] <- SVF.name[2]
 
     ylab <- "Semi-variance"
@@ -248,11 +248,11 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, fraction=0.5, col="black", 
   }
 
   # choose lag units
-  lag.scale <- unit(xlim,"time",2)
+  lag.scale <- unit(xlim,"time",2,SI=!units)
   lag.name <- lag.scale$name
   lag.scale <- lag.scale$scale
 
-  lag.name <- c(lag.name,unit(xlim,"time",thresh=2,concise=TRUE)$name)
+  lag.name <- c(lag.name,unit(xlim,"time",thresh=2,concise=TRUE,SI=!units)$name)
   lag.name[3] <- lag.name[2]
 
   xlab <- "Time-lag"

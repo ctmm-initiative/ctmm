@@ -523,7 +523,7 @@ uere.null <- function(data)
   {
     UERE <- cbind(UERE)
     colnames(UERE) <- "horizontal"
-    rownames(UERE) <- "all"
+    if(is.null(names(value))) { rownames(UERE) <- "all" }
     UERE <- new.UERE(UERE,DOF=NA*UERE,AICc=NA*UERE[1,])
   }
 
@@ -621,7 +621,7 @@ get.class <- function(data,LEVELS=levels(data$class))
     Ci <- as.integer(data$class)
 
     Levels <- levels(data$class)
-    if(any(LEVELS != Levels)) # some LEVELS not in data
+    if(any(LEVELS %nin% Levels)) # some LEVELS not in data
     {
       MISS <- LEVELS[LEVELS %nin% Levels]
       Levels <- c(Levels,MISS) # append missing LEVELS

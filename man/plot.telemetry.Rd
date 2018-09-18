@@ -13,9 +13,9 @@ Produces simple plots of \code{telemetry} objects, possibly overlayed with a Gau
 plot(x,y,...)
 
 \S3method{plot}{telemetry}(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF",error=TRUE,velocity=FALSE,
-     col="red",col.level="black",col.DF="blue",col.grid="white",transparency.error=0.25,
-     pch=1,type='p',labels=NULL,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,cex=NULL,lwd=1,
-     lwd.level=1,...)
+     units=TRUE,col="red",col.level="black",col.DF="blue",col.grid="white",
+     transparency.error=0.25,pch=1,type='p',labels=NULL,fraction=1,add=FALSE,xlim=NULL,
+     ylim=NULL,cex=NULL,lwd=1,lwd.level=1,...)
 
 \S4method{zoom}{list}(x,...)
 
@@ -34,6 +34,7 @@ plot(x,y,...)
   \item{DF}{Plot the maximum likelihood probability density function \code{"PDF"} or cumulative distribution function \code{"CDF"}.}
   \item{error}{Plot error circles/ellipses if present in the data. \code{error=2} will fill in the circles and \code{error=3} will plot densities instead.}
   \item{velocity}{Plot velocity vectors if present in the data.}
+  \item{units}{Convert axes to natural units.}
   \item{col}{Color option for telemetry data. Can be an array or list of arrays.}
   \item{col.level}{Color option for home-range contours. Can be an array.}
   \item{col.DF}{Color option for the density function. Can be an array.}

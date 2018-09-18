@@ -151,6 +151,7 @@ missing.class <- function(DATA,TYPE)
   # column to check for NAs
   if(TYPE=="speed") { COL <- "speed" }
   else if(TYPE=="vertical") { COL <- "z" }
+  else { COL <- TYPE }
 
   # some location classes are missing TYPE
   NAS <- is.na(DATA[[COL]])
@@ -183,15 +184,20 @@ missing.class <- function(DATA,TYPE)
     DATA[[COL]][NAS] <- 0
     if(TYPE=="speed") { DATA$heading[NAS] <- 0 }
 
-    # do we have TYPE DOP
-    DOP <- DOP.LIST[[TYPE]]$DOP
-    VAR <- DOP.LIST[[TYPE]]$VAR
+    # do we have an associated TYPE DOP
+    if(TYPE %in% names(DOP.LIST))
+    {
+      DOP <- DOP.LIST[[TYPE]]$DOP
+      VAR <- DOP.LIST[[TYPE]]$VAR
 
-    if(!(DOP %in% names(DATA))) { DATA[[DOP]] <- 1 }
-    # adjust DOP values for missing TYPE
-    DATA[[DOP]][NAS] <- Inf
-    # adjust calibrated errors --- shouldn't be necessary
-    if(VAR %in% names(DATA)) { DATA[[VAR]][NAS] <- Inf }
+      if(!(DOP %in% names(DATA))) { DATA[[DOP]] <- 1 }
+      # adjust DOP values for missing TYPE
+      DATA[[DOP]][NAS] <- Inf
+      # adjust calibrated errors --- shouldn't be necessary
+      if(VAR %in% names(DATA)) { DATA[[VAR]][NAS] <- Inf }
+    }
+    else if(TYPE=="HDOP")
+    { DATA[[COL]][NAS] <- 100 }
   }
 
   return(DATA)
@@ -373,7 +379,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   # HDOP
   if(!("HDOP" %in% names(DATA)))
   {
-    COL <- c("GPS.HDOP","HDOP","DOP","Horizontal.Dilution","GPS.Horizontal.Dilution")
+    COL <- c("GPS.HDOP","HDOP","Horizontal.Dilution","GPS.Horizontal.Dilution","GPS.DOP","DOP","GPS.PDOP","PDOP","GPS.GDOP","GDOP")
     COL <- pull.column(object,COL)
     if(length(COL))
     {
@@ -395,6 +401,9 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
       # message("HDOP values approximated; UERE will have to be fit. See help(\"uere\").")
     }
   }
+
+  # account for missing DOP values
+  if("HDOP" %in% names(DATA)) { DATA <- missing.class(DATA,"HDOP") }
 
   ###########################
   # generic location classes
@@ -476,28 +485,31 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     DATA$speed <- COL
     COL <- c("heading","GPS.heading","Course")
     COL <- pull.column(object,COL)
-    if(length(COL)) { DATA$heading <- COL }
+    if(length(COL))
+    {
+      DATA$heading <- COL
+
+      ####################
+      # SPEED ERE
+      COL <- "eobs.speed.accuracy.estimate"
+      COL <- pull.column(object,COL)
+      if(length(COL) && FALSE) # e-obs column is terrible for error estimation, location error estimates are better
+      {
+        # UERE from Scott's calibration data
+        DATA[[DOP.LIST$speed$DOP]] <- COL
+        DATA[[DOP.LIST$speed$VAR]] <- 0.115475648329319^2/2 * COL^2
+      }
+      else if("HDOP" %in% names(DATA)) # USE HDOP as approximate SDOP
+      {
+        DATA$SDOP <- DATA$HDOP
+        # message("HDOP used as an approximate speed DOP.")
+      }
+
+      # do we need a location class for missing speeds?
+      if("speed" %in% names(DATA))
+      { DATA <- missing.class(DATA,"speed") }
+    }
     else { DATA$speed <- NULL }
-
-    ####################
-    # SPEED ERE
-    COL <- "eobs.speed.accuracy.estimate"
-    COL <- pull.column(object,COL)
-    if(length(COL) && FALSE) # e-obs column is terrible for error estimation, location error estimates are better
-    {
-      # UERE from Scott's calibration data
-      DATA[[DOP.LIST$speed$DOP]] <- COL
-      DATA[[DOP.LIST$speed$VAR]] <- 0.115475648329319^2/2 * COL^2
-    }
-    else if("HDOP" %in% names(DATA)) # USE HDOP as approximate SDOP
-    {
-      DATA$SDOP <- DATA$HDOP
-      # message("HDOP used as an approximate speed DOP.")
-    }
-
-    # do we need a location class for missing speeds?
-    if("speed" %in% names(DATA))
-    { DATA <- missing.class(DATA,"speed") }
   } # END SPEED IMPORT
 
   #######################################
