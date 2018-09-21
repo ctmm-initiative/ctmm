@@ -126,10 +126,15 @@ Move2CSV <- function(object,timeformat="",timezone="UTC",projection=NULL,...)
 # consider alternative spellings of NAMES, but preserve order (preference) of NAMES
 pull.column <- function(object,NAMES,FUNC=as.numeric)
 {
-  canonical <- function(NAME) { unique(tolower(gsub("[.:_ ]","",NAME))) }
+  canonical <- function(NAME,UNIQUE=TRUE)
+  {
+    NAME <- tolower(gsub("[.:_ ]","",NAME))
+    if(UNIQUE) { NAME <- unique(NAME) }
+    return(NAME)
+  }
 
   NAMES <- canonical(NAMES)
-  names(object) <- canonical(names(object)) -> COLS
+  names(object) <- canonical(names(object),FALSE) -> COLS
 
   for(NAME in NAMES)
   {
@@ -343,6 +348,15 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     # estimated from Scott's calibration data
     DATA$HDOP <- COL
     DATA[[DOP.LIST$horizontal$VAR]] <- 1.2304709680947150^2/2*COL^2
+
+    NAS <- is.na(DATA$HDOP)
+    if(any(NAS))
+    {
+      DATA$HDOP[NAS] <- 1000
+      DATA[[DOP.LIST$horizontal$VAR]][NAS] <- Inf
+      DATA$class <- as.factor(NAS)
+      levels(DATA$class) <- c('complete','incomplete')
+    }
   }
 
   ###########

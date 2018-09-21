@@ -61,7 +61,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.5.2</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.5.3</span>
       </span>
     </div>
 
@@ -127,7 +127,7 @@
     </div>
 
     <pre class="usage"><span class='co'># S3 method for ctmm</span>
-<span class='fu'>summary</span>(<span class='no'>object</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>level.UD</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>units</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>IC</span><span class='kw'>=</span><span class='st'>"AICc"</span>,<span class='kw'>MSPE</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='no'>...</span>)</pre>
+<span class='fu'>summary</span>(<span class='no'>object</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>level.UD</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>units</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>IC</span><span class='kw'>=</span><span class='st'>"AICc"</span>,<span class='kw'>MSPE</span><span class='kw'>=</span><span class='st'>"position"</span>,<span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -150,11 +150,11 @@
     </tr>
     <tr>
       <th>IC</th>
-      <td><p>Information criteria for sorting lists of <code>ctmm</code> objects. Options include <code>"AICc"</code>, <code>"AIC"</code>, or <code>"BIC"</code>.</p></td>
+      <td><p>Information criteria for sorting lists of <code>ctmm</code> objects. Can be <code>"AICc"</code>, <code>"AIC"</code>, <code>"BIC"</code> or none (<code>"NA"</code>). AICc is approximate.</p></td>
     </tr>
     <tr>
       <th>MSPE</th>
-      <td><p>Sort models with the same autocovariance structure by MSPE. <code>MSPE=2</code> will sort by the velocity MSPE, rather than the position MSPE.</p></td>
+      <td><p>Sort models with the same autocovariance structure by the mean square predictive error of <code>"position"</code>, <code>"velocity"</code>, or not (<code>NA</code>).</p></td>
     </tr>
     <tr>
       <th>...</th>

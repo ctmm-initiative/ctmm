@@ -1,6 +1,8 @@
 # estimate and assign speeds to times
 outlie <- function(data,UERE=10,standardize=FALSE,plot=TRUE,...)
 {
+  if(class(data)=="list") { return( lapply(data, function(d){outlie(d,UERE=UERE,standardize=standardize,plot=plot)} ) ) }
+
   error <- get.error(data,ctmm(error=UERE,axes=c("x","y")),circle=TRUE)
 
   Vs <- assign_speeds(data,UERE=error)

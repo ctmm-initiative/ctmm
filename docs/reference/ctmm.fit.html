@@ -62,7 +62,7 @@ The fitting functions wrap around optim and ctmm.loglike to fit continuous-time 
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.5.2</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.5.3</span>
       </span>
     </div>
 
@@ -134,7 +134,7 @@ The fitting functions wrap around <code>optim</code> and <code>ctmm.loglike</cod
 
 <span class='fu'>ctmm.fit</span>(<span class='no'>data</span>,<span class='kw'>CTMM</span><span class='kw'>=</span><span class='fu'>ctmm</span>(),<span class='kw'>method</span><span class='kw'>=</span><span class='st'>"ML"</span>,<span class='kw'>COV</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>control</span><span class='kw'>=</span><span class='fu'>list</span>(),<span class='kw'>trace</span><span class='kw'>=</span><span class='fl'>FALSE</span>)
 
-<span class='fu'>ctmm.select</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>verbose</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.99</span>,<span class='kw'>IC</span><span class='kw'>=</span><span class='st'>"AICc"</span>,<span class='kw'>MSPE</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>trace</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='no'>...</span>)</pre>
+<span class='fu'>ctmm.select</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>verbose</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.99</span>,<span class='kw'>IC</span><span class='kw'>=</span><span class='st'>"AICc"</span>,<span class='kw'>MSPE</span><span class='kw'>=</span><span class='st'>"position"</span>,<span class='kw'>trace</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -209,11 +209,11 @@ The fitting functions wrap around <code>optim</code> and <code>ctmm.loglike</cod
     </tr>
     <tr>
       <th>IC</th>
-      <td><p>Information criteria used. Only <code>"AICc"</code> is currently supported.</p></td>
+      <td><p>Information criteria used for selection. Can be <code>"AICc"</code>, <code>"AIC"</code>, <code>"BIC"</code> or none (<code>"NA"</code>). AICc is approximate.</p></td>
     </tr>
     <tr>
       <th>MSPE</th>
-      <td><p>Reject non-stationary features that increase MSPE. <code>MSPE=2</code> uses the velocity MSPE, rather than the position MSPE.</p></td>
+      <td><p>Reject non-stationary features that increase the mean square predictive error of <code>"position"</code>, <code>"velocity"</code>, or not (<code>NA</code>).</p></td>
     </tr>
     <tr>
       <th>...</th>
@@ -275,7 +275,7 @@ Kálmán filters for continuous-time movement models.
 Therefore, fitting without telemetry errors, if possible, can provide improved initial estimates of <code>tau</code> and <code>sigma</code> for later fitting with telemetry errors.</p>
 <p>The default <code>optim</code> method here is <code>"Nelder-Mead"</code> with the largest allowable number of maximum iterations. Annecdotally, the faster <code>"BFGS"</code> and <code>"L-BFGS-B"</code> methods often perform poorly on these types of problems.
 However, Nelder Mead is not ideal and you may want to attempt a second fit, using the first fit as its initial guess.</p>
-<p>The AICs of endlessly diffusing models like BM and IOU cannot be easily compared to the AICs of range resident models like bivariate Gaussian, OU, and OUF. Endlessly diffusing models have to be conditioned off of an initial state, which we derive in <code>ctmm</code> by taking the large range limit of a range-restricted process. I.e., BM is the limit OU(<code>Inf</code>) and IOU(<code>tau</code>) is the limit OUF(<code>Inf</code>,<code>tau</code>). Using comparable likelihood functions gives up statistical efficiency and the objective prior. Moreover, comparing conditional likelihoods---with the objective prior taken from the joint likelihood---does not appear to select the true model with a likelihood ratio test. Therefore, there does not appear to be any obvious way to select between range resident and endlessly diffusing movement models.</p>
+<p>The AICs/BICs of endlessly diffusing models like BM and IOU cannot be easily compared to the AICs/BICs of range resident models like bivariate Gaussian, OU, and OUF, as their joint likelihood functions are infinitely different. Endlessly diffusing models have to be conditioned off of an initial state, which we derive in <code>ctmm</code> by taking the large range limit of a range-restricted process. I.e., BM is the limit OU(<code>Inf</code>) and IOU(<code>tau</code>) is the limit OUF(<code>Inf</code>,<code>tau</code>). Using comparable likelihood functions gives up statistical efficiency and the objective prior. Moreover, comparing conditional likelihoods---with the objective prior taken from the joint likelihood---does not appear to select the true model with a likelihood ratio test. Therefore, there does not appear to be a simple approach for selecting between range resident and endlessly diffusing movement models.</p>
 <p>Prior to v0.3.6, the univariate AICc formula was (mis)used, with the full parameter count treated as degrees of freedom in the mean. As of v.0.3.6, the mean and autocovariance parameters are treated separately in the approximate multivariate AICc formula (Burnham &amp; Anderson, Eq. 7.91). Still, this improved formula is only exact for IID data.</p>
 <p>Prior to v0.3.2, <code>ctmm.select</code> would consider every possible model.
 This is no longer feasible with current versions of <code>ctmm</code>, as the number of possible models has grown too large.</p>

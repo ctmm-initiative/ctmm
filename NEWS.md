@@ -1,9 +1,17 @@
-ctmm 0.5.3 (2018-09-18)
+ctmm 0.5.3 (2018-09-20)
 ================
 
+  * MSPE slots & arguments restructured and fully utilized in both summary and ctmm.select
+
   * now avoiding fastPOSIXct timezone and epoch issues in as.telemetry
+  
+  * outlie() now works on lists of telemetry objects
 
   * overlap() now robust to bad model fits
+  
+  * e-obs data with missing error/speed/altitude now importing correctly in as.telemetry
+  
+  * correlogram plots now cap estimates to appropriate range
   
 ctmm 0.5.2 (2018-09-10)
 ================

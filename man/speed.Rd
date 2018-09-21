@@ -55,16 +55,16 @@ If data quality is poor and velocity can barely be resolved, then the sampling d
 # Load package and data
 library(ctmm)
 data(buffalo)
-Cilla <- buffalo$Cilla
+Gabs <- buffalo$Gabs
 
-GUESS <- ctmm.guess(Cilla,interactive=FALSE)
-FIT <- ctmm.fit(Cilla,GUESS)
+GUESS <- ctmm.guess(Gabs,interactive=FALSE)
+FIT <- ctmm.fit(Gabs,GUESS)
 
 # stationary Gaussian estimate
 speed(FIT)
 
 # conditional estimate
-speed(FIT,Cilla)
+speed(FIT,Gabs)
 }}
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the

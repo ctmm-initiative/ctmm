@@ -4,7 +4,7 @@
 \title{Summarize a continuous-time movement model}
 \description{ This function returns a list of biologically interesting parameters in human readable format, as derived from a continuous-time movement model.}
 \usage{
-\S3method{summary}{ctmm}(object,level=0.95,level.UD=0.95,units=TRUE,IC="AICc",MSPE=TRUE,...)
+\S3method{summary}{ctmm}(object,level=0.95,level.UD=0.95,units=TRUE,IC="AICc",MSPE="position",...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -12,8 +12,8 @@
   \item{level}{ Confidence level for parameter estimates. }
   \item{level.UD}{ Coverage level for the Gaussian home-range area. }
   \item{units}{Convert result to natural units.}
-  \item{IC}{Information criteria for sorting lists of \code{ctmm} objects. Options include \code{"AICc"}, \code{"AIC"}, or \code{"BIC"}.}
-  \item{MSPE}{Sort models with the same autocovariance structure by MSPE. \code{MSPE=2} will sort by the velocity MSPE, rather than the position MSPE.}
+  \item{IC}{Information criteria for sorting lists of \code{ctmm} objects. Can be \code{"AICc"}, \code{"AIC"}, \code{"BIC"} or none (\code{"NA"}). AICc is approximate.}
+  \item{MSPE}{Sort models with the same autocovariance structure by the mean square predictive error of \code{"position"}, \code{"velocity"}, or not (\code{NA}).}
   \item{...}{Unused options.}
 }
 

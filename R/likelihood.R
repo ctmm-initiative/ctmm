@@ -696,6 +696,8 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
   # Mean square prediction error
   mspe <- function(K=1)
   {
+    if(!CTMM$range && K==1) { return(Inf) }
+
     # velocity MSPE
     if(K==2)
     {
@@ -716,18 +718,22 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
     }
 
     VAR <- sum(diag(CTMM$sigma))
-    if(K==2) { VAR <- VAR * (1/prod(CTMM$tau) + CTMM$circle^2) }
+    if(K==2)
+    {
+      if(CTMM$range) { VAR <- VAR * (1/prod(CTMM$tau) + CTMM$circle^2) }
+      else { VAR <- VAR / CTMM$tau[2] } # I don't think circle is valid here
+    }
 
     MSPE <- MSPE + VAR
+
     return(MSPE)
   }
   STUFF <- drift@energy(CTMM)
   UU <- STUFF$UU
   VV <- STUFF$VV
-  # Mean square prediction error in locations
-  CTMM$MSPE <- mspe(K=1)
-  # mean suare predicton error in velocities
-  CTMM$MSPEV <- mspe(K=2)
+  # Mean square prediction error in locations & velocities
+  CTMM$MSPE <- c( mspe(K=1) , mspe(K=2) )
+  names(CTMM$MSPE) <- c("position","velocity")
 
   return(CTMM)
 }

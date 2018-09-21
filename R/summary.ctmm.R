@@ -74,7 +74,7 @@ ci.tau <- function(tau,COV,alpha=0.05,min=0,max=Inf)
 }
 
 ###
-summary.ctmm <- function(object,level=0.95,level.UD=0.95,units=TRUE,IC="AICc",MSPE=TRUE,...)
+summary.ctmm <- function(object,level=0.95,level.UD=0.95,units=TRUE,IC="AICc",MSPE="position",...)
 {
   CLASS <- class(object)
   if(CLASS=="ctmm")
@@ -129,7 +129,7 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
   par[1,] <- -2*log(alpha.UD)*pi*par[1,]
 
   # pretty area units   # do we convert units
-  unit.list <- unit.par(par,"area",SI=!units)
+  unit.list <- unit.par(par[1,],"area",SI=!units)
   name[1] <- unit.list$name
   scale[1] <- unit.list$scale
 
@@ -228,11 +228,8 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
 
   # affix DOF info
   # only valid for processes with a stationary mean
-  if(object$range)
-  {
-    SUM$DOF <- c( DOF.mean(object) , DOF.area(object) , DOF.speed/2 )
-    names(SUM$DOF) <- c("mean","area","speed")
-  }
+  SUM$DOF <- c( DOF.mean(object) , DOF.area(object) , DOF.speed/2 )
+  names(SUM$DOF) <- c("mean","area","speed")
 
   SUM$CI <- par
 
@@ -241,11 +238,18 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
 #methods::setMethod("summary",signature(object="ctmm"), function(object,...) summary.ctmm(object,...))
 
 #DOF of area
-DOF.area <- function(CTMM) { CTMM$sigma@par["area"]^2/abs(CTMM$COV["area","area"]) }
+DOF.area <- function(CTMM)
+{
+  if(CTMM$range) { DOF <- CTMM$sigma@par["area"]^2/abs(CTMM$COV["area","area"]) }
+  else { DOF <- 0 }
+  return(DOF)
+}
 
 #########
 DOF.mean <- function(CTMM)
 {
+  if(!CTMM$range) { return(0) }
+
   DOF <- CTMM$DOF.mu
   DIM <- dim(DOF)
 

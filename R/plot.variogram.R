@@ -220,6 +220,9 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, units=TRUE, fraction=0.5, c
     xlim <- c(0,max.lag)
   }
 
+  # clamp ACF estimates before calculating extent
+  if(ACF) { x <- lapply(x,function(y) { y$SVF <- clamp(y$SVF,-1,1) ; y }) }
+
   # calculate ylimits from all variograms !!!
   if(is.null(ylim)) { ylim <- extent(x,level=max(level))$y }
 
@@ -335,7 +338,7 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, units=TRUE, fraction=0.5, c
         DOF <- STUFF$DOF
         # Fisher transformation
         FISH <- atanh(SVF)
-        SD <- 1/sqrt(DOF-3)
+        SD <- 1/sqrt(max(DOF-3,0))
         SVF.lower <- tanh(stats::qnorm(alpha[j]/2,mean=FISH,sd=SD,lower.tail=TRUE))
         SVF.upper <- tanh(stats::qnorm(alpha[j]/2,mean=FISH,sd=SD,lower.tail=FALSE))
 

@@ -16,7 +16,7 @@ ctmm.loglike(data,CTMM,REML=FALSE,profile=TRUE,zero=0,verbose=FALSE)
 
 ctmm.fit(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=FALSE)
 
-ctmm.select(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",MSPE=TRUE,trace=FALSE,...)
+ctmm.select(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",MSPE="position",trace=FALSE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -37,8 +37,8 @@ ctmm.select(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",MSPE=TRUE,trace=FALSE,.
   \item{control}{An optional argument list with standardized numerical arguments.}
   \item{trace}{Report progress updates. Can be among \code{0:2} with increasing detail.}
   \item{level}{Attempt to simplify a model if a feature's non-existence falls within this level of confidence interval.}
-  \item{IC}{Information criteria used. Only \code{"AICc"} is currently supported.}
-  \item{MSPE}{Reject non-stationary features that increase MSPE. \code{MSPE=2} uses the velocity MSPE, rather than the position MSPE.}
+  \item{IC}{Information criteria used for selection. Can be \code{"AICc"}, \code{"AIC"}, \code{"BIC"} or none (\code{"NA"}). AICc is approximate.}
+  \item{MSPE}{Reject non-stationary features that increase the mean square predictive error of \code{"position"}, \code{"velocity"}, or not (\code{NA}).}
   \item{...}{Further arguments passed to \code{ctmm.fit}.}
 }
 
@@ -108,7 +108,7 @@ Therefore, fitting without telemetry errors, if possible, can provide improved i
 The default \code{\link{optim}} method here is \code{"Nelder-Mead"} with the largest allowable number of maximum iterations. Annecdotally, the faster \code{"BFGS"} and \code{"L-BFGS-B"} methods often perform poorly on these types of problems.
 However, Nelder Mead is not ideal and you may want to attempt a second fit, using the first fit as its initial guess.
 
-The AICs of endlessly diffusing models like BM and IOU cannot be easily compared to the AICs of range resident models like bivariate Gaussian, OU, and OUF. Endlessly diffusing models have to be conditioned off of an initial state, which we derive in \code{ctmm} by taking the large range limit of a range-restricted process. I.e., BM is the limit OU(\code{Inf}) and IOU(\code{tau}) is the limit OUF(\code{Inf},\code{tau}). Using comparable likelihood functions gives up statistical efficiency and the objective prior. Moreover, comparing conditional likelihoods---with the objective prior taken from the joint likelihood---does not appear to select the true model with a likelihood ratio test. Therefore, there does not appear to be any obvious way to select between range resident and endlessly diffusing movement models.
+The AICs/BICs of endlessly diffusing models like BM and IOU cannot be easily compared to the AICs/BICs of range resident models like bivariate Gaussian, OU, and OUF, as their joint likelihood functions are infinitely different. Endlessly diffusing models have to be conditioned off of an initial state, which we derive in \code{ctmm} by taking the large range limit of a range-restricted process. I.e., BM is the limit OU(\code{Inf}) and IOU(\code{tau}) is the limit OUF(\code{Inf},\code{tau}). Using comparable likelihood functions gives up statistical efficiency and the objective prior. Moreover, comparing conditional likelihoods---with the objective prior taken from the joint likelihood---does not appear to select the true model with a likelihood ratio test. Therefore, there does not appear to be a simple approach for selecting between range resident and endlessly diffusing movement models.
 
 Prior to v0.3.6, the univariate AICc formula was (mis)used, with the full parameter count treated as degrees of freedom in the mean. As of v.0.3.6, the mean and autocovariance parameters are treated separately in the approximate multivariate AICc formula (Burnham & Anderson, Eq. 7.91). Still, this improved formula is only exact for IID data.
 

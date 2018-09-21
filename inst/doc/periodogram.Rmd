@@ -83,7 +83,7 @@ The non-default `control` list here specifies our prototype optimization code th
 With `verbose=TRUE`, we obtain a list fitted `ctmm` objects, one for each relevant combination of effects, where the first element of that list is the preferred model.
 
 ```{r}
-summary(FITS,units=FALSE)
+summary(FITS)
 ```
 
 From the first model, We see that the velocity autocorrelation (OUF), anisotropy, and `2` harmonics of daily periodicity were all selected.
@@ -95,16 +95,17 @@ For a given autocovariance model, the different non-stationary models are sorted
 For sorting between the autocovariance models (each with best non-stationary model), the information criteria is used. MSPE is not valid for general purpose selection.
 
 ```{r}
-# sorted by MSPE
+# these are sorted by MSPE
 summary(FITS[1:7])
-# sorted by IC
+# these are sorted by IC
 summary(FITS[c(5,8:10)])
 ```
 
 If only the information criteria was used, we would have selected `harmonic 3 0` over `harmonic 2 0`.
 
 ```{r}
-summary(FITS,MSPE=FALSE)
+# sorting by IC only
+summary(FITS,MSPE=NA)
 ```
 
 Next we do some sanity checking on our results. The sampling interval for Gamba is fairly steady at

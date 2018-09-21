@@ -1,20 +1,16 @@
 PRIORITY
-* IOU/BM ctmm.select not working
+* satellites_used, velocity_2d
+* when ctmm.fit estimates error==0 exactly, the uncertainty isn't propagated because error==FALSE
 * summary(ctmm) return model name
-* export turtle and then import turtle
 * simulate with emulate=TRUE
 * Telonics HDOP conversion factor
 * summary UERE list for model selection help
 * overlap needs to return DOFs in an overlap object - and then define a summary function for the overlap object
 * overlaps' correlated errors
-* multi-class UERE in ctmm(), ctmm.guess(), ctmm.fit(), variogram.fit(), etc., etc.
 * uere() select for identical UEREs (location class , axes) ?
 * should standardization be moved to ctmm.select?
 * reference Guillaume's paper at the beginning of the periodogram vignette
-* use perturb.ctmm in ctmm.guess / variogram.fit ?
-* reduce uere() warning in as.telemetry to once... remove other crap... too much
 * error vignette - check back on variogram
-* quiet uere() example
 
 ERROR PAPER
 * how does error change variogram DOF calculation?

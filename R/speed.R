@@ -4,10 +4,18 @@ speed.telemetry <- function(object,CTMM,level=0.95,robust=FALSE,units=TRUE,prior
 speed.ctmm <- function(object,data=NULL,level=0.95,robust=FALSE,units=TRUE,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,cores=1,...)
 {
   if(length(object$tau)<2 || object$tau[2]<=.Machine$double.eps)
-  { stop("Movement model is fractal. Speed cannot be estimated.") }
+  {
+    warning("Movement model is fractal.")
+    CI <- c(0,Inf,Inf)
+    names(CI) <- c("low","ML","high")
+    CI <- rbind(CI)
+    rownames(CI) <- "speed (m/s)"
+    #attr(CI,"DOF") <- 0
+    return(CI)
+  }
 
   if(prior && fast && any(eigen(object$COV,only.values=TRUE)$values<=.Machine$double.eps))
-  { stop("Indefinite covariance matrix in sampling distribution.") }
+  { stop("Indefinite covariance matrix estimate. Consider fast=FALSE.") }
 
   if(is.null(data) && prior && !fast)
   { stop("Parametric boostrap cannot be performed without data.") }
@@ -36,7 +44,8 @@ speed.ctmm <- function(object,data=NULL,level=0.95,robust=FALSE,units=TRUE,prior
         VAR <- c(GRAD %*% object$COV %*% GRAD)
 
         # propagate errors chi -> chi^2
-        CI <- chisq.ci(MEAN^2,(2*MEAN)^2*VAR,alpha=1-level)
+        DOF <- (2*MEAN)^2*VAR
+        CI <- chisq.ci(MEAN^2,DOF,alpha=1-level)
         # transform back
         CI <- sqrt(CI)
       }
@@ -44,6 +53,7 @@ speed.ctmm <- function(object,data=NULL,level=0.95,robust=FALSE,units=TRUE,prior
       {
         CI <- c(1,1,1)*MEAN
         names(CI) <- c("low","ML","high")
+        DOF <- 0
       }
     }
   }
@@ -134,7 +144,8 @@ speed.ctmm <- function(object,data=NULL,level=0.95,robust=FALSE,units=TRUE,prior
       # transform back
       VAR <- AVE^2 * VAR
       # chi^2 speed^2
-      CI <- chisq.ci(AVE^2,(2*AVE)^2*VAR,alpha=1-level)
+      DOF <- (2*AVE)^2*VAR
+      CI <- chisq.ci(AVE^2,DOF,alpha=1-level)
       CI <- sqrt(CI)
     }
     else
@@ -150,7 +161,7 @@ speed.ctmm <- function(object,data=NULL,level=0.95,robust=FALSE,units=TRUE,prior
   UNITS <- unit(CI,"speed",SI=!units)
   CI <- rbind(CI)/UNITS$scale
   rownames(CI) <- paste0("speed (",UNITS$name,")")
-
+  #attr(CI,"DOF") <- DOF
   return(CI)
 }
 

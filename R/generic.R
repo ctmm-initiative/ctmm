@@ -1,3 +1,10 @@
+# base match.arg cannot match NA ???
+match.arg <- function(arg,choices,...)
+{
+  if(is.na(arg) && any(is.na(choices))) { return(NA) }
+  else { return(base::match.arg(arg,choices,...)) }
+}
+
 # is a package installed?
 is.installed <- function(pkg) is.element(pkg, utils::installed.packages()[,1])
 

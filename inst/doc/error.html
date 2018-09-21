@@ -12,7 +12,7 @@
 
 <meta name="author" content="Christen H. Fleming" />
 
-<meta name="date" content="2018-09-13" />
+<meta name="date" content="2018-09-20" />
 
 <title>Telemetry error</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Telemetry error</h1>
 <h4 class="author"><em>Christen H. Fleming</em></h4>
-<h4 class="date"><em>2018-09-13</em></h4>
+<h4 class="date"><em>2018-09-20</em></h4>
 
 
 
@@ -151,12 +151,12 @@ FIT &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(turtle[[<s
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(FIT)</code></pre></div>
 <pre><code>## $DOF
 ##     mean     area    speed 
-## 12.59923 24.41651  0.00000 
+## 12.59923 24.41652  0.00000 
 ## 
 ## $CI
 ##                           low        ML     high
-## area (hectares)     12.192644 18.949153 27.17140
-## tau position (days)  3.693129  6.319045 10.81206</code></pre>
+## area (hectares)     12.192644 18.949151 27.17140
+## tau position (days)  3.693129  6.319044 10.81206</code></pre>
 <p><code>trace=TRUE</code> allows us to see the models considered. <code>verbose=TRUE</code> would save each model.</p>
 </div>
 <div id="fitting-with-uncalibrated-data" class="section level3">
@@ -172,13 +172,13 @@ FIT &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(turtle[[<s
 <span class="kw">summary</span>(FIT)</code></pre></div>
 <pre><code>## $DOF
 ##     mean     area    speed 
-## 13.46151 25.98178  0.00000 
+## 13.46152 25.98179  0.00000 
 ## 
 ## $CI
 ##                           low        ML      high
 ## area (hectares)     12.604531 19.298797 27.396171
-## tau position (days)  3.467312  5.882936  9.981489
-## error (meters)       0.000000  9.317617 63.303346</code></pre>
+## tau position (days)  3.467312  5.882936  9.981488
+## error (meters)       0.000000  9.317617 63.303345</code></pre>
 <p>Here, fitting the UERE simultaneously with the movement model produced a consistent result. This will not always be the case.</p>
 </div>
 </div>
