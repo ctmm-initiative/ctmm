@@ -6,7 +6,6 @@ emulate.ctmm <- function(object,data=NULL,fast=FALSE,...)
   CTMM <- object
   if(!fast) { return( emulate.telemetry(data,CTMM,fast=fast,...) ) }
 
-  # needs to be updated for periodic stuff
   Sigma <- CTMM$COV.mu
   DIM <- dim(Sigma)
   if(length(DIM)==2)

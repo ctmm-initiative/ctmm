@@ -85,7 +85,7 @@
       <h1>Telemetry error</h1>
                         <h4 class="author">Christen H. Fleming</h4>
             
-            <h4 class="date">2018-09-16</h4>
+            <h4 class="date">2018-09-21</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/ctmm-initiative/ctmm/blob/master/vignettes/error.Rmd"><code>vignettes/error.Rmd</code></a></small>
       <div class="hidden name"><code>error.Rmd</code></div>
@@ -129,21 +129,36 @@
 <pre><code>## [1] "t"      "HDOP"   "x"      "y"      "VAR.xy"</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(turtle[[<span class="dv">3</span>]],<span class="dt">error=</span><span class="dv">2</span>) <span class="co"># turtle plot with 95% error discs</span></code></pre></div>
 <p><img src="error_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
+<div id="error-model-selection" class="section level2">
+<h2 class="hasAnchor">
+<a href="#error-model-selection" class="anchor"></a>Error model selection</h2>
+<p>Not all GPS devices provide reliable DOP values and sometimes it is not obvious what error information will prove to be the most predictive. Generally speaking, <code>as.telemetry</code> will attempt to import the “best” column from among those that estimate error, DOP value, number of satellites and fix type, inlcuding timed-out fixes (see the <code>timeout</code> argument in <code>help(as.telemetry)</code>). Researchers may want to import the data with different error information, run <code>uere.fit</code> for each error model, and then select among the candidate models. Here we do this by comparing the turtle calibration data with and without HDOP values.</p>
+<p>First, we remove the HDOP values in an alternate dataset.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">squirtle &lt;-<span class="st"> </span><span class="kw">lapply</span>(turtle,<span class="cf">function</span>(t){ t<span class="op">$</span>HDOP &lt;-<span class="st"> </span><span class="ot">NULL</span> ; t })</code></pre></div>
+<p>In other cases, manipulation will need to be performed before importing, so that <code>as.telemetry</code> can format the <code>telemetry</code> object properly. Running <code>uere.fit</code> now results in errors calibrated under the assumption of homoskedastic errors.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">UERE2 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/uere.html">uere.fit</a></span>(squirtle[<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>])</code></pre></div>
+<p>We can now apply model selection to the two UERE fits by summarizing them in a list.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(<span class="kw">list</span>(<span class="dt">HDOP=</span>UERE,<span class="dt">homo=</span>UERE2))</code></pre></div>
+<pre><code>##             &lt;U+0394&gt;AICc  Z[red]²
+## HDOP       0.0000 6.179499
+## homo     350.6833 7.403003</code></pre>
+<p>Now we can see that the HDOP values yield the better error model, both in terms of AICc and in terms of reduced Z squared, which is a goodness-of-fit statistic akin to reduced chi squared but designed for comparing error models.</p>
+</div>
 </div>
 <div id="outlier-detection" class="section level1">
 <h1 class="hasAnchor">
 <a href="#outlier-detection" class="anchor"></a>Outlier detection</h1>
 <p>Now we come to the task of identifying outliers. The <code>outlie</code> function uses error information to estimate straight-line speeds between sampled times and distances from the bulk of the data.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/outlie.html">outlie</a></span>(turtle[[<span class="dv">3</span>]]) -&gt;<span class="st"> </span>OUT</code></pre></div>
-<p><img src="error_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
+<p><img src="error_files/figure-html/unnamed-chunk-8-1.png" width="700"></p>
 <p>High-speed segments are colored in blue, while distant locations are colored in red. More emphasis is placed on the more extreme locations in the <code>outlie</code> plot. Visually we can see at least one outlier in the wood turtle data. The output of <code>outlie</code> also contains the error-informed speed and distance estimates (in SI units) used to generate the plot.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(OUT)</code></pre></div>
-<p><img src="error_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
+<p><img src="error_files/figure-html/unnamed-chunk-9-1.png" width="700"></p>
 <p>A sustained speed of 0.1 m/s is not biologically implausible for a wood turtle, but this location is highly suspicious, both in terms of speed and lack of proximity. After removing the outlier, we can check the data again.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">BAD &lt;-<span class="st"> </span><span class="kw">which.max</span>(OUT<span class="op">$</span>speed)
 turtle[[<span class="dv">3</span>]] &lt;-<span class="st"> </span>turtle[[<span class="dv">3</span>]][<span class="op">-</span>BAD,]
 <span class="kw"><a href="../reference/outlie.html">outlie</a></span>(turtle[[<span class="dv">3</span>]]) -&gt;<span class="st"> </span>OUT</code></pre></div>
-<p><img src="error_files/figure-html/unnamed-chunk-7-1.png" width="700"></p>
+<p><img src="error_files/figure-html/unnamed-chunk-10-1.png" width="700"></p>
 <p>Datasets may have multiple outliers. In pathological situations, there may be no clear separation between the normative data and the outliers. This necessitates a better error model, either by improving inadequate (or absent) HDOP estimates or by employing a heavier tailed error distribution (not yet supported).</p>
 </div>
 <div id="variograms-and-model-selection" class="section level1">
@@ -153,7 +168,7 @@ turtle[[<span class="dv">3</span>]] &lt;-<span class="st"> </span>turtle[[<span 
 <h2 class="hasAnchor">
 <a href="#variograms" class="anchor"></a>Variograms</h2>
 <p>If we were working with ARGOS data or high resolution GPS data on a small animal, then we can get a “nugget” effect in the variogram that looks like an initial discontinuity at short time lags.</p>
-<p><img src="error_files/figure-html/unnamed-chunk-8-1.png" width="700"><img src="error_files/figure-html/unnamed-chunk-8-2.png" width="700"></p>
+<p><img src="error_files/figure-html/unnamed-chunk-11-1.png" width="700"><img src="error_files/figure-html/unnamed-chunk-11-2.png" width="700"></p>
 <p>The height of this initial discontinuity corresponds to the variance of uncorrelated location errors. The second plot is the kind of initial discontinuity one has with detector array data. The end of the (slope) discontinuity is highlighted with a circle. This discontinuity is smooth because the movement and detection are correlated. The height of this initial discontinuity is also (at least roughly) the variance of the location errors.</p>
 </div>
 <div id="model-fitting" class="section level2">
@@ -175,14 +190,17 @@ FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fi
 <pre><code>## * Fitting models OUF anisotropic error</code></pre>
 <pre><code>## * Fitting models OU anisotropic error</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(FIT)</code></pre></div>
-<pre><code>## $DOF
+<pre><code>## $name
+## [1] "OU anisotropic error"
+## 
+## $DOF
 ##     mean     area    speed 
-## 12.59923 24.41651  0.00000 
+## 12.59923 24.41654  0.00000 
 ## 
 ## $CI
-##                           low        ML     high
-## area (hectares)     12.192645 18.949154 27.17140
-## tau position (days)  3.693129  6.319045 10.81206</code></pre>
+##                          low        ML     high
+## area (hectares)    12.192644 18.949148 27.17139
+## t[position] (days)  3.693129  6.319044 10.81205</code></pre>
 <p><code>trace=TRUE</code> allows us to see the models considered. <code>verbose=TRUE</code> would save each model.</p>
 </div>
 <div id="fitting-with-uncalibrated-data" class="section level3">
@@ -197,15 +215,18 @@ GUESS<span class="op">$</span>error &lt;-<span class="st"> </span><span class="d
 <span class="co"># fit parameter estimates</span>
 FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.select</a></span>(turtle[[<span class="dv">3</span>]],GUESS,<span class="dt">control=</span>control)
 <span class="kw">summary</span>(FIT)</code></pre></div>
-<pre><code>## $DOF
-##     mean     area    speed 
-## 13.46151 25.98177  0.00000 
+<pre><code>## $name
+## [1] "OU anisotropic error"
+## 
+## $DOF
+##    mean    area   speed 
+## 13.4615 25.9817  0.0000 
 ## 
 ## $CI
-##                           low        ML      high
-## area (hectares)     12.604531 19.298799 27.396176
-## tau position (days)  3.467312  5.882937  9.981491
-## error (meters)       0.000000  9.317617 63.303345</code></pre>
+##                          low        ML     high
+## area (hectares)    12.604532 19.298814 27.39621
+## t[position] (days)  3.467311  5.882941  9.98151
+## error (meters)      0.000000  9.317617 63.30335</code></pre>
 <p>Here, fitting the UERE simultaneously with the movement model produced a consistent result. This will not always be the case.</p>
 </div>
 </div>
@@ -217,7 +238,11 @@ FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fi
       <h2 class="hasAnchor">
 <a href="#tocnav" class="anchor"></a>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
-<li><a href="#error-calibration">Error calibration</a></li>
+<li>
+<a href="#error-calibration">Error calibration</a><ul class="nav nav-pills nav-stacked">
+<li><a href="#error-model-selection">Error model selection</a></li>
+      </ul>
+</li>
       <li><a href="#outlier-detection">Outlier detection</a></li>
       <li>
 <a href="#variograms-and-model-selection">Variograms and model selection</a><ul class="nav nav-pills nav-stacked">

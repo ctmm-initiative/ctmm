@@ -86,7 +86,7 @@ variogram.fit <- function(variogram,CTMM=ctmm(),name="GUESS",fraction=0.5,intera
   manlist <- lapply(1:nrow(DF),function(r){ manipulate::slider(min=DF$min[r],max=DF$max[r],initial=DF$initial[r],label=DF$label[r],step=DF$step[r]) })
   names(manlist) <- rownames(DF)
 
-  # !!! put eror checkbox option here?
+  # put eror checkbox option here
   CHECK <- DF$min==0 & DF$max==1 & DF$step==1
   if(any(CHECK))
   {
@@ -162,13 +162,13 @@ variogram.fit.backend <- function(variogram,CTMM=ctmm(),fraction=0.5,b=4)
   {
     sigma.unit <- unit(sigma,"area",concise=TRUE)
     sigma <- sigma / sigma.unit$scale
-    label <- paste("sigma variance (",sigma.unit$name,")",sep="")
+    label <- paste("\u03C3 variance (",sigma.unit$name,")",sep="")
   }
   else
   {
     sigma.unit <- unit(sigma,"diffusion",concise=TRUE)
     sigma <- sigma / sigma.unit$scale
-    label <- paste("sigma diffusion (",sigma.unit$name,")",sep="")
+    label <- paste("\u03C3 diffusion (",sigma.unit$name,")",sep="")
   }
   DF <- rbind(DF,data.frame(min=0,max=m*sigma,initial=sigma,label=label,step=sigma/RES,stringsAsFactors=FALSE))
   NAMES <- c(NAMES,"sigma")
@@ -179,11 +179,11 @@ variogram.fit.backend <- function(variogram,CTMM=ctmm(),fraction=0.5,b=4)
   tau[1] <- tau[1] / tau1.unit$scale
   tau[2] <- tau[2] / tau2.unit$scale
 
-  label <- paste("tau position (",tau1.unit$name,")",sep="")
+  label <- paste("\u03C4[position] (",tau1.unit$name,")",sep="")
   DF <- rbind(DF,data.frame(min=0,max=m*tau[1],initial=tau[1],label=label,step=tau[1]/RES,stringsAsFactors=FALSE))
   NAMES <- c(NAMES,"tau1")
 
-  label <- paste("tau velocity (",tau2.unit$name,")",sep="")
+  label <- paste("\u03C4[velocity] (",tau2.unit$name,")",sep="")
   DF <- rbind(DF,data.frame(min=0,max=m*tau[2],initial=tau[2],label=label,step=tau[2]/RES,stringsAsFactors=FALSE))
   NAMES <- c(NAMES,"tau2")
 

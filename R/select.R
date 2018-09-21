@@ -360,7 +360,7 @@ summary.ctmm.list <- function(object, IC="AICc", MSPE="position", units=TRUE, ..
     # show relative IC
     ICS <- ICS - ICS[1]
     ICS <- cbind(ICS)
-    colnames(ICS) <- paste0("d",IC)
+    colnames(ICS) <- paste0("\u0394",IC)
   }
   else { ICS <- NULL }
 
@@ -369,7 +369,7 @@ summary.ctmm.list <- function(object, IC="AICc", MSPE="position", units=TRUE, ..
     MSPES <- sapply(object,function(m){get.MSPE(m,MSPE)})
 
     # convert to meters/kilometers
-    CNAME <- "dRMSPE"
+    CNAME <- paste0("\u0394","RMSPE")
     MSPES <- sqrt(MSPES)
     MSPES <- MSPES - MSPES[1]
     MIN <- min(c(abs(MSPES[MSPES!=0]),Inf))
@@ -386,8 +386,15 @@ summary.ctmm.list <- function(object, IC="AICc", MSPE="position", units=TRUE, ..
 
   DOF <- sapply(object,DOF.mean)
   METH <- sapply(object,function(m){m$method})
-  DOF <- data.frame(DOF,METH)
-  colnames(DOF) <- c("DOF[mean]","method")
+
+  DOF <- cbind(DOF)
+  colnames(DOF) <- "DOF[mean]"
+
+  if(FALSE) # only prints correctly in unicode locale (Windows R bug)
+  {
+    DOF <- data.frame(DOF,METH)
+    colnames(DOF) <- c("DOF[mean]","method")
+  }
 
   ICS <- cbind(ICS,DOF)
 

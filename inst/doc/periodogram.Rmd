@@ -4,10 +4,11 @@ author: "Guillaume Péron, Christen H. Fleming, and Justin M. Calabrese"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Periodic movement models}
   %\VignetteKeyword{periodic}
+  %\VignetteIndexEntry{Periodic movement models}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  \usepackage[utf8]{inputenc}
 ---
 
 In this vignette, we walk through periodogram for movement data and periodic movement model fitting and selection.

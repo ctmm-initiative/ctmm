@@ -1,16 +1,19 @@
 PRIORITY
-* satellites_used, velocity_2d
-* when ctmm.fit estimates error==0 exactly, the uncertainty isn't propagated because error==FALSE
-* summary(ctmm) return model name
-* simulate with emulate=TRUE
+* uere() select for identical UEREs (location class , axes) ?
+* error vignette - check back on variogram
 * Telonics HDOP conversion factor
-* summary UERE list for model selection help
+* reference Guillaume's paper at the beginning of the periodogram vignette
+
+OSCILLATOR MODEL
+* storage of parameters
+* Langevin equation solutions
+* summary of parameters
+* variogram plot of theoretical
+* critically damped oscillator - one less parameter in count - select
+
+OVERLAP
 * overlap needs to return DOFs in an overlap object - and then define a summary function for the overlap object
 * overlaps' correlated errors
-* uere() select for identical UEREs (location class , axes) ?
-* should standardization be moved to ctmm.select?
-* reference Guillaume's paper at the beginning of the periodogram vignette
-* error vignette - check back on variogram
 
 ERROR PAPER
 * how does error change variogram DOF calculation?
@@ -36,6 +39,10 @@ PARALLELIZATION
 * parallel derivatives with upper/lower/etc.
 
 MISC WORK
+* should standardization be moved to ctmm.select?
+* writeRaster, ... with lists of ctmm objects (when appropriate)
+* when ctmm.fit estimates error==0 exactly, the uncertainty isn't propagated because error==FALSE
+* simulate with emulate=TRUE
 * significant digits function (MLE+CI) for summary functions
 * akde/occurrence grid=UD/raster
 * p-value test for trend terms using variance of mu_alt-mu_null

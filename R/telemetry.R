@@ -405,7 +405,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   # approximate DOP from # satellites if necessary
   if(!("HDOP" %in% names(DATA)))
   {
-    COL <- c("GPS.satellite.count","satellite.count","NumSats","Sats") # Counts? Messages?
+    COL <- c("GPS.satellite.count","satellite.count","NumSats","satellites.used","Sats") # Counts? Messages?
     COL <- pull.column(object,COL)
     if(length(COL))
     {

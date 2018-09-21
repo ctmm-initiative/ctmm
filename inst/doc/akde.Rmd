@@ -7,6 +7,7 @@ vignette: >
   %\VignetteKeyword{akde}
   %\VignetteIndexEntry{Autocorrelated Kernel Density Estimation}
   %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
   \usepackage[utf8]{inputenc}
 ---
 

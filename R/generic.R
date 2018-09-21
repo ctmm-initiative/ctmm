@@ -160,7 +160,7 @@ cov.loglike <- function(hess,grad=rep(0,nrow(hess)))
   if(all(diag(hess)>0))
   {
     COV <- try(PDsolve(hess))
-    if(class(COV)=="matrix") { return(COV) }
+    if(class(COV)=="matrix" && all(diag(COV)>0)) { return(COV) }
   }
   # one of the curvatures is negative or close to negative
   # return something sensible just in case we are on a boundary and this makes sense
@@ -182,7 +182,7 @@ cov.loglike <- function(hess,grad=rep(0,nrow(hess)))
 
   EIGEN <- eigen(hess)
   values <- EIGEN$values
-  if(any(values<=0)) { warning("MLE is near a boundary or optim failed.") }
+  if(any(values<=0)) { warning("MLE is near a boundary or optim() failed.") }
   values <- clamp(values,0,Inf)
   vectors <- EIGEN$vectors
 

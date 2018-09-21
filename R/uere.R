@@ -306,6 +306,8 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
 # summarize uere object
 summary.UERE <- function(object,level=0.95,...)
 {
+  if(class(object)=="list") { return(summary.UERE.list(object,...)) }
+
   TYPE <- colnames(object)
   N <- sapply(TYPE,function(type){length(DOP.LIST[[type]]$axes)}) # (type)
   DOF <- attr(object,"DOF") # (class,type)
@@ -319,6 +321,25 @@ summary.UERE <- function(object,level=0.95,...)
   UERE <- aperm(UERE,c(2,1,3))
   return(UERE)
 }
+
+
+# summarize list of uere objects
+summary.UERE.list <- function(object,...)
+{
+  AICc <- sapply(object,function(U) { attr(U,"AICc") } )
+  AICc <- AICc - min(AICc)
+  Zsq <- sapply(object,function(U) { attr(U,"Zsq") } )
+
+  TAB <- cbind(AICc,Zsq)
+  colnames(TAB) <- c("\u0394AICc","Z[red]\u00B2")
+  rownames(TAB) <- names(object)
+
+  IND <- order(AICc)
+  TAB <- TAB[IND,]
+
+  return(TAB)
+}
+
 
 # calculate residuals of calibration data
 # add axes argument for other uses?

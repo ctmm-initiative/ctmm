@@ -3,19 +3,24 @@ speed.telemetry <- function(object,CTMM,level=0.95,robust=FALSE,units=TRUE,prior
 
 speed.ctmm <- function(object,data=NULL,level=0.95,robust=FALSE,units=TRUE,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,cores=1,...)
 {
+  # bad return value
+  INF <- c(0,Inf,Inf)
+  names(INF) <- c("low","ML","high")
+  INF <- rbind(INF)
+  rownames(INF) <- "speed (m/s)"
+  #attr(CI,"DOF") <- 0
+
   if(length(object$tau)<2 || object$tau[2]<=.Machine$double.eps)
   {
     warning("Movement model is fractal.")
-    CI <- c(0,Inf,Inf)
-    names(CI) <- c("low","ML","high")
-    CI <- rbind(CI)
-    rownames(CI) <- "speed (m/s)"
-    #attr(CI,"DOF") <- 0
-    return(CI)
+    return(INF)
   }
 
   if(prior && fast && any(eigen(object$COV,only.values=TRUE)$values<=.Machine$double.eps))
-  { stop("Indefinite covariance matrix estimate. Consider fast=FALSE.") }
+  {
+    warning("Indefinite covariance matrix estimate. Consider fast=FALSE.")
+    return(INF)
+  }
 
   if(is.null(data) && prior && !fast)
   { stop("Parametric boostrap cannot be performed without data.") }
@@ -94,7 +99,11 @@ speed.ctmm <- function(object,data=NULL,level=0.95,robust=FALSE,units=TRUE,prior
       N <- N + cores
       if(!robust) # rolling sums to keep complexity O(N)
       {
-        if(any(ADD==Inf)) { stop("Sampling distribution does not always resolve velocity, c") }
+        if(any(ADD==Inf))
+        {
+          warning("Sampling distribution does not always resolve velocity. Try robust=TRUE.")
+          return(INF)
+        }
         S1 <- S1 + sum(ADD)
         S2 <- S2 + sum(ADD^2)
       }

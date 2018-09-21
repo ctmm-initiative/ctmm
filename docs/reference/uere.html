@@ -61,7 +61,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.5.2</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.5.3</span>
       </span>
     </div>
 
@@ -170,6 +170,7 @@
 <code>uere.fit()</code> allows users to estimate the UERE from calibration data, where the device was left fixed over a period of time.
 The calibration UERE can then be applied to tracking data with the <code>uere()&lt;-</code> assignment method.
 Otherwise, when <code>error=TRUE</code> in <code><a href='ctmm.fit.html'>ctmm</a></code>, <code><a href='ctmm.fit.html'>ctmm.fit</a></code> will estimate the UERE simultaneously with the movement model, which is less reliable than using calibration data.</p>
+<p><code>summary()</code> applied to single <code>UERE</code> object will return UERE parameter estimates and confidence intervals, while <code>summary()</code> applied to a list of <code>UERE</code> objects will return a model-selection table, with AICc and reduced Z squared (goodness of fit) values.</p>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
@@ -190,7 +191,7 @@ Otherwise, when <code>error=TRUE</code> in <code><a href='ctmm.fit.html'>ctmm</a
 <span class='fu'>data</span>(<span class='no'>turtle</span>)
 
 <span class='co'># the first two datasets are calibration data</span>
-<span class='fu'>names</span>(<span class='no'>turtle</span>)</div><div class='output co'>#&gt; [1] "Calibration.1" "Calibration.2" "Turtle.1"      "Turtle.2"     </div><div class='input'>
+<span class='fu'>names</span>(<span class='no'>turtle</span>)</div><div class='output co'>#&gt; [1] "60s"  "90s"  "F231" "F403"</div><div class='input'>
 <span class='co'># estimate UERE from calibration data</span>
 <span class='no'>UERE</span> <span class='kw'>&lt;-</span> <span class='fu'>uere.fit</span>(<span class='no'>turtle</span>[<span class='fl'>1</span>:<span class='fl'>2</span>])
 <span class='co'># inspect UERE estimate</span>

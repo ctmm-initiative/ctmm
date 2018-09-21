@@ -4,9 +4,10 @@ author: "Christen H. Fleming and Justin M. Calabrese"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Variograms and Model Selection}
   %\VignetteKeyword{variogram}
+  %\VignetteIndexEntry{Variograms and Model Selection}
   %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
   \usepackage[utf8]{inputenc}
 ---
 
@@ -94,7 +95,7 @@ plot(SVF,CTMM=m.ou,fraction=0.65,level=level,col.CTMM="purple")
 title("Ornstein-Uhlenbeck movement")
 ```
 
-where for both the models `m.iid` and `m.ou`, `sigma` is the asymptotic variance. In the Ornstein-Uhlenbeck (OU) model `m.ou`, `tau` is a single timescale that governs the autocorrelation in position and dictates the animal's home-range crossing time. The independent and identically distributed (IID) null model `m.iid` has no autocorrelation. Notice that all units are in meters and seconds, as output by the utility function `%#%` (see `help("%#%")`.
+where for both the models `m.iid` and `m.ou`, `sigma` (σ) is the asymptotic variance. In the Ornstein-Uhlenbeck (OU) model `m.ou`, `tau` (τ) is a single timescale that governs the autocorrelation in position and dictates the animal's home-range crossing time. The independent and identically distributed (IID) null model `m.iid` has no autocorrelation. Notice that all units are in meters and seconds, as output by the utility function `%#%` (see `help("%#%")`.
 
 The IID model `m.iid` is obviously incorrect and in the zoomed in plot we can also see that the OU model `m.ou` is incorrectly linear at short lags, whereas the empirical variogram actually curves up for an hour or two before it becomes linear. Let us introduce a model that incorporates this behavior.
 

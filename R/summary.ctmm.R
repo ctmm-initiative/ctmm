@@ -1,6 +1,6 @@
 ###################################################
 # Calculate good CIs for other functions
-confint.ctmm <- function(model,alpha=0.05)
+confint.ctmm <- function(model,alpha=0.05,UNICODE=FALSE)
 {
   tau <- model$tau
   tau <- tau[tau<Inf]
@@ -16,6 +16,7 @@ confint.ctmm <- function(model,alpha=0.05)
   {
     NAME <- paste("tau",names(tau))
     for(k in 1:K) { par <- rbind(par,ci.tau(tau[k],COV[NAME[k],NAME[k]],alpha=alpha)) }
+    if(UNICODE) { NAME <- paste0("\u03C4[",names(tau),"]") }
   }
 
   # circulation period
@@ -64,7 +65,7 @@ ci.tau <- function(tau,COV,alpha=0.05,min=0,max=Inf)
   CI <- c(CI, (1/tau + c(1,-1)*z*sqrt(COV/tau^4))^-1)
 
   # take most conservative estimates
-  CI <- range(CI,na.rm=TRUE)
+  CI <- sort(range(CI,na.rm=TRUE))
 
   # enforce boundary constraints
   CI <- c(max(CI[1],min),min(CI[2],max))
@@ -123,7 +124,7 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
   name <- character(K+1)
   scale <- numeric(K+1)
 
-  par <- confint.ctmm(object,alpha=alpha)
+  par <- confint.ctmm(object,alpha=alpha,UNICODE=TRUE)
 
   # standard area to home-range area
   par[1,] <- -2*log(alpha.UD)*pi*par[1,]
@@ -224,7 +225,7 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
 
   colnames(par) <- c("low","ML","high")
 
-  SUM <- list()
+  SUM <- list(name=name.ctmm(object))
 
   # affix DOF info
   # only valid for processes with a stationary mean

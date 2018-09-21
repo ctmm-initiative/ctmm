@@ -1,5 +1,7 @@
-ctmm 0.5.3 (2018-09-20)
+ctmm 0.5.3 (2018-09-21)
 ================
+
+  * summary() now works on lists of UERE objects for error model selection
 
   * MSPE slots & arguments restructured and fully utilized in both summary and ctmm.select
 

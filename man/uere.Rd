@@ -32,6 +32,8 @@ uere.fit(data,precision=1/2)
 \code{uere.fit()} allows users to estimate the UERE from calibration data, where the device was left fixed over a period of time.
 The calibration UERE can then be applied to tracking data with the \code{uere()<-} assignment method.
 Otherwise, when \code{error=TRUE} in \code{\link{ctmm}}, \code{\link{ctmm.fit}} will estimate the UERE simultaneously with the movement model, which is less reliable than using calibration data.
+
+\code{summary()} applied to single \code{UERE} object will return UERE parameter estimates and confidence intervals, while \code{summary()} applied to a list of \code{UERE} objects will return a model-selection table, with AICc and reduced Z squared (goodness of fit) values.
 }
 
 \value{The UERE estimate.}
