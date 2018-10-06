@@ -2,6 +2,7 @@
 # Calculate good CIs for other functions
 confint.ctmm <- function(model,alpha=0.05,UNICODE=FALSE)
 {
+  model <- get.taus(model,zeroes=TRUE)
   tau <- model$tau
   tau <- tau[tau<Inf]
   K <- length(tau)
@@ -14,10 +15,28 @@ confint.ctmm <- function(model,alpha=0.05,UNICODE=FALSE)
   # timescale uncertainty: can hit 0 and Inf
   if(K>0)
   {
-    NAME <- paste("tau",names(tau))
-    for(k in 1:K) { par <- rbind(par,ci.tau(tau[k],COV[NAME[k],NAME[k]],alpha=alpha)) }
-    if(UNICODE) { NAME <- paste0("\u03C4[",names(tau),"]") }
+    NAME <- model$tau.names # canonical parameter names
+    if(K==2 && model$omega) # oscillatory model
+    {
+      TAU <- model$TAU # human-readible parameters
+      COV.TAU <- model$J.TAU.tau %*% COV[NAME,NAME] %*% t(model$J.TAU.tau)
+      for(k in 1:K) { par <- rbind(par,ci.tau(TAU[k],COV.TAU[k,k],alpha=alpha)) }
+
+      if(UNICODE) { NAME <- c("\u03C4[decay]","\u03C4[period]") }
+      else { NAME <- c("tau decay","tau period") }
+    }
+    else if(K>1 && tau[1]==tau[2]) # identical timescales
+    {
+      par <- rbind(par,ci.tau(tau[1],COV[NAME,NAME],alpha=alpha))
+      if(UNICODE) { NAME <- "\u03C4" }
+    }
+    else # OU, OUF, IOU
+    {
+      for(k in 1:K) { par <- rbind(par,ci.tau(tau[k],COV[NAME[k],NAME[k]],alpha=alpha)) }
+      if(UNICODE) { NAME <- paste0("\u03C4[",names(tau),"]") }
+    }
   }
+  # else IID, BM
 
   # circulation period
   circle <- model$circle
@@ -91,13 +110,13 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
   alpha <- 1-level
   alpha.UD <- 1-level.UD
 
+  object <- get.taus(object) # populate with parameter stuff
   drift <- get(object$mean)
 
   circle <- object$circle
   tau <- object$tau
   range <- object$range
   tau <- tau[tau<Inf]
-  K <- length(tau)
 
   AM.sigma <- mean(diag(object$sigma))
   GM.sigma <- object$sigma@par["area"]
@@ -120,11 +139,11 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
     object$DOF.mu <- diag(0,nrow=length(object$mu))
   }
 
-  # where to store unit information
-  name <- character(K+1)
-  scale <- numeric(K+1)
-
   par <- confint.ctmm(object,alpha=alpha,UNICODE=TRUE)
+  # where to store unit information
+  K <- nrow(par)
+  name <- character(K)
+  scale <- numeric(K)
 
   # standard area to home-range area
   par[1,] <- -2*log(alpha.UD)*pi*par[1,]
@@ -151,11 +170,11 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
   if(continuity(object)>1)
   {
     COV <- area2var(object,MEAN=TRUE)
-    COV <- rm.name(COV,"error")
 
     # RMS velocity
-    Omega2 <- 1/prod(tau)
-    grad <- -Omega2/tau
+    Omega2 <- object$Omega2
+    grad <- object$J.Omega2
+    NAMES <- object$tau.names
 
     # contribution from circulation
     omega2 <- 0
@@ -163,13 +182,15 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
     {
       omega2 <- circle^2
       grad <- c(grad,2*circle)
+      NAMES <- c(NAMES,'circle')
     }
 
     # contribution from sigma
     # GM.sigma <- cosh(ecc)*AM.sigma
     ms <- (2*AM.sigma)*(Omega2+omega2)
     grad <- 2*c(Omega2+omega2, AM.sigma*grad)
-    var.ms <- c((grad) %*% COV %*% (grad))
+    NAMES <- c("variance",NAMES)
+    var.ms <- c((grad) %*% COV[NAMES,NAMES] %*% (grad))
 
     # include mean
     MSPEED <- drift@speed(object)

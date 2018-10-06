@@ -3,6 +3,7 @@
 # error (modulo UERE) is now an argument of the output functions in addition to lag
 svf.func <- function(CTMM,moment=FALSE)
 {
+  CTMM <- get.taus(CTMM) # pre-calculate stuff
   # pull out relevant model parameters
   tau <- CTMM$tau
 
@@ -26,35 +27,47 @@ svf.func <- function(CTMM,moment=FALSE)
   K <- length(tau)
 
   # FIRST CONSTRUCT STANDARD ACF AND ITS PARAMTER GRADIENTS
+  NAMES <- CTMM$tau.names
   if(K==0 && range) # Bivariate Gaussian
   {
-    NAMES <- NULL
     acf <- function(t){ if(t==0) {1} else {0} }
     acf.grad <- function(t){ NULL }
   }
   else if(K==0) # Brownian motion
   {
-    NAMES <- NULL
     acf <- function(t){ 1-t }
     acf.grad <- function(t){ NULL }
   }
   else if(K==1 && range) # OU motion
   {
-    NAMES <- "tau position"
     acf <- function(t){ exp(-t/tau) }
     acf.grad <- function(t){ t/tau^2*acf(t) }
   }
   else if(K==1) # IOU motion
   {
-    NAMES <- "tau velocity"
     acf <- function(t) { 1-(t-tau*(1-exp(-t/tau))) }
     acf.grad <- function(t){ 1-(1+t/tau)*exp(-t/tau) }
   }
   else if(K==2) # OUF motion
   {
-    NAMES <- c("tau position","tau velocity")
-    acf <- function(t){ diff(tau*exp(-t/tau))/diff(tau) }
-    acf.grad <- function(t) { c(1,-1)*((1+t/tau)*exp(-t/tau)-acf(t))/diff(tau) }
+    if(tau[1]>tau[2]) # overdamped
+    {
+      acf <- function(t){ diff(tau*exp(-t/tau))/diff(tau) }
+      acf.grad <- function(t) { c(1,-1)*((1+t/tau)*exp(-t/tau)-acf(t))/diff(tau) }
+    }
+    else if(!CTMM$omega) # critically damped
+    {
+      tau <- tau[1]
+      acf <- function(t){ (1+t/tau)*exp(-t/tau) }
+      acf.grad <- function(t) { (t^2/tau^3)*exp(-t/tau) }
+    }
+    else if(CTMM$omega) # underdamped
+    {
+      f <- CTMM$f.nu[1]
+      nu <- CTMM$f.nu[2]
+      acf <- function(t) { (cos(nu*t) + (f/nu)*sin(nu*t))*exp(-f*t) }
+      acf.grad <- function(t) { c( exp(-f*t) * c( -t*cos(nu*t) + (1-f*t)/nu*sin(nu*t) , -(t+f/nu^2)*sin(nu*t) + (f/nu)*t*cos(nu*t) ) %*% CTMM$J.nu.tau ) }
+    }
   }
 
   # finish off svf function including circulation if present

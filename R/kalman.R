@@ -1,7 +1,9 @@
 ###############################
 # Propagator/Green's function and Two-time correlation from Langevin equation for Kalman filter and simulations
-langevin <- function(dt,CTMM,K=continuity(CTMM))
+# random CTMM objects need to be run through get.taus() first, to precompute various parameters
+langevin <- function(dt,CTMM)
 {
+  K <- CTMM$K
   tau <- CTMM$tau
   sigma <- methods::getDataPart(CTMM$sigma)
 
@@ -18,50 +20,51 @@ langevin <- function(dt,CTMM,K=continuity(CTMM))
   }
   else if(K==2)
   {
-    f <- 1/tau
-    Omega2 <- prod(f)
-    nu <- abs(diff(f))/2
-    TT <- 2*mean(f)/Omega2
+    Omega2 <- CTMM$Omega2
 
     if(dt==Inf) # make this numerically relative in future
     {
       Green <- rbind( c(0,0) , c(0,0) )
       Sigma <- rbind( c(1,0) , c(0,Omega2) )
     }
-    else
+    else # finite time matrices
     {
-      # should we use the exponential or hyperbolic representation?
-      if(nu*dt>0.8813736) # exponential
-      { DAMP <- TRUE }
-      else # hyperbolic
-      {
-        DAMP <- FALSE
-        f <- mean(f)
-      }
+      TT <- CTMM$TfOmega2
+      f <- CTMM$f.nu[1] # mean(f)
+      nu <- CTMM$f.nu[2] # nu || omega
 
-      if(DAMP) # very overdamped
+      # function representation choice
+      if(tau[1]>tau[2] && nu*dt>0.8813736) # exponential functions
       {
         Exp <- exp(-dt/tau)/diff(tau)
         c0 <- diff(Exp*tau)
         c1 <- -diff(Exp)
         c2 <- diff(Exp/tau)
       }
-      else # mildly overdamped to underdamped
+      else # trigonometric and hyperbolic-trigonometric functions
       {
         Exp <- exp(-f*dt)
-        # DEBUG <<- list(dt=dt,CTMM=CTMM,f=f,Exp=Exp,nu=nu)
-        SincE <- sinch(nu*dt)*Exp  # !!! Error in sinch(nu * dt) * Exp : non-numeric argument to binary operator ???
-        CosE <- cosh(nu*dt)*Exp
+
+        if(tau[1]>tau[2]) # hyperbolic-trigonometric
+        {
+          SincE <- sinch(nu*dt)*Exp
+          CosE <- cosh(nu*dt)*Exp
+        }
+        else # trigonometric
+        {
+          SincE <- sinc(nu*dt)*Exp
+          CosE <- cos(nu*dt)*Exp
+        }
 
         c0 <- CosE + (f*dt)*SincE
         c1 <- -(Omega2*dt)*SincE
         c2 <- -Omega2*(CosE - (f*dt)*SincE)
-      }
+      } # end function representation
 
       Green <- rbind( c(c0,-c1/Omega2) , c(c1,-c2/Omega2) )
       Sigma <- -TT*c1^2  #off-diagonal term
       Sigma <- rbind( c(1,0)-c(c0^2+c1^2/Omega2,Sigma) , c(0,Omega2)-c(Sigma,c1^2+c2^2/Omega2) )
-    }
+    } # end finite time matrices
   }
 
   # fix the dimension of the filter
@@ -146,11 +149,12 @@ kalman <- function(z,u,dt,CTMM,error=NULL,smooth=FALSE,sample=FALSE,residual=FAL
     Sigma <- array(0,c(n,K*DIM,K*DIM))
 
     # Propagators from Langevin equation
+    CTMM <- get.taus(CTMM) # pre-compute some stuff for Langevin equation solutions
     for(i in 1:n)
     {
       # does the time lag change values? Then update the propagators.
       if(i==1 || dt[i] != dt[i-1])
-      { Langevin <- langevin(dt=dt[i],CTMM=CTMM,K=K) }
+      { Langevin <- langevin(dt=dt[i],CTMM=CTMM) }
 
       Green[i,,] <- Langevin$Green # (K*DIM,K*DIM)
       Sigma[i,,] <- Langevin$Sigma # (K*DIM,K*DIM)

@@ -701,7 +701,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
     # velocity MSPE
     if(K==2)
     {
-      if(length(CTMM$tau)==1) { return(Inf) }
+      if(length(CTMM$tau)<2 || any(CTMM$tau<=0)) { return(Inf) }
       UU <- VV
     }
 
@@ -720,8 +720,8 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
     VAR <- sum(diag(CTMM$sigma))
     if(K==2)
     {
-      if(CTMM$range) { VAR <- VAR * (1/prod(CTMM$tau) + CTMM$circle^2) }
-      else { VAR <- VAR / CTMM$tau[2] } # I don't think circle is valid here
+      STUFF <- get.taus(CTMM)
+      VAR <- VAR * (STUFF$Omega2 + CTMM$circle^2)
     }
 
     MSPE <- MSPE + VAR

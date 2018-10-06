@@ -164,6 +164,14 @@ rcov <- function(x,...)
   else
   { COV <- MAD^2 * diag(length(AVE)) }
 
+  # too many infinities for Gmedian to handle --- fall back to MAD
+  NANS <- is.nan(diag(COV)) | is.na(diag(COV))
+  if(any(NANS))
+  {
+    COV[NANS,] <- COV[,NANS] <- 0
+    COV[NANS,NANS] <- MAD[NANS]^2
+  }
+
   return(list(median=AVE,COV=COV))
 }
 

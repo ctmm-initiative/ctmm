@@ -225,9 +225,9 @@ smoother <- function(DATA,CTMM,precompute=FALSE,sample=FALSE,residual=FALSE,...)
 
 
 ########################################
-# fill in data gaps with missing observations of infinite error !!!
+# fill in data gaps with missing observations of infinite error
 ########################################
-fill.data <- function(data,CTMM=ctmm(tau=Inf),verbose=FALSE,t=NULL,dt=NULL,res=1,cor.min=0,dt.max=NULL)
+fill.data <- function(data,CTMM=ctmm(tau=Inf),verbose=FALSE,t=NULL,dt=NULL,res=1,cor.min=0,dt.max=NULL,DT=diff(t))
 {
   # is this recorded data or empty gap
   data$record <- TRUE
@@ -238,31 +238,37 @@ fill.data <- function(data,CTMM=ctmm(tau=Inf),verbose=FALSE,t=NULL,dt=NULL,res=1
   if(is.null(t))
   {
     t <- data$t
-    DT <- diff(t)
+    if(is.null(DT)) { DT <- diff(t) }
 
     # target resolution
     if(is.null(dt)){ dt <- stats::median(DT)/res }
 
     # maximum gap to bridge
     if(is.null(dt.max)) { dt.max <- -log(cor.min)*CTMM$tau[1] }
+    dt.max2 <- dt.max/2
 
     # this regularization is not perfectly regular, but holds up to sampling drift in caribou data
-    t.grid <- c()  # full (even-ish) grid
+    t.grid <- c()  # full (locally) even grid
     dt.grid <- c() # local (numeric) sampling resolution
     t.new <- c()   # new times in this even grid
     for(i in 1:length(DT))
     {
-      n.sub <- round(DT[i]/dt)+1
-      n.sub <- max(n.sub,2) # fix for crazy small time-steps
-      t.sub <- seq(from=t[i],to=t[i+1],length.out=n.sub)
-      dt.sub <- DT[i]/(n.sub-1)
+      if(DT[i]<=dt.max)
+      {
+        n.sub <- round(DT[i]/dt)+1
+        n.sub <- max(n.sub,2) # fix for crazy small time-steps
+        t.sub <- seq(from=t[i],to=t[i+1],length.out=n.sub)
+        dt.sub <- DT[i]/(n.sub-1)
+        dt.sub <- rep(dt.sub,n.sub)
+      }
+      else # skip bulk of gap
+      {
+        t.sub <- seq(from=0,to=dt.max2,by=dt)
+        t.sub <- c( t[i]+t.sub , t[i+1]-rev(t.sub) )
+        n.sub <- length(t.sub)
+        dt.sub <- rep(dt,n.sub)
+      }
 
-      # skip low correlation times in gaps
-      INCLUDE <- (t.sub-t[i])<=dt.max/2 | (t[i+1]-t.sub)<=dt.max/2
-      t.sub <- t.sub[INCLUDE]
-      n.sub <- length(t.sub)
-
-      dt.sub <- rep(dt.sub,n.sub)
       t.grid <- c(t.grid,t.sub)
       dt.grid <- c(dt.grid,dt.sub)
 
@@ -488,10 +494,11 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
       Sigma <- array(0,c(n,K,K))
 
       object$sigma <- 1
+      object <- get.taus(object) # pre-compute stuff for Langevin equation solutions
       for(i in 1:n)
       {
         # tabulate propagators if necessary
-        if((i==1)||(dt[i]!=dt[i-1])) { Langevin <- langevin(dt=dt[i],CTMM=object,K=K) }
+        if((i==1)||(dt[i]!=dt[i-1])) { Langevin <- langevin(dt=dt[i],CTMM=object) }
         Green[i,,] <- Langevin$Green
         Sigma[i,,] <- Langevin$Sigma
         # Sigma is now standardization matrix

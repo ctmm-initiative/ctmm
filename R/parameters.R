@@ -33,7 +33,7 @@ clean.parameters <- function(par)
 # identify autocovariance parameters in ctmm object
 # if profile==TRUE, some parameters can be solved exactly and so aren't identified
 # if linear==TRUE, only return linear non-problematic parameters
-id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,UERE=FALSE,dt=0,df=0,dz=10)
+id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,UERE=FALSE,dt=0,df=0,dz=10,force.error=FALSE)
 {
   # identify and name autocovariance parameters
   NAMES <- NULL
@@ -48,12 +48,18 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,UERE=FALSE,dt=0,df=0,dz
   {
     TAU <- CTMM$tau
     if(!CTMM$range) { TAU <- TAU[-1] }
-    if(length(TAU)) { NAMES <- c(NAMES,paste("tau",names(TAU))) }
+    if(length(TAU))
+    {
+      if(length(TAU)==2 && TAU[1]==TAU[2]) { TAU <- TAU[1] ; NAMES <- c(NAMES,"tau") } # identical timescales
+      else { NAMES <- c(NAMES,paste("tau",names(TAU))) } # distinct timescales
+    }
+
+    if(CTMM$omega) { NAMES <- c(NAMES,"omega") }
 
     if(CTMM$circle) { NAMES <- c(NAMES,"circle") }
   }
 
-  if(CTMM$error && UERE<3) { NAMES <- c(NAMES,"error") }
+  if((CTMM$error || force.error) && UERE<3) { NAMES <- c(NAMES,"error") }
 
   # setup parameter information
   parscale <- NULL
@@ -88,6 +94,14 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,UERE=FALSE,dt=0,df=0,dz
       period <- c(period,rep(FALSE,length(TAU)))
     }
 
+    if(CTMM$omega)
+    {
+      parscale <- c(parscale,max(CTMM$omega,df))
+      lower <- c(lower,0)
+      upper <- c(upper,Inf)
+      period <- c(period,FALSE)
+    }
+
     if(CTMM$circle)
     {
       parscale <- c(parscale,max(abs(CTMM$circle),df))
@@ -97,7 +111,7 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,UERE=FALSE,dt=0,df=0,dz
     }
   }
 
-  if(CTMM$error && UERE<3)
+  if((CTMM$error || force.error) && UERE<3)
   {
     parscale <- c(parscale,max(dz,CTMM$error)) # minimum of dz error parscale
     lower <- c(lower,0)
@@ -132,8 +146,10 @@ get.parameters <- function(CTMM,NAMES)
   getter("angle",sigma[3])
 
   tau <- CTMM$tau
-  getter("tau position",tau[1])
-  getter("tau velocity",tau[2])
+  getter("tau position",if(length(tau)>0) { tau[1] } else { 0 })
+  getter("tau velocity",if(length(tau)>1) { tau[2] } else { 0 })
+  getter("tau",if(length(tau)>0) { min(tau) } else { 0 }) # identical timescales
+  getter("omega")
 
   getter("circle")
   getter("error")
@@ -155,6 +171,8 @@ set.parameters <- function(CTMM,par)
 
   NAME <- "tau position"; if(NAME %in% NAMES) { CTMM$tau[1] <- par[NAME] ; names(CTMM$tau)[1] <- 'position' }
   NAME <- "tau velocity"; if(NAME %in% NAMES) { CTMM$tau[2] <- par[NAME] ; names(CTMM$tau)[2] <- 'velocity' }
+  NAME <- "tau"; if(NAME %in% NAMES) { CTMM$tau <- c(1,1)*par[NAME] ; names(CTMM$tau) <- c('position','velocity') } # identical timescales
+  NAME <- "omega"; if(NAME %in% NAMES) { CTMM$omega <- par[NAME] }
 
   NAME <- "circle"; if(NAME %in% NAMES) { CTMM[[NAME]] <- par[NAME] }
   NAME <- "error"; if(NAME %in% NAMES) { CTMM[[NAME]] <- par[NAME] }

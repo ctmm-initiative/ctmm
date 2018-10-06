@@ -30,7 +30,7 @@ emulate.ctmm <- function(object,data=NULL,fast=FALSE,...)
 
   par <- get.parameters(CTMM,NAMES)
   # positive variables (potential)
-  PAR <- c("area","tau position","tau velocity","error")
+  PAR <- c("area","tau position","tau velocity","tau","error")
   # included variables that are positive
   PAR <- PAR[PAR %in% NAMES]
   # log transform positive parameters
@@ -51,8 +51,8 @@ emulate.ctmm <- function(object,data=NULL,fast=FALSE,...)
   # transform log back to positive parameters
   par[PAR] <- exp(par[PAR])
   # keep tau sorted
-  PAR <- c('tau position','tau velocity')
-  if(all(PAR %in% NAMES)) { par[PAR] <- sort(par[PAR],decreasing=TRUE) }
+  # PAR <- c('tau position','tau velocity')
+  # if(all(PAR %in% NAMES)) { par[PAR] <- sort(par[PAR],decreasing=TRUE) }
 
   CTMM <- set.parameters(CTMM,par)
 
@@ -98,7 +98,7 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,multiplicative=TRUE,robust=FA
   DIM <- length(NAMES) * length(method)
 
   # positive variables (potential)
-  POS <- c("area","eccentricity","tau position","tau velocity","error")
+  POS <- c("area","eccentricity","tau position","tau velocity","tau","error")
   # included variables that are positive
   POS <- POS[POS %in% NAMES]
 
@@ -131,21 +131,37 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,multiplicative=TRUE,robust=FA
     {
       # transform eccentricity to variance (not area)
       if("eccentricity" %in% NAMES) { p["eccentricity",] <- p['area',]*cosh(p["eccentricity",]/2) }
-      # transform tau velocity to MS speed
-      if("tau velocity" %in% NAMES)
+
+      if(CTMM$omega) # underdamped
       {
-        if(CTMM$range) { p["tau velocity",] <- p[VAR,]/(p["tau position",]*p["tau velocity",]) }
-        else { p["tau velocity",] <- p[VAR,]/(p["tau velocity",]) }
+        # mean square velocity and average diffusion
+        p["omega",] <- p[VAR,]*(1/p["tau",]^2+p["omega",]^2) # MSV
+        p["tau",] <- p[VAR,]/p["tau",] # DIF
+        # refer back to get.taus() for how this was parameterized
       }
-      # transform tau position to diffusion rate
-      if("tau position" %in% NAMES) { p["tau position",] <- p[VAR,]/p["tau position",] }
+      else if("tau" %in% NAMES) # critically damped
+      {
+        p["tau",] <- p[VAR,]/p["tau",]^2 # mean square Velocity
+      }
+      else # overdamped
+      {
+        # transform tau position to diffusion rate
+        if("tau position" %in% NAMES)
+        { DIF <- p[VAR,]/p["tau position",] }
+
+        # mean square velocity
+        if("tau velocity" %in% NAMES)
+        {
+          if(!CTMM$range) { MSV <- p[VAR,]/(p["tau velocity",]) }
+          else { MSV <- p[VAR,]/(p["tau position",]*p["tau velocity",]) }
+        }
+
+        if("tau velocity" %in% NAMES) { p["tau velocity",] <- MSV }
+        if("tau position" %in% NAMES) { p["tau position",] <- DIF }
+      }
 
       # log transform
-      if(multiplicative && length(POS))
-      {
-        if(any(p[POS,]<=0)) { stop('Some parameter estimates are zero. Requires multiplicative=FALSE or robust=TRUE.') }
-        p[POS,] <- log(p[POS,])
-      }
+      if(multiplicative && length(POS)) { p[POS,] <- log(p[POS,]) }
     }
 
     # transform back from parameters of interest
@@ -153,12 +169,31 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,multiplicative=TRUE,robust=FA
     {
       if(multiplicative && length(POS)) { p[POS,] <- exp(p[POS,]) }
 
-      if("tau position" %in% NAMES) { p["tau position",] <- p[VAR,]/p["tau position",] }
-      if("tau velocity" %in% NAMES)
+      if(CTMM$omega) # underdamped
       {
-        if(CTMM$range) { p["tau velocity",] <- p[VAR,]/(p["tau position",]*p["tau velocity",]) }
-        else { p["tau velocity",] <- p[VAR,]/(p["tau velocity",]) }
+        p["tau",] <- p[VAR,]/p["tau",]
+        p["omega",] <- p["omega",]/p[VAR,] - 1/p["tau",]^2 # omega^2
+        p["omega",] <- pmax(p["omega",],0) # bias should be other way
+        p["omega",] <- sqrt(p["omega",])
       }
+      else if("tau" %in% NAMES) # critically damped
+      {
+        p["tau",] <- sqrt(p[VAR,]/p["tau",])
+      }
+      else # overdamped
+      {
+        if("tau velocity" %in% NAMES) { p["tau velocity",] -> MSV }
+        if("tau position" %in% NAMES) { p["tau position",] -> DIF }
+
+        if("tau position" %in% NAMES) { p["tau position",] <- p[VAR,]/DIF }
+
+        if("tau velocity" %in% NAMES)
+        {
+          if(CTMM$range) { p["tau velocity",] <- p[VAR,]/(MSV*p["tau position",]) }
+          else { p["tau velocity",] <- p[VAR,]/MSV }
+        }
+      }
+
       if("eccentricity" %in% NAMES) { p['eccentricity',] <- 2*acosh(max(p['eccentricity',]/p['area',],1)) }
     }
 
@@ -195,22 +230,27 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,multiplicative=TRUE,robust=FA
   # rolling mean and variance
   rolling_update <- function(ADD) # [par*method,run]
   {
-    N <<- N + cores # update sample size
+    N <<- N + ncol(ADD) # update sample size
     SAMPLE <<- cbind(SAMPLE,ADD) # update sample (transformed)
     if(!robust)
     {
       # update sums
       S1 <<- S1 + rowSums(ADD) # sum over runs
       S2 <<- S2 + (ADD %.% t(ADD)) # inner product over runs
+
       # normalize sums
       AVE <<- S1/N
       COV <<- (S2-N*outer(AVE))/max(1,N-1)
+
+      if(any(abs(AVE)==Inf)) { stop('Some scale parameter estimates on boundary. Requires multiplicative=FALSE or robust=TRUE.') }
     }
     else if(N>=DIM+1)
     {
       STUFF <- rcov(SAMPLE)
       AVE <<- STUFF$median
       COV <<- STUFF$COV
+
+      if(any(abs(AVE)==Inf) || any(abs(diag(COV))==Inf)) { stop('Too many scale parameter estimates on boundary. Requires multiplicative=FALSE.') }
     }
   }
 
@@ -320,28 +360,15 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,multiplicative=TRUE,robust=FA
   rownames(SAMPLE) <- NAMES
   SAMPLE <- Transform(SAMPLE,inverse=TRUE)
 
-  # do we need to trim boundary for good curvature estimate?
-  PS <- c("tau position","tau velocity")
-  for(P in PS)
-  {
-    if(P %in% NAMES)
-    {
-      ZEROS <- which(SAMPLE[P,]<=0)
-      if(ncol(SAMPLE)-2*length(ZEROS)<=length(NAMES)+1) { stop("error target too large for boundary sensitivity.") }
-      if(length(ZEROS))
-      {
-        HIGHS <- sort(SAMPLE[P,],decreasing=TRUE,index.return=TRUE)$ix
-        HIGHS <- HIGHS[1:length(ZEROS)] # counter balancing high estimates to trim
-        SAMPLE <- SAMPLE[,-c(ZEROS,HIGHS)] # trimming low and high esitmates to get good local curvature estimate of sampling density
-      }
-    }
-  }
-
   # robust covariance estimate
   # if(!robust) { COV <- cov(t(SAMPLE)) } else { COV <- rcov(SAMPLE) }
   COV <- stats::cov(t(SAMPLE))
   dimnames(COV) <- list(NAMES,NAMES)
   CTMM$COV <- COV
+
+  # we lost eccentricity
+  if("eccentricity" %in% NAMES && P["eccentricity"]==0) { CTMM <- simplify.ctmm(CTMM,"eccentricity") }
+  # what other parameters could have been lost?
 
   # fix COV[mean] with a verbose likelihood evaluation
   CTMM <- ctmm.loglike(data,CTMM,profile=FALSE,verbose=TRUE)

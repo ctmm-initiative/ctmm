@@ -12,7 +12,7 @@
   \item{level}{ Confidence level for parameter estimates. }
   \item{level.UD}{ Coverage level for the Gaussian home-range area. }
   \item{units}{Convert result to natural units.}
-  \item{IC}{Information criteria for sorting lists of \code{ctmm} objects. Can be \code{"AICc"}, \code{"AIC"}, \code{"BIC"} or none (\code{"NA"}). AICc is approximate.}
+  \item{IC}{Information criteria for sorting lists of \code{ctmm} objects. Can be \code{"AICc"}, \code{"AIC"}, \code{"BIC"} or none (\code{NA}). AICc is approximate.}
   \item{MSPE}{Sort models with the same autocovariance structure by the mean square predictive error of \code{"position"}, \code{"velocity"}, or not (\code{NA}).}
   \item{...}{Unused options.}
 }

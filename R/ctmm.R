@@ -2,7 +2,7 @@ new.covm <- methods::setClass("covm", representation("matrix",par="numeric",isot
 
 #######################################
 # convenience wrapper for new.ctmm
-ctmm <- function(tau=NULL,isotropic=FALSE,range=TRUE,circle=FALSE,error=FALSE,axes=c("x","y"),...)
+ctmm <- function(tau=NULL,omega=FALSE,isotropic=FALSE,range=TRUE,circle=FALSE,error=FALSE,axes=c("x","y"),...)
 {
   tau.names <- c("position","velocity","acceleration")
   List <- list(...)
@@ -23,18 +23,18 @@ ctmm <- function(tau=NULL,isotropic=FALSE,range=TRUE,circle=FALSE,error=FALSE,ax
 
   # label tau elements
   K <- length(tau)
-  CPF <- List$CPF
-  if(is.null(CPF)) { CPF <- FALSE }
-  if(K && !CPF)
+  if(K)
   {
     tau <- sort(tau,decreasing=TRUE)
     names(tau) <- tau.names[1:K]
     # tau <- tau[tau>0]
   }
   if(!length(tau)) { tau <- NULL } # NULL, NA, integer(0), ...
-  List$CPF <- CPF
-  if(CPF && length(tau)) { names(tau) <- c("period","decay") }
   List$tau <- tau
+
+  List$omega <- as.numeric(omega)
+  # requires matching decay timescales
+  if(omega) { List$tau <- c(1,1)/mean(1/List$tau) }
 
   # label parameter covariance matrix
   # cov.names <- c("area",names(tau))
@@ -76,6 +76,7 @@ ctmm <- function(tau=NULL,isotropic=FALSE,range=TRUE,circle=FALSE,error=FALSE,ax
 }
 #print.ctmm <- function(x,...) { print.listof(x,...) }
 
+
 ctmm.ctmm <- function(CTMM)
 {
   List <- methods::getDataPart(CTMM)
@@ -84,6 +85,84 @@ ctmm.ctmm <- function(CTMM)
   CTMM <- do.call(ctmm,List)
   return(CTMM)
 }
+
+
+# compute all tau/omega related quantities that we need
+get.taus <- function(CTMM,zeroes=FALSE)
+{
+  CTMM$tau <- sort(CTMM$tau,decreasing=TRUE)
+  K <- if(zeroes) { length(CTMM$tau) } else { continuity(CTMM) }
+  CTMM$K <- K
+
+  if(K==1 && CTMM$range)
+  { CTMM$tau.names <- "tau position" }
+  else if(K>1 && !CTMM$range) # IOU
+  {
+    CTMM$tau.names <- "tau velocity"
+    CTMM$Omega2 <- 1/CTMM$tau[2] # mean square speed modulo diffusion coefficient (not really Omega^2)
+    CTMM$J.Omega2 <- -1/CTMM$tau[2]^2
+  }
+  else if(K>1 && CTMM$tau[1]>CTMM$tau[2]) # overdamped
+  {
+    # the canonical parameterization in this regime is (tau1,tau2) as this includes (0,0) and extends to (Inf,Inf) with rectangular boundary conditions
+    CTMM$tau.names <- c('tau position','tau velocity')
+    CTMM$f <- 1/CTMM$tau
+    CTMM$f.nu <- c( mean(CTMM$f) , +diff(CTMM$f)/2 ) # (f,nu)
+    CTMM$Omega2 <- prod(CTMM$f) # Omega^2
+    CTMM$TfOmega2 <- 2*CTMM$f.nu[1]/CTMM$Omega2 # 2f/Omega^2 term
+
+    ### Jacobians ###
+    # d(f1,f2)/d(tau1,tau2) # needed for SVF CIs
+    CTMM$J.f.tau <- -diag(CTMM$f^2)
+    # d(tau1,tau2)/d(f1,f2)
+    CTMM$J.tau.f <- -diag(CTMM$tau^2)
+
+    # d(f,nu)/d(tau1,tau2) # needed for diff(f)==0 test
+    CTMM$J.nu.tau <- rbind( -c(1,1)*CTMM$f^2/2 , -c(-1,+1)*CTMM$f^2/2 )
+
+    # dOmega^2/d(tau1,tau2) # needed for speed CIs
+    CTMM$J.Omega2 <- -CTMM$Omega2/CTMM$tau
+  }
+  else if(K>1 && CTMM$tau[1]==CTMM$tau[2] && !CTMM$omega) # critically damped
+  {
+    # the canonical parameterization in this regime is (tau) as this includes (0) and extends to (Inf)
+    CTMM$tau.names <- c('tau')
+    CTMM$f <- 1/CTMM$tau
+    CTMM$f.nu <- c( CTMM$f[1] , 0 )
+    CTMM$Omega2 <- prod(CTMM$f)
+    CTMM$TfOmega2 <- 2*CTMM$f.nu[1]/CTMM$Omega2
+
+    CTMM$J.tau.f <- -CTMM$tau[1]^2
+    CTMM$J.f.tau <- -CTMM$f^2
+
+    CTMM$J.Omega2 <- -2/CTMM$tau[1]^3
+  }
+  else if(K>1 && CTMM$omega) # underdamped
+  {
+    # the canonical parameterization in this regime is utlimately (tau,omega) as this includes (0,0) and extends to (Inf,Inf)
+    CTMM$tau.names <- c('tau','omega')
+    CTMM$f <- 1/CTMM$tau # make sure this isn't used outside of this function
+    CTMM$f.nu <- c( mean(CTMM$f) , CTMM$omega ) # (f,omega)
+    CTMM$Omega2 <- sum(CTMM$f.nu^2)
+    CTMM$TfOmega2 <- 2*CTMM$f.nu[1]/CTMM$Omega2
+    # decay & oscillation period
+    CTMM$TAU <- c(1,2*pi)/CTMM$f.nu
+
+    # d(f,omega)/d(tau,omega) # needed for SVC CIs
+    CTMM$J.nu.tau <- diag(c(-CTMM$f[1]^2,1))
+
+    # d(tau,T)/d(tau,omega) # needed for summary
+    CTMM$J.TAU.tau <- diag(c(1,-2*pi/CTMM$omega^2))
+
+    CTMM$J.Omega2 <- 2*CTMM$f.nu %*% CTMM$J.nu.tau # dOmega^2/d(f,omega) d(f,omega)/d(tau1,tau2)
+  }
+  else # IID || BM
+  { CTMM$tau.names <- NULL }
+
+  return(CTMM)
+}
+
+
 
 # 2D covariance matrix universal format
 covm <- function(pars,isotropic=FALSE,axes=c("x","y"))

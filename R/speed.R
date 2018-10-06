@@ -7,7 +7,7 @@ speed.ctmm <- function(object,data=NULL,level=0.95,robust=FALSE,units=TRUE,prior
   INF <- c(0,Inf,Inf)
   names(INF) <- c("low","ML","high")
   INF <- rbind(INF)
-  rownames(INF) <- "speed (m/s)"
+  rownames(INF) <- "speed (meters/second)"
   #attr(CI,"DOF") <- 0
 
   if(length(object$tau)<2 || object$tau[2]<=.Machine$double.eps)
@@ -67,7 +67,8 @@ speed.ctmm <- function(object,data=NULL,level=0.95,robust=FALSE,units=TRUE,prior
     cores <- resolveCores(cores,fast=FALSE)
 
     # random speed calculation
-    spd.fn <- function(i=0) { speed.rand(object,data=data,prior=prior,fast=fast,cor.min=cor.min,dt.max=dt.max,error=error,precompute=precompute,...) }
+    DT <- diff(data$t)
+    spd.fn <- function(i=0) { speed.rand(object,data=data,prior=prior,fast=fast,cor.min=cor.min,dt.max=dt.max,error=error,precompute=precompute,DT=DT,...) }
 
     # setup precompute stuff
     if(prior==FALSE)
@@ -174,8 +175,9 @@ speed.ctmm <- function(object,data=NULL,level=0.95,robust=FALSE,units=TRUE,prior
   return(CI)
 }
 
+
 # calculate speed of one random trajectory
-speed.rand <- function(CTMM,data=NULL,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,precompute=FALSE,...)
+speed.rand <- function(CTMM,data=NULL,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,precompute=FALSE,DT=diff(data$t),...)
 {
   # capture model uncertainty
   if(prior) { CTMM <- emulate(CTMM,data=data,fast=fast,...) }
@@ -188,37 +190,33 @@ speed.rand <- function(CTMM,data=NULL,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NU
   if(is.null(data))
   {
     # analytic result possible here
-    if(data$mean=="stationary") { return(speed.deterministic(CTMM)) }
+    if(CTMM$mean=="stationary") { return(speed.deterministic(CTMM)) }
     # else do a sufficient length simulation
-    t <- seq(0,CTMM$tau[2]/error^2,dt) # is this right for error dependence?
+    t <- seq(0,CTMM$tau[2]/error^2,dt) # this should give O(error) estimation error
     data <- simulate(CTMM,t=t,precompute=precompute)
   }
   else
   {
     # check for rare cases in sampling disribution where motion is almost but not fractal relative to sampling schedule
-    if(prior && !fast)
+    # first check if non-stationary mean is irrelevant
+    drift <- get(CTMM$mean)
+    if(drift@speed(CTMM)$EST/(sum(diag(CTMM$sigma))/prod(CTMM$tau))<error^2)
     {
-      # first check if non-stationary mean is irrelevant
-      drift <- get(CTMM$mean)
-      if(drift@speed(CTMM)$EST/(sum(diag(CTMM$sigma))/prod(CTMM$tau))<error^2)
+      # now check if there are many steps per sampled interval
+      FRAC <- CTMM$tau[2]/DT
+      if(all(FRAC<error))
       {
-        # now check if there are many steps per sampled interval
-        DT <- diff(data$t)
-        FRAC <- CTMM$tau[2]/DT
-        if(all(FRAC<error))
-        {
-          # finally check if the simulated distance would be much greater than sampled net displacement
-          FAKE <- CTMM
-          FAKE$mean <- "stationary"
-          SPD <- speed(FAKE)[2]
-          FRAC <- sqrt(diff(data$x)^2+diff(data$y)^2)/DT / SPD
-          if(all(FRAC<error)) { return(SPD) }
-        }
+        # finally check if the simulated distance would be much greater than sampled net displacement
+        FAKE <- CTMM
+        FAKE$mean <- "stationary"
+        SPD <- speed(FAKE)[2]
+        FRAC <- sqrt(diff(data$x)^2+diff(data$y)^2)/DT / SPD
+        if(all(FRAC<error)) { return(SPD) }
       }
     }
 
     if(is.null(dt.max)) { dt.max <- -log(cor.min)*CTMM$tau[2] }
-    data <- simulate(CTMM,data=data,dt=dt,precompute=precompute,dt.max=dt.max)
+    data <- simulate(CTMM,data=data,dt=dt,precompute=precompute,dt.max=dt.max,DT=DT)
     t <- data$t
   }
   if(is.null(dt.max)) { dt.max <- Inf }

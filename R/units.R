@@ -108,6 +108,7 @@ unit.telemetry <- function(data,length=1,time=1)
 unit.ctmm <- function(CTMM,length=1,time=1)
 {
   if(length(CTMM$tau)){ CTMM$tau <- CTMM$tau/time }
+  CTMM$omega <- CTMM$omega * time
   CTMM$circle <- CTMM$circle * time
 
   # all means scale with length the same way... but not time
@@ -154,12 +155,17 @@ unit.ctmm <- function(CTMM,length=1,time=1)
     tau <- tau[tau<Inf]
     if(length(tau))
     {
-      tau <- paste("tau",names(tau))
-      tau <- tau[tau %in% NAMES]
+      tau <- NAMES[grepl("tau",NAMES)]
       if(length(tau))
       {
         CTMM$COV[tau,] <- CTMM$COV[tau,]/time
         CTMM$COV[,tau] <- CTMM$COV[,tau]/time
+      }
+
+      if("omega" %in% NAMES)
+      {
+        CTMM$COV["omega",] <- CTMM$COV["omega",] * time
+        CTMM$COV[,"omega"] <- CTMM$COV[,"omega"] * time
       }
     }
 

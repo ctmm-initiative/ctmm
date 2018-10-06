@@ -332,6 +332,7 @@ summary.UERE.list <- function(object,...)
 
   TAB <- cbind(AICc,Zsq)
   colnames(TAB) <- c("\u0394AICc","Z[red]\u00B2")
+  # Encoding(colnames(TAB)) <- "UTF-8"
   rownames(TAB) <- names(object)
 
   IND <- order(AICc)
@@ -540,7 +541,7 @@ uere.null <- function(data)
   UERE <- value
 
   # default ambiguous assignment
-  if(class(UERE)=="numeric")
+  if(class(UERE)=="numeric" || class(UERE)=="integer")
   {
     UERE <- cbind(UERE)
     colnames(UERE) <- "horizontal"

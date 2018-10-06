@@ -128,7 +128,8 @@ The fitting functions wrap around <code>optim</code> and <code>ctmm.loglike</cod
     
     </div>
 
-    <pre class="usage"><span class='fu'>ctmm</span>(<span class='kw'>tau</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>isotropic</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>range</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>circle</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>error</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>axes</span><span class='kw'>=</span><span class='fu'>c</span>(<span class='st'>"x"</span>,<span class='st'>"y"</span>),<span class='no'>...</span>)
+    <pre class="usage"><span class='fu'>ctmm</span>(<span class='kw'>tau</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>omega</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>isotropic</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>range</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>circle</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>error</span><span class='kw'>=</span><span class='fl'>FALSE</span>,
+     <span class='kw'>axes</span><span class='kw'>=</span><span class='fu'>c</span>(<span class='st'>"x"</span>,<span class='st'>"y"</span>),<span class='no'>...</span>)
 
 <span class='fu'>ctmm.loglike</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>REML</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>profile</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>zero</span><span class='kw'>=</span><span class='fl'>0</span>,<span class='kw'>verbose</span><span class='kw'>=</span><span class='fl'>FALSE</span>)
 
@@ -141,7 +142,11 @@ The fitting functions wrap around <code>optim</code> and <code>ctmm.loglike</cod
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>tau</th>
-      <td><p>Array of autocorrelation timescales explained below.</p></td>
+      <td><p>Array of autocorrelation timescales (explained below).</p></td>
+    </tr>
+    <tr>
+      <th>omega</th>
+      <td><p>Frequency (2π/period) of oscillatory range crossings.</p></td>
     </tr>
     <tr>
       <th>isotropic</th>
@@ -209,7 +214,7 @@ The fitting functions wrap around <code>optim</code> and <code>ctmm.loglike</cod
     </tr>
     <tr>
       <th>IC</th>
-      <td><p>Information criteria used for selection. Can be <code>"AICc"</code>, <code>"AIC"</code>, <code>"BIC"</code> or none (<code>"NA"</code>). AICc is approximate.</p></td>
+      <td><p>Information criteria used for selection. Can be <code>"AICc"</code>, <code>"AIC"</code>, <code>"BIC"</code> or none (<code>NA</code>). AICc is approximate.</p></td>
     </tr>
     <tr>
       <th>MSPE</th>

@@ -1,9 +1,13 @@
-ctmm 0.5.3 (2018-09-21)
+ctmm 0.5.3 (2018-10-05)
 ================
+
+  * oscillatory (and critically damped) models now supported, starting with omega option of ctmm()
 
   * summary() now works on lists of UERE objects for error model selection
 
   * MSPE slots & arguments restructured and fully utilized in both summary and ctmm.select
+  
+  * speed() more efficient on very coarse data
 
   * now avoiding fastPOSIXct timezone and epoch issues in as.telemetry
   
@@ -11,9 +15,13 @@ ctmm 0.5.3 (2018-09-21)
 
   * overlap() now robust to bad model fits
   
+  * ctmm.boot() better handles parameter estimation near boundaries
+  
   * e-obs data with missing error/speed/altitude now importing correctly in as.telemetry
   
   * correlogram plots now cap estimates to appropriate range
+  
+  * beta optimizer now more aggressive in searching along boundaries
   
 ctmm 0.5.2 (2018-09-10)
 ================

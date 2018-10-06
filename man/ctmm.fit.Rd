@@ -10,7 +10,8 @@
 The fitting functions wrap around \code{optim} and \code{ctmm.loglike} to fit continuous-time movement models to 2D animal tracking data as described in Fleming et al (2014) and Fleming et al (2015), and Fleming et al (2017).
 }
 \usage{
-ctmm(tau=NULL,isotropic=FALSE,range=TRUE,circle=FALSE,error=FALSE,axes=c("x","y"),...)
+ctmm(tau=NULL,omega=FALSE,isotropic=FALSE,range=TRUE,circle=FALSE,error=FALSE,
+     axes=c("x","y"),...)
 
 ctmm.loglike(data,CTMM,REML=FALSE,profile=TRUE,zero=0,verbose=FALSE)
 
@@ -20,7 +21,8 @@ ctmm.select(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",MSPE="position",trace=F
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{tau}{Array of autocorrelation timescales explained below.}
+  \item{tau}{Array of autocorrelation timescales (explained below).}
+  \item{omega}{Frequency (2π/period) of oscillatory range crossings.}
   \item{isotropic}{A Boolean denoting whether or not the animal's covariance is circular or elliptical.}
   \item{range}{A Boolean denoting whether or not the movement model has a finite range.}
   \item{circle}{The period it takes the animal to stochastically circle its mean location.}
@@ -37,7 +39,7 @@ ctmm.select(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",MSPE="position",trace=F
   \item{control}{An optional argument list with standardized numerical arguments.}
   \item{trace}{Report progress updates. Can be among \code{0:2} with increasing detail.}
   \item{level}{Attempt to simplify a model if a feature's non-existence falls within this level of confidence interval.}
-  \item{IC}{Information criteria used for selection. Can be \code{"AICc"}, \code{"AIC"}, \code{"BIC"} or none (\code{"NA"}). AICc is approximate.}
+  \item{IC}{Information criteria used for selection. Can be \code{"AICc"}, \code{"AIC"}, \code{"BIC"} or none (\code{NA}). AICc is approximate.}
   \item{MSPE}{Reject non-stationary features that increase the mean square predictive error of \code{"position"}, \code{"velocity"}, or not (\code{NA}).}
   \item{...}{Further arguments passed to \code{ctmm.fit}.}
 }

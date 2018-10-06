@@ -54,6 +54,49 @@ Optimizer <- function(par,fn,...,method="Nelder-Mead",lower=-Inf,upper=Inf,perio
 }
 
 
+# search up to and along a boundary/period
+box.search <- function(p0,grad,hess,cov=PDsolve(hess),lower=-Inf,upper=Inf,period=F,period.max=1/2)
+{
+  # how far we can go before boundary
+  n <- length(p0)
+  lambda <- rep(1,n)
+
+  # naive target
+  dp <- -c(cov %*% grad)
+  p1 <- p0 + dp
+
+  # passes through lower boundary ?
+  dlo <- lower-p1
+  LO <- (dlo>=0)
+  if(any(LO) && dp[LO]<0) { lambda[LO] <- 1 - abs( dlo[LO]/dp[LO] ) }
+
+  # passes through upper boundary ?
+  dhi <- p1-upper
+  HI <- (dhi>=0)
+  if(any(HI) && dp[HI]>0) { lambda[HI] <- 1 - abs( dhi[HI]/dp[HI] ) }
+
+  PER <- as.logical(period)
+  if(any(PER)) { lambda[PER] <- min(1, abs(dp[PER])/(period[PER]*period.max) ) }
+
+  MIN <- which.min(lambda)
+  if(lambda[MIN]<1)
+  {
+    p2 <- p1 # target beyond boundary
+    p1 <- p0 + lambda[MIN]*dp # go to boundary and stop
+
+    # remaning dimensions
+    if(length(lambda)>1)
+    {
+      # gradient estimated on boundary
+      grad <- hess %*% (p1-p2) # should I use this?
+      # search along remaining dimensions
+      p1[-MIN] <- box.search(p1[-MIN],grad[-MIN],hess[-MIN,-MIN],lower=lower[-MIN],upper=upper[-MIN],period=period[-MIN],period.max=period.max)
+    }
+  }
+
+  return(p1)
+}
+
 ######################
 # apply box constraints to travel in a straight line from p0 by dp
 ######################
@@ -233,14 +276,14 @@ mc.min <- function(min,cores=detectCores())
 # 1 - quasi-Newton-Raphson - custom method with efficient Hessian update
 #   - TODO: full Hessian option when DIM small
 #   - TODO: filling up mc queue if p>2n+1
-# 2 - Preconditioned Non-linear Conjugate Gradient - Polak–Ribiere with automatic restarts
+# 2 - Preconditioned Non-linear Conjugate Gradient - Polak-Ribiere with automatic restarts
 # 3 - Preconditioned Gradient Descent
 # 4 - (TODO) Pattern Search
 ##################################
 mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
 {
   DEBUG <- FALSE
-  PMAP <- TRUE
+  PMAP <- TRUE # periodic parameters are mapped locally: (-period/2,+period/2) -> (-Inf,Inf) during search steps
   # check complains about visible bindings
   fnscale <- parscale <- maxit <- precision <- trace <- cores <- hessian <- covariance <- NULL
   # fix default control arguments
@@ -652,26 +695,29 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
       # par could have been updated, updating boxed pars
       BOX <- is.boxed(par,fix.dir=TRUE)
       # what dimensions are pushing through the boundaries
-      TEST <- BOX & c(gradient%*%DIR)<0
-      if(any(TEST)) { par.diff[TEST] <- 0 }
+      BOXED <- BOX & c(gradient%*%DIR)<0
 
       if(STAGE==1 || STAGE==3)
       {
-        # Newton-Raphson search step from par.target
-        # this is also preconditioned gradient descent
-        if(!any(TEST))
-        { par.diff <- -c(covariance %*% gradient) }
-        else if(any(!TEST)) # constrained search
-        {
-          TEST <- !TEST # now the free dimensions
-          par.diff[TEST] <- -PDsolve(hessian[TEST,TEST]) %*% gradient[TEST]
-        }
+        # Newton-Raphson search step from par.target (can optimize along boundary)
+        par.target <- box.search(par,gradient,hessian,covariance,lower=lower,upper=upper,period=period)
+        par.diff <- par.target-par
+
+        # # this is also preconditioned gradient descent
+        # if(!any(BOXED))
+        # { par.diff <- -c(covariance %*% gradient) }
+        # else if(any(!BOXED)) # constrained search
+        # {
+        #   BOXED <- !BOXED # now the free dimensions
+        #   par.diff[BOXED] <- -PDsolve(hessian[BOXED,BOXED]) %*% gradient[BOXED]
+        #   # there are more exact relations if the global optimum is behind the boundary and the cost function is still quadratic on the boundary... not generally true here
+        # }
       }
       else if(STAGE==2) # conjugate gradient (preconditioned)
       {
-        if(!any(TEST))
+        if(!any(BOXED))
         {
-          # Polak–Ribiere formula (preconditoned)
+          # Polak-Ribiere formula (preconditoned)
           beta <- c(gradient %*% covariance %*% (gradient - gradient.old)) / c(gradient.old %*% covariance %*% gradient.old)
           beta <- max(0,beta)
           if(is.nan(beta) || is.na(beta) || abs(beta)==Inf) { beta <- 0 } # initialized by gradient.old
@@ -685,32 +731,33 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
           else # don't divide by zero
           { par.diff <- par.dir }
         }
-        else if(any(!TEST))
+        else if(any(!BOXED))
         {
-          TEST <- !TEST # now the free dimensions
-          COV <- PDsolve(hessian[TEST,TEST])
-          # Polak–Ribiere formula (preconditoned)
-          beta <- c(gradient[TEST] %*% COV %*% (gradient - gradient.old)[TEST]) / c(gradient.old[TEST] %*% COV %*% gradient.old[TEST])
+          FREE <- !BOXED # now the free dimensions
+          COV <- PDsolve(hessian[FREE,FREE])
+          # Polak-Ribiere formula (preconditoned)
+          beta <- c(gradient[FREE] %*% COV %*% (gradient - gradient.old)[FREE]) / c(gradient.old[FREE] %*% COV %*% gradient.old[FREE])
           beta <- max(0,beta)
           if(is.nan(beta) || is.na(beta) || abs(beta)==Inf) { beta <- 0 } # initialized by gradient.old
 
           # search direction
-          par.dir[TEST] <- -c(COV %*% gradient[TEST]) + (beta * par.dir[TEST])
+          par.dir[FREE] <- -c(COV %*% gradient[FREE]) + (beta * par.dir[FREE])
 
           # approximate search step (exact if hessian is correct)
-          if(any(abs(par.dir[TEST])>.Machine$double.eps))
-          { par.diff[TEST] <- c(gradient[TEST] %*% par.dir[TEST]) / c(par.dir[TEST] %*% hessian[TEST,TEST] %*% par.dir[TEST]) * par.dir[TEST] }
+          if(any(abs(par.dir[FREE])>.Machine$double.eps))
+          { par.diff[FREE] <- c(gradient[FREE] %*% par.dir[FREE]) / c(par.dir[FREE] %*% hessian[FREE,FREE] %*% par.dir[FREE]) * par.dir[FREE] }
           else # don't divide by zero
-          { par.diff[TEST] <- par.dir[TEST] }
+          { par.diff[FREE] <- par.dir[FREE] }
         }
-      }
+
+        # where we aim to evaluate next
+        par.target <- line.boxer(par.diff,p0=par,lower=lower,upper=upper,period=period)
+      } # end conjugate-gradient code
+      if(any(BOXED)) { par.diff[BOXED] <- 0 }
 
       if(sum(par.diff^2) <= .Machine$double.eps) { ERROR <- 0 ; STAGE <- STAGE + 1 ; next }
       # new search direction
       DIR.STEP <- par.diff / sqrt(sum(par.diff^2))
-
-      # where we aim to evaluate next
-      par.target <- line.boxer(par.diff,p0=par,lower=lower,upper=upper,period=period)
 
       if(trace)
       {

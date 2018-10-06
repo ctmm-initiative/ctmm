@@ -1,15 +1,9 @@
 PRIORITY
-* uere() select for identical UEREs (location class , axes) ?
+* Email Qing and ask if BIC sorts properly on dev branch
+* ctmm.fit -> id.parameters : force.error argument for when error is estimated to be 0
 * error vignette - check back on variogram
 * Telonics HDOP conversion factor
 * reference Guillaume's paper at the beginning of the periodogram vignette
-
-OSCILLATOR MODEL
-* storage of parameters
-* Langevin equation solutions
-* summary of parameters
-* variogram plot of theoretical
-* critically damped oscillator - one less parameter in count - select
 
 OVERLAP
 * overlap needs to return DOFs in an overlap object - and then define a summary function for the overlap object
