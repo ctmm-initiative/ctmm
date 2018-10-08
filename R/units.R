@@ -120,17 +120,18 @@ unit.ctmm <- function(CTMM,length=1,time=1)
   }
 
   if(class(CTMM$error)=='numeric') { CTMM$error <- CTMM$error/length } # don't divide logicals
+
   if("sigma" %in% names(CTMM))
   {
     CTMM$sigma <- CTMM$sigma/length^2
     attr(CTMM$sigma,'par')["area"] <- attr(CTMM$sigma,'par')["area"]/length^2
-  }
 
-  # variance -> diffusion adjustment
-  if(!CTMM$range)
-  {
-    CTMM$sigma <- CTMM$sigma*time
-    CTMM$sigma@par["area"] <- CTMM$sigma@par["area"]*time
+    # variance -> diffusion adjustment
+    if(!CTMM$range)
+    {
+      CTMM$sigma <- CTMM$sigma*time
+      CTMM$sigma@par["area"] <- CTMM$sigma@par["area"]*time
+    }
   }
 
   if("COV.mu" %in% names(CTMM)) { CTMM$COV.mu <- CTMM$COV.mu/length^2 }

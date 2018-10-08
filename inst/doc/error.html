@@ -12,7 +12,7 @@
 
 <meta name="author" content="Christen H. Fleming" />
 
-<meta name="date" content="2018-10-05" />
+<meta name="date" content="2018-10-06" />
 
 <title>Telemetry error</title>
 
@@ -280,7 +280,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 
 <h1 class="title toc-ignore">Telemetry error</h1>
 <h4 class="author"><em>Christen H. Fleming</em></h4>
-<h4 class="date"><em>2018-10-05</em></h4>
+<h4 class="date"><em>2018-10-06</em></h4>
 
 
 
@@ -327,9 +327,9 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" data-line-number="1">UERE2 &lt;-<span class="st"> </span><span class="kw">uere.fit</span>(squirtle[<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>])</a></code></pre></div>
 <p>We can now apply model selection to the two UERE fits by summarizing them in a list.</p>
 <div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" data-line-number="1"><span class="kw">summary</span>(<span class="kw">list</span>(<span class="dt">HDOP=</span>UERE,<span class="dt">homo=</span>UERE2))</a></code></pre></div>
-<pre><code>##             &lt;U+0394&gt;AICc  Z[red]²
-## HDOP       0.0000 6.179499
-## homo     350.6833 7.403003</code></pre>
+<pre><code>##         ÄAICc  Z[red]²
+## HDOP   0.0000 6.179499
+## homo 350.6833 7.403003</code></pre>
 <p>Now we can see that the HDOP values yield the better error model, both in terms of AICc and in terms of reduced Z squared, which is a goodness-of-fit statistic akin to reduced chi squared but designed for comparing error models.</p>
 </div>
 </div>
@@ -378,12 +378,12 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## 
 ## $DOF
 ##     mean     area    speed 
-## 12.59923 24.41654  0.00000 
+## 12.59923 24.41653  0.00000 
 ## 
 ## $CI
 ##                          low        ML     high
-## area (hectares)    12.192644 18.949149 27.17139
-## t[position] (days)  3.693129  6.319044 10.81205</code></pre>
+## area (hectares)    12.192644 18.949148 27.17139
+## ô[position] (days)  3.693129  6.319044 10.81205</code></pre>
 <p><code>trace=TRUE</code> allows us to see the models considered. <code>verbose=TRUE</code> would save each model.</p>
 </div>
 <div id="fitting-with-uncalibrated-data" class="section level3">
@@ -395,22 +395,20 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb28-1" data-line-number="1"><span class="co"># cheat and use previous fit as initial guess</span></a>
 <a class="sourceLine" id="cb28-2" data-line-number="2">GUESS<span class="op">$</span>error &lt;-<span class="st"> </span><span class="dv">10</span> <span class="co"># 10 meter error guess</span></a>
 <a class="sourceLine" id="cb28-3" data-line-number="3"><span class="co"># fit parameter estimates</span></a>
-<a class="sourceLine" id="cb28-4" data-line-number="4">FIT &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(turtle[[<span class="dv">3</span>]],GUESS,<span class="dt">control=</span>control)</a></code></pre></div>
-<pre><code>## Warning in cov.loglike(hess, grad): MLE is near a boundary or optim()
-## failed.</code></pre>
-<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb30-1" data-line-number="1"><span class="kw">summary</span>(FIT)</a></code></pre></div>
+<a class="sourceLine" id="cb28-4" data-line-number="4">FIT &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(turtle[[<span class="dv">3</span>]],GUESS,<span class="dt">control=</span>control)</a>
+<a class="sourceLine" id="cb28-5" data-line-number="5"><span class="kw">summary</span>(FIT)</a></code></pre></div>
 <pre><code>## $name
 ## [1] &quot;OU anisotropic error&quot;
 ## 
 ## $DOF
 ##     mean     area    speed 
-## 13.46151 25.98178  0.00000 
+## 13.46151 25.98174  0.00000 
 ## 
 ## $CI
-##                          low        ML     high
-## area (hectares)    12.604531 19.298798 27.39617
-## t[position] (days)  3.467312  5.882936  9.98149
-## error (meters)      0.000000  9.317617 63.30334</code></pre>
+##                          low        ML      high
+## area (hectares)    12.604532 19.298807 27.396192
+## ô[position] (days)  3.467311  5.882938  9.981498
+## error (meters)      0.000000  9.317616 63.303339</code></pre>
 <p>Here, fitting the UERE simultaneously with the movement model produced a consistent result. This will not always be the case.</p>
 </div>
 </div>
