@@ -431,6 +431,18 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
   df <- MINS$df
   dz <- MINS$dz
 
+  # unstandardize (includes likelihood adjustment)
+  unscale.ctmm <- function(CTMM)
+  {
+    CTMM <- unit.ctmm(CTMM,length=1/SCALE)
+    # log-likelihood adjustment
+    CTMM$loglike <- CTMM$loglike - length(axes)*n*log(SCALE)
+    # translate back to origin from center
+    CTMM$mu <- drift@shift(CTMM$mu,SHIFT)
+
+    return(CTMM)
+  }
+
   method <- match.arg(method,c("ML","pREML","pHREML","HREML","REML"))
 
   default <- list(method="Nelder-Mead",precision=1/2,maxit=.Machine$integer.max)
@@ -577,7 +589,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
     if(method %in% c("pREML","pHREML","HREML"))
     {
       assign("EMPTY",FALSE,pos=MLE.env)
-      assign("MLE",CTMM,pos=MLE.env)
+      assign("MLE",unscale.ctmm(CTMM),pos=MLE.env) # convert units back and store
     }
     else
     { empty.env(MLE.env) }
@@ -670,11 +682,8 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
   # covariance parameters only
   setup.parameters(CTMM,profile=FALSE,linear=FALSE)
 
-  CTMM <- unit.ctmm(CTMM,length=1/SCALE) # unstandardize (includes likelihood adjustment)
-  # log-likelihood adjustment
-  CTMM$loglike <- CTMM$loglike - length(CTMM$axes)*length(data$t)*log(SCALE)
-  # translate back to origin from center
-  CTMM$mu <- drift@shift(CTMM$mu,SHIFT)
+  # unstandardize (includes likelihood adjustment)
+  CTMM <- unscale.ctmm(CTMM)
 
   nu <- length(NAMES)
   # all parameters

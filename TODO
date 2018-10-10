@@ -1,4 +1,5 @@
 PRIORITY
+* multi-path GPS location resolution / signal bouncing
 * Email Qing and ask if BIC sorts properly on dev branch
 * ctmm.fit -> id.parameters : force.error argument for when error is estimated to be 0
 * error vignette - check back on variogram

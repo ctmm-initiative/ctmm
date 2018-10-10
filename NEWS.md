@@ -1,4 +1,4 @@
-ctmm 0.5.3 (2018-10-05)
+ctmm 0.5.3 (2018-10-09)
 ================
 
   * oscillatory (and critically damped) models now supported, starting with omega option of ctmm()
@@ -22,6 +22,8 @@ ctmm 0.5.3 (2018-10-05)
   * correlogram plots now cap estimates to appropriate range
   
   * beta optimizer now more aggressive in searching along boundaries
+  
+  * bugfix in ctmm.select with pREML & error
   
 ctmm 0.5.2 (2018-09-10)
 ================
