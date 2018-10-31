@@ -61,7 +61,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.5.1</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.5.3</span>
       </span>
     </div>
 
@@ -134,14 +134,14 @@
 <li><p>Do not save workspaces between sessions. They can become corrupted.</p></li>
 <li><p>Upgrade <code>R</code> to the latest version and update all of your packages.</p></li>
 <li><p>Work through the vignettes <code><a href='../articles/variogram.html'>vignette("variogram")</a></code> and <code><a href='../articles/akde.html'>vignette("akde")</a></code>.</p></li>
-<li><p>Stable beta releases between the CRAN release are published <a href='http://www2.physics.umd.edu/~hfleming/'>here</a>.</p></li>
-<li><p>The development build can be installed via <code><a href='http://www.rdocumentation.org/packages/devtools/topics/install_github'>devtools::install_github("ctmm-initiative/ctmm")</a></code>.</p></li>
+<li><p>Stable beta releases between the CRAN release are published <a href='http://www2.physics.umd.edu/~hfleming/'>here</a> on request.</p></li>
+<li><p>The development build can be installed via <code><a href='http://www.rdocumentation.org/packages/devtools/topics/reexports'>devtools::install_github("ctmm-initiative/ctmm")</a></code>.</p></li>
 <li><p>The <a href='https://groups.google.com/forum/#!forum/ctmm-user'><code>ctmm</code> user's group</a> is a good place to find and ask for help.</p></li>
 <li><p>Bug reports and feature requests can be raised at the <a href='https://github.com/ctmm-initiative/ctmm'>Github project page</a>.</p></li>
 </ol>
     <p><b>Help installing packages on Linux</b></p>
 <p>These are the packages I needed in Ubuntu:
-    <code>sudo apt install fftw3 fftw3-dev libgdal1-dev libproj-dev libgeos-dev r-base-core</code></p>
+    <code>sudo apt install fftw3 fftw3-dev libgdal1-dev libproj-dev libgeos-dev libgsl-dev r-base-core</code></p>
 <p><b><code>ctmm.select</code> only returns one model with <code>verbose=TRUE</code></b></p>
 <p>The newer version of <code>ctmm.select</code> is much more intelligent, necessitated by the exploding number of new model permutations. Any simpler models were judged to be so unlikely that they were not attempted. You can set <code>level=1</code> to force alternative model fitting, but the additional models should lose badly in model selection (please contact me if I am wrong).</p>
     <p><b><code>as.telemetry</code> reports abnormal sampling intervals and speeds</b></p>

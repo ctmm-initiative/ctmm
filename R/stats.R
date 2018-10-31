@@ -14,7 +14,7 @@ CI.lower <- Vectorize(function(k,Alpha){stats::qchisq(Alpha/2,k,lower.tail=TRUE)
 
 
 # calculate chi^2 confidence intervals from MLE and COV estimates
-chisq.ci <- function(MLE,COV=NULL,level=0.95,alpha=1-level,DOF=2*MLE^2/COV,fast=TRUE)
+chisq.ci <- function(MLE,COV=NULL,level=0.95,alpha=1-level,DOF=2*MLE^2/COV,HDR=FALSE)
 {
   # try to do something reasonable on failure cases
   if(is.nan(DOF)) { DOF <- 0 } # this comes from infinite variance divsion
@@ -27,27 +27,27 @@ chisq.ci <- function(MLE,COV=NULL,level=0.95,alpha=1-level,DOF=2*MLE^2/COV,fast=
   else if(!is.null(COV) && COV<0) # try an exponential distribution?
   {
     warning("VAR[Area] = ",COV," < 0")
-    CI <- c(1,1,1)*MLE
-    CI[1] <- stats::qexp(alpha/2,rate=1/min(sqrt(-COV),MLE))
-    CI[3] <- stats::qexp(1-alpha/2,rate=1/max(sqrt(-COV),MLE))
+    if(!HDR)
+    {
+      CI <- c(1,1,1)*MLE
+      CI[1] <- stats::qexp(alpha/2,rate=1/min(sqrt(-COV),MLE))
+      CI[3] <- stats::qexp(1-alpha/2,rate=1/max(sqrt(-COV),MLE))
+    }
+    else
+    { CI <- c(0,0,MLE) * stats::qexp(1-alpha,rate=1/min(sqrt(-COV),MLE)) }
   }
   else     # regular estimate
   {
-    # traditional confidence intervals
-    if(fast)
+    if(!HDR) # traditional confidence intervals
     { CI <- MLE * c(CI.lower(DOF,alpha),1,CI.upper(DOF,alpha)) }
-    else # more probable confidence intervals
-    {
-      CI <- MLE * q2chisq(1-alpha,DOF)/DOF
-      CI[3] <- CI[2]
-      CI[2] <- MLE
-    }
+    else # highest density region
+    { CI <- MLE * chisq.hdr(df=DOF,level=level,pow=HDR)/DOF }
 
+    # Normal backup for upper.tail
+    if(is.null(COV)) { COV <- 2*MLE^2/DOF }
+    UPPER <- norm.ci(CI[2],COV,alpha=alpha)[3]
     # qchisq upper.tail is too small when DOF<<1
     # probably an R bug that no regular use of chi-square/gamma would come across
-    if(is.null(COV)) { COV <- 2*MLE^2/DOF }
-    # Normal backup for upper.tail
-    UPPER <- norm.ci(MLE,COV,alpha=alpha)[3]
     if(CI[3]<UPPER) { CI[3] <- UPPER }
   }
 
@@ -56,36 +56,36 @@ chisq.ci <- function(MLE,COV=NULL,level=0.95,alpha=1-level,DOF=2*MLE^2/COV,fast=
 }
 
 
-# proper 2-sided quantile function for chi-squared distribution
-q2chisq <- function(p,df)
+# highest density region (HDR) for chi/chi^2 distribution
+# pow=1 gives chi HDR (in terms of chi^2 values)
+# pow=2 gives chi^2 HDR
+chisq.hdr <- function(df,level=0.95,alpha=1-level,pow=1)
 {
   # mode == 0
-  if(df <= 2) { CI <- c(0,0,stats::qchisq(p,df,lower.tail=TRUE)) }
-  else # mode == df
+  if(df <= pow)
+  { CI <- c(0,0,stats::qchisq(level,df,lower.tail=TRUE)) } # this goes badly when df<<1
+  else # mode == df - pow
   {
-    # conventional CIs
-    x1 <- stats::qchisq((1-p)/2,df,lower.tail=TRUE)
-    x2 <- stats::qchisq((1-p)/2,df,lower.taul=FALSE)
-    # mismatched density
-    p1 <- stats::dchisq(x1,df)
-    p2 <- stats::dchisq(x2,df)
-    # average density as first guess
-    p0 <- sqrt(p1*p2)
+    # chi and chi^2 modes
+    mode <- df-pow
 
-    # MORE TO COME !!!
-
-    # start loop
-
-    # quantiles for this density
-    x <- idchisq(p0,df)
-
-    # total probability for these quantiles
-
-    # newton iteration towards target probability
-
-    # end loop
-
-    CI <- c(x1,df-2,x2)
+    # given some chi^2 value under the mode, solve for the equiprobability-density chi^2 value over the mode
+    X2 <- function(X1) { if(X1==0){return(Inf)} ; X1 <- -X1/mode ; return( -mode*gsl::lambert_Wm1(X1*exp(X1)) ) }
+    # how far off are we from the desired coverage level
+    dP <- function(X1) {pchisq(X2(X1),df,lower.tail=TRUE)-pchisq(X1,df,lower.tail=TRUE)-level}
+    # solve for X1 to get the desired coverage level
+    X1 <- stats::uniroot(dP,c(0,mode),f.lower=alpha,f.upper=-level,extendInt="downX",tol=.Machine$double.eps,maxiter=.Machine$integer.max)$root
+    # uniroot is not reliable when root is very near boundary
+    if(X1==0)
+    {
+      # cost function with logit link
+      dP2 <- function(z) { dP(mode/(1+exp(z)))^2 }
+      X1 <- stats::nlm(dP2,1,ndigit=16,gradtol=.Machine$double.eps,stepmax=100,steptol=.Machine$double.eps,iterlim=.Machine$integer.max)$minimum
+      X1 <- mode/(1+exp(X1))
+      # nlm is not reliable in some other cases...
+    }
+    # HDR CI
+    CI <- c(X1,mode,X2(X1))
   }
   return(CI)
 }

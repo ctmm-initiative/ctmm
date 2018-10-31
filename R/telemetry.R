@@ -77,35 +77,51 @@ get.telemetry <- function(data,axes=c("x","y"))
 
 #######################
 # Generic import function
-as.telemetry <- function(object,timeformat="",timezone="UTC",projection=NULL,timeout=Inf,na.rm="row",drop=TRUE,...) UseMethod("as.telemetry")
+as.telemetry <- function(object,timeformat="",timezone="UTC",projection=NULL,timeout=Inf,na.rm="row",mark.rm=FALSE,drop=TRUE,...) UseMethod("as.telemetry")
+
 
 # MoveStack object
-as.telemetry.MoveStack <- function(object,timeformat="",timezone="UTC",projection=NULL,timeout=Inf,na.rm="row",drop=TRUE,...)
+as.telemetry.MoveStack <- function(object,timeformat="",timezone="UTC",projection=NULL,timeout=Inf,na.rm="row",mark.rm=FALSE,drop=TRUE,...)
 {
-  # need to first conglomerate to MoveBank format, then run as.telemetry
+  # get individual names
+  NAMES <- levels(attr(object,"trackID"))
+
+  # convert individually
   object <- move::split(object)
-  DATA <- lapply(object,function(mv){ Move2CSV(mv,timeformat=timeformat,timezone=timezone,projection=projection) })
-  DATA <- do.call(rbind,DATA)
-  DATA <- as.telemetry.data.frame(DATA,timeformat=timeformat,timezone=timezone,projection=projection,timeout=timeout,na.rm=na.rm,drop=drop)
+  object <- lapply(object,function(mv){ as.telemetry.Move(mv,timeformat=timeformat,timezone=timezone,projection=projection,timeout=timeout,na.rm=na.rm,mark.rm=mark.rm,...) })
+  # name by MoveStack convention
+  names(object) <- NAMES
+
+  if(drop && length(object)==1) { object <- object[[1]] }
+
+  return(object)
+}
+
+
+# Move object
+as.telemetry.Move <- function(object,timeformat="",timezone="UTC",projection=NULL,timeout=Inf,na.rm="row",mark.rm=FALSE,drop=TRUE,...)
+{
+  # preserve Move object projection if possible
+  if(is.null(projection) && !raster::isLonLat(object)) { projection <- raster::projection(object) }
+
+  DATA <- Move2CSV(object,timeformat=timeformat,timezone=timezone,projection=projection)
+  # can now treat this as a MoveBank object
+  DATA <- as.telemetry.data.frame(DATA,timeformat=timeformat,timezone=timezone,projection=projection,timeout=timeout,na.rm=na.rm,mark.rm=mark.rm,drop=drop)
   return(DATA)
 }
 
-# Move object
-as.telemetry.Move <- function(object,timeformat="",timezone="UTC",projection=NULL,timeout=Inf,na.rm="row",drop=TRUE,...)
-{
-  DATA <- Move2CSV(object,timeformat=timeformat,timezone=timezone,projection=projection)
-  # can now treat this as a MoveBank object
-  DATA <- as.telemetry.data.frame(DATA,timeformat=timeformat,timezone=timezone,projection=projection,timeout=timeout,na.rm=na.rm,drop=drop)
-  return(DATA)
-}
 
 # convert Move object back to MoveBank CSV
 Move2CSV <- function(object,timeformat="",timezone="UTC",projection=NULL,...)
 {
   DATA <- data.frame(timestamp=move::timestamps(object))
-  if(raster::isLonLat(object))
-  { DATA[,c('location.long','location.lat')] <- sp::coordinates(object) }
-  else
+
+  if(raster::isLonLat(object)) # projection will be automated
+  {
+    DATA[,c('location.long','location.lat')] <- sp::coordinates(object)
+    if(is.null(projection)) { warning("Move objects in geographic coordinates are automatically projected.") }
+  }
+  else # projection will be preserved, but still need long-lat
   { DATA[,c('location.long','location.lat')] <- sp::coordinates(sp::spTransform(object,sp::CRS("+proj=longlat +datum=WGS84"))) }
 
   # break Move object up into data.frame and idData
@@ -210,7 +226,7 @@ missing.class <- function(DATA,TYPE)
 
 
 # read in a MoveBank object file
-as.telemetry.character <- function(object,timeformat="",timezone="UTC",projection=NULL,timeout=Inf,na.rm="row",drop=TRUE,...)
+as.telemetry.character <- function(object,timeformat="",timezone="UTC",projection=NULL,timeout=Inf,na.rm="row",mark.rm=FALSE,drop=TRUE,...)
 {
   # read with 3 methods: fread, temp_unzip, read.csv, fall back to next if have error.
   # fread error message is lost, we can use print(e) for debugging.
@@ -226,7 +242,7 @@ as.telemetry.character <- function(object,timeformat="",timezone="UTC",projectio
       data <- utils::read.csv(object,...)
     }
   }
-  data <- as.telemetry.data.frame(data,timeformat=timeformat,timezone=timezone,projection=projection,timeout=timeout,na.rm=na.rm,drop=drop)
+  data <- as.telemetry.data.frame(data,timeformat=timeformat,timezone=timezone,projection=projection,timeout=timeout,na.rm=na.rm,mark.rm=mark.rm,drop=drop)
   return(data)
 }
 
@@ -253,7 +269,7 @@ asPOSIXct <- function(x,timeformat="",timezone="UTC",...)
 
 
 # this assumes a MoveBank data.frame
-as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projection=NULL,timeout=Inf,na.rm="row",drop=TRUE,...)
+as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projection=NULL,timeout=Inf,na.rm="row",mark.rm=FALSE,drop=TRUE,...)
 {
   na.rm <- match.arg(na.rm,c("row","col"))
 
@@ -282,6 +298,11 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   COL <- c("location.lat","Latitude","lat","GPS.Latitude")
   COL <- pull.column(object,COL)
   DATA$latitude <- COL
+
+  # manually marked outliers
+  COL <- c("manually.marked.outlier","marked.outlier","outlier")
+  COL <- pull.column(object,COL,as.logical)
+  if(mark.rm && length(COL)) { object <- object[!COL,] }
 
   ###############################################
   # TIME & PROJECTION

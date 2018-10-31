@@ -1,4 +1,4 @@
-ctmm 0.5.3 (2018-10-09)
+ctmm 0.5.3 (2018-10-30)
 ================
 
   * oscillatory (and critically damped) models now supported, starting with omega option of ctmm()
@@ -15,6 +15,10 @@ ctmm 0.5.3 (2018-10-09)
 
   * overlap() now robust to bad model fits
   
+  * new as.telemetry() argument mark.rm to delete marked outliers
+  
+  * projection information in Move & MoveStack objects now preserved if possible
+  
   * ctmm.boot() better handles parameter estimation near boundaries
   
   * e-obs data with missing error/speed/altitude now importing correctly in as.telemetry
@@ -24,6 +28,8 @@ ctmm 0.5.3 (2018-10-09)
   * beta optimizer now more aggressive in searching along boundaries
   
   * bugfix in ctmm.select with pREML & error
+  
+  * years updated to tropical years and calendar days updated to stellar days
   
 ctmm 0.5.2 (2018-09-10)
 ================

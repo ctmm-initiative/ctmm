@@ -85,7 +85,7 @@
       <h1>Telemetry error</h1>
                         <h4 class="author">Christen H. Fleming</h4>
             
-            <h4 class="date">2018-10-05</h4>
+            <h4 class="date">2018-10-31</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/ctmm-initiative/ctmm/blob/master/vignettes/error.Rmd"><code>vignettes/error.Rmd</code></a></small>
       <div class="hidden name"><code>error.Rmd</code></div>
@@ -98,50 +98,50 @@
 <h1 class="hasAnchor">
 <a href="#error-calibration" class="anchor"></a>Error calibration</h1>
 <p>The first step to handling errors is to quantify them. Make sure that your data’s “dilution of precision” (DOP) and error columns import correctly into <code>ctmm</code>. Some tracking device manufacturers provide pre-calibrated errors. These coati were tracked with e-obs GPS collars that features calibrated errors for the location, imported by <code>ctmm</code> into the <code>VAR.xy</code> column, which represents the <code>x</code> and <code>y</code> error variances.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="kw">library</span>(ctmm)</a>
-<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="kw">data</span>(<span class="st">'coati'</span>)</a>
-<a class="sourceLine" id="cb1-3" data-line-number="3"><span class="kw">names</span>(coati[[<span class="dv">1</span>]]) <span class="co"># imported column names</span></a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ctmm)
+<span class="kw">data</span>(<span class="st">'coati'</span>)
+<span class="kw">names</span>(coati[[<span class="dv">1</span>]]) <span class="co"># imported column names</span></code></pre></div>
 <pre><code>##  [1] "timestamp" "longitude" "latitude"  "t"         "HDOP"     
 ##  [6] "VAR.xy"    "z"         "VDOP"      "speed"     "heading"  
 ## [11] "SDOP"      "VAR.v"     "x"         "y"         "vx"       
 ## [16] "vy"</code></pre>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(coati[[<span class="dv">1</span>]],<span class="dt">col=</span><span class="kw">rainbow</span>(<span class="dv">2</span>),<span class="dt">error=</span><span class="dv">2</span>,<span class="dt">trans=</span><span class="fl">0.4</span>) <span class="co"># coati plot with 95% error discs</span></a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(coati[[<span class="dv">1</span>]],<span class="dt">col=</span><span class="kw">rainbow</span>(<span class="dv">2</span>),<span class="dt">error=</span><span class="dv">2</span>,<span class="dt">trans=</span><span class="fl">0.4</span>) <span class="co"># coati plot with 95% error discs</span></code></pre></div>
 <p><img src="error_files/figure-html/unnamed-chunk-1-1.png" width="700"></p>
 <p>Most GPS devices will only have an <code>HDOP</code> column, which is only proportional to the <code>x</code> and <code>y</code> error standard deviations. The proportionality constant between the HDOP and error standard deviation is known as the user equivalent range error (UERE). The UERE should be estimated from calibration data if not provided by the manufacturer. Without the option of pre-calibrated errors or calibration data, the UERE must be fit simultaneously with the movement model, which is not as reliable. We will cover simultaneous fitting at the end of this vignette.</p>
 <p>In the following wood turtle dataset, we have some calibration data and a turtle track. Note that the calibration data must be collected from the same model device as the tracking data.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="kw">data</span>(turtle)</a>
-<a class="sourceLine" id="cb4-2" data-line-number="2"><span class="kw">names</span>(turtle[[<span class="dv">1</span>]]) <span class="co"># data are not yet calibrated</span></a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(turtle)
+<span class="kw">names</span>(turtle[[<span class="dv">1</span>]]) <span class="co"># data are not yet calibrated</span></code></pre></div>
 <pre><code>## [1] "t"    "HDOP" "x"    "y"</code></pre>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" data-line-number="1"><span class="kw">names</span>(turtle) <span class="co"># two calibration datasets and two turtle datasets</span></a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">names</span>(turtle) <span class="co"># two calibration datasets and two turtle datasets</span></code></pre></div>
 <pre><code>## [1] "60s"  "90s"  "F231" "F403"</code></pre>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" data-line-number="1"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(turtle[<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>],<span class="dt">col=</span><span class="kw">rainbow</span>(<span class="dv">2</span>)) <span class="co"># calibration data only</span></a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(turtle[<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>],<span class="dt">col=</span><span class="kw">rainbow</span>(<span class="dv">2</span>)) <span class="co"># calibration data only</span></code></pre></div>
 <p><img src="error_files/figure-html/unnamed-chunk-2-1.png" width="700"></p>
 <p>The <code>uere</code> command is used to estimate the UERE parameter from calibration data. Do not use this command on animal tracking data.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" data-line-number="1">UERE &lt;-<span class="st"> </span><span class="kw"><a href="../reference/uere.html">uere.fit</a></span>(turtle[<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>]) <span class="co"># only using calibration data</span></a>
-<a class="sourceLine" id="cb9-2" data-line-number="2"><span class="kw">summary</span>(UERE)</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">UERE &lt;-<span class="st"> </span><span class="kw"><a href="../reference/uere.html">uere.fit</a></span>(turtle[<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>]) <span class="co"># only using calibration data</span>
+<span class="kw">summary</span>(UERE)</code></pre></div>
 <pre><code>## , , horizontal
 ## 
 ##          low       ML     high
 ## all 9.940412 10.62878 11.31654</code></pre>
 <p>For GPS data, the UERE will typically be 10-15 meters. The UERE can be assigned to a dataset with the <code>uere()&lt;-</code> command.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" data-line-number="1"><span class="kw"><a href="../reference/uere.html">uere</a></span>(turtle) &lt;-<span class="st"> </span>UERE</a>
-<a class="sourceLine" id="cb11-2" data-line-number="2"><span class="kw">names</span>(turtle[[<span class="dv">3</span>]]) <span class="co"># now the data are calibrated</span></a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/uere.html">uere</a></span>(turtle) &lt;-<span class="st"> </span>UERE
+<span class="kw">names</span>(turtle[[<span class="dv">3</span>]]) <span class="co"># now the data are calibrated</span></code></pre></div>
 <pre><code>## [1] "t"      "HDOP"   "x"      "y"      "VAR.xy"</code></pre>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" data-line-number="1"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(turtle[[<span class="dv">3</span>]],<span class="dt">error=</span><span class="dv">2</span>) <span class="co"># turtle plot with 95% error discs</span></a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(turtle[[<span class="dv">3</span>]],<span class="dt">error=</span><span class="dv">2</span>) <span class="co"># turtle plot with 95% error discs</span></code></pre></div>
 <p><img src="error_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
 <div id="error-model-selection" class="section level2">
 <h2 class="hasAnchor">
 <a href="#error-model-selection" class="anchor"></a>Error model selection</h2>
 <p>Not all GPS devices provide reliable DOP values and sometimes it is not obvious what error information will prove to be the most predictive. Generally speaking, <code>as.telemetry</code> will attempt to import the “best” column from among those that estimate error, DOP value, number of satellites and fix type, inlcuding timed-out fixes (see the <code>timeout</code> argument in <code>help(as.telemetry)</code>). Researchers may want to import the data with different error information, run <code>uere.fit</code> for each error model, and then select among the candidate models. Here we do this by comparing the turtle calibration data with and without HDOP values.</p>
 <p>First, we remove the HDOP values in an alternate dataset.</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" data-line-number="1">squirtle &lt;-<span class="st"> </span><span class="kw">lapply</span>(turtle,<span class="cf">function</span>(t){ t<span class="op">$</span>HDOP &lt;-<span class="st"> </span><span class="ot">NULL</span> ; t })</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">squirtle &lt;-<span class="st"> </span><span class="kw">lapply</span>(turtle,<span class="cf">function</span>(t){ t<span class="op">$</span>HDOP &lt;-<span class="st"> </span><span class="ot">NULL</span> ; t })</code></pre></div>
 <p>In other cases, manipulation will need to be performed before importing, so that <code>as.telemetry</code> can format the <code>telemetry</code> object properly. Running <code>uere.fit</code> now results in errors calibrated under the assumption of homoskedastic errors.</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" data-line-number="1">UERE2 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/uere.html">uere.fit</a></span>(squirtle[<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>])</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">UERE2 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/uere.html">uere.fit</a></span>(squirtle[<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>])</code></pre></div>
 <p>We can now apply model selection to the two UERE fits by summarizing them in a list.</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" data-line-number="1"><span class="kw">summary</span>(<span class="kw">list</span>(<span class="dt">HDOP=</span>UERE,<span class="dt">homo=</span>UERE2))</a></code></pre></div>
-<pre><code>##             &lt;U+0394&gt;AICc  Z[red]²
-## HDOP       0.0000 6.179499
-## homo     350.6833 7.403003</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(<span class="kw">list</span>(<span class="dt">HDOP=</span>UERE,<span class="dt">homo=</span>UERE2))</code></pre></div>
+<pre><code>##         ΔAICc  Z[red]²
+## HDOP   0.0000 6.179499
+## homo 350.6833 7.403003</code></pre>
 <p>Now we can see that the HDOP values yield the better error model, both in terms of AICc and in terms of reduced Z squared, which is a goodness-of-fit statistic akin to reduced chi squared but designed for comparing error models.</p>
 </div>
 </div>
@@ -149,15 +149,15 @@
 <h1 class="hasAnchor">
 <a href="#outlier-detection" class="anchor"></a>Outlier detection</h1>
 <p>Now we come to the task of identifying outliers. The <code>outlie</code> function uses error information to estimate straight-line speeds between sampled times and distances from the bulk of the data.</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" data-line-number="1"><span class="kw"><a href="../reference/outlie.html">outlie</a></span>(turtle[[<span class="dv">3</span>]]) -&gt;<span class="st"> </span>OUT</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/outlie.html">outlie</a></span>(turtle[[<span class="dv">3</span>]]) -&gt;<span class="st"> </span>OUT</code></pre></div>
 <p><img src="error_files/figure-html/unnamed-chunk-8-1.png" width="700"></p>
 <p>High-speed segments are colored in blue, while distant locations are colored in red. More emphasis is placed on the more extreme locations in the <code>outlie</code> plot. Visually we can see at least one outlier in the wood turtle data. The output of <code>outlie</code> also contains the error-informed speed and distance estimates (in SI units) used to generate the plot.</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" data-line-number="1"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(OUT)</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(OUT)</code></pre></div>
 <p><img src="error_files/figure-html/unnamed-chunk-9-1.png" width="700"></p>
 <p>A sustained speed of 0.1 m/s is not biologically implausible for a wood turtle, but this location is highly suspicious, both in terms of speed and lack of proximity. After removing the outlier, we can check the data again.</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb20-1" data-line-number="1">BAD &lt;-<span class="st"> </span><span class="kw">which.max</span>(OUT<span class="op">$</span>speed)</a>
-<a class="sourceLine" id="cb20-2" data-line-number="2">turtle[[<span class="dv">3</span>]] &lt;-<span class="st"> </span>turtle[[<span class="dv">3</span>]][<span class="op">-</span>BAD,]</a>
-<a class="sourceLine" id="cb20-3" data-line-number="3"><span class="kw"><a href="../reference/outlie.html">outlie</a></span>(turtle[[<span class="dv">3</span>]]) -&gt;<span class="st"> </span>OUT</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">BAD &lt;-<span class="st"> </span><span class="kw">which.max</span>(OUT<span class="op">$</span>speed)
+turtle[[<span class="dv">3</span>]] &lt;-<span class="st"> </span>turtle[[<span class="dv">3</span>]][<span class="op">-</span>BAD,]
+<span class="kw"><a href="../reference/outlie.html">outlie</a></span>(turtle[[<span class="dv">3</span>]]) -&gt;<span class="st"> </span>OUT</code></pre></div>
 <p><img src="error_files/figure-html/unnamed-chunk-10-1.png" width="700"></p>
 <p>Datasets may have multiple outliers. In pathological situations, there may be no clear separation between the normative data and the outliers. This necessitates a better error model, either by improving inadequate (or absent) HDOP estimates or by employing a heavier tailed error distribution (not yet supported).</p>
 </div>
@@ -179,54 +179,54 @@
 <h3 class="hasAnchor">
 <a href="#fitting-with-calibrated-data" class="anchor"></a>Fitting with calibrated data</h3>
 <p>For calibrated errors, we have to set <code>error=TRUE</code> in the model guess to fit with telemetry error accounted for.</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb21-1" data-line-number="1"><span class="co"># automated guestimates with circular covariance and calibrated errors</span></a>
-<a class="sourceLine" id="cb21-2" data-line-number="2">GUESS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.fit.html">ctmm.guess</a></span>(turtle[[<span class="dv">3</span>]],<span class="dt">CTMM=</span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">error=</span><span class="ot">TRUE</span>),<span class="dt">interactive=</span><span class="ot">FALSE</span>)</a>
-<a class="sourceLine" id="cb21-3" data-line-number="3"><span class="co"># the beta optimizer is more reliable than the default optimizer</span></a>
-<a class="sourceLine" id="cb21-4" data-line-number="4"><span class="co"># control &lt;- list(method='pNewton',cores=-1) # will use all but one cores</span></a>
-<a class="sourceLine" id="cb21-5" data-line-number="5">control &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">method=</span><span class="st">'pNewton'</span>,<span class="dt">cores=</span><span class="dv">2</span>) <span class="co"># CRAN policy limits us to 2 cores</span></a>
-<a class="sourceLine" id="cb21-6" data-line-number="6"><span class="co"># stepwise fitting</span></a>
-<a class="sourceLine" id="cb21-7" data-line-number="7">FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.select</a></span>(turtle[[<span class="dv">3</span>]],GUESS,<span class="dt">control=</span>control,<span class="dt">trace=</span><span class="ot">TRUE</span>)</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># automated guestimates with circular covariance and calibrated errors</span>
+GUESS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.fit.html">ctmm.guess</a></span>(turtle[[<span class="dv">3</span>]],<span class="dt">CTMM=</span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">error=</span><span class="ot">TRUE</span>),<span class="dt">interactive=</span><span class="ot">FALSE</span>)
+<span class="co"># the beta optimizer is more reliable than the default optimizer</span>
+<span class="co"># control &lt;- list(method='pNewton',cores=-1) # will use all but one cores</span>
+control &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">method=</span><span class="st">'pNewton'</span>,<span class="dt">cores=</span><span class="dv">2</span>) <span class="co"># CRAN policy limits us to 2 cores</span>
+<span class="co"># stepwise fitting</span>
+FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.select</a></span>(turtle[[<span class="dv">3</span>]],GUESS,<span class="dt">control=</span>control,<span class="dt">trace=</span><span class="ot">TRUE</span>)</code></pre></div>
 <pre><code>## * Fitting model OUF isotropic error.</code></pre>
 <pre><code>## * Fitting models OUF anisotropic error.</code></pre>
 <pre><code>## * Fitting models OU anisotropic error, OUf anisotropic error.</code></pre>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb25-1" data-line-number="1"><span class="kw">summary</span>(FIT)</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(FIT)</code></pre></div>
 <pre><code>## $name
 ## [1] "OU anisotropic error"
 ## 
 ## $DOF
 ##     mean     area    speed 
-## 12.59923 24.41650  0.00000 
+## 12.59923 24.41652  0.00000 
 ## 
 ## $CI
 ##                          low        ML     high
-## area (hectares)    12.192644 18.949156 27.17141
-## t[position] (days)  3.693129  6.319046 10.81206</code></pre>
+## area (hectares)    12.192645 18.949153 27.17140
+## τ[position] (days)  3.693129  6.319045 10.81206</code></pre>
 <p><code>trace=TRUE</code> allows us to see the models considered. <code>verbose=TRUE</code> would save each model.</p>
 </div>
 <div id="fitting-with-uncalibrated-data" class="section level3">
 <h3 class="hasAnchor">
 <a href="#fitting-with-uncalibrated-data" class="anchor"></a>Fitting with uncalibrated data</h3>
 <p>Fitting with unknown errors is a method of last resort. We have to provide an initial guess for <code>error</code>, which will be the device’s UERE. <code>error=10</code> is usually a good guess for GPS data. Let’s consider the turtle data again, but without calibrated UERE.</p>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb27-1" data-line-number="1"><span class="co"># delete UERE information</span></a>
-<a class="sourceLine" id="cb27-2" data-line-number="2"><span class="kw"><a href="../reference/uere.html">uere</a></span>(turtle[[<span class="dv">3</span>]]) &lt;-<span class="st"> </span><span class="ot">NULL</span></a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># delete UERE information</span>
+<span class="kw"><a href="../reference/uere.html">uere</a></span>(turtle[[<span class="dv">3</span>]]) &lt;-<span class="st"> </span><span class="ot">NULL</span></code></pre></div>
 <p>The only difference is that you have to provide an initial guess for the UERE. Otherwise, the steps are the same.</p>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb28-1" data-line-number="1"><span class="co"># cheat and use previous fit as initial guess</span></a>
-<a class="sourceLine" id="cb28-2" data-line-number="2">GUESS<span class="op">$</span>error &lt;-<span class="st"> </span><span class="dv">10</span> <span class="co"># 10 meter error guess</span></a>
-<a class="sourceLine" id="cb28-3" data-line-number="3"><span class="co"># fit parameter estimates</span></a>
-<a class="sourceLine" id="cb28-4" data-line-number="4">FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.select</a></span>(turtle[[<span class="dv">3</span>]],GUESS,<span class="dt">control=</span>control)</a>
-<a class="sourceLine" id="cb28-5" data-line-number="5"><span class="kw">summary</span>(FIT)</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># cheat and use previous fit as initial guess</span>
+GUESS<span class="op">$</span>error &lt;-<span class="st"> </span><span class="dv">10</span> <span class="co"># 10 meter error guess</span>
+<span class="co"># fit parameter estimates</span>
+FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.select</a></span>(turtle[[<span class="dv">3</span>]],GUESS,<span class="dt">control=</span>control)
+<span class="kw">summary</span>(FIT)</code></pre></div>
 <pre><code>## $name
 ## [1] "OU anisotropic error"
 ## 
 ## $DOF
 ##     mean     area    speed 
-## 13.46151 25.98178  0.00000 
+## 13.46152 25.98180  0.00000 
 ## 
 ## $CI
-##                          low        ML     high
-## area (hectares)    12.604531 19.298798 27.39617
-## t[position] (days)  3.467312  5.882936  9.98149
-## error (meters)      0.000000  9.317617 63.30335</code></pre>
+##                          low        ML      high
+## area (hectares)    12.604531 19.298795 27.396166
+## τ[position] (days)  3.467312  5.882935  9.981486
+## error (meters)      0.000000  9.317617 63.303346</code></pre>
 <p>Here, fitting the UERE simultaneously with the movement model produced a consistent result. This will not always be the case.</p>
 </div>
 </div>

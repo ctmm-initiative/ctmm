@@ -11,16 +11,16 @@
 
 \usage{
 as.telemetry(object,timeformat="",timezone="UTC",projection=NULL,timeout=Inf,na.rm="row",
-             drop=TRUE,...)
+             mark.rm=FALSE,drop=TRUE,...)
 
 \S3method{as.telemetry}{character}(object,timeformat="",timezone="UTC",projection=NULL,timeout=Inf,na.rm="row",
-             drop=TRUE,...)
+             mark.rm=FALSE,drop=TRUE,...)
 
 \S3method{as.telemetry}{data.frame}(object,timeformat="",timezone="UTC",projection=NULL,timeout=Inf,na.rm="row",
-             drop=TRUE,...)
+             mark.rm=FALSE,drop=TRUE,...)
 
 \S3method{as.telemetry}{Move}(object,timeformat="",timezone="UTC",projection=NULL,timeout=Inf,na.rm="row",
-             drop=TRUE,...)
+             mark.rm=FALSE,drop=TRUE,...)
 
 \S3method{summary}{telemetry}(object,...)
 }
@@ -33,6 +33,7 @@ as.telemetry(object,timeformat="",timezone="UTC",projection=NULL,timeout=Inf,na.
   %\item{UERE}{"User equivalent range errors" needed to translate DOP values into location uncertainty.}
   \item{timeout}{GPS location fix timeout value (seconds). Potentially useful for categorizing accuracy. \code{timeout=max} will use the maximum value.}
   \item{na.rm}{If some values are \code{NA} in the data frame, are the rows (times) deleted or are the columns (data types) deleted.}
+  \item{mark.rm}{Delete Movebank manually marked outliers. Also see \code{\link{outlie}}.}
   \item{drop}{Only return a \code{telemetry} object for one individual if \code{TRUE}. Always return a \code{list} of telemetry objects if \code{FALSE}.}
   \item{...}{Optional arguments to be fed to \code{\link{fread}} or \code{\link{read.csv}}, in the case of compressed files.}
 }

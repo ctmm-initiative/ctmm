@@ -267,6 +267,11 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
     dof[BAD] <- 0
   }
   AICc <- AICc + length(axes)^2*sum( (DOF.ML+Kc)*dof/(length(axes)*dof-2) )
+  if(length(axes)*dof<=2) # does not have a mean value
+  {
+    AICc <- Inf
+    warning("Sample size too small for AICc to exist.")
+  }
 
   ### Z_reduced^2 ###
   Pi <- lapply(1:length(data),function(k){c( w[[k]] / UERE[Ci[[k]]]^2 )}) # (animal;time)

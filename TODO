@@ -1,10 +1,9 @@
 PRIORITY
-* multi-path GPS location resolution / signal bouncing
-* Email Qing and ask if BIC sorts properly on dev branch
 * ctmm.fit -> id.parameters : force.error argument for when error is estimated to be 0
 * error vignette - check back on variogram
-* Telonics HDOP conversion factor
+* Telonics HDOP conversion factor (2.5)
 * reference Guillaume's paper at the beginning of the periodogram vignette
+* occurrence() on the same grid
 
 OVERLAP
 * overlap needs to return DOFs in an overlap object - and then define a summary function for the overlap object
@@ -19,6 +18,7 @@ ERROR PAPER
 * email ARGOS about McClintock formula
 * kGcluster with tpeqd projection suggestion
 * predict can return VAR.xy for isotropic with UERE<4
+* propagation of error uncertainty
 
 PROJECTION
 * projection() <- on all plottable objects + plot option

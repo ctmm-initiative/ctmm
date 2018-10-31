@@ -38,6 +38,13 @@ plot(LSP,max=TRUE,diagnostic=TRUE,cex=0.5)
 
 The `max=TRUE` option keeps only local maxima and often yields periodograms that are easier to interpret, especially when the resolution of the periodogram has been increased from the default.
 
+Periodicities in the data cause peaks at their respective periods on the horizontal axis.
+To visually assess significance, these peaks should be compared to the normal variation around the smooth trend of the periodogram.
+Important natural periods like the stellar day, synodic month and tropical year are labeled on the horizontal axes and given dark vertical lines in the plot.
+Harmonics of these natural periods have unlabeled tick marks on the horizontal axis and are are given lighter vertical lines in the plot.
+E.g., the two tick marks under a day represent the second and third harmonic of the day, or (24/2) 12 hours and (24/3) 8 hours, respectively
+Peaks at the harmonics of a period indicate that fine details of the periodicity are resolved by the data.
+
 The `diagnostic=TRUE` option draws the periodogram of the sampling schedule with red symbols. If the periodogram of the sampling schedule exhibits peaks, this indicates that the corresponding peaks in the movement data could be simply caused by irregularities in the sampling schedule and not by periodicity in the movement.
 Here the periodogram exhibits a clear peak for the period of one day, but this is also present in the (red) diagnostic.
 

@@ -272,7 +272,7 @@ max.periodogram <- function(LSP,df=stats::median(diff(LSP$f)))
 # plot periodograms
 plot.periodogram <- function(x,max=FALSE,diagnostic=FALSE,col="black",transparency=0.25,grid=TRUE,...)
 {
-  DAY <- 24*60^2
+  DAY <- 1 %#% 'day' # daily periods
 
   # frequency in 1/seconds
   f <- x$f
@@ -299,10 +299,10 @@ plot.periodogram <- function(x,max=FALSE,diagnostic=FALSE,col="black",transparen
   }
 
   # yearly periods
-  ticker(365.24*DAY,11,"year")
+  ticker(1 %#% 'year',12,"year")
 
   # lunar periods
-  ticker(29.53059*DAY,29,"month")
+  ticker(1 %#% 'month',29,"month")
 
   # diurnal periods
   ticker(DAY,24,"day")

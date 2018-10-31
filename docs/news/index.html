@@ -116,9 +116,9 @@
       <small>Source: <a href='https://github.com/ctmm-initiative/ctmm/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
     </div>
 
-    <div id="ctmm-0-5-3-2018-10-05" class="section level1">
+    <div id="ctmm-0-5-3-2018-10-30" class="section level1">
 <h1 class="page-header">
-<a href="#ctmm-0-5-3-2018-10-05" class="anchor"></a>ctmm 0.5.3 (2018-10-05)<small> Unreleased </small>
+<a href="#ctmm-0-5-3-2018-10-30" class="anchor"></a>ctmm 0.5.3 (2018-10-30)<small> Unreleased </small>
 </h1>
 <ul>
 <li><p>oscillatory (and critically damped) models now supported, starting with omega option of ctmm()</p></li>
@@ -128,10 +128,14 @@
 <li><p>now avoiding fastPOSIXct timezone and epoch issues in as.telemetry</p></li>
 <li><p>outlie() now works on lists of telemetry objects</p></li>
 <li><p>overlap() now robust to bad model fits</p></li>
+<li><p>new as.telemetry() argument mark.rm to delete marked outliers</p></li>
+<li><p>projection information in Move &amp; MoveStack objects now preserved if possible</p></li>
 <li><p>ctmm.boot() better handles parameter estimation near boundaries</p></li>
 <li><p>e-obs data with missing error/speed/altitude now importing correctly in as.telemetry</p></li>
 <li><p>correlogram plots now cap estimates to appropriate range</p></li>
 <li><p>beta optimizer now more aggressive in searching along boundaries</p></li>
+<li><p>bugfix in ctmm.select with pREML &amp; error</p></li>
+<li><p>years updated to tropical years and calendar days updated to stellar days</p></li>
 </ul>
 </div>
     <div id="ctmm-0-5-2-2018-09-10" class="section level1">
@@ -511,7 +515,7 @@
     <div id="tocnav">
       <h2>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
-        <li><a href="#ctmm-0-5-3-2018-10-05">0.5.3</a></li>
+        <li><a href="#ctmm-0-5-3-2018-10-30">0.5.3</a></li>
         <li><a href="#ctmm-0-5-2-2018-09-10">0.5.2</a></li>
         <li><a href="#ctmm-0-5-1-2018-08-06">0.5.1</a></li>
         <li><a href="#ctmm-0-5-0-2018-05-15">0.5.0</a></li>

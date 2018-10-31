@@ -243,10 +243,10 @@ unit.variogram <- function(SVF,time=1,area=1)
   add(c("s","s.","sec","sec.","second","seconds"),1)
   add(c("min","min.","minute","minutes"),60)
   add(c("h","h.","hr","hr.","hour","hours"),60^2)
-  add(c("day","days"),24*60^2)
-  add(c("wk","wk.","week","weeks"),7*24*60^2)
-  add(c("mon","mon.","month","months"),((29*24+12)*60+44)*60+2.8)
-  add(c("yr","yr.","year","years"),365.24*7*24*60^2)
+  add(c("day","days"),(23*60+56)*60+4.0910) # stellar day
+  add(c("wk","wk.","week","weeks"),7*24*60^2) # calendar week
+  add(c("mon","mon.","month","months"),((29*24+12)*60+44)*60+2.8016) # synodic month
+  add(c("yr","yr.","year","years"),365.24219 * 24*60^2) # tropical year
 
   # Distance conversions
   add(c("\u03BCm","\u03BCm.","micron","microns","micrometer","micrometers"),1E-6)
