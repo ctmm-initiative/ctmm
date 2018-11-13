@@ -129,18 +129,20 @@
     <pre class="usage"><span class='fu'>predict</span>(<span class='no'>object</span>,<span class='no'>...</span>)
 
 <span class='co'># S3 method for ctmm</span>
-<span class='fu'>predict</span>(<span class='no'>object</span>,<span class='kw'>data</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>t</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>dt</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>res</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='no'>...</span>)
+<span class='fu'>predict</span>(<span class='no'>object</span>,<span class='kw'>data</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>t</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>dt</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>res</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>complete</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='no'>...</span>)
 
 <span class='co'># S3 method for telemetry</span>
-<span class='fu'>predict</span>(<span class='no'>object</span>,<span class='kw'>CTMM</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>t</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>dt</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>res</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='no'>...</span>)
+<span class='fu'>predict</span>(<span class='no'>object</span>,<span class='kw'>CTMM</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>t</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>dt</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>res</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>complete</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='no'>...</span>)
 
 <span class='fu'>simulate</span>(<span class='no'>object</span>,<span class='kw'>nsim</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>seed</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='no'>...</span>)
 
 <span class='co'># S3 method for ctmm</span>
-<span class='fu'>simulate</span>(<span class='no'>object</span>,<span class='kw'>nsim</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>seed</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>data</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>t</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>dt</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>res</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>precompute</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='no'>...</span>)
+<span class='fu'>simulate</span>(<span class='no'>object</span>,<span class='kw'>nsim</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>seed</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>data</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>t</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>dt</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>res</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>complete</span><span class='kw'>=</span><span class='fl'>FALSE</span>,
+         <span class='kw'>precompute</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='no'>...</span>)
 
 <span class='co'># S3 method for telemetry</span>
-<span class='fu'>simulate</span>(<span class='no'>object</span>,<span class='kw'>nsim</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>seed</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>CTMM</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>t</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>dt</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>res</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>precompute</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='no'>...</span>)</pre>
+<span class='fu'>simulate</span>(<span class='no'>object</span>,<span class='kw'>nsim</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>seed</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>CTMM</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>t</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>dt</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>res</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>complete</span><span class='kw'>=</span><span class='fl'>FALSE</span>,
+         <span class='kw'>precompute</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -164,6 +166,10 @@
     <tr>
       <th>res</th>
       <td><p>Average number of locations to predict or simulate per <code>data</code> time.</p></td>
+    </tr>
+    <tr>
+      <th>complete</th>
+      <td><p>Additionally calculate timestamps and geographic coordinates.</p></td>
     </tr>
     <tr>
       <th>CTMM</th>

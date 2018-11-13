@@ -73,11 +73,9 @@ MISC WORK
 * export ellipse drawing function
 * effective DOF for diffusion rate?
 
-PERIODIC 0.4.X
+PERIODIC
+* calculate explicit time link for periodicity? or estimate frequency?
 * DOF[mean] should just be the stationary mean
-* AIC/MSPE hybrid model selection
-* mean derivative not included in simulate/predict/etc?
-* T-test on high frequency amplitudes
 * variogram on mean detrended data with CTMM argument
 * simulate.telemetry (not pure ctmm)
 * smoother (non-uniform u(t) and velocity vector)

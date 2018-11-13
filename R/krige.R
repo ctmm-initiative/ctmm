@@ -388,7 +388,7 @@ occurrence <- function(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=
 
 ##############################################
 # SIMULATE DATA over time array t
-simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1,precompute=FALSE,...)
+simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1,complete=FALSE,precompute=FALSE,...)
 {
   if(!is.null(seed)){ set.seed(seed) }
 
@@ -578,17 +578,19 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
   }
 
   data <- new.telemetry(data,info=info)
+  if(complete) { data <- pseudonymize(data,tz=info$timezone,proj=info$projection,origin=EPOCH)  }
   return(data)
 }
 #methods::setMethod("simulate",signature(object="ctmm"), function(object,...) simulate.ctmm(object,...))
 
-simulate.telemetry <- function(object,nsim=1,seed=NULL,CTMM=NULL,t=NULL,dt=NULL,res=1,precompute=FALSE,...)
-{ simulate.ctmm(CTMM,nsim=nsim,seed=seed,data=object,t=t,dt=dt,res=res,...) }
+simulate.telemetry <- function(object,nsim=1,seed=NULL,CTMM=NULL,t=NULL,dt=NULL,res=1,complete=FALSE,precompute=FALSE,...)
+{ simulate.ctmm(CTMM,nsim=nsim,seed=seed,data=object,t=t,dt=dt,res=res,complete=complete,precompute=precompute,...) }
+
 
 ##########################
 # predict locations at certaint times !!! make times unique
 ##########################
-predict.ctmm <- function(object,data=NULL,t=NULL,dt=NULL,res=1,...)
+predict.ctmm <- function(object,data=NULL,t=NULL,dt=NULL,res=1,complete=FALSE,...)
 {
   info <- attr(object,"info")
   axes <- object$axes
@@ -684,8 +686,9 @@ predict.ctmm <- function(object,data=NULL,t=NULL,dt=NULL,res=1,...)
   }
 
   data <- new.telemetry(data,info=info)
+  if(complete) { data <- pseudonymize(data,tz=info$timezone,proj=info$projection,origin=EPOCH)  }
   return(data)
 }
 
-predict.telemetry <- function(object,CTMM=NULL,t=NULL,dt=NULL,res=1,...)
-{ predict.ctmm(CTMM,data=object,t=t,dt=dt,res=res,...) }
+predict.telemetry <- function(object,CTMM=NULL,t=NULL,dt=NULL,res=1,complete=FALSE,...)
+{ predict.ctmm(CTMM,data=object,t=t,dt=dt,res=res,complete=complete,...) }

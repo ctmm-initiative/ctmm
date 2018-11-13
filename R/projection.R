@@ -13,6 +13,7 @@ setMethod('projection', signature(x='telemetry'), projection.telemetry)
 setMethod('projection', signature(x='ctmm'), projection.telemetry)
 setMethod('projection', signature(x='UD'), projection.telemetry)
 
+
 projection.list <- function(x,asText=TRUE)
 {
   PROJS <- sapply(x,projection)
@@ -167,6 +168,9 @@ format.projection <- function(proj,datum="WGS84")
 # only allow compatible projections
 validate.projection <- function(projection)
 {
+  if(class(projection)=="character") { projection <- sp::CRS(projection) } # this adds missing longlat specification
+  if(class(projection)=="CRS") { projection <- as.character(projection) }
+
   if(grepl("longlat",projection,fixed=TRUE) || grepl("latlong",projection,fixed=TRUE))
   { stop("A projected coordinate system must be specified.") }
 

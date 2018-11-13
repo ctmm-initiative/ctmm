@@ -59,7 +59,7 @@ For periodic-mean processes, you need to specify one or more period values that 
 In our example, we are going to specify a period of a day, which is what the periodogram was saying. Other individuals in this population were also exhibiting a weekly periodicity, and in similar species, lunar cycles are well-known to affect ranging behaviors.
 
 ```{r}
-PROTO <- ctmm(mean="periodic",period=c(1 %#% "day",1 %#% "month"),circle=TRUE)
+PROTO <- ctmm(mean="periodic",period=c(24 %#% "hours",1 %#% "month"),circle=TRUE)
 ```
 
 The `mean="periodic"` option tells `ctmm` that you want a periodic-mean process. The default is `mean="stationary"`.

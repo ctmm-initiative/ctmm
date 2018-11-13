@@ -94,9 +94,10 @@ get.taus <- function(CTMM,zeroes=FALSE)
   K <- if(zeroes) { length(CTMM$tau) } else { continuity(CTMM) }
   CTMM$K <- K
 
-  if(K==1 && CTMM$range)
+  # can't use range boolean because of approximations in ctmm.loglike
+  if(K==1 && CTMM$tau[1]<Inf) # OU
   { CTMM$tau.names <- "tau position" }
-  else if(K>1 && !CTMM$range) # IOU
+  else if(K>1 && CTMM$tau[1]==Inf) # IOU
   {
     CTMM$tau.names <- "tau velocity"
     CTMM$Omega2 <- 1/CTMM$tau[2] # mean square speed modulo diffusion coefficient (not really Omega^2)

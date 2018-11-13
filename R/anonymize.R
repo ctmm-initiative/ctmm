@@ -25,12 +25,13 @@ anonymize <- function(data)
 
 
 # give false origin, orientation, dispatch epoch
-pseudonymize <- function(data,center=c(0,0),datum="WGS84",origin="1111-11-11 11:11.11 UTC",tz="GMT")
+EPOCH <- as.POSIXct("1970-01-01 00:00.00 UTC",tz="GMT")
+pseudonymize <- function(data,center=c(0,0),datum="WGS84",origin="1111-11-11 11:11.11 UTC",tz="GMT",proj=NULL)
 {
   DROP <- class(data)=="telemetry"
   data <- listify(data)
 
-  proj <- paste0("+proj=aeqd +lon_0=",center[1]," +lat_0=",center[2]," +datum=",datum)
+  if(is.null(proj)) { proj <- paste0("+proj=aeqd +lon_0=",center[1]," +lat_0=",center[2]," +datum=",datum) }
 
   for(i in 1:length(data))
   {

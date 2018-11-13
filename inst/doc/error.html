@@ -12,7 +12,7 @@
 
 <meta name="author" content="Christen H. Fleming" />
 
-<meta name="date" content="2018-10-31" />
+<meta name="date" content="2018-11-13" />
 
 <title>Telemetry error</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Telemetry error</h1>
 <h4 class="author"><em>Christen H. Fleming</em></h4>
-<h4 class="date"><em>2018-10-31</em></h4>
+<h4 class="date"><em>2018-11-13</em></h4>
 
 
 
@@ -168,12 +168,12 @@ FIT &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(turtle[[<s
 ## 
 ## $DOF
 ##     mean     area    speed 
-## 12.59922 24.41640  0.00000 
+## 12.59923 24.41652  0.00000 
 ## 
 ## $CI
 ##                          low        ML     high
-## area (hectares)    12.192645 18.949176 27.17145
-## τ[position] (days)  3.693128  6.319052 10.81209</code></pre>
+## area (hectares)    12.192644 18.949152 27.17140
+## τ[position] (days)  3.693129  6.319045 10.81206</code></pre>
 <p><code>trace=TRUE</code> allows us to see the models considered. <code>verbose=TRUE</code> would save each model.</p>
 </div>
 <div id="fitting-with-uncalibrated-data" class="section level3">
@@ -185,22 +185,20 @@ FIT &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(turtle[[<s
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># cheat and use previous fit as initial guess</span>
 GUESS<span class="op">$</span>error &lt;-<span class="st"> </span><span class="dv">10</span> <span class="co"># 10 meter error guess</span>
 <span class="co"># fit parameter estimates</span>
-FIT &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(turtle[[<span class="dv">3</span>]],GUESS,<span class="dt">control=</span>control)</code></pre></div>
-<pre><code>## Warning in cov.loglike(hess, grad): MLE is near a boundary or optim()
-## failed.</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(FIT)</code></pre></div>
+FIT &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(turtle[[<span class="dv">3</span>]],GUESS,<span class="dt">control=</span>control)
+<span class="kw">summary</span>(FIT)</code></pre></div>
 <pre><code>## $name
 ## [1] &quot;OU anisotropic error&quot;
 ## 
 ## $DOF
 ##     mean     area    speed 
-## 13.46146 25.98132  0.00000 
+## 13.46151 25.98178  0.00000 
 ## 
 ## $CI
 ##                          low        ML      high
-## area (hectares)    12.604540 19.298891 27.396382
-## τ[position] (days)  3.467307  5.882964  9.981597
-## error (meters)      0.000000  9.317612 63.303332</code></pre>
+## area (hectares)    12.604531 19.298798 27.396173
+## τ[position] (days)  3.467312  5.882936  9.981489
+## error (meters)      0.000000  9.317617 63.303344</code></pre>
 <p>Here, fitting the UERE simultaneously with the movement model produced a consistent result. This will not always be the case.</p>
 </div>
 </div>

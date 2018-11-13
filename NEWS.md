@@ -1,4 +1,4 @@
-ctmm 0.5.3 (2018-10-30)
+ctmm 0.5.3 (2018-11-13)
 ================
 
   * oscillatory (and critically damped) models now supported, starting with omega option of ctmm()
@@ -8,6 +8,8 @@ ctmm 0.5.3 (2018-10-30)
   * MSPE slots & arguments restructured and fully utilized in both summary and ctmm.select
   
   * speed() more efficient on very coarse data
+  
+  * new complete argument in simulate() and predict() to calculate timestamps and geographic coordinates
 
   * now avoiding fastPOSIXct timezone and epoch issues in as.telemetry
   

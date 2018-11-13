@@ -277,7 +277,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   names(object) <- tolower(names(object))
 
   # timestamp column
-  COL <- c('timestamp','Acquisition.Start.Time','Acquisition.Time','time')
+  COL <- c('timestamp','Acquisition.Start.Time','Acquisition.Time','time','Date.GMT','Date.Local')
   COL <- pull.column(object,COL,FUNC=as.character)
   COL <- asPOSIXct(COL,timeformat=timeformat,timezone=timezone)
   DATA <- data.frame(timestamp=COL)
@@ -443,7 +443,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   ###########################
   # generic location classes
   # includes Telonics Gen4 location classes (use with HDOP information)
-  COL <- c("GPS.fix.type","fix.type","Fix.Attempt","GPS.Fix.Attempt","Telonics.Fix.Attempt")
+  COL <- c("GPS.fix.type","fix.type","Fix.Attempt","GPS.Fix.Attempt","Telonics.Fix.Attempt","Fix.Status")
   COL <- pull.column(object,COL,FUNC=as.factor)
   if(length(COL)) { DATA$class <- COL }
 
@@ -484,7 +484,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   ################################
   # HEIGHT
   # Import third axis if available
-  COL <- c("height.above.ellipsoid","height.above.msl","height.above.mean.sea.level","height.raw","height.(raw)","barometric.height","height","Argos.altitude","GPS.Altitude","altitude","barometric.depth","depth")
+  COL <- c("height.above.ellipsoid","height.above.msl","height.above.mean.sea.level","height.raw","height.(raw)","barometric.height","height","Argos.altitude","GPS.Altitude","altitude","barometric.depth","depth","Alt")
   COL <- pull.column(object,COL)
   if(length(COL))
   {

@@ -11,7 +11,7 @@ LSP <- periodogram(Gamba,fast=2,res.time=2)
 plot(LSP,max=TRUE,diagnostic=TRUE,cex=0.5)
 
 ## ------------------------------------------------------------------------
-PROTO <- ctmm(mean="periodic",period=c(1 %#% "day",1 %#% "month"),circle=TRUE)
+PROTO <- ctmm(mean="periodic",period=c(24 %#% "hours",1 %#% "month"),circle=TRUE)
 
 ## ------------------------------------------------------------------------
 SVF <- variogram(Gamba,res=3)

@@ -72,7 +72,7 @@ chisq.hdr <- function(df,level=0.95,alpha=1-level,pow=1)
     # given some chi^2 value under the mode, solve for the equiprobability-density chi^2 value over the mode
     X2 <- function(X1) { if(X1==0){return(Inf)} ; X1 <- -X1/mode ; return( -mode*gsl::lambert_Wm1(X1*exp(X1)) ) }
     # how far off are we from the desired coverage level
-    dP <- function(X1) {pchisq(X2(X1),df,lower.tail=TRUE)-pchisq(X1,df,lower.tail=TRUE)-level}
+    dP <- function(X1) {stats::pchisq(X2(X1),df,lower.tail=TRUE)-stats::pchisq(X1,df,lower.tail=TRUE)-level}
     # solve for X1 to get the desired coverage level
     X1 <- stats::uniroot(dP,c(0,mode),f.lower=alpha,f.upper=-level,extendInt="downX",tol=.Machine$double.eps,maxiter=.Machine$integer.max)$root
     # uniroot is not reliable when root is very near boundary
