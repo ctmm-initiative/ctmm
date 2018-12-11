@@ -84,13 +84,15 @@ as.telemetry <- function(object,timeformat="",timezone="UTC",projection=NULL,tim
 as.telemetry.MoveStack <- function(object,timeformat="",timezone="UTC",projection=NULL,timeout=Inf,na.rm="row",mark.rm=FALSE,drop=TRUE,...)
 {
   # get individual names
-  NAMES <- levels(attr(object,"trackID"))
+  NAMES <- move::trackId(object)
+  NAMES <- levels(NAMES)
 
   # convert individually
   object <- move::split(object)
   object <- lapply(object,function(mv){ as.telemetry.Move(mv,timeformat=timeformat,timezone=timezone,projection=projection,timeout=timeout,na.rm=na.rm,mark.rm=mark.rm,...) })
   # name by MoveStack convention
   names(object) <- NAMES
+  for(i in 1:length(object)) { attr(object,"info")$identity <- NAMES[i] }
 
   if(drop && length(object)==1) { object <- object[[1]] }
 
@@ -144,7 +146,7 @@ pull.column <- function(object,NAMES,FUNC=as.numeric)
 {
   canonical <- function(NAME,UNIQUE=TRUE)
   {
-    NAME <- tolower(gsub("[.:_ ]","",NAME))
+    NAME <- tolower(gsub("[.:_ -]","",NAME))
     if(UNIQUE) { NAME <- unique(NAME) }
     return(NAME)
   }
@@ -426,7 +428,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   # approximate DOP from # satellites if necessary
   if(!("HDOP" %in% names(DATA)))
   {
-    COL <- c("GPS.satellite.count","satellite.count","NumSats","satellites.used","Sats") # Counts? Messages?
+    COL <- c("GPS.satellite.count","satellite.count","NumSats","satellites.used","Satellites","Sats") # Counts? Messages?
     COL <- pull.column(object,COL)
     if(length(COL))
     {
@@ -462,7 +464,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   # timed-out fixes
   if(timeout<Inf)
   {
-    COL <- c("GPS.time.to.fix","time.to.fix","fix.time","time.to.get.fix")
+    COL <- c("GPS.time.to.fix","time.to.fix","fix.time","time.to.get.fix","Duration")
     COL <- pull.column(object,COL)
     if(length(COL))
     {

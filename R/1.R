@@ -45,3 +45,4 @@ writeShapefile <- function(object,folder,file=NULL,...) UseMethod("writeShapefil
 emulate <- function(object,...) UseMethod("emulate")
 AICc <- function(object,...) UseMethod("AICc")
 speed <- function(object,...) UseMethod("speed")
+speeds <- function(object,...) UseMethod("speeds")

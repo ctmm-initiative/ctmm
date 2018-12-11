@@ -9,7 +9,7 @@ importFrom("stats",simulate,predict,median)
 # non-base generics to export
 export(plot,simulate,predict,median)
 export(extent,projection,"projection<-",raster,writeRaster,zoom)
-export(emulate,speed,writeShapefile)
+export(emulate,speed,speeds,writeShapefile)
 #export(SpatialPoints,SpatialPolygonsDataFrame)
 #S3method(SpatialPoints,matrix)
 #S3method(SpatialPoints,data.frame)
@@ -87,6 +87,8 @@ S3method(simulate,ctmm)
 S3method(simulate,telemetry)
 S3method(speed,ctmm)
 S3method(speed,telemetry)
+S3method(speeds,ctmm)
+S3method(speeds,telemetry)
 
 #UERE FUNCTIONS
 export(uere,"uere<-",uere.fit)

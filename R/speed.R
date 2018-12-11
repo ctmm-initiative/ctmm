@@ -112,7 +112,7 @@ speed.ctmm <- function(object,data=NULL,level=0.95,robust=FALSE,units=TRUE,prior
       { SPEEDS <- sort(SPEEDS,method="radix") }
 
       # standard_error(mean) / mean
-      if(length(SPEEDS)>1)
+      if(N>1)
       {
         # calculate averages and their standard errors
         if(!robust)
@@ -124,10 +124,10 @@ speed.ctmm <- function(object,data=NULL,level=0.95,robust=FALSE,units=TRUE,prior
         else
         {
           # median
-          AVE <- SPEEDS[round(N/2)]
+          AVE <- vint(SPEEDS,(N+1)/2)
           # standard error on the median
-          Q1 <- SPEEDS[round((N-sqrt(N))/2)]
-          Q2 <- SPEEDS[round((1+N+sqrt(N))/2)]
+          Q1 <- vint(SPEEDS,(N+1-sqrt(N))/2)
+          Q2 <- vint(SPEEDS,(N+1+sqrt(N))/2)
           ERROR <- max(AVE-Q1,Q2-AVE) / AVE
           # correct for Inf AVE
           if(is.nan(ERROR))
@@ -139,8 +139,8 @@ speed.ctmm <- function(object,data=NULL,level=0.95,robust=FALSE,units=TRUE,prior
 
         # update progress bar
         utils::setTxtProgressBar(pb,clamp(min(length(SPEEDS)/20,(error/ERROR)^2)))
-      }
-    }
+      } # end N>1 ERROR calc
+    } # end while ERROR
 
     # return raw data (undocumented)
     if(is.na(level) || is.null(level)) { return(SPEEDS) }
@@ -182,7 +182,7 @@ speed.rand <- function(CTMM,data=NULL,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NU
   # capture model uncertainty
   if(prior) { CTMM <- emulate(CTMM,data=data,fast=fast,...) }
   # fail state for fractal process
-  if(length(CTMM$tau)==1 || CTMM$tau[2]<=.Machine$double.eps) { return(Inf) }
+  if(length(CTMM$tau)<2 || CTMM$tau[2]<=.Machine$double.eps) { return(Inf) }
   if(CTMM$tau[2]==Inf) { return(0) }
 
   dt <- CTMM$tau[2]*(error/10)^(1/3) # this gives O(error/10) instantaneous error
@@ -234,6 +234,7 @@ speed.rand <- function(CTMM,data=NULL,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NU
 
   return(v)
 }
+
 
 # only for stationary processes
 speed.deterministic <- function(CTMM)

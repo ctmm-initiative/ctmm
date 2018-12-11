@@ -1,3 +1,35 @@
+# iterpolate vector by continuous index
+# vec is a vector, ind is a continuous index
+vint <- function(vec,ind,return.ind=FALSE)
+{
+  n <- length(vec)
+
+  lo <- floor(ind)
+  hi <- ceiling(ind)
+
+  # extrapolate
+  lo <- max(1,lo)
+  hi <- max(2,hi)
+  # extrapolate
+  lo <- min(n-1,lo)
+  hi <- min(n,hi)
+
+  if(return.ind) { return(c(lo,hi)) }
+
+  # linear interpolation
+  vec <- vec[lo] + (vec[hi]-vec[lo])*(ind-lo)
+
+  return(vec)
+}
+# same thing as above but with a block-vector
+mint <- function(mat,ind)
+{
+  IND <- vint(mat[1,],ind,return.ind=TRUE)
+  mat <- mat[,IND[1]] + (mat[,IND[2]]-mat[,IND[1]])*(ind-IND[1])
+  return(mat)
+}
+
+
 # statistical mode
 Mode <- function(x)
 {
@@ -14,7 +46,7 @@ CI.lower <- Vectorize(function(k,Alpha){stats::qchisq(Alpha/2,k,lower.tail=TRUE)
 
 
 # calculate chi^2 confidence intervals from MLE and COV estimates
-chisq.ci <- function(MLE,COV=NULL,level=0.95,alpha=1-level,DOF=2*MLE^2/COV,HDR=FALSE)
+chisq.ci <- function(MLE,COV=NULL,level=0.95,alpha=1-level,DOF=2*MLE^2/COV,robust=FALSE,HDR=FALSE)
 {
   # try to do something reasonable on failure cases
   if(is.nan(DOF)) { DOF <- 0 } # this comes from infinite variance divsion
@@ -38,10 +70,12 @@ chisq.ci <- function(MLE,COV=NULL,level=0.95,alpha=1-level,DOF=2*MLE^2/COV,HDR=F
   }
   else     # regular estimate
   {
-    if(!HDR) # traditional confidence intervals
-    { CI <- MLE * c(CI.lower(DOF,alpha),1,CI.upper(DOF,alpha)) }
-    else # highest density region
+    if(HDR) # highest density region
     { CI <- MLE * chisq.hdr(df=DOF,level=level,pow=HDR)/DOF }
+    else if(robust) # quantile CIs # not sure how well this works for k<<1
+    { CI <- MLE * c(CI.lower(DOF,alpha),stats::qchisq(0.5,DOF)/DOF,CI.upper(DOF,alpha)) }
+    else # traditional confidence intervals
+    { CI <- MLE * c(CI.lower(DOF,alpha),1,CI.upper(DOF,alpha)) }
 
     # Normal backup for upper.tail
     if(is.null(COV)) { COV <- 2*MLE^2/DOF }

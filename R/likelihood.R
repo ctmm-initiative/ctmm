@@ -64,13 +64,13 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
 
   # check for bad time intervals
   ZERO <- which(dt==0)
-  if(length(ZERO))
+  if(length(ZERO) && K && CTMM$tau[1])
   {
-    if(CTMM$error==FALSE) { return(-Inf) }
-    # check for HDOP==1 just in case
+    if(CTMM$error==FALSE) { warning("Duplicate timestamps require an error model.") ; return(-Inf) }
+    # check for HDOP==0 just in case
     ZERO <- error[ZERO,,,drop=FALSE]
     ZERO <- apply(ZERO,1,det)
-    if(any(ZERO<=0)) { return(-Inf) } else { ZERO <- 0 }
+    if(any(ZERO<=0)) { warning("Duplicate timestamps require an error model.") ; return(-Inf) }
   }
 
   ### what kind of profiling is possible
