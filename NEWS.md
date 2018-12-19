@@ -1,4 +1,4 @@
-ctmm 0.5.3 (2018-12-10)
+ctmm 0.5.3 (2018-12-18)
 ================
 
   * oscillatory (and critically damped) models now supported, starting with omega option of ctmm()
@@ -7,7 +7,9 @@ ctmm 0.5.3 (2018-12-10)
 
   * MSPE slots & arguments restructured and fully utilized in both summary and ctmm.select
   
-  * speed() more efficient on very coarse data
+  * new method speeds() for estimating instantaneous speeds
+  
+  * speed() more efficient on very coarse data, slightly improved CIs
   
   * new complete argument in simulate() and predict() to calculate timestamps and geographic coordinates
 
@@ -18,6 +20,8 @@ ctmm 0.5.3 (2018-12-10)
   * overlap() now robust to bad model fits
   
   * new as.telemetry() argument mark.rm to delete marked outliers
+  
+  * bugfix in predict() & occurrence() where eccentricity was dropped from covariances
   
   * projection information in Move & MoveStack objects now preserved if possible
   
@@ -35,7 +39,7 @@ ctmm 0.5.3 (2018-12-10)
   
   * bugfix in ctmm.select with pREML & error
   
-  * rank 1/2 corrections to quantiles in speeds(...,robust=TRUE)
+  * summary() on telemetry lists no longer fails on length-1 timeseries
   
   * years updated to tropical years and calendar days updated to stellar days
   

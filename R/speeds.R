@@ -3,17 +3,15 @@
 # add independent variance from RMS speed?
 
 ####
-speeds.telemetry <- function(object,CTMM,t=NULL,level=0.95,robust=FALSE,prior=FALSE,fast=TRUE,error=0.01,cores=1,...)
+speeds.telemetry <- function(object,CTMM,t=NULL,cycle=Inf,level=0.95,robust=FALSE,prior=FALSE,fast=TRUE,error=0.01,cores=1,...)
 {
   data <- object
   # check conflicting conditions
 
-  # return Infs if OU/BM
-
   if(is.null(t)) { t <- data$t }
 
-  if(!prior) { SPEEDS <- speeds.fast(data,CTMM=CTMM,t=t,level=level,robust=robust,...) }
-  else { SPEEDS <- speeds.slow(data,CTMM=CTMM,t=t,level=level,robust=robust,fast=fast,error=error,cores=cores,...) }
+  if(!prior && fast) { SPEEDS <- speeds.fast(data,CTMM=CTMM,t=t,cycle=cycle,level=level,robust=robust,...) }
+  else { SPEEDS <- speeds.slow(data,CTMM=CTMM,t=t,cycle=cycle,level=level,robust=robust,prior=prior,fast=fast,error=error,cores=cores,...) }
 
   SPEEDS <- as.data.frame(SPEEDS)
   SPEEDS$t <- t
@@ -25,26 +23,26 @@ speeds.telemetry <- function(object,CTMM,t=NULL,level=0.95,robust=FALSE,prior=FA
   return(SPEEDS)
 }
 
-speeds.ctmm <- function(object,data,t=NULL,level=0.95,robust=FALSE,prior=FALSE,fast=TRUE,error=0.01,cores=1,...)
-{ speeds.telemetry(data,CTMM=object,t=t,level=level,robust=robust,prior=prior,fast=fast,error=error,cores=cores,...) }
+speeds.ctmm <- function(object,data,t=NULL,cycle=Inf,level=0.95,robust=FALSE,prior=FALSE,fast=TRUE,error=0.01,cores=1,...)
+{ speeds.telemetry(data,CTMM=object,t=t,cycle=cycle,level=level,robust=robust,prior=prior,fast=fast,error=error,cores=cores,...) }
 
 
 # emulate then simulate
-speeds.slow <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,fast=TRUE,error=0.01,cores=1,...)
+speeds.slow <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,prior=FALSE,fast=TRUE,error=0.01,cores=1,...)
 {
   n <- length(t)
 
   # function to evaluate random speeds
   SUB <- NULL
-  spds.fn <- function(i)
+  spds.fn <- function(i=0)
   {
     # capture model uncertainty
-    CTMM <- emulate(CTMM,data=data,fast=fast,...)
+    if(prior) { CTMM <- emulate(CTMM,data=data,fast=fast,...) }
     # fail state for fractal process
     if(length(CTMM$tau)<2 || CTMM$tau[2]<=.Machine$double.eps) { return(rep(Inf,n)) }
     if(CTMM$tau[2]==Inf) { return(rep(0,n)) }
 
-    data <- simulate(data,CTMM=CTMM,t=t)
+    data <- simulate(data,CTMM=CTMM,t=t,precompute=precompute)
 
     if(nrow(data)>n)
     {
@@ -63,14 +61,37 @@ speeds.slow <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,fast=TRUE,
   INF <- t(INF)
   colnames(INF) <- c("low","ML","high")
 
-  # loop over emulations
-  N <- 0
-  SPEEDS <- NULL
   if(!robust)
   {
     S1 <- array(0,n)
     S2 <- array(0,n)
   }
+
+  if(!prior) # precompute kalman filter
+  {
+    precompute <- TRUE
+    SPEEDS <- spds.fn()
+    dim(SPEEDS) <- c(n,1)
+    N <- 1
+    precompute <- -1
+
+    S1 <- rowSums(SPEEDS)
+    S2 <- rowSums(SPEEDS^2)
+
+    if(any(SPEEDS==Inf))
+    {
+      warning("Sampling distribution does not always resolve velocity. Try robust=TRUE.")
+      return(INF)
+    }
+  }
+  else
+  {
+    SPEEDS <- NULL
+    N <- 0
+    precompute <- FALSE
+  }
+
+  # loop over emulations
   ERROR <- Inf
   pb <- utils::txtProgressBar(style=3)
   while(ERROR>=error || N<=20)
@@ -135,21 +156,20 @@ speeds.slow <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,fast=TRUE,
   # calculate averages and variances
   if(!robust)
   {
-    AVE <- rowMeans(SPEEDS) # (n)
-    # calculate MVU variance under log transformation
-    VAR <- apply(log(SPEEDS),1,stats::var)
-    # transform back
-    VAR <- VAR * AVE^2
-    # chi^2 speed^2
-    DOF <- 2*AVE^2/VAR
+    M1 <- rowMeans(SPEEDS) # (n)
+    M2 <- rowMeans(SPEEDS^2)
 
-    CI <- sapply(1:n,function(i){ chisq.ci(AVE[i]^2,DOF=DOF[i],level=level) }) # (t,3)
+    # chi^1 DOF consistent with 1-2 moments
+    DOF <- vapply(1:n,function(i){chi.dof(M1[i],M2[i])},numeric(1))
+
+    CI <- vapply(1:n,function(i){ chisq.ci(M2[i],DOF=DOF[i],level=level) },numeric(3)) # (3,t)
     CI <- sqrt(CI)
+    CI[2,] <- M1
   }
   else ### start here !!!
   {
     alpha <- (1-level)/2
-    CI <- sapply(1:nrow(SPEEDS),function(i){stats::quantile(SPEEDS[i,],c(alpha,0.5,1-alpha))}) # (3,t)
+    CI <- vapply(1:nrow(SPEEDS),function(i){stats::quantile(SPEEDS[i,],c(alpha,0.5,1-alpha))},numeric(3)) # (3,t)
     rownames(CI) <- c("low","ML","high")
   }
   CI <- t(CI)
@@ -167,7 +187,8 @@ speeds.fast <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,...)
   DOF <- summary(CTMM)$DOF['speed']
   if(!DOF)
   {
-    AVE <- rep(Inf,n) # upgrade to outlie estimates?
+    M1 <- rep(Inf,n) # upgrade to outlie estimates?
+    M2 <- rep(Inf,n)
     DOF <- numeric(n)
   }
   else
@@ -178,23 +199,19 @@ speeds.fast <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,...)
     v <- get.telemetry(data,axes=axes) # (n,2)
     VAR <- get.error(data,list(axes=axes,error=TRUE),DIM=2) # (n,2,2)
 
-    # delta method doesn't work very well for small speed estimates
-    # # delta method - variance of square speed
-    # VAR <- 4 * vapply(1:n,function(i){v[i,] %*% VAR[i,,] %*% v[i,]},numeric(1)) # (n)
-    # # speeds
-    # v2 <- rowSums(v^2)
-    # DOF <- 2*v2^2/VAR
+    # exact second moment - not used currently
+    M2 <- vapply(1:n,function(i){ sum( v[i,]^2 + diag(VAR[i,,]) ) },numeric(1))
 
-    AVE <- numeric(n)
-    DOF <- numeric(n)
-    for(i in 1:n)
-    {
-      EIGEN <- eigen(VAR[i,,])
-      CHI2.VAR <- sum(EIGEN$values) # variance of velocity
-      AVE[i] <- sum( (t(EIGEN$vectors) %*% v[i,])^2 ) + CHI2.VAR # mean square velocity
-      CHI2.VAR <- 2*sum(EIGEN$values^2) # variance of square speed in 2D
-      DOF[i] <- 2*AVE[i]^2/CHI2.VAR # chi^2 DOF
-    }
+    # good approximation to mean speed (delta method fails when velocity estimate is small)
+    AVE <- vapply(1:n,function(i){abs.bivar(v[i,],VAR[i,,])},numeric(1)) # n
+
+    # variance of square speed # exact?
+    # VAR <- 4 * vapply(1:n,function(i){v[i,] %*% VAR[i,,] %*% v[i,]},numeric(1)) # (n)
+    # variance of speed - delta method (M2 might be inconsistent with M1)
+    # VAR <- VAR/AVE^2
+
+    # chi^1 DOF consistent with M1 & VAR about M1 (M2 might be inconsistent with M1)
+    DOF <- vapply(1:n,function(i){chi.dof(AVE[i],M2[i])},numeric(1))
   }
 
 
@@ -208,9 +225,41 @@ speeds.fast <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,...)
   }
   else
   {
-    v <- vapply(1:n,function(i){ chisq.ci(AVE[i],DOF=DOF[i],level=level,robust=robust) },numeric(3)) # (3,n)
-    v <- sqrt(t(v))
+    v <- vapply(1:n,function(i){ chisq.ci(M2[i],DOF=DOF[i],level=level,robust=robust) },numeric(3)) # (3,n)
+    v <- sqrt(t(v)) # (n,3)
+    v[,2] <- AVE
   }
 
   return(v)
+}
+
+# approximate <|r|> of bi-variate Gaussian distribution
+# bessel function stuff (exact for equal variance)
+# elliptical functions stuff (exact for zero mean)
+# anistotropic + nonzero combination is approximate
+# returns first two moments
+abs.bivar <- function(mu,Sigma)
+{
+  sigma0 <- mean(diag(Sigma))
+  stdev0 <- sqrt(sigma0)
+  mu2 <- sum(mu^2)
+  mu <- sqrt(mu2)
+
+  sigma <- eigen(Sigma)$values
+
+  Barg <- mu2/(4*sigma0)
+  if(Barg >= BESSEL_LIMIT) { return(mu) }
+
+  B0 <- besselI(Barg,0,expon.scaled=TRUE)
+  B1 <- besselI(Barg,1,expon.scaled=TRUE)
+
+  # contains deterministic limit
+  sqrtpi2 <- sqrt(pi/2)
+  Bv <-  sqrtpi2 * sqrt(Barg) * ( B0 + B1 ) * mu
+  # contains stochastic limit
+  Bs <- B0 / sqrtpi2 * sqrt(sigma[1]) * pracma::ellipke(1-sigma[2]/sigma[1])$e
+
+  M1 <- Bv + Bs
+
+  return(M1)
 }

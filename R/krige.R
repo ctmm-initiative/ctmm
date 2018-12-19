@@ -152,6 +152,7 @@ smoother <- function(DATA,CTMM,precompute=FALSE,sample=FALSE,residual=FALSE,...)
   {
     if(DIM==1) { CTMM$sigma <- area } # isotropic variance
     KALMAN <- kalman(z,u=NULL,dt=dt,CTMM=CTMM,error=error,precompute=precompute,sample=sample,residual=residual,...)
+    # point estimates will be correct but eccentricity is missing from variances
 
     if(residual) { return(KALMAN) }
 
@@ -170,8 +171,13 @@ smoother <- function(DATA,CTMM,precompute=FALSE,sample=FALSE,residual=FALSE,...)
 
     if(DIM<AXES && !sample) # promote from VAR to COV (2,2)
     {
-      COV <- drop(COV) %o% diag(AXES)
-      if(K>1) { vCOV <- drop(vCOV) %o% diag(AXES) }
+      # fix for zero-error eccentric smoother
+      MAT <- attr(sigma,'par') # keeps track of SQUEEZE and ROTATE
+      MAT[1] <- 1
+      MAT <- covm(MAT)
+      MAT <- methods::getDataPart(MAT)
+      COV <- drop(COV) %o% MAT
+      if(K>1) { vCOV <- drop(vCOV) %o% MAT }
     }
   }
 

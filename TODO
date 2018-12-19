@@ -1,7 +1,5 @@
 PRIORITY
-* ctmm.fit(data) IID
-* PDfunc(M, func = function(m) { : Matrix not positive definite. (optimizer)
-* if (sum(par.diff^2) <= .Machine$double.eps) (optimizer)
+* compass speed plot -- or cycle argument for speeds()
 * ctmm.fit -> id.parameters : force.error argument for when error is estimated to be 0
 * error vignette - check back on variogram
 * Telonics HDOP conversion factor (2.5)

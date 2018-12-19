@@ -703,7 +703,7 @@ summary.telemetry <- function(object,...)
 
     # unit conversions
     COL <- 1
-    units <- unit(stats::median(DT),"time",thresh=1,concise=TRUE)
+    units <- unit(stats::median(DT,na.rm=TRUE),"time",thresh=1,concise=TRUE)
     result[,COL] <- result[,COL]/units$scale
     colnames(result)[COL] <- paste0("interval (",units$name,")")
 

@@ -1,3 +1,6 @@
+# how far you can go before R's bessel function breaks down
+BESSEL_LIMIT <- 2^16
+
 # estimate and assign speeds to times
 outlie <- function(data,UERE=10,standardize=FALSE,plot=TRUE,...)
 {
@@ -203,8 +206,6 @@ BesselSolver <- function(y)
 {
   # solution storage
   x <- numeric(length(y))
-  # how far you can go before R's bessel function breaks down
-  BESSEL_LIMIT <- 2^16
 
   # critical point, below which all point estimates are zero
   # SUB1 <- (y<=2)

@@ -52,6 +52,7 @@ unit <- function(data,dimension,thresh=1,concise=FALSE,SI=FALSE)
     }
   }
 
+  data <- data[!is.na(data)]
   max.data <- max(abs(data))
 
   if(concise) { name.list <- abrv.list }

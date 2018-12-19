@@ -148,15 +148,13 @@ speed.ctmm <- function(object,data=NULL,level=0.95,robust=FALSE,units=TRUE,prior
     # calculate averages and variances
     if(!robust)
     {
-      AVE <- mean(SPEEDS)
-      # calculate variance under log transform, where data are more normal and variance estimator is more MVU
-      VAR <- stats::var(log(SPEEDS))
-      # transform back
-      VAR <- AVE^2 * VAR
-      # chi^2 speed^2
-      DOF <- (2*AVE)^2*VAR
-      CI <- chisq.ci(AVE^2,DOF,alpha=1-level)
+      # more correct chi^1 statistics
+      M1 <- mean(SPEEDS)
+      M2 <- mean(SPEEDS^2)
+      DOF <- chi.dof(M1,M2)
+      CI <- chisq.ci(M2,DOF=DOF,alpha=1-level) # correct mean and variance
       CI <- sqrt(CI)
+      CI[2] <- M1
     }
     else
     {
@@ -237,16 +235,20 @@ speed.rand <- function(CTMM,data=NULL,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NU
 
 
 # only for stationary processes
-speed.deterministic <- function(CTMM)
+speed.deterministic <- function(CTMM,sigma=CTMM$sigma)
 {
-  if(CTMM$isotropic)
-  { v <- sqrt(sum(diag(CTMM$sigma))/prod(CTMM$tau) * pi/2/2) }
+  sigma <- attr(sigma,"par")
+  sigma['area'] <- sigma['area'] / prod(CTMM$tau)
+
+  if(CTMM$isotropic || !sigma['eccentricity'])
+  {
+    v <- sqrt(sigma['area'] * pi/2)
+  }
   else
   {
-    sigma <- attr(CTMM$sigma,"par")
     # eigen values of velocity variance
-    sigma <- sigma['area'] / prod(CTMM$tau) * exp(c(1,-1)/2*sigma['eccentricity'])
-    v <- sqrt(2/pi) * sqrt(sigma[1]) * pracma::ellipke(-diff(sigma)/sigma[1])$e
+    sigma <- sigma['area'] * exp(c(1,-1)/2*sigma['eccentricity'])
+    v <- sqrt(2/pi) * sqrt(sigma[1]) * pracma::ellipke(1-sigma[2]/sigma[1])$e
   }
   return(v)
 }
