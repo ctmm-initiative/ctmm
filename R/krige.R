@@ -616,10 +616,27 @@ predict.ctmm <- function(object,data=NULL,t=NULL,dt=NULL,res=1,complete=FALSE,..
     v <- get(object$mean)@velocity(t,object) %*% mu
     colnames(v) <- paste0("v",axes)
 
-    # missing COVs !!!
-
     data <- data.frame(r,v)
     data$t <- t
+
+    # missing COVs !!!
+    DOP <- DOP.match(axes)
+    sigma <- methods::getDataPart(object$sigma)
+    if(length(axes)==1 || object$isotropic)
+    {
+      sigma <- mean(diag(sigma,length(axes)))
+      data[[DOP.LIST[[DOP]]$VAR]] <- sigma
+      if(length(object$tau)>1) { data[[paste0("VAR.v",axes)]] <- sigma/prod(object$tau) }
+    }
+    else
+    {
+      sigma <- c(sigma)[-3]
+      for(i in 1:3)
+      {
+        data[[DOP.LIST[[DOP]]$COV[i]]] <- sigma[i]
+        if(length(object$tau)>1) { data[[DOP.LIST$speed$COV[i]]] <- sigma[i]/prod(object$tau) }
+      }
+    }
   }
   else # condition off of the data
   {

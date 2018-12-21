@@ -22,7 +22,7 @@ speed(object,...)
 
 speeds(object,...)
 
-\S3method{speeds}{ctmm}(object,data,t=NULL,cycle=Inf,level=0.95,robust=FALSE,prior=FALSE,fast=TRUE,
+\S3method{speeds}{ctmm}(object,data=NULL,t=NULL,cycle=Inf,level=0.95,robust=FALSE,prior=FALSE,fast=TRUE,
        error=0.01,cores=1,...)
 
 \S3method{speeds}{telemetry}(object,CTMM,t=NULL,cycle=Inf,level=0.95,robust=FALSE,prior=FALSE,fast=TRUE,

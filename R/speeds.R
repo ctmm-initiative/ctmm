@@ -23,7 +23,7 @@ speeds.telemetry <- function(object,CTMM,t=NULL,cycle=Inf,level=0.95,robust=FALS
   return(SPEEDS)
 }
 
-speeds.ctmm <- function(object,data,t=NULL,cycle=Inf,level=0.95,robust=FALSE,prior=FALSE,fast=TRUE,error=0.01,cores=1,...)
+speeds.ctmm <- function(object,data=NULL,t=NULL,cycle=Inf,level=0.95,robust=FALSE,prior=FALSE,fast=TRUE,error=0.01,cores=1,...)
 { speeds.telemetry(data,CTMM=object,t=t,cycle=cycle,level=level,robust=robust,prior=prior,fast=fast,error=error,cores=cores,...) }
 
 
@@ -42,7 +42,7 @@ speeds.slow <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,prior=FALS
     if(length(CTMM$tau)<2 || CTMM$tau[2]<=.Machine$double.eps) { return(rep(Inf,n)) }
     if(CTMM$tau[2]==Inf) { return(rep(0,n)) }
 
-    data <- simulate(data,CTMM=CTMM,t=t,precompute=precompute)
+    data <- simulate(CTMM,data=data,t=t,precompute=precompute)
 
     if(nrow(data)>n)
     {
@@ -193,7 +193,7 @@ speeds.fast <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,...)
   }
   else
   {
-    if(!is.null(CTMM)) { data <- predict(data,CTMM=CTMM,t=t,...) }
+    if(!is.null(CTMM)) { data <- predict(CTMM,data=data,t=t,...) }
 
     axes <- c("vx","vy")
     v <- get.telemetry(data,axes=axes) # (n,2)
@@ -203,7 +203,7 @@ speeds.fast <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,...)
     M2 <- vapply(1:n,function(i){ sum( v[i,]^2 + diag(VAR[i,,]) ) },numeric(1))
 
     # good approximation to mean speed (delta method fails when velocity estimate is small)
-    AVE <- vapply(1:n,function(i){abs.bivar(v[i,],VAR[i,,])},numeric(1)) # n
+    M1 <- vapply(1:n,function(i){abs.bivar(v[i,],VAR[i,,])},numeric(1)) # n
 
     # variance of square speed # exact?
     # VAR <- 4 * vapply(1:n,function(i){v[i,] %*% VAR[i,,] %*% v[i,]},numeric(1)) # (n)
@@ -211,23 +211,18 @@ speeds.fast <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,...)
     # VAR <- VAR/AVE^2
 
     # chi^1 DOF consistent with M1 & VAR about M1 (M2 might be inconsistent with M1)
-    DOF <- vapply(1:n,function(i){chi.dof(AVE[i],M2[i])},numeric(1))
+    DOF <- vapply(1:n,function(i){chi.dof(M1[i],M2[i])},numeric(1))
   }
 
 
   # if no level, return point estimate and DOF
   if(is.null(level))
-  {
-    # output v and chi DOF
-    v <- sqrt(AVE)
-    v <- cbind(v,DOF)
-    colnames(v) <- c("speed","DOF")
-  }
+  { v <- cbind(speed=M1,DOF=DOF,VAR=pmax(0,M2-M1^2)) } # output v and chi DOF
   else
   {
     v <- vapply(1:n,function(i){ chisq.ci(M2[i],DOF=DOF[i],level=level,robust=robust) },numeric(3)) # (3,n)
     v <- sqrt(t(v)) # (n,3)
-    v[,2] <- AVE
+    v[,2] <- M1
   }
 
   return(v)
