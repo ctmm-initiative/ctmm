@@ -132,33 +132,33 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,multiplicative=TRUE,robust=FA
       # transform eccentricity to variance (not area)
       if("eccentricity" %in% NAMES) { p["eccentricity",] <- p['area',]*cosh(p["eccentricity",]/2) }
 
-      if(CTMM$omega) # underdamped
-      {
-        # mean square velocity and average diffusion
-        p["omega",] <- p[VAR,]*(1/p["tau",]^2+p["omega",]^2) # MSV
-        p["tau",] <- p[VAR,]/p["tau",] # DIF
-        # refer back to get.taus() for how this was parameterized
-      }
-      else if("tau" %in% NAMES) # critically damped
-      {
-        p["tau",] <- p[VAR,]/p["tau",]^2 # mean square Velocity
-      }
-      else # overdamped
-      {
-        # transform tau position to diffusion rate
-        if("tau position" %in% NAMES)
-        { DIF <- p[VAR,]/p["tau position",] }
-
-        # mean square velocity
-        if("tau velocity" %in% NAMES)
-        {
-          if(!CTMM$range) { MSV <- p[VAR,]/(p["tau velocity",]) }
-          else { MSV <- p[VAR,]/(p["tau position",]*p["tau velocity",]) }
-        }
-
-        if("tau velocity" %in% NAMES) { p["tau velocity",] <- MSV }
-        if("tau position" %in% NAMES) { p["tau position",] <- DIF }
-      }
+      # if(CTMM$omega) # underdamped
+      # {
+      #   # mean square velocity and average diffusion
+      #   p["omega",] <- p[VAR,]*(1/p["tau",]^2+p["omega",]^2) # MSV
+      #   p["tau",] <- p[VAR,]/p["tau",] # DIF
+      #   # refer back to get.taus() for how this was parameterized
+      # }
+      # else if("tau" %in% NAMES) # critically damped
+      # {
+      #   p["tau",] <- p[VAR,]/p["tau",]^2 # mean square Velocity
+      # }
+      # else # overdamped
+      # {
+      #   # transform tau position to diffusion rate
+      #   if("tau position" %in% NAMES)
+      #   { DIF <- p[VAR,]/p["tau position",] }
+      #
+      #   # mean square velocity
+      #   if("tau velocity" %in% NAMES)
+      #   {
+      #     if(!CTMM$range) { MSV <- p[VAR,]/(p["tau velocity",]) }
+      #     else { MSV <- p[VAR,]/(p["tau position",]*p["tau velocity",]) }
+      #   }
+      #
+      #   if("tau velocity" %in% NAMES) { p["tau velocity",] <- MSV }
+      #   if("tau position" %in% NAMES) { p["tau position",] <- DIF }
+      # }
 
       # log transform
       if(multiplicative && length(POS)) { p[POS,] <- log(p[POS,]) }
@@ -169,30 +169,30 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,multiplicative=TRUE,robust=FA
     {
       if(multiplicative && length(POS)) { p[POS,] <- exp(p[POS,]) }
 
-      if(CTMM$omega) # underdamped
-      {
-        p["tau",] <- p[VAR,]/p["tau",]
-        p["omega",] <- p["omega",]/p[VAR,] - 1/p["tau",]^2 # omega^2
-        p["omega",] <- pmax(p["omega",],0) # bias should be other way
-        p["omega",] <- sqrt(p["omega",])
-      }
-      else if("tau" %in% NAMES) # critically damped
-      {
-        p["tau",] <- sqrt(p[VAR,]/p["tau",])
-      }
-      else # overdamped
-      {
-        if("tau velocity" %in% NAMES) { p["tau velocity",] -> MSV }
-        if("tau position" %in% NAMES) { p["tau position",] -> DIF }
-
-        if("tau position" %in% NAMES) { p["tau position",] <- p[VAR,]/DIF }
-
-        if("tau velocity" %in% NAMES)
-        {
-          if(CTMM$range) { p["tau velocity",] <- p[VAR,]/(MSV*p["tau position",]) }
-          else { p["tau velocity",] <- p[VAR,]/MSV }
-        }
-      }
+      # if(CTMM$omega) # underdamped
+      # {
+      #   p["tau",] <- p[VAR,]/p["tau",]
+      #   p["omega",] <- p["omega",]/p[VAR,] - 1/p["tau",]^2 # omega^2
+      #   p["omega",] <- pmax(p["omega",],0) # bias should be other way
+      #   p["omega",] <- sqrt(p["omega",])
+      # }
+      # else if("tau" %in% NAMES) # critically damped
+      # {
+      #   p["tau",] <- sqrt(p[VAR,]/p["tau",])
+      # }
+      # else # overdamped
+      # {
+      #   if("tau velocity" %in% NAMES) { p["tau velocity",] -> MSV }
+      #   if("tau position" %in% NAMES) { p["tau position",] -> DIF }
+      #
+      #   if("tau position" %in% NAMES) { p["tau position",] <- p[VAR,]/DIF }
+      #
+      #   if("tau velocity" %in% NAMES)
+      #   {
+      #     if(CTMM$range) { p["tau velocity",] <- p[VAR,]/(MSV*p["tau position",]) }
+      #     else { p["tau velocity",] <- p[VAR,]/MSV }
+      #   }
+      # }
 
       if("eccentricity" %in% NAMES) { p['eccentricity',] <- 2*acosh(max(p['eccentricity',]/p['area',],1)) }
     }
@@ -218,6 +218,7 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,multiplicative=TRUE,robust=FA
 
     # extract parameters
     FIT <- sapply(FIT,function(f){ get.parameters(f,NAMES) }) # [parameter,method]
+
     rownames(FIT) <- NAMES
     colnames(FIT) <- method
 

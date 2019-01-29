@@ -399,6 +399,7 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
   if(!is.null(seed)){ set.seed(seed) }
 
   info <- attr(object,"info")
+  if(!is.null(data)) { info$identity <- glue( attr(data,'info')$identity , info$identity ) }
   axes <- object$axes
   AXES <- length(axes)
 
@@ -599,6 +600,7 @@ simulate.telemetry <- function(object,nsim=1,seed=NULL,CTMM=NULL,t=NULL,dt=NULL,
 predict.ctmm <- function(object,data=NULL,t=NULL,dt=NULL,res=1,complete=FALSE,...)
 {
   info <- attr(object,"info")
+  if(!is.null(data)) { info$identity <- glue( attr(data,'info')$identity , info$identity ) }
   axes <- object$axes
 
   # Gaussian simulation not conditioned off of any data

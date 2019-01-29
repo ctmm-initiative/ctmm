@@ -26,7 +26,7 @@ ctmm.boot(data,CTMM,method=CTMM$method,multiplicative=TRUE,robust=FALSE,error=0.
 \code{ctmm.boot} can leverage multiple estimators via the \code{method} argument (see \code{\link{ctmm.fit}}) and as described in Fleming et al (2018), though generally this is only useful if the specified estimators deviate substantially from each other realtive to the target \code{error}.
 }
 
-\value{A model fit object with relatively unbiased estimates of home-range area, location variance, diffusion rate, and mean-square speed (and more accurate CIs than \code{ctmm.fit}).}
+\value{A model fit object with relatively unbiased estimates of home-range area, location variance, and autocorrelation timescales (and more accurate CIs than \code{ctmm.fit}).}
 
 %\references{}
 

@@ -93,7 +93,8 @@ new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,units=
     assign("y.dim","length",pos=plot.env)
     assign("x.scale",dist$scale,pos=plot.env)
     assign("y.scale",dist$scale,pos=plot.env)
-  }
+    assign("projection",c(data,CTMM,UD),pos=plot.env)
+  } # end !add
 
   return(dist)
 }

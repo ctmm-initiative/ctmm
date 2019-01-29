@@ -299,3 +299,13 @@ rename <- function(object,name1,name2)
   names(object)[IND] <- name2
   return(object)
 }
+
+
+# glue strings together if they different
+glue <- function(...)
+{
+  x <- c(...) # removes NULLs
+  x <- unique(x) # removes matchs
+  x <- paste(x) # paste different strings together
+  return(x)
+}
