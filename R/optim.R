@@ -68,12 +68,12 @@ box.search <- function(p0,grad,hess,cov=PDsolve(hess),lower=-Inf,upper=Inf,perio
   # passes through lower boundary ?
   dlo <- lower-p1
   LO <- (dlo>=0)
-  if(any(LO) && dp[LO]<0) { lambda[LO] <- 1 - abs( dlo[LO]/dp[LO] ) }
+  if(any(LO)) { lambda[LO] <- ifelse( dp[LO]<0 , 1 - abs( dlo[LO]/dp[LO] ) , 1 ) }
 
   # passes through upper boundary ?
   dhi <- p1-upper
   HI <- (dhi>=0)
-  if(any(HI) && dp[HI]>0) { lambda[HI] <- 1 - abs( dhi[HI]/dp[HI] ) }
+  if(any(HI)) { lambda[HI] <- ifelse( dp[HI]>0 , 1 - abs( dhi[HI]/dp[HI] ) , 1 ) }
 
   PER <- as.logical(period)
   if(any(PER)) { lambda[PER] <- min(1, abs(dp[PER])/(period[PER]*period.max) ) }
