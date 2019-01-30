@@ -1,4 +1,4 @@
-ctmm 0.5.3 (2018-12-18)
+ctmm 0.5.3 (2018-01-29)
 ================
 
   * oscillatory (and critically damped) models now supported, starting with omega option of ctmm()
@@ -16,6 +16,8 @@ ctmm 0.5.3 (2018-12-18)
   * now avoiding fastPOSIXct timezone and epoch issues in as.telemetry
   
   * outlie() now works on lists of telemetry objects
+  
+  * bugfixes in overlap() CIs
 
   * overlap() now robust to bad model fits
   

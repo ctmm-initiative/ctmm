@@ -83,10 +83,10 @@ overlap.ctmm <- function(object,level=0.95,debias=TRUE,...)
   D <- function(p)
   {
     CTMM1$mu[1,] <- p[1:2]
-    CTMM1$sigma <- covm(p[3:5])
+    CTMM1$sigma <- covm(p[3:5],isotropic=CTMM1$isotropic)
 
     CTMM2$mu[1,] <- p[6:7]
-    CTMM2$sigma <- covm(p[8:10])
+    CTMM2$sigma <- covm(p[8:10],isotropic=CTMM2$isotropic)
 
     return(BhattacharyyaD(CTMM1,CTMM2))
   }
@@ -96,17 +96,17 @@ overlap.ctmm <- function(object,level=0.95,debias=TRUE,...)
   grad <- genD(par,D,lower=lower,upper=upper,parscale=parscale,mc.cores=1,order=1,...)$gradient
   VAR <- 0
 
-  VAR <- VAR + grad[1:2] %*% CTMM1$COV.mu %*% grad[1:2]
+  VAR <- VAR + abs(grad[1:2] %*% CTMM1$COV.mu %*% grad[1:2])
   if(CTMM1$isotropic)
-  { VAR <- VAR + grad[3] * CTMM1$COV[1,1] * grad[3] }
+  { VAR <- VAR + abs(grad[3] * CTMM1$COV[1,1] * grad[3]) }
   else
-  { VAR <- VAR + grad[3:5] %*% CTMM1$COV[1:3,1:3] %*% grad[3:5] }
+  { VAR <- VAR + abs(grad[3:5] %*% CTMM1$COV[1:3,1:3] %*% grad[3:5]) }
 
-  VAR <- VAR + grad[6:7] %*% CTMM1$COV.mu %*% grad[6:7]
-  if(CTMM1$isotropic)
-  { VAR <- VAR + grad[8] * CTMM1$COV[1,1] * grad[8] }
+  VAR <- VAR + abs(grad[6:7] %*% CTMM2$COV.mu %*% grad[6:7])
+  if(CTMM2$isotropic)
+  { VAR <- VAR + abs(grad[8] * CTMM2$COV[1,1] * grad[8]) }
   else
-  { VAR <- VAR + grad[8:10] %*% CTMM1$COV[1:3,1:3] %*% grad[8:10] }
+  { VAR <- VAR + abs(grad[8:10] %*% CTMM2$COV[1:3,1:3] %*% grad[8:10]) }
 
   VAR <- as.numeric(VAR)
 
@@ -147,7 +147,8 @@ overlap.ctmm <- function(object,level=0.95,debias=TRUE,...)
   # mean terms
   BIAS <- sum(diag((BIAS*outer(mu) + COV.mu) %*% PDsolve(sigma)))/8
   # AMGM covariance terms
-  BIAS <- BIAS + ElogW(sigma,n0)/2 - ElogW(CTMM1$sigma,n1)/4 - ElogW(CTMM2$sigma,n2)/4
+  BIAS <- BIAS + max(ElogW(sigma,n0)/2 - ElogW(CTMM1$sigma,n1)/4 - ElogW(CTMM2$sigma,n2)/4 , 0)
+  # this is actually the expectation value?
 
   # relative bias instead of absolute bias
   BIAS <- BIAS/MLE
