@@ -1,6 +1,7 @@
 \name{plot.variogram}
 \alias{plot.variogram}
 \alias{zoom,variogram-method}
+\encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Plotting methods for variogram objects.}
 \description{

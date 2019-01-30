@@ -1,6 +1,7 @@
 \name{variogram.fit}
 \alias{ctmm.guess}
 \alias{variogram.fit}
+\encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Visually fit a movement model to a variogram}
 \description{This function plots a \code{variogram} object overlayed with a continuous-time movement model guesstimated from the variogram's shape. Sliders are given to adjust the parameter guesstimates and the result can be saved to a global variable. The intention of this function is to facilitate good starting guesses for \code{ctmm.fit}, starting with a prototype hypothesis argument \code{CTMM}, which can contain features such as \code{isotropic}, \code{range}, \code{circle}, etc..}

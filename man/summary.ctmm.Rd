@@ -1,5 +1,6 @@
 \name{summary.ctmm}
 \alias{summary.ctmm}
+\encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Summarize a continuous-time movement model}
 \description{ This function returns a list of biologically interesting parameters in human readable format, as derived from a continuous-time movement model.}

@@ -1,5 +1,6 @@
 \name{summary.UD}
 \alias{summary.UD}
+\encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Summarize a range distribution}
 \description{ This function returns a list of biologically interesting parameters in human readable format, as derived from an autocorrelated kernel density estimate.}

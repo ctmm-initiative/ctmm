@@ -1,5 +1,6 @@
 \name{wolf}
 \alias{wolf}
+\encoding{UTF-8}
 \docType{data}
 
 \title{Maned wolf GPS dataset from The Maned Wolf Conservation Program.}

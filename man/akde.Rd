@@ -3,6 +3,7 @@
 \alias{akde.telemetry}
 \alias{akde.list}
 \alias{mean.UD}
+\encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Calculate an autocorrelated kernel density estimate}
 \description{

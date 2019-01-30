@@ -8,6 +8,7 @@
 \alias{writeShapefile}
 \alias{writeShapefile.telemetry}
 \alias{writeShapefile.UD}
+\encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Export ctmm data formats}
 \description{Functions to export \code{ctmm} data formats into common \code{sp}, \code{raster}, and ESRI formats.}

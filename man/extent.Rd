@@ -5,6 +5,7 @@
 \alias{extent,UD-method}
 \alias{extent,variogram-method}
 \alias{extent,list-method}
+\encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Extent}
 \description{Functions to calculate the \eqn{(x,y)} plotting extent (or bounding box) of various ctmm objects or list of such objects, for use when plotting multiple ctmm objects.}

@@ -8,6 +8,7 @@
 \alias{projection<-,list-method}
 \alias{median}
 \alias{median.telemetry}
+\encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Projection}
 \description{Functions to manipulate the coordinate reference system (CRS) of ctmm objects}

@@ -1,5 +1,6 @@
 \name{turtle}
 \alias{turtle}
+\encoding{UTF-8}
 \docType{data}
 
 \title{Wood turtle GPS and calibration dataset from Working Land and Seascapes.}

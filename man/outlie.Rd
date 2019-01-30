@@ -1,5 +1,6 @@
 \name{outlie}
 \alias{outlie}
+\encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Methods to facilitate outlier detection.}
 \description{Produces a \code{data.frame} of speed and distance estimates to analyze, as well as a plot highlighting potential speed and distance outliers in \code{telemetry} data.

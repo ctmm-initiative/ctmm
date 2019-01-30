@@ -1,5 +1,6 @@
 \name{buffalo}
 \alias{buffalo}
+\encoding{UTF-8}
 \docType{data}
 
 \title{African buffalo GPS dataset from Kruger National Park, South Africa.}

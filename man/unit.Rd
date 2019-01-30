@@ -1,5 +1,6 @@
 \name{Unit conversion}
 \alias{\%#\%}
+\encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Convert dimensionful quantities to and from SI units}
 \description{

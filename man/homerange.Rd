@@ -1,5 +1,6 @@
 \name{homerange}
 \alias{homerange}
+\encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Calculate a range distribution estimate}
 \description{

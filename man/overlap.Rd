@@ -1,5 +1,6 @@
 \name{overlap}
 \alias{overlap}
+\encoding{UTF-8}
 %\alias{overlap.ctmm}
 %\alias{overlap.telemetry}
 %- Also NEED an '\alias' for EACH other topic documented here.

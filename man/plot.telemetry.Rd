@@ -4,6 +4,7 @@
 \alias{zoom,list-method}
 \alias{zoom,telemetry-method}
 \alias{zoom,UD-method}
+\encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Plotting methods for telemetry objects.}
 \description{

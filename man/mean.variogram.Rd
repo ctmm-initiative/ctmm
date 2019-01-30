@@ -1,5 +1,6 @@
 \name{mean.variogram}
 \alias{mean.variogram}
+\encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Compute a number-weighted average of variogram objects}
 \description{This function takes a list of variogram objects and calculates its number-weighted average variogram.}

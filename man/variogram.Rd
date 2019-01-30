@@ -1,5 +1,6 @@
 \name{variogram}
 \alias{variogram}
+\encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Calculate an empirical variogram from movement data}
 \description{

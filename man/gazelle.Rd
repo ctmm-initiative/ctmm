@@ -1,5 +1,6 @@
 \name{gazelle}
 \alias{gazelle}
+\encoding{UTF-8}
 \docType{data}
 
 \title{Mongolian gazelle GPS dataset from the Mongolia's Eastern Steppe.}

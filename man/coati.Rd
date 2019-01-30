@@ -1,5 +1,6 @@
 \name{coati}
 \alias{coati}
+\encoding{UTF-8}
 \docType{data}
 
 \title{Coatis on Barro Colorado Island, Panama.}
