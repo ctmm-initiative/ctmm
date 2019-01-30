@@ -1,4 +1,4 @@
-ctmm 0.5.3 (2018-01-29)
+ctmm 0.5.3 (2019-01-29)
 ================
 
   * oscillatory (and critically damped) models now supported, starting with omega option of ctmm()

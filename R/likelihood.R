@@ -776,7 +776,7 @@ area2var <- function(CTMM,MEAN=TRUE)
     # backup for infinite covariances
     for(i in 1:nrow(COV))
     {
-      if(any(is.nan(COV[i,]) || any(is.nan(COV[,i]))))
+      if(any( is.nan(COV[i,]) | is.nan(COV[,i]) ))
       {
         COV[i,] <- COV[,i] <- 0
         COV[i,i] <- Inf

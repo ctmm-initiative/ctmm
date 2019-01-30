@@ -56,7 +56,7 @@ outlie <- function(data,UERE=10,standardize=FALSE,plot=TRUE,...)
 # speeds assigned by blame
 # dt[1] is recording interval
 # dt[2] is minimum time between fixes, which can be smaller than dt[1]
-assign_speeds <- function(data,dt=NULL,UERE=0,method=c("max","min"))
+assign_speeds <- function(data,dt=NULL,UERE=0,method="max")
 {
   method <- match.arg(method,c("max","min"))
 
