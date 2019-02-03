@@ -467,7 +467,7 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
     #   data <- data[WHICH,]
     # }
 
-  }
+  } # conditional simulation
   else # Gaussian simulation not conditioned off of any data
   {
     STUFF <- c('Green','Sigma','error','object','mu','Lambda','n','K','z','v','circle','R','UERE')
@@ -580,9 +580,18 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
       # velocity error?
     }
 
-    data <- cbind(t=t,z,v)
-    data <- data.frame(data)
-  }
+    # restore error columns if we simulated error
+    if(is.null(data) || !UERE)
+    {
+      data <- cbind(t=t,z,v)
+      data <- data.frame(data)
+    }
+    else
+    {
+      data[,axes] <- z
+      # not storing velocity without error yet!
+    }
+  } # Gaussian simulation
 
   data <- new.telemetry(data,info=info)
   if(complete) { data <- pseudonymize(data,tz=info$timezone,proj=info$projection,origin=EPOCH)  }

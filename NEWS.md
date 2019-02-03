@@ -1,3 +1,8 @@
+ctmm 0.5.4 (2019-02-02)
+================
+
+  * bugfix in ctmm.boot for heteroskedastic errors
+
 ctmm 0.5.3 (2019-01-29)
 ================
 

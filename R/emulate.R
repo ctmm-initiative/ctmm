@@ -209,6 +209,7 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,multiplicative=TRUE,robust=FA
 
 
   # simulate with errors & return parameter estimates
+  precompute <- FALSE
   Replicate <- function(i=0,DATA=simulate(CTMM,data=FRAME,precompute=precompute),...)
   {
     # apply all estimators, recycling previous fit as first guess

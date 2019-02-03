@@ -595,9 +595,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
     { empty.env(MLE.env) }
 
     # pREML correction ############################### only do pREML if sufficiently away from boundaries
-    TEST <- method %in% c("pREML","pHREML")
-    if(TEST) { TEST <- all( eigen(hess,only.values=TRUE)$values > .Machine$double.eps*length(NAMES) ) }
-    if(TEST)
+    if(method %in% c("pREML","pHREML") && mat.min(hess) > .Machine$double.eps*length(NAMES))
     {
       # parameter correction
       REML <- TRUE

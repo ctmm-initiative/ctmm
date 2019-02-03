@@ -5,7 +5,7 @@
 \title{Calculate an empirical variogram from movement data}
 \description{
 This function calculates the empirical variogram of multi-dimensional tracking data for visualizing stationary (time-averaged) autocorrelation structure.
-One of two algorithms is used. The slow \eqn{O(n^2)} algorithm is based upon Fleming et al (2014), but with interval-weights instead of lag-weights.
+One of two algorithms is used. The slow \eqn{O(n^2)} algorithm is based upon Fleming & Calabrese et al (2014), but with interval-weights instead of lag-weights.
 Additional modifications have also been included to accommodate drift in the sampling rate.
 The fast \eqn{O(n \log n)} algorithm is based upon the FFT method of Marcotte (1996), with some tweaks to better handle irregularly sampled data.
 Both methods reduce to the unbiased \dQuote{method of moments} estimator in the case of evenly \emph{scheduled} data, even with missing observations, but they produce slightly different outputs for irregularly sampled data.

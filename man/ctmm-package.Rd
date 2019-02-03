@@ -6,7 +6,7 @@
 \description{
 Functions for identifying, fitting, and applying continuous-space, continuous-time stochastic movement models to animal tracking data.
 The package is described in Calabrese & Fleming (2016) <doi:10.1111/2041-210X.12559> and its methods are based on those introduced in
-Fleming et al (2014) <doi:10.1086/675504>,
+Fleming & Calabrese et al (2014) <doi:10.1086/675504>,
 Fleming et al (2014) <doi:10.1111/2041-210X.12176>,
 Fleming et al (2015) <doi:10.1890/14-2010.1>,
 Fleming et al (2016) <doi:10.1890/15-1607>,
@@ -22,8 +22,8 @@ Winner & Noonan et al (2018) <doi:10.1111/2041-210X.13027>.
 \tabular{ll}{
 Package: \tab ctmm\cr
 Type: \tab Package\cr
-Version: \tab 0.5.3 \cr
-Date: \tab 2019-01-29 \cr
+Version: \tab 0.5.4 \cr
+Date: \tab 2019-02-02 \cr
 License: \tab GPL-3 \cr
 }
 
@@ -60,7 +60,7 @@ A maximum-entropy description of animal movement.
 
 C. H. Fleming, W. F. Fagan, T. Mueller, K. A. Olson, P. Leimgruber, J. M. Calabrese.
 Rigorous home-range estimation with movement data: A new autocorrelated kernel-density estimator.
-\href{http://www.esajournals.org/doi/abs/10.1890/14-2010.1}{Ecology, 96:5, 1182-1188 (2015)}.
+\href{https://esajournals.onlinelibrary.wiley.com/doi/abs/10.1890/14-2010.1}{Ecology, 96:5, 1182-1188 (2015)}.
 
 J. M. Calabrese, C. H. Fleming.
 ctmm: an R package for analyzing animal relocation data as a continuous-time stochastic process.
@@ -79,7 +79,8 @@ A new kernel-density estimator for accurate home-range and species-range area es
 \href{http://onlinelibrary.wiley.com/wol1/doi/10.1111/2041-210X.12673/abstract}{Methods in Ecology and Evolution, 8:5, 571-579 (2016)}.
 
 G. Péron, C. H. Fleming, R. C. de Paula, N. Mitchell, M. Strohbach, P. Leimgruber, J. M. Calabrese.
-Periodic continuous-time movement models uncover behavioral changes of wild canids along anthropization gradients. \href{http://onlinelibrary.wiley.com/wol1/doi/10.1002/ecm.1260/abstract}{Ecological Monographs 87:3, 442-456 (2017)}
+Periodic continuous-time movement models uncover behavioral changes of wild canids along anthropization gradients.
+\href{http://onlinelibrary.wiley.com/wol1/doi/10.1002/ecm.1260/abstract}{Ecological Monographs 87:3, 442-456 (2017)}
 
 C. H. Fleming, D. Sheldon, E. Gurarie, W. F. Fagan, S. LaPoint, J. M. Calabrese.
 Kálmán filters for continuous-time movement models.
