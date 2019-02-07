@@ -189,16 +189,38 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",MSPE="posit
 
     # consider if some timescales are actually zero
     CI <- confint.ctmm(CTMM,alpha=beta)
-    if(length(CTMM$tau)==2 && !CTMM$omega && CTMM$tau[1]!=CTMM$tau[2] && !is.na(IC))
+    if(length(CTMM$tau)==2 && !is.na(IC)) # OUX -> OU
     {
-      Q <- CI["tau velocity",1]
-      if(is.nan(Q) || (Q<=0))
+      if(!CTMM$omega && CTMM$tau[1]!=CTMM$tau[2]) # OUF -> OU
       {
-        GUESS <- c(GUESS,list(MLE))
-        GUESS[[length(GUESS)]]$tau <- MLE$tau[-length(MLE$tau)]
+        Q <- CI["tau velocity",1]
+        if(is.nan(Q) || (Q<=0))
+        {
+          GUESS <- c(GUESS,list(MLE))
+          GUESS[[length(GUESS)]]$tau <- MLE$tau[-length(MLE$tau)]
+        }
+      }
+      else if(!CTMM$omega) # OUf -> OU
+      {
+        Q <- CI["tau",1]
+        if(is.nan(Q) || (Q<=0))
+        {
+          GUESS <- c(GUESS,list(MLE))
+          GUESS[[length(GUESS)]]$tau <- MLE$tau[-length(MLE$tau)]
+        }
+      }
+      else # OUO -> OU
+      {
+        Q <- 1/CI["tau period",3]
+        if(is.nan(Q) || (Q<=0))
+        {
+          GUESS <- c(GUESS,list(MLE))
+          GUESS[[length(GUESS)]]$omega <- FALSE
+          GUESS[[length(GUESS)]]$tau <- MLE$tau[-length(MLE$tau)]
+        }
       }
     }
-    else if(length(CTMM$tau)==1 && !is.na(IC))
+    else if(length(CTMM$tau)==1 && !is.na(IC)) # OU -> IID
     {
       Q <- CI["tau position",1]
       if(is.nan(Q) || (Q<=0))

@@ -1,6 +1,8 @@
 ctmm 0.5.4 (2019-02-07)
 ================
 
+  * bugfix in ctmm.select where OU was not considered over the new OUO/OUf models introduced in v0.5.3
+
   * bugfix in ctmm.boot for heteroskedastic errors
   
   * multiplicative option depreciated from ctmm.boot
@@ -8,7 +10,7 @@ ctmm 0.5.4 (2019-02-07)
 ctmm 0.5.3 (2019-01-29)
 ================
 
-  * oscillatory (and critically damped) models now supported, starting with omega option of ctmm()
+  * oscillatory (and critically damped) OUO/OUf models now supported, starting with omega option of ctmm()
 
   * summary() now works on lists of UERE objects for error model selection
 
