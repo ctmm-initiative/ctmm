@@ -84,8 +84,9 @@ emulate.telemetry <- function(object,CTMM,fast=FALSE,...)
 #####################################
 # multi-estimator parametric bootstrap
 # + concurrent double-bootstrap AICc
-ctmm.boot <- function(data,CTMM,method=CTMM$method,multiplicative=TRUE,robust=FALSE,error=0.01,cores=1,trace=TRUE,...)
+ctmm.boot <- function(data,CTMM,method=CTMM$method,robust=FALSE,error=0.01,cores=1,trace=TRUE,...)
 {
+  multiplicative <- FALSE
   method <- match.arg(method,c('ML','HREML','pREML','pHREML','REML'),several.ok=TRUE)
   cores <- resolveCores(cores,fast=FALSE)
 
@@ -244,7 +245,7 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,multiplicative=TRUE,robust=FA
       AVE <<- S1/N
       COV <<- (S2-N*outer(AVE))/max(1,N-1)
 
-      if(any(abs(AVE)==Inf)) { stop('Some scale parameter estimates on boundary. Requires multiplicative=FALSE or robust=TRUE.') }
+      if(any(abs(AVE)==Inf)) { stop('Some scale parameter estimates on boundary. Requires robust=TRUE.') }
     }
     else if(N>=DIM+1)
     {
@@ -252,7 +253,7 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,multiplicative=TRUE,robust=FA
       AVE <<- STUFF$median
       COV <<- STUFF$COV
 
-      if(any(abs(AVE)==Inf) || any(abs(diag(COV))==Inf)) { stop('Too many scale parameter estimates on boundary. Requires multiplicative=FALSE.') }
+      if(any(abs(AVE)==Inf) || any(abs(diag(COV))==Inf)) { stop('Too many scale parameter estimates on boundary.') }
     }
   }
 

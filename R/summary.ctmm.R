@@ -84,7 +84,7 @@ ci.tau <- function(tau,COV,alpha=0.05,min=0,max=Inf)
   CI <- c(CI, (1/tau + c(1,-1)*z*sqrt(COV/tau^4))^-1)
 
   # take most conservative estimates
-  CI <- sort(range(CI,na.rm=TRUE))
+  CI <- sort(range(min,CI,max,na.rm=TRUE))
 
   # enforce boundary constraints
   CI <- c(max(CI[1],min),min(CI[2],max))

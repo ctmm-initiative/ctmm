@@ -34,7 +34,7 @@ speeds(object,...)
   \item{data}{Optional \code{telemetry} object on which the simulations will be conditioned.}
   \item{CTMM}{Movement model object.}
   \item{t}{Array of times to estimate instantaneous speeds at.}
-  \item{cycle}{Average over time \code{t} indices modulo \code{cycle}. E.g., for \code{t} sequenced by hours, \code{cycle=24} gives daily the cycle of speeds.}
+  \item{cycle}{Average over time \code{t} indices modulo \code{cycle}. E.g., for \code{t} sequenced by hours, \code{cycle=24} gives daily the cycle of speeds. (Not yet supported.)}
   \item{level}{Confidence level to report on the estimated average speed.}
   \item{robust}{Use robust statistics for the ensemble average and its confidence intervals (see Details).}
   \item{units}{Convert result to natural units.}

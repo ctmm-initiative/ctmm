@@ -1,7 +1,9 @@
-ctmm 0.5.4 (2019-02-02)
+ctmm 0.5.4 (2019-02-07)
 ================
 
   * bugfix in ctmm.boot for heteroskedastic errors
+  
+  * multiplicative option depreciated from ctmm.boot
 
 ctmm 0.5.3 (2019-01-29)
 ================
