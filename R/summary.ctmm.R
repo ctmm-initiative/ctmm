@@ -76,6 +76,7 @@ confint.ctmm <- function(model,alpha=0.05,UNICODE=FALSE)
 ci.tau <- function(tau,COV,alpha=0.05,min=0,max=Inf)
 {
   z <- stats::qnorm(1-alpha/2)
+  if(is.nan(COV)) { COV <- Inf }
 
   # tau normal for lower CI
   CI <- tau + c(1,-1)*z*sqrt(COV)
@@ -84,7 +85,7 @@ ci.tau <- function(tau,COV,alpha=0.05,min=0,max=Inf)
   CI <- c(CI, (1/tau + c(1,-1)*z*sqrt(COV/tau^4))^-1)
 
   # take most conservative estimates
-  CI <- sort(range(min,CI,max,na.rm=TRUE))
+  CI <- sort(range(CI,na.rm=TRUE))
 
   # enforce boundary constraints
   CI <- c(max(CI[1],min),min(CI[2],max))

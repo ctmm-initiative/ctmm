@@ -1,3 +1,12 @@
+ctmm 0.5.5 (2019-02-09)
+================
+
+  * bugfix in summary where timescale CIs were always (0,Inf)
+  
+  * ctmm.select default now level=1
+  
+  * R dependency increased to >=3.5 for parallel functions to work correctly
+  
 ctmm 0.5.4 (2019-02-07)
 ================
 

@@ -58,7 +58,7 @@ simplify.ctmm <- function(M,par)
 
 ###############
 # keep removing uncertain parameters until AIC stops improving
-ctmm.select <- function(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",MSPE="position",trace=FALSE,...)
+ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position",trace=FALSE,...)
 {
   IC <- match.arg(IC,c("AICc","AIC","BIC",NA))
   MSPE <- match.arg(MSPE,c("position","velocity",NA))

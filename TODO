@@ -1,4 +1,5 @@
 PRIORITY
+* update buffalo data
 * UTM import (Pati's collars: x,y,zone)
 * expose cex, lty, ... in plot.variogram
 * combine two telemetry objects for same animal but different device (dyadic UEREs)

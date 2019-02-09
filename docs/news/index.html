@@ -60,7 +60,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.5</span>
       </span>
     </div>
 
@@ -118,12 +118,31 @@
       <small>Source: <a href='https://github.com/ctmm-initiative/ctmm/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
     </div>
 
-    <div id="ctmm-0-5-3-2018-01-29" class="section level1">
+    <div id="ctmm-0-5-5-2019-02-08" class="section level1">
 <h1 class="page-header">
-<a href="#ctmm-0-5-3-2018-01-29" class="anchor"></a>ctmm 0.5.3 (2018-01-29)<small> Unreleased </small>
+<a href="#ctmm-0-5-5-2019-02-08" class="anchor"></a>ctmm 0.5.5 (2019-02-08)<small> Unreleased </small>
 </h1>
 <ul>
-<li><p>oscillatory (and critically damped) models now supported, starting with omega option of ctmm()</p></li>
+<li><p>bugfix in summary where timescale CIs were always (0,Inf)</p></li>
+<li><p>ctmm.select default now level=1</p></li>
+</ul>
+</div>
+    <div id="ctmm-0-5-4-2019-02-07" class="section level1">
+<h1 class="page-header">
+<a href="#ctmm-0-5-4-2019-02-07" class="anchor"></a>ctmm 0.5.4 (2019-02-07)<small> 2019-02-08 </small>
+</h1>
+<ul>
+<li><p>bugfix in ctmm.select where OU was not considered over the new OUO/OUf models introduced in v0.5.3</p></li>
+<li><p>bugfix in ctmm.boot for heteroskedastic errors</p></li>
+<li><p>multiplicative option depreciated from ctmm.boot</p></li>
+</ul>
+</div>
+    <div id="ctmm-0-5-3-2019-01-29" class="section level1">
+<h1 class="page-header">
+<a href="#ctmm-0-5-3-2019-01-29" class="anchor"></a>ctmm 0.5.3 (2019-01-29)<small> 2019-01-31 </small>
+</h1>
+<ul>
+<li><p>oscillatory (and critically damped) OUO/OUf models now supported, starting with omega option of ctmm()</p></li>
 <li><p>summary() now works on lists of UERE objects for error model selection</p></li>
 <li><p>MSPE slots &amp; arguments restructured and fully utilized in both summary and ctmm.select</p></li>
 <li><p>new method speeds() for estimating instantaneous speeds</p></li>
@@ -131,6 +150,7 @@
 <li><p>new complete argument in simulate() and predict() to calculate timestamps and geographic coordinates</p></li>
 <li><p>now avoiding fastPOSIXct timezone and epoch issues in as.telemetry</p></li>
 <li><p>outlie() now works on lists of telemetry objects</p></li>
+<li><p>bugfixes in overlap() CIs</p></li>
 <li><p>overlap() now robust to bad model fits</p></li>
 <li><p>new as.telemetry() argument mark.rm to delete marked outliers</p></li>
 <li><p>bugfix in predict() &amp; occurrence() where eccentricity was dropped from covariances</p></li>
@@ -523,7 +543,9 @@
     <div id="tocnav">
       <h2>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
-        <li><a href="#ctmm-0-5-3-2018-01-29">0.5.3</a></li>
+        <li><a href="#ctmm-0-5-5-2019-02-08">0.5.5</a></li>
+        <li><a href="#ctmm-0-5-4-2019-02-07">0.5.4</a></li>
+        <li><a href="#ctmm-0-5-3-2019-01-29">0.5.3</a></li>
         <li><a href="#ctmm-0-5-2-2018-09-10">0.5.2</a></li>
         <li><a href="#ctmm-0-5-1-2018-08-06">0.5.1</a></li>
         <li><a href="#ctmm-0-5-0-2018-05-15">0.5.0</a></li>

@@ -17,7 +17,7 @@ ctmm.loglike(data,CTMM,REML=FALSE,profile=TRUE,zero=0,verbose=FALSE)
 
 ctmm.fit(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=FALSE)
 
-ctmm.select(data,CTMM,verbose=FALSE,level=0.99,IC="AICc",MSPE="position",trace=FALSE,...)
+ctmm.select(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position",trace=FALSE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
