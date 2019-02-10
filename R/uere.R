@@ -267,7 +267,7 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
     dof[BAD] <- 0
   }
   AICc <- AICc + length(axes)^2*sum( (DOF.ML+Kc)*dof/(length(axes)*dof-2) )
-  if(length(axes)*dof<=2) # does not have a mean value
+  if(any(length(axes)*dof<=2)) # does not have a mean value
   {
     AICc <- Inf
     warning("Sample size too small for AICc to exist.")
@@ -329,21 +329,41 @@ summary.UERE <- function(object,level=0.95,...)
 
 
 # summarize list of uere objects
-summary.UERE.list <- function(object,...)
+summary.UERE.list <- function(object,drop=TRUE,...)
 {
-  AICc <- sapply(object,function(U) { attr(U,"AICc") } )
-  AICc <- AICc - min(AICc)
+  NAMES <- names(object)
+  if(is.null(NAMES)) { NAMES <- 1:length(object) }
+
+  AIC <- sapply(object,function(U) { attr(U,"AICc") } )
   Zsq <- sapply(object,function(U) { attr(U,"Zsq") } )
 
-  TAB <- cbind(AICc,Zsq)
-  colnames(TAB) <- c("\u0394AICc","Z[red]\u00B2")
-  # Encoding(colnames(TAB)) <- "UTF-8"
-  rownames(TAB) <- names(object)
+  DIM <- dim(AIC)
+  if(!length(DIM))
+  {
+    DIM <- c(1,length(AIC))
+    dim(AIC) <- DIM
+    dim(Zsq) <- DIM
+  }
 
-  IND <- order(AICc)
-  TAB <- TAB[IND,]
+  TAB <- list()
+  for(i in 1:DIM[1])
+  {
+    AIC[i,] <- AIC[i,] - min(AIC[i,])
 
-  return(TAB)
+    TAB[[i]] <- cbind(AIC[i,],Zsq[i,])
+
+    colnames(TAB[[i]]) <- c("\u0394AICc","Z[red]\u00B2")
+    # Encoding(colnames(TAB)) <- "UTF-8"
+
+    rownames(TAB[[i]]) <- NAMES
+
+    IND <- order(AIC[i,])
+    TAB[[i]] <- TAB[[i]][IND,]
+  }
+  names(TAB) <- rownames(AIC)
+
+  if(length(TAB)==1 && drop) { return(TAB[[1]]) }
+  else { return(TAB) }
 }
 
 

@@ -279,7 +279,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   names(object) <- tolower(names(object))
 
   # timestamp column
-  COL <- c('timestamp','Acquisition.Start.Time','Acquisition.Time','time','Date.GMT','Date.Local')
+  COL <- c('timestamp','Acquisition.Start.Time','Acquisition.Time','time','Date.GMT','Date.Local','GMT.Time')
   COL <- pull.column(object,COL,FUNC=as.character)
   COL <- asPOSIXct(COL,timeformat=timeformat,timezone=timezone)
   DATA <- data.frame(timestamp=COL)

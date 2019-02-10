@@ -5,6 +5,8 @@ ctmm 0.5.5 (2019-02-09)
   
   * ctmm.select default now level=1
   
+  * summary on UERE lists now works with more than one axis
+  
   * R dependency increased to >=3.5 for parallel functions to work correctly
   
 ctmm 0.5.4 (2019-02-07)

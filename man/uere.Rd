@@ -24,8 +24,9 @@ uere.fit(data,precision=1/2)
   \item{data}{\code{telemetry} object or list of telemetry objects, preferably with DOP columns.}
   \item{value}{UERE value(s) to assign to telemetry data (see details).}
   \item{precision}{Fraction of maximum possible digits of precision to target in categorical error fitting. \code{precision=1/2} results in about 7 decimal digits of precision.}
-  \item{object}{\code{UERE} object to summarize.}
+  \item{object}{\code{UERE} object to summarize or list of \code{UERE} objects to compare.}
   \item{level}{Confidence level for UERE estimate confidence intervals.}
+%  \item{drop}{Return only one summary table if there is only one data axis, when summarizing a list of \code{UERE} objects.}
   \item{...}{Further arguments are ignored.}
 }
 

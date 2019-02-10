@@ -77,7 +77,7 @@ unit <- function(data,dimension,thresh=1,concise=FALSE,SI=FALSE)
 unit.par <- function(par,...)
 {
   PAR <- par[2:3]
-  PAR <- PAR[PAR>0]
+  PAR <- PAR[PAR>.Machine$double.eps]
   if(length(PAR)) { PAR <- min(PAR) } else { PAR <- 0 }
 
   return( unit(PAR,...) )
