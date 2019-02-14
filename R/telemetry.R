@@ -75,6 +75,15 @@ get.telemetry <- function(data,axes=c("x","y"))
   return(data)
 }
 
+########
+set.telemetry <- function(data,value,axes=colnames(value))
+{
+  if(length(axes)==1) { data[[axes]] <- value }
+  else if(length(axes)>1) { data[,axes] <- value }
+
+  return(data)
+}
+
 #######################
 # Generic import function
 as.telemetry <- function(object,timeformat="",timezone="UTC",projection=NULL,timeout=Inf,na.rm="row",mark.rm=FALSE,drop=TRUE,...) UseMethod("as.telemetry")
@@ -330,11 +339,15 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   {
     DATA$COV.angle <- COL
     DATA$HDOP <- pull.column(object,"Argos.GDOP")
+
     # according to ARGOS, the following can be missing on <4 message data... but it seems present regardless
-    DATA[[DOP.LIST$horizontal$VAR]] <- pull.column(object,"Argos.error.radius")^2/2
     DATA$COV.major <- pull.column(object,"Argos.semi.major")^2/2
     DATA$COV.minor <- pull.column(object,"Argos.semi.minor")^2/2
-    # 1/2 from McClintock et al (2014) & in line with HDOP conventions
+
+    if(DOP.LIST$horizontal$VAR %in% names(object))
+    { DATA[[DOP.LIST$horizontal$VAR]] <- pull.column(object,"Argos.error.radius")^2/2 }
+    else
+    { DATA[[DOP.LIST$horizontal$VAR]] <- (DATA$COV.minor + DATA$COV.major)/2 }
   }
 
   # ARGOS error categories (older ARGOS data <2011)

@@ -35,12 +35,12 @@ periodogram <- function(data,CTMM=NULL,dt=NULL,res.freq=1,res.time=1,fast=NULL,a
     # Some warning about S4 objects that I don't understand or care about...
     suppressWarnings(
     if(is.null(CTMM[[i]]))
-    { data[[i]][,axes] <- t(t(data[[i]][,axes]) - colMeans(data[[i]][,axes,drop=FALSE])) }
+    { data[[i]] <- set.telemetry(data[[i]],t(t(data[[i]][,axes,drop=FALSE]) - colMeans(data[[i]][,axes,drop=FALSE])),axes=axes) }
     else # use the better result if provided # this is unfinished
     {
       drift <- get(CTMM[[i]]$mean)
       MU <- drift(data[[i]]$t,CTMM[[i]]) %*% CTMM[[i]]$mu
-      data[[i]][,axes] <- as.matrix(data[[i]][,axes]) - MU[,axes]
+      data[[i]] <- set.telemetry(data[[i]],as.matrix(data[[i]][,axes,drop=FALSE]) - MU[,axes],axes=axes)
     }
     )
   }

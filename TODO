@@ -1,5 +1,4 @@
 PRIORITY
-* * default GPS error zero with ARGOS-GPS data - minimum two location classes GPS & ARGOS
 * as.telemetry tibble->data.frame
 * update buffalo data
 * UTM import (Pati's collars: x,y,zone)
@@ -10,7 +9,7 @@ PRIORITY
 * error vignette - check back on variogram
 * Telonics HDOP conversion factor (2.5)
 * reference Guillaume's paper at the beginning of the periodogram vignette
-* occurrence() on the same grid
+* occurrence() on the same grid for mean() (Ellie)
 
 OVERLAP
 * overlap needs to return DOFs in an overlap object - and then define a summary function for the overlap object

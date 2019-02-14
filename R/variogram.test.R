@@ -8,13 +8,10 @@ svf.test <- function(variogram,CTMM)
   DOF <- Vectorize(svf$DOF)(variogram$lag[-1],error=MSE[-1])
 
   Fstat <- SVF/variogram$SVF[-1]
+  Fstat <- pmax(Fstat,1/Fstat)
   Fstat <- stats::pf(Fstat,DOF,variogram$DOF[-1],lower.tail=FALSE)
 
   RETURN <- min(Fstat)
 
   return(RETURN)
 }
-
-# signature (CTMM,variogram)
-
-# signature (variogram,variogram)
