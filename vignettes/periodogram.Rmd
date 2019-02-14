@@ -106,7 +106,7 @@ For sorting between the autocovariance models (each with best non-stationary mod
 # these are sorted by MSPE
 summary(FITS[1:7])
 # these are sorted by IC
-summary(FITS[c(5,8:10)])
+summary(FITS[c(1,8,11,14,17,18)])
 ```
 
 If only the information criteria was used, we would have selected `harmonic 3 0` over `harmonic 2 0`.
@@ -134,8 +134,8 @@ summary(FITS[[7]]) # harmonic 3 0 # selected by IC
 summary(FITS[[1]]) # harmonic 2 0 # selected by MSPE
 ```
 
-* `rotation/deviation %` corresponds to $100 \eta_P$ from the paper. It is interpreted as the proportion of the variance in the animal`s location that is caused by the periodicity in the mean.
-* `rotation/speed %` corresponds to  $100 \eta_V$ from the paper. It is interpreted as the proportion of the variance in the animal`s velocity that is caused by the periodicity in the mean.
+* `rotation/deviation %` corresponds to $100 \eta_P$ from the Péron et al (2017). It is interpreted as the proportion of the variance in the animal`s location that is caused by the periodicity in the mean.
+* `rotation/speed %` corresponds to  $100 \eta_V$ from the Péron et al (2017). It is interpreted as the proportion of the variance in the animal`s velocity that is caused by the periodicity in the mean.
 * `circulation period`  is the period of the stochastic circulations. On average, the animal re-pass through the same neighborhoods every estimated number of months (or days, or hours, depending on the automated unit specification).
 
 Note that, aside from the rotational indices, these two models are largely consistent, and the 3 harmonic model has an extrordinarily uncertain speed estimate.

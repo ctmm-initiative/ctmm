@@ -1,4 +1,6 @@
 PRIORITY
+* * default GPS error zero with ARGOS-GPS data - minimum two location classes GPS & ARGOS
+* as.telemetry tibble->data.frame
 * update buffalo data
 * UTM import (Pati's collars: x,y,zone)
 * expose cex, lty, ... in plot.variogram

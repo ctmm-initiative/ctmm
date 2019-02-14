@@ -439,13 +439,33 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     }
   }
 
+  # GPS-ARGOS hybrid data
+  COL <- "sensor.type"
+  COL <- pull.column(object,COL,FUNC=as.factor)
+  if(length(COL))
+  {
+    levels(COL) <- tolower(levels(COL))
+    LEVELS <- levels(COL)
+    if(('gps' %in% LEVELS) && any(grepl('argos',LEVELS)))
+    {
+      GPS <- (COL=='gps')
+      DATA$COV.angle[GPS] <- 0
+      DATA$COV.major[GPS] <- 0
+      DATA$COV.minor[GPS] <- 0
+      DATA$HDOP[GPS & is.na(DATA$HDOP)] <- 1
+      DATA$VAR.xy[GPS & is.na(DATA$VAR.xy)] <- 0
+      rm(GPS)
+    }
+    rm(LEVELS)
+  }
+
   # account for missing DOP values
   if("HDOP" %in% names(DATA)) { DATA <- missing.class(DATA,"HDOP") }
 
   ###########################
   # generic location classes
   # includes Telonics Gen4 location classes (use with HDOP information)
-  COL <- c("GPS.fix.type","fix.type","Fix.Attempt","GPS.Fix.Attempt","Telonics.Fix.Attempt","Fix.Status")
+  COL <- c("GPS.fix.type","fix.type","Fix.Attempt","GPS.Fix.Attempt","Telonics.Fix.Attempt","Fix.Status","sensor.type")
   COL <- pull.column(object,COL,FUNC=as.factor)
   if(length(COL)) { DATA$class <- COL }
 

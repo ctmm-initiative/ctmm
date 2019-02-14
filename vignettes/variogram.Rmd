@@ -217,15 +217,17 @@ The fit parameter `DOF[mean]` is the number of degrees of freedom worth of data 
 If you have a complex, hypothetical model in mind, say the OUF `m.ouf` as you would get from variogram fitting the easy way, then you can perform model selection more conveniently with the `ctmm.select` function. `ctmm.select` considers the initial guess (hypothesis) and then iterates this model to select the best model based upon an information criteria.
 
 ```{r}
-FITZ <- ctmm.select(Cilla,m.ouf,verbose=TRUE,level=1)
+FITZ <- ctmm.select(Cilla,m.ouf,verbose=TRUE)
 summary(FITZ)
 ```
 
-Note that `level=1` is set here for demonstration purposes only, to attempt every nearest model no matter how unlikely it may seem.
+<!--Note that `level=1` is set here for demonstration purposes only, to attempt every nearest model no matter how unlikely it may seem.-->
 The isotropic and anisotropic (`isotropic=FALSE`) flags correspond to circular and elliptical covariances respectively---an option we did not consider above.
 <!-- The Ornstein-Uhlenbeck-F (OUF) model is continuous in position and velocity (`M.OUF`),
 the Ornstein-Uhlenbeck (OU) model is continuous in position only (`M.OU`),
 and the independent and identically distributed (IID) model has no autocorrelation (`M.IID`). -->
+The OUf model is a special case of the OUF model where the two autocorrelation timescales, τ position and τ velocity, cannot be distinguished.
+This model is usually only relevant for short tracks of data.
 The IID model was never considered here by `ctmm.select` because it first requires selecting OU over OUF in the nested model hierarchy.
 See `help("ctmm")` for more options.
 

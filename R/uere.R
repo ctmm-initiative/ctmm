@@ -141,6 +141,9 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
   # null UERE structure given location classes
   UERE <- rep(NA_real_,length(CLASS))
   names(UERE) <- CLASS
+  # don't overwrite ARGOS when calibrating GPS
+  ARGOS <- grepl('argos',tolower(CLASS))
+  if(any(ARGOS) && type=='horizontal') { UERE[ARGOS] <- 1 }
 
   z <- lapply(1:length(data),function(i){get.telemetry(data[[i]],axes)})
 
@@ -299,6 +302,7 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
 
   # fix missing UEREs
   if(any(BAD)) { UERE[BAD] <- NA }
+  if(any(ARGOS) && type=='horizontal') { dof[ARGOS] <- Inf }
 
   attr(UERE,"DOF") <- dof # sampling distribution
   attr(UERE,"AICc") <- AICc
@@ -498,23 +502,33 @@ try.assign.uere <- function(data,UERE,TYPE="horizontal")
   NAS <- is.na(UERE)
   POS <- !NAS
 
+  # don't overwrite ARGOS when calibrating GPS
+  ARGOS <- grepl('argos',tolower(levels(data$class)))
+  if(TYPE=='horizontal' && any(ARGOS))
+  {
+    ARGOS <- levels(data$class)[ARGOS]
+    SAFE <- (data$class != ARGOS)
+  }
+  else
+  { SAFE <- rep(TRUE,length(data$t)) }
+
   if(all(NAS))
   {
     # delete the VAR/COV columns
     data[[VAR]] <- NULL
     if(any(COV %in% names(data))) { data[COV] <- NULL }
   }
-  else
+  else if(any(SAFE))
   {
     # UERE[time] > 0
     if(any(NAS)) { UERE[NAS] <- 0 }
     U.POS <- UERE[Ci]
 
     if(DOP %in% names(data))
-    { data[[VAR]] <- (U.POS*data[[DOP]])^2/length(axes) }
+    { data[[VAR]][SAFE] <- (U.POS*data[[DOP]])[SAFE]^2/length(axes) }
     else if(!(VAR %in% names(data)))
     {
-      data[[VAR]] <- (U.POS)^2/length(axes)
+      data[[VAR]][SAFE] <- (U.POS)[SAFE]^2/length(axes)
       message("DOP values missing. Assuming DOP=1.")
     }
 
@@ -523,15 +537,15 @@ try.assign.uere <- function(data,UERE,TYPE="horizontal")
     {
       # indication of NA time
       U.NAS <- NAS[Ci]
-      data[[VAR]][U.NAS] <- Inf
+      data[[VAR]][U.NAS & SAFE] <- Inf
     }
 
     # covariance matrix (dual tagged)
     if(all(COV %in% names(data)))
     {
-      data[[COV[1]]] <- data[[VAR]]
-      data[[COV[2]]] <- 0
-      data[[COV[3]]] <- data[[VAR]]
+      data[[COV[1]]][SAFE] <- data[[VAR]][SAFE]
+      data[[COV[2]]][SAFE] <- 0
+      data[[COV[3]]][SAFE] <- data[[VAR]][SAFE]
     }
   }
 

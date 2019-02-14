@@ -53,6 +53,8 @@ If \code{length(tau)==0}, then an IID bi-variate Gaussian model is fit to the da
 If \code{length(tau)==1}, then an Ornstein-Uhlenbeck (OU) model (Brownian motion restricted to a finite home range) is fit the data, where \code{tau} is the position autocorrelation timescale. \code{tau=Inf} then yields Brownian motion (BM).
 If \code{length(tau)==2}, then the OUF model (continuous-velocity motion restricted to a finite home range) is fit to the data, where \code{tau[1]} is again the position autocorrelation timescale and \code{tau[2]} is the velocity autocorrelation timescale. \code{tau[1]=Inf} then yields integrated Ornstein-Uhlenbeck (IOU) motion, which is a spatially unrestricted continuous-velocity process.
 
+Two new models were introduced in ctmm version 0.5.2 for the case of \code{tau[1]==tau[2]}, which can happen with short tracks of data. When \code{tau[1]==tau[2]} and \code{omega==0}, the model is categorized as OUf---a special case of OUF---and the two \code{tau} parameters are treated as identical. On the other hand, when \code{tau[1]==tau[2]} and \code{omega>0}, an oscillatory model is implemented, which we refer to as OU\eqn{\Omega}.
+
 The potential fitting methods---maximum likelihood (\code{ML}), residual maximum likelihood (\code{REML}), perturbative REML (\code{pREML}), hybrid REML (\code{HREML}), and perturbative hybrid REML (\code{pHREML})---are described in Fleming et al (2019). In general, \code{pHREML} is the best method, though when parameter estimates lie near boundaries it can fail, in which case \code{ctmm.fit} will fall back to \code{HREML}, as reported by the \code{method} slot of the resulting fit object.
 
 The \code{control} list can take the folowing arguments, with defaults shown:

@@ -1,3 +1,8 @@
+ctmm 0.5.6 (2019-02-13)
+================
+
+  * GPS-ARGOS hybrid data now supported by as.telemetry & uere.fit
+
 ctmm 0.5.5 (2019-02-11)
 ================
 
