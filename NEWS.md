@@ -4,6 +4,8 @@ ctmm 0.5.6 (2019-02-14)
   * GPS-ARGOS hybrid data now supported by as.telemetry & uere.fit
   
   * periodogram functionality restored for one-dimensional data
+  
+  * bugfix in IID ctmm.fit with elliptical errors
 
 ctmm 0.5.5 (2019-02-11)
 ================

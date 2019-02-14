@@ -73,6 +73,8 @@ langevin <- function(dt,CTMM)
   { Sigma <- sigma * Sigma }
   else # 2D filter
   {
+    K <- max(1,K)
+
     Sigma <- outer(Sigma,sigma) # (k,k,d,d)
     Sigma <- aperm(Sigma,c(1,3,2,4)) # (k,k,d,d) -> (k,d,k,d)
     dim(Sigma) <- c(K*DIM,K*DIM)
