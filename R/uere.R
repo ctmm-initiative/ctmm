@@ -245,7 +245,9 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
     UERE2 <- sqrt(UERE2)
     UERE2 <- UERE2[EST]
 
-    ERROR <- abs(UERE2-UERE[EST])/UERE2
+    ERROR <- abs(UERE2-UERE[EST])/max(UERE[EST],UERE2)
+    NANS <- is.nan(ERROR)
+    if(any(NANS)) { ERROR[NANS] <- 0 }
     ERROR <- max(ERROR)
 
     UERE[EST] <- UERE2
