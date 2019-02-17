@@ -44,6 +44,8 @@ Global migrations that are not along one geodesic (locally straight line) will p
 
 \code{as.telemetry} assumes \href{https://www.movebank.org/node/2381}{Movebank naming conventions}.
 Sufficient MoveBank columns include \code{individual.local.identifier} (or \code{tag.local.identifier}), \code{timestamp}, \code{location.long} and \code{location.lat}, while the optional Movebank columns include (E-OBS) \code{eobs.horizontal.accuracy.estimate}, (Telonics) \code{GPS.Horizontal.Error}, \code{GPS.HDOP}, (ARGOS) \code{Argos.orientation}, \code{Argos.semi.minor} and \code{Argos.semi.major} or \code{Argos.location.class}, etc..
+To have all columns detected and not overwrite eachother's information, \bold{it is best to have only one tracking device model per file imported}.
+Multiple deployments on a single individual can be merged afterwards.
 
 The \code{GPS.HDOP} value requires the device's UERE value to be translated into telemetry errors. The UERE represents the RMS error given ideal (\eqn{HDOP=1}) satellite conditions. Therefore, if your device is purported to have an accuracy of 10 meters, then the UERE is likely around 10 meters. Consult your device manual and manufacturer for a specific value or see \code{\link{uere}} for UERE calibration.
 }

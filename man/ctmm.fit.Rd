@@ -72,7 +72,7 @@ Note that simpler models in a nested hierarchy will only be attempted if they ap
 The function \code{ctmm} returns a prototype \code{ctmm} movement-model object.
 By default, \code{ctmm.loglike} returns the log-likelihood of the model \code{CTMM}.
 \code{ctmm.fit} (and \code{ctmm.loglike} with \code{verbose=TRUE}) returns the maximum likelihood \code{ctmm} movement-model object with all of the components of \code{CTMM} plus the components listed below.
-\code{ctmm.select} returns the best model by default or the complete list of attempted models if \code{verbose=TRUE}.
+\code{ctmm.select} returns the best model by default or the sorted list of attempted models if \code{verbose=TRUE}.
 \describe{
 \item{\code{AICc}}{The approximate corrected Akaike information criterion for multivariate distributions with variable numbers of unknown mean and (structured) covariance parameters (Burnham & Anderson, Eq. 7.91). This formula is only exact for IID data.}
 \item{\code{loglike}}{The log-likelihood.}
@@ -106,9 +106,6 @@ Kálmán filters for continuous-time movement models.
 \author{ C. H. Fleming and G. Péron. }
 
 \note{
-Fitting without telemetry errors involves fewer parameters and is much faster than fitting with telemetry errors, as the variance/covariance can be profiled analytically without numerical optimization.
-Therefore, fitting without telemetry errors, if possible, can provide improved initial estimates of \code{tau} and \code{sigma} for later fitting with telemetry errors.
-
 The default \code{\link{optim}} method here is \code{"Nelder-Mead"} with the largest allowable number of maximum iterations. Annecdotally, the faster \code{"BFGS"} and \code{"L-BFGS-B"} methods often perform poorly on these types of problems.
 However, Nelder Mead is not ideal and you may want to attempt a second fit, using the first fit as its initial guess.
 

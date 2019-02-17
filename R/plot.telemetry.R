@@ -252,8 +252,8 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
           else
           {
             B2 <- vapply(1:(dim(ERROR)[1]),function(i){ eigen(ERROR[i,,],only.values=TRUE)$values },numeric(2)) # (big/small,n)
-            A2 <- B2[1,]
-            B2 <- B2[2,]
+            A2 <- clamp(B2[1,],0,Inf)
+            B2 <- clamp(B2[2,],0,A2)
           }
 
           B2 <- ifelse(B2<A2,B2/A2,1) # prevent 0/0
@@ -507,7 +507,10 @@ plot.ctmm <- function(model,alpha=0.05,col="blue",bg=NA,...)
 ellipsograph <- function(mu,sigma,level=0.95,fg=graphics::par("col"),bg=NA,...)
 {
   Eigen <- eigen(sigma)
-  std <- sqrt(Eigen$values)
+  std <- Eigen$values
+  std[1] <- clamp(std[1],0,Inf)
+  std[2] <- clamp(std[2],0,std[1])
+  std <- sqrt(std)
   vec <- Eigen$vectors
 
   # confidence level = 1-alpha

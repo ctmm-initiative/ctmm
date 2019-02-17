@@ -10,7 +10,7 @@
 detectCores <- function(...,fast=TRUE)
 {
   if(fast && .Platform$OS.type=="windows") { return(1) } # Windows cannot fork
-  else { return(parallel::detectCores(...)) }
+  else { return(parallel::detectCores(logical=FALSE,...)) }
 }
 
 

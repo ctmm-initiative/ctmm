@@ -73,6 +73,14 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     if(any(ZERO<=0)) { warning("Duplicate timestamps require an error model.") ; return(-Inf) }
   }
 
+  # check for bad variances
+  if(area==0)
+  {
+    ZERO <- rep(FALSE,n)
+    for(i in 1:dim(error)[2]) { ZERO <- ZERO | (error[,i,i]==0) }
+    if(any(ZERO)) { return(-Inf) }
+  }
+
   ### what kind of profiling is possible
   if((!UERE && !(circle && !isotropic)) || (UERE<3 && isotropic)) # can profile full covariance matrix with unit-variance filter
   {

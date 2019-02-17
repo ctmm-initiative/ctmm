@@ -1,4 +1,7 @@
 PRIORITY
+* wrap objective function in try() at higher level in optimizer
+* overlap on mean()s of UDs (Ellie)
+* fast plot of GPS-ARGOS hybrid data
 * as.telemetry tibble->data.frame
 * update buffalo data
 * UTM import (Pati's collars: x,y,zone)

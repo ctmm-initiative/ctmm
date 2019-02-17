@@ -2,6 +2,9 @@
 # Calculate good CIs for other functions
 confint.ctmm <- function(model,alpha=0.05,UNICODE=FALSE)
 {
+  # make sure parameters are named correctly
+  model <- ctmm.ctmm(model)
+
   model <- get.taus(model,zeroes=TRUE)
   tau <- model$tau
   tau <- tau[tau<Inf]

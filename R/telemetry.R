@@ -288,7 +288,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   names(object) <- tolower(names(object))
 
   # timestamp column
-  COL <- c('timestamp','Acquisition.Start.Time','Acquisition.Time','time','Date.GMT','Date.Local','GMT.Time')
+  COL <- c('timestamp','Acquisition.Start.Time','Acquisition.Time','time','Date.GMT','Date.Local','GMT.Time','Date.Time')
   COL <- pull.column(object,COL,FUNC=as.character)
   COL <- asPOSIXct(COL,timeformat=timeformat,timezone=timezone)
   DATA <- data.frame(timestamp=COL)
@@ -309,6 +309,10 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   COL <- c("location.lat","Latitude","lat","GPS.Latitude")
   COL <- pull.column(object,COL)
   DATA$latitude <- COL
+
+  # UTM locations if long-lat not present
+  #
+  # !!!
 
   # manually marked outliers
   COL <- c("manually.marked.outlier","marked.outlier","outlier")
@@ -429,12 +433,44 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   # HDOP
   if(!("HDOP" %in% names(DATA)))
   {
-    COL <- c("GPS.HDOP","HDOP","Horizontal.Dilution","GPS.Horizontal.Dilution","GPS.DOP","DOP","GPS.PDOP","PDOP","GPS.GDOP","GDOP")
+    COL <- c("GPS.HDOP","HDOP","Horizontal.DOP","GPS.Horizontal.Dilution","Horizontal.Dilution")
+    COL <- pull.column(object,COL)
+    if(length(COL)) { DATA$HDOP <- COL }
+  }
+
+  # DOP
+  if(!("HDOP" %in% names(DATA)))
+  {
+    COL <- c("GPS.DOP","DOP","GPS.Dilution","Dilution")
     COL <- pull.column(object,COL)
     if(length(COL))
     {
+      message("HDOP values not found. Using ambiguous DOP values.")
       DATA$HDOP <- COL
-      # message("HDOP values found; UERE will have to be fit. See help(\"uere\").")
+    }
+  }
+
+  # PDOP
+  if(!("HDOP" %in% names(DATA)))
+  {
+    COL <- c("GPS.PDOP","PDOP","Position.DOP","GPS.Position.Dilution","Position.Dilution")
+    COL <- pull.column(object,COL)
+    if(length(COL))
+    {
+      message("HDOP values not found. Using PDOP values.")
+      DATA$HDOP <- COL
+    }
+  }
+
+  # GDOP
+  if(!("HDOP" %in% names(DATA)))
+  {
+    COL <- c("GPS.GDOP","GDOP","Geometric.DOP","GPS.Geometric.Dilution","Geometric.Dilution")
+    COL <- pull.column(object,COL)
+    if(length(COL))
+    {
+      message("HDOP values not found. Using GDOP values.")
+      DATA$HDOP <- COL
     }
   }
 
@@ -448,7 +484,6 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
       message("HDOP values not found. Approximating via # satellites.")
       COL <- 10/(COL-2)
       DATA$HDOP <- COL
-      # message("HDOP values approximated; UERE will have to be fit. See help(\"uere\").")
     }
   }
 

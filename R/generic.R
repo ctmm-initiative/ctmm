@@ -241,7 +241,8 @@ prepend <- function(x,values,before=1)
 
 
 # CLAMP A NUMBER
-clamp <- Vectorize(function(num,min=0,max=1) { if(num<min) {min} else if(num<max) {num} else {max} })
+clamp <- function(num,min=0,max=1)
+{ ifelse(num<min,min,ifelse(num>max,max,num)) }
 
 
 # PAD VECTOR
