@@ -411,6 +411,7 @@ telemetry.mins <- function(data,axes=c('x','y'))
 
   dz <- get.telemetry(data,axes)
   dz <- apply(dz,2,diff)
+  dim(dz) <- c(nrow(data)-1,length(axes)) # R drops length-1 dimensions
   dz <- rowSums( dz^2 )
   dz <- sqrt(min(dz[dz>0])) # smallest nonzero distance
 
@@ -806,6 +807,9 @@ ctmm.guess <- function(data,CTMM=ctmm(),variogram=NULL,name="GUESS",interactive=
   if(is.null(variogram)) { variogram = variogram(data,axes=CTMM$axes) }
   else { CTMM$axes <- attr(variogram,"info")$axes }
 
+  n <- length(data$t)
+  if(n==2) { CTMM$isotropic = TRUE }
+
   # mean specific guesswork/preparation
   drift <- get(CTMM$mean)
   CTMM <- drift@init(data,CTMM)
@@ -815,8 +819,6 @@ ctmm.guess <- function(data,CTMM=ctmm(),variogram=NULL,name="GUESS",interactive=
   # estimate circulation period if circle=TRUE
   if(CTMM$circle && class(CTMM$circle)=="logical")
   {
-    n <- length(data$t)
-
     # residuals
     z <- get.telemetry(data,CTMM$axes)
     z <- z - (u %*% CTMM$mu)

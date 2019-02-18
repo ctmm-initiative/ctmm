@@ -23,6 +23,7 @@ drift.init <- function(data,CTMM)
   n <- length(data$t)
   z <- z - (u %*% CTMM$mu)
   CTMM$sigma <- (t(z) %*% z) / (n-1)
+  if(n==2) { CTMM$sigma <- diag(mean(diag(CTMM$sigma)),nrow=nrow(CTMM$sigma)) }
 
   # remove error from variability
   if(CTMM$error)

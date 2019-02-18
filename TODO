@@ -1,5 +1,5 @@
 PRIORITY
-* wrap objective function in try() at higher level in optimizer
+* cores option in ctmm.select
 * overlap on mean()s of UDs (Ellie)
 * fast plot of GPS-ARGOS hybrid data
 * as.telemetry tibble->data.frame

@@ -238,6 +238,7 @@ sigma.destruct <- function(sigma,isotropic=FALSE) # last arg not implemented
   stuff <- eigen(sigma)
 
   e <- stuff$values
+  e <- clamp(e,0,Inf)
   GM <- sqrt(prod(e))
   e <- log(e[1]/e[2])
 

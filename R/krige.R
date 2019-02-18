@@ -324,6 +324,7 @@ fill.data <- function(data,CTMM=ctmm(tau=Inf),verbose=FALSE,t=NULL,dt=NULL,res=1
 #################################
 occurrence <- function(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=0.5,dt.max=NULL)
 {
+  axes <- CTMM$axes
   CTMM0 <- CTMM
   dt <- stats::median(diff(data$t))
 
@@ -341,8 +342,20 @@ occurrence <- function(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=
   dt.grid <- data$dt.grid
   w.grid <- data$w.grid
   data <- data$data
-  # run through smoother to get
+
+  # calculate trend
+  drift <- get(CTMM0$mean)
+  drift <- drift(data$t,CTMM0) %*% CTMM0$mu
+
+  # detrend for smoothing - retrend later
+  z <- get.telemetry(data,axes=axes)
+  data[,axes] <- z - drift
+
+  # smooth mean-zero data # run through smoother to get
   state <- smoother(data,CTMM,smooth=TRUE)
+
+  # detrend for simulation - retrend later
+  state$R <- state$R + drift
 
   # evenly sampled subset: data points (bridge ends) may be counted twice and weighted half
   GRID <- c( which(data$t %in% t.grid) , which(data$t %in% t.grid[which(diff(t.grid)==0)]) )

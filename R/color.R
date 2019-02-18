@@ -1,3 +1,18 @@
+# append lunar phase to telemetry object
+sunmoon.telemetry <- function(object,...)
+{
+  ADD <- suncalc::getMoonIllumination(object$timestamp,keep="fraction")$fraction
+  object$moon <- ADD
+
+  ADD <- suncalc::getSunlightPosition(date=object$timestamp,lat=object$latitude,lon=object$longitude,keep="altitude")
+  object$sun <- ADD/pi + 1/2
+
+  return(object)
+}
+
+
+
+# color by annual season, lunar phase, sunlight, or timespan
 color.telemetry.list <- function(object,col="rainbow",...)
 {
   n <- length(object)

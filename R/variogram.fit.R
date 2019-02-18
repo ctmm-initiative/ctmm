@@ -151,7 +151,9 @@ variogram.fit.backend <- function(variogram,CTMM=ctmm(),fraction=0.5,b=4)
 
   # manipulation controls
   z=1+log(fraction,b)
-  DF <- data.frame(min=1+log(min.step,b),max=1,initial=z,label="zoom",step=log(min.step,b)/RES,stringsAsFactors=FALSE)
+  MIN <- 1+log(min.step,b)
+  MIN <- min(z,MIN)
+  DF <- data.frame(min=MIN,max=1,initial=z,label="zoom",step=log(min.step,b)/RES,stringsAsFactors=FALSE)
   NAMES <- c("z")
 
   K <- length(CTMM$tau)
