@@ -33,13 +33,12 @@ akde(data,CTMM,VMM=NULL,debias=TRUE,smooth=TRUE,error=0.001,res=10,grid=NULL,...
   \item{x}{A list of \code{UD}s calculated on the same grid.}
 }
 
-%\details{}
-
-\value{Returns a \code{UD} object: a list with the sampled grid line locations \code{r$x} and \code{r$y}, the extent of each grid cell \code{dr}, the probability density and cumulative distribution functions evaluated on the sampled grid locations \code{PDF} & \code{CDF}, the optimal bandwidth matrix \code{H}, and the effective sample size of the data in \code{DOF.H}.
-
-For weighted AKDE, please note additional \code{...} arguments passed to \code{\link{bandwidth}} and the \code{weights=TRUE} argument, specifically.
+\details{For weighted AKDE, please note additional \code{...} arguments passed to \code{\link{bandwidth}} and the \code{weights=TRUE} argument, specifically.
 
 When feeding in lists of \code{telemetry} and \code{ctmm} objects, all UDs will be calculated on the same grid. These UDs can be averaged with the \code{mean} command, however this is not an optimal way to calculate population ranges.
+}
+
+\value{Returns a \code{UD} object: a list with the sampled grid line locations \code{r$x} and \code{r$y}, the extent of each grid cell \code{dr}, the probability density and cumulative distribution functions evaluated on the sampled grid locations \code{PDF} & \code{CDF}, the optimal bandwidth matrix \code{H}, and the effective sample size of the data in \code{DOF.H}.
 }
 
 \references{

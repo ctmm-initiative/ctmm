@@ -63,7 +63,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.5</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.6</span>
       </span>
     </div>
 
@@ -184,11 +184,14 @@
     </tr>
     </table>
     
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>For weighted AKDE, please note additional <code>...</code> arguments passed to <code><a href='bandwidth.html'>bandwidth</a></code> and the <code>weights=TRUE</code> argument, specifically.</p>
+<p>When feeding in lists of <code>telemetry</code> and <code>ctmm</code> objects, all UDs will be calculated on the same grid. These UDs can be averaged with the <code>mean</code> command, however this is not an optimal way to calculate population ranges.</p>
+    
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>Returns a <code>UD</code> object: a list with the sampled grid line locations <code>r$x</code> and <code>r$y</code>, the extent of each grid cell <code>dr</code>, the probability density and cumulative distribution functions evaluated on the sampled grid locations <code>PDF</code> &amp; <code>CDF</code>, the optimal bandwidth matrix <code>H</code>, and the effective sample size of the data in <code>DOF.H</code>.</p>
-<p>For weighted AKDE, please note additional <code>...</code> arguments passed to <code><a href='bandwidth.html'>bandwidth</a></code> and the <code>weights=TRUE</code> argument, specifically.</p>
-<p>When feeding in lists of <code>telemetry</code> and <code>ctmm</code> objects, all UDs will be calculated on the same grid. These UDs can be averaged with the <code>mean</code> command, however this is not an optimal way to calculate population ranges.</p>
     
     <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
 
@@ -237,6 +240,8 @@ In v0.3.2, this method was further improved to use <code>DOF.area</code> from th
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
       
+      <li><a href="#details">Details</a></li>
+
       <li><a href="#value">Value</a></li>
 
       <li><a href="#references">References</a></li>

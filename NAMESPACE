@@ -105,3 +105,6 @@ S3method(emulate,ctmm)
 S3method(emulate,telemetry)
 #S3method(AICc,ctmm)
 #S3method(AICc,list)
+
+# time and time-visualization methods
+export(annotate,color)

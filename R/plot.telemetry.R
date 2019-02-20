@@ -161,7 +161,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
         for(j in 1:2)
         {
           CTMM[[i]]$sigma <- const[j]*sigma
-          plot.ctmm(CTMM[[i]],alpha.UD,col=scales::alpha(col.level[[i]],0.5),lwd=lwd.level/2,...)
+          plot.ctmm(CTMM[[i]],alpha.UD,col=malpha(col.level[[i]],0.5),lwd=lwd.level/2,...)
         }
       }
     }
@@ -196,6 +196,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
 
   col <- prepare.p(col)
   pch <- prepare.p(pch)
+  lwd <- prepare.p(lwd)
   type <- prepare.p(type,all=TRUE)
   error <- rep(error,length(x))
 
@@ -226,7 +227,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
     # we aren't plotting if UERE is missing
     # error=FALSE or no UERE
     if(!error[i] || FLAG<=1) # DEFAULT POINTS
-    { graphics::points(r, cex=cex[[i]], col=col[[i]], pch=pch[[i]], type=type[[i]], lwd=lwd, ...) }
+    { graphics::points(r, cex=cex[[i]], col=col[[i]], pch=pch[[i]], type=type[[i]], lwd=lwd[[i]], ...) }
     else if(error[i]<3) # CIRCLE/ELLIPSE
     {
       # scale radii
@@ -267,7 +268,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
         alpha <- clamp((4/pxpkm) / alpha)^transparency.error
 
         bg <- NA
-        fg <- scales::alpha(col[[i]],alpha)
+        fg <- malpha(col[[i]],alpha)
       }
       else if(error[i]==2) # DISC
       {
@@ -284,8 +285,8 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
         # area of a pixel in physical units, spread over disc
         alpha <- clamp((1/pxpkm^2) / alpha)^transparency.error
 
-        bg <- scales::alpha(col[[i]],alpha)
-        fg <- scales::alpha(col[[i]],alpha/2)
+        bg <- malpha(col[[i]],alpha)
+        fg <- malpha(col[[i]],alpha/2)
       }
 
       # plot circle
@@ -293,10 +294,10 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
       {
         # convert to radii
         ERROR <- z * sqrt(ERROR)
-        graphics::symbols(x=r$x,y=r$y,circles=ERROR,fg=fg,bg=bg,inches=FALSE,add=TRUE,lwd=lwd,...)
+        graphics::symbols(x=r$x,y=r$y,circles=ERROR,fg=fg,bg=bg,inches=FALSE,add=TRUE,lwd=lwd[[i]],...)
       }
       else if(FLAG==4)
-      { for(j in 1:nrow(r)) { ellipsograph(mu=as.numeric(r[j,]),sigma=ERROR[j,,],level=level.UD,fg=fg[j],bg=bg[j],lwd=lwd,...) } }
+      { for(j in 1:nrow(r)) { ellipsograph(mu=as.numeric(r[j,]),sigma=ERROR[j,,],level=level.UD,fg=fg[j],bg=bg[j],lwd=lwd[[i]][j],...) } }
     } # end circle/ellipse plot
     else if(error[i]==3) # kernels
     {
@@ -325,10 +326,10 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
         ERROR <- get.error(x[[i]],ctmm(axes=c("vx","vy"),error=TRUE),circle=TRUE)
         alpha <- sqrt(rowSums(get.telemetry(x[[i]],axes=c("vx","vy"))^2)/ERROR)
         alpha <- clamp(alpha)
-        col[[i]] <- scales::alpha(col[[i]],alpha)
+        col[[i]] <- malpha(col[[i]],alpha)
       }
 
-      shape::Arrows(x0=r$x, y0=r$y, x1=(r$x+dr$vx), y1=(r$y+dr$vy), col=col[[i]], code=2, segment=T, arr.adj=1, arr.length=arr.length, arr.type="curved", lwd=lwd)
+      shape::Arrows(x0=r$x, y0=r$y, x1=(r$x+dr$vx), y1=(r$y+dr$vy), col=col[[i]], code=2, segment=T, arr.adj=1, arr.length=arr.length, arr.type="curved", lwd=lwd[[i]])
     }
   } # end telemetry loop
 }
@@ -441,12 +442,12 @@ plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",units=TRUE,col.level="bl
     if(!any(is.na(col.level[i,,])) && !any(is.na(level.UD)))
     {
       # make sure that correct style is used for low,ML,high even in absence of lows and highs
-      plot.kde(x[[i]],level=level.UD,labels=labels[i,,2],col=scales::alpha(col.level[i,,2],1),lwd=lwd,...)
+      plot.kde(x[[i]],level=level.UD,labels=labels[i,,2],col=malpha(col.level[i,,2],1),lwd=lwd,...)
 
       if(!is.na(level) && !is.null(x[[i]]$DOF.area))
       {
         P <- sapply(level.UD, function(l) { CI.UD(x[[i]],l,level,P=TRUE)[-2] } )
-        plot.kde(x[[i]],level=P,labels=c(t(labels[i,,c(1,3)])),col=scales::alpha(c(t(col.level[i,,c(1,3)])),0.5),lwd=lwd/2,...)
+        plot.kde(x[[i]],level=P,labels=c(t(labels[i,,c(1,3)])),col=malpha(c(t(col.level[i,,c(1,3)])),0.5),lwd=lwd/2,...)
       }
     }
   }
@@ -457,7 +458,7 @@ plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",units=TRUE,col.level="bl
 # plot PDF stored as KDE object
 plot.df <- function(kde,DF="CDF",col="blue",...)
 {
-  col <- scales::alpha(col,(0:255)/255)
+  col <- malpha(col,(0:255)/255)
 
   if(DF=="PDF")
   {

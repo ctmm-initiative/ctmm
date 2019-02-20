@@ -45,7 +45,7 @@ overlap <- function(object,level=0.95,debias=TRUE,...)
 
 
 #####################
-overlap.ctmm <- function(object,level=0.95,debias=TRUE,...)
+overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,...)
 {
   CTMM1 <- object[[1]]
   CTMM2 <- object[[2]]
@@ -91,24 +91,27 @@ overlap.ctmm <- function(object,level=0.95,debias=TRUE,...)
     return(BhattacharyyaD(CTMM1,CTMM2))
   }
 
-  # propagate uncertainty - slightly wasteful if isotropic
-  # grad <- numDeriv::grad(D,par)
-  grad <- genD(par,D,lower=lower,upper=upper,parscale=parscale,mc.cores=1,order=1,...)$gradient
   VAR <- 0
+  # propagate uncertainty - slightly wasteful if isotropic
+  if(COV)
+  {
+    # grad <- numDeriv::grad(D,par)
+    grad <- genD(par,D,lower=lower,upper=upper,parscale=parscale,mc.cores=1,order=1,...)$gradient
 
-  VAR <- VAR + abs(grad[1:2] %*% CTMM1$COV.mu %*% grad[1:2])
-  if(CTMM1$isotropic)
-  { VAR <- VAR + abs(grad[3] * CTMM1$COV[1,1] * grad[3]) }
-  else
-  { VAR <- VAR + abs(grad[3:5] %*% CTMM1$COV[1:3,1:3] %*% grad[3:5]) }
+    VAR <- VAR + abs(grad[1:2] %*% CTMM1$COV.mu %*% grad[1:2])
+    if(CTMM1$isotropic)
+    { VAR <- VAR + abs(grad[3] * CTMM1$COV[1,1] * grad[3]) }
+    else
+    { VAR <- VAR + abs(grad[3:5] %*% CTMM1$COV[1:3,1:3] %*% grad[3:5]) }
 
-  VAR <- VAR + abs(grad[6:7] %*% CTMM2$COV.mu %*% grad[6:7])
-  if(CTMM2$isotropic)
-  { VAR <- VAR + abs(grad[8] * CTMM2$COV[1,1] * grad[8]) }
-  else
-  { VAR <- VAR + abs(grad[8:10] %*% CTMM2$COV[1:3,1:3] %*% grad[8:10]) }
+    VAR <- VAR + abs(grad[6:7] %*% CTMM2$COV.mu %*% grad[6:7])
+    if(CTMM2$isotropic)
+    { VAR <- VAR + abs(grad[8] * CTMM2$COV[1,1] * grad[8]) }
+    else
+    { VAR <- VAR + abs(grad[8:10] %*% CTMM2$COV[1:3,1:3] %*% grad[8:10]) }
 
-  VAR <- as.numeric(VAR)
+    VAR <- as.numeric(VAR)
+  }
 
   # this quantity is roughly chi-square
   MLE <- BhattacharyyaD(CTMM1,CTMM2)

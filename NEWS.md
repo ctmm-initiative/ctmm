@@ -1,5 +1,7 @@
-ctmm 0.5.6 (2019-02-17)
+ctmm 0.5.6 (2019-02-20)
 ================
+
+  * new functions annotate and color
 
   * GPS-ARGOS hybrid data now supported by as.telemetry & uere.fit
   

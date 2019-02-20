@@ -24,7 +24,7 @@
 
 {These are the packages I needed in Ubuntu:
 
-\code{sudo apt install fftw3 fftw3-dev libgdal1-dev libproj-dev libgeos-dev libgsl-dev r-base-core}}
+\code{sudo apt install fftw3 fftw3-dev libgdal1-dev libproj-dev libgeos-dev libgsl-dev libv8-dev r-base-core}}
 
 \bold{\code{ctmm.select} only returns one model with \code{verbose=TRUE}}
 

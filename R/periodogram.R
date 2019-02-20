@@ -307,7 +307,7 @@ plot.periodogram <- function(x,max=FALSE,diagnostic=FALSE,col="black",transparen
   # diurnal periods
   ticker(DAY,24,"day")
 
-  col <- scales::alpha(col,alpha=((f[1]/f)^transparency))
+  col <- malpha(col,alpha=((f[1]/f)^transparency))
   plot(1/LSP$f,LSP$P,log="x",xaxt="n",xlab="Period",ylab="Log Spectral Density",col=col,...)
 
   if(diagnostic)
@@ -316,7 +316,7 @@ plot.periodogram <- function(x,max=FALSE,diagnostic=FALSE,col="black",transparen
     if(max) { LSP <- max.periodogram(LSP) }
     LSP$P <- LSP$P - max(LSP$P)
 
-    col <- scales::alpha("red",alpha=((f[1]/f)^transparency))
+    col <- malpha("red",alpha=((f[1]/f)^transparency))
     graphics::points(1/LSP$f,LSP$P,col=col,...)
   }
 
