@@ -1,4 +1,4 @@
-ctmm 0.5.6 (2019-02-20)
+ctmm 0.5.6 (2019-02-21)
 ================
 
   * new functions annotate and color

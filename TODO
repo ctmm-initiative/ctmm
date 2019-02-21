@@ -1,6 +1,7 @@
 PRIORITY
-* make color by take a vector
+* mean, mode, median for ctmm and UD objects
 * cores option in ctmm.select
+* mean ctmm object
 * overlap on mean()s of UDs (Ellie)
 * fast plot of GPS-ARGOS hybrid data
 * as.telemetry tibble->data.frame

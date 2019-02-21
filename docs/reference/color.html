@@ -130,22 +130,22 @@
 
     <pre class="usage"><span class='fu'>annotate</span>(<span class='no'>object</span>,<span class='kw'>by</span><span class='kw'>=</span><span class='st'>"all"</span>,<span class='kw'>cores</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='no'>...</span>)
 
-<span class='fu'>color</span>(<span class='no'>object</span>,<span class='kw'>by</span><span class='kw'>=</span><span class='st'>"time"</span>,<span class='kw'>col.fn</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>alpha</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>dt</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='no'>...</span>)</pre>
+<span class='fu'>color</span>(<span class='no'>object</span>,<span class='kw'>by</span><span class='kw'>=</span><span class='st'>"time"</span>,<span class='kw'>col.fn</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>alpha</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>dt</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>cores</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>object</th>
-      <td><p>A <code>telemetry</code> object or list of objects.</p></td>
+      <td><p>A <code>telemetry</code> object or list of objects. <code>color</code> can also take <code>ctmm</code> and <code>UD</code> objects.</p></td>
     </tr>
     <tr>
       <th>by</th>
-      <td><p>What to <code>annotate</code> or <code>color</code> times by. Options include <code>"individual"</code>, <code>"time"</code>, <code>"sun"</code>, <code>"moon"</code>, <code>"season"</code>, and <code>"tropic"</code> (see Details below).</p></td>
+      <td><p>What to <code>annotate</code> or <code>color</code> times by. Options include <code>"individual"</code>, <code>"time"</code>, <code>"sun"</code>, <code>"moon"</code>, <code>"season"</code>, and <code>"tropic"</code> (see Details below). <code>ctmm</code> and <code>UD</code> objects can only be colored by <code>"individual"</code>.</p></td>
     </tr>
     <tr>
       <th>cores</th>
-      <td><p>Number of annotations to peform in parallel. <code>cores=0</code> will use all cores, while <code>cores&lt;0</code> will reserve <code><a href='https://www.rdocumentation.org/packages/base/topics/MathFun'>abs(cores)</a></code>.</p></td>
+      <td><p>Number of annotations or overlap calculations to peform in parallel. <code>cores=0</code> will use all cores, while <code>cores&lt;0</code> will reserve <code><a href='https://www.rdocumentation.org/packages/base/topics/MathFun'>abs(cores)</a></code>.</p></td>
     </tr>
     <tr>
       <th>...</th>
@@ -180,7 +180,7 @@ Finding the best color assignment is an \(NP\)-hard problem that is here approxi
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p><code>annotate</code> returns an annotated telemetry object with extra columns to facilitate coloring.
-<code>color</code> returns a valid <code>col</code> argument for <code><a href='plot.telemetry.html'>plot.telemetry</a></code>.</p>
+<code>color</code> returns a valid <code>col</code> argument for <code>{plot.telemetry}</code>.</p>
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 

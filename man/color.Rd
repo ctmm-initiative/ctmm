@@ -10,13 +10,13 @@ These functions facilitate the coloring of tracks by annotating tracking data wi
 \usage{
 annotate(object,by="all",cores=1,...)
 
-color(object,by="time",col.fn=NULL,alpha=1,dt=NULL,...)
+color(object,by="time",col.fn=NULL,alpha=1,dt=NULL,cores=1,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{object}{A \code{telemetry} object or list of objects. }
-  \item{by}{What to \code{annotate} or \code{color} times by. Options include \code{"individual"}, \code{"time"}, \code{"sun"}, \code{"moon"}, \code{"season"}, and \code{"tropic"} (see Details below).}
-  \item{cores}{Number of annotations to peform in parallel. \code{cores=0} will use all cores, while \code{cores<0} will reserve \code{abs(cores)}.}
+  \item{object}{A \code{telemetry} object or list of objects. \code{color} can also take \code{ctmm} and \code{UD} objects. }
+  \item{by}{What to \code{annotate} or \code{color} times by. Options include \code{"individual"}, \code{"time"}, \code{"sun"}, \code{"moon"}, \code{"season"}, and \code{"tropic"} (see Details below). \code{ctmm} and \code{UD} objects can only be colored by \code{"individual"}.}
+  \item{cores}{Number of annotations or overlap calculations to peform in parallel. \code{cores=0} will use all cores, while \code{cores<0} will reserve \code{abs(cores)}.}
   \item{...}{Additional arguments.}
   \item{col.fn}{Optional coloring function that can take a [0,1] interval and alpha channel argument.}
   \item{alpha}{Base alpha channel value.}
@@ -40,7 +40,7 @@ Other named columns in the \code{telemetry} object can also be used with \code{c
 
 
 \value{\code{annotate} returns an annotated telemetry object with extra columns to facilitate coloring.
-\code{color} returns a valid \code{col} argument for \code{\link{plot.telemetry}}.
+\code{color} returns a valid \code{col} argument for \code{{plot.telemetry}}.
 }
 
 %\references{}

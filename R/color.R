@@ -46,66 +46,79 @@ annotate <- function(object,by="all",cores=1,...)
 
 ################
 # color by time/phase
-color <- function(object,by="time",col.fn=NULL,alpha=1,dt=NULL,...)
+color <- function(object,by="time",col.fn=NULL,alpha=1,dt=NULL,cores=1,...)
 {
   object <- listify(object)
 
-  BYS <- c("individual","time","sun","moon","season","tropic")
-  # check for annotations if necessary
-  check <- function(cby,column) { if(by==cby && column %nin% names(object[[1]])) stop("Data are not annotated.") }
-  check('sun','sunlight')
-  check('moon','moonlight')
-  check('season','season')
-  check('tropic','tropic')
-  if(by %nin% BYS && by %nin% names(object[[1]])) { stop("Data are not annotated.") }
-
+  # determine color function
   if(is.null(col.fn))
-  {
-    if(by=="individual") { col.fn <- function(i,alpha){grDevices::hsv(i,alpha=alpha)} }
-    else { col.fn <- function(i,alpha){grDevices::rgb(i,0,1-i,alpha)} }
-  }
-
-  # determine index
-  if(by %in% c("individual","tropic")) # cyclic scale
   {
     if(by=="individual")
     {
-      index <- color.individual(object,...)
-      index <- lapply(1:length(object), function(i){ rep(index[i],length(object[[i]]$t)) })
+      index <- color.individual(object,cores=cores,...)
+      col.fn <- function(i,alpha){grDevices::hsv(i,alpha=alpha)}
     }
-    else if(by=="tropic")
-    { index <- lapply(object,function(o){o$tropic}) }
+    else
+    { col.fn <- function(i,alpha){grDevices::rgb(i,0,1-i,alpha)} }
   }
-  else # relative scale (normalized)
+
+  if(class(object[[1]]) %in% c('UD','CTMM')) # color densities by individual only
   {
-    if(by=="time")
-    { index <- lapply(object,function(o){o$t}) }
-    else if(by=="sun")
-    { index <- lapply(object,function(o){o$sunlight}) }
-    else if(by=="moon")
-    { index <- lapply(object,function(o){o$moonlight}) }
-    else if(by=="season")
-    { index <- lapply(object,function(o){o$season}) }
-    else # custom column
-    { index <- lapply(object,function(o){o[[by]]}) }
+    if(by!='individual') { stop("Only by='individual' supported by object class.") }
 
-    # scale index to 0:1
-    MIN <- sapply(index,function(i){min(i)})
-    MIN <- min(MIN)
-    MAX <- sapply(index,function(i){max(i)})
-    MAX <- max(MAX)
-    index <- lapply(index,function(i){(i-MIN)/(MAX-MIN)})
+    # apply color function
+    index <- col.fn(index,alpha) # index already calculated above
   }
+  else # telemetry or data.frame
+  {
+    BYS <- c("individual","time","sun","moon","season","tropic")
+    # check for annotations if necessary
+    check <- function(cby,column) { if(by==cby && column %nin% names(object[[1]])) stop("Data are not annotated.") }
+    check('sun','sunlight')
+    check('moon','moonlight')
+    check('season','season')
+    check('tropic','tropic')
+    if(by %nin% BYS && by %nin% names(object[[1]])) { stop("Data are not annotated.") }
 
-  # calculate alpha channel
-  ALPHA <- lapply(object,function(o){ diff(o$t) })
-  if(is.null(dt)) { dt <- stats::median( sapply(ALPHA,function(a){ stats::median(a) }) ) }
-  ALPHA <- lapply(ALPHA,function(a){ a <- pmin(c(Inf,a),c(a,Inf)); a <- alpha*clamp(a/dt); return(a) })
+    # determine index
+    if(by %in% c("individual","tropic")) # cyclic scale
+    {
+      if(by=="individual") # numeric index calculated above
+      { index <- lapply(1:length(object), function(i){ rep(index[i],length(object[[i]]$t)) }) }
+      else if(by=="tropic")
+      { index <- lapply(object,function(o){o$tropic}) }
+    }
+    else # relative scale (normalized)
+    {
+      if(by=="time")
+      { index <- lapply(object,function(o){o$t}) }
+      else if(by=="sun")
+      { index <- lapply(object,function(o){o$sunlight}) }
+      else if(by=="moon")
+      { index <- lapply(object,function(o){o$moonlight}) }
+      else if(by=="season")
+      { index <- lapply(object,function(o){o$season}) }
+      else # custom column
+      { index <- lapply(object,function(o){o[[by]]}) }
 
-  # apply color function
-  index <- lapply(1:length(index),function(i){ col.fn(index[[i]],ALPHA[[i]]) })
+      # scale index to 0:1
+      MIN <- sapply(index,function(i){min(i)})
+      MIN <- min(MIN)
+      MAX <- sapply(index,function(i){max(i)})
+      MAX <- max(MAX)
+      index <- lapply(index,function(i){(i-MIN)/(MAX-MIN)})
+    }
 
-  if(length(index)==1) { index <- index[[1]] }
+    # calculate alpha channel
+    ALPHA <- lapply(object,function(o){ diff(o$t) })
+    if(is.null(dt)) { dt <- stats::median( sapply(ALPHA,function(a){ stats::median(a) }) ) }
+    ALPHA <- lapply(ALPHA,function(a){ a <- pmin(c(Inf,a),c(a,Inf)); a <- alpha*clamp(a/dt); return(a) })
+
+    # apply color function
+    index <- lapply(1:length(index),function(i){ col.fn(index[[i]],ALPHA[[i]]) })
+
+    if(length(index)==1) { index <- index[[1]] }
+  }
 
   names(index) <- names(object)
   return(index)
