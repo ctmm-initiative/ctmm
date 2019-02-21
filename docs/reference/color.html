@@ -32,7 +32,7 @@
 
 <meta property="og:title" content="Color telemetry objects by time — color" />
 
-<meta property="og:description" content="These functions facilitate the coloring of tracks by a variety of time related quantites." />
+<meta property="og:description" content="These functions facilitate the coloring of tracks by annotating tracking data with time/location specific information and computing color arguments for plot." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -124,7 +124,7 @@
 
     <div class="ref-description">
     
-    <p>These functions facilitate the coloring of tracks by a variety of time related quantites.</p>
+    <p>These functions facilitate the coloring of tracks by annotating tracking data with time/location specific information and computing color arguments for <code>plot</code>.</p>
     
     </div>
 
@@ -149,7 +149,7 @@
     </tr>
     <tr>
       <th>...</th>
-      <td><p>Additional arguments (see Details below).</p></td>
+      <td><p>Additional arguments.</p></td>
     </tr>
     <tr>
       <th>col.fn</th>
@@ -167,14 +167,15 @@
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>An <code>annotate</code>d <code>telemetry</code> object is required for <code>color</code> <code>by</code> arguments <code>"sun"</code>, <code>"moon"</code>, <code>"season"</code>, or <code>"tropic"</code>.</p>
+    <p>Annotated <code>telemetry</code> objects are required for <code>color</code> <code>by</code> arguments <code>"sun"</code>, <code>"moon"</code>, <code>"season"</code>, or <code>"tropic"</code>.</p>
 <p><code>by="time"</code> colors tracking data with a gradient that increases in time.
 <code>by="sun"</code> colors according to the sine of the sun's altitude, which is proportional to solar flux during daylight hours.
 <code>by="moon"</code> colors according to the illuminated fraction of the moon.
 <code>by="season"</code> colors according to the length of the day, and therefore corresponds to the local season.
 <code>by="tropic"</code> currently colors according to the calender day, but will eventually be upgraded to tropical-year cycle.</p>
-<p><code>by="individual"</code> assigns more distinct colors to individuals with higher spatial overlap. Finding the best color assignment is an \(NP\)-hard problem that is here approximated in \(O(N^3)\) time, and so the color contrast is not always optimal.</p>
-<p>Other named columns in the <code>telemetry</code> object can also be used with <code>color</code>.</p>
+<p><code>by="individual"</code> assigns colors to minimize the maximum combined spatial and color overlap.
+Finding the best color assignment is an \(NP\)-hard problem that is here approximated in \(O(N^3)\) time with a custom greedy algorithm.</p>
+<p>Other named columns in the <code>telemetry</code> object can also be used with <code>color</code>, by specifying the column name with <code>by</code>.</p>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
@@ -193,6 +194,7 @@
 
 <span class='co'># assign distinct colors to buffalo</span>
 <span class='no'>COL</span> <span class='kw'>&lt;-</span> <span class='fu'>color</span>(<span class='no'>buffalo</span>,<span class='kw'>by</span><span class='kw'>=</span><span class='st'>'individual'</span>)
+<span class='co'># Notice the separation into RGB and CMY for maximum contrast</span>
 <span class='fu'><a href='plot.telemetry.html'>plot</a></span>(<span class='no'>buffalo</span>,<span class='kw'>col</span><span class='kw'>=</span><span class='no'>COL</span>)</div><div class='img'><img src='color-1.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'># annotate buffalo with sunlight data and compute colors</span>
 <span class='no'>buffalo</span> <span class='kw'>&lt;-</span> <span class='fu'>annotate</span>(<span class='no'>buffalo</span>,<span class='kw'>cores</span><span class='kw'>=</span><span class='fl'>2</span>) <span class='co'># CRAN policy limits to 2 cores</span>
