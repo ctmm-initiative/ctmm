@@ -1,4 +1,5 @@
 PRIORITY
+* make color by take a vector
 * cores option in ctmm.select
 * overlap on mean()s of UDs (Ellie)
 * fast plot of GPS-ARGOS hybrid data

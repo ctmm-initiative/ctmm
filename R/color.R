@@ -128,126 +128,61 @@ malpha <- function(col,alpha=1)
 
 ##############################
 # COLOR BY INDIVIDUAL
-# precision: fraction of numerical precision to target---error seems larger than it should be (1/2)
-# maxit: maximum number of iterations to attempt when equilibrating
-color.individual <- function(object,precision=1/4,STEP=1,maxit=Inf,...)
+# a greedy algorithm
+color.individual <- function(object,cores=1,...)
 {
   object <- listify(object)
   n <- length(object)
   if(n==1) { return(0) }
   if(n==2) { return(c(0,1/2)) }
 
-  STEP <- 1 # initial equilibration step size (decays harmonically)
-  tol <- .Machine$double.eps^precision
-
   CLASS <- class(object[[1]])
   # could update this to robust overlap calculation
   if(CLASS %in% c('telemetry','data.frame'))
-  { OVER <- lapply(object,function(o){ ctmm.fit(o,ctmm(isotropic=(nrow(o)<3)),method='ML') }) }
+  { OVER <- plapply(object,function(o){ ctmm.fit(o,ctmm(isotropic=(nrow(o)<3)),method='ML',COV=FALSE) },cores=cores) }
   else if(CLASS %in% c('ctmm','UD'))
   { OVER <- object }
   OVER <- overlap(OVER,debias=FALSE,COV=FALSE)[,,2]
+  diag(OVER) <- 0 # no self interactions
 
-  # supply small minimum repulsion/overlap for some initial color separation
-  repulsion <- min(1/length(object),1/10)
-  repulsion <- max(repulsion-min(OVER),0) # don't necessarily need it
-  OVER <- (OVER + repulsion)/(1 + repulsion) # O(repulsion^2) change
+  # who has the worst spatial overlap
+  ORDER <- apply(OVER,1,function(o){mean(sort(o,decreasing=TRUE)[1:2])}) # need 2 values to break ties... full sort is wasteful
+  ORDER <- order(ORDER,decreasing=TRUE)
 
-  # who has the most overlap with everyone
-  SOVER <- rowSums(OVER)
-  ORDER <- order(SOVER,decreasing=TRUE)
-
-  # initially greedy energy minimization algorithm matching highest overlaps to largest color distances
-  r <- array(Inf,c(n,2)) # current locations
-  colnames(r) <- c('x','y')
-  rownames(r) <- names(object)
-
-  N <- 2 # individuals currently on color wheel
-  # initial solution
-  r[ORDER[1:2],] <- array(c(1,-1,0,0),c(2,2))
-
-  # find best gap to insert next color
-  insert <- function()
-  {
-    # current angles
-    theta <- atan2(r[ORDER[1:N],'y'],r[ORDER[1:N],'x']) # -pi:pi
-    theta <- sort(theta)
-    # midpoints between angles
-    M <- (theta[-1]+theta[-N])/2
-    M[N] <- ( (theta[1]+2*pi) + theta[N] )/2
-    # midpoint locations to evaluate
-    M <- cbind(x=cos(M),y=sin(M))
-    # difference vectors (mid,other)
-    dX <- outer(M[,'x'],r[ORDER[1:N],'x'],'-')
-    dY <- outer(M[,'y'],r[ORDER[1:N],'y'],'-')
-    dr <- sqrt(dX^2+dY^2)
-    U <- -OVER[ORDER[N+1],ORDER[1:N]]*log(dr) # potential energies of next individual
-    U <- rowSums(U) # total potential energies of next individual
-    MIN <- which.min(U) # minimum energy midpoint
-    return(M[MIN,])
-  }
-
-  # adjust spacings to minimize energy
-  equilibrate <- function()
-  {
-    ORDER <- ORDER[1:N]
-    r <- r[ORDER,]
-    OVER <- OVER[ORDER,ORDER]
-
-    i <- 0
-    ERROR <- Inf
-    tol <- N*tol
-    while(i<=maxit && ERROR>=tol)
-    {
-      OLD <- diff(sort(atan2(r[,'y'],r[,'x'])))
-      dX <- outer(r[,'x'],r[,'x'],'-')
-      dY <- outer(r[,'y'],r[,'y'],'-')
-      dr2 <- dX^2+dY^2
-      diag(dr2) <- Inf # zero self interaction
-      FX <- OVER * dX / dr2 # 1/r force on first index from second index
-      FY <- OVER * dY / dr2
-      FX <- rowSums(FX) # net force on index
-      FY <- rowSums(FY) # net force on index
-      Fr <- cbind(x=FX,y=FY) # net force vectors
-      MAX <- sqrt(max(rowSums(Fr^2))) # max force, used to scale time step
-      r <- r + (STEP/(i+1)/MAX)*Fr # run forward in time
-      r <- r / sqrt(rowSums(r^2)) # pull back to color wheel
-      r[1,] <- c(1,0) # fix most overlapping individual to first color
-
-      ERROR <- diff(sort(atan2(r[,'y'],r[,'x']))) - OLD
-      ERROR <- max(abs(ERROR))
-      i <- i + 1
-    }
-    return(r)
-  }
+  POS <- ORDER[1:2] # current order in color wheel
+  N <- length(POS) # individuals currently on color wheel
 
   # insert individuals one-by-one
   while(N < n)
   {
-    r[ORDER[N+1],] <- insert() # insert next charge into best gap
-    N <- N + 1
-    # plot(r[ORDER[1:N],],xlim=c(-1,1),ylim=c(-1,1),asp=1,cex=2*SOVER[ORDER[1:N]]/max(SOVER)); points(0,0,col='red')
-    r[ORDER[1:N],] <- equilibrate() # equilibrate current charges
-    # plot(r[ORDER[1:N],],xlim=c(-1,1),ylim=c(-1,1),asp=1,cex=2*SOVER[ORDER[1:N]]/max(SOVER)); points(0,0,col='red')
+    MAT <- outer(1:(N+1),1:(N+1),'-') # color distance matrix
+    MAT <- abs(MAT)
+    MAT <- ifelse(MAT>(N+1)/2,N+1-MAT,MAT) # cyclic property of colors
+    MAT <- (2*pi/2)/(N+1) * MAT # map 0:1 to 0:pi for angle overlap
+    MAT <- cos(MAT) # color overlap matrix
+
+    MAX <- rep(NA,N) # to store worst values
+    for(i in 1:N) # cycle through gaps
+    {
+      # ? what is the worst combined overlap if we insert individual N+1 in gap i ?
+      TRY <- c(POS[1:i],ORDER[N+1]) # attempted sorting
+      if(i<N) { TRY <- c(TRY,POS[(i+1):N]) }
+      TRY <- OVER[TRY,TRY] # corresponding overlap matrix
+      TRY <- TRY * MAT # combined overlap
+      MAX[i] <- max(TRY) # worst combined overlap
+    }
+    # best worst insertion
+    MIN <- which.min(MAX)
+
+    # insert individual N+1
+    NEW <- c(POS[1:MIN],ORDER[N+1])
+    if(MIN<N) { NEW <- c(NEW,POS[(MIN+1):N]) }
+
+    POS <- NEW
+    N <- length(POS)
   }
 
-  # normalize interaction strengths to equispace colors
-  # plot(r[ORDER[1:N],],xlim=c(-1,1),ylim=c(-1,1),asp=1,cex=2*SOVER[ORDER[1:N]]/max(SOVER)); points(0,0,col='red')
-  while(min(OVER)<0.5)
-  {
-    OVER <- (OVER + sqrt(1/N))/(1 + sqrt(1/N)) # O(1/N) change
-    r <- equilibrate()
-    # plot(r[ORDER[1:N],],xlim=c(-1,1),ylim=c(-1,1),asp=1,cex=2*SOVER[ORDER[1:N]]/max(SOVER)); points(0,0,col='red')
-    # title(min(OVER))
-  }
-
-  # format results to unit interval
-  theta <- atan2(r[,'y'],r[,'x'])/(2*pi)
-  theta <- theta - min(theta) # no longer necessary
-
-  # make equispaced (should be close)
-  # ORDER <- order(theta)
-  # theta <- (ORDER-1)/N
-
+  theta <- (1:N - 1)/N
+  theta[POS] <- theta
   return(theta)
 }
