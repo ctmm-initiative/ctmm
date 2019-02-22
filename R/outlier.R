@@ -269,8 +269,9 @@ time_res <- function(DT)
 {
   ### recording interval ###
   dt <- DT[DT>0]
-  if(length(dt)==0) { return(0) }
-  if(length(dt)==1) { return(dt) }
+  # fallback values
+  if(length(dt)==0) { return(c(1,1)) }
+  if(length(dt)==1) { return(c(dt,min(1,dt/2))) }
 
   # assume decimal truncation
   M <- -log10(min(dt))

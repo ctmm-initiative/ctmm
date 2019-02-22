@@ -1,4 +1,4 @@
-ctmm 0.5.6 (2019-02-21)
+ctmm 0.5.6 (2019-02-22)
 ================
 
   * new functions annotate and color
@@ -16,6 +16,8 @@ ctmm 0.5.6 (2019-02-21)
   * only physical cores now counted by cores arguments
   
   * stability improvements to base R optimizer usage
+  
+  * bugfix in mark.rm argument of as.telemetry
 
 ctmm 0.5.5 (2019-02-11)
 ================

@@ -287,6 +287,11 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   # make column names canonicalish
   names(object) <- tolower(names(object))
 
+  # manually marked outliers
+  COL <- c("manually.marked.outlier","marked.outlier","outlier")
+  COL <- pull.column(object,COL,as.logical)
+  if(mark.rm && length(COL)) { object <- object[!COL,] }
+
   # timestamp column
   COL <- c('timestamp','Acquisition.Start.Time','Acquisition.Time','time','Date.GMT','Date.Local','GMT.Time','Date.Time','Date.Time.GMT')
   COL <- pull.column(object,COL,FUNC=as.character)
@@ -313,11 +318,6 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   # UTM locations if long-lat not present
   #
   # !!!
-
-  # manually marked outliers
-  COL <- c("manually.marked.outlier","marked.outlier","outlier")
-  COL <- pull.column(object,COL,as.logical)
-  if(mark.rm && length(COL)) { object <- object[!COL,] }
 
   ###############################################
   # TIME & PROJECTION
