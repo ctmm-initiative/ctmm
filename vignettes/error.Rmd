@@ -37,6 +37,14 @@ names(turtle[[3]]) # now the data are calibrated, as VAR is present
 plot(turtle[[3]],error=2) # turtle plot with 95% error discs
 ```
 
+If you have ARGOS or e-obs data, they will import with calibration already applied to the horizontal dimensions, but not the vertical dimension. These data only need their vertical errors calibrated.
+
+```{r}
+data(coati)
+names(coati[[1]]) # VAR already present
+plot(coati[[1]],error=2) # coati plot with 95% error discs
+```
+
 ## Error model selection
 
 Not all GPS devices provide reliable DOP values and sometimes it is not obvious what error information will prove to be the most predictive. Generally speaking, `as.telemetry` will attempt to import the "best" column from among those that estimate error, DOP value, number of satellites and fix type, inlcuding timed-out fixes (see the `timeout` argument in `help(as.telemetry)`). Researchers may want to import the data with different error information, run `uere.fit` for each error model, and then select among the candidate models. Here we do this by comparing the turtle calibration data with and without HDOP values.

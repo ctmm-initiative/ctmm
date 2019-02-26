@@ -43,7 +43,7 @@ get.dop.types <- function(data)
   data <- listify(data)
   # all kinds of data
   NAMES <- sapply(data,names)
-  NAMES <- unique(c(NAMES))
+  NAMES <- unique(unlist(NAMES))
 
   IN <- sapply(TYPES,function(type){all(DOP.LIST[[type]]$axes %in% NAMES) || all(DOP.LIST[[type]]$geo %in% NAMES)})
   TYPES <- TYPES[IN]
@@ -148,12 +148,12 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
   z <- lapply(1:length(data),function(i){get.telemetry(data[[i]],axes)})
 
   # make sure axes present in dataset (e.g., only 2D fixes)
-  IN <- as.logical(sapply(z,length))
+  if(type=='speed') { IN <- sapply(z,length)>0 } else { IN <- sapply(z,length)>length(axes) }
   data <- data[IN]
   z <- z[IN]
 
   # don't have enough data to estimate any UERE
-  if(!length(data) || length(data)>=sum(sapply(data,nrow)))
+  if(!length(data))
   {
     attr(UERE,"DOF") <- numeric(length(UERE)) # sampling distribution
     attr(UERE,"AICc") <- NA_real_
@@ -707,6 +707,7 @@ get.class.mat <- function(data,LEVELS=levels(data$class))
   if("class" %in% names(data))
   {
     C <- sapply(LEVELS,function(lc){data$class==lc}) # (time,class)
+    dim(C) <- c(nrow(data),length(LEVELS))
     colnames(C) <- LEVELS
   }
   else

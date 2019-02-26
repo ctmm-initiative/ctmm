@@ -298,7 +298,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   COL <- asPOSIXct(COL,timeformat=timeformat,timezone=timezone)
   DATA <- data.frame(timestamp=COL)
 
-  COL <- c("animal.ID","individual.local.identifier","local.identifier","individual.ID","Name","ID","tag.local.identifier","tag.ID","deployment.ID","track.ID")
+  COL <- c("animal.ID","individual.local.identifier","local.identifier","individual.ID","Name","ID","tag.local.identifier","tag.ID","deployment.ID","track.ID","band.number","band.num")
   COL <- pull.column(object,COL,as.factor)
   if(length(COL)==0)
   {
@@ -419,9 +419,9 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   COL <- pull.column(object,COL)
   if(length(COL))
   {
-    # estimated from Scott's calibration data
     DATA$HDOP <- COL
-    DATA[[DOP.LIST$horizontal$VAR]] <- 1.2304709680947150^2/2*COL^2
+    # estimated from calibration data of Scott LaPoint; Thomas Pfeiffer and Bernd-Ulrich Meyburg
+    DATA[[DOP.LIST$horizontal$VAR]] <- (1.673414^2/2) * COL^2
 
     NAS <- is.na(DATA$HDOP)
     if(any(NAS))

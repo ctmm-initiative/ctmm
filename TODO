@@ -1,5 +1,6 @@
 PRIORITY
-* finish cross checking e-obs calibration data
+* raster::drawPoly for subsetting data
+* distribute cores from ctmm.select -> ctmm.fit optimizer
 * mean, mode, median for ctmm and UD objects
 * mean ctmm object
 * overlap on mean()s of UDs (Ellie)

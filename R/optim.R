@@ -302,7 +302,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
   # check complains about visible bindings
   fnscale <- parscale <- maxit <- precision <- trace <- cores <- hessian <- covariance <- NULL
   # fix default control arguments
-  default <- list(fnscale=1,parscale=pmin(abs(par),abs(par-lower),abs(upper-par)),maxit=100,trace=FALSE,precision=NULL,cores=NULL,hessian=NULL,covariance=NULL,stages=NULL)
+  default <- list(fnscale=1,parscale=pmin(abs(par),abs(par-lower),abs(upper-par)),maxit=100,trace=FALSE,precision=NULL,cores=1,hessian=NULL,covariance=NULL,stages=NULL)
   control <- replace(default,names(control),control)
   # check does not like attach
   NAMES <- names(control)
