@@ -1,6 +1,6 @@
 PRIORITY
+* finish cross checking e-obs calibration data
 * mean, mode, median for ctmm and UD objects
-* cores option in ctmm.select
 * mean ctmm object
 * overlap on mean()s of UDs (Ellie)
 * fast plot of GPS-ARGOS hybrid data

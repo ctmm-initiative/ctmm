@@ -16,11 +16,11 @@ color(object,by="time",col.fn=NULL,alpha=1,dt=NULL,cores=1,...)
 \arguments{
   \item{object}{A \code{telemetry} object or list of objects. \code{color} can also take \code{ctmm} and \code{UD} objects. }
   \item{by}{What to \code{annotate} or \code{color} times by. Options include \code{"individual"}, \code{"time"}, \code{"sun"}, \code{"moon"}, \code{"season"}, and \code{"tropic"} (see Details below). \code{ctmm} and \code{UD} objects can only be colored by \code{"individual"}.}
-  \item{cores}{Number of annotations or overlap calculations to peform in parallel. \code{cores=0} will use all cores, while \code{cores<0} will reserve \code{abs(cores)}.}
-  \item{...}{Additional arguments.}
   \item{col.fn}{Optional coloring function that can take a [0,1] interval and alpha channel argument.}
   \item{alpha}{Base alpha channel value.}
   \item{dt}{Sampling interval specification for making oversampled times more transparent. If \code{NULL}, the median will be used. Disabled if zero.}
+  \item{cores}{Number of annotations or overlap calculations to peform in parallel. \code{cores=0} will use all cores, while \code{cores<0} will reserve \code{abs(cores)}.}
+  \item{...}{Additional arguments.}
 }
 
 \details{

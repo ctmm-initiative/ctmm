@@ -17,7 +17,8 @@ ctmm.loglike(data,CTMM,REML=FALSE,profile=TRUE,zero=0,verbose=FALSE)
 
 ctmm.fit(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=FALSE)
 
-ctmm.select(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position",trace=FALSE,...)
+ctmm.select(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position",trace=FALSE,cores=1,
+            ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -41,6 +42,7 @@ ctmm.select(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position",trace=FALS
   \item{level}{Attempt to simplify a model if a feature's non-existence falls within this level of confidence interval.}
   \item{IC}{Information criteria used for selection. Can be \code{"AICc"}, \code{"AIC"}, \code{"BIC"} or none (\code{NA}). AICc is approximate.}
   \item{MSPE}{Reject non-stationary features that increase the mean square predictive error of \code{"position"}, \code{"velocity"}, or not (\code{NA}).}
+  \item{cores}{Maximum number of models to fit in parallel. cores=0 will use all cores, while cores<0 will reserve abs(cores).}
   \item{...}{Further arguments passed to \code{ctmm.fit}.}
 }
 

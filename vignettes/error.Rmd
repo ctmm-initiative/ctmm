@@ -13,22 +13,11 @@ vignette: >
 
 # Error calibration
 
-The first step to handling errors is to quantify them. Make sure that your data's "dilution of precision" (DOP) and error columns import correctly into `ctmm`. Some tracking device manufacturers provide pre-calibrated errors. These coati were tracked with e-obs GPS collars that features calibrated errors for the location, imported by `ctmm` into the `VAR.xy` column, which represents the `x` and `y` error variances.
-
-```{r}
-library(ctmm)
-data('coati')
-names(coati[[1]]) # imported column names
-plot(coati[[1]],col=rainbow(2),error=2,trans=0.4) # coati plot with 95% error discs
-```
-
-Most GPS devices will only have an `HDOP` column, which is only proportional to the `x` and `y` error standard deviations. The proportionality constant between the HDOP and error standard deviation is known as the user equivalent range error (UERE). The UERE should be estimated from calibration data if not provided by the manufacturer. Without the option of pre-calibrated errors or calibration data, the UERE must be fit simultaneously with the movement model, which is not as reliable. We will cover simultaneous fitting at the end of this vignette.
-
-In the following wood turtle dataset, we have some calibration data and a turtle track. Note that the calibration data must be collected from the same model device as the tracking data.
+The first step to handling errors is to quantify them. Make sure that your data's "dilution of precision" (DOP) and error columns import correctly into `ctmm`. In the following wood turtle dataset, we have some calibration data and a turtle track. Note that the calibration data must be collected from the same model device as the tracking data.
 
 ```{r}
 data(turtle)
-names(turtle[[1]]) # data are not yet calibrated
+names(turtle[[1]]) # data are not yet calibrated, but HDOP is present
 names(turtle) # two calibration datasets and two turtle datasets
 plot(turtle[1:2],col=rainbow(2)) # calibration data only
 ```
@@ -44,7 +33,7 @@ For GPS data, the UERE will typically be 10-15 meters. The UERE can be assigned 
 
 ```{r}
 uere(turtle) <- UERE
-names(turtle[[3]]) # now the data are calibrated
+names(turtle[[3]]) # now the data are calibrated, as VAR is present
 plot(turtle[[3]],error=2) # turtle plot with 95% error discs
 ```
 
@@ -126,10 +115,9 @@ For calibrated errors, we have to set `error=TRUE` in the model guess to fit wit
 # automated guestimates with circular covariance and calibrated errors
 GUESS <- ctmm.guess(turtle[[3]],CTMM=ctmm(error=TRUE),interactive=FALSE)
 # the beta optimizer is more reliable than the default optimizer
-# control <- list(method='pNewton',cores=-1) # will use all but one cores
-control <- list(method='pNewton',cores=2) # CRAN policy limits us to 2 cores
-# stepwise fitting
-FIT <- ctmm.select(turtle[[3]],GUESS,control=control,trace=TRUE)
+control <- list(method='pNewton')
+# stepwise fitting # CRAN policy limits us to 2 cores
+FIT <- ctmm.select(turtle[[3]],GUESS,control=control,trace=TRUE,cores=2)
 summary(FIT)
 ```
 
@@ -150,7 +138,7 @@ The only difference is that you have to provide an initial guess for the UERE. O
 # cheat and use previous fit as initial guess
 GUESS$error <- 10 # 10 meter error guess
 # fit parameter estimates
-FIT <- ctmm.select(turtle[[3]],GUESS,control=control)
+FIT <- ctmm.select(turtle[[3]],GUESS,control=control,cores=2)
 summary(FIT)
 ```
 

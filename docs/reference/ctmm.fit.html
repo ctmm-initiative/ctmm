@@ -137,7 +137,8 @@ The fitting functions wrap around <code>optim</code> and <code>ctmm.loglike</cod
 
 <span class='fu'>ctmm.fit</span>(<span class='no'>data</span>,<span class='kw'>CTMM</span><span class='kw'>=</span><span class='fu'>ctmm</span>(),<span class='kw'>method</span><span class='kw'>=</span><span class='st'>"ML"</span>,<span class='kw'>COV</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>control</span><span class='kw'>=</span><span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/list'>list</a></span>(),<span class='kw'>trace</span><span class='kw'>=</span><span class='fl'>FALSE</span>)
 
-<span class='fu'>ctmm.select</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>verbose</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>IC</span><span class='kw'>=</span><span class='st'>"AICc"</span>,<span class='kw'>MSPE</span><span class='kw'>=</span><span class='st'>"position"</span>,<span class='kw'>trace</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='no'>...</span>)</pre>
+<span class='fu'>ctmm.select</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>verbose</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>IC</span><span class='kw'>=</span><span class='st'>"AICc"</span>,<span class='kw'>MSPE</span><span class='kw'>=</span><span class='st'>"position"</span>,<span class='kw'>trace</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>cores</span><span class='kw'>=</span><span class='fl'>1</span>,
+            <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -221,6 +222,10 @@ The fitting functions wrap around <code>optim</code> and <code>ctmm.loglike</cod
     <tr>
       <th>MSPE</th>
       <td><p>Reject non-stationary features that increase the mean square predictive error of <code>"position"</code>, <code>"velocity"</code>, or not (<code>NA</code>).</p></td>
+    </tr>
+    <tr>
+      <th>cores</th>
+      <td><p>Maximum number of models to fit in parallel. cores=0 will use all cores, while cores&lt;0 will reserve abs(cores).</p></td>
     </tr>
     <tr>
       <th>...</th>

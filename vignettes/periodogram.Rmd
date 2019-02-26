@@ -82,9 +82,9 @@ We thereby conduct a model selection.
 
 ```{r}
 # ctmm beta optimizer is more reliable here
-# control <- list(method="pNewton",cores=-1) # use all but 1 core
-control <- list(method="pNewton",cores=2) # CRAN policy limits to 2 processes
-FITS <- ctmm.select(Gamba,GUESS,verbose=TRUE,control=control)
+control <- list(method="pNewton")
+# CRAN policy limits to 2 processes
+FITS <- ctmm.select(Gamba,GUESS,verbose=TRUE,control=control,cores=2)
 ```
 
 The non-default `control` list here specifies our prototype optimization code that has been tested to be faster and more accurate on this example.

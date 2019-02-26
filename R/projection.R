@@ -124,6 +124,7 @@ northing <- function(x,proj)
   return(u)
 }
 
+
 # rotate northing to heading
 # u = dim(2,n)
 # return = dim(n,2)

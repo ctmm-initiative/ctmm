@@ -58,7 +58,7 @@ simplify.ctmm <- function(M,par)
 
 ###############
 # keep removing uncertain parameters until AIC stops improving
-ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position",trace=FALSE,...)
+ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position",trace=FALSE,cores=1,...)
 {
   IC <- match.arg(IC,c("AICc","AIC","BIC",NA))
   MSPE <- match.arg(MSPE,c("position","velocity",NA))
@@ -108,7 +108,7 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
     # fit every model
     if(trace && length(GUESS)) { message("* Fitting models ",paste(names(GUESS),collapse=", "),".") }
     #? should I run select here instead of fit ?
-    GUESS <- lapply(GUESS,function(g){ctmm.fit(data,g,trace=trace2,...)})
+    GUESS <- plapply(GUESS,function(g){ctmm.fit(data,g,trace=trace2,...)},cores=cores)
 
     MODELS <<- c(MODELS,GUESS)
 

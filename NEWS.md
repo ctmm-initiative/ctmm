@@ -1,9 +1,11 @@
-ctmm 0.5.6 (2019-02-22)
+ctmm 0.5.6 (2019-02-25)
 ================
 
   * new functions annotate and color
+  
+  * support for UTM locations in as.telemetry
 
-  * GPS-ARGOS hybrid data now supported by as.telemetry & uere.fit
+  * support for GPS-ARGOS hybrid data in as.telemetry & uere.fit
   
   * periodogram functionality restored for one-dimensional data
   
@@ -13,11 +15,15 @@ ctmm 0.5.6 (2019-02-22)
   
   * ctmm.loglike now returns -Inf when movement and error variance are zero
   
-  * only physical cores now counted by cores arguments
-  
   * stability improvements to base R optimizer usage
   
   * bugfix in mark.rm argument of as.telemetry
+  
+  * cores option added to ctmm.select
+  
+  * only physical cores now counted by cores arguments
+
+  * cores option now used in Windows when appropriate
 
 ctmm 0.5.5 (2019-02-11)
 ================

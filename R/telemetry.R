@@ -316,8 +316,42 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   DATA$latitude <- COL
 
   # UTM locations if long-lat not present
-  #
-  # !!!
+  if(all(c('longitude','latitude') %nin% names(DATA)))
+  {
+    message("Geocentric coordinates not found. Looking for UTM coordinates.")
+
+    COL <- c("GPS.UTM.zone","UTM.zone","zone")
+    COL <- pull.column(object,COL,FUNC=as.character)
+    zone <- COL
+
+    COL <- c("GPS.UTM.Easting","GPS.UTM.East","GPS.UTM.x","UTM.Easting","UTM.East","UTM.x","Easting","East","x")
+    COL <- pull.column(object,COL)
+    XY <- COL
+
+    COL <- c("GPS.UTM.Northing","GPS.UTM.North","GPS.UTM.y","UTM.Northing","UTM.North","UTM.y","Northing","North","y")
+    COL <- pull.column(object,COL)
+    XY <- cbind(XY,COL)
+
+    if(!is.null(XY) && ncol(XY)==2 && !is.null(zone))
+    {
+      # construct UTM projections
+      if(any(grepl("^[0-9]*$",zone))) { message('UTM zone missing lattitude bands; assuming UTM hemisphere="north". Alternatively, format zone column "# +south".') }
+      zone <- paste0("+proj=utm +zone=",zone)
+
+      # convert to long-lat
+      colnames(XY) <- c("x","y")
+      XY <- sapply(1:nrow(XY),function(i){rgdal::project(XY[i,,drop=FALSE],zone[i],inv=TRUE)})
+      XY <- t(XY)
+
+      # work with long-lat as if imported directly
+      DATA$longitude <- XY[,1]
+      DATA$latitude <- XY[,2]
+    }
+    else
+    { stop("Could not identify location columns.") }
+
+    rm(zone,XY)
+  }
 
   ###############################################
   # TIME & PROJECTION

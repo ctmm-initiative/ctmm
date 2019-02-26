@@ -144,14 +144,6 @@
       <td><p>What to <code>annotate</code> or <code>color</code> times by. Options include <code>"individual"</code>, <code>"time"</code>, <code>"sun"</code>, <code>"moon"</code>, <code>"season"</code>, and <code>"tropic"</code> (see Details below). <code>ctmm</code> and <code>UD</code> objects can only be colored by <code>"individual"</code>.</p></td>
     </tr>
     <tr>
-      <th>cores</th>
-      <td><p>Number of annotations or overlap calculations to peform in parallel. <code>cores=0</code> will use all cores, while <code>cores&lt;0</code> will reserve <code><a href='https://www.rdocumentation.org/packages/base/topics/MathFun'>abs(cores)</a></code>.</p></td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td><p>Additional arguments.</p></td>
-    </tr>
-    <tr>
       <th>col.fn</th>
       <td><p>Optional coloring function that can take a [0,1] interval and alpha channel argument.</p></td>
     </tr>
@@ -162,6 +154,14 @@
     <tr>
       <th>dt</th>
       <td><p>Sampling interval specification for making oversampled times more transparent. If <code>NULL</code>, the median will be used. Disabled if zero.</p></td>
+    </tr>
+    <tr>
+      <th>cores</th>
+      <td><p>Number of annotations or overlap calculations to peform in parallel. <code>cores=0</code> will use all cores, while <code>cores&lt;0</code> will reserve <code><a href='https://www.rdocumentation.org/packages/base/topics/MathFun'>abs(cores)</a></code>.</p></td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td><p>Additional arguments.</p></td>
     </tr>
     </table>
     
