@@ -420,7 +420,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   if(length(COL))
   {
     DATA$HDOP <- COL
-    # estimated from calibration data of Scott LaPoint; Thomas Pfeiffer and Bernd-Ulrich Meyburg
+    # estimated from calibration data of Scott LaPoint; Thomas Pfeiffer & Bernd-Ulrich Meyburg
     DATA[[DOP.LIST$horizontal$VAR]] <- (1.673414^2/2) * COL^2
 
     NAS <- is.na(DATA$HDOP)

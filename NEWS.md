@@ -1,5 +1,7 @@
-ctmm 0.5.6 (2019-02-26)
+ctmm 0.5.6 (2019-02-27)
 ================
+
+  * new functions lasso and marquee
 
   * new functions annotate and color
   
@@ -12,6 +14,8 @@ ctmm 0.5.6 (2019-02-26)
   * bugfix in IID ctmm.fit with elliptical errors
   
   * bugfix in occurrence when projection origin is far from the mean location
+  
+  * e-obs calibration cross checked and fixed
   
   * ctmm.loglike now returns -Inf when movement and error variance are zero
   

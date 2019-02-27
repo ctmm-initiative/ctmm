@@ -49,11 +49,8 @@ data(buffalo)
 #Extract movement data for a single animal
 Cilla <- buffalo$Cilla
 
-#Calculate variogram
-SVF <- variogram(Cilla)
-
 # generate a visual fit of the variogram (requires RStudio or a guess object is returned)
-variogram.fit(SVF)
+ctmm.guess(Cilla)
 }
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the

@@ -1,5 +1,5 @@
 PRIORITY
-* raster::drawPoly for subsetting data
+* summary.UERE on list( list(individual UEREs), joint UEREs )
 * distribute cores from ctmm.select -> ctmm.fit optimizer
 * mean, mode, median for ctmm and UD objects
 * mean ctmm object
@@ -7,9 +7,8 @@ PRIORITY
 * fast plot of GPS-ARGOS hybrid data
 * as.telemetry tibble->data.frame
 * update buffalo data
-* UTM import (Pati's collars: x,y,zone)
 * expose cex, lty, ... in plot.variogram
-* combine two telemetry objects for same animal but different device (dyadic UEREs)
+* combine two telemetry objects for same animal but different device (dyadic UEREs, match columns)
 * compass speed plot -- or cycle argument for speeds()
 * ctmm.fit -> id.parameters : force.error argument for when error is estimated to be 0
 * error vignette - check back on variogram

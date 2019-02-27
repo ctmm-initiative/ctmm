@@ -288,7 +288,12 @@ rm.name <- function(object,name)
 listify <- function(x)
 {
   if(is.null(x)) { return(x) }
-  if(class(x) != "list") { x <- list(x) }
+
+  if(class(x) != "list")
+  {
+    x <- list(x)
+    names(x) <- attr(x[[1]],'info')$identity
+  }
   return(x)
 }
 

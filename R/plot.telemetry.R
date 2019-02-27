@@ -89,11 +89,16 @@ new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,units=
 
     # empty base layer plot
     plot(ext, xlab=xlab, ylab=ylab, col=grDevices::rgb(1,1,1,0), asp=1, ...)
+    # plot information for further layering
+    projection <- unique(c(projection(data),projection(CTMM),projection(UD))) # some objects could be NULL
+    if(length(projection)>1) { stop("Multiple projections not yet supported.") }
+    assign("projection",projection,pos=plot.env)
+    # dimensional type
     assign("x.dim","length",pos=plot.env)
     assign("y.dim","length",pos=plot.env)
+    # unit conversion
     assign("x.scale",dist$scale,pos=plot.env)
     assign("y.scale",dist$scale,pos=plot.env)
-    assign("projection",c(data,CTMM,UD),pos=plot.env)
   } # end !add
 
   return(dist)
@@ -214,6 +219,8 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
   # now plot individually
   for(i in 1:length(x))
   {
+    if(!nrow(x[[i]])) { next } # skip empty data
+
     x[[i]] <- unit.telemetry(x[[i]],length=dist$scale)
 
     r <- x[[i]][,c('x','y')]

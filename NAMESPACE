@@ -108,3 +108,6 @@ S3method(emulate,telemetry)
 
 # time and time-visualization methods
 export(annotate,color)
+
+# GUI selection methods
+export(lasso,marquee)

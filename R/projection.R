@@ -1,6 +1,9 @@
 # global variable
 DATA.EARTH <- list(R.EQ=6378137,R.PL=6356752.3142) # equatorial & polar radii
 
+# otherwise returns NA
+projection.NULL <- function(x,asText=TRUE) { return(NULL) }
+setMethod('projection', signature(x='NULL'), projection.NULL)
 
 # range of telemetry data
 projection.telemetry <- function(x,asText=TRUE)

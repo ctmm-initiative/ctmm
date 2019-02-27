@@ -6,6 +6,7 @@
 \alias{projection,UD-method}
 \alias{projection,list-method}
 \alias{projection<-,list-method}
+\alias{projection,NULL-method}
 \alias{median}
 \alias{median.telemetry}
 \encoding{UTF-8}
@@ -21,6 +22,8 @@
 \S4method{projection}{UD}(x,asText=TRUE)
 
 \S4method{projection}{list}(x,asText=TRUE)
+
+\S4method{projection}{NULL}(x,asText=TRUE)
 
 \S4method{projection}{telemetry}(x) <- value
 
