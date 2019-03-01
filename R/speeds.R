@@ -61,6 +61,13 @@ speeds.slow <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,prior=FALS
   INF <- t(INF)
   colnames(INF) <- c("low","ML","high")
 
+  DOF <- summary(CTMM)$DOF['speed']
+  if(!DOF)
+  {
+    warning("Movement model is fractal.")
+    return(INF)
+  }
+
   if(!robust)
   {
     S1 <- array(0,n)
@@ -137,11 +144,14 @@ speeds.slow <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,prior=FALS
         Q1 <- mint(SPEEDS,(N+1-sqrt(N))/2)
         Q2 <- mint(SPEEDS,(N+1+sqrt(N))/2)
         ERROR <- max(1-Q1/AVE,Q2/AVE-1)
+
         # correct for Inf AVE
-        if(is.nan(ERROR))
+        if(is.nan(ERROR)) { ERROR <- Inf }
+
+        if(N>n/error^2)
         {
-          ERROR <- Inf
-          warning("Speeds accumulating on boundary and expectation value may not converge.")
+          warning("Expectation values did not converge after ",N," iterations.")
+          break
         }
       }
 

@@ -1,4 +1,4 @@
-ctmm 0.5.6 (2019-02-27)
+ctmm 0.5.6 (2019-02-28)
 ================
 
   * new functions lasso and marquee
@@ -28,6 +28,8 @@ ctmm 0.5.6 (2019-02-27)
   * only physical cores now counted by cores arguments
 
   * cores option now used in Windows when appropriate
+  
+  * improvements to speed, speeds, ctmm.select for short tracks of data
 
 ctmm 0.5.5 (2019-02-11)
 ================

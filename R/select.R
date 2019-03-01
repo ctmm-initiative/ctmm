@@ -231,7 +231,7 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
     }
 
     # can autocorrelation timescales be distinguished?
-    if(length(CTMM$tau)==2 && (CTMM$tau[1]!=CTMM$tau[2] || CTMM$omega))
+    if(length(CTMM$tau)==2 && CTMM$tau[1]<Inf && (CTMM$tau[1]!=CTMM$tau[2] || CTMM$omega))
     {
       TEMP <- get.taus(CTMM,zeroes=TRUE)
       nu <- TEMP$f.nu[2] # frequency/difference
@@ -448,7 +448,7 @@ summary.ctmm.list <- function(object, IC="AICc", MSPE="position", units=TRUE, ..
     # convert to meters/kilometers
     CNAME <- paste0("\u0394","RMSPE")
     MSPES <- sqrt(MSPES)
-    MSPES <- MSPES - MSPES[1]
+    if(MSPES[1]<Inf) { MSPES <- MSPES - MSPES[1] }
     MIN <- min(c(abs(MSPES[MSPES!=0]),Inf))
     UNIT <- unit(MIN,if(MSPE=="position"){"length"}else{"speed"},concise=TRUE,SI=!units)
     MSPES <- MSPES/UNIT$scale

@@ -16,6 +16,13 @@ vint <- function(vec,ind,return.ind=FALSE)
 
   if(return.ind) { return(c(lo,hi)) }
 
+  IND <- abs(vec[c(lo,hi)])
+  if(any(IND==Inf))
+  {
+    IND <- which.max(IND)
+    return(vec[c(lo,hi)[IND]])
+  }
+
   # linear interpolation
   vec <- vec[lo] + (vec[hi]-vec[lo])*(ind-lo)
 

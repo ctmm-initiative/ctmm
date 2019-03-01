@@ -32,7 +32,11 @@ speed.ctmm <- function(object,data=NULL,level=0.95,robust=FALSE,units=TRUE,prior
     { CI <- summary(object,level=level,units=FALSE)$CI['speed (meters/second)',] * sqrt(pi/2/2) }
     else # elliptical velocity distribution
     {
-      NAMES <- id.parameters(object,profile=FALSE)$NAMES
+      STUFF <- id.parameters(object,profile=FALSE,linear=FALSE)
+      NAMES <- STUFF$NAMES
+      parscale <- STUFF$parscale
+      lower <- STUFF$lower
+      upper <- STUFF$upper
 
       fn <- function(p)
       {
@@ -45,7 +49,8 @@ speed.ctmm <- function(object,data=NULL,level=0.95,robust=FALSE,units=TRUE,prior
 
       if(prior && fast)
       {
-        GRAD <- numDeriv::grad(fn,PAR) # don't step outside of (0,1)
+        GRAD <- genD(par=PAR,fn=fn,lower=lower,upper=upper,parscale=parscale,Richardson=2,mc.cores=1)$grad
+        # GRAD <- numDeriv::grad(fn,PAR) # don't step outside of (0,1)
         VAR <- c(GRAD %*% object$COV %*% GRAD)
 
         # propagate errors chi -> chi^2
@@ -129,11 +134,14 @@ speed.ctmm <- function(object,data=NULL,level=0.95,robust=FALSE,units=TRUE,prior
           Q1 <- vint(SPEEDS,(N+1-sqrt(N))/2)
           Q2 <- vint(SPEEDS,(N+1+sqrt(N))/2)
           ERROR <- max(AVE-Q1,Q2-AVE) / AVE
+
           # correct for Inf AVE
-          if(is.nan(ERROR))
+          if(is.nan(ERROR)) { ERROR <- Inf }
+
+          if(N>1/error^2)
           {
-            ERROR <- Inf
-            warning("Speeds accumulating on boundary and expectation value may not converge.")
+            warning("Expectation values did not converge after ",N," iterations.")
+            break
           }
         }
 
@@ -198,7 +206,8 @@ speed.rand <- function(CTMM,data=NULL,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NU
     # check for rare cases in sampling disribution where motion is almost but not fractal relative to sampling schedule
     # first check if non-stationary mean is irrelevant
     drift <- get(CTMM$mean)
-    if(drift@speed(CTMM)$EST/(sum(diag(CTMM$sigma))/prod(CTMM$tau))<error^2)
+    MSV <- sum(diag(CTMM$sigma))/ ifelse(CTMM$range,prod(CTMM$tau),CTMM$tau[2])
+    if(drift@speed(CTMM)$EST/MSV<error^2)
     {
       # now check if there are many steps per sampled interval
       FRAC <- CTMM$tau[2]/DT
@@ -248,7 +257,7 @@ speed.deterministic <- function(CTMM,sigma=CTMM$sigma)
   {
     # eigen values of velocity variance
     sigma <- sigma['area'] * exp(c(1,-1)/2*sigma['eccentricity'])
-    v <- sqrt(2/pi) * sqrt(sigma[1]) * pracma::ellipke(1-sigma[2]/sigma[1])$e
+    v <- sqrt(2/pi) * sqrt(sigma[1]) * pracma::ellipke(1-clamp(sigma[2]/sigma[1]))$e
   }
   return(v)
 }

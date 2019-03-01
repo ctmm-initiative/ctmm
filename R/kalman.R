@@ -348,7 +348,7 @@ kalman <- function(z,u,dt,CTMM,error=NULL,smooth=FALSE,sample=FALSE,residual=FAL
     # upgrade concurrent estimates to Kriged estimates (covariance only)
     for(i in (n-1):1)
     {
-      L[i,,] <- sCon[i,,] %*% t(Green[i+1,,]) %*% PDsolve(sFor[i+1,,]) # (K*DIM,K*DIM)
+      L[i,,] <- sCon[i,,] %*% t(Green[i+1,,]) %*% PDsolve(sFor[i+1,,],pseudo=TRUE) # (K*DIM,K*DIM)
       # manifestly symmetric backsolver
       # sCon[i,,] <- sCon[i,,] + L %*% (sCon[i+1,,]-sFor[i+1,,]) %*% t(L)
       # manifestly PSD backsolver

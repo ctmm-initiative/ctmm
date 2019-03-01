@@ -293,12 +293,12 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   if(mark.rm && length(COL)) { object <- object[!COL,] }
 
   # timestamp column
-  COL <- c('timestamp','Acquisition.Start.Time','Acquisition.Time','time','Date.GMT','Date.Local','GMT.Time','Date.Time','Date.Time.GMT')
+  COL <- c('timestamp','Acquisition.Start.Time','Acquisition.Time','Date.Time','Date.Time.GMT','time','Date.GMT','Date.Local','GMT.Time')
   COL <- pull.column(object,COL,FUNC=as.character)
   COL <- asPOSIXct(COL,timeformat=timeformat,timezone=timezone)
   DATA <- data.frame(timestamp=COL)
 
-  COL <- c("animal.ID","individual.local.identifier","local.identifier","individual.ID","Name","ID","tag.local.identifier","tag.ID","deployment.ID","track.ID","band.number","band.num")
+  COL <- c("animal.ID","individual.local.identifier","local.identifier","individual.ID","Name","ID","tag.local.identifier","tag.ID","deployment.ID","track.ID","band.number","band.num","device.info.serial")
   COL <- pull.column(object,COL,as.factor)
   if(length(COL)==0)
   {
@@ -566,7 +566,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   # timed-out fixes
   if(timeout<Inf)
   {
-    COL <- c("GPS.time.to.fix","time.to.fix","fix.time","time.to.get.fix","Duration")
+    COL <- c("GPS.time.to.fix","time.to.fix","GPS.fix.time","fix.time","time.to.get.fix","Duration")
     COL <- pull.column(object,COL)
     if(length(COL))
     {
