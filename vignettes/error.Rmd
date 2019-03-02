@@ -62,9 +62,15 @@ We can now apply model selection to the two UERE fits by summarizing them in a l
 ```{r}
 summary(list(HDOP=UERE,homo=UERE2))
 ```
-Now we can see that the HDOP values yield the better error model,
+We can see that the HDOP values yield the better error model,
 both in terms of AICc and in terms of reduced Z squared, which is a goodness-of-fit statistic akin to reduced chi squared but designed for comparing error models.
 
+We had two calibration datasets, so we can also see if there is any substantial difference between the two GPS tags. We do this by making a list of individual UEREs to compare to the previous joint UERE.
+```{r}
+UERES <- lapply(turtle[1:2],uere.fit)
+summary(list(joint=UERE,individual=UERES))
+```
+In this case, performance of the individualized and joint error models are comparable, and AICc selects the joint model.
 
 # Outlier detection
 

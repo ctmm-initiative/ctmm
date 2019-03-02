@@ -79,18 +79,25 @@ uere.fit <- function(data,precision=1/2)
   TYPES <- get.dop.types(data) # types of DOP data present
 
   # loop over axes/types
-  UERE <- lapply(TYPES,function(type){uere.type(data,precision=precision,trace=trace,type=type)})
+  LIST <- lapply(TYPES,function(type){uere.type(data,precision=precision,trace=trace,type=type)})
+
+  UERE <- lapply(LIST,function(L){ L$UERE })
   names(UERE) <- TYPES
 
-  # passed by slot
-  DOF <- lapply(UERE,function(U){attr(U,"DOF")})
+  DOF <- lapply(LIST,function(L){ L$DOF })
   names(DOF) <- TYPES
-  # passed by slot
-  AICc <- vapply(UERE,function(U){attr(U,"AICc")},numeric(1))
+
+  AICc <- sapply(LIST,function(L){ L$AICc })
   names(AICc) <- TYPES
-  # passed by slot
-  Z2 <- vapply(UERE,function(U){attr(U,"Zsq")},numeric(1))
-  names(Z2) <- TYPES
+
+  Zsq <- sapply(LIST,function(L){ L$Zsq })
+  names(Zsq) <- TYPES
+
+  VAR.Zsq <- sapply(LIST,function(L){ L$VAR.Zsq })
+  names(VAR.Zsq) <- TYPES
+
+  N <- sapply(LIST,function(L){ L$N })
+  names(N) <- TYPES
 
   CLASS <- names(UERE[[1]])
   if(!length(CLASS)) { CLASS <- "all" }
@@ -101,7 +108,7 @@ uere.fit <- function(data,precision=1/2)
   DOF <- matrix( simplify2array(DOF) , length(CLASS) , length(TYPES) )
   dimnames(DOF) <- list(CLASS,TYPES)
 
-  UERE <- new.UERE(UERE,DOF=DOF,AICc=AICc,Zsq=Z2)
+  UERE <- new.UERE(UERE,DOF=DOF,AICc=AICc,Zsq=Zsq,VAR.Zsq=VAR.Zsq,N=N)
 
   return(UERE)
 }
@@ -155,9 +162,12 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
   # don't have enough data to estimate any UERE
   if(!length(data))
   {
-    attr(UERE,"DOF") <- numeric(length(UERE)) # sampling distribution
-    attr(UERE,"AICc") <- NA_real_
-    attr(UERE,"Zsq") <- NA_real_
+    UERE <- list(UERE=UERE)
+    UERE$DOF <- numeric(length(UERE)) # sampling distribution
+    UERE$AICc <- NA_real_
+    UERE$Zsq <- NA_real_
+    UERE$VAR.Zsq <- NA_real_
+    UERE$N <- NA_real_
 
     return(UERE)
   }
@@ -306,9 +316,12 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
   if(any(BAD)) { UERE[BAD] <- NA }
   if(any(ARGOS) && type=='horizontal') { dof[ARGOS] <- Inf }
 
-  attr(UERE,"DOF") <- dof # sampling distribution
-  attr(UERE,"AICc") <- AICc
-  attr(UERE,"Zsq") <- mtmean(Z2) # minimally trimmed mean in case of weird speed=0 estimates
+  UERE <- list(UERE=UERE)
+  UERE$DOF <- dof # sampling distribution
+  UERE$AICc <- AICc
+  UERE$Zsq <- mtmean(Z2) # minimally trimmed mean in case of weird speed=0 estimates
+  UERE$VAR.Zsq <- mtmean(Z2^2) - UERE$Zsq^2
+  UERE$N <- sum(Z2<Inf)
 
   return(UERE)
 }
@@ -317,31 +330,88 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
 # summarize uere object
 summary.UERE <- function(object,level=0.95,...)
 {
-  if(class(object)=="list") { return(summary.UERE.list(object,...)) }
+  if(class(object)=="list") { return(summary.UERE.list(object,level=level,...)) }
 
   TYPE <- colnames(object)
   N <- sapply(TYPE,function(type){length(DOP.LIST[[type]]$axes)}) # (type)
   DOF <- attr(object,"DOF") # (class,type)
   DOF <- t(t(DOF)*N)
 
-  UERE <- sapply(1:length(object),function(i){chisq.ci(object[i]^2,DOF=DOF[i],level=level)}) #(3,class*type)
+  UERE <- sapply(1:length(object),function(i){chisq.ci(object[i]^2,DOF=DOF[i],level=level)}) #(3CI,class*type)
   UERE <- sqrt(UERE)
-  dim(UERE) <- c(3,dim(object)) # (3,class,type)
+  dim(UERE) <- c(3,dim(object)) # (3CI,class,type)
   dimnames(UERE)[[1]] <- c("low","ML","high")
   dimnames(UERE)[2:3] <- dimnames(object)
-  UERE <- aperm(UERE,c(2,1,3))
+  UERE <- aperm(UERE,c(2,1,3)) # (class,3CI,type)
   return(UERE)
 }
 
 
 # summarize list of uere objects
-summary.UERE.list <- function(object,drop=TRUE,...)
+summary.UERE.list <- function(object,level=0.95,drop=TRUE,...)
 {
   NAMES <- names(object)
   if(is.null(NAMES)) { NAMES <- 1:length(object) }
 
+  # determine all types of data
+  # better be consistent across joint models
+  # might not be consistent within joint models' individual models
+  TYPES <- NULL
+  for(i in 1:length(object))
+  {
+    if(class(object[[i]])=="UERE") # these should be all the same
+    {
+      TYPES <- c(TYPES,names(attr(object[[i]],"AICc")))
+      TYPES <- unique(TYPES)
+    }
+    else if(class(object[[i]])=="list") # these can differ within list
+    {
+      for(j in 1:length(object[[i]]))
+      {
+        TYPES <- c(TYPES,names(attr(object[[i]][[j]],"AICc")))
+        TYPES <- unique(TYPES)
+      }
+    }
+  }
+
+  # aggregate lists of individual models to compare with joint models
+  for(i in 1:length(object))
+  {
+    if(class(object[[i]])=="list")
+    {
+      AICc <- rep(0,length(TYPES))
+      names(AICc) <- TYPES
+      N <- AICc
+      Zsq <- AICc
+      VAR.Zsq <- AICc
+
+      for(j in 1:length(object[[i]]))
+      {
+        U <- object[[i]][[j]]
+        IN <- TYPES %in% names(attr(U,"AICc"))
+        if(length(IN))
+        {
+          AICc[IN] <- AICc[IN] + attr(U,"AICc")[IN]
+          N[IN] <- N[IN] + attr(U,"N")[IN]
+          Zsq[IN] <- Zsq[IN] + attr(U,"N")[IN] * attr(U,"Zsq")[IN]
+          VAR.Zsq[IN] <- VAR.Zsq[IN] + attr(U,"N")[IN] * (attr(U,"VAR.Zsq")[IN] + attr(U,"Zsq")[IN]^2)
+        }
+      }
+
+      Zsq <- Zsq/N
+      VAR.Zsq <- VAR.Zsq/N - Zsq^2
+
+      attr(object[[i]],"AICc") <- AICc
+      attr(object[[i]],"N") <- N
+      attr(object[[i]],"Zsq") <- Zsq
+      attr(object[[i]],"VAR.Zsq") <- VAR.Zsq
+    }
+  }
+
   AIC <- sapply(object,function(U) { attr(U,"AICc") } )
+  N <- sapply(object,function(U) { attr(U,"N") } )
   Zsq <- sapply(object,function(U) { attr(U,"Zsq") } )
+  VAR.Zsq <- sapply(object,function(U) { attr(U,"VAR.Zsq") } )
 
   DIM <- dim(AIC)
   if(!length(DIM))
@@ -349,6 +419,8 @@ summary.UERE.list <- function(object,drop=TRUE,...)
     DIM <- c(1,length(AIC))
     dim(AIC) <- DIM
     dim(Zsq) <- DIM
+    dim(VAR.Zsq) <- DIM
+    dim(N) <- DIM
   }
 
   TAB <- list()
@@ -356,9 +428,13 @@ summary.UERE.list <- function(object,drop=TRUE,...)
   {
     AIC[i,] <- AIC[i,] - min(AIC[i,])
 
-    TAB[[i]] <- cbind(AIC[i,],Zsq[i,])
+    # TAB[[i]] <- sapply(1:DIM[2],function(j){ chisq.ci(Zsq[i,j],COV=VAR.Zsq[i,j]/N[i,j],level=level) }) # (3CIS,models)
+    # TAB[[i]] <- cbind(AIC[i,],t(TAB[[i]]))
+    # colnames(TAB[[i]]) <- c("\u0394AICc","(       ","Z[red]\u00B2","       )")
 
+    TAB[[i]] <- cbind(AIC[i,],Zsq[i,])
     colnames(TAB[[i]]) <- c("\u0394AICc","Z[red]\u00B2")
+
     # Encoding(colnames(TAB)) <- "UTF-8"
 
     rownames(TAB[[i]]) <- NAMES
@@ -569,7 +645,7 @@ uere.null <- function(data)
   rownames(UERE) <- CLASS
   colnames(UERE) <- TYPES
 
-  UERE <- new.UERE(UERE,DOF=UERE,AICc=UERE[1,])
+  UERE <- new.UERE(UERE,DOF=UERE,AICc=UERE[1,],Zsq=UERE[1,],VAR.Zsq=UERE[1,],N=UERE[1,])
 
   return(UERE)
 }

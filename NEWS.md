@@ -1,9 +1,11 @@
-ctmm 0.5.6 (2019-02-28)
+ctmm 0.5.6 (2019-03-02)
 ================
 
   * new functions lasso and marquee
 
   * new functions annotate and color
+  
+  * summary can now compare joint UERE objects to lists of individualized UERE objects
   
   * support for UTM locations in as.telemetry
 

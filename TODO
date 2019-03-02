@@ -13,8 +13,7 @@ PRIORITY
 * combine two telemetry objects for same animal but different device (dyadic UEREs, match columns)
 * compass speed plot -- or cycle argument for speeds()
 * ctmm.fit -> id.parameters : force.error argument for when error is estimated to be 0
-* error vignette - check back on variogram
-* Telonics HDOP conversion factor (2.5)
+* error vignette - check back on variogram, correlogram
 * reference Guillaume's paper at the beginning of the periodogram vignette
 * occurrence() on the same grid for mean() (Ellie)
 
@@ -23,6 +22,7 @@ OVERLAP
 * overlaps' correlated errors
 
 ERROR PAPER
+* include error uncertainty in ctmm.fit output
 * how does error change variogram DOF calculation?
 * errors on x,y,z variograms
 * errors on periodograms?
@@ -88,6 +88,7 @@ MISC WORK
 * effective DOF for diffusion rate?
 
 PERIODIC
+* estimate periodicities in optimizer
 * calculate explicit time link for periodicity? or estimate frequency?
 * DOF[mean] should just be the stationary mean
 * variogram on mean detrended data with CTMM argument

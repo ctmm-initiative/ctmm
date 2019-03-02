@@ -705,9 +705,9 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
 
     # combine data.frame with ancillary info
     info <- list(identity=id[i], timezone=timezone, projection=projection)
-    AICc <- NA*UERE[1,]
-    names(AICc) <- colnames(UERE) # R drops dimnames...
-    UERE <- new.UERE(UERE,DOF=NA*UERE,AICc=AICc)
+    AIC <- NA*UERE[1,]
+    names(AIC) <- colnames(UERE) # R drops dimnames...
+    UERE <- new.UERE(UERE,DOF=NA*UERE,AICc=AIC,Zsq=AIC,VAR.Zsq=AIC,N=AIC)
     telist[[i]] <- new.telemetry( telist[[i]] , info=info, UERE=UERE )
   }
   rm(DATA)
