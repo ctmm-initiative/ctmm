@@ -195,9 +195,15 @@ plot.svf <- function(lag,CTMM,error=NULL,alpha=0.05,col="red",type="l",...)
 ###########################################################
 # PLOT VARIOGRAM
 ###########################################################
-plot.variogram <- function(x, CTMM=NULL, level=0.95, units=TRUE, fraction=0.5, col="black", col.CTMM="red", xlim=NULL, ylim=NULL, ...)
+plot.variogram <- function(x, CTMM=NULL, level=0.95, units=TRUE, fraction=0.5, col="black", col.CTMM="red", xlim=NULL, ylim=NULL, ext=NULL, ...)
 {
   alpha <- 1-level
+
+  if(!is.null(ext))
+  {
+    xlim <- ext$x
+    ylim <- ext$y
+  }
 
   # empirical variograms
   x <- listify(x)

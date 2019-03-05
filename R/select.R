@@ -48,7 +48,7 @@ simplify.ctmm <- function(M,par)
   # autocorrelation timescales can't be distinguished
   if("diff.tau" %in% par)
   {
-    M$tau <- c(1,1)/mean(1/M$tau)
+    M$tau <- c(1,1)*mean(M$tau)
     M$omega <- FALSE
   }
 
@@ -257,6 +257,8 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
       TEMP$omega <- sqrt(.Machine$double.eps)
       GUESS <- c(GUESS,list(TEMP))
     }
+    else if(length(CTMM$tau)==1 && level==1) # OU -> OUf (bimodal likelihood)
+    { GUESS <- c(GUESS,list(simplify.ctmm(MLE,"diff.tau"))) }
 
     # consider if there is no circulation
     if(CTMM$circle)
@@ -290,7 +292,7 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
     MODELS <- sort.ctmm(MODELS,IC=IC,MSPE=MSPE)
 
     # remove redundant models
-    NAMES <- sapply(MODELS,name.ctmm)
+    NAMES <- sapply(MODELS,name.ctmm) -> names(MODELS)
     KEEP <- c(TRUE, NAMES[-1]!=NAMES[-length(NAMES)] )
     MODELS <- MODELS[KEEP]
 

@@ -311,7 +311,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   COL <- pull.column(object,COL)
   DATA$longitude <- COL
 
-  COL <- c("location.lat","Latitude","lat","GPS.Latitude")
+  COL <- c("location.lat","Latitude","latt","lat","GPS.Latitude")
   COL <- pull.column(object,COL)
   DATA$latitude <- COL
 
@@ -511,7 +511,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   # approximate DOP from # satellites if necessary
   if(!("HDOP" %in% names(DATA)))
   {
-    COL <- c("GPS.satellite.count","satellite.count","NumSats","satellites.used","Satellites","Sats") # Counts? Messages?
+    COL <- c("GPS.satellite.count","satellite.count","NumSats","satellites.used","Satellites","Sats","Satt") # Counts? Messages?
     COL <- pull.column(object,COL)
     if(length(COL))
     {
@@ -547,7 +547,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   ###########################
   # generic location classes
   # includes Telonics Gen4 location classes (use with HDOP information)
-  COL <- c("GPS.fix.type","fix.type","Fix.Attempt","GPS.Fix.Attempt","Telonics.Fix.Attempt","Fix.Status","sensor.type")
+  COL <- c("GPS.fix.type","fix.type","Fix.Attempt","GPS.Fix.Attempt","Telonics.Fix.Attempt","Fix.Status","sensor.type","Fix")
   COL <- pull.column(object,COL,FUNC=as.factor)
   if(length(COL)) { DATA$class <- COL }
 
@@ -566,7 +566,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   # timed-out fixes
   if(timeout<Inf)
   {
-    COL <- c("GPS.time.to.fix","time.to.fix","GPS.fix.time","fix.time","time.to.get.fix","Duration")
+    COL <- c("GPS.time.to.fix","time.to.fix","GPS.TTF","TTF","GPS.fix.time","fix.time","time.to.get.fix","Duration")
     COL <- pull.column(object,COL)
     if(length(COL))
     {
@@ -632,7 +632,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
       # SPEED ERE
       COL <- "eobs.speed.accuracy.estimate"
       COL <- pull.column(object,COL)
-      if(length(COL) && FALSE) # e-obs column is terrible for error estimation, location error estimates are better
+      if(length(COL) && FALSE) # e-obs column is terrible for error estimation, location error estimates are better # but they do not cross validate
       {
         # UERE from Scott's calibration data
         DATA[[DOP.LIST$speed$DOP]] <- COL

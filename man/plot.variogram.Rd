@@ -9,7 +9,7 @@ Produces simple plots of \code{varigram} objects (semi-variance vs. time lag) an
 }
 \usage{
 \S3method{plot}{variogram}(x,CTMM=NULL,level=0.95,units=TRUE,fraction=0.5,col="black",col.CTMM="red",xlim=NULL,
-     ylim=NULL,...)
+     ylim=NULL,ext=NULL,...)
 
 \S4method{zoom}{variogram}(x,fraction=0.5,...)
 }
@@ -25,6 +25,7 @@ Produces simple plots of \code{varigram} objects (semi-variance vs. time lag) an
   \item{col.CTMM}{Color for the model. Can be an array.}
   \item{xlim}{Range of lags to plot (in SI units).}
   \item{ylim}{Range of semi-variance to plot (in SI units).}
+  \item{ext}{Plot extent alternative to \code{xlim} and \code{ylim} (see \code{\link{extent}}).}
   \item{\dots}{
 Additional \code{plot} function parameters.
 }

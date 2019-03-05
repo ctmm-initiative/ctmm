@@ -265,11 +265,9 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
     if(ERROR<TOL) { BREAK <- TRUE }
   }
 
-  # missing UEREs should not impact calculation
-  if(any(BAD)) { UERE[BAD] <- 1 }
-
   ### AICc values ###
-  AICc <- vapply(1:length(data),function(i){ sum( log( (2*pi)*(UERE[Ci[[i]]]^2 / w[[i]]) ) ) },numeric(1)) # (animals)
+  if(any(BAD)) { UERE[BAD] <- NA } # missing UEREs should not impact calculation
+  AICc <- vapply(1:length(data),function(i){ sum( log( (2*pi)*(UERE[Ci[[i]]]^2 / w[[i]]) ), na.rm=TRUE) },numeric(1)) # (animals)
   AICc <- length(axes) * sum(AICc)
   if(type=="speed")
   { dof <- DOF.ML }
@@ -281,14 +279,15 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
     Kc[BAD] <- 0
     dof[BAD] <- 0
   }
-  AICc <- AICc + length(axes)^2*sum( (DOF.ML+Kc)*dof/(length(axes)*dof-2) )
-  if(any(length(axes)*dof<=2)) # does not have a mean value
+  AICc <- AICc + length(axes)^2*sum( ((DOF.ML+Kc)*dof/(length(axes)*dof-2))[EST] )
+  if(any(length(axes)*dof[EST]<=2)) # does not have a mean value
   {
     AICc <- Inf
     warning("Sample size too small for AICc to exist.")
   }
 
   ### Z_reduced^2 ###
+  if(any(BAD)) { UERE[BAD] <- Inf } # missing UEREs should not impact calculation
   Pi <- lapply(1:length(data),function(k){c( w[[k]] / UERE[Ci[[k]]]^2 )}) # (animal;time)
   u2 <- lapply(1:length(data),function(k){c( colMeans((t(z[[k]])-mu[k,])^2) * Pi[[k]] )}) # (animal;time)
   if(type=="speed") # known mean
@@ -348,7 +347,7 @@ summary.UERE <- function(object,level=0.95,...)
 
 
 # summarize list of uere objects
-summary.UERE.list <- function(object,level=0.95,drop=TRUE,...)
+summary.UERE.list <- function(object,level=0.95,drop=TRUE,CI=FALSE,...)
 {
   NAMES <- names(object)
   if(is.null(NAMES)) { NAMES <- 1:length(object) }
@@ -428,14 +427,19 @@ summary.UERE.list <- function(object,level=0.95,drop=TRUE,...)
   {
     AIC[i,] <- AIC[i,] - min(AIC[i,])
 
-    # TAB[[i]] <- sapply(1:DIM[2],function(j){ chisq.ci(Zsq[i,j],COV=VAR.Zsq[i,j]/N[i,j],level=level) }) # (3CIS,models)
-    # TAB[[i]] <- cbind(AIC[i,],t(TAB[[i]]))
-    # colnames(TAB[[i]]) <- c("\u0394AICc","(       ","Z[red]\u00B2","       )")
-
-    TAB[[i]] <- cbind(AIC[i,],Zsq[i,])
-    colnames(TAB[[i]]) <- c("\u0394AICc","Z[red]\u00B2")
-
+    if(CI)
+    {
+      TAB[[i]] <- sapply(1:DIM[2],function(j){ chisq.ci(Zsq[i,j],COV=VAR.Zsq[i,j]/N[i,j],level=level) }) # (3CIS,models)
+      TAB[[i]] <- cbind(AIC[i,],t(TAB[[i]]))
+      colnames(TAB[[i]]) <- c("\u0394AICc","(       ","Z[red]\u00B2","       )")
+    }
+    else
+    {
+      TAB[[i]] <- cbind(AIC[i,],Zsq[i,])
+      colnames(TAB[[i]]) <- c("\u0394AICc","Z[red]\u00B2")
+    }
     # Encoding(colnames(TAB)) <- "UTF-8"
+
 
     rownames(TAB[[i]]) <- NAMES
 

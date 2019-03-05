@@ -35,6 +35,9 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     theta <- 0
   }
 
+  # check for bad eccentricity from optimizer
+  if(abs(ecc)>=-log(.Machine$double.eps)) { return(-Inf) }
+
   circle <- CTMM$circle
 
   n <- length(data$t)
@@ -64,7 +67,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
 
   # check for bad time intervals
   ZERO <- which(dt==0)
-  if(length(ZERO) && K && CTMM$tau[1])
+  if(length(ZERO) && length(CTMM$tau) && CTMM$tau[1])
   {
     if(CTMM$error==FALSE) { warning("Duplicate timestamps require an error model.") ; return(-Inf) }
     # check for HDOP==0 just in case

@@ -16,7 +16,7 @@ plot(x,y,...)
 \S3method{plot}{telemetry}(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF",error=TRUE,velocity=FALSE,
      units=TRUE,col="red",col.level="black",col.DF="blue",col.grid="white",
      transparency.error=0.25,pch=1,type='p',labels=NULL,fraction=1,add=FALSE,xlim=NULL,
-     ylim=NULL,cex=NULL,lwd=1,lwd.level=1,...)
+     ylim=NULL,ext=NULL,cex=NULL,lwd=1,lwd.level=1,...)
 
 \S4method{zoom}{list}(x,...)
 
@@ -48,6 +48,7 @@ plot(x,y,...)
   \item{add}{Setting to \code{TRUE} will disable the unit conversions and base layer plot, so that \code{plot.telemetry} can be overlayed atop other outputs more easily.}
   \item{xlim}{The \code{x} limits \code{c(x1, x2)} of the plot (in SI units).}
   \item{ylim}{The \code{y} limits \code{c(y1, y2)} of the plot (in SI units).}
+  \item{ext}{Plot extent alternative to \code{xlim} and \code{ylim} (see \code{\link{extent}}).}
   \item{cex}{Relative size of plotting symbols. Only used when errors are missing.}
   \item{lwd}{Line widths of \code{telemetry} points.}
   \item{lwd.level}{Line widths of \code{UD} contours.}

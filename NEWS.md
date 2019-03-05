@@ -1,4 +1,4 @@
-ctmm 0.5.6 (2019-03-02)
+ctmm 0.5.6 (2019-03-04)
 ================
 
   * new functions lasso and marquee
@@ -10,6 +10,8 @@ ctmm 0.5.6 (2019-03-02)
   * support for UTM locations in as.telemetry
 
   * support for GPS-ARGOS hybrid data in as.telemetry & uere.fit
+  
+  * new plot option ext for extent objects
   
   * periodogram functionality restored for one-dimensional data
   
