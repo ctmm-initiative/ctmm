@@ -310,7 +310,10 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
         graphics::symbols(x=r$x,y=r$y,circles=ERROR,fg=fg,bg=bg,inches=FALSE,add=TRUE,lwd=lwd[[i]],...)
       }
       else if(FLAG==4)
-      { for(j in 1:nrow(r)) { ellipsograph(mu=as.numeric(r[j,]),sigma=ERROR[j,,],level=level.UD,fg=fg[j],bg=bg[j],lwd=lwd[[i]][j],...) } }
+      {
+        if(length(lwd[[i]])<nrow(r)) { lwd[[i]] <- rep(lwd[[i]],nrow(r)) }
+        for(j in 1:nrow(r)) { ellipsograph(mu=as.numeric(r[j,]),sigma=ERROR[j,,],level=level.UD,fg=fg[j],bg=bg[j],lwd=lwd[[i]][j],...) }
+      }
     } # end circle/ellipse plot
     else if(error[i]==3) # kernels
     {

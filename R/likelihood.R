@@ -283,10 +283,21 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     }
   }   ### END KALMAN FILTER RUNS ###
 
+  # discard infinite uncertainty in stationary mean for BM/IOU
+  if(!CTMM$range)
+  { logdetcov <- ifelse(M==1,0, -log(det(COV.mu[-(1:AXES),-(1:AXES)])) ) }
+
   if(PROFILE) # missing variances from profiling
   {
     logdetCOV <- logdetCOV + AXES*log(area) # per n
     logdetcov <- logdetcov + (AXES*M)*log(area) # absolute
+  }
+  else if(!CTMM$range && REML)
+  {
+    # sigma was sum(var)/n and not sum(var)/(n-1) even though var[1]==0 from conditioning
+    # but we discarded COV[mu.stationary]==Inf above
+    logdetcov <- logdetcov + (AXES)*log(area)
+    # lets REML fix this even if we didn't PROFILE
   }
 
   if(SQUEEZE) # de-squeeze
@@ -718,7 +729,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
     if(!CTMM$range && K==1) { return(Inf) }
 
     # velocity MSPE
-    if(K==2)
+    if(K>=2)
     {
       if(length(CTMM$tau)<2 || any(CTMM$tau<=0)) { return(Inf) }
       UU <- VV
@@ -728,13 +739,15 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
     if(length(dim(MSPE))==2 && length(UU)==1) # multiple spatial dimensions and one trend component
     { MSPE <- sum(diag(MSPE)) * c(UU) }
     else if(length(dim(MSPE))==2 && length(UU)>1) # one spatial dimension and many trend components
-    { MSPE <- sum(diag(MSPE %*% UU)) }
+    { MSPE <- diag(MSPE %*% UU) }
     else if(length(dim(MSPE))==4) # k trend components in multiple dimensions
     {
       MSPE <- lapply(1:length(axes),function(i) MSPE[i,,,i])
       MSPE <- Reduce("+",MSPE)
-      MSPE <- sum(diag(MSPE %*% UU))
+      MSPE <- diag(MSPE %*% UU)
     }
+    # 0/0 -> 0 (IOU)
+    MSPE <- sum(nant(MSPE,0))
 
     VAR <- sum(diag(CTMM$sigma))
     if(K==2)

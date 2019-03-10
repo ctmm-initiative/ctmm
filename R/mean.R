@@ -20,6 +20,9 @@ drift.init <- function(data,CTMM)
   # IID estimate for (error + 0 movement) || (movement + 0 error)
   CTMM$mu <- PDsolve(t(u) %*% (w * u)) %*% (t(u) %*% (w * z))
 
+  # don't return variance if no variance
+  if(!CTMM$range) { return(CTMM) }
+
   n <- length(data$t)
   z <- z - (u %*% CTMM$mu)
   CTMM$sigma <- (t(z) %*% z) / (n-1)
@@ -291,16 +294,19 @@ periodic.summary <- function(CTMM,level,level.UD)
   # CIs are too big to be useful
   if(length(CTMM$tau)>1)
   {
+    CTMM <- get.taus(CTMM)
+
     ROT <- sum((omega*A)^2)/2 # sine and cosine average 1/2
     Omega <- CTMM$circle
-    RAN <- 2*area*cosh(ecc/2) * ( 1/prod(CTMM$tau) + Omega^2 )
+    MSD <- 2*area*cosh(ecc/2)
+    RAN <- MSD * ( CTMM$Omega2 + Omega^2 )
     MLE <- ROT/(ROT+RAN)
 
     GRAD <- omega^2*A
     COV.ROT <- c(GRAD %*% COV %*% GRAD)
 
-    GRAD <- c(RAN/area,-2*area*cosh(ecc/2)/prod(CTMM$tau)/CTMM$tau)
-    PARS <- c("area","tau position","tau velocity")
+    GRAD <- c(RAN/area,MSD*CTMM$J.Omega2)
+    PARS <- c("area",CTMM$tau.names)
     if(!CTMM$isotropic)
     {
       GRAD <- c(GRAD,RAN*tanh(ecc/2)/2)

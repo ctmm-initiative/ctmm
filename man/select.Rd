@@ -31,20 +31,24 @@ marquee(object,...)
 \seealso{ \code{\link{plot.telemetry}}  }
 
 %% This example is interactive!
-\examples{\donttest{
-# Load package and data
-library(ctmm)
-data(wolf)
+\examples{
+# This example is interactive
+if(interactive())
+{
+  # Load package and data
+  library(ctmm)
+  data(wolf)
 
-# Extract wolf Luna
-Luna <- wolf$Luna
+  # Extract wolf Luna
+  Luna <- wolf$Luna
 
-# Select resident data
-Luna.sub <- lasso(Luna)
+  # Select resident data
+  Luna.sub <- lasso(Luna)
 
-# You can now work with the resident and dispersive data separately
-names(Luna.sub)
-}}
+  # You can now work with the resident and dispersive data separately
+  names(Luna.sub)
+}
+}
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

@@ -206,6 +206,8 @@ QuadTest <- function(x,y,MIN=which.min(y),thresh=0.5)
   return(all(abs(r)<thresh))
 }
 
+
+########################
 # does the line search satisfy the some Wolfe-like conditions
 WolfeTest <- function(x,y,grad.i,i=1,MIN=which.min(y),const=c(1,1),thresh=0.1)
 {
@@ -221,6 +223,7 @@ WolfeTest <- function(x,y,grad.i,i=1,MIN=which.min(y),const=c(1,1),thresh=0.1)
   if(is.nan(DIFF$gradient)) { return(TRUE) } # numerical error - too tight
   else { return(TEST<=thresh) }
 }
+
 
 ######################
 # minimally rotate orthonormal basis DIR to include vec
@@ -278,6 +281,8 @@ rank1update <- function(H.LINE,LINE,hessian,covariance)
   return(list(hessian=hessian,covariance=covariance,condition=FACT))
 }
 
+
+##################
 # best number of calculations to make with min count and cores
 mc.min <- function(min,cores=detectCores())
 {

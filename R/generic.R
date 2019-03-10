@@ -60,20 +60,20 @@ IFFT <- function(X,plan=NULL) { FFT(X,inverse=TRUE) }
 composite <- function(n) { 2^ceiling(log(n,2)) }
 
 # sinc functions
-sinc <- Vectorize( function(x)
+sinc <- Vectorize( function(x,SIN=sin(x))
 {
   if(x==0)
   { return(1) }
   else
-  { return(sin(x)/x) }
+  { return(SIN/x) }
 } )
 
-sinch <- Vectorize( function(x)
+sinch <- Vectorize( function(x,SINH=sinh(x))
 {
   if(x==0)
   { return(1) }
   else
-  { return(sinh(x)/x) }
+  { return(SINH/x) }
 } )
 
 

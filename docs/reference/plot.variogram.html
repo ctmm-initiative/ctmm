@@ -63,7 +63,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.5</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.6</span>
       </span>
     </div>
 
@@ -130,7 +130,7 @@
 
     <pre class="usage"><span class='co'># S3 method for variogram</span>
 <span class='fu'><a href='plot.telemetry.html'>plot</a></span>(<span class='no'>x</span>,<span class='kw'>CTMM</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>units</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>fraction</span><span class='kw'>=</span><span class='fl'>0.5</span>,<span class='kw'>col</span><span class='kw'>=</span><span class='st'>"black"</span>,<span class='kw'>col.CTMM</span><span class='kw'>=</span><span class='st'>"red"</span>,<span class='kw'>xlim</span><span class='kw'>=</span><span class='kw'>NULL</span>,
-     <span class='kw'>ylim</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='no'>...</span>)
+     <span class='kw'>ylim</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>ext</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='no'>...</span>)
 
 <span class='co'># S4 method for variogram</span>
 <span class='fu'>zoom</span>(<span class='no'>x</span>,<span class='kw'>fraction</span><span class='kw'>=</span><span class='fl'>0.5</span>,<span class='no'>...</span>)</pre>
@@ -173,6 +173,10 @@
     <tr>
       <th>ylim</th>
       <td><p>Range of semi-variance to plot (in SI units).</p></td>
+    </tr>
+    <tr>
+      <th>ext</th>
+      <td><p>Plot extent alternative to <code>xlim</code> and <code>ylim</code> (see <code>extent</code>).</p></td>
     </tr>
     <tr>
       <th>&#8230;</th>

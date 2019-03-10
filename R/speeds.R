@@ -5,6 +5,7 @@
 ####
 speeds.telemetry <- function(object,CTMM,t=NULL,cycle=Inf,level=0.95,robust=FALSE,prior=FALSE,fast=TRUE,error=0.01,cores=1,...)
 {
+  cores <- resolveCores(cores,fast=FALSE)
   data <- object
   # check conflicting conditions
 

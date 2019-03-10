@@ -118,18 +118,23 @@
       <small>Source: <a href='https://github.com/ctmm-initiative/ctmm/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
     </div>
 
-    <div id="ctmm-0-5-6-2019-02-27" class="section level1">
+    <div id="ctmm-0-5-6-2019-03-09" class="section level1">
 <h1 class="page-header">
-<a href="#ctmm-0-5-6-2019-02-27" class="anchor"></a>ctmm 0.5.6 (2019-02-27)<small> Unreleased </small>
+<a href="#ctmm-0-5-6-2019-03-09" class="anchor"></a>ctmm 0.5.6 (2019-03-09)<small> Unreleased </small>
 </h1>
 <ul>
 <li><p>new functions lasso and marquee</p></li>
 <li><p>new functions annotate and color</p></li>
+<li><p>summary can now compare joint UERE objects to lists of individualized UERE objects</p></li>
 <li><p>support for UTM locations in as.telemetry</p></li>
 <li><p>support for GPS-ARGOS hybrid data in as.telemetry &amp; uere.fit</p></li>
+<li><p>new plot option ext for extent objects</p></li>
+<li><p>increased numerical precision in ctmm.loglike for 0 &lt; dt &lt;&lt; tau, including the limit OU/OUF -&gt; BM/OU</p></li>
+<li><p>BM/IOU model likelihoods are now exact limits of OU/OUF likelihoods modulo a constant</p></li>
 <li><p>periodogram functionality restored for one-dimensional data</p></li>
 <li><p>bugfix in IID ctmm.fit with elliptical errors</p></li>
 <li><p>bugfix in occurrence when projection origin is far from the mean location</p></li>
+<li><p>bugfix in ctmm.guess/variogram.fit for BM/IOU models</p></li>
 <li><p>e-obs calibration cross checked and fixed</p></li>
 <li><p>ctmm.loglike now returns -Inf when movement and error variance are zero</p></li>
 <li><p>stability improvements to base R optimizer usage</p></li>
@@ -137,6 +142,7 @@
 <li><p>cores option added to ctmm.select</p></li>
 <li><p>only physical cores now counted by cores arguments</p></li>
 <li><p>cores option now used in Windows when appropriate</p></li>
+<li><p>improvements to speed, speeds, ctmm.select for short tracks of data</p></li>
 </ul>
 </div>
     <div id="ctmm-0-5-5-2019-02-11" class="section level1">
@@ -566,7 +572,7 @@
     <div id="tocnav">
       <h2>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
-        <li><a href="#ctmm-0-5-6-2019-02-27">0.5.6</a></li>
+        <li><a href="#ctmm-0-5-6-2019-03-09">0.5.6</a></li>
         <li><a href="#ctmm-0-5-5-2019-02-11">0.5.5</a></li>
         <li><a href="#ctmm-0-5-4-2019-02-07">0.5.4</a></li>
         <li><a href="#ctmm-0-5-3-2019-01-29">0.5.3</a></li>

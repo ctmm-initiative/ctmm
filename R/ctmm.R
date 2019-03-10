@@ -102,6 +102,10 @@ get.taus <- function(CTMM,zeroes=FALSE)
     CTMM$tau.names <- "tau velocity"
     CTMM$Omega2 <- 1/CTMM$tau[2] # mean square speed modulo diffusion coefficient (not really Omega^2)
     CTMM$J.Omega2 <- -1/CTMM$tau[2]^2
+
+    CTMM$f <- 1/CTMM$tau
+    CTMM$f.nu <- c( mean(CTMM$f) , +diff(CTMM$f)/2 ) # (f,nu)
+    CTMM$TfOmega2 <- 2*CTMM$f.nu[1]/CTMM$Omega2 # 2f/Omega^2 term
   }
   else if(K>1 && CTMM$tau[1]>CTMM$tau[2]) # overdamped
   {
@@ -341,35 +345,16 @@ ctmm.prepare <- function(data,CTMM,precompute=TRUE,tau=TRUE)
   {
     K <- length(CTMM$tau)  # dimension of hidden state per spatial dimension
     axes <- CTMM$axes
-    range <- TRUE
+    # range <- TRUE
 
     if(K>0)
     {
-      # numerical limit for rangeless processes
-      if(CTMM$tau[1]==Inf)
-      {
-        range <- FALSE
-        # aim for OU/OUF decay that is half way to machine epsilon
-        CTMM$tau[1] <- log(2^((.Machine$double.digits-1)/2))*(last(data$t)-data$t[1])
-        # CTMM$tau[1] <- (last(data$t)-data$t[1]) / (.Machine$double.eps)^(1/4)
-
-        # diffusion -> variance
-        if(!is.null(CTMM$sigma))
-        {
-          TAU <- CTMM$tau[1]
-          CTMM$sigma <- CTMM$sigma*TAU
-          CTMM$sigma@par[1] <- CTMM$sigma@par[1]*TAU
-        }
-      }
-
       # continuity reduction
-      CTMM$tau = CTMM$tau[CTMM$tau!=0]
+      CTMM$tau = CTMM$tau[CTMM$tau>0]
       K <- length(CTMM$tau)
     }
-    # I am this lazy
-    # if(K==0) { K <- 1 ; CTMM$tau <- 0 }
 
-    CTMM$range <- range
+    CTMM$K <- K
   }
 
   # evaluate mean function for this data set if no vector is provided
@@ -404,21 +389,11 @@ ctmm.repair <- function(CTMM,K=length(CTMM$tau))
   if(K && length(CTMM$tau)) { CTMM$tau <- replace(numeric(K),1:length(CTMM$tau),CTMM$tau) }
   else if(K) { CTMM$tau <- numeric(K) }
 
-  if(!CTMM$range)
+  if(FALSE && !CTMM$range) # no longer needed
   {
-    K <- length(CTMM$tau)
-
-    # variance -> diffusion
-    TAU <- CTMM$tau[1]
-    CTMM$sigma <- CTMM$sigma/TAU
-    CTMM$sigma@par[1] <- CTMM$sigma@par[1]/TAU
-    CTMM$tau[1] <- Inf
-
-    ## delete garbate estimates
-    # CTMM$mu <- NULL
-    # CTMM$COV.mu <- NULL
-    # CTMM$DOF.mu <- NULL
+    K <- length(CTMM$tau) # why do I need this now?
   }
+  CTMM$K <- NULL
 
   # erase evaluated mean vector from ctmm.prepare
   CTMM$class.mat <- NULL

@@ -179,7 +179,7 @@ PDfunc <-function(M,func=function(m){1/m},force=FALSE,pseudo=FALSE,tol=.Machine$
   {
     # add up from smallest contribution to largest contribution
     INDEX <- sort(abs(M),method="quick",index.return=TRUE)$ix
-    M <- lapply(INDEX,function(i){M[i]*V[,,i]})
+    M <- lapply(INDEX,function(i){nant(M[i]*V[,,i],0)}) # 0/0 -> 0
     M <- Reduce('+',M)
   }
 
@@ -196,13 +196,28 @@ PDsolve <- function(M,force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
     M <- as.matrix(M)
     DIM <- dim(M)
   }
+  if(DIM[1]==0) { return(M) }
 
-  # check for Inf & invert those to 0
+  # check for Inf & invert those to 0 (and vice versa)
   INF <- diag(M)==Inf
-  if(any(INF))
+  ZERO <- sapply(1:nrow(M),function(i){all(M[i,]==0)})
+  if(any(INF) || any(ZERO))
   {
-    M[INF,INF] <- 0 # inverting the Inf dimensions
-    if(any(!INF)) { M[!INF,!INF] <- PDsolve(M[!INF,!INF]) } # regular inverse of remaining dimensions
+    # 1/Inf == 0
+    if(any(INF))
+    {
+      M[INF,] <- 0
+      M[,INF] <- 0
+      M[INF,INF] <- 0
+    }
+
+    # 1/0 == Inf
+    if(any(ZERO)) { M[ZERO,ZERO] <- Inf }
+
+    # regular inverse of remaining dimensions
+    REM <- !(INF|ZERO)
+    if(any(REM)) { M[REM,REM] <- PDsolve(M[REM,REM]) }
+
     return(M)
   }
 

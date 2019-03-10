@@ -25,7 +25,6 @@ get.IC <- function(CTMM,IC="AICc")
   return(IC)
 }
 
-
 ##################
 # function to simplify complexity of models
 simplify.ctmm <- function(M,par)
@@ -41,6 +40,8 @@ simplify.ctmm <- function(M,par)
 
   if("range" %in% par)
   {
+    M$sigma <- M$sigma/M$tau[1]
+    attr(M$sigma,"par")['area'] <- attr(M$sigma,"par")['area']/M$tau[1]
     M$tau[1] <- Inf
     M$range <- FALSE
   }
@@ -351,7 +352,7 @@ name.ctmm <- function(CTMM,whole=TRUE)
 }
 
 ########
-sort.ctmm <- function(x,decreasing=FALSE,IC="AICc",MSPE="position",flatten=TRUE,...)
+sort.ctmm <- function(x,decreasing=FALSE,IC="AICc",MSPE="position",flatten=TRUE,INF=FALSE,...)
 {
   if(is.na(MSPE))
   { ICS <- sapply(x,function(m){get.IC(m,IC)}) }
@@ -408,6 +409,14 @@ sort.ctmm <- function(x,decreasing=FALSE,IC="AICc",MSPE="position",flatten=TRUE,
   IND <- sort(ICS,index.return=TRUE,decreasing=decreasing)$ix
   y <- y[IND]
 
+  # BM/IOU log-likelihood is infinitely lower than OU/OUF log-likelihood
+  RANGE <- sapply(y,function(Y){Y[[1]]$range})
+  if(!is.na(IC) && any(RANGE) && any(!RANGE))
+  {
+    if(INF) { for(i in which(!RANGE)) { for(j in 1:length(y[[i]])) { y[[i]][[j]][[IC]] <- Inf } } }
+    y <- c( y[RANGE] , y[!RANGE] )
+  }
+
   if(flatten) { y <- do.call(c,y) }
 
   return(y)
@@ -425,7 +434,7 @@ summary.ctmm.list <- function(object, IC="AICc", MSPE="position", units=TRUE, ..
   MSPE <- match.arg(MSPE,c("position","velocity",NA))
 
   N <- length(object)
-  object <- sort.ctmm(object,IC=IC,MSPE=MSPE,flatten=FALSE)
+  object <- sort.ctmm(object,IC=IC,MSPE=MSPE,flatten=FALSE,INF=TRUE)
   M <- length(object)
 
   # if(N==M) { MSPE <- NA } # don't need to sort MSPE
@@ -449,8 +458,9 @@ summary.ctmm.list <- function(object, IC="AICc", MSPE="position", units=TRUE, ..
 
     # convert to meters/kilometers
     CNAME <- paste0("\u0394","RMSPE")
+    MIN <- which.min(MSPES)
     MSPES <- sqrt(MSPES)
-    if(MSPES[1]<Inf) { MSPES <- MSPES - MSPES[1] }
+    if(MSPES[1]<Inf) { MSPES <- MSPES - MSPES[MIN] }
     MIN <- min(c(abs(MSPES[MSPES!=0]),Inf))
     UNIT <- unit(MIN,if(MSPE=="position"){"length"}else{"speed"},concise=TRUE,SI=!units)
     MSPES <- MSPES/UNIT$scale
@@ -463,12 +473,26 @@ summary.ctmm.list <- function(object, IC="AICc", MSPE="position", units=TRUE, ..
   ICS <- cbind(ICS,MSPES)
   rownames(ICS) <- names(object)
 
-  DOF <- sapply(object,DOF.mean)
+  if(is.na(MSPE))
+  {
+    DOF <- sapply(object,DOF.mean)
+    DOF <- cbind(DOF)
+    colnames(DOF) <- "DOF[mean]"
+  }
+  else if(MSPE=="position")
+  {
+    DOF <- sapply(object,DOF.area)
+    DOF <- cbind(DOF)
+    colnames(DOF) <- "DOF[area]"
+  }
+  else if(MSPE=="velocity")
+  {
+    DOF <- sapply(object,DOF.speed)
+    DOF <- cbind(DOF)
+    colnames(DOF) <- "DOF[speed]"
+  }
+
   METH <- sapply(object,function(m){m$method})
-
-  DOF <- cbind(DOF)
-  colnames(DOF) <- "DOF[mean]"
-
   if(FALSE) # only prints correctly in unicode locale (Windows R bug)
   {
     DOF <- data.frame(DOF,METH)

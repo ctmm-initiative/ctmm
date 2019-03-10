@@ -409,6 +409,12 @@ occurrence <- function(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=
 # SIMULATE DATA over time array t
 simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1,complete=FALSE,precompute=FALSE,...)
 {
+  if(class(nsim) %in% c("data.frame","telemetry"))
+  {
+    data <- nsim
+    nsim <- 1
+  }
+
   if(!is.null(seed)){ set.seed(seed) }
 
   info <- attr(object,"info")
@@ -521,9 +527,13 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
         if((i==1)||(dt[i]!=dt[i-1])) { Langevin <- langevin(dt=dt[i],CTMM=object) }
         Green[i,,] <- Langevin$Green
         Sigma[i,,] <- Langevin$Sigma
-        # Sigma is now standardization matrix
-        Sigma[i,,] <- PDfunc(Sigma[i,,],func=function(x){sqrt(abs(x))},pseudo=TRUE)
       }
+      if(!object$range) { Sigma[1,,] <- 0 } # start at first point instead of random point on Earth
+
+      # Sigma is now standardization matrix
+      Sigma <- vapply(1:n,function(i){PDfunc(Sigma[i,,],func=function(x){sqrt(abs(x))},pseudo=TRUE)},Sigma[1,,]) # (K,K,n)
+      dim(Sigma) <- c(K,K,n)
+      Sigma <- aperm(Sigma,c(3,1,2)) # (n,K,K)
 
       # circulation stuff
       circle <- object$circle
@@ -613,7 +623,14 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
 #methods::setMethod("simulate",signature(object="ctmm"), function(object,...) simulate.ctmm(object,...))
 
 simulate.telemetry <- function(object,nsim=1,seed=NULL,CTMM=NULL,t=NULL,dt=NULL,res=1,complete=FALSE,precompute=FALSE,...)
-{ simulate.ctmm(CTMM,nsim=nsim,seed=seed,data=object,t=t,dt=dt,res=res,complete=complete,precompute=precompute,...) }
+{
+  if(class(nsim)=="ctmm")
+  {
+    CTMM <- nsim
+    nsim <- 1
+  }
+  simulate.ctmm(CTMM,nsim=nsim,seed=seed,data=object,t=t,dt=dt,res=res,complete=complete,precompute=precompute,...)
+}
 
 
 ##########################

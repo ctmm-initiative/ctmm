@@ -1,7 +1,6 @@
 PRIORITY
 * variogram() error on lists
 * error vignette should specify that tracking and calibration data have same location classes
-* summary.UERE on list( list(individual UEREs), joint UEREs )
 * distribute cores from ctmm.select -> ctmm.fit optimizer
 * mean, mode, median for ctmm and UD objects
 * mean ctmm object

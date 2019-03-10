@@ -1,4 +1,4 @@
-ctmm 0.5.6 (2019-03-04)
+ctmm 0.5.6 (2019-03-09)
 ================
 
   * new functions lasso and marquee
@@ -13,11 +13,17 @@ ctmm 0.5.6 (2019-03-04)
   
   * new plot option ext for extent objects
   
+  * increased numerical precision in ctmm.loglike for 0 < dt << tau, including the limit OU/OUF -> BM/OU
+  
+  * BM/IOU model likelihoods are now exact limits of OU/OUF likelihoods modulo a constant
+  
   * periodogram functionality restored for one-dimensional data
   
   * bugfix in IID ctmm.fit with elliptical errors
   
   * bugfix in occurrence when projection origin is far from the mean location
+  
+  * bugfix in ctmm.guess/variogram.fit for BM/IOU models
   
   * e-obs calibration cross checked and fixed
   

@@ -159,17 +159,22 @@
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='co'># Load package and data</span>
-<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/library'>library</a></span>(<span class='no'>ctmm</span>)
-<span class='fu'><a href='https://www.rdocumentation.org/packages/utils/topics/data'>data</a></span>(<span class='no'>wolf</span>)
+    <pre class="examples"><div class='input'><span class='co'># This example is interactive</span>
+<span class='kw'>if</span>(<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/interactive'>interactive</a></span>())
+{
+  <span class='co'># Load package and data</span>
+  <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/library'>library</a></span>(<span class='no'>ctmm</span>)
+  <span class='fu'><a href='https://www.rdocumentation.org/packages/utils/topics/data'>data</a></span>(<span class='no'>wolf</span>)
 
-<span class='co'># Extract wolf Luna</span>
-<span class='no'>Luna</span> <span class='kw'>&lt;-</span> <span class='no'>wolf</span>$<span class='no'>Luna</span>
+  <span class='co'># Extract wolf Luna</span>
+  <span class='no'>Luna</span> <span class='kw'>&lt;-</span> <span class='no'>wolf</span>$<span class='no'>Luna</span>
 
-<span class='co'># Select resident data</span>
-<span class='no'>Luna.sub</span> <span class='kw'>&lt;-</span> <span class='fu'>lasso</span>(<span class='no'>Luna</span>)</div><div class='output co'>#&gt; <span class='message'>Click to place vertices and press [ESC] when done.</span></div><div class='img'><img src='select-1.png' alt='' width='700' height='433' /></div><div class='input'>
-<span class='co'># You can now work with the resident and dispersive data separately</span>
-<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/names'>names</a></span>(<span class='no'>Luna.sub</span>)</div><div class='output co'>#&gt; [1] "interior Luna" "exterior Luna"</div></pre>
+  <span class='co'># Select resident data</span>
+  <span class='no'>Luna.sub</span> <span class='kw'>&lt;-</span> <span class='fu'>lasso</span>(<span class='no'>Luna</span>)
+
+  <span class='co'># You can now work with the resident and dispersive data separately</span>
+  <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/names'>names</a></span>(<span class='no'>Luna.sub</span>)
+}</div><div class='output co'>#&gt; <span class='message'>Click to place vertices and press [ESC] when done.</span></div><div class='img'><img src='select-1.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt; [1] "interior Luna" "exterior Luna"</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

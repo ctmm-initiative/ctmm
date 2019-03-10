@@ -289,3 +289,6 @@ DOF.mean <- function(CTMM)
 
   return(DOF)
 }
+
+#######
+DOF.speed <- function(CTMM) { return( summary(CTMM)$DOF['speed'] ) }
