@@ -32,7 +32,8 @@ speed.ctmm <- function(object,data=NULL,level=0.95,robust=FALSE,units=TRUE,prior
     { CI <- summary(object,level=level,units=FALSE)$CI['speed (meters/second)',] * sqrt(pi/2/2) }
     else # elliptical velocity distribution
     {
-      STUFF <- id.parameters(object,profile=FALSE,linear=FALSE)
+      UERE <- ifelse(object$error && "error" %nin% dimnames(object)[[1]],3,1) # propagate error uncertainty
+      STUFF <- id.parameters(object,profile=FALSE,linear=FALSE,UERE=UERE)
       NAMES <- STUFF$NAMES
       parscale <- STUFF$parscale
       lower <- STUFF$lower
@@ -178,6 +179,7 @@ speed.ctmm <- function(object,data=NULL,level=0.95,robust=FALSE,units=TRUE,prior
   CI <- rbind(CI)/UNITS$scale
   rownames(CI) <- paste0("speed (",UNITS$name,")")
   #attr(CI,"DOF") <- DOF
+  if(CI[1]==Inf) { CI[1] <- 0 } # sampled all Inf
   return(CI)
 }
 

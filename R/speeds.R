@@ -186,6 +186,11 @@ speeds.slow <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,prior=FALS
   CI <- t(CI)
 
   close(pb)
+
+  # all samples were Inf fix
+  INF <- CI[,"low"]==Inf
+  if(any(INF)) { CI[INF,"low"] <- 0 }
+
   return(CI)
 }
 

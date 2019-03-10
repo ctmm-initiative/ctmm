@@ -35,6 +35,16 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     theta <- 0
   }
 
+  # simplify filter for no movement process
+  if(area<=0)
+  {
+    CTMM$tau <- NULL
+    CTMM$omega <- FALSE
+    CTMM$circle <- FALSE
+    isotropic <- TRUE
+    CTMM$sigma <- COVM(0)
+  }
+
   # check for bad eccentricity from optimizer
   if(abs(ecc)>=-log(.Machine$double.eps)) { return(-Inf) }
 

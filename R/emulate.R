@@ -6,22 +6,40 @@ emulate.ctmm <- function(object,data=NULL,fast=FALSE,...)
   CTMM <- object
   if(!fast) { return( emulate.telemetry(data,CTMM,fast=fast,...) ) }
 
+  AXES <- length(CTMM$axes)
+
   Sigma <- CTMM$COV.mu
   DIM <- dim(Sigma)
-  if(length(DIM)==2)
-  {  CTMM$mu <- MASS::mvrnorm(mu=CTMM$mu,Sigma=Sigma) }
+  if(length(DIM)==AXES) # stationary mean
+  { if(CTMM$range) { CTMM$mu <- MASS::mvrnorm(mu=CTMM$mu,Sigma=Sigma) } }
   else if(length(DIM)==4)
   {
-    # flatten covariance block-matrix
-    Sigma <- aperm(Sigma,c(2,1,3,4)) # (x,k,k,x) -> (k,x,k,x)
-    Sigma <- array(Sigma,c(prod(DIM[2:1]),prod(DIM[3:4]))) # (k,x,k,x) -> (k*x,k*x)
-    # flatten mean block-vector
-    mu <- CTMM$mu # k,x
-    mu <- array(mu,prod(DIM[1:2])) # k,x -> k*x
-    mu <- as.numeric(mu) # aRg!
-    mu <- MASS::mvrnorm(mu=mu,Sigma=Sigma) # (k*x,k*x) %*% k*x -> k*x
-    mu <- array(mu,DIM[2:1]) # k*x -> k,x
-    CTMM$mu <- mu
+    mu <- CTMM$mu # (k,x)
+
+    # dont sample stationary mean for BM/IOU
+    if(!CTMM$range)
+    {
+      mu <- mu[-1,,drop=FALSE] # (k-1,x)
+      Sigma <- Sigma[,-1,-1,,drop=FALSE] # (x,k,k,x) -> (x,k-1,k-1,x)
+      DIM <- dim(Sigma)
+    }
+
+    if(DIM[3]) # make sure there's something left to sample
+    {
+      # flatten covariance block-matrix
+      Sigma <- aperm(Sigma,c(2,1,3,4)) # (x,k,k,x) -> (k,x,k,x)
+      Sigma <- array(Sigma,c(prod(DIM[2:1]),prod(DIM[3:4]))) # (k,x,k,x) -> (k*x,k*x)
+      # flatten mean block-vector
+      mu <- array(mu,prod(DIM[1:2])) # k,x -> k*x
+      mu <- as.numeric(mu) # aRg!
+      mu <- MASS::mvrnorm(mu=mu,Sigma=Sigma) # (k*x,k*x) %*% k*x -> k*x
+      mu <- array(mu,DIM[2:1]) # k*x -> k,x
+
+      if(CTMM$range)
+      { CTMM$mu <- mu }
+      else
+      { CTMM$mu[-1] <- mu }
+    }
   }
   else stop("COV.mu has odd dimension.")
 
