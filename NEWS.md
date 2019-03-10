@@ -1,4 +1,4 @@
-ctmm 0.5.6 (2019-03-09)
+ctmm 0.5.6 (2019-03-10)
 ================
 
   * new functions lasso and marquee

@@ -290,7 +290,11 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   # manually marked outliers
   COL <- c("manually.marked.outlier","marked.outlier","outlier")
   COL <- pull.column(object,COL,as.logical)
-  if(mark.rm && length(COL)) { object <- object[!COL,] }
+  if(mark.rm && length(COL))
+  {
+    COL <- is.na(COL) | !COL
+    object <- object[COL,]
+  }
 
   # timestamp column
   COL <- c('timestamp','Acquisition.Start.Time','Acquisition.Time','Date.Time','Date.Time.GMT','time','Date.GMT','Date.Local','GMT.Time')
