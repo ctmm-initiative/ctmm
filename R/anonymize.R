@@ -2,14 +2,14 @@
 # unfinished: per individual || per list
 
 # strip projection, origin, orientation, epoch
-anonymize <- function(data)
+anonymize <- function(data,...)
 {
   DROP <- class(data)=="telemetry"
   data <- listify(data)
 
   for(i in 1:length(data))
   {
-    projection(data[[i]]) <- median(data[[i]],k=2)
+    projection(data[[i]]) <- median(data[[i]],k=2,...)
     data[[i]]$t <- data[[i]]$t - data[[i]]$t[1]
 
     COLS <- c("timestamp","longitude","latitude")

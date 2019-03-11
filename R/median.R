@@ -156,7 +156,7 @@ median.longlat <- function(data,k=1,...)
 
     # 2-mode cluster
     mu <- rbind(mu1,mu2)
-    if(nrow(mu)>3) { mu <- Gmedian::kGmedian(data,ncenters=mu,...)$centers }
+    if(nrow(mu)>3) { mu <- Gmedian::kGmedian(data,ncenters=mu,nstart=10,...)$centers }
 
     # make sure separation is not reduced by clustering
     if(sum((mu1-mu2)^2)>sum((mu[1,]-mu[2,])^2))

@@ -13,23 +13,25 @@ vignette: >
 
 # Error calibration
 
-The first step to handling errors is to quantify them. Make sure that your data's "dilution of precision" (DOP) and error columns import correctly into `ctmm`. In the following wood turtle dataset, we have some calibration data and a turtle track. Note that the calibration data must be collected from the same model device as the tracking data.
+The first step to handling errors is to quantify them. Make sure that your data's "dilution of precision" (DOP) and error columns import correctly into `ctmm`. In the following wood turtle dataset, we have some calibration data and a turtle track. Note that the calibration data must be collected from the same model device as the tracking data, and their data formatting bust be similar enough that the same location classes are detected by `as.telemetry`.
 
 ```{r}
 data(turtle)
-names(turtle[[1]]) # data are not yet calibrated, but HDOP is present
+names(turtle[[1]]) # data are not yet calibrated, but HDOP and location class is present
 names(turtle) # two calibration datasets and two turtle datasets
 plot(turtle[1:2],col=rainbow(2)) # calibration data only
 ```
 
-The `uere` command is used to estimate the UERE parameter from calibration data. Do not use this command on animal tracking data.
+The `uere` command is used to estimate the UERE parameter(s) from calibration data. Do not use this command on animal tracking data.
 
 ```{r}
 UERE <- uere.fit(turtle[1:2]) # only using calibration data
 summary(UERE)
 ```
 
-For GPS data, the UERE will typically be 10-15 meters. The UERE can be assigned to a dataset with the `uere()<-` command.
+For GPS data, the UERE will typically be 10-15 meters.
+Here we have two location classes, "2D" and "3D", which have substantially different UERE values.
+The UERE can then be assigned to a dataset with the `uere()<-` command.
 
 ```{r}
 uere(turtle) <- UERE
@@ -47,23 +49,28 @@ plot(coati[[1]],error=2) # coati plot with 95% error discs
 
 ## Error model selection
 
-Not all GPS devices provide reliable DOP values and sometimes it is not obvious what error information will prove to be the most predictive. Generally speaking, `as.telemetry` will attempt to import the "best" column from among those that estimate error, DOP value, number of satellites and fix type, inlcuding timed-out fixes (see the `timeout` argument in `help(as.telemetry)`). Researchers may want to import the data with different error information, run `uere.fit` for each error model, and then select among the candidate models. Here we do this by comparing the turtle calibration data with and without HDOP values.
+Not all GPS devices provide reliable DOP values and sometimes it is not obvious what error information will prove to be the most predictive. Generally speaking, `as.telemetry` will attempt to import the "best" column from among those that estimate error, DOP value, number of satellites and fix type, inlcuding timed-out fixes (see the `timeout` argument in `help(as.telemetry)`). Researchers may want to import their data with different error information, run `uere.fit` for each error model, and then select among the candidate models. Here we do this by comparing the turtle calibration data with and without HDOP values.
 
-First, we remove the HDOP values in an alternate dataset.
+First, we consider whether or not the HDOP and location class information are informative.
 ```{r}
-squirtle <- lapply(turtle,function(t){ t$HDOP <- NULL ; t })
+t.noHDOP  <- lapply(turtle,function(t){ t$HDOP  <- NULL; t })
+t.noclass <- lapply(turtle,function(t){ t$class <- NULL; t })
+t.nothing <- lapply(turtle,function(t){ t$HDOP  <- NULL; t$class <- NULL; t })
 ```
 In other cases, manipulation will need to be performed before importing, so that `as.telemetry` can format the `telemetry` object properly.
 Running `uere.fit` now results in errors calibrated under the assumption of homoskedastic errors.
 ```{r}
-UERE2 <- uere.fit(squirtle[1:2])
+UERE.noHDOP  <- uere.fit(t.noHDOP[1:2])
+UERE.noclass <- uere.fit(t.noclass[1:2])
+UERE.nothing <- uere.fit(t.nothing[1:2])
 ```
-We can now apply model selection to the two UERE fits by summarizing them in a list.
+We can now apply model selection to the UERE model fits by summarizing them in a list.
 ```{r}
-summary(list(HDOP=UERE,homo=UERE2))
+summary(list(HDOP.class=UERE,class=UERE.noHDOP,HDOP=UERE.noclass,homoskedastic=UERE.nothing))
 ```
-We can see that the HDOP values yield the better error model,
-both in terms of AICc and in terms of reduced Z squared, which is a goodness-of-fit statistic akin to reduced chi squared but designed for comparing error models.
+We can see that the combination of location class and HDOP values yield the best error model,
+both in terms of AICc and in terms of reduced Z squared.
+Reduced Z squared is a goodness-of-fit statistic akin to reduced chi squared, but designed for comparing error models.
 
 We had two calibration datasets, so we can also see if there is any substantial difference between the two GPS tags. We do this by making a list of individual UEREs to compare to the previous joint UERE.
 ```{r}
@@ -139,11 +146,13 @@ summary(FIT)
 
 ### Fitting with uncalibrated data
 
-Fitting with unknown errors is a method of last resort. We have to provide an initial guess for `error`, which will be the device's UERE. `error=10` is usually a good guess for GPS data. Let's consider the turtle data again, but without calibrated UERE.
+Fitting with unknown errors is a method of last resort. We have to provide an initial guess for `error`, which will be the device's UERE. `error=10` is usually a good guess for GPS data. Unlike `uere.fit`, `ctmm.fit` is not yet coded to use the location classes.
 
 ```{r}
 # delete UERE information
-uere(turtle[[3]]) <- NULL
+uere(turtle) <- NULL
+# toss out 2D locations for now
+turtle <- lapply(turtle,function(t){ t[t$class=="3D",] })
 ```
 
 The only difference is that you have to provide an initial guess for the UERE. Otherwise, the steps are the same.

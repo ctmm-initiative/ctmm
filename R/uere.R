@@ -667,7 +667,8 @@ uere.null <- function(data)
     UERE <- cbind(UERE)
     colnames(UERE) <- "horizontal"
     if(is.null(names(value))) { rownames(UERE) <- "all" }
-    UERE <- new.UERE(UERE,DOF=NA*UERE,AICc=NA*UERE[1,])
+    AIC <- NA*UERE[1,]
+    UERE <- new.UERE(UERE,DOF=NA*UERE,AICc=AIC,Zsq=AIC,VAR.Zsq=AIC,N=AIC)
   }
 
   DOF <- attr(UERE,"DOF")
@@ -711,6 +712,9 @@ uere.null <- function(data)
     DOF.NULL <- UERE.NULL
     AICc.NULL <- UERE.NULL[1,]
     names(AICc.NULL) <- TYPES # R drops dimnames...
+    Zsq.NULL <- AICc.NULL
+    VAR.Zsq.NULL <- AICc.NULL
+    N.NULL <- AICc.NULL
 
     # copy over @UERE slot
     if(length(attr(data[[i]],"UERE")) && length(UERE))
@@ -720,6 +724,9 @@ uere.null <- function(data)
       UERE.NULL[CLASS,TYPES] <- attr(data[[i]],"UERE")
       DOF.NULL[CLASS,TYPES] <- attr(attr(data[[i]],"UERE"),"DOF")
       AICc.NULL[TYPES] <- attr(attr(data[[i]],"UERE"),"AICc")
+      Zsq.NULL[TYPES] <- attr(attr(data[[i]],"UERE"),"Zsq")
+      VAR.Zsq.NULL[TYPES] <- attr(attr(data[[i]],"UERE"),"VAR.Zsq")
+      N.NULL[TYPES] <- attr(attr(data[[i]],"UERE"),"N")
     }
 
     # copy over UERE-value (overwriting conflicts)
@@ -730,6 +737,9 @@ uere.null <- function(data)
       UERE.NULL[CLASS,TYPES] <- methods::getDataPart(UERE)
       DOF.NULL[CLASS,TYPES] <- attr(UERE,"DOF")
       AICc.NULL[TYPES] <- attr(UERE,"AICc")
+      Zsq.NULL[TYPES] <- attr(UERE,"Zsq")
+      VAR.Zsq.NULL[TYPES] <- attr(UERE,"VAR.Zsq")
+      N.NULL[TYPES] <- attr(UERE,"N")
     }
 
     # calibrate data
@@ -743,7 +753,7 @@ uere.null <- function(data)
     }
 
     # store UERE that was applied
-    UERE.NULL <- new.UERE(UERE.NULL,DOF=DOF.NULL,AICc=AICc.NULL)
+    UERE.NULL <- new.UERE(UERE.NULL,DOF=DOF.NULL,AICc=AICc.NULL,Zsq=Zsq.NULL,VAR.Zsq=VAR.Zsq.NULL,N=N.NULL)
     attr(data[[i]],"UERE") <- UERE.NULL
   }
 

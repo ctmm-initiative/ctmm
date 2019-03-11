@@ -241,7 +241,7 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
       Q <- c(J %*% CTMM$COV[Q,Q] %*% J) # variance of nu
       Q <- ci.tau(nu,Q,alpha=beta)[1]
 
-      if(Q<=0 || is.na(IC))
+      if(Q<=0 || level==1 || is.na(IC))
       { GUESS <- c(GUESS,list(simplify.ctmm(MLE,"diff.tau"))) }
     }
     else if(length(CTMM$tau)==2) # try other side if boundary if choosen model is critically damped

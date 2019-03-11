@@ -30,8 +30,8 @@ as.telemetry(object,timeformat="",timezone="UTC",projection=NULL,timeout=Inf,na.
   \item{timeformat}{Format argument for \code{\link{strptime}}.}
   \item{timezone}{Timezone argument for \code{\link{strptime}}.}
   \item{projection}{Optional PROJ.4 projection argument to be fed to \code{\link[rgdal]{project}}.}
-  %\item{UERE}{"User equivalent range errors" needed to translate DOP values into location uncertainty.}
-  \item{timeout}{GPS location fix timeout value (seconds). Potentially useful for categorizing accuracy.}
+  \item{timeout}{GPS location fix timeout value (seconds) for assigning a \code{"timed-out"} location class.}
+  %\item{class.2D}{Assign location classes \code{"2D"} and \code{"3D"} to fixes with \code{3} and \code{>3} satellites.}
   \item{na.rm}{If some values are \code{NA} in the data frame, are the rows (times) deleted or are the columns (data types) deleted.}
   \item{mark.rm}{Delete Movebank manually marked outliers. Also see \code{\link{outlie}}.}
   \item{drop}{Only return a \code{telemetry} object for one individual if \code{TRUE}. Always return a \code{list} of telemetry objects if \code{FALSE}.}
