@@ -149,6 +149,8 @@ gridder <- function(t,z,dt=NULL,W=NULL,lag=NULL,p=NULL,FLOOR=NULL,finish=TRUE,re
 
   # default time step
   if(is.null(dt)) { dt <- stats::median(DT) }
+  if(!is.na(dt) && dt==0) { dt <- stats::median(DT[DT>0]) }
+  if(is.na(dt)) { dt <- 1 } # doesn't really matter
 
   # setup grid transformation
   if(is.null(lag))

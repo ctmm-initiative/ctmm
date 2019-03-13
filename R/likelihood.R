@@ -46,7 +46,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   }
 
   # check for bad eccentricity from optimizer
-  if(abs(ecc)>=-log(.Machine$double.eps)) { return(-Inf) }
+  if(!isotropic && abs(ecc)>=-log(.Machine$double.eps)) { return(-Inf) }
 
   circle <- CTMM$circle
 
@@ -746,15 +746,26 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
     }
 
     MSPE <- CTMM$COV.mu
-    if(length(dim(MSPE))==2 && length(UU)==1) # multiple spatial dimensions and one trend component
-    { MSPE <- sum(diag(MSPE)) * c(UU) }
-    else if(length(dim(MSPE))==2 && length(UU)>1) # one spatial dimension and many trend components
-    { MSPE <- diag(MSPE %*% UU) }
-    else if(length(dim(MSPE))==4) # k trend components in multiple dimensions
+    if(length(axes)==1)
     {
-      MSPE <- lapply(1:length(axes),function(i) MSPE[i,,,i])
-      MSPE <- Reduce("+",MSPE)
-      MSPE <- diag(MSPE %*% UU)
+      if(length(MSPE)==1) # one spatial dimension and one trend component
+      { MSPE <- MSPE * UU }
+      else # one spatial dimension and many trend components
+      { MSPE <- diag(MSPE %*% UU) }
+    }
+    else
+    {
+      if(length(UU)==1) # multiple spatial dimensions and one trend component
+      { MSPE <- sum(diag(MSPE)) * c(UU) }
+      # else if(length(dim(MSPE))==2 && length(UU)>1)
+      else if(length(dim(MSPE))==4) # k trend components in multiple dimensions
+      {
+        MSPE <- lapply(1:length(axes),function(i) MSPE[i,,,i])
+        MSPE <- Reduce("+",MSPE)
+        MSPE <- diag(MSPE %*% UU)
+      }
+      else
+      { stop("Inconsistent dimensions around COV[mu].") }
     }
     # 0/0 -> 0 (IOU)
     MSPE <- sum(nant(MSPE,0))
@@ -829,6 +840,8 @@ area2var <- function(CTMM,MEAN=TRUE)
 ###################
 ctmm.guess <- function(data,CTMM=ctmm(),variogram=NULL,name="GUESS",interactive=TRUE)
 {
+  #
+
   # use intended axes
   if(is.null(variogram)) { variogram = variogram(data,axes=CTMM$axes) }
   else { CTMM$axes <- attr(variogram,"info")$axes }

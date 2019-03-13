@@ -25,7 +25,10 @@ residuals.ctmm <- function(object,data,...)
     rm(drift)
 
     # calculate residuals
-    data[,axes] <- smoother(data,object,residual=TRUE)
+    TEMP <- smoother(data,object,residual=TRUE)
+    if(!object$range) { data <- data[-1,] } # conditioning off first observation
+    data[,axes] <- TEMP
+    rm(TEMP)
   }
 
   # keep only axes

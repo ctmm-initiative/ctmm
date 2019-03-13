@@ -1,5 +1,10 @@
 PRIORITY
-* 2D/3D fix argument for as.telemetry from number of satellites
+* ctmm.select run OUf.isotropic before OUf.anisotropic with OU/OUF.anisotropic + OUf.isotropic parameters
+* ctmm.select optimize f of OUf in isolation first?
+* ctmm.select optimize Omega of OUO in isolation first?
+* prediction COV should be called VAR if length(axes)==1 or call everything COV
+* optimize: was rank-1 update correlation preserving? was it local?
+* 2D/3D fix argument for as.telemetry from number of satellites?
 * variogram() error on lists
 * error vignette should specify that tracking and calibration data have same location classes
 * distribute cores from ctmm.select -> ctmm.fit optimizer

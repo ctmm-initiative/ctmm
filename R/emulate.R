@@ -106,6 +106,8 @@ emulate.telemetry <- function(object,CTMM,fast=FALSE,...)
 # + concurrent double-bootstrap AICc
 ctmm.boot <- function(data,CTMM,method=CTMM$method,robust=FALSE,error=0.01,cores=1,trace=TRUE,...)
 {
+  if("COV" %nin% names(CTMM)) { stop("CTMM needs to be output from ctmm.select or ctmm.fit.") }
+
   multiplicative <- FALSE
   method <- match.arg(method,c('ML','HREML','pREML','pHREML','REML'),several.ok=TRUE)
   cores <- resolveCores(cores,fast=FALSE)

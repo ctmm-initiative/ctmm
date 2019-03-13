@@ -370,7 +370,7 @@ kalman <- function(z,u,dt,CTMM,error=NULL,smooth=FALSE,sample=FALSE,residual=FAL
       mu <- iW %*% D # (MEAN,DATA)
       # if DIM==1, dim(mu)==c(M,2), else dim(mu)==c(2*M,1) - reversed order
       # fix for BM/IOU conditioning off first location (not really a model parameter)
-      if(!CTMM$range)
+      if(!CTMM$range && length(mu))
       {
         # overwrite NaN stationary mean value with first location (maximizes likelihood)
         mu[1,] <- zRes[1,DATA]
