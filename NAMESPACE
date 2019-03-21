@@ -110,4 +110,4 @@ S3method(emulate,telemetry)
 export(annotate,color)
 
 # GUI selection methods
-export(lasso,marquee)
+export(lasso,marquee,cleave)

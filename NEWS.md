@@ -1,7 +1,7 @@
-ctmm 0.5.6 (2019-03-10)
+ctmm 0.5.6 (2019-03-20)
 ================
 
-  * new functions lasso and marquee
+  * new functions lasso, marquee, and cleave
 
   * new functions annotate and color
   
@@ -22,6 +22,8 @@ ctmm 0.5.6 (2019-03-10)
   * bugfix in IID ctmm.fit with elliptical errors
   
   * bugfix in occurrence when projection origin is far from the mean location
+  
+  * bugfix in akde.list where location errors were not smoothed
   
   * bugfix in ctmm.guess/variogram.fit for BM/IOU models
   

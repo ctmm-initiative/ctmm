@@ -251,8 +251,15 @@ akde.list <- function(data,CTMM,VMM=NULL,debias=TRUE,smooth=TRUE,error=0.001,res
   #step 1: compute the optimal bandwidths for each instance
   # if (!silent)
   #  cat("Computing optimal bandwidths\n")
-  for (i.instance in 1:n.instances)
+  for(i.instance in 1:n.instances)
   {
+    # smooth data
+    if(CTMM[[i.instance]]$error && smooth)
+    {
+      data[[i.instance]] <- predict(CTMM[[i.instance]],data=data[[i.instance]],t=data[[i.instance]]$t)
+      CTMM[[i.instance]]$error <- FALSE # smoothed error model (approximate)
+    }
+
     #alias for readability
     instance <- data[[i.instance]]
     n.samples <- length(instance$x)
@@ -321,6 +328,7 @@ akde.list <- function(data,CTMM,VMM=NULL,debias=TRUE,smooth=TRUE,error=0.001,res
   names(UD.list) <- names(data)
   return(UD.list)
 }
+
 
 ###################
 # average aligned UDs

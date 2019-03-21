@@ -32,7 +32,7 @@
 
 <meta property="og:title" content="Spatial selection methods for telemetry objects. — select" />
 
-<meta property="og:description" content="Methods to segment or subset telemety objects based on polygon lasso and rectangular marquee selectors." />
+<meta property="og:description" content="Methods to segment or subset telemety objects based on polygon lasso, rectangular marquee, and time slider selectors." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -124,13 +124,15 @@
 
     <div class="ref-description">
     
-    <p>Methods to segment or subset telemety objects based on polygon lasso and rectangular marquee selectors.</p>
+    <p>Methods to segment or subset telemety objects based on polygon lasso, rectangular marquee, and time slider selectors.</p>
     
     </div>
 
     <pre class="usage"><span class='fu'>lasso</span>(<span class='no'>object</span>,<span class='no'>...</span>)
 
-<span class='fu'>marquee</span>(<span class='no'>object</span>,<span class='no'>...</span>)</pre>
+<span class='fu'>marquee</span>(<span class='no'>object</span>,<span class='no'>...</span>)
+
+<span class='fu'>cleave</span>(<span class='no'>object</span>,<span class='kw'>fraction</span><span class='kw'>=</span><span class='fl'>0.5</span>,<span class='kw'>name</span><span class='kw'>=</span><span class='st'>"CLEFT"</span>,<span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -140,6 +142,14 @@
       <td><p><code>telemetry</code> object or list of such objects.</p></td>
     </tr>
     <tr>
+      <th>fraction</th>
+      <td><p>Initial split index, as fraction of total (will change to time).</p></td>
+    </tr>
+    <tr>
+      <th>name</th>
+      <td><p>Name of list to store cleft telemetry objects to.</p></td>
+    </tr>
+    <tr>
       <th>...</th>
       <td><p>Additional arguments passed to <code>plot</code>.</p></td>
     </tr>
@@ -147,11 +157,11 @@
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>Allows the user to subset telemetry data into two groups (interior and exterior), based on a hand-drawn polygon lasso or rectangular marquee.</p>
+    <p><code>lasso</code> and <code>marquee</code> allow the user to subset telemetry data into two groups (interior and exterior), based on a hand-drawn polygon lasso or rectangular marquee. <code>cleave</code> allows the user to split the data into two halves at a particular time selected via slider.</p>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Returns a named list telemetry objects, twice the length of the input <code>object</code>, where the first half are the interior subsets and the second half are the exterior subsets.</p>
+    <p><code>lasso</code> and <code>marquee</code> return a named list telemetry objects, twice the length of the input <code>object</code>, where the first half are the interior subsets and the second half are the exterior subsets. <code>cleave</code> stores a similar list of telemetry objects to <code>name</code> on button press.</p>
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
