@@ -250,7 +250,7 @@ fill.data <- function(data,CTMM=ctmm(tau=Inf),verbose=FALSE,t=NULL,dt=NULL,res=1
     if(is.null(dt)){ dt <- stats::median(DT)/res }
 
     # maximum gap to bridge
-    if(is.null(dt.max)) { dt.max <- -log(cor.min)*CTMM$tau[1] }
+    if(cor.min>0 && length(CTMM$tau)>1 && CTMM$tau[2]>0) { dt.max <- max(dt.max,-log(cor.min)*CTMM$tau[2]) }
     dt.max2 <- dt.max/2
 
     # this regularization is not perfectly regular, but holds up to sampling drift in caribou data
@@ -322,11 +322,12 @@ fill.data <- function(data,CTMM=ctmm(tau=Inf),verbose=FALSE,t=NULL,dt=NULL,res=1
 # cor.min is roughly the correlation required between locations to bridge them
 # dt.max is (alternatively) the maximum gap allowed between locations to bridge them
 #################################
-occurrence <- function(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=0.5,dt.max=NULL)
+occurrence <- function(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=0.05,dt.max=NULL)
 {
   axes <- CTMM$axes
   CTMM0 <- CTMM
   dt <- stats::median(diff(data$t))
+  if(is.null(dt.max)) { dt.max <- dt }
 
   if(length(H)==1) { H <- diag(H,2) }
 

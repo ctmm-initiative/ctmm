@@ -22,8 +22,8 @@ setMethod('extent', signature(x='list'), extent.list)
 extent.telemetry <- function(x,level=1,...)
 {
   alpha <- (1-level)/2
-  X <- stats::quantile(x$x,probs=c(alpha,1-alpha))
-  Y <- stats::quantile(x$y,probs=c(alpha,1-alpha))
+  X <- stats::quantile(x$x,probs=c(alpha,1-alpha),na.rm=TRUE)
+  Y <- stats::quantile(x$y,probs=c(alpha,1-alpha),na.rm=TRUE)
   RANGE <- data.frame(x=X,y=Y)
   row.names(RANGE) <- c("min","max")
   return(RANGE)
@@ -134,3 +134,29 @@ extent.variogram <- function(x,level=0.95,threshold=2,...)
   return(EXT)
 }
 setMethod('extent', signature(x='variogram'), extent.variogram)
+
+
+# intersection of extents
+min.extent <- function(...,na.rm=FALSE)
+{
+  LIST <- list(...)
+
+  if(!length(LIST))
+  {
+    INF <- rbind(min=-Inf,max=Inf)
+    INF <- cbind(INF,INF)
+    return(INF)
+  }
+
+  MIN <- LIST[[1]]
+  MIN[1,1] <- max(sapply(LIST,function(L){L[1,1]}),na.rm=na.rm)
+  MIN[1,2] <- max(sapply(LIST,function(L){L[1,2]}),na.rm=na.rm)
+  MIN[2,1] <- min(sapply(LIST,function(L){L[2,1]}),na.rm=na.rm)
+  MIN[2,2] <- min(sapply(LIST,function(L){L[2,2]}),na.rm=na.rm)
+
+  # fix for no intersection
+  MIN[,1] <- range(MIN[,1])
+  MIN[,2] <- range(MIN[,2])
+
+  return(MIN)
+}

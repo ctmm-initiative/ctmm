@@ -1,4 +1,4 @@
-ctmm 0.5.6 (2019-03-20)
+ctmm 0.5.6 (2019-03-31)
 ================
 
   * new functions lasso, marquee, and cleave
@@ -16,6 +16,8 @@ ctmm 0.5.6 (2019-03-20)
   * increased numerical precision in ctmm.loglike for 0 < dt << tau, including the limit OU/OUF -> BM/OU
   
   * BM/IOU model likelihoods are now exact limits of OU/OUF likelihoods modulo a constant
+  
+  * occurrence default dt.max & cor.min arguments now tighter
   
   * periodogram functionality restored for one-dimensional data
   

@@ -7,7 +7,7 @@
 This function calculates an occurrence distribution from \code{telemetry} data and a continuous-time movement model.
 }
 \usage{
-occurrence(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=0.5,dt.max=NULL)
+occurrence(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=0.05,dt.max=NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -17,12 +17,12 @@ occurrence(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=0.5,dt.max=N
   \item{res.time}{Number of temporal grid points per median timestep.}
   \item{res.space}{Number of grid points along each axis, relative to the average diffusion (per median timestep) from a stationary point.}
   \item{grid}{Optional grid specification with columns labeled \code{x} and \code{y}. Not yet supported.}
-  \item{cor.min}{Location correlation threshold for skipping gaps.}
-  \item{dt.max}{Maximum absolute gap size (in seconds) for Kriging interpolation, alternative to \code{cor.min}.}
+  \item{cor.min}{Velocity correlation threshold for skipping gaps.}
+  \item{dt.max}{Maximum absolute gap size (in seconds) for Kriging interpolation. If left \code{NULL}, the median of \code{diff(data$t)} will be used.}
 }
 
 \details{
-The arguments \code{cor.min} or \code{dt.max} are used to prevent the interpolation of large gaps, which would bias the estimate to more resemble the movement model than the data.
+The arguments \code{cor.min} or \code{dt.max} are used to prevent the interpolation of large gaps, which would bias the estimate to more resemble the movement model than the data. Because \code{cor.min} can produce an empty range with fractal movement models, the larger of the two rules is employed.
 }
 
 \value{Returns a \code{UD} object containing the sampled grid line locations \code{x} and \code{y}, the probability density and cumulative distribution functions evaluated on the sampled grid locations \code{PDF} & \code{CDF}, the optional bandwidth matrix \code{H}, and the area of each grid cell \code{dA}.
@@ -40,9 +40,12 @@ Kálmán filters for continuous-time movement models.
 
 \author{ C. H. Fleming. }
 
-\note{Large gaps have a tendency to blow up the estimate, and can be avoided with the \code{cor.min} or \code{dt.max} arguments.
+\note{Large gaps have a tendency to slow down computation and blow up the estimate. This can be avoided with the \code{cor.min} or \code{dt.max} arguments.
 
-In the case of coarse grids, the value of \code{PDF} in a grid cell actually corresponds to the average probability density over the entire rectangular cell. }
+In the case of coarse grids, the value of \code{PDF} in a grid cell actually corresponds to the average probability density over the entire rectangular cell.
+
+Prior to \code{ctmm} v0.5.6, \code{cor.min} referred to the location correlation, with a default of 50\%.
+In \code{ctmm} v0.5.6 and above, \code{cor.min} refers to the velocity correlation, with a default of 5\%.}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
