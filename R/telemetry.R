@@ -180,6 +180,9 @@ pull.column <- function(object,NAMES,FUNC=as.numeric)
 # do we need a new location class for this
 missing.class <- function(DATA,TYPE)
 {
+  LEVELS <- paste0("[",TYPE,"]")
+  LEVELS[2] <- paste0("NA",LEVELS)
+
   # column to check for NAs
   if(TYPE=="speed") { COL <- "speed" }
   else if(TYPE=="vertical") { COL <- "z" }
@@ -199,7 +202,7 @@ missing.class <- function(DATA,TYPE)
       if(length(OVER))
       {
         OVER <- as.factor(NAS)
-        levels(OVER) <- c(TYPE,"missing")
+        levels(OVER) <- LEVELS
         DATA$class <- paste(as.character(DATA$class),as.character(OVER))
         DATA$class <- as.factor(DATA$class)
         rm(OVER)
@@ -209,7 +212,7 @@ missing.class <- function(DATA,TYPE)
     else # we need a location class for missing TYPE
     {
       DATA$class <- as.factor(NAS)
-      levels(DATA$class) <- c(TYPE,"missing")
+      levels(DATA$class) <- LEVELS
     }
 
     # zero missing TYPE
@@ -415,6 +418,9 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     DATA$COV.major <- ARGOS.major[COL]
     DATA[[DOP.LIST$horizontal$VAR]] <- ARGOS.radii[COL]
     DATA$HDOP <- sqrt(2*ARGOS.radii)[COL]
+
+    # remove Z class for now
+    DATA <- DATA[COL!="Z",]
   }
 
   ############
@@ -570,7 +576,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   # timed-out fixes
   if(timeout<Inf)
   {
-    COL <- c("GPS.time.to.fix","time.to.fix","GPS.TTF","TTF","GPS.fix.time","fix.time","time.to.get.fix","Duration")
+    COL <- c("GPS.time.to.fix","time.to.fix","GPS.TTF","TTF","GPS.fix.time","fix.time","time.to.get.fix","Duration","GPS.navigation.time","navigation.time")
     COL <- pull.column(object,COL)
     if(length(COL))
     {

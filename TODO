@@ -1,6 +1,6 @@
 PRIORITY
 * Telonics import bug
-* mode methods for ctmm and UD object (start with generic)
+* mode methods for ctmm and UD object (start with generic) (Erin?)
 * akde on data.frame objects
 * 1D ctmm summary doesn't make sense
 * plotting GPS/ARGOS hybrid data without calibration makes GPS data invisible (VAR==0)
