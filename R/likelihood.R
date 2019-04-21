@@ -17,26 +17,19 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   isotropic <- CTMM$isotropic
 
   COVM <- function(...) { covm(...,isotropic=CTMM$isotropic,axes=CTMM$axes) } # enforce model structure
+  # sigma is current estimate and M.sigma is what we compute the Kalman filter with
   if(!is.null(CTMM$sigma))
-  {
-    CTMM$sigma <- M.sigma <- COVM(CTMM$sigma) # model-only covariance
-    sigma <- CTMM$sigma # model->profile covariance
+  { sigma <- CTMM$sigma <- M.sigma <- COVM(CTMM$sigma) }
+  else # better be profiling
+  { sigma <- M.sigma <- COVM(diag(AXES)) }
+  theta <- sigma@par["angle"] # NA in 1D
 
-    area <- sigma@par[1]
-    ecc <- sigma@par[2]
-    theta <- sigma@par[3]
-  }
-  else
-  {
-    M.sigma <- COVM(diag(AXES))
-
-    area <- 1 # only makes sense with profile
-    ecc <- 0
-    theta <- 0
-  }
+  STUFF <- squeezable.covm(CTMM)
+  smgm <- STUFF$fact  # ratio of major axis to geometric mean axis
+  ECC.EXT <- !STUFF$able # extreme eccentricity --- cannot squeeze data to match variances
 
   # simplify filter for no movement process
-  if(area<=0)
+  if(all(eigenvalues.covm(sigma)<=0))
   {
     CTMM$tau <- NULL
     CTMM$omega <- FALSE
@@ -45,16 +38,13 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     CTMM$sigma <- COVM(0)
   }
 
-  # check for bad eccentricity from optimizer
-  if(!isotropic && abs(ecc)>=-log(.Machine$double.eps)) { return(-Inf) }
-
   circle <- CTMM$circle
+  if(circle && ECC.EXT) { return(-Inf) } # can't squeeze !!! need 2D Langevin code
 
   n <- length(data$t)
 
   t <- data$t
-  # time lags
-  dt <- c(Inf,diff(t))
+  dt <- c(Inf,diff(t)) # time lags
 
   # data z and mean vector u
   z <- get.telemetry(data,CTMM$axes)
@@ -72,7 +62,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
 
   # get the error information
   error <- CTMM$error.mat # note for fitted errors, this is error matrix @ UERE=1 (CTMM$error)
-  # are we fitting the error, then the above is not yet normalized
+  # are we fitting the error?, then the above is not yet normalized
   UERE <- attr(error,"flag")
 
   # check for bad time intervals
@@ -87,7 +77,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   }
 
   # check for bad variances
-  if(area==0)
+  if(max(eigenvalues.covm(sigma))<=0)
   {
     ZERO <- rep(FALSE,n)
     for(i in 1:dim(error)[2]) { ZERO <- ZERO | (error[,i,i]==0) }
@@ -95,73 +85,42 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   }
 
   ### what kind of profiling is possible
-  if((!UERE && !(circle && !isotropic)) || (UERE<3 && isotropic)) # can profile full covariance matrix with unit-variance filter
-  {
-    PROFILE <- 2
-    est.cov <- function(COV) { COVM(VAR.MULT*COV) }
-  }
-  else if(UERE<3) # can profile variance with fixed-eccentricity 2D or 2x1D filters
-  {
-    PROFILE <- TRUE
-    est.cov <- function(COV)
-    {
-      if(length(COV)>1) { COV <- mean(diag(COV)) }
-      COV <- VAR.MULT * COV
-      if(ROTATE) { theta <- 0 } # already along axis
-      if(SQUEEZE) { ecc <- 0 } # in circular coordinate system
-      COV <- COVM(c(COV,ecc,theta))
-      return(COV)
-    }
-  }
-  else # no profiling possible - need exact-covariance filter
-  {
-    PROFILE <- FALSE
-    est.cov <- function(COV) { sigma }
-  }
+  if((!UERE && !(circle && !isotropic)) || (UERE<3 && isotropic)) # can profile full covariance matrix all at once
+  { PROFILE <- 2 }
+  else if(UERE<3) # can profile (max) variance with fixed-eccentricity 2D or 2x1D filters
+  { PROFILE <- TRUE }
+  else # no profiling possible - need exact-covariance filter (e.g. UERE>=3)
+  { PROFILE <- FALSE }
 
   ### 2D or 1D Kalman filters necessary?
-  if(!circle && !isotropic && UERE && UERE<4) # can run 2x1D Kalman filters
+  if(!circle && !isotropic && UERE && UERE<4 && !ECC.EXT) # can run 2x1D Kalman filters
   { DIM <- 1/2 }
-  else if(UERE==4 || (circle && !isotropic && UERE)) # full 2D filter necessary
+  else if(UERE==4 || (circle && !isotropic && UERE) || ECC.EXT) # full 2D filter necessary
   { DIM <- 2 }
   else # can run 1x1D Kalman filter
   { DIM <- 1 }
 
-  ### calibrate unknown errors given PROFILE state
-  if(UERE && UERE<3) # calibrate errors
-  {
-    if(PROFILE) { CTMM$error <- CTMM$error / sqrt(area) } # fix error/variance ratio
-    error <- CTMM$error^2 * error
-  }
-
   # orient the data along the major & minor axes of sigma to run 2x1D filters - or to do basic circulation transformation after squeezing
-  ROTATE <- !isotropic && (circle || (UERE && UERE<4))
+  ROTATE <- !isotropic && (circle || (UERE && UERE<4) && !ECC.EXT)
   if(ROTATE)
   {
     R <- rotate(-theta)
     z <- z %*% t(R)
-
-    # minimize numerical errors from transforming back and forth
-    M.sigma <- attr(M.sigma,"par")
-    M.sigma["angle"] <- 0
-    M.sigma <- COVM(M.sigma)
+    M.sigma <- rotate.covm(M.sigma,-theta)
 
     if(UERE>=4) { error <- rotate.mat(error,-theta) } # rotate error ellipses
   }
 
   # squeeze from ellipse to circle for circulation model transformation
-  SQUEEZE <- (circle && !isotropic)
+  # don't squeeze if some variances are zero
+  SQUEEZE <- circle && !isotropic && !ECC.EXT
   if(SQUEEZE)
   {
-    z <- squeeze(z,ecc)
-
-    # minimize numerical errors from transforming back and forth
-    M.sigma <- attr(M.sigma,"par")
-    M.sigma["eccentricity"] <- 0
-    M.sigma <- COVM(M.sigma)
+    z <- squeeze(z,smgm)
+    M.sigma <- squeeze.covm(M.sigma,circle=TRUE)
 
     # squeeze error circles into ellipses
-    if(UERE) { error <- squeeze.mat(error,ecc) }
+    if(UERE) { error <- squeeze.mat(error,smgm) }
 
     # mean functions can requires squeezing (below)
     # how does !error && circle && !isotropic avoid this?
@@ -173,7 +132,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     if(!SQUEEZE)
     { u <- vapply(1:ncol(u),function(i){cbind(u[,i],rep(0,n),rep(0,n),u[,i])},array(0,c(n,4))) }
     else
-    { u <- vapply(1:ncol(u),function(i){cbind(u[,i]*exp(-ecc/4),rep(0,n),rep(0,n),u[,i]*exp(+ecc/4))},array(0,c(n,4))) }
+    { u <- vapply(1:ncol(u),function(i){cbind(u[,i]/smgm,rep(0,n),rep(0,n),u[,i]*smgm)},array(0,c(n,4))) }
     dim(u) <- c(n,4*M) # <- (n,2,2*M)
   }
   else if(circle) # 1D circle can use symmetry with just u -> (u,0) mean function for x
@@ -193,39 +152,88 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     rm(R)
   }
 
+  # largest variance (to profile)
+  max.var <- 0
+  update.max.var <- function(sigma)
+  {
+    max.var <<- mean(eigenvalues.covm(sigma))
+    if(UERE<3) { max.var <<- max(max.var,CTMM$error^2) }
+  }
+  update.max.var(M.sigma)
+
+  ### calibrate unknown errors given PROFILE state
+  if(UERE && UERE<3) # calibrate errors
+  {
+    if(PROFILE) { CTMM$error <- CTMM$error / sqrt(max.var) } # fix error/variance ratio
+    error <- CTMM$error^2 * error
+  }
+
+  # Normalization of filters
+  K.sigma <- M.sigma # default Kalman filter
+  if(PROFILE==2 && !UERE) # unit-covariance filter
+  {
+    UNIT <- 2
+    K.sigma <- COVM( diag(AXES) )
+
+    # arg COV is ML COV matrix
+    update.vars <- function(COV)
+    {
+      COV <- VAR.MULT*COV
+      M.sigma <<- COVM(COV)
+      update.max.var(M.sigma)
+    }
+  }
+  else if(PROFILE) # unit max-variance filters
+  {
+    UNIT <- 1
+    K.sigma <- scale.covm(M.sigma,1/max.var)
+
+    # arg COV contains ML max.var estimate
+    update.vars <- function(COV)
+    {
+      COV <- mean(diag(cbind(COV))) # diag is annoying
+      max.var <<- VAR.MULT * c(COV) # relative in ratio to max var !!!
+      # update sigma # M.sigma was in ratio to max.var
+      M.sigma <<- scale.covm(K.sigma,max.var)
+      # update error
+      if(UERE && UERE<3) { CTMM$error <<- CTMM$error * sqrt(max.var) }
+      # update.max.var(sigma)
+    }
+  }
+  else # fixed-variance filters
+  {
+    UNIT <- FALSE
+    update.vars <- function(COV) { }
+  }
+
   #### RUN KALMAN FILTERS ###
   if(DIM==1/2) ### 2 separate 1D Kalman filters instead of 1 2D Kalman filter ###
   {
-    # scale eigen variances proportionally
-    SIGMA <- exp(c(+1,-1)*ecc/2)
-    if(!PROFILE) { SIGMA <- SIGMA * area }
+    SIGMA <- eigenvalues.covm(K.sigma) # (relative to max.var)
 
     # major axis likelihood
     CTMM$sigma <- SIGMA[1]
-    KALMAN1 <- kalman(cbind(z[,1]),u,dt=dt,CTMM=CTMM,error=error)
+    KALMAN1 <- kalman(cbind(z[,1]),u,dt=dt,CTMM=CTMM,error=error[,1,1,drop=FALSE]) # errors are relative to max.var if PROFILE
 
     # minor axis likelihood
     CTMM$sigma <- SIGMA[2]
-    KALMAN2 <- kalman(cbind(z[,2]),u,dt=dt,CTMM=CTMM,error=error)
+    KALMAN2 <- kalman(cbind(z[,2]),u,dt=dt,CTMM=CTMM,error=error[,2,2,drop=FALSE]) # errors are relative to max.var if PROFILE
 
     mu <- cbind(KALMAN1$mu,KALMAN2$mu)
 
-    R.sigma <- c(KALMAN1$sigma + KALMAN2$sigma)/2 # residual variance
-    if(PROFILE && !profile) { RATIO <- R.sigma/area } # ratio of residual variance to model variance
-    if(profile)
-    {
-      sigma <- est.cov(R.sigma)
-      area <- attr(sigma,'par')['area']
-    }
+    R.sigma <- c(KALMAN1$sigma + KALMAN2$sigma)/2 # residual variance (relative to M.sigma)
+    if(PROFILE && !profile)
+    { RATIO <- R.sigma/max.var } # ratio of residual variance to model variance
+    else if(profile)
+    { update.vars(R.sigma) }
 
     # combine uncorrelated estimates
     COV.mu <- array(c(KALMAN1$iW,diag(0,M),diag(0,M),KALMAN2$iW),c(M,M,2,2)) # -1/Hessian
-    if(PROFILE) { COV.mu <- COV.mu * area }
-    DOF.mu <- array(c(SIGMA[1]*KALMAN1$W,diag(0,M),diag(0,M),SIGMA[2]*KALMAN2$W),c(M,M,2,2))
+    if(PROFILE) { COV.mu <- COV.mu * max.var }
 
     # put in first canonical form (2*M,2*M)
-    COV.mu <- aperm(COV.mu,c(3,1,4,2)) ; dim(COV.mu) <- c(2*M,2*M)
-    DOF.mu <- aperm(DOF.mu,c(3,1,4,2)) ; dim(DOF.mu) <- c(2*M,2*M)
+    COV.mu <- aperm(COV.mu,c(3,1,4,2))
+    dim(COV.mu) <- c(2*M,2*M)
 
     logdetCOV <- KALMAN1$logdet + KALMAN2$logdet
     logdetcov <- -log(det(KALMAN1$W)) - log(det(KALMAN2$W))
@@ -233,23 +241,25 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   else ### 1x 1D or 2D Kalman filter ###
   {
     # prepare variance/covariance of 1D/2D Kalman filters
-    if(PROFILE==2 || (PROFILE && DIM==1)) { CTMM$sigma <- 1 } # could be rotated & squeezed
-    else if(DIM==1) { CTMM$sigma <- area }
-    else if(DIM==2) { CTMM$sigma <- COVM(c(if(PROFILE){1}else{area},if(SQUEEZE){0}else{ecc},if(ROTATE){0}else{theta})) } # circle, !isotropic, UERE=1,2
-    # else sigma is full covariance matrix
+    if(PROFILE==2 || DIM==1) # could be rotated & squeezed
+    { CTMM$sigma <- K.sigma@par['major'] }
+    else if(DIM==2) # circle, !isotropic, UERE=1,2
+    { CTMM$sigma <- K.sigma } # else sigma is full covariance matrix
+
+    if(DIM==1) { error <- error[,1,1,drop=FALSE] } # isotropic && UERE redundant error information
 
     KALMAN <- kalman(z,u,dt=dt,CTMM=CTMM,error=error)
 
     mu <- KALMAN$mu
 
-    R.sigma <- KALMAN$sigma # residual covariance
-    if(PROFILE==2 && !profile) { RATIO <- mean(diag( COVM(R.sigma) %*% PDsolve(M.sigma) )) }
-    else if(PROFILE && !profile) { RATIO <- mean(diag(R.sigma))/area } # filter already partially standardized via eccentricity
-    if(profile) # variance/covariance update based on residual covariance
-    {
-      sigma <- est.cov(R.sigma)
-      area <- attr(sigma,'par')['area']
-    }
+    R.sigma <- KALMAN$sigma # residual covariance (relative to K.sigma)
+
+    if(profile)
+    { update.vars(R.sigma) } # variance/covariance update based on residual covariance
+    else if(PROFILE==2)
+    { RATIO <- mean( diag( COVM(R.sigma) %*% solve.covm(M.sigma) ) ) }
+    else if(PROFILE) # filter already partially standardized via eccentricity
+    { RATIO <- mean(diag(cbind(R.sigma))) / var.covm(M.sigma,ave=TRUE) }
 
     logdetCOV <- (AXES/DIM)*KALMAN$logdet # log autocovariance / n
 
@@ -259,17 +269,8 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
       logdetcov <- -log(det(KALMAN$W)) # log cov[beta] absolute
 
       COV.mu <- KALMAN$iW # (2*M,2*M) from riffle
-      # sqrt(sigma)
-      SQRTM <- sqrtm(sigma) %o% diag(1,M) # (2,2,M,M)
-      SQRTM <- aperm(SQRTM,c(1,3,2,4)) # (2,M,2,M)
-      dim(SQRTM) <- c(2*M,2*M)
-      DOF.mu <- SQRTM %*% KALMAN$W %*% SQRTM # (2*M,2*M)
-
-      if(PROFILE) # variance was not included
-      {
-        COV.mu <- COV.mu * area # iW=COV/area
-        DOF.mu <- DOF.mu / area # W=area/COV
-      }
+      # variance was not included
+      if(PROFILE) { COV.mu <- COV.mu * max.var } # iW=COV/area
 
       logdetcov <- log(det(COV.mu)) # (2*M,2*M)
     }
@@ -277,48 +278,40 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     {
       logdetcov <- -AXES*log(det(KALMAN$W)) # log cov[beta] absolute
 
-      if(PROFILE)
-      {
-        COV.mu <- KALMAN$iW %o% sigma # (M,M,2,2)
-        DOF.mu <- KALMAN$W %o% diag(AXES)
-      }
+      if(PROFILE) # unit covariance filter???
+      { COV.mu <- KALMAN$iW %o% M.sigma } # (M,M,2,2)
       else if(!PROFILE)
-      {
-        COV.mu <- KALMAN$iW %o% diag(AXES)
-        DOF.mu <- (area * KALMAN$W) %o% diag(AXES)
-      }
+      { COV.mu <- KALMAN$iW %o% diag(AXES) }
       # put either in first canonical form (AXES*M,AXES*M)
-      COV.mu <- aperm(COV.mu,c(3,1,4,2)) ; dim(COV.mu) <- c(AXES*M,AXES*M)
-      DOF.mu <- aperm(DOF.mu,c(3,1,4,2)) ; dim(DOF.mu) <- c(AXES*M,AXES*M)
+      COV.mu <- aperm(COV.mu,c(3,1,4,2))
+      dim(COV.mu) <- c(AXES*M,AXES*M)
     }
   }   ### END KALMAN FILTER RUNS ###
 
-  # discard infinite uncertainty in stationary mean for BM/IOU
-  if(!CTMM$range)
-  { logdetcov <- ifelse(M==1,0, -log(det(COV.mu[-(1:AXES),-(1:AXES)])) ) }
+  # discard infinite prior uncertainty in stationary mean for BM/IOU
+  if(!CTMM$range) { logdetcov <- ifelse(M==1,0, -log(det(COV.mu[-(1:AXES),-(1:AXES)])) ) }
 
-  if(PROFILE) # missing variances from profiling
+  # missing variances/covariances from profiling
+  log.det.sigma <- ifelse(UNIT==1,AXES*log(max.var),log(det.covm(M.sigma)))
+  if(UNIT)
   {
-    logdetCOV <- logdetCOV + AXES*log(area) # per n
-    logdetcov <- logdetcov + (AXES*M)*log(area) # absolute
+    logdetCOV <- logdetCOV + log.det.sigma # per n
+    logdetcov <- logdetcov + M*log.det.sigma # absolute
   }
   else if(!CTMM$range && REML)
   {
     # sigma was sum(var)/n and not sum(var)/(n-1) even though var[1]==0 from conditioning
-    # but we discarded COV[mu.stationary]==Inf above
-    logdetcov <- logdetcov + (AXES)*log(area)
-    # lets REML fix this even if we didn't PROFILE
+    # but we discarded COV[mu.stationary]==Inf above # let REML fix this even if we didn't PROFILE
+    logdetcov <- logdetcov + log.det.sigma
   }
 
   if(SQUEEZE) # de-squeeze
   {
-    sigma <- attr(sigma,"par")
-    sigma["eccentricity"] <- ecc
-    sigma <- COVM(sigma)
+    M.sigma <- squeeze.covm(M.sigma,smgm=1/smgm)
 
     if(DIM==1) # DIM==2 squeezed u(t), so beta and COV[beta] have normal scale already
     {
-      R <- exp(c(+1,-1)*ecc/4)
+      R <- c(smgm,1/smgm)
       mu <- t(R * t(mu)) # (M,2)
 
       dim(COV.mu) <- c(2,M*2*M)
@@ -337,45 +330,22 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
 
     mu <- mu %*% t(R)
 
-    sigma <- attr(sigma,"par")
-    sigma["angle"] <- theta
-    sigma <- COVM(sigma)
+    M.sigma <- rotate.covm(M.sigma,theta)
 
     dim(COV.mu) <- c(2,M*2*M)
-    dim(DOF.mu) <- c(2,M*2*M)
-
     COV.mu <- R %*% COV.mu
-    DOF.mu <- R %*% DOF.mu
-
     dim(COV.mu) <- c(2,M,2,M)
-    dim(DOF.mu) <- c(2,M,2,M)
-
     COV.mu <- aperm(COV.mu,c(3,4,1,2))
-    DOF.mu <- aperm(DOF.mu,c(3,4,1,2))
-
     dim(COV.mu) <- c(2,M*2*M)
-    dim(DOF.mu) <- c(2,M*2*M)
-
     COV.mu <- R %*% COV.mu
-    DOF.mu <- R %*% DOF.mu
-
     dim(COV.mu) <- c(2*M,2*M)
-    dim(DOF.mu) <- c(2*M,2*M)
   }
 
-  # restructure indices from x*n,y*m to x,m,n,y !! CONSIDER DROPPING THIS? !!
+  # restructure indices from x*n,y*m to x,m,n,y
   dim(COV.mu) <- c(AXES,M,AXES,M)
-  dim(DOF.mu) <- c(AXES,M,AXES,M)
   COV.mu <- aperm(COV.mu,c(1,2,4,3))
-  DOF.mu <- aperm(DOF.mu,c(1,2,4,3))
-
-  # should I drop the indices in COV.mu and DOF.mu if possible ?
-  COV.mu <- drop(COV.mu)
-  DOF.mu <- drop(DOF.mu)
-
-  # isotropic reduction if possible
-  if(length(dim(DOF.mu))==2 && AXES==2 && DOF.mu[1,1]==DOF.mu[2,2] && DOF.mu[1,2]==0) { DOF.mu <- mean(diag(DOF.mu)) }
-  # is this always correct?
+  # should I drop the mean indices in COV.mu and DOF.mu if possible ?
+  if(M==1) { dim(COV.mu) <- c(AXES,AXES) }
 
   # re-write all of this to calculate constant, divide constant by n, and then subtract off from sum term by term?
   # likelihood constant/n: 2pi from det second term from variance-profiled quadratic term (which we will subtract if variance is not profiled)
@@ -386,7 +356,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
 
   ### loglike: ( quadratic term of loglikelihood first )
   if(PROFILE && profile) { RATIO <- 1/VAR.MULT } # everything could be profiled - or transformed to variances whose mean could be profiled
-  else if(!PROFILE) { RATIO <- mean(diag(cbind(R.sigma))) } # could profile anything and didn't # residuals fully standardized by model
+  else if(!PROFILE) { RATIO <- mean(diag(cbind(R.sigma))) } # couldn't profile anything and didn't # residuals fully standardized by model
   # PROFILE && !profile was filter specific !
   # finish off the loglikelihood calculation # RATIO is variance ratio from above
   loglike <- -AXES/2*(RATIO-1) - logdetCOV/2 #
@@ -399,16 +369,14 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   if(verbose)
   {
     # assign variables
-    CTMM$sigma <- sigma
-    CTMM <- ctmm.repair(CTMM,K=K)
+    if(profile && PROFILE) { CTMM$sigma <- M.sigma }
+    else { CTMM$sigma <- sigma }
 
-    if(UERE>=3) { CTMM$error <- as.logical(CTMM$error) } # old profile code broke logical error flag - not sure if still necessary
-    else if(UERE && UERE<3 && PROFILE) { CTMM$error <- CTMM$error * sqrt(attr(sigma,'par')['area']) } # restore error ratio
+    CTMM <- ctmm.repair(CTMM,K=K)
 
     # mu <- drift@shift(mu,mu.center) # translate back to origin from center
     CTMM$mu <- mu
     CTMM$COV.mu <- COV.mu
-    CTMM$DOF.mu <- DOF.mu
 
     CTMM$loglike <- loglike
     attr(CTMM,"info") <- attr(data,"info")
@@ -789,49 +757,6 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
   names(CTMM$MSPE) <- c("position","velocity")
 
   return(CTMM)
-}
-
-
-####### calculate variance and variance-covaraince from area and eccentricity information
-area2var <- function(CTMM,MEAN=TRUE)
-{
-  VAR <- mean(diag(CTMM$sigma))
-  COV <- CTMM$COV
-
-  NAMES <- rownames(COV)
-  if(!CTMM$isotropic)
-  {
-    NAMES <- c("variance",NAMES[-(1:3)])
-    area <- CTMM$sigma@par["area"]
-    ecc <- CTMM$sigma@par["eccentricity"]
-
-    # convert area, eccentricity uncertainty into mean variance uncertainty
-    grad <- rbind( c(cosh(ecc/2),area*sinh(ecc/2)/2,0) )
-    if(!MEAN) { grad <- 2*grad } # total x-y variance or average x-y variance
-
-    P <- nrow(COV)
-    if(P>3)
-    {
-      grad <- rbind( grad , array(0,c(P-3,3)) )
-      grad <- cbind( grad , rbind( rep(0,P-3) , diag(1,P-3) ) )
-    }
-
-    COV <- grad %*% COV %*% t(grad)
-    # backup for infinite covariances
-    for(i in 1:nrow(COV))
-    {
-      if(any( is.nan(COV[i,]) | is.nan(COV[,i]) ))
-      {
-        COV[i,] <- COV[,i] <- 0
-        COV[i,i] <- Inf
-      }
-    }
-  }
-  else
-  { NAMES <- c("variance",NAMES[-1]) }
-  dimnames(COV) <- list(NAMES,NAMES)
-
-  return(COV)
 }
 
 

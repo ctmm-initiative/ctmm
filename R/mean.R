@@ -263,22 +263,15 @@ periodic.summary <- function(CTMM,level,level.UD)
 
   # ROTATIONAL VARIANCE INDEX
   ROT <- sum(A^2)/2 # sine and cosine average 1/2
-  area <- CTMM$sigma@par["area"]
-  ecc <- CTMM$sigma@par["eccentricity"]
-  RAN <- 2 * area * cosh(ecc/2)
+  RAN <- var.covm(CTMM$sigma)
   MLE <- ROT/(ROT+RAN)
 
   GRAD <- A
   COV.ROT <- c(GRAD %*% COV %*% GRAD)
 
-  GRAD <- RAN/area
-  PARS <- "area"
-  if(!CTMM$isotropic)
-  {
-    GRAD <- c(GRAD,RAN*tanh(ecc/2)/2)
-    PARS <- c(PARS,"eccentricity")
-  }
+  if(CTMM$isotropic) { PARS <- c('major','major') } else { PARS <- c('major','minor') }
   COV.RAN <- CTMM$COV[PARS,PARS]
+  GRAD <- c(1,1)
   COV.RAN <- c(GRAD %*% COV.RAN %*% GRAD)
 
   GRAD <- c(RAN,-ROT)/(ROT+RAN)^2
@@ -297,29 +290,15 @@ periodic.summary <- function(CTMM,level,level.UD)
     CTMM <- get.taus(CTMM)
 
     ROT <- sum((omega*A)^2)/2 # sine and cosine average 1/2
-    Omega <- CTMM$circle
-    MSD <- 2*area*cosh(ecc/2)
-    RAN <- MSD * ( CTMM$Omega2 + Omega^2 )
-    MLE <- ROT/(ROT+RAN)
 
     GRAD <- omega^2*A
     COV.ROT <- c(GRAD %*% COV %*% GRAD)
 
-    GRAD <- c(RAN/area,MSD*CTMM$J.Omega2)
-    PARS <- c("area",CTMM$tau.names)
-    if(!CTMM$isotropic)
-    {
-      GRAD <- c(GRAD,RAN*tanh(ecc/2)/2)
-      PARS <- c(PARS,"eccentricity")
-    }
-    if(CTMM$circle)
-    {
-      GRAD <- c(GRAD,4*area*cosh(ecc/2)*Omega)
-      PARS <- c(PARS,"circle")
-    }
-    COV.RAN <- CTMM$COV[PARS,PARS]
-    COV.RAN <- c(GRAD %*% COV.RAN %*% GRAD)
+    STUFF <- rand.speed(CTMM)
+    RAN <- STUFF$MLE
+    COV.RAN <- STUFF$COV
 
+    MLE <- ROT/(ROT+RAN)
     GRAD <- c(RAN,-ROT)/(ROT+RAN)^2
     VAR <- sum(GRAD^2 * c(COV.ROT,COV.RAN))
 

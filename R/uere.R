@@ -498,7 +498,7 @@ residuals.calibration <- function(data,TYPES=get.dop.types(data),...)
 # 0 : no error
 # 1 : constant error parameter fit
 # 2 : proportional error parameter fit to DOP value
-# 3 : full error no fit (circle)
+# 3 : full error calibration, no fit (circle)
 # 4 : " " (ellipse)
 # circle : force variance   scalar output
 # DIM : force covariance matrix output with dim [DIM,DIM]

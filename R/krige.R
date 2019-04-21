@@ -16,18 +16,12 @@ smoother <- function(DATA,CTMM,precompute=FALSE,sample=FALSE,residual=FALSE,...)
 
   isotropic <- CTMM$isotropic
   sigma <- CTMM$sigma
-  area <- sigma@par[1]
   COVM <- function(...) { covm(...,isotropic=CTMM$isotropic,axes=CTMM$axes) } # enforce model structure
-  if(AXES > 1)
-  {
-    ecc <- sigma@par[2]
-    theta <- sigma@par[3]
-  }
-  else
-  {
-    ecc <- 0
-    theta <- 0
-  }
+  theta <- sigma@par['angle'] # NA in 1D
+
+  STUFF <- squeezable.covm(CTMM)
+  smgm <- STUFF$fact  # ratio of major axis to geometric mean axis
+  ECC.EXT <- !STUFF$able # extreme eccentricity --- cannot squeeze data to match variances
 
   K <- max(length(CTMM$tau),1)
 
@@ -41,10 +35,10 @@ smoother <- function(DATA,CTMM,precompute=FALSE,sample=FALSE,residual=FALSE,...)
     # get the error information
     error <- CTMM$error.mat # note for fitted errors, this is error matrix @ UERE=1 (CTMM$error)
     UERE <- attr(error,"flag")
-    # are we fitting the error, then the above is not yet normalized
+    # are we fitting the error, then the above is not yet normalized.
     if(UERE && UERE<3) { error <- error * CTMM$error } # set UERE value if necessary
 
-    if(UERE>=4 || (!isotropic && circle && UERE)) { DIM <- 2 } # requires 2D smoother
+    if(UERE>=4 || (!isotropic && circle && UERE) || ECC.EXT) { DIM <- 2 } # requires 2D smoother
     else if(!isotropic & UERE) { DIM <- 1/2 } # requires 2x1D smoothers
     else { DIM <- 1 } # can use 1x1D smoother
 
@@ -52,30 +46,24 @@ smoother <- function(DATA,CTMM,precompute=FALSE,sample=FALSE,residual=FALSE,...)
     # u <- CTMM$mean.vec
     # mu <- CTMM$mu
 
-    # do we need to orient the data along the major an minor axes of sigma for 1D smoothers (or elliptical circulation)
-    ROTATE <- !isotropic && (circle || (UERE && UERE<4))
+    # orient the data along the major an minor axes of sigma
+    ROTATE <- !isotropic && !ECC.EXT
     if(ROTATE)
     {
       z <- rotate.vec(z,-theta)
-
-      sigma <- attr(sigma,"par")
-      sigma["angle"] <- 0
-      sigma <- COVM(sigma)
+      sigma <- rotate.covm(sigma,-theta)
 
       if(UERE>=4) { error <- rotate.mat(error,-theta) } # rotate error ellipses
     }
 
-    # squeeze from ellipse to circle for circulation model transformation
-    SQUEEZE <- (!isotropic && circle)
+    # squeeze from ellipse to circle
+    SQUEEZE <- !isotropic && (DIM<2 || circle) && !ECC.EXT
     if(SQUEEZE)
     {
-      z <- squeeze(z,ecc)
+      z <- squeeze(z,smgm)
+      sigma <- squeeze.covm(sigma,circle=TRUE)
 
-      sigma <- attr(sigma,"par")
-      sigma["eccentricity"] <- 0
-      sigma <- COVM(sigma)
-
-      if(UERE) { error <- squeeze.mat(error,ecc) } # squeeze error circles into ellipses
+      if(UERE) { error <- squeeze.mat(error,smgm) } # squeeze error circles into ellipses
     }
 
     if(circle) ## COROTATING FRAME FOR circle=TRUE ##
@@ -118,15 +106,17 @@ smoother <- function(DATA,CTMM,precompute=FALSE,sample=FALSE,residual=FALSE,...)
     }
   }
 
+  SIGMA <- eigenvalues.covm(sigma)
+
   # rotated data with circular errors - 2x1D kalman smoother
   if(DIM==1/2) # diagonalize data and then run two 1D Kalman filters with separate means
   {
     # major axis likelihood
-    CTMM$sigma <- area * exp(+ecc/2) # major variance
-    KALMAN1 <- kalman(z[,1,drop=FALSE],u=NULL,dt=dt,CTMM=CTMM,error=error,precompute=precompute,sample=sample,residual=residual,...)
+    CTMM$sigma <- SIGMA[1]
+    KALMAN1 <- kalman(z[,1,drop=FALSE],u=NULL,dt=dt,CTMM=CTMM,error=error[,1,1,drop=FALSE],precompute=precompute,sample=sample,residual=residual,...)
     # minor axis likelihood
-    CTMM$sigma <- area * exp(-ecc/2) # minor variance
-    KALMAN2 <- kalman(z[,2,drop=FALSE],u=NULL,dt=dt,CTMM=CTMM,error=error,precompute=precompute,sample=sample,residual=residual,...)
+    CTMM$sigma <- SIGMA[2]
+    KALMAN2 <- kalman(z[,2,drop=FALSE],u=NULL,dt=dt,CTMM=CTMM,error=error[,2,2,drop=FALSE],precompute=precompute,sample=sample,residual=residual,...)
 
     if(residual) { return(cbind(KALMAN1,KALMAN2)) }
 
@@ -150,7 +140,12 @@ smoother <- function(DATA,CTMM,precompute=FALSE,sample=FALSE,residual=FALSE,...)
   }
   else # use 1 Kalman filter - may be 1D or 2D
   {
-    if(DIM==1) { CTMM$sigma <- area } # isotropic variance
+    if(DIM==1)
+    {
+      CTMM$sigma <- SIGMA[1] # isotropic variance
+      error <- error[,1,1,drop=FALSE] # isotropic && UERE redundant error information
+    }
+
     KALMAN <- kalman(z,u=NULL,dt=dt,CTMM=CTMM,error=error,precompute=precompute,sample=sample,residual=residual,...)
     # point estimates will be correct but eccentricity is missing from variances
 
@@ -171,15 +166,12 @@ smoother <- function(DATA,CTMM,precompute=FALSE,sample=FALSE,residual=FALSE,...)
 
     if(DIM<AXES && !sample) # promote from VAR to COV (2,2)
     {
-      # fix for zero-error eccentric smoother
-      MAT <- attr(sigma,'par') # keeps track of SQUEEZE and ROTATE
-      MAT[1] <- 1
-      MAT <- covm(MAT)
-      MAT <- methods::getDataPart(MAT)
+      # fix for circular smoother # keeps track of SQUEEZE and ROTATE
+      MAT <- diag(AXES)
       COV <- drop(COV) %o% MAT
       if(K>1) { vCOV <- drop(vCOV) %o% MAT }
     }
-  }
+  } # end single filter
 
   if(circle) # circulate
   {
@@ -195,12 +187,12 @@ smoother <- function(DATA,CTMM,precompute=FALSE,sample=FALSE,residual=FALSE,...)
 
   if(SQUEEZE) # unsqueeze the distribution
   {
-    z <- squeeze(z,-ecc)
-    if(!sample) { COV <- squeeze.mat(COV,-ecc) }
+    z <- squeeze(z,1/smgm)
+    if(!sample) { COV <- squeeze.mat(COV,1/smgm) }
     if(K>1)
     {
-      v <- squeeze(v,-ecc)
-      if(!sample) { vCOV <- squeeze.mat(vCOV,-ecc) }
+      v <- squeeze(v,1/smgm)
+      if(!sample) { vCOV <- squeeze.mat(vCOV,1/smgm) }
     }
   }
 
@@ -504,9 +496,9 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
       mu <- object$mu
       if(is.null(mu)) { mu <- array(0,c(1,AXES)) }
       sigma <- object$sigma
-      if(is.null(sigma)) { sigma <- diag(1,AXES) }
+      if(is.null(sigma)) { sigma <- covm(1,axes=axes) }
 
-      Lambda <- sqrtm(sigma)
+      Lambda <- sqrtm.covm(sigma)
 
       K <- length(tau)
 
@@ -622,6 +614,7 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
   return(data)
 }
 #methods::setMethod("simulate",signature(object="ctmm"), function(object,...) simulate.ctmm(object,...))
+
 
 simulate.telemetry <- function(object,nsim=1,seed=NULL,CTMM=NULL,t=NULL,dt=NULL,res=1,complete=FALSE,precompute=FALSE,...)
 {

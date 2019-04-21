@@ -1,4 +1,4 @@
-ctmm 0.5.6 (2019-03-31)
+ctmm 0.5.6 (2019-04-20)
 ================
 
   * new functions lasso, marquee, and cleave
@@ -17,6 +17,10 @@ ctmm 0.5.6 (2019-03-31)
   
   * BM/IOU model likelihoods are now exact limits of OU/OUF likelihoods modulo a constant
   
+  * covariance matrices can now take arbitrary eccentricty
+  
+  * ctmm.boot now debiases covariance matrix directly/linearly
+  
   * occurrence default dt.max & cor.min arguments now tighter
   
   * periodogram functionality restored for one-dimensional data
@@ -28,6 +32,8 @@ ctmm 0.5.6 (2019-03-31)
   * bugfix in akde.list where location errors were not smoothed
   
   * bugfix in ctmm.guess/variogram.fit for BM/IOU models
+  
+  * bugfix in speed for IOU models
   
   * e-obs calibration cross checked and fixed
   

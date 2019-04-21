@@ -265,10 +265,7 @@ variogram.fit.backend <- function(variogram,CTMM=ctmm(),fraction=0.5,b=4)
   {
     # store trace, but preserve angle & eccentricity
     if(length(CTMM$axes)==2)
-    {
-      CTMM$sigma <- CTMM$sigma@par
-      CTMM$sigma[1] <- sigma * sigma.unit$scale / cosh(CTMM$sigma[2]/2)
-    }
+    { CTMM$sigma <- scale.covm(CTMM$sigma,(sigma*sigma.unit$scale)/mean(diag(CTMM$sigma))) }
     else
     { CTMM$sigma <- sigma }
 

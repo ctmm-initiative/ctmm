@@ -8,13 +8,13 @@ svf.func <- function(CTMM,moment=FALSE)
   tau <- CTMM$tau
 
   # trace variance
-  sigma <- mean(diag(CTMM$sigma)) # now AM.sigma
+  sigma <- var.covm(CTMM$sigma,ave=TRUE)
 
   circle <- CTMM$circle
 
   # no error considered if missing
   COV <- CTMM$COV
-  if(!is.null(COV)) { COV <- area2var(CTMM,MEAN=TRUE) }
+  if(!is.null(COV)) { COV <- axes2var(CTMM,MEAN=TRUE) }
 
   range <- CTMM$range
   tau <- tau[tau<Inf]

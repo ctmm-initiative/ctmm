@@ -29,19 +29,18 @@ get.IC <- function(CTMM,IC="AICc")
 # function to simplify complexity of models
 simplify.ctmm <- function(M,par)
 {
-  if("eccentricity" %in% par)
+  if("minor" %in% par)
   {
     M$isotropic <- TRUE
     M$sigma <- covm(M$sigma,isotropic=TRUE,axes=M$axes)
-    if("COV" %in% names(M)) { M$COV <- rm.name(M$COV,"eccentricity") }
+    if("COV" %in% names(M)) { M$COV <- rm.name(M$COV,"minor") } # why?
   }
 
   if("circle" %in% par) { M$circle <- FALSE }
 
   if("range" %in% par)
   {
-    M$sigma <- M$sigma/M$tau[1]
-    attr(M$sigma,"par")['area'] <- attr(M$sigma,"par")['area']/M$tau[1]
+    M$sigma <- scale.covm(M$sigma,1/M$tau) # convert to diffusion matrix
     M$tau[1] <- Inf
     M$range <- FALSE
   }
@@ -135,7 +134,7 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
   # all of the features we need to fit numerically
   FEATURES <- id.parameters(CTMM,UERE=UERE)$NAMES
   # consider only features unnecessary "compatibility"
-  FEATURES <- FEATURES[!(FEATURES=="area")]
+  FEATURES <- FEATURES[!(FEATURES=="major")]
   FEATURES <- FEATURES[!(FEATURES=="error")]
   FEATURES <- FEATURES[!grepl("tau",FEATURES)]
   FEATURES <- FEATURES[!(FEATURES=="omega")]
@@ -155,7 +154,7 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
     MLE <- get.mle()
 
     # consider non-zero eccentricity
-    if(("eccentricity" %in% FEATURES) && MLE$isotropic)
+    if(("minor" %in% FEATURES) && MLE$isotropic)
     {
       GUESS <- c(GUESS,list(MLE))
       n <- length(GUESS)
@@ -271,9 +270,11 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
     # consider if eccentricity is zero
     if(!CTMM$isotropic)
     {
-      Q <- "eccentricity"
-      Q <- stats::qnorm(beta/2,mean=CTMM$sigma@par[Q],sd=sqrt(CTMM$COV[Q,Q]))
-      if(Q<=0 || is.na(IC)) { GUESS <- c(GUESS,list(simplify.ctmm(MLE,"eccentricity"))) }
+      Q <- c("major","minor")
+      GRAD <- c(1/CTMM$sigma@par[1],-1/CTMM$sigma@par[2])
+      SD <- sqrt(c(GRAD %*% CTMM$COV[Q,Q] %*% GRAD))
+      Q <- stats::qnorm(beta/2,mean=log(CTMM$sigma@par[1]/CTMM$sigma@par[2]),sd=SD)
+      if(Q<=0 || is.na(IC)) { GUESS <- c(GUESS,list(simplify.ctmm(MLE,"minor"))) }
     }
 
     # consider if we can relax range residence (non-likelihood comparison only)

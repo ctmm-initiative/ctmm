@@ -1,4 +1,8 @@
 PRIORITY
+* Telonics import bug
+* mode methods for ctmm and UD object (start with generic)
+* akde on data.frame objects
+* 1D ctmm summary doesn't make sense
 * plotting GPS/ARGOS hybrid data without calibration makes GPS data invisible (VAR==0)
 * ctmm.select run OUf.isotropic before OUf.anisotropic with OU/OUF.anisotropic + OUf.isotropic parameters
 * ctmm.select optimize f of OUf in isolation first?

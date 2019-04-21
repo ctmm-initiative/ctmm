@@ -48,7 +48,7 @@ emulate.ctmm <- function(object,data=NULL,fast=FALSE,...)
 
   par <- get.parameters(CTMM,NAMES)
   # positive variables (potential)
-  PAR <- c("area","tau position","tau velocity","tau","error")
+  PAR <- POSITIVE.PARAMETERS
   # included variables that are positive
   PAR <- PAR[PAR %in% NAMES]
   # log transform positive parameters
@@ -108,7 +108,6 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,robust=FALSE,error=0.01,cores
 {
   if("COV" %nin% names(CTMM)) { stop("CTMM needs to be output from ctmm.select or ctmm.fit.") }
 
-  multiplicative <- FALSE
   method <- match.arg(method,c('ML','HREML','pREML','pHREML','REML'),several.ok=TRUE)
   cores <- resolveCores(cores,fast=FALSE)
 
@@ -121,22 +120,10 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,robust=FALSE,error=0.01,cores
   DIM <- length(NAMES) * length(method)
 
   # positive variables (potential)
-  POS <- c("area","eccentricity","tau position","tau velocity","tau","error")
+  POS <- POSITIVE.PARAMETERS
   # included variables that are positive
   POS <- POS[POS %in% NAMES]
 
-  # eccentricity
-  if("eccentricity" %in% NAMES)
-  {
-    # ensure eccentricity is positive
-    if(attr(CTMM$sigma,'par')['eccentricity']<0)
-    {
-      attr(CTMM$sigma,'par')['eccentricity'] <- abs( attr(CTMM$sigma,'par')['eccentricity'] )
-      attr(CTMM$sigma,'par')['angle'] <- ( (attr(CTMM$sigma,'par')['angle'] + pi/2) %% pi ) - pi/2
-    }
-  }
-
-  # log transform positive parameters
   Transform <- function(p,inverse=FALSE)
   {
     DIM <- dim(p)
@@ -146,78 +133,15 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,robust=FALSE,error=0.01,cores
       p <- cbind(p)
     }
 
-    # which slot will contain the variance
-    if("eccentricity" %in% NAMES) { VAR <- "eccentricity" } else { VAR <- "area" }
-
-    # transform to parameters of interest
-    if(!inverse)
+    # transform to parameters of interest (to debias)
+    if("minor" %in% NAMES)
     {
-      # transform eccentricity to variance (not area)
-      if("eccentricity" %in% NAMES) { p["eccentricity",] <- p['area',]*cosh(p["eccentricity",]/2) }
-
-      # if(CTMM$omega) # underdamped
-      # {
-      #   # mean square velocity and average diffusion
-      #   p["omega",] <- p[VAR,]*(1/p["tau",]^2+p["omega",]^2) # MSV
-      #   p["tau",] <- p[VAR,]/p["tau",] # DIF
-      #   # refer back to get.taus() for how this was parameterized
-      # }
-      # else if("tau" %in% NAMES) # critically damped
-      # {
-      #   p["tau",] <- p[VAR,]/p["tau",]^2 # mean square Velocity
-      # }
-      # else # overdamped
-      # {
-      #   # transform tau position to diffusion rate
-      #   if("tau position" %in% NAMES)
-      #   { DIF <- p[VAR,]/p["tau position",] }
-      #
-      #   # mean square velocity
-      #   if("tau velocity" %in% NAMES)
-      #   {
-      #     if(!CTMM$range) { MSV <- p[VAR,]/(p["tau velocity",]) }
-      #     else { MSV <- p[VAR,]/(p["tau position",]*p["tau velocity",]) }
-      #   }
-      #
-      #   if("tau velocity" %in% NAMES) { p["tau velocity",] <- MSV }
-      #   if("tau position" %in% NAMES) { p["tau position",] <- DIF }
-      # }
-
-      # log transform
-      if(multiplicative && length(POS)) { p[POS,] <- log(p[POS,]) }
-    }
-
-    # transform back from parameters of interest
-    if(inverse)
-    {
-      if(multiplicative && length(POS)) { p[POS,] <- exp(p[POS,]) }
-
-      # if(CTMM$omega) # underdamped
-      # {
-      #   p["tau",] <- p[VAR,]/p["tau",]
-      #   p["omega",] <- p["omega",]/p[VAR,] - 1/p["tau",]^2 # omega^2
-      #   p["omega",] <- pmax(p["omega",],0) # bias should be other way
-      #   p["omega",] <- sqrt(p["omega",])
-      # }
-      # else if("tau" %in% NAMES) # critically damped
-      # {
-      #   p["tau",] <- sqrt(p[VAR,]/p["tau",])
-      # }
-      # else # overdamped
-      # {
-      #   if("tau velocity" %in% NAMES) { p["tau velocity",] -> MSV }
-      #   if("tau position" %in% NAMES) { p["tau position",] -> DIF }
-      #
-      #   if("tau position" %in% NAMES) { p["tau position",] <- p[VAR,]/DIF }
-      #
-      #   if("tau velocity" %in% NAMES)
-      #   {
-      #     if(CTMM$range) { p["tau velocity",] <- p[VAR,]/(MSV*p["tau position",]) }
-      #     else { p["tau velocity",] <- p[VAR,]/MSV }
-      #   }
-      # }
-
-      if("eccentricity" %in% NAMES) { p['eccentricity',] <- 2*acosh(max(p['eccentricity',]/p['area',],1)) }
+      # linearize covariance matrix for debiasing
+      P <- c("major","minor","angle")
+      if(!inverse)
+      { p[P,] <- sapply(1:ncol(p),function(i){sigma.construct(p[P,i])[c(1,2,4)]}) }
+      else
+      { p[P,] <- sapply(1:ncol(p),function(i){sigma.destruct(matrix(p[P,i][c(1,2,2,3)],2,2))}) }
     }
 
     # restore dimensionality and array names
@@ -229,7 +153,6 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,robust=FALSE,error=0.01,cores
 
     return(p)
   }
-
 
   # simulate with errors & return parameter estimates
   precompute <- FALSE
@@ -285,8 +208,8 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,robust=FALSE,error=0.01,cores
   ### outer loop: designing the weight matrix until estimate converges
   EST <- Replicate(0,DATA=data) # original estimates that we are working with to optimally weight (transformed)
   dim(EST) <- DIM # (NAMES*methods)
-  P0 <- Transform(get.parameters(CTMM,NAMES)) -> P1 # null model for parametric bootstrap
-  if(trace>1) { print(P0) }
+  P0 <- P1 <-  Transform(get.parameters(CTMM,NAMES)) # null model for parametric bootstrap
+  if(trace>1) { print(Transform(P0,inverse=TRUE)) }
   ERROR <- Inf -> ERROR.OLD
   tol <- error*sqrt(length(NAMES)) # eigen-value tolerance for pseudo-inverse
   MAX <- max(1/error^2,DIM+1) # maximum sample size
@@ -368,8 +291,9 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,robust=FALSE,error=0.01,cores
     # order of current error, which we do not know
     ERROR <- ERROR^2
     names(P1) <- NAMES
-    if(trace>1) { print(P1) }
     P <- Transform(P1,inverse=TRUE)
+    P <- clean.parameters(P) # fixes boundary crossings, etc.
+    if(trace>1) { print(P) }
     CTMM <- set.parameters(CTMM,P)
     P1 -> P0
   } # END OUTER LOOP
@@ -381,7 +305,6 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,robust=FALSE,error=0.01,cores
   SAMPLE <- sapply(1:length(NAMES),function(p) W[p,] %*% array(SAMPLE[p,,],c(length(method),N)) ) # R arrays are insane
   dim(SAMPLE) <- c(N,length(NAMES)) # R arrays are insane, part 2
   SAMPLE <- t(SAMPLE)
-  # transform weighted estimates to canonical coordinates
   rownames(SAMPLE) <- NAMES
   SAMPLE <- Transform(SAMPLE,inverse=TRUE)
 
@@ -390,10 +313,6 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,robust=FALSE,error=0.01,cores
   COV <- stats::cov(t(SAMPLE))
   dimnames(COV) <- list(NAMES,NAMES)
   CTMM$COV <- COV
-
-  # we lost eccentricity
-  if("eccentricity" %in% NAMES && P["eccentricity"]==0) { CTMM <- simplify.ctmm(CTMM,"eccentricity") }
-  # what other parameters could have been lost?
 
   # fix COV[mean] with a verbose likelihood evaluation
   CTMM <- ctmm.loglike(data,CTMM,profile=FALSE,verbose=TRUE)

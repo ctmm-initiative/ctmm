@@ -248,18 +248,14 @@ speed.rand <- function(CTMM,data=NULL,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NU
 # only for stationary processes
 speed.deterministic <- function(CTMM,sigma=CTMM$sigma)
 {
-  sigma <- attr(sigma,"par")
-  sigma['area'] <- sigma['area'] / prod(CTMM$tau)
+  sigma <- eigenvalues.covm(sigma)
 
-  if(CTMM$isotropic || !sigma['eccentricity'])
-  {
-    v <- sqrt(sigma['area'] * pi/2)
-  }
+  if(CTMM$isotropic || sigma[1]==sigma[2])
+  { v <- sqrt(sigma[1] * pi/2) }
   else
-  {
-    # eigen values of velocity variance
-    sigma <- sigma['area'] * exp(c(1,-1)/2*sigma['eccentricity'])
-    v <- sqrt(2/pi) * sqrt(sigma[1]) * pracma::ellipke(1-clamp(sigma[2]/sigma[1]))$e
-  }
+  { v <- sqrt(2/pi) * sqrt(sigma[1]) * pracma::ellipke(1-clamp(sigma[2]/sigma[1]))$e }
+
+  v <- v/sqrt(ifelse(CTMM$range,prod(CTMM$tau),CTMM$tau[2]))
+
   return(v)
 }

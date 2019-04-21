@@ -66,14 +66,15 @@ confint.ctmm <- function(model,alpha=0.05,UNICODE=FALSE)
 
   # standard area uncertainty: chi-square
   NAME <- c("area",NAME)
-  GM.sigma <- model$sigma@par["area"]
-  COV <- COV["area","area"]
-  par <- rbind(chisq.ci(GM.sigma,COV=COV,alpha=alpha),par)
+  AREA <- area.covm(model$sigma)
+  DOF <- 2*DOF.area(model)
+  par <- rbind(chisq.ci(AREA,DOF=DOF,alpha=alpha),par)
 
   rownames(par) <- NAME
 
   return(par)
 }
+
 
 # timescale uncertainty: can hit 0 and Inf
 ci.tau <- function(tau,COV,alpha=0.05,min=0,max=Inf)
@@ -97,6 +98,7 @@ ci.tau <- function(tau,COV,alpha=0.05,min=0,max=Inf)
   return(CI)
 }
 
+
 ###
 summary.ctmm <- function(object,level=0.95,level.UD=0.95,units=TRUE,IC="AICc",MSPE="position",...)
 {
@@ -106,6 +108,36 @@ summary.ctmm <- function(object,level=0.95,level.UD=0.95,units=TRUE,IC="AICc",MS
   else if(CLASS=="list")
   { return(summary.ctmm.list(object,level=level,level.UD=level.UD,IC=IC,MSPE=MSPE,units=units)) }
 }
+
+
+# stochastic square speed contribution
+rand.speed <- function(CTMM)
+{
+  MSD <- var.covm(CTMM$sigma,ave=FALSE)
+  Omega <- CTMM$circle
+  Omega2 <- CTMM$Omega2 + Omega^2
+  MLE <- MSD * Omega2
+
+  COV.RAN <- axes2var(CTMM,MEAN=FALSE)
+
+  GRAD <- Omega2
+  PARS <- "variance"
+
+  PARS <- c(PARS,CTMM$tau.names)
+  GRAD <- c(GRAD,MSD*CTMM$J.Omega2)
+
+  if(CTMM$circle)
+  {
+    PARS <- c(PARS,"circle")
+    GRAD <- c(GRAD,2*MSD*Omega)
+  }
+
+  COV.RAN <- COV.RAN[PARS,PARS]
+  COV.RAN <- c(GRAD %*% COV.RAN %*% GRAD)
+
+  return(list(MLE=MLE,COV=COV.RAN))
+}
+
 
 ######################################################
 # Summarize results
@@ -121,10 +153,6 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
   tau <- object$tau
   range <- object$range
   tau <- tau[tau<Inf]
-
-  AM.sigma <- mean(diag(object$sigma))
-  GM.sigma <- object$sigma@par["area"]
-  ecc <- object$sigma@par["eccentricity"]
 
   if("COV" %in% names(object))
   { COV <- object$COV }
@@ -173,28 +201,10 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
   # can we estimate speed?
   if(continuity(object)>1)
   {
-    COV <- area2var(object,MEAN=TRUE)
-
-    # RMS velocity
-    Omega2 <- object$Omega2
-    grad <- object$J.Omega2
-    NAMES <- object$tau.names
-
-    # contribution from circulation
-    omega2 <- 0
-    if(circle)
-    {
-      omega2 <- circle^2
-      grad <- c(grad,2*circle)
-      NAMES <- c(NAMES,'circle')
-    }
-
-    # contribution from sigma
-    # GM.sigma <- cosh(ecc)*AM.sigma
-    ms <- (2*AM.sigma)*(Omega2+omega2)
-    grad <- 2*c(Omega2+omega2, AM.sigma*grad)
-    NAMES <- c("variance",NAMES)
-    var.ms <- c((grad) %*% COV[NAMES,NAMES] %*% (grad))
+    # stochastic contribution
+    STUFF <- rand.speed(object)
+    ms <- STUFF$MLE
+    var.ms <- STUFF$COV
 
     # include mean
     MSPEED <- drift@speed(object)
@@ -266,26 +276,39 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
 #DOF of area
 DOF.area <- function(CTMM)
 {
-  if(CTMM$range) { DOF <- CTMM$sigma@par["area"]^2/abs(CTMM$COV["area","area"]) }
-  else { DOF <- 0 }
+  sigma <- CTMM$sigma@par
+  AREA <- area.covm(CTMM$sigma)
+
+  if(CTMM$isotropic)
+  { VAR <- CTMM$COV['major','major'] }
+  else
+  {
+    P <- c('major','minor')
+    GRAD <- c( sqrt(sigma['minor']) , sigma['major']/sqrt(sigma['minor'])/2 )
+    VAR <- c( GRAD %*% CTMM$COV[P,P] %*% GRAD )
+  }
+
+  if(CTMM$range) { DOF <- AREA^2/abs(VAR) } else { DOF <- 0 }
+
+  if(is.nan(DOF)) { DOF <- 0 }
+
   return(DOF)
 }
 
 #########
 DOF.mean <- function(CTMM)
 {
-  if(!CTMM$range) { return(0) }
+  if(!CTMM$range || "COV.mu" %nin% names(CTMM)) { return(0) }
 
-  DOF <- CTMM$DOF.mu
-  DIM <- dim(DOF)
+  sigma <- CTMM$sigma
+  COV <- CTMM$COV.mu
 
-  if(!is.null(DIM))
-  {
-    # stationary contribution
-    if(length(DIM)==4) { DOF <- DOF[,1,1,] }
-    # average of x-y DOFs
-    DOF <- mean(diag(DOF))
-  }
+  if(length(dim(COV))==4) { COV <- COV[,1,1,] } # take only stationary mean COV
+
+  sigma <- sqrtm.covm(sigma)
+  # symmetric under trace and det
+  DOF <- sigma %*% PDsolve(COV) %*% sigma
+  DOF <- mean(diag(DOF))
 
   return(DOF)
 }

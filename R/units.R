@@ -124,15 +124,11 @@ unit.ctmm <- function(CTMM,length=1,time=1)
 
   if("sigma" %in% names(CTMM))
   {
-    CTMM$sigma <- CTMM$sigma/length^2
-    attr(CTMM$sigma,'par')["area"] <- attr(CTMM$sigma,'par')["area"]/length^2
+    CTMM$sigma <- scale.covm(CTMM$sigma,1/length^2)
 
     # variance -> diffusion adjustment
     if(!CTMM$range)
-    {
-      CTMM$sigma <- CTMM$sigma*time
-      CTMM$sigma@par["area"] <- CTMM$sigma@par["area"]*time
-    }
+    { CTMM$sigma <- scale.covm(CTMM$sigma,time) }
   }
 
   if("COV.mu" %in% names(CTMM)) { CTMM$COV.mu <- CTMM$COV.mu/length^2 }
@@ -141,15 +137,15 @@ unit.ctmm <- function(CTMM,length=1,time=1)
   {
     NAMES <- dimnames(CTMM$COV)[[1]]
 
-    if("area" %in% NAMES)
+    if("major" %in% NAMES)
     {
-      CTMM$COV["area",] <- CTMM$COV["area",]/length^2
-      CTMM$COV[,"area"] <- CTMM$COV[,"area"]/length^2
+      CTMM$COV["major",] <- CTMM$COV["major",]/length^2
+      CTMM$COV[,"major"] <- CTMM$COV[,"major"]/length^2
 
       if(!CTMM$range)
       {
-        CTMM$COV["area",] <- CTMM$COV["area",]*time
-        CTMM$COV[,"area"] <- CTMM$COV[,"area"]*time
+        CTMM$COV["major",] <- CTMM$COV["major",]*time
+        CTMM$COV[,"major"] <- CTMM$COV[,"major"]*time
       }
     }
 

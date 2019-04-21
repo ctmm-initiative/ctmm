@@ -401,8 +401,7 @@ plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",units=TRUE,col.level="bl
     {
       H <- covm(x[[i]]$H)
       theta <- H@par["angle"]
-      ecc <- H@par["eccentricity"]
-      sigma <- H@par["area"]
+      sigma <- H@par[c("major","minor")]
 
       X <- x[[i]]$r$x
       Y <- x[[i]]$r$y
@@ -411,8 +410,8 @@ plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",units=TRUE,col.level="bl
       SIN <- sin(theta)
 
       # grid spacing
-      du <- sqrt(sigma*exp(+ecc/2))
-      dv <- sqrt(sigma*exp(-ecc/2))
+      du <- sqrt(sigma[1])
+      dv <- sqrt(sigma[2])
 
       # bandwidth axes
       u <- outer(+X*COS,+Y*SIN,"+")

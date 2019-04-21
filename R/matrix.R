@@ -57,17 +57,17 @@ rotates.mat <- function(M,R) # could add tR=t(R) argument for small cost savings
 }
 
 # eccentricity squeeze transformation
-squeeze <- function(z,ecc)
+squeeze <- function(z,smgm)
 {
-  z[,1] <- z[,1] * exp(-ecc/4)
-  z[,2] <- z[,2] * exp(+ecc/4)
+  z[,1] <- z[,1] / smgm
+  z[,2] <- z[,2] * smgm
   return(z)
 }
 
 # eccentricity transform matrices
-squeeze.mat <- function(M,ecc) # (n,2,2)
+squeeze.mat <- function(M,smgm) # (n,2,2)
 {
-  R <- exp(c(-1,1)*ecc/4)
+  R <- c(1/smgm,smgm)
   M <- aperm(M,c(2,3,1)) # (2,2,n)
   M <- R * M # (2',2,n)
   M <- aperm(M,c(2,3,1)) # (2,n,2')
