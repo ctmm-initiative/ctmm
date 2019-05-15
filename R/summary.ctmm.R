@@ -279,7 +279,9 @@ DOF.area <- function(CTMM)
   sigma <- CTMM$sigma@par
   AREA <- area.covm(CTMM$sigma)
 
-  if(CTMM$isotropic)
+  if("major" %nin% dimnames(CTMM$COV)[[1]])
+  { VAR <- Inf }
+  else if(CTMM$isotropic)
   { VAR <- CTMM$COV['major','major'] }
   else
   {

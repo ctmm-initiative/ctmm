@@ -33,16 +33,27 @@ simplify.ctmm <- function(M,par)
   {
     M$isotropic <- TRUE
     M$sigma <- covm(M$sigma,isotropic=TRUE,axes=M$axes)
-    if("COV" %in% names(M)) { M$COV <- rm.name(M$COV,"minor") } # why?
+    par <- c(par,'angle')
   }
 
-  if("circle" %in% par) { M$circle <- FALSE }
+  if("major" %in% par)
+  {
+    M$isotropic <- TRUE
+    M$sigma <- covm(0,isotropic=TRUE,axes=M$axes)
+    M$tau <- NULL
+    par <- c(par,c('minor','angle','circle','tau position','tau velocity','tau','omega'))
+  }
+
+  if("circle" %in% par)
+  { M$circle <- FALSE }
 
   if("range" %in% par)
   {
     M$sigma <- scale.covm(M$sigma,1/M$tau) # convert to diffusion matrix
     M$tau[1] <- Inf
     M$range <- FALSE
+
+    par <- c('tau','tau position')
   }
 
   # autocorrelation timescales can't be distinguished
@@ -50,7 +61,12 @@ simplify.ctmm <- function(M,par)
   {
     M$tau <- c(1,1)*mean(M$tau)
     M$omega <- FALSE
+
+    par <- c('tau position','tau velocity')
+    M$features <- c(M$features,'tau')
   }
+
+  M$features <- M$features[M$features %nin% par]
 
   return(M)
 }
@@ -272,10 +288,14 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
     {
       Q <- c("major","minor")
       GRAD <- c(1/CTMM$sigma@par[1],-1/CTMM$sigma@par[2])
-      SD <- sqrt(c(GRAD %*% CTMM$COV[Q,Q] %*% GRAD))
+      SD <- ifelse(all(Q %in% CTMM$features),sqrt(c(GRAD %*% CTMM$COV[Q,Q] %*% GRAD)),Inf) # variance could collapse early
       Q <- stats::qnorm(beta/2,mean=log(CTMM$sigma@par[1]/CTMM$sigma@par[2]),sd=SD)
       if(Q<=0 || is.na(IC)) { GUESS <- c(GUESS,list(simplify.ctmm(MLE,"minor"))) }
     }
+
+    # is the animal even moving?
+    if(!CTMM$sigma@par['major'] && CTMM$error)
+    { GUESS <- c(GUESS,list(simplify.ctmm(MLE,"major"))) }
 
     # consider if we can relax range residence (non-likelihood comparison only)
     if(CTMM$range && is.na(IC))
@@ -307,6 +327,8 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
 ################
 name.ctmm <- function(CTMM,whole=TRUE)
 {
+  FEATURES <- CTMM$features
+
   # base model
   tau <- CTMM$tau
   if(length(tau)==2)
@@ -319,7 +341,12 @@ name.ctmm <- function(CTMM,whole=TRUE)
   else if(length(tau)==1)
   { if(tau[1]<Inf) { NAME <- "OU" } else { NAME <- "BM" } }
   else if(length(tau)==0)
-  { NAME <- "IID" }
+  {
+    if(CTMM$sigma@par['major'] || "major" %in% FEATURES)
+    { NAME <- "IID" }
+    else
+    { NAME <- "inactive" }
+  }
 
   # isotropy
   if(CTMM$isotropic)
@@ -328,11 +355,11 @@ name.ctmm <- function(CTMM,whole=TRUE)
   { NAME <- c(NAME,"anisotropic") }
 
   # circulation
-  if(CTMM$circle)
+  if(CTMM$circle || "circle" %in% FEATURES)
   { NAME <- c(NAME,"circulation") }
 
   # error
-  if(CTMM$error)
+  if(CTMM$error || "error" %in% FEATURES)
   { NAME <- c(NAME,"error") }
 
   # mean

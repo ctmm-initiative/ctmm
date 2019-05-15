@@ -361,6 +361,7 @@ PDclamp <- function(M)
   return(M)
 }
 
+
 # relatively smallest eigen value of matrix
 mat.min <- function(M)
 {
@@ -371,3 +372,38 @@ mat.min <- function(M)
   M <- last(M)
   return(M)
 }
+
+
+# smallest maximum of matrices (for inner products on normalized vectors)
+# if MAX=FALSE, largest minimum of matrices
+ext.mat <- function(...,MAX=TRUE)
+{
+  MATS <- list(...)
+  DIM <- dim(MATS[[1]])[1]
+  MATS <- lapply(MATS,eigen)
+
+  VAL <- NULL
+  VEC <- NULL
+  for(i in 1:length(MATS))
+  {
+    VAL <- c(VAL,MATS[[i]]$values)
+    VEC <- cbind(VEC,MATS[[i]]$vectors)
+  }
+  rm(MATS)
+
+  ORDER <- order(VAL,decreasing=MAX)
+  VAL <- VAL[ORDER]
+  VEC <- VEC[,ORDER]
+
+  MATS <- list()
+  for(i in 1:DIM)
+  {
+    MATS[[i]] <- VAL[i] * (VEC[,i] %o% VEC[,i])
+    # Grahm-Schmidt orthogonalization
+    if(i<DIM) { for(j in (i+1):DIM) { VEC[,j] <- VEC[,j] - c(VEC[,i] %*% VEC[,j]) * VEC[,i] } }
+  }
+
+  MATS <- Reduce("+",MATS)
+  return(MATS)
+}
+

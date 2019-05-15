@@ -1,4 +1,4 @@
-ctmm 0.5.6 (2019-04-20)
+ctmm 0.5.6 (2019-05-14)
 ================
 
   * new functions lasso, marquee, and cleave
@@ -17,9 +17,11 @@ ctmm 0.5.6 (2019-04-20)
   
   * BM/IOU model likelihoods are now exact limits of OU/OUF likelihoods modulo a constant
   
-  * covariance matrices can now take arbitrary eccentricty
+  * covariance matrices can now take arbitrary eccentricty and scale
   
-  * ctmm.boot now debiases covariance matrix directly/linearly
+  * ctmm.boot new argument iterate=FALSE and bugfixes for iterate=TRUE
+
+  * ctmm.boot now debiases the covariance matrix directly (linearly)
   
   * occurrence default dt.max & cor.min arguments now tighter
   

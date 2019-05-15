@@ -26,7 +26,7 @@ clean.parameters <- function(par)
     par["angle"] <- (((par["angle"]/pi+1/2) %% 1) - 1/2)*pi
   }
 
-  P <- c("tau velocity","tau position")
+  P <- c("tau position","tau velocity")
   if(all(P %in% NAMES)) { par[P] <- sort(par[P],decreasing=TRUE) }
 
   return(par)
@@ -36,33 +36,37 @@ clean.parameters <- function(par)
 # identify autocovariance parameters in ctmm object
 # if profile==TRUE, some parameters can be solved exactly and so aren't identified
 # if linear==TRUE, only return linear non-problematic parameters
-id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,UERE=FALSE,dt=0,df=0,dz=0,force.error=FALSE)
+# STRUCT determines the model structure incase some estimated parameters in CTMM are zero
+id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,UERE=FALSE,dt=0,df=0,dz=0,STRUCT=CTMM)
 {
   # identify and name autocovariance parameters
   NAMES <- NULL
 
-  sigma <- attr(CTMM$sigma,"par")
-  if(!profile || (CTMM$error && UERE>=3)) # must fit all 1-3 covariance parameters
-  { if(CTMM$isotropic) { NAMES <- c(NAMES,"major") } else { NAMES <- c(NAMES,names(sigma)) } }
-  else if(CTMM$error || CTMM$circle) # must fit shape, but scale/area/var can be profiled for free
-  { if(!CTMM$isotropic) { NAMES <- c(NAMES,names(sigma[2:3])) } } # the latter are ratios to the former
+  if(STRUCT$sigma@par['major'] || length(STRUCT$tau))
+  {
+    sigma <- attr(CTMM$sigma,"par")
+    if(!profile || (STRUCT$error && UERE>=3)) # must fit all 1-3 covariance parameters
+    { if(STRUCT$isotropic) { NAMES <- c(NAMES,"major") } else { NAMES <- c(NAMES,names(sigma)) } }
+    else if(STRUCT$error || STRUCT$circle) # must fit shape, but scale/area/var can be profiled for free
+    { if(!STRUCT$isotropic) { NAMES <- c(NAMES,names(sigma[2:3])) } } # the latter are ratios to the former
+  }
 
   if(!linear) # nonlinear autocorrelation parameters
   {
     TAU <- CTMM$tau
-    if(!CTMM$range) { TAU <- TAU[-1] }
+    if(!STRUCT$range) { TAU <- TAU[-1] }
     if(length(TAU))
     {
       if(length(TAU)==2 && TAU[1]==TAU[2]) { TAU <- TAU[1] ; NAMES <- c(NAMES,"tau") } # identical timescales
       else { NAMES <- c(NAMES,paste("tau",names(TAU))) } # distinct timescales
     }
 
-    if(CTMM$omega) { NAMES <- c(NAMES,"omega") }
+    if(STRUCT$omega) { NAMES <- c(NAMES,"omega") }
 
-    if(CTMM$circle) { NAMES <- c(NAMES,"circle") }
+    if(STRUCT$circle) { NAMES <- c(NAMES,"circle") }
   }
 
-  if((CTMM$error || force.error) && UERE<3) { NAMES <- c(NAMES,"error") }
+  if((STRUCT$error) && UERE<3) { NAMES <- c(NAMES,"error") }
 
   # setup parameter information
   parscale <- NULL
@@ -97,7 +101,7 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,UERE=FALSE,dt=0,df=0,dz
       period <- c(period,rep(FALSE,length(TAU)))
     }
 
-    if(CTMM$omega)
+    if(STRUCT$omega)
     {
       parscale <- c(parscale,max(CTMM$omega,df))
       lower <- c(lower,0)
@@ -105,7 +109,7 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,UERE=FALSE,dt=0,df=0,dz
       period <- c(period,FALSE)
     }
 
-    if(CTMM$circle)
+    if(STRUCT$circle)
     {
       parscale <- c(parscale,max(abs(CTMM$circle),df))
       lower <- c(lower,-Inf)
@@ -114,7 +118,7 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,UERE=FALSE,dt=0,df=0,dz
     }
   }
 
-  if((CTMM$error || force.error) && UERE<3)
+  if(STRUCT$error && UERE<3)
   {
     parscale <- c(parscale,max(dz,CTMM$error)) # minimum of dz error parscale
     lower <- c(lower,0)

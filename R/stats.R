@@ -37,16 +37,6 @@ mint <- function(mat,ind)
 }
 
 
-# statistical mode
-Mode <- function(x)
-{
-  ux <- unique(x)
-  tab <- tabulate(match(x, ux))
-  ux[tab == max(tab)]
-  mean(ux)
-}
-
-
 # confidence interval functions
 CI.upper <- Vectorize(function(k,Alpha){stats::qchisq(Alpha/2,k,lower.tail=FALSE)/k})
 CI.lower <- Vectorize(function(k,Alpha){stats::qchisq(Alpha/2,k,lower.tail=TRUE)/k})

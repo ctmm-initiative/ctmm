@@ -479,9 +479,10 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
 
   # id and characterize parameters for profiling
   pars <- NAMES <- parscale <- lower <- upper <- period <- NULL
+  ORIGINAL <- CTMM # original structure of model before fitting
   setup.parameters <- function(CTMM,profile=TRUE,linear=FALSE)
   {
-    STUFF <- id.parameters(CTMM,profile=profile,linear=linear,UERE=UERE,dt=dt,df=df,dz=dz)
+    STUFF <- id.parameters(CTMM,profile=profile,linear=linear,UERE=UERE,dt=dt,df=df,dz=dz,STRUCT=ORIGINAL)
     NAMES <<- STUFF$NAMES
     parscale <<- STUFF$parscale
     lower <<- STUFF$lower
@@ -491,8 +492,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
     pars <<- get.parameters(CTMM,NAMES)
   }
   setup.parameters(CTMM)
-  # fix numeric error when it should be logical
-  if(!("error" %in% NAMES)) { CTMM$error <- as.logical(CTMM$error) }
+  if("error" %nin% NAMES) { CTMM$error <- as.logical(CTMM$error) } # fix numeric error when it should be logical
 
   # degrees of freedom, including the mean, variance/covariance, tau, and error model
   k.mean <- ncol(CTMM$mean.vec)
@@ -684,6 +684,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
   # unstandardize (includes likelihood adjustment)
   CTMM <- unscale.ctmm(CTMM)
 
+  CTMM$features <- NAMES # store all auto-covariance features
   nu <- length(NAMES)
   # all parameters
   q <- length(axes)

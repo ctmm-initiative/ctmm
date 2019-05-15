@@ -46,6 +46,7 @@ emulate <- function(object,...) UseMethod("emulate")
 AICc <- function(object,...) UseMethod("AICc")
 speed <- function(object,...) UseMethod("speed")
 speeds <- function(object,...) UseMethod("speeds")
+modes <- function(object,...) UseMethod("modes")
 
 # internal S3 generic function
 pars <- function(...) { UseMethod("pars") }

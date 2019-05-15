@@ -215,7 +215,7 @@ cov.loglike <- function(hess,grad=rep(0,nrow(hess)))
   { COV <- COV + Reduce("+",lapply((1:length(grad))[SUB],function(i){ values[i] * outer(vectors[,i]) })) }
   SUB <- !SUB
   if(any(SUB)) # toss out the off-diagonal NaNs
-  { COV <- COV + Reduce("+",lapply((1:length(grad))[SUB],function(i){ D <- diag(outer(vectors[,i])) ; D[D>0] <- Inf ; diag(D) })) }
+  { COV <- COV + Reduce("+",lapply((1:length(grad))[SUB],function(i){ D <- diag(outer(vectors[,i])) ; D[D>0] <- Inf ; diag(D,length(D)) })) }
 
   COV <- COV/W
 

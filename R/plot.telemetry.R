@@ -235,7 +235,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
     ERROR <- get.error(x[[i]],list(error=TRUE,axes=c('x','y')))
     # don't want to throw z in here yet, in case of kernels
     FLAG <- attr(ERROR,"flag") # nothing, circle or ellipse?
-    if(FLAG && FLAG<=2) { ERROR <- ERROR * (10/dist$scale)^2 } # 10 meter default error
+    if(FLAG && FLAG<=2) { ERROR <- ERROR * (10/get('x.scale',pos=plot.env))^2 } # 10 meter default error
 
     # we aren't plotting if UERE is missing
     # error=FALSE or no UERE
