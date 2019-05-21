@@ -1,3 +1,8 @@
+ctmm 0.5.7 (2019-05-20)
+================
+
+  * SpatialPointsDataFrame now includes timestamp information
+
 ctmm 0.5.6 (2019-05-14)
 ================
 

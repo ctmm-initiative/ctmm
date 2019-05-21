@@ -150,13 +150,18 @@ SpatialPointsDataFrame.telemetry <- function(object,...)
   # promote to list if not already
   object <- listify(object)
 
+  SP <- SpatialPoints.telemetry(object,...)
+
   # make identity array
   identity <- unlist(sapply(object,function(o){ rep(attr(o,"info")$identity,length(o$t)) }))
 
-  SP <- SpatialPoints.telemetry(object,...)
+  timestamp <- do.call(c,lapply(object,function(o){ o$timestamp }))
+
+  DF <- data.frame(identity=identity,timestamp=timestamp,row.names=1:length(identity))
+  names(DF) <- c("identity","timestamp") # weird namespace collision with identity()
 
   # make SPDF with identity information
-  SP <- sp::SpatialPointsDataFrame(SP,data.frame(identity=identity),match.ID=FALSE)
+  SP <- sp::SpatialPointsDataFrame(SP,DF,match.ID=FALSE)
 
   return(SP)
 }
