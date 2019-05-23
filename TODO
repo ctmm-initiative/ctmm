@@ -1,4 +1,6 @@
 PRIORITY
+* mean method for ctmm objects
+* residuals in vignette 'variogram' and 'error'
 * precompute environments not carried over in Windows socket parallelization
 * area/error CI when MLE=0 (min of normal upper from VAR)
 * Telonics QFP class with no HDOP

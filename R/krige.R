@@ -243,6 +243,7 @@ fill.data <- function(data,CTMM=ctmm(tau=Inf),verbose=FALSE,t=NULL,dt=NULL,res=1
 
     # maximum gap to bridge
     if(cor.min>0 && length(CTMM$tau)>1 && CTMM$tau[2]>0) { dt.max <- max(dt.max,-log(cor.min)*CTMM$tau[2]) }
+    if(is.null(dt.max)) { dt.max <- Inf } # default don't skip gaps
     dt.max2 <- dt.max/2
 
     # this regularization is not perfectly regular, but holds up to sampling drift in caribou data
@@ -417,7 +418,7 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
 
   CLASS <- class(data)
   CONDITIONAL <- FALSE
-  if((CLASS=="telemetry" || CLASS=='data.frame'))
+  if(CLASS=="telemetry" || CLASS=='data.frame')
   {
     if(all(object$axes %in% names(data))) # condition off of data
     { CONDITIONAL <- TRUE }

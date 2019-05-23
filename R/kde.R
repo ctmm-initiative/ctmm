@@ -258,18 +258,32 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,precisi
     # { hlim[2] <- bandwidth(data,CTMM,VMM=VMM,weights=FALSE,fast=fast,dt=dt,precision=precision,verbose=TRUE)$h[1] }
     # Not sure how helpful this is?
 
-    MISE <- stats::optimize(f=MISE,interval=hlim,tol=error)
-    h <- MISE$minimum
-    MISE <- MISE$objective / sqrt(det(2*pi*sigma)) # constant
+    MISE <- optimizer(sqrt(prod(hlim)),MISE,lower=hlim[1],upper=hlim[2],control=list(precision=precision))
+    h <- MISE$par
+    MISE <- MISE$value
+
+    #MISE <- stats::optimize(f=MISE,interval=hlim,tol=error)
+    #h <- MISE$minimum
+    #MISE <- MISE$objective
+
+    MISE <- MISE / sqrt(det(2*pi*sigma)) # constant
 
     if(!is.null(VMM)) { h <- c(h,h) }
   }
   else # 3D
   {
+    #!! could do an IID evaluation here for minimum h !!#
+    #!! could do an n=1 evaluation here for maximum h !!#
+
     h <- 4/5/n^(1/7) # User Silverman's rule of thumb as initial guess
-    MISE <- stats::optim(par=c(h,h),fn=MISE,control=list(maxit=.Machine$integer.max,reltol=error))
+    MISE <- optimizer(c(h,h),MISE,lower=c(0,0),control=list(precision=precision))
     h <- MISE$par
     MISE <- MISE$value
+
+    #MISE <- stats::optim(par=c(h,h),fn=MISE,control=list(maxit=.Machine$integer.max,reltol=error))
+    #h <- MISE$par
+    #MISE <- MISE$value
+
     MISE <- MISE / sqrt(det(2*pi*sigma)) / sqrt(2*pi*sigmaz) # constant
   }
 

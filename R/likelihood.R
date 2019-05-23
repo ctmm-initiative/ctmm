@@ -446,10 +446,10 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
 
   method <- match.arg(method,c("ML","pREML","pHREML","HREML","REML"))
 
-  default <- list(method="Nelder-Mead",precision=1/2,maxit=.Machine$integer.max)
+  default <- list(method="pNewton",precision=1/2,maxit=.Machine$integer.max)
   control <- replace(default,names(control),control)
   precision <- control$precision
-  optimizer <- control$method
+  op.method <- control$method
   control$method <- NULL
 
   if(method=="REML") { REML <- TRUE }
@@ -553,7 +553,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
     control$covariance <- covariance()
     control$parscale <- parscale
     control$zero <- TRUE
-    RESULT <- Optimizer(par=pars,fn=fn,method=optimizer,lower=lower,upper=upper,period=period,control=control)
+    RESULT <- optimizer(par=pars,fn=fn,method=op.method,lower=lower,upper=upper,period=period,control=control)
     pars <- clean.parameters(RESULT$par)
     # copy over hessian from fit to COV.init ?
 
@@ -648,7 +648,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
         control$covariance <- covariance()
         control$parscale <- parscale
         control$zero <- TRUE
-        RESULT <- Optimizer(par=pars,fn=fn,method=optimizer,lower=lower,upper=upper,period=period,control=control)
+        RESULT <- optimizer(par=pars,fn=fn,method=op.method,lower=lower,upper=upper,period=period,control=control)
         pars <- clean.parameters(RESULT$par)
 
         store.pars(pars,profile=TRUE,finish=TRUE)

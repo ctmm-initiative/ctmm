@@ -300,12 +300,12 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   }
 
   # timestamp column
-  COL <- c('timestamp','Acquisition.Start.Time','Acquisition.Time','Date.Time','Date.Time.GMT','time','Date.GMT','Date.Local','GMT.Time')
+  COL <- c('timestamp','Acquisition.Start.Time','Acquisition.Time','Date.Time','Date.Time.GMT','time','Date.GMT','Date.Local','GMT.Time','Date')
   COL <- pull.column(object,COL,FUNC=as.character)
   COL <- asPOSIXct(COL,timeformat=timeformat,timezone=timezone)
   DATA <- data.frame(timestamp=COL)
 
-  COL <- c("animal.ID","individual.local.identifier","local.identifier","individual.ID","Name","ID","tag.local.identifier","tag.ID","deployment.ID","track.ID","band.number","band.num","device.info.serial")
+  COL <- c("animal.ID","individual.local.identifier","local.identifier","individual.ID","Name","ID","tag.local.identifier","tag.ID","deployment.ID","track.ID","band.number","band.num","device.info.serial","Animal")
   COL <- pull.column(object,COL,as.factor)
   if(length(COL)==0)
   {

@@ -1,8 +1,8 @@
 ###################################
 # make a wrapper that applies optim then afterwards numDeriv, possibly on a boundary with one-sided derivatives if necessary
-Optimizer <- function(par,fn,...,method="Nelder-Mead",lower=-Inf,upper=Inf,period=F,control=list())
+optimizer <- function(par,fn,...,method="pNewton",lower=-Inf,upper=Inf,period=FALSE,control=list())
 {
-  method <- match.arg(method,c("Nelder-Mead","BFGS","CG","L-BFGS-B","SANN","Brent","pNewton"))
+  method <- match.arg(method,c("pNewton","Nelder-Mead","BFGS","CG","L-BFGS-B","SANN","Brent"))
 
   precision <- maxit <- NULL
   default <- list(precision=1/2,maxit=.Machine$integer.max,parscale=pmin(abs(par),abs(par-lower),abs(upper-par)))
@@ -32,7 +32,9 @@ Optimizer <- function(par,fn,...,method="Nelder-Mead",lower=-Inf,upper=Inf,perio
     {
       # try optimize (can fail with high skew & kurtosis)
       tol <- 3*sqrt(2*.Machine$double.eps^precision) # digit precision
-      ATTEMPT <- stats::optimize(f=func,...,lower=max(lower,-10*abs(par)),upper=min(upper,10*abs(par)),tol=tol)
+      lower <- ifelse(lower>-Inf,lower,-10*abs(par))
+      upper <- ifelse(upper<Inf,upper,10*abs(par))
+      ATTEMPT <- stats::optimize(f=func,...,lower=lower,upper=upper,tol=tol)
       RESULT <- rbind(c(ATTEMPT$minimum,ATTEMPT$objective))
 
       # log scale backup that can't capture zero boundary

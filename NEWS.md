@@ -1,7 +1,13 @@
-ctmm 0.5.7 (2019-05-20)
+ctmm 0.5.7 (2019-05-22)
 ================
 
-  * SpatialPointsDataFrame now includes timestamp information
+  * new function optimizer
+  
+  * 'pNewton' now the default optimization method
+
+  * SpatialPointsDataFrame now includes timestamp 
+  
+  * bugfix in conditional simulations with dt argument
 
 ctmm 0.5.6 (2019-05-14)
 ================
