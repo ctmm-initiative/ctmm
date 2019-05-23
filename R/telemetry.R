@@ -557,9 +557,16 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   ###########################
   # generic location classes
   # includes Telonics Gen4 location classes (use with HDOP information)
-  COL <- c("GPS.fix.type","fix.type","Fix.Attempt","GPS.Fix.Attempt","Telonics.Fix.Attempt","Fix.Status","sensor.type","Fix")
+  COL <- c("GPS.fix.type","GPS.fix.type.raw","fix.type","Fix.Attempt","GPS.Fix.Attempt","Telonics.Fix.Attempt","Fix.Status","sensor.type","Fix","2D/3D")
   COL <- pull.column(object,COL,FUNC=as.factor)
   if(length(COL)) { DATA$class <- COL }
+
+  # detect if Telonics by location classes
+  if(!TELONICS && "class" %in% names(DATA))
+  {
+    if(all(levels(DATA$class) %in% c("Succeeded (3D)","Succeeded (2D)","Resolved QFP","Resolved QFP (Uncertain)","Unresolved QFP")))
+    { TELONICS <- TRUE }
+  }
 
   # consolidate Telonics location classes as per manual
   if(TELONICS && "class" %in% names(DATA))
@@ -570,6 +577,9 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     SUB <- CLASS %in% c("Resolved QFP","Resolved QFP (Uncertain)","Unresolved QFP")
     if(any(SUB)) { CLASS[SUB] <- "QFP" }
     levels(DATA$class) <- CLASS
+
+    # some QFP locations can be missing HDOP, etc.
+    DATA <- missing.class(DATA,"HDOP")
   }
 
   #######################

@@ -1,9 +1,9 @@
 PRIORITY
+* likelihood error in Animove error turtle example
 * mean method for ctmm objects
 * residuals in vignette 'variogram' and 'error'
 * precompute environments not carried over in Windows socket parallelization
 * area/error CI when MLE=0 (min of normal upper from VAR)
-* Telonics QFP class with no HDOP
 * mode methods for ctmm and UD object (start with generic) (Erin?)
 * akde on data.frame objects
 * 1D ctmm summary doesn't make sense
