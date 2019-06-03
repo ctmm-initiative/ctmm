@@ -1,4 +1,4 @@
-ctmm 0.5.7 (2019-05-22)
+ctmm 0.5.7 (2019-06-02)
 ================
 
   * new function optimizer
@@ -8,6 +8,10 @@ ctmm 0.5.7 (2019-05-22)
   * SpatialPointsDataFrame now includes timestamp 
   
   * bugfix in conditional simulations with dt argument
+  
+  * bugfix in plot.UD gridlines
+  
+  * minor enhancements to cleave function
 
 ctmm 0.5.6 (2019-05-14)
 ================

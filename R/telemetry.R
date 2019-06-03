@@ -564,7 +564,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   # detect if Telonics by location classes
   if(!TELONICS && "class" %in% names(DATA))
   {
-    if(all(levels(DATA$class) %in% c("Succeeded (3D)","Succeeded (2D)","Resolved QFP","Resolved QFP (Uncertain)","Unresolved QFP")))
+    if(all(levels(DATA$class) %in% c("Succeeded (3D)","Succeeded (2D)","Resolved QFP","Resolved QFP (Uncertain)","Unresolved QFP","Failed")))
     { TELONICS <- TRUE }
   }
 
@@ -586,7 +586,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   # timed-out fixes
   if(timeout<Inf)
   {
-    COL <- c("GPS.time.to.fix","time.to.fix","GPS.TTF","TTF","GPS.fix.time","fix.time","time.to.get.fix","Duration","GPS.navigation.time","navigation.time")
+    COL <- c("GPS.time.to.fix","time.to.fix","GPS.TTF","TTF","GPS.fix.time","fix.time","time.to.get.fix","Duration","GPS.navigation.time","navigation.time","Time.On")
     COL <- pull.column(object,COL)
     if(length(COL))
     {

@@ -401,7 +401,7 @@ plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",units=TRUE,col.level="bl
     {
       H <- covm(x[[i]]$H)
       theta <- H@par["angle"]
-      sigma <- H@par[c("major","minor")]
+      sigma <- eigenvalues.covm(H)
 
       X <- x[[i]]$r$x
       Y <- x[[i]]$r$y

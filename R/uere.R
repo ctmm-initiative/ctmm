@@ -303,10 +303,10 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
     beta <- lapply(1:length(data),function(k){ ( DOF.ML[Ci[[k]]] - 1 - colSums(gamma[[k]]) ) / DOF[Ci[[k]]] }) # (animal;time)
     dofi <- lapply(1:length(data),function(k){ DOF.ML[Ci[[k]]] - 1 - colSums(gamma[[k]]^2) }) # (animal;time)
   }
-  t2 <- lapply(1:length(data),function(k){ beta[[k]] * u2[[k]] / ( alpha[[k]]^2 - alpha[[k]]*u2[[k]]/DOF[Ci[[k]]] ) }) # (animal,time)
+  t2 <- lapply(1:length(data),function(k){ clamp( beta[[k]] * u2[[k]] / ( alpha[[k]]^2 - alpha[[k]]*u2[[k]]/DOF[Ci[[k]]] ),0,Inf) }) # (animal,time)
   Z <- log(unlist(t2))/2
   dofi <- unlist(dofi)
-  M <- -(dofi-1)/dofi/(2*length(axes))
+  M <- -clamp(dofi-1,0,Inf)/dofi/(2*length(axes))
   VAR <- (dofi+1)/dofi/(2*length(axes))
   ERR <- VAR + M^2
   Z2 <- (Z^2/ERR)

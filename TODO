@@ -1,4 +1,8 @@
 PRIORITY
+* update optimizer to pracma::randortho
+* check that the zero argument of optimizer is being used appropriately
+* weighted mean() of UDs (Nina)
+* overlap on mean()s of UDs (Ellie)
 * likelihood error in Animove error turtle example
 * mean method for ctmm objects
 * residuals in vignette 'variogram' and 'error'
@@ -19,7 +23,6 @@ PRIORITY
 * distribute cores from ctmm.select -> ctmm.fit optimizer
 * mean, mode, median for ctmm and UD objects
 * mean ctmm object
-* overlap on mean()s of UDs (Ellie)
 * fast plot of GPS-ARGOS hybrid data
 * as.telemetry tibble->data.frame
 * update buffalo data
