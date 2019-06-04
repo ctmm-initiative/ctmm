@@ -1,4 +1,4 @@
-ctmm 0.5.7 (2019-06-02)
+ctmm 0.5.7 (2019-06-03)
 ================
 
   * new function optimizer
@@ -10,6 +10,8 @@ ctmm 0.5.7 (2019-06-02)
   * bugfix in conditional simulations with dt argument
   
   * bugfix in plot.UD gridlines
+  
+  * stability fix in ctmm.fit for BM/IOU models
   
   * minor enhancements to cleave function
 

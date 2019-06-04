@@ -24,13 +24,13 @@ cleave <- function(object,fraction=0.5,name="CLEFT",...)
         TITLE1 <- paste0("1:",SUB)
         TITLE2 <- paste0(SUB+1,":",n)
 
-        if(SUB==0) { title(TITLE2,col.main="blue") }
-        else if(SUB==n) { title(TITLE1,col.main="red") }
+        if(SUB==0) { graphics::title(TITLE2,col.main="blue") }
+        else if(SUB==n) { graphics::title(TITLE1,col.main="red") }
         else
         {
           # this was amazingly annoying to figure out
-          eval( bquote(title(expression(.(TITLE1) * "   " * phantom(.(TITLE2))),col.main="red")) )
-          eval( bquote(title(expression(phantom(.(TITLE1)) * "   " * .(TITLE2)),col.main="blue")) )
+          eval( bquote(graphics::title(expression(.(TITLE1) * "   " * phantom(.(TITLE2))),col.main="red")) )
+          eval( bquote(graphics::title(expression(phantom(.(TITLE1)) * "   " * .(TITLE2)),col.main="blue")) )
         }
       }
     },

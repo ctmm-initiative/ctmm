@@ -76,7 +76,7 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,UERE=FALSE,dt=0,df=0,dz
 
   if("major" %in% NAMES)
   {
-    parscale <- c(parscale,max(dz,sigma['major']))
+    parscale <- c(parscale,max(dz^2*ifelse(CTMM$range,1,df),sigma['major']))
     lower <- c(lower,0)
     upper <- c(upper,Inf)
     period <- c(period,FALSE)

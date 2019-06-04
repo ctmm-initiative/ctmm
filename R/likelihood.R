@@ -414,6 +414,13 @@ telemetry.mins <- function(data,axes=c('x','y'))
 # FIT MODEL WITH LIKELIHOOD FUNCTION (convenience wrapper to optim)
 ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=FALSE)
 {
+  if(is.null(CTMM$sigma))
+  {
+    # CTMM$sigma <- covm(stats::cov(get.telemetry(data,axes)),isotropic=CTMM$isotropic,axes=axes)
+    # above fails for IOU
+    CTMM <- ctmm.guess(data,CTMM=CTMM,interactive=FALSE)
+  }
+
   axes <- CTMM$axes
   # standardize data for numerical stability
   # pre-centering the data reduces later numerical error across models (tested)
@@ -460,7 +467,6 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="ML",COV=TRUE,control=list(),trace=
   drift <- get(CTMM$mean)
   CTMM$mu <- NULL # can always profile mu analytically
   range <- CTMM$range
-  if(is.null(CTMM$sigma)) { CTMM$sigma <- covm(stats::cov(get.telemetry(data,axes)),isotropic=CTMM$isotropic,axes=axes) }
 
   # save for fitting
   COV.init <- CTMM$COV
