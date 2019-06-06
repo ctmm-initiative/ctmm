@@ -1,4 +1,5 @@
 PRIORITY
+* simulate.telemetry with no CTMM object to simulate error only
 * update optimizer to pracma::randortho
 * check that the zero argument of optimizer is being used appropriately
 * weighted mean() of UDs (Nina)

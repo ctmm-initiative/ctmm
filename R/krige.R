@@ -409,6 +409,10 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
     nsim <- 1
   }
 
+  # no movement model
+  if(is.null(object)) { object <- ctmm(sigma=0,mu=c(0,0),error=TRUE) }
+  ZERO <- all(diag(object$sigma)==0) # no movement model logical
+
   if(!is.null(seed)){ set.seed(seed) }
 
   info <- attr(object,"info")
@@ -420,7 +424,7 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
   CONDITIONAL <- FALSE
   if(CLASS=="telemetry" || CLASS=='data.frame')
   {
-    if(all(object$axes %in% names(data))) # condition off of data
+    if(!ZERO && all(object$axes %in% names(data))) # condition off of data
     { CONDITIONAL <- TRUE }
     else # use data time & error for unconditional simulation
     { t <- data$t }
@@ -486,52 +490,66 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
     STUFF <- c('Green','Sigma','error','object','mu','Lambda','n','K','z','v','circle','R','UERE')
     if(precompute>=0)
     {
-      if(is.null(data)) { error <- UERE <- FALSE }
-      else { error <- get.error(data,object) ; UERE <- attr(error,'flag') } # get error if provided
+      if(is.null(data))
+      { error <- UERE <- FALSE }
+      else # get error if provided
+      {
+        error <- get.error(data,object)
+        UERE <- attr(error,'flag')
+      }
       object <- ctmm.prepare(data.frame(t=t),object) # mean.vec calculated here
 
-      tau <- object$tau
-      if(is.null(tau)) { tau = 0 }
-      K <- length(tau)
-
-      mu <- object$mu
-      if(is.null(mu)) { mu <- array(0,c(1,AXES)) }
-      sigma <- object$sigma
-      if(is.null(sigma)) { sigma <- covm(1,axes=axes) }
-
-      Lambda <- sqrtm.covm(sigma)
-
-      K <- length(tau)
-
       n <- length(t)
-      dt <- c(Inf,diff(t)) # time lags
 
-      # where we will store the data
-      z <- array(0,c(n,AXES))
-      if(K>1) { v <- array(0,c(n,AXES)) } else { v <- NULL }
-
-      Green <- array(0,c(n,K,K))
-      Sigma <- array(0,c(n,K,K))
-
-      object$sigma <- 1
-      object <- get.taus(object) # pre-compute stuff for Langevin equation solutions
-      for(i in 1:n)
+      if(ZERO) # no model - simulation of errors only
       {
-        # tabulate propagators if necessary
-        if((i==1)||(dt[i]!=dt[i-1])) { Langevin <- langevin(dt=dt[i],CTMM=object) }
-        Green[i,,] <- Langevin$Green
-        Sigma[i,,] <- Langevin$Sigma
+        z <- get.telemetry(data)
+        v <- NULL
       }
-      if(!object$range) { Sigma[1,,] <- 0 } # start at first point instead of random point on Earth
+      else # have model
+      {
+        tau <- object$tau
+        if(is.null(tau)) { tau = 0 }
+        K <- length(tau)
 
-      # Sigma is now standardization matrix
-      Sigma <- vapply(1:n,function(i){PDfunc(Sigma[i,,],func=function(x){sqrt(abs(x))},pseudo=TRUE)},Sigma[1,,]) # (K,K,n)
-      dim(Sigma) <- c(K,K,n)
-      Sigma <- aperm(Sigma,c(3,1,2)) # (n,K,K)
+        mu <- object$mu
+        if(is.null(mu)) { mu <- array(0,c(1,AXES)) }
+        sigma <- object$sigma
+        if(is.null(sigma)) { sigma <- covm(1,axes=axes) }
 
-      # circulation stuff
-      circle <- object$circle
-      R <- exp(1i*circle*(t-t[1]))
+        Lambda <- sqrtm.covm(sigma)
+
+        K <- length(tau)
+
+        dt <- c(Inf,diff(t)) # time lags
+
+        # where we will store the data
+        z <- array(0,c(n,AXES))
+        if(K>1) { v <- array(0,c(n,AXES)) } else { v <- NULL }
+
+        Green <- array(0,c(n,K,K))
+        Sigma <- array(0,c(n,K,K))
+
+        object$sigma <- 1
+        object <- get.taus(object) # pre-compute stuff for Langevin equation solutions
+        for(i in 1:n)
+        {
+          # tabulate propagators if necessary
+          if((i==1)||(dt[i]!=dt[i-1])) { Langevin <- langevin(dt=dt[i],CTMM=object) }
+          Green[i,,] <- Langevin$Green
+          Sigma[i,,] <- Langevin$Sigma
+        }
+        if(!object$range) { Sigma[1,,] <- 0 } # start at first point instead of random point on Earth
+
+        # Sigma is now standardization matrix
+        Sigma <- vapply(1:n,function(i){PDfunc(Sigma[i,,],func=function(x){sqrt(abs(x))},pseudo=TRUE)},Sigma[1,,]) # (K,K,n)
+        dim(Sigma) <- c(K,K,n)
+        Sigma <- aperm(Sigma,c(3,1,2)) # (n,K,K)
+
+        # circulation stuff
+        circle <- object$circle
+        R <- exp(1i*circle*(t-t[1]))
+      } # end if(!is.null(object))
 
       # pre-compute error matrices
       if(UERE && UERE<=3) # circular errors
@@ -548,40 +566,43 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
     # store precomputed objects for later
     if(precompute>0) { for(thing in STUFF) { assign(thing,get(thing),pos=Kalman.env) } }
 
-    # initial hidden state, for standardized process
-    H <- array(0,c(K,AXES))
-    for(i in 1:n)
+    if(!ZERO) # have model
     {
-      # generate standardized process - R arrays are something awful... awful
-      H[] <- cbind(Green[i,,]) %*% H[,,drop=FALSE] + cbind(Sigma[i,,]) %*% array(stats::rnorm(K*AXES),c(K,AXES))
-      # pull out location from hidden state
-      z[i,] <- H[1,]
-      if(K>1) { v[i,] <- H[2,] }
-    }
+      # initial hidden state, for standardized process
+      H <- array(0,c(K,AXES))
+      for(i in 1:n)
+      {
+        # generate standardized process - R arrays are something awful... awful
+        H[] <- cbind(Green[i,,]) %*% H[,,drop=FALSE] + cbind(Sigma[i,,]) %*% array(stats::rnorm(K*AXES),c(K,AXES))
+        # pull out location from hidden state
+        z[i,] <- H[1,]
+        if(K>1) { v[i,] <- H[2,] }
+      }
 
-    # rotate process if necessary
-    if(circle)
-    {
-      z <- z[,1] + 1i*z[,2]
-      z <- R * z
-      z <- cbind(Re(z),Im(z))
+      # rotate process if necessary
+      if(circle)
+      {
+        z <- z[,1] + 1i*z[,2]
+        z <- R * z
+        z <- cbind(Re(z),Im(z))
 
+        if(K>1)
+        {
+          v <- v[,] + 1i*v[,2]
+          v <- (R*v) + 1i*circle*z # mean zero here
+          v <- cbind(Re(v),Im(v))
+        }
+      }
+
+      # calculate mean function
+      z <- (z %*% Lambda) + (object$mean.vec %*% mu)
+      colnames(z) <- axes
       if(K>1)
       {
-        v <- v[,] + 1i*v[,2]
-        v <- (R*v) + 1i*circle*z # mean zero here
-        v <- cbind(Re(v),Im(v))
+        v <- (v %*% Lambda) + (get(object$mean)@velocity(t,object) %*% mu)
+        colnames(v) <- paste0("v",axes)
       }
-    }
-
-    # calculate mean function
-    z <- (z %*% Lambda) + (object$mean.vec %*% mu)
-    colnames(z) <- axes
-    if(K>1)
-    {
-      v <- (v %*% Lambda) + (get(object$mean)@velocity(t,object) %*% mu)
-      colnames(v) <- paste0("v",axes)
-    }
+    } # end if(!is.null(object))
 
     # throw in error
     if(UERE)
@@ -624,6 +645,7 @@ simulate.telemetry <- function(object,nsim=1,seed=NULL,CTMM=NULL,t=NULL,dt=NULL,
     CTMM <- nsim
     nsim <- 1
   }
+
   simulate.ctmm(CTMM,nsim=nsim,seed=seed,data=object,t=t,dt=dt,res=res,complete=complete,precompute=precompute,...)
 }
 

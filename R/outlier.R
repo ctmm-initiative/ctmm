@@ -32,13 +32,13 @@ outlie <- function(data,UERE=10,standardize=FALSE,plot=TRUE,...)
     data <- unit.telemetry(data,length=get("x.scale",pos=plot.env))
 
     lwd <- Vs$v.dt
-    lwd <- (lwd/max(lwd))
+    lwd <- ifelse(diff(range(lwd)),lwd/max(lwd),0)
     col <- grDevices::rgb(0,0,lwd,lwd)
     lwd <- 2*lwd
     n <- length(data$t)
     graphics::segments(x0=data$x[-n],y0=data$y[-n],x1=data$x[-1],y1=data$y[-1],col=col,lwd=lwd,asp=1,...)
 
-    cex <- (d/max(d))
+    cex <- ifelse(diff(range(d)),d/max(d),0)
     col <- grDevices::rgb(cex,0,0,cex)
     graphics::points(data$x,data$y,col=col,cex=cex,pch=20,...)
   }
