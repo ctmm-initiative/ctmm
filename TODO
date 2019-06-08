@@ -1,4 +1,6 @@
 PRIORITY
+* broke outlie
+* bandwidth weights=TRUE dt>min(diff(t)) probably not subsetting data correctly (Pepper)
 * summary.list needs to descend into lists recursively for uere objects
 * simulate.telemetry with no CTMM object to simulate error only 2D/3D
 * update optimizer to pracma::randortho

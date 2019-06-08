@@ -148,6 +148,7 @@ color.individual <- function(object,cores=1,...)
   n <- length(object)
   if(n==1) { return(0) }
   if(n==2) { return(c(0,1/2)) }
+  if(n==3) { return(c(0,1/3,2/3)) }
 
   CLASS <- class(object[[1]])
   # could update this to robust overlap calculation
