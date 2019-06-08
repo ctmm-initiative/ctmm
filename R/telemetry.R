@@ -307,7 +307,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   COL <- asPOSIXct(COL,timeformat=timeformat,timezone=timezone)
   DATA <- data.frame(timestamp=COL)
 
-  COL <- c("animal.ID","individual.local.identifier","local.identifier","individual.ID","Name","ID","tag.local.identifier","tag.ID","deployment.ID","track.ID","band.number","band.num","device.info.serial","Animal","Device.ID")
+  COL <- c("animal.ID","individual.local.identifier","local.identifier","individual.ID","Name","ID","tag.local.identifier","tag.ID","deployment.ID","track.ID","band.number","band.num","device.info.serial","Animal","Device.ID","collar.id")
   COL <- pull.column(object,COL,as.factor)
   if(length(COL)==0)
   {
@@ -433,7 +433,8 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   {
     DATA$HDOP <- COL
     # estimated from calibration data of Scott LaPoint; Thomas Pfeiffer & Bernd-Ulrich Meyburg
-    DATA[[DOP.LIST$horizontal$VAR]] <- (1.673414^2/2) * COL^2
+    # DATA[[DOP.LIST$horizontal$VAR]] <- (1.673414^2/2) * COL^2
+    # calibration inconsistent with newer e-obs devices
 
     NAS <- is.na(DATA$HDOP)
     if(any(NAS))
@@ -523,7 +524,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   # approximate DOP from # satellites if necessary
   if(!("HDOP" %in% names(DATA)))
   {
-    COL <- c("GPS.satellite.count","satellite.count","Sat.Count","Num.Sats","satellites.used","Satellites","Sats","Satt") # Counts? Messages?
+    COL <- c("GPS.satellite.count","satellite.count","Sat.Count","Num.Sats","Sat.Num","satellites.used","Satellites","Sats","Satt") # Counts? Messages?
     COL <- pull.column(object,COL)
     if(length(COL))
     {

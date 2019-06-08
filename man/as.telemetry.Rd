@@ -4,6 +4,8 @@
 \alias{as.telemetry.data.frame}
 \alias{as.telemetry.Move}
 \alias{summary.telemetry}
+\alias{head.telemetry}
+\alias{tail.telemetry}
 \encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Import, coerce, and summarize MoveBank data}
@@ -23,6 +25,10 @@ as.telemetry(object,timeformat="",timezone="UTC",projection=NULL,timeout=Inf,na.
              mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
 
 \S3method{summary}{telemetry}(object,...)
+
+\S3method{head}{telemetry}(x,n=6L,...)
+
+\S3method{tail}{telemetry}(x,n=6L,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -37,6 +43,8 @@ as.telemetry(object,timeformat="",timezone="UTC",projection=NULL,timeout=Inf,na.
   \item{keep}{Retain additonal columns after coercion.}
   \item{drop}{Only return a \code{telemetry} object for one individual if \code{TRUE}. Always return a \code{list} of telemetry objects if \code{FALSE}.}
   \item{...}{Optional arguments to be fed to \code{\link{fread}} or \code{\link{read.csv}}, in the case of compressed files.}
+  \item{x}{\code{telemetry} object.}
+  \item{n}{Number of rows to return, if positive, or number of rows to omit, if negative.}
 }
 
 \details{
@@ -48,7 +56,7 @@ Sufficient MoveBank columns include \code{individual.local.identifier} (or \code
 To have all columns detected and not overwrite eachother's information, \bold{it is best to have only one tracking device model per file imported}.
 Multiple deployments on a single individual can be merged afterwards.
 
-The \code{GPS.HDOP} value requires the device's UERE value to be translated into telemetry errors. The UERE represents the RMS error given ideal (\eqn{HDOP=1}) satellite conditions. Therefore, if your device is purported to have an accuracy of 10 meters, then the UERE is likely around 10 meters. Consult your device manual and manufacturer for a specific value or see \code{\link{uere}} for UERE calibration.
+%The \code{GPS.HDOP} value requires the device's UERE value to be translated into telemetry errors. The UERE represents the RMS error given ideal (\eqn{HDOP=1}) satellite conditions. Therefore, if your device is purported to have an accuracy of 10 meters, then the UERE is likely around 10 meters. Consult your device manual and manufacturer for a specific value or see \code{\link{uere}} for UERE calibration.
 }
 
 \value{\code{as.telemetry} returns a single \code{telemetry} object or list of \code{telemetry} objects if multiple animals are identified.}

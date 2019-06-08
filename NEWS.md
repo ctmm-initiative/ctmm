@@ -4,6 +4,8 @@ ctmm 0.5.7 (2019-06-03)
   * new function optimizer
   
   * 'pNewton' now the default optimization method
+  
+  * head, tail methods for telemetry objects
 
   * SpatialPointsDataFrame now includes timestamp 
   
@@ -14,6 +16,8 @@ ctmm 0.5.7 (2019-06-03)
   * stability fix in ctmm.fit for BM/IOU models
   
   * minor enhancements to cleave function
+  
+  * as.telemetry no longer automatically calibrates e-obs errors (inconsistent with newer devices)
 
 ctmm 0.5.6 (2019-05-14)
 ================

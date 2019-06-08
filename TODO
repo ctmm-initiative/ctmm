@@ -1,5 +1,6 @@
 PRIORITY
-* simulate.telemetry with no CTMM object to simulate error only
+* summary.list needs to descend into lists recursively for uere objects
+* simulate.telemetry with no CTMM object to simulate error only 2D/3D
 * update optimizer to pracma::randortho
 * check that the zero argument of optimizer is being used appropriately
 * weighted mean() of UDs (Nina)
