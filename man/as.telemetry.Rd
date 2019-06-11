@@ -4,7 +4,9 @@
 \alias{as.telemetry.data.frame}
 \alias{as.telemetry.Move}
 \alias{summary.telemetry}
+\alias{head}
 \alias{head.telemetry}
+\alias{tail}
 \alias{tail.telemetry}
 \encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
@@ -26,7 +28,11 @@ as.telemetry(object,timeformat="",timezone="UTC",projection=NULL,timeout=Inf,na.
 
 \S3method{summary}{telemetry}(object,...)
 
+head(x,n=6L,...)
+
 \S3method{head}{telemetry}(x,n=6L,...)
+
+tail(x,n=6L,...)
 
 \S3method{tail}{telemetry}(x,n=6L,...)
 }

@@ -131,7 +131,7 @@ ctmm.reduce <- function(CTMM)
 #####################################
 # multi-estimator parametric bootstrap
 # + concurrent double-bootstrap AICc
-ctmm.boot <- function(data,CTMM,method=CTMM$method,iterate=FALSE,robust=FALSE,error=0.01,cores=1,trace=TRUE,...)
+ctmm.boot <- function(data,CTMM,method=CTMM$method,AICc=FALSE,iterate=FALSE,robust=FALSE,error=0.01,cores=1,trace=TRUE,...)
 {
   if("COV" %nin% names(CTMM)) { stop("CTMM needs to be output from ctmm.select or ctmm.fit.") }
 
@@ -188,6 +188,7 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,iterate=FALSE,robust=FALSE,er
   Replicate <- function(i=0,DATA=simulate(CTMM,data=FRAME,precompute=precompute),...)
   {
     FIT <- ctmm.fit(DATA,CTMM,method=method,COV=FALSE,...)
+    if(AICc) {}
     FIT <- get.parameters(FIT,NAMES)
     names(FIT) <- NAMES
     FIT <- Transform(FIT)

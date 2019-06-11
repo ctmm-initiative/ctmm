@@ -5,6 +5,8 @@ ctmm 0.5.7 (2019-06-03)
   
   * 'pNewton' now the default optimization method
   
+  * 'pHREML' now the default estimator
+  
   * head, tail methods for telemetry objects
 
   * SpatialPointsDataFrame now includes timestamp 

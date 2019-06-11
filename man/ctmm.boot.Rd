@@ -6,14 +6,15 @@
 \description{This function allows the point estimates and confidence intervals of an initial estimated movement model to be improved by parametric boostrap, as described in Fleming et al (2019).
 }
 \usage{
-ctmm.boot(data,CTMM,method=CTMM$method,iterate=FALSE,robust=FALSE,error=0.01,cores=1,
-          trace=TRUE,...)
+ctmm.boot(data,CTMM,method=CTMM$method,AICc=FALSE,iterate=FALSE,robust=FALSE,error=0.01,
+          cores=1,trace=TRUE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{data}{ Timeseries data represented as a \code{telemetry} object. }
   \item{CTMM}{ A \code{ctmm} movement-model object from the output of \code{ctmm.fit} containing the initial parameter estimates.}
   \item{method}{Fitting method to use: \code{"ML"}, \code{"HREML"}, \code{"pREML"}, \code{"pHREML"}, or \code{"REML"}. See \code{\link{ctmm.fit}} for descriptions.}
+  \item{AICc}{Run second set of simulations to calculate AICc via Kullback–Leibler divergence. Otherwise, only AIC is updated.}
 %  \item{multiplicative}{Removes multiplicative bias (rather than additive) bias from positive scale parameters like area.}
   \item{iterate}{Iteratively solve for the parameters such that the average estimate (of \code{method}) is that of the data, whereas with \code{iterate=FALSE} only the first-order correction is calculated from the initial estimate.}
   \item{robust}{Uses robust estimates of the average and covariation for debiasing. Useful when parameters are near boundaries.}

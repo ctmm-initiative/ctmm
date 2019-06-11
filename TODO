@@ -1,5 +1,6 @@
 PRIORITY
-* broke outlie
+* abstract AIC/AICc code and allow ctmm.boot to update parameter estimates somehow...
+* as.telemetry.telemetry
 * bandwidth weights=TRUE dt>min(diff(t)) probably not subsetting data correctly (Pepper)
 * summary.list needs to descend into lists recursively for uere objects
 * simulate.telemetry with no CTMM object to simulate error only 2D/3D

@@ -422,6 +422,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     DATA$HDOP <- sqrt(2*ARGOS.radii)[COL]
 
     # remove Z class for now
+    object <- object[COL!="Z",]
     DATA <- DATA[COL!="Z",]
   }
 
