@@ -164,6 +164,10 @@ format.projection <- function(proj,datum="WGS84")
     { stop("PROJ4 does not support ",nrow(proj)," foci projections.") }
   }
 
+  # put in canonical format
+  proj <- sp::CRS(proj)
+  proj <- as.character(proj)
+
   validate.projection(proj)
   return(proj)
 }
@@ -180,4 +184,24 @@ validate.projection <- function(projection)
 
   if(grepl("units=",projection,fixed=TRUE) && !grepl("units=m",projection,fixed=TRUE))
   { stop("Units of distance other than meters not supported.") }
+}
+
+
+# projection check data against grid
+validate.grid <- function(data,grid)
+{
+  if(class(grid) %in% c("UD","RasterLayer") && !is.null(projection(data)) && !is.null(projection(grid)))
+  {
+    proj1 <- projection(data)
+    proj2 <- projection(grid)
+
+    # put into canonical format
+    proj1 <- sp::CRS(proj1)
+    proj2 <- sp::CRS(proj2)
+
+    proj1 <- as.character(proj1)
+    proj2 <- as.character(proj2)
+
+    if(proj1 != proj2) { stop("Grid projection does not match data projection.") }
+  }
 }

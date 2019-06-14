@@ -1,6 +1,3 @@
-# S3 generic
-akde <- function(data,CTMM,VMM=NULL,debias=TRUE,smooth=TRUE,error=0.001,res=10,grid=NULL,...) { UseMethod("akde") }
-
 # fast lag counter
 lag.DOF <- function(data,dt=NULL,weights=NULL,lag=NULL,FLOOR=NULL,p=NULL)
 {
@@ -396,58 +393,98 @@ akde.bias <- function(CTMM,H,lag,DOF,weights)
 homerange <- function(data,CTMM,method="AKDE",...)
 { akde(data,CTMM,...) }
 
-
-#######################################
-# wrap the kde function for our telemetry data format and CIs.
-akde.telemetry <- function(data,CTMM,VMM=NULL,debias=TRUE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
+# AKDE single or list
+# (C) C.H. Fleming (2016-2019)
+# (C) Kevin Winner & C.H. Fleming (2016)
+akde <- function(data,CTMM,VMM=NULL,debias=TRUE,weights=FALSE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
 {
-  CTMM0 <- CTMM # original model fit
-  if(class(CTMM)=="ctmm") # calculate bandwidth etc.
+  if(length(projection(data))>1) { stop("Data not in single coordinate system.") }
+  validate.grid(data,grid)
+
+  DROP <- class(data)!="list"
+  data <- listify(data)
+  CTMM <- listify(CTMM)
+  VMM <- listify(VMM)
+
+  n <- length(data)
+  weights <- array(weights,n)
+
+  # loop over individuals for bandwidth optimization
+  CTMM0 <- list()
+  KDE <- list()
+  DEBIAS <- list()
+  for(i in 1:n)
   {
-    axes <- CTMM$axes
+    CTMM0[[i]] <- CTMM[[i]] # original model fit
+    if(class(CTMM[[i]])=="ctmm") # calculate bandwidth etc.
+    {
+      axes <- CTMM[[i]]$axes
 
-    # smooth out errors (which also removes duplicate times)
-    z <- NULL
-    if(!is.null(VMM))
-    {
-      axis <- VMM$axes
-      if(VMM$error && smooth) { z <- predict(VMM,data=data,t=data$t)[,axis] }
-      axes <- c(axes,axis)
-    }
-    if(CTMM$error && smooth)
-    {
-      data <- predict(CTMM,data=data,t=data$t)
-      CTMM$error <- FALSE # smoothed error model (approximate)
-    }
-    # copy back !!! times and locations
-    if(!is.null(VMM))
-    {
-      data[,axis] <- z
-      VMM$error <- FALSE # smoothed error model (approximate)
-    }
+      # smooth out errors (which also removes duplicate times)
+      z <- NULL
+      if(!is.null(VMM[[i]]))
+      {
+        axis <- VMM[[i]]$axes
+        if(VMM[[i]]$error && smooth) { z <- predict(VMM[[i]],data=data[[i]],t=data[[i]]$t)[,axis] }
+        axes <- c(axes,axis)
+      }
+      if(CTMM[[i]]$error && smooth)
+      {
+        data[[i]] <- predict(CTMM[[i]],data=data[[i]],t=data[[i]]$t)
+        CTMM[[i]]$error <- FALSE # smoothed error model (approximate)
+      }
+      # copy back !!! times and locations
+      if(!is.null(VMM[[i]]))
+      {
+        data[[i]][,axis] <- z
+        VMM[[i]]$error <- FALSE # smoothed error model (approximate)
+      }
 
-    # calculate optimal bandwidth and some other information
-    KDE <- bandwidth(data=data,CTMM=CTMM,VMM=VMM,verbose=TRUE,...)
-  }
-  else if(class(CTMM)=="bandwidth") # bandwidth information was precalculated
+      # calculate optimal bandwidth and some other information
+      KDE[[i]] <- bandwidth(data=data[[i]],CTMM=CTMM[[i]],VMM=VMM[[i]],weights[i],verbose=TRUE,...)
+    }
+    else if(class(CTMM)=="bandwidth") # bandwidth information was precalculated
+    {
+      KDE[[i]] <- CTMM[[i]]
+      axes <- names(KDE[[i]]$h)
+    }
+    else
+    { stop(paste("CTMM argument is of class",class(CTMM))) }
+
+    if(debias) { DEBIAS[[i]] <- KDE[[i]]$bias }
+  } # end loop over individuals
+
+  COL <- length(axes)
+
+  # determine desired (absolute) resolution
+  dr <- sapply(1:n,function(i){sqrt(diag(KDE[[i]]$H))/res}) # (axes,n)
+  dim(dr) <- c(COL,n)
+  dr <- apply(dr,1,min)
+
+  # combine everything for grid calculation
+  H.all <- lapply(1:n,function(i){N=length(data[[i]]$t);K=prepare.H(KDE[[i]]$H,n=N,axes=axes);dim(K)=c(N,COL^2);return(K)})
+  H.all <- do.call("rbind", H.all)
+  dim(H.all) <- c(length(H.all)/COL^2,COL,COL)
+
+  # take only the necessary columns
+  data.all <- lapply(data,function(d) { d[,c("t",axes)] })
+  data.all <- do.call("rbind", data.all)
+
+  # complete grid specification
+  grid <- kde.grid(data.all,H=H.all,axes=axes,alpha=error,res=res,dr=dr,grid=grid)
+
+  # loop over individuals
+  for(i in 1:n)
   {
-    KDE <- CTMM
-    axes <- names(KDE$h)
+    KDE[[i]] <- c(KDE[[i]],kde(data[[i]],KDE[[i]]$H,axes=axes,bias=DEBIAS[[i]],W=KDE[[i]]$weights,alpha=error,dr=dr,grid=grid))
+
+    KDE[[i]] <- new.UD(KDE[[i]],info=attr(data[[i]],"info"),type='range',CTMM=ctmm())
+    # in case bandwidth is pre-calculated...
+    if(class(CTMM0[[i]])=="ctmm") { attr(KDE[[i]],"CTMM") <- CTMM0[[i]] }
   }
-  else
-  { stop(paste("CTMM argument is of class",class(CTMM))) }
 
-  if(debias) { debias <- KDE$bias }
-
-  # absolute resolution
-  dr <- sqrt(diag(KDE$H))/res
-
-  KDE <- c(KDE,kde(data,KDE$H,axes=axes,bias=debias,W=KDE$weights,alpha=error,dr=dr,grid=grid))
-
-  KDE <- new.UD(KDE,info=attr(data,"info"),type='range',CTMM=ctmm())
-  # in case bandwidth is pre-calculated...
-  if(class(CTMM0)=="ctmm") { attr(KDE,"CTMM") <- CTMM0 }
-
+  names(KDE) <- names(data)
+  if(DROP) { KDE <- KDE[[1]] }
   return(KDE)
 }
 
@@ -480,11 +517,9 @@ prepare.H <- function(H,n,axes=c('x','y'))
 
 ############################################
 # construct a grid for the density function
-kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=1,dr=NULL,EXT=NULL)
+# non-destructuve WRT argument 'grid'
+kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=1,dr=NULL,EXT=NULL,grid=NULL)
 {
-  R <- get.telemetry(data,axes) # (times,dim)
-  n <- nrow(R) # (times)
-
   H <- prepare.H(H,n,axes=axes) # (times,dim,dim)
 
   # how far to extend range from data as to ensure alpha significance in total probability
@@ -492,25 +527,71 @@ kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=1,dr=NULL,EXT=NULL)
   dH <- z * apply(H,1,function(h){sqrt(diag(h))}) # (dim,times)
   dH <- t(dH) # (times,dim)
 
-  # now to find the necessary extent of our grid
-  if(is.null(EXT)) { EXT <- rbind( apply(R-dH,2,min) , apply(R+dH,2,max) ) } # (ext,dim) }
-  dEXT <- EXT[2,]-EXT[1,]
+  if(class(grid)=="RasterLayer") # grid defined by raster
+  {
+    EXT <- raster::extent(grid)
+    EXT <- cbind( c(EXT@xmin,EXT@xmax) , c(EXT@ymin,EXT@ymax) )
+    dEXT <- EXT[2,]-EXT[1,]
 
-  # grid center
-  mu <- apply(EXT,2,mean)
+    res <- dim(grid)[2:1]
+    dr <- raster::res(grid)
 
-  if(is.null(dr)) { dr <- dEXT/res }
+    # grid locations
+    R <- list(x=raster::xFromCol(grid),y=rev(raster::yFromRow(grid)))
+  } # end raster
+  else if(!is.null(grid$r)) # grid fully pre-specified
+  {
+    R <- grid$r
+    dr <- if(is.null(grid$dr)) { sapply(R,mean) } else { grid$dr }
 
-  res <- dEXT/dr
+    EXT <- sapply(1:length(axes),function(i){c(first(R[[i]]),last(R[[i]])) + c(-1,1)*dr[i]/2})
+    dEXT <- EXT[2,]-EXT[1,]
+  } # end grid
+  else # no grid locations specified
+  {
+    R <- get.telemetry(data,axes) # (times,dim)
+    n <- nrow(R) # (times)
 
-  # half resolution
-  res <- ceiling(res/2+1)
+    # now to find the necessary extent of our grid
+    if(is.null(EXT)) { EXT <- rbind( apply(R-dH,2,min) , apply(R+dH,2,max) ) } # (ext,dim) }
+    dEXT <- EXT[2,]-EXT[1,]
 
-  # grid locations
-  R <- lapply(1:length(res),function(i){ (-res[i]:res[i])*dr[i] + mu[i] } ) # (grid,dim)
+    # grid center
+    mu <- apply(EXT,2,mean)
+
+    if(!is.null(grid$dr)) { dr <- grid$dr }
+    if(is.null(dr)) { dr <- dEXT/res }
+
+    if(is.null(grid$align.to.origin) || !grid$align.to.origin)
+    {
+      res <- dEXT/dr
+
+      # half resolution
+      res <- ceiling(res/2+1)
+
+      # grid locations
+      R <- lapply(1:length(axes),function(i){ (-res[i]:res[i])*dr[i] + mu[i] } ) # (grid,dim)
+    }
+    else # align grid to origin
+    {
+      EXT <- t(t(EXT)/dr)
+      # round midpoints to nearest integer from origin
+      EXT[1,] <- floor(EXT[1,]+1/2) - 1/2
+      EXT[2,] <- ceiling(EXT[2,]-1/2) + 1/2
+      res <- round(EXT[2,]-EXT[1,])
+
+      R <- lapply(1:length(axes),function(i){dr[i]*seq(EXT[1,i]+1/2,EXT[2,i]-1/2,length.out=res[i])})
+      EXT <- t(t(EXT)*dr)
+      dEXT <- EXT[2,]-EXT[1,]
+    }
+  } # end no grid specification
+
   names(R) <- axes
-
-  grid <- list(R=R,dH=dH,dr=dr,EXT=EXT,dEXT=dEXT)
+  names(dr) <- axes
+  colnames(EXT) <- axes
+  rownames(EXT) <- c('min','max')
+  names(dEXT) <- axes
+  grid <- list(r=R,dH=dH,dr=dr,EXT=EXT,dEXT=dEXT,axes=axes)
   return(grid)
 }
 
@@ -531,9 +612,10 @@ kde <- function(data,H,axes=c("x","y"),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr
   # format bandwidth matrix
   H <- prepare.H(H,n,axes=axes)
 
-  if(is.null(grid)) { grid <- kde.grid(data,H=H,axes=axes,alpha=alpha,res=res,dr=dr) }
+  # fill in grid information
+  grid <- kde.grid(data,H=H,axes=axes,alpha=alpha,res=res,dr=dr,grid=grid)
 
-  R <- grid$R
+  R <- grid$r
   # generalize this for future grid option use
   dH <- grid$dH
   dr <- grid$dr

@@ -73,8 +73,8 @@ S3method(summary,ctmm)
 
 #AKDE FUNCTIONS
 export(akde,bandwidth,homerange,writeShapefile,SpatialPolygonsDataFrame.UD)
-S3method(akde,list)
-S3method(akde,telemetry)
+#S3method(akde,list)
+#S3method(akde,telemetry)
 S3method(mean,UD)
 S3method(plot,UD)
 S3method(summary,UD)

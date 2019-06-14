@@ -1,7 +1,10 @@
 PRIORITY
-* abstract AIC/AICc code and allow ctmm.boot to update parameter estimates somehow...
-* as.telemetry.telemetry
-* bandwidth weights=TRUE dt>min(diff(t)) probably not subsetting data correctly (Pepper)
+* outlie crashes on Inf-VAR
+* occurrence() on the same grid for mean() --- allow list arguments --- listify ?
+* uere(data) <- 10 in vignette
+* diffusion calculation with CIs (in summary)
+* as.telemetry.telemetry (do nothing)
+* bandwidth weights=TRUE dt>min(diff(t)) probably not subsetting data correctly (Pepper), need to "regularize" data for large dt
 * summary.list needs to descend into lists recursively for uere objects
 * simulate.telemetry with no CTMM object to simulate error only 2D/3D
 * update optimizer to pracma::randortho
@@ -37,7 +40,6 @@ PRIORITY
 * ctmm.fit -> id.parameters : force.error argument for when error is estimated to be 0
 * error vignette - check back on variogram, correlogram
 * reference Guillaume's paper at the beginning of the periodogram vignette
-* occurrence() on the same grid for mean() (Ellie)
 
 OVERLAP
 * overlap needs to return DOFs in an overlap object - and then define a summary function for the overlap object

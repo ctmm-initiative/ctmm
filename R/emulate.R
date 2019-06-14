@@ -188,10 +188,19 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,AICc=FALSE,iterate=FALSE,robu
   Replicate <- function(i=0,DATA=simulate(CTMM,data=FRAME,precompute=precompute),...)
   {
     FIT <- ctmm.fit(DATA,CTMM,method=method,COV=FALSE,...)
-    if(AICc) {}
+    if(AICc)
+    {
+      # double expectation value
+      DATA <- simulate(CTMM,data=FRAME,precompute=precompute)
+      # update KLD sum
+      AIC <- -2*ctmm.loglike(DATA,FIT,profile=FALSE)
+    }
+    else
+    { AIC <- 0 }
     FIT <- get.parameters(FIT,NAMES)
     names(FIT) <- NAMES
     FIT <- Transform(FIT)
+    attr(FIT,"AIC") <- AIC # attach to slot
     return(FIT)
   }
 
@@ -261,6 +270,7 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,AICc=FALSE,iterate=FALSE,robu
     # INITIAL simulation precomputes Kalman filter matrix
     precompute <- TRUE
     ADD <- Replicate() # [par] (transformed)
+    AIC <- attr(ADD,"AIC") # to store ensemble of -2*KLD
     dim(ADD) <- c(length(NAMES),1) # [par,1]
     rolling_update(ADD)
 
@@ -270,8 +280,9 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,AICc=FALSE,iterate=FALSE,robu
     {
       # calculate burst of cores estimates
       ADD <- plapply(1:cores,Replicate,cores=cores,fast=FALSE)
-      ADD <- simplify2array(ADD) # [par,method,run]
-      dim(ADD) <- c(length(NAMES),cores) # [par*method,run]
+      AIC <- c(AIC, sapply(ADD, function(add){attr(add,"AIC")} ) )
+      ADD <- simplify2array(ADD) # [par,run]
+      dim(ADD) <- c(length(NAMES),cores) # [par,run]
       rolling_update(ADD)
 
       # alternative test if bias is relatively well resolved
@@ -285,6 +296,8 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,AICc=FALSE,iterate=FALSE,robu
 
       if(trace) { utils::setTxtProgressBar(pb,clamp(max(N/MAX,(error/ERROR)^2))) }
     } # END INNER LOOP
+    VAR.AIC <- stats::var(AIC)
+    AIC <- mean(AIC)
 
     ## recalculate error & store best model
     ERROR <- AVE - EST # how far off were we?
@@ -298,6 +311,8 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,AICc=FALSE,iterate=FALSE,robu
 
       BEST$COV <- COV
       BEST$BIAS <- BIAS
+      BEST$AIC <- AIC
+      BEST$VAR.AIC <- VAR.AIC
 
       # final iteration --- calculate final parameter estimate COV
       if(ERROR<=error || !iterate)
@@ -321,6 +336,8 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,AICc=FALSE,iterate=FALSE,robu
       # go back to previous (best) result
       BEST$COV -> COV
       BEST$BIAS -> BIAS
+      BEST$AIC -> AIC
+      BEST$VAR.AIC -> VAR.AIC
     }
 
     ## calculate best estimate
@@ -337,6 +354,12 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,AICc=FALSE,iterate=FALSE,robu
 
   # fix COV[mean] with a verbose likelihood evaluation
   CTMM <- ctmm.loglike(data,CTMM,profile=FALSE,verbose=TRUE)
+
+  # fix AIC/BIC/MSPE
+  CTMM <- ic.ctmm(CTMM,nrow(data))
+
+  # store simulated AICc
+  if(AICc) { CTMM$AICc <- AIC; CTMM$VAR.AICc <- VAR.AIC }
 
   if(trace) { close(pb) }
   return(CTMM)

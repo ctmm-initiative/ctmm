@@ -691,8 +691,26 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
 
   # unstandardize (includes likelihood adjustment)
   CTMM <- unscale.ctmm(CTMM)
-
   CTMM$features <- NAMES # store all auto-covariance features
+
+  # calculate AIC,AICc,BIC,MSPE,...
+  CTMM <- ic.ctmm(CTMM,n)
+
+  return(CTMM)
+}
+
+
+#################
+# calculate AIC/BIC/AICc/MSPE/...
+#################
+ic.ctmm <- function(CTMM,n)
+{
+  NAMES <- CTMM$features
+  axes <- CTMM$axes
+  range <- CTMM$range
+  k.mean <- nrow(CTMM$mu)
+  method <- CTMM$method
+
   nu <- length(NAMES)
   # all parameters
   q <- length(axes)
@@ -758,6 +776,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
 
     return(MSPE)
   }
+  drift <- get(CTMM$mean)
   STUFF <- drift@energy(CTMM)
   UU <- STUFF$UU
   VV <- STUFF$VV

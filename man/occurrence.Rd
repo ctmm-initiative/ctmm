@@ -16,7 +16,7 @@ occurrence(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=0.05,dt.max=
   \item{H}{Optional additional banwidth matrix for future use.}
   \item{res.time}{Number of temporal grid points per median timestep.}
   \item{res.space}{Number of grid points along each axis, relative to the average diffusion (per median timestep) from a stationary point.}
-  \item{grid}{Optional grid specification with columns labeled \code{x} and \code{y}. Not yet supported.}
+  \item{grid}{Optional grid specification via \code{raster}, \code{UD}, or list of arguments (See \code{\link{akde}} for details).}
   \item{cor.min}{Velocity correlation threshold for skipping gaps.}
   \item{dt.max}{Maximum absolute gap size (in seconds) for Kriging interpolation. If left \code{NULL}, the median of \code{diff(data$t)} will be used.}
 }

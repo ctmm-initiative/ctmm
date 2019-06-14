@@ -317,6 +317,8 @@ fill.data <- function(data,CTMM=ctmm(tau=Inf),verbose=FALSE,t=NULL,dt=NULL,res=1
 #################################
 occurrence <- function(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=0.05,dt.max=NULL)
 {
+  validate.grid(data,grid)
+
   axes <- CTMM$axes
   CTMM0 <- CTMM
   dt <- stats::median(diff(data$t))
@@ -392,7 +394,7 @@ occurrence <- function(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=
   dr <- sqrt(dr)
 
   # using the same data format as AKDE, but with only the ML estimate (alpha=1)
-  KDE <- kde(data,H=H,W=w.grid,dr=dr/res.space)
+  KDE <- kde(data,H=H,W=w.grid,dr=dr/res.space,grid=grid)
   KDE$H <- diag(0,2)
   KDE <- new.UD(KDE,info=info,type='occurrence',CTMM=CTMM0)
   return(KDE)

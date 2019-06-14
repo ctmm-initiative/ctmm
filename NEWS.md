@@ -1,4 +1,4 @@
-ctmm 0.5.7 (2019-06-03)
+ctmm 0.5.7 (2019-06-14)
 ================
 
   * new function optimizer
@@ -6,6 +6,8 @@ ctmm 0.5.7 (2019-06-03)
   * 'pNewton' now the default optimization method
   
   * 'pHREML' now the default estimator
+  
+  * grid argument now supported in akde and occurrence methods
   
   * head, tail methods for telemetry objects
 

@@ -28,11 +28,11 @@ as.telemetry(object,timeformat="",timezone="UTC",projection=NULL,timeout=Inf,na.
 
 \S3method{summary}{telemetry}(object,...)
 
-head(x,n=6L,...)
+head(x,...)
 
 \S3method{head}{telemetry}(x,n=6L,...)
 
-tail(x,n=6L,...)
+tail(x,...)
 
 \S3method{tail}{telemetry}(x,n=6L,...)
 }

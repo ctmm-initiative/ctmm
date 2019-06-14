@@ -287,6 +287,23 @@ asPOSIXct <- function(x,timeformat="",timezone="UTC",...)
 # this assumes a MoveBank data.frame
 as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projection=NULL,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
 {
+  NAMES <- list()
+  NAMES$timestamp <- c('timestamp','Acquisition.Start.Time','Acquisition.Time','Date.Time','Date.Time.GMT','UTC.Date.Time','time','Date.GMT','Date.Local','GMT.Time','Date')
+  NAMES$id <- c("animal.ID","individual.local.identifier","local.identifier","individual.ID","Name","ID","ID.Names","tag.local.identifier","tag.ID","deployment.ID","track.ID","band.number","band.num","device.info.serial","Animal","Device.ID","collar.id")
+  NAMES$long <- c("location.long","Longitude","long","lon","GPS.Longitude")
+  NAMES$lat <- c("location.lat","Latitude","latt","lat","GPS.Latitude")
+  NAMES$zone <- c("GPS.UTM.zone","UTM.zone","zone")
+  NAMES$east <- c("GPS.UTM.Easting","GPS.UTM.East","GPS.UTM.x","UTM.Easting","UTM.East","UTM.x","Easting","East","x")
+  NAMES$north <- c("GPS.UTM.Northing","GPS.UTM.North","GPS.UTM.y","UTM.Northing","UTM.North","UTM.y","Northing","North","y")
+  NAMES$HDOP <- c("GPS.HDOP","HDOP","Horizontal.DOP","GPS.Horizontal.Dilution","Horizontal.Dilution","Hor.Dil")
+  NAMES$DOP <- c("GPS.DOP","DOP","GPS.Dilution","Dilution","Dil")
+  NAMES$PDOP <- c("GPS.PDOP","PDOP","Position.DOP","GPS.Position.Dilution","Position.Dilution","Pos.Dil")
+  NAMES$GDOP <- c("GPS.GDOP","GDOP","Geometric.DOP","GPS.Geometric.Dilution","Geometric.Dilution","Geo.Dil")
+  NAMES$VDOP <- c("GPS.VDOP","VDOP","Vertical.DOP","GPS.Vertical.Dilusion","Vertical.Dilution","Ver.Dil")
+  NAMES$nsat <- c("GPS.satellite.count","satellite.count","Sat.Count","Num.Sats","Sat.Num","satellites.used","Satellites","Sats","Satt") # Counts? Messages?
+  NAMES$TTF <- c("GPS.time.to.fix","time.to.fix","GPS.TTF","TTF","GPS.fix.time","fix.time","time.to.get.fix","Duration","GPS.navigation.time","navigation.time","Time.On")
+  NAMES$z <- c("height.above.ellipsoid","height.above.msl","height.above.mean.sea.level","height.raw","height.(raw)","barometric.height","height","Argos.altitude","GPS.Altitude","altitude","barometric.depth","depth","Alt")
+
   na.rm <- match.arg(na.rm,c("row","col"))
 
   # make column names canonicalish
@@ -302,12 +319,13 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   }
 
   # timestamp column
-  COL <- c('timestamp','Acquisition.Start.Time','Acquisition.Time','Date.Time','Date.Time.GMT','UTC.Date.Time','time','Date.GMT','Date.Local','GMT.Time','Date')
+  options(digits.secs=6) # otherwise, R will truncate to seconds...
+  COL <- NAMES$timestamp
   COL <- pull.column(object,COL,FUNC=as.character)
   COL <- asPOSIXct(COL,timeformat=timeformat,timezone=timezone)
   DATA <- data.frame(timestamp=COL)
 
-  COL <- c("animal.ID","individual.local.identifier","local.identifier","individual.ID","Name","ID","tag.local.identifier","tag.ID","deployment.ID","track.ID","band.number","band.num","device.info.serial","Animal","Device.ID","collar.id")
+  COL <- NAMES$id
   COL <- pull.column(object,COL,as.factor)
   if(length(COL)==0)
   {
@@ -316,11 +334,11 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   }
   DATA$id <- COL
 
-  COL <- c("location.long","Longitude","long","lon","GPS.Longitude")
+  COL <- NAMES$long
   COL <- pull.column(object,COL)
   DATA$longitude <- COL
 
-  COL <- c("location.lat","Latitude","latt","lat","GPS.Latitude")
+  COL <- NAMES$lat
   COL <- pull.column(object,COL)
   DATA$latitude <- COL
 
@@ -329,15 +347,15 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   {
     message("Geocentric coordinates not found. Looking for UTM coordinates.")
 
-    COL <- c("GPS.UTM.zone","UTM.zone","zone")
+    COL <- NAMES$zone
     COL <- pull.column(object,COL,FUNC=as.character)
     zone <- COL
 
-    COL <- c("GPS.UTM.Easting","GPS.UTM.East","GPS.UTM.x","UTM.Easting","UTM.East","UTM.x","Easting","East","x")
+    COL <- NAMES$east
     COL <- pull.column(object,COL)
     XY <- COL
 
-    COL <- c("GPS.UTM.Northing","GPS.UTM.North","GPS.UTM.y","UTM.Northing","UTM.North","UTM.y","Northing","North","y")
+    COL <- NAMES$north
     COL <- pull.column(object,COL)
     XY <- cbind(XY,COL)
 
@@ -462,7 +480,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
       DATA$HDOP <- sqrt(2)*COL
 
       # approximate UERE lower bound for cases where NA error and !NA HDOP
-      COL <- c("GPS.HDOP","HDOP","DOP","Horizontal.Dilution","GPS.Horizontal.Dilution")
+      COL <- NAMES$HDOP
       COL <- pull.column(object,COL)
       if(length(COL))
       {
@@ -481,7 +499,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   # HDOP
   if(!("HDOP" %in% names(DATA)))
   {
-    COL <- c("GPS.HDOP","HDOP","Horizontal.DOP","GPS.Horizontal.Dilution","Horizontal.Dilution")
+    COL <- NAMES$HDOP
     COL <- pull.column(object,COL)
     if(length(COL)) { DATA$HDOP <- COL }
   }
@@ -489,7 +507,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   # DOP
   if(!("HDOP" %in% names(DATA)))
   {
-    COL <- c("GPS.DOP","DOP","GPS.Dilution","Dilution")
+    COL <- NAMES$DOP
     COL <- pull.column(object,COL)
     if(length(COL))
     {
@@ -501,7 +519,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   # PDOP
   if(!("HDOP" %in% names(DATA)))
   {
-    COL <- c("GPS.PDOP","PDOP","Position.DOP","GPS.Position.Dilution","Position.Dilution")
+    COL <- NAMES$PDOP
     COL <- pull.column(object,COL)
     if(length(COL))
     {
@@ -513,7 +531,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   # GDOP
   if(!("HDOP" %in% names(DATA)))
   {
-    COL <- c("GPS.GDOP","GDOP","Geometric.DOP","GPS.Geometric.Dilution","Geometric.Dilution")
+    COL <- NAMES$GDOP
     COL <- pull.column(object,COL)
     if(length(COL))
     {
@@ -525,7 +543,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   # approximate DOP from # satellites if necessary
   if(!("HDOP" %in% names(DATA)))
   {
-    COL <- c("GPS.satellite.count","satellite.count","Sat.Count","Num.Sats","Sat.Num","satellites.used","Satellites","Sats","Satt") # Counts? Messages?
+    COL <- NAMES$nsat
     COL <- pull.column(object,COL)
     if(length(COL))
     {
@@ -590,7 +608,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   # timed-out fixes
   if(timeout<Inf)
   {
-    COL <- c("GPS.time.to.fix","time.to.fix","GPS.TTF","TTF","GPS.fix.time","fix.time","time.to.get.fix","Duration","GPS.navigation.time","navigation.time","Time.On")
+    COL <- NAMES$TTF
     COL <- pull.column(object,COL)
     if(length(COL))
     {
@@ -612,13 +630,13 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   ################################
   # HEIGHT
   # Import third axis if available
-  COL <- c("height.above.ellipsoid","height.above.msl","height.above.mean.sea.level","height.raw","height.(raw)","barometric.height","height","Argos.altitude","GPS.Altitude","altitude","barometric.depth","depth","Alt")
+  COL <- NAMES$z
   COL <- pull.column(object,COL)
   if(length(COL))
   {
     DATA$z <- COL
 
-    COL <- c("GPS.VDOP","VDOP")
+    COL <- NAMES$VDOP
     COL <- pull.column(object,COL)
     if(length(COL))
     {

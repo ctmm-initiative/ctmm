@@ -10,11 +10,8 @@
 This function calculates autocorrelated kernel density home-range estimates from \code{telemetry} data and a corresponding continuous-time movement model.
 }
 \usage{
-akde(data,CTMM,VMM=NULL,debias=TRUE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
-
-\S3method{akde}{telemetry}(data,CTMM,VMM=NULL,debias=TRUE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
-
-\S3method{akde}{list}(data,CTMM,VMM=NULL,debias=TRUE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
+akde(data,CTMM,VMM=NULL,debias=TRUE,weights=FALSE,smooth=TRUE,error=0.001,res=10,
+     grid=NULL,...)
 
 \S3method{mean}{UD}(x,...)
 
@@ -26,16 +23,24 @@ akde(data,CTMM,VMM=NULL,debias=TRUE,smooth=TRUE,error=0.001,res=10,grid=NULL,...
   \item{VMM}{An optional vertical \code{ctmm} object for 3D home-range calculation.}
   \item{debias}{Debias the distribution for area estimation (AKDEc).}
   \item{smooth}{"Smooth" out errors from the data.}
+  \item{weights}{Optimally weight the data to account for temporal sampling bias (See \code{\link{bandwidth}} for details).}
   \item{error}{Target probability error.}
   \item{res}{Number of grid points along each axis, relative to the bandwidth.}
-  \item{grid}{Optional grid specification with columns labeled \code{x} and \code{y}. Not yet supported.}
-  \item{...}{Arguments passed to all instances of \code{\link{bandwidth}}, such as \code{weights}.}
+  \item{grid}{Optional grid specification via \code{raster}, \code{UD}, or list of arguments (See `Details' below).}
+  \item{...}{Arguments passed to all instances of \code{\link{bandwidth}}.}
   \item{x}{A list of \code{UD}s calculated on the same grid.}
 }
 
-\details{For weighted AKDE, please note additional \code{...} arguments passed to \code{\link{bandwidth}} and the \code{weights=TRUE} argument, specifically.
+\details{For weighted AKDE, please note additional \code{...} arguments passed to \code{\link{bandwidth}}.
 
 When feeding in lists of \code{telemetry} and \code{ctmm} objects, all UDs will be calculated on the same grid. These UDs can be averaged with the \code{mean} command, however this is not an optimal way to calculate population ranges.
+
+If a \code{UD} or \code{raster} objects is supplied in the \code{grid} argument, then the estimate will be calculated on the same grid. Alternatively, a list grid arguments can be supplied, with any of the following components:
+\describe{
+\item{\code{r}}{A list with vectors \code{x} and \code{y} that define the grid.}
+\item{\code{dr}}{A vector setting the \code{x} and \code{y} cell widths in meters.}
+\item{\code{align.to.origin}}{Logical value indicating that cell midpoint locations are aligned to be an integer number of \code{dr} steps from the origin.}
+}
 }
 
 \value{Returns a \code{UD} object: a list with the sampled grid line locations \code{r$x} and \code{r$y}, the extent of each grid cell \code{dr}, the probability density and cumulative distribution functions evaluated on the sampled grid locations \code{PDF} & \code{CDF}, the optimal bandwidth matrix \code{H}, and the effective sample size of the data in \code{DOF.H}.
