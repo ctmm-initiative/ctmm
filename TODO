@@ -1,6 +1,7 @@
 PRIORITY
+* test occurrence, Gaussian plot
+* conditional encounter density estimation: p_E(x) \propto p_1(x)*p_2(x) (Shauhin et al)
 * outlie crashes on Inf-VAR
-* occurrence() on the same grid for mean() --- allow list arguments --- listify ?
 * uere(data) <- 10 in vignette
 * diffusion calculation with CIs (in summary)
 * as.telemetry.telemetry (do nothing)

@@ -518,15 +518,54 @@ prepare.H <- function(H,n,axes=c('x','y'))
 ############################################
 # construct a grid for the density function
 # non-destructuve WRT argument 'grid'
-kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=1,dr=NULL,EXT=NULL,grid=NULL)
+# non-grid arguments are merely suggestions
+kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=NULL,dr=NULL,EXT=NULL,grid=NULL)
 {
-  H <- prepare.H(H,n,axes=axes) # (times,dim,dim)
+  H <- prepare.H(H,n=length(data$t),axes=axes) # (times,dim,dim)
 
   # how far to extend range from data as to ensure alpha significance in total probability
   z <- sqrt(-2*log(alpha))
   dH <- z * apply(H,1,function(h){sqrt(diag(h))}) # (dim,times)
   dH <- t(dH) # (times,dim)
 
+  # format lazy grid arguments
+  if(!is.null(grid) && class(grid)=="list" && all(axes %in% names(grid))) # assuming coordinate list
+  { grid <- list(r=grid) }
+  else if(!is.null(grid) && class(grid) %nin% c("list","UD","RasterLayer"))
+  {
+    if(class(grid)=="Extent")
+    { grid <- list(extent=grid) }
+    else # assuming extent or dr
+    {
+      if(length(dim(grid))==2) # assuming extent
+      { grid <- list(extent=grid) }
+      else if(length(grid)==length(axes)) # assuming dr
+      { grid <- list(dr=grid) }
+      else
+      { stop("Malformed grid argument.") }
+    }
+  }
+
+  # format extents canonically
+  get.extent <- function(EXT)
+  {
+    if(class(EXT)=="Extent")
+    { EXT <- cbind( c(EXT@xmin,EXT@xmax) , c(EXT@ymin,EXT@ymax) ) }
+    else # in case of data.frame
+    { EXT <- as.matrix(EXT) }
+
+    return(EXT)
+  }
+
+  # centered sequence (mu) with n steps by by
+  cseq <- function(mu,n,by)
+  {
+    n <- 1:n
+    n <- n - mean(n)
+    return(mu + n*by)
+  }
+
+  # specify grid
   if(class(grid)=="RasterLayer") # grid defined by raster
   {
     EXT <- raster::extent(grid)
@@ -542,48 +581,87 @@ kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=1,dr=NULL,EXT=NULL,g
   else if(!is.null(grid$r)) # grid fully pre-specified
   {
     R <- grid$r
-    dr <- if(is.null(grid$dr)) { sapply(R,mean) } else { grid$dr }
+    # UD object will also have dr
+    if(!is.null(grid$dr))
+    { dr <- grid$dr }
+    else
+    { dr <- sapply(R,function(r){mean(diff(r))}) }
 
+    EXT <- sapply(1:length(axes),function(i){c(first(R[[i]]),last(R[[i]])) + c(-1,1)*dr[i]/2}) # (ext,axes)
+    dEXT <- EXT[2,]-EXT[1,]
+  }
+  else if(!is.null(grid$dr) && !is.null(grid$extent)) # grid fully pre-specified... with possible conflict
+  { # resolution takes presidence over extent
+    dr <- grid$dr
+    EXT <- get.extent(grid$extent)
+    if(isTRUE(grid$align.to.origin)) { EXT <- t((round(t(EXT)/dr+1/2)-1/2)*dr) } # assume mostly correct
+
+    dEXT <- EXT[2,]-EXT[1,]
+    res <- round(dEXT/dr) # extent could be slightly off --- assuming mostly correct
+
+    # grid center
+    mu <- apply(EXT,2,mean)
+    # preserve dr
+    R <- lapply(1:length(axes),function(i){cseq(mu[i],n=res[i],by=dr[i])})
+    # correct extent
     EXT <- sapply(1:length(axes),function(i){c(first(R[[i]]),last(R[[i]])) + c(-1,1)*dr[i]/2})
     dEXT <- EXT[2,]-EXT[1,]
-  } # end grid
-  else # no grid locations specified
+  }
+  else if(!is.null(grid$extent)) # grid extent specified, but not resolution
   {
-    R <- get.telemetry(data,axes) # (times,dim)
-    n <- nrow(R) # (times)
+    # align.to.origin doesn't make sense without dr specified
+    EXT <- get.extent(grid$extent)
+    dEXT <- EXT[2,]-EXT[1,]
 
-    # now to find the necessary extent of our grid
+    if(is.null(dr)) { dr <- dEXT/res }
+    res <- ceiling(dEXT/dr)
+    dr <- dEXT/res # correct dr if necessary
+
+    R <- lapply(1:length(axes),function(i){seq(EXT[1,i]+dr[i]/2,EXT[2,i]-dr[i]/2,length.out=res[i])})
+  }
+  else if(!is.null(grid$dr)) # grid resolution specified, but not extent
+  {
+    dr <- grid$dr
+
+    R <- get.telemetry(data,axes) # (times,dim)
+    # minimum extent
+    if(is.null(EXT)) { EXT <- rbind( apply(R-dH,2,min) , apply(R+dH,2,max) ) } # (ext,dim) }
+    # align to origin if requested
+    if(isTRUE(grid$align.to.origin))
+    {
+      EXT[1,] <- (floor(EXT[1,]/dr+1/2)-1/2)*dr
+      EXT[2,] <- (ceiling(EXT[2,]/dr-1/2)+1/2)*dr
+    }
+
+    dEXT <- EXT[2,]-EXT[1,]
+    res <- ceiling(dEXT/dr)
+
+    # grid center
+    mu <- apply(EXT,2,mean)
+    # preserve dr
+    R <- lapply(1:length(axes),function(i){cseq(mu[i],n=res[i],by=dr[i])})
+    # correct extent
+    EXT <- sapply(1:length(axes),function(i){c(first(R[[i]]),last(R[[i]])) + c(-1,1)*dr[i]/2})
+    dEXT <- EXT[2,]-EXT[1,]
+  }
+  else # grid not specified at all
+  {
+    # align.to.origin doesn't make sense without dr
+    R <- get.telemetry(data,axes) # (times,dim)
+
     if(is.null(EXT)) { EXT <- rbind( apply(R-dH,2,min) , apply(R+dH,2,max) ) } # (ext,dim) }
     dEXT <- EXT[2,]-EXT[1,]
 
     # grid center
     mu <- apply(EXT,2,mean)
 
-    if(!is.null(grid$dr)) { dr <- grid$dr }
+    # complete suggestions
     if(is.null(dr)) { dr <- dEXT/res }
+    res <- ceiling(dEXT/dr)
+    dr <- dEXT/res
 
-    if(is.null(grid$align.to.origin) || !grid$align.to.origin)
-    {
-      res <- dEXT/dr
-
-      # half resolution
-      res <- ceiling(res/2+1)
-
-      # grid locations
-      R <- lapply(1:length(axes),function(i){ (-res[i]:res[i])*dr[i] + mu[i] } ) # (grid,dim)
-    }
-    else # align grid to origin
-    {
-      EXT <- t(t(EXT)/dr)
-      # round midpoints to nearest integer from origin
-      EXT[1,] <- floor(EXT[1,]+1/2) - 1/2
-      EXT[2,] <- ceiling(EXT[2,]-1/2) + 1/2
-      res <- round(EXT[2,]-EXT[1,])
-
-      R <- lapply(1:length(axes),function(i){dr[i]*seq(EXT[1,i]+1/2,EXT[2,i]-1/2,length.out=res[i])})
-      EXT <- t(t(EXT)*dr)
-      dEXT <- EXT[2,]-EXT[1,]
-    }
+    # grid locations
+    R <- lapply(1:length(axes),function(i){ seq(EXT[1,i]+dr[i]/2,EXT[2,i]-dr[i]/2,length.out=res[i]) } ) # (grid,dim)
   } # end no grid specification
 
   names(R) <- axes
@@ -591,7 +669,7 @@ kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=1,dr=NULL,EXT=NULL,g
   colnames(EXT) <- axes
   rownames(EXT) <- c('min','max')
   names(dEXT) <- axes
-  grid <- list(r=R,dH=dH,dr=dr,EXT=EXT,dEXT=dEXT,axes=axes)
+  grid <- list(r=R,dH=dH,dr=dr,extent=EXT,dEXT=dEXT,axes=axes)
   return(grid)
 }
 

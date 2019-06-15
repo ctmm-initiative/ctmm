@@ -35,11 +35,12 @@ akde(data,CTMM,VMM=NULL,debias=TRUE,weights=FALSE,smooth=TRUE,error=0.001,res=10
 
 When feeding in lists of \code{telemetry} and \code{ctmm} objects, all UDs will be calculated on the same grid. These UDs can be averaged with the \code{mean} command, however this is not an optimal way to calculate population ranges.
 
-If a \code{UD} or \code{raster} objects is supplied in the \code{grid} argument, then the estimate will be calculated on the same grid. Alternatively, a list grid arguments can be supplied, with any of the following components:
+If a \code{UD} or \code{raster} object is supplied in the \code{grid} argument, then the estimate will be calculated on the same grid. Alternatively, a list of grid arguments can be supplied, with any of the following components:
 \describe{
-\item{\code{r}}{A list with vectors \code{x} and \code{y} that define the grid.}
-\item{\code{dr}}{A vector setting the \code{x} and \code{y} cell widths in meters.}
-\item{\code{align.to.origin}}{Logical value indicating that cell midpoint locations are aligned to be an integer number of \code{dr} steps from the origin.}
+\item{\code{r}}{A list with vectors \code{x} and \code{y} that define the grid-cell midpoints.}
+\item{\code{dr}}{A vector setting the \code{x} and \code{y} cell widths in meters. Equivalent to \code{\link{res}} for \code{raster} objects.}
+\item{\code{extent}}{The \eqn{x}-\eqn{y} extent of the grid cells, formatted as from the output of \code{\link{extent}}.}
+\item{\code{align.to.origin}}{Logical value indicating that cell midpoint locations are aligned to be an integer number of \code{dr} steps from the projection origin.}
 }
 }
 
