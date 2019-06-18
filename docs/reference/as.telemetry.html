@@ -63,7 +63,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.6</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.7</span>
       </span>
     </div>
 
@@ -129,29 +129,39 @@
     </div>
 
     <pre class="usage"><span class='fu'>as.telemetry</span>(<span class='no'>object</span>,<span class='kw'>timeformat</span><span class='kw'>=</span><span class='st'>""</span>,<span class='kw'>timezone</span><span class='kw'>=</span><span class='st'>"UTC"</span>,<span class='kw'>projection</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>timeout</span><span class='kw'>=</span><span class='fl'>Inf</span>,<span class='kw'>na.rm</span><span class='kw'>=</span><span class='st'>"row"</span>,
-             <span class='kw'>mark.rm</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>drop</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='no'>...</span>)
+             <span class='kw'>mark.rm</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>keep</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>drop</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='no'>...</span>)
 
 <span class='co'># S3 method for character</span>
 <span class='fu'>as.telemetry</span>(<span class='no'>object</span>,<span class='kw'>timeformat</span><span class='kw'>=</span><span class='st'>""</span>,<span class='kw'>timezone</span><span class='kw'>=</span><span class='st'>"UTC"</span>,<span class='kw'>projection</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>timeout</span><span class='kw'>=</span><span class='fl'>Inf</span>,<span class='kw'>na.rm</span><span class='kw'>=</span><span class='st'>"row"</span>,
-             <span class='kw'>mark.rm</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>drop</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='no'>...</span>)
+             <span class='kw'>mark.rm</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>keep</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>drop</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='no'>...</span>)
 
 <span class='co'># S3 method for data.frame</span>
 <span class='fu'>as.telemetry</span>(<span class='no'>object</span>,<span class='kw'>timeformat</span><span class='kw'>=</span><span class='st'>""</span>,<span class='kw'>timezone</span><span class='kw'>=</span><span class='st'>"UTC"</span>,<span class='kw'>projection</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>timeout</span><span class='kw'>=</span><span class='fl'>Inf</span>,<span class='kw'>na.rm</span><span class='kw'>=</span><span class='st'>"row"</span>,
-             <span class='kw'>mark.rm</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>drop</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='no'>...</span>)
+             <span class='kw'>mark.rm</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>keep</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>drop</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='no'>...</span>)
 
 <span class='co'># S3 method for Move</span>
 <span class='fu'>as.telemetry</span>(<span class='no'>object</span>,<span class='kw'>timeformat</span><span class='kw'>=</span><span class='st'>""</span>,<span class='kw'>timezone</span><span class='kw'>=</span><span class='st'>"UTC"</span>,<span class='kw'>projection</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>timeout</span><span class='kw'>=</span><span class='fl'>Inf</span>,<span class='kw'>na.rm</span><span class='kw'>=</span><span class='st'>"row"</span>,
-             <span class='kw'>mark.rm</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>drop</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='no'>...</span>)
+             <span class='kw'>mark.rm</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>keep</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>drop</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='no'>...</span>)
 
 <span class='co'># S3 method for telemetry</span>
-<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/summary'>summary</a></span>(<span class='no'>object</span>,<span class='no'>...</span>)</pre>
+<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/summary'>summary</a></span>(<span class='no'>object</span>,<span class='no'>...</span>)
+
+<span class='fu'>head</span>(<span class='no'>x</span>,<span class='no'>...</span>)
+
+<span class='co'># S3 method for telemetry</span>
+<span class='fu'>head</span>(<span class='no'>x</span>,<span class='kw'>n</span><span class='kw'>=</span><span class='fl'>6L</span>,<span class='no'>...</span>)
+
+<span class='fu'>tail</span>(<span class='no'>x</span>,<span class='no'>...</span>)
+
+<span class='co'># S3 method for telemetry</span>
+<span class='fu'>tail</span>(<span class='no'>x</span>,<span class='kw'>n</span><span class='kw'>=</span><span class='fl'>6L</span>,<span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>object</th>
-      <td><p>A MoveBank CSV filename, MoveBank <code>data.frame</code> object, or <code>Move</code> object to coarce, or a <code>telemetry</code> object to summarize.</p></td>
+      <td><p>A MoveBank CSV filename, MoveBank <code>data.frame</code> object, or <code>Move</code> object to coerce, or a <code>telemetry</code> object to summarize.</p></td>
     </tr>
     <tr>
       <th>timeformat</th>
@@ -178,12 +188,24 @@
       <td><p>Delete Movebank manually marked outliers. Also see <code><a href='outlie.html'>outlie</a></code>.</p></td>
     </tr>
     <tr>
+      <th>keep</th>
+      <td><p>Retain additonal columns after coercion.</p></td>
+    </tr>
+    <tr>
       <th>drop</th>
       <td><p>Only return a <code>telemetry</code> object for one individual if <code>TRUE</code>. Always return a <code>list</code> of telemetry objects if <code>FALSE</code>.</p></td>
     </tr>
     <tr>
       <th>...</th>
       <td><p>Optional arguments to be fed to <code>fread</code> or <code><a href='https://www.rdocumentation.org/packages/utils/topics/read.table'>read.csv</a></code>, in the case of compressed files.</p></td>
+    </tr>
+    <tr>
+      <th>x</th>
+      <td><p><code>telemetry</code> object.</p></td>
+    </tr>
+    <tr>
+      <th>n</th>
+      <td><p>Number of rows to return, if positive, or number of rows to omit, if negative.</p></td>
     </tr>
     </table>
     
@@ -195,7 +217,7 @@ Global migrations that are not along one geodesic (locally straight line) will p
 Sufficient MoveBank columns include <code>individual.local.identifier</code> (or <code>tag.local.identifier</code>), <code>timestamp</code>, <code>location.long</code> and <code>location.lat</code>, while the optional Movebank columns include (E-OBS) <code>eobs.horizontal.accuracy.estimate</code>, (Telonics) <code>GPS.Horizontal.Error</code>, <code>GPS.HDOP</code>, (ARGOS) <code>Argos.orientation</code>, <code>Argos.semi.minor</code> and <code>Argos.semi.major</code> or <code>Argos.location.class</code>, etc..
 To have all columns detected and not overwrite eachother's information, <b>it is best to have only one tracking device model per file imported</b>.
 Multiple deployments on a single individual can be merged afterwards.</p>
-<p>The <code>GPS.HDOP</code> value requires the device's UERE value to be translated into telemetry errors. The UERE represents the RMS error given ideal (\(HDOP=1\)) satellite conditions. Therefore, if your device is purported to have an accuracy of 10 meters, then the UERE is likely around 10 meters. Consult your device manual and manufacturer for a specific value or see <code><a href='uere.html'>uere</a></code> for UERE calibration.</p>
+<p><!-- %The \code{GPS.HDOP} value requires the device's UERE value to be translated into telemetry errors. The UERE represents the RMS error given ideal (\eqn{HDOP=1}) satellite conditions. Therefore, if your device is purported to have an accuracy of 10 meters, then the UERE is likely around 10 meters. Consult your device manual and manufacturer for a specific value or see \code{\link{uere}} for UERE calibration. --></p>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 

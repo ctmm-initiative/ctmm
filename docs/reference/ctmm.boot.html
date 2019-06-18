@@ -32,7 +32,7 @@
 
 <meta property="og:title" content="Parametric bootstrap continuous-time movement models — ctmm.boot" />
 
-<meta property="og:description" content="This function allows the point estimates and confidence intervals of an initial estimated movement model to be improved by parametric boostrap,  as described in Fleming et al (2019)." />
+<meta property="og:description" content="This function allows the point estimates and confidence intervals of an initial estimated movement model to be improved by parametric boostrap, as described in Fleming et al (2019)." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -63,7 +63,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.6</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.7</span>
       </span>
     </div>
 
@@ -124,11 +124,12 @@
 
     <div class="ref-description">
     
-    <p>This function allows the point estimates and confidence intervals of an initial estimated movement model to be improved by parametric boostrap,  as described in Fleming et al (2019).</p>
+    <p>This function allows the point estimates and confidence intervals of an initial estimated movement model to be improved by parametric boostrap, as described in Fleming et al (2019).</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>ctmm.boot</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>method</span><span class='kw'>=</span><span class='no'>CTMM</span>$<span class='no'>method</span>,<span class='kw'>robust</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>error</span><span class='kw'>=</span><span class='fl'>0.01</span>,<span class='kw'>cores</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>trace</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>ctmm.boot</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>method</span><span class='kw'>=</span><span class='no'>CTMM</span>$<span class='no'>method</span>,<span class='kw'>AICc</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>iterate</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>robust</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>error</span><span class='kw'>=</span><span class='fl'>0.01</span>,
+          <span class='kw'>cores</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>trace</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -143,7 +144,15 @@
     </tr>
     <tr>
       <th>method</th>
-      <td><p>Fitting method(s) to use: <code>"ML"</code>, <code>"HREML"</code>, <code>"pREML"</code>, <code>"pHREML"</code>, or <code>"REML"</code>. See "Description" below.</p></td>
+      <td><p>Fitting method to use: <code>"ML"</code>, <code>"HREML"</code>, <code>"pREML"</code>, <code>"pHREML"</code>, or <code>"REML"</code>. See <code><a href='ctmm.fit.html'>ctmm.fit</a></code> for descriptions.</p></td>
+    </tr>
+    <tr>
+      <th>AICc</th>
+      <td><p>Run dual set of simulations to approximate AICc values via Kullback–Leibler divergence. Otherwise, only the AIC is updated.</p></td>
+    </tr>
+    <tr>
+      <th>iterate</th>
+      <td><p>Iteratively solve for the parameters such that the average estimate (of <code>method</code>) is that of the data, whereas with <code>iterate=FALSE</code> only the first-order correction is calculated from the initial estimate.</p></td>
     </tr>
     <tr>
       <th>robust</th>
@@ -163,17 +172,13 @@
     </tr>
     <tr>
       <th>...</th>
-      <td><p>Further arguments passed to <code>ctmm.fit</code>.</p></td>
+      <td><p>Further arguments passed to <code><a href='ctmm.fit.html'>ctmm.fit</a></code>.</p></td>
     </tr>
     </table>
     
-    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
-
-    <p><code>ctmm.boot</code> can leverage multiple estimators via the <code>method</code> argument (see <code><a href='ctmm.fit.html'>ctmm.fit</a></code>) and as described in Fleming et al (2019), though generally this is only useful if the specified estimators deviate substantially from each other realtive to the target <code>error</code>.</p>
-    
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A model fit object with relatively unbiased estimates of home-range area, location variance, and autocorrelation timescales (and more accurate CIs than <code>ctmm.fit</code>).</p>
+    <p>A model fit object with relatively unbiased estimates of location covariance, and autocorrelation timescales (and more accurate CIs than <code>ctmm.fit</code>). If <code>AICc=TRUE</code>, then, in addition to an updated <code>AICc</code> slot, the model fit object will also contain a <code>VAR.AICc</code> slot quantifying the numerical variance in the <code>AICc</code> estimate. This variance can be decreased by decreasing argument <code>error</code>.</p>
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
@@ -186,8 +191,6 @@
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
       
-      <li><a href="#details">Details</a></li>
-
       <li><a href="#value">Value</a></li>
 
       <li><a href="#see-also">See also</a></li>

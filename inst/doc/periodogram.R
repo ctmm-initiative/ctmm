@@ -18,10 +18,8 @@ SVF <- variogram(Gamba,res=3)
 GUESS <- ctmm.guess(Gamba,PROTO,variogram=SVF,interactive=FALSE)
 
 ## ------------------------------------------------------------------------
-# ctmm beta optimizer is more reliable here
-control <- list(method="pNewton")
 # CRAN policy limits to 2 processes (cores)
-FITS <- ctmm.select(Gamba,GUESS,verbose=TRUE,control=control,cores=2)
+FITS <- ctmm.select(Gamba,GUESS,verbose=TRUE,cores=2)
 
 ## ------------------------------------------------------------------------
 summary(FITS)

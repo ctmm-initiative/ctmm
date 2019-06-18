@@ -61,10 +61,8 @@ title("Detector Array")
 ## ------------------------------------------------------------------------
 # automated guestimates with circular covariance and calibrated errors
 GUESS <- ctmm.guess(turtle[[3]],CTMM=ctmm(error=TRUE),interactive=FALSE)
-# the beta optimizer is more reliable than the default optimizer
-control <- list(method='pNewton')
 # stepwise fitting # CRAN policy limits us to 2 cores
-FIT <- ctmm.select(turtle[[3]],GUESS,control=control,trace=TRUE,cores=2)
+FIT <- ctmm.select(turtle[[3]],GUESS,trace=TRUE,cores=2)
 summary(FIT)
 
 ## ------------------------------------------------------------------------
@@ -77,6 +75,6 @@ turtle <- lapply(turtle,function(t){ t[t$class=="3D",] })
 # cheat and use previous fit as initial guess
 GUESS$error <- 10 # 10 meter error guess
 # fit parameter estimates
-FIT <- ctmm.select(turtle[[3]],GUESS,control=control,trace=TRUE,cores=2)
+FIT <- ctmm.select(turtle[[3]],GUESS,trace=TRUE,cores=2)
 summary(FIT)
 

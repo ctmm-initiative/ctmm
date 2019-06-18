@@ -81,13 +81,10 @@ Potentially, the most complex model based on our prototype could have both circu
 We thereby conduct a model selection.
 
 ```{r}
-# ctmm beta optimizer is more reliable here
-control <- list(method="pNewton")
 # CRAN policy limits to 2 processes (cores)
-FITS <- ctmm.select(Gamba,GUESS,verbose=TRUE,control=control,cores=2)
+FITS <- ctmm.select(Gamba,GUESS,verbose=TRUE,cores=2)
 ```
 
-The non-default `control` list here specifies our prototype optimization code that has been tested to be faster and more accurate on this example.
 With `verbose=TRUE`, we obtain a list fitted `ctmm` objects, one for each relevant combination of effects, where the first element of that list is the preferred model.
 
 ```{r}

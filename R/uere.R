@@ -429,6 +429,7 @@ summary.UERE.list <- function(object,level=0.95,drop=TRUE,CI=FALSE,...)
 
     if(CI)
     {
+      # is N correct here for 1D and 2D ???
       TAB[[i]] <- sapply(1:DIM[2],function(j){ chisq.ci(Zsq[i,j],COV=VAR.Zsq[i,j]/N[i,j],level=level) }) # (3CIS,models)
       TAB[[i]] <- cbind(AIC[i,],t(TAB[[i]]))
       colnames(TAB[[i]]) <- c("\u0394AICc","(       ","Z[red]\u00B2","       )")

@@ -30,7 +30,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.6</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.7</span>
       </span>
     </div>
 
@@ -86,7 +86,7 @@
       <h1>Variograms and Model Selection</h1>
                         <h4 class="author">Christen H. Fleming and Justin M. Calabrese</h4>
             
-            <h4 class="date">2019-03-12</h4>
+            <h4 class="date">2019-06-17</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/ctmm-initiative/ctmm/blob/master/vignettes/variogram.Rmd"><code>vignettes/variogram.Rmd</code></a></small>
       <div class="hidden name"><code>variogram.Rmd</code></div>
@@ -231,24 +231,24 @@ SVF4 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocume
 ## 
 ## $DOF
 ##  mean  area speed 
-##  3527  3527     0 
+##  3527  3526     0 
 ## 
 ## $CI
 ##                               low       ML     high
-## area (square kilometers) 356.8253 368.9005 381.1739</code></pre>
+## area (square kilometers) 356.9248 369.0051 381.2837</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">M.OU &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(Cilla,m.ou)
 <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/summary">summary</a></span>(M.OU)</code></pre></div>
 <pre><code>## $name
 ## [1] "OU anisotropic"
 ## 
 ## $DOF
-##      mean      area     speed 
-##  6.122943 11.761743  0.000000 
+##     mean     area    speed 
+## 5.430229 8.231785 0.000000 
 ## 
 ## $CI
 ##                                 low        ML      high
-## area (square kilometers) 183.968161 358.81249 591.08179
-## τ[position] (days)         6.122653  14.31746  33.48051</code></pre>
+## area (square kilometers) 181.703264 414.86725 742.63019
+## τ[position] (days)         5.232246  16.55615  52.38784</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">M.OUF &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(Cilla,m.ouf)
 <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/summary">summary</a></span>(M.OUF)</code></pre></div>
 <pre><code>## $name
@@ -256,21 +256,21 @@ SVF4 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocume
 ## 
 ## $DOF
 ##       mean       area      speed 
-##   11.53638   22.45087 3445.42496 
+##   10.73354   18.13596 3445.13307 
 ## 
 ## $CI
-##                                 low        ML      high
-## area (square kilometers) 234.902077 372.85819 542.17207
-## τ[position] (days)         4.040848   6.93123  11.88908
-## τ[velocity] (minutes)     39.603630  42.10547  44.76536
-## speed (kilometers/day)    13.818921  14.05357  14.28817</code></pre>
+##                                 low         ML      high
+## area (square kilometers) 239.647390 403.458835 609.24126
+## τ[position] (days)         4.026011   7.505368  13.99165
+## τ[velocity] (minutes)     39.570325  42.069009  44.72547
+## speed (kilometers/day)    13.819957  14.054636  14.28926</code></pre>
 <p>Notice how tiny the (Gaussian) area uncertainty is in IID model <code>M.IID</code>. Let us look into some details of the models.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">FITS &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">IID=</span>M.IID,<span class="dt">OU=</span>M.OU,<span class="dt">OUF=</span>M.OUF)
 <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/summary">summary</a></span>(FITS)</code></pre></div>
-<pre><code>##         ΔAICc ΔRMSPE (m)  DOF[area]
-## OUF     0.000   68.07668   22.45087
-## OU   1565.211  208.89971   11.76174
-## IID 38112.285    0.00000 3527.00000</code></pre>
+<pre><code>##         ΔAICc ΔRMSPE (m)   DOF[area]
+## OUF     0.000   352.8536   18.135964
+## OU   1565.291   779.5549    8.231785
+## IID 38112.149     0.0000 3526.000000</code></pre>
 <p><code>AICc</code> is the (linearly) corrected Akaike information criteria. AIC balances likelihood against model complexity in a way that is good if we want to make optimal predictions. A lower AIC is better. Getting the AIC to go down by 5 is great, while getting the AIC to go down by 10 is awesome. Our AIC is going down by thousands.</p>
 <p>The fit parameter <code>DOF[mean]</code> is the number of degrees of freedom worth of data we have to estimate the stationary mean parameter, assuming that the model is correct. Notice that the IID model perceives thousands of independent data points, while the autocorrelated OU and OUF models only see a handful of independent data points. This is why the IID model produced tiny confidence intervals on the predicted (Gaussian) area.</p>
 </div>
@@ -278,13 +278,14 @@ SVF4 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocume
 <h2 class="hasAnchor">
 <a href="#maximum-likelihood-fitting-the-easy-way" class="anchor"></a>Maximum Likelihood Fitting the Easy Way</h2>
 <p>If you have a complex, hypothetical model in mind, say the OUF <code>m.ouf</code> as you would get from variogram fitting the easy way, then you can perform model selection more conveniently with the <code>ctmm.select</code> function. <code>ctmm.select</code> considers the initial guess (hypothesis) and then iterates this model to select the best model based upon an information criteria.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">FITZ &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.select</a></span>(Cilla,m.ouf,<span class="dt">verbose=</span><span class="ot">TRUE</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># CRAN policy limits us to 2 cores</span>
+FITZ &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.select</a></span>(Cilla,m.ouf,<span class="dt">verbose=</span><span class="ot">TRUE</span>,<span class="dt">cores=</span><span class="dv">2</span>)
 <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/summary">summary</a></span>(FITZ)</code></pre></div>
-<pre><code>##                      ΔAICc ΔRMSPE (km) DOF[area]
-## OUF anisotropic    0.00000    1.500741  22.45087
-## OUF isotropic     67.74847    1.617945  22.44579
-## OU anisotropic  1565.21096    1.641565  11.76174
-## OUf anisotropic 1864.01164    0.000000 348.07043</code></pre>
+<pre><code>##                     ΔAICc ΔRMSPE (km)  DOF[area]
+## OUF anisotropic    0.0000    1.776669  18.136018
+## OUF isotropic     67.7508    1.912066  17.912943
+## OU anisotropic  1565.2907    2.203373   8.231784
+## OUf anisotropic 1863.8799    0.000000 345.919684</code></pre>
 <!--Note that `level=1` is set here for demonstration purposes only, to attempt every nearest model no matter how unlikely it may seem.-->
 <p>The isotropic and anisotropic (<code>isotropic=FALSE</code>) flags correspond to circular and elliptical covariances respectively—an option we did not consider above. <!-- The Ornstein-Uhlenbeck-F (OUF) model is continuous in position and velocity (`M.OUF`),
 the Ornstein-Uhlenbeck (OU) model is continuous in position only (`M.OU`),

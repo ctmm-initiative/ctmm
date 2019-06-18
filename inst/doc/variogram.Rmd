@@ -217,7 +217,8 @@ The fit parameter `DOF[mean]` is the number of degrees of freedom worth of data 
 If you have a complex, hypothetical model in mind, say the OUF `m.ouf` as you would get from variogram fitting the easy way, then you can perform model selection more conveniently with the `ctmm.select` function. `ctmm.select` considers the initial guess (hypothesis) and then iterates this model to select the best model based upon an information criteria.
 
 ```{r}
-FITZ <- ctmm.select(Cilla,m.ouf,verbose=TRUE)
+# CRAN policy limits us to 2 cores
+FITZ <- ctmm.select(Cilla,m.ouf,verbose=TRUE,cores=2)
 summary(FITZ)
 ```
 

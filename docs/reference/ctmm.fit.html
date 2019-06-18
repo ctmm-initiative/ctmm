@@ -32,7 +32,7 @@
 
 <meta property="og:title" content="Specify, fit, and select continuous-time movement models — ctmm" />
 
-<meta property="og:description" content="These functions allow one to propose hypothethical movement models (with initial estimates), fit those models to the data, and select among those models via an information criteria.
+<meta property="og:description" content="These functions allow one to propose hypothetical movement models (with initial estimates), fit those models to the data, and select among those models via an information criteria.
 The fitting functions wrap around optim and ctmm.loglike to fit continuous-time movement models to 2D animal tracking data as described in Fleming et al (2014) and Fleming et al (2015), and Fleming et al (2017)." />
 <meta name="twitter:card" content="summary" />
 
@@ -64,7 +64,7 @@ The fitting functions wrap around optim and ctmm.loglike to fit continuous-time 
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.6</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.7</span>
       </span>
     </div>
 
@@ -125,7 +125,7 @@ The fitting functions wrap around optim and ctmm.loglike to fit continuous-time 
 
     <div class="ref-description">
     
-    <p>These functions allow one to propose hypothethical movement models (with initial estimates), fit those models to the data, and select among those models via an information criteria.
+    <p>These functions allow one to propose hypothetical movement models (with initial estimates), fit those models to the data, and select among those models via an information criteria.
 The fitting functions wrap around <code>optim</code> and <code>ctmm.loglike</code> to fit continuous-time movement models to 2D animal tracking data as described in Fleming et al (2014) and Fleming et al (2015), and Fleming et al (2017).</p>
     
     </div>
@@ -135,7 +135,7 @@ The fitting functions wrap around <code>optim</code> and <code>ctmm.loglike</cod
 
 <span class='fu'>ctmm.loglike</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>REML</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>profile</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>zero</span><span class='kw'>=</span><span class='fl'>0</span>,<span class='kw'>verbose</span><span class='kw'>=</span><span class='fl'>FALSE</span>)
 
-<span class='fu'>ctmm.fit</span>(<span class='no'>data</span>,<span class='kw'>CTMM</span><span class='kw'>=</span><span class='fu'>ctmm</span>(),<span class='kw'>method</span><span class='kw'>=</span><span class='st'>"ML"</span>,<span class='kw'>COV</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>control</span><span class='kw'>=</span><span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/list'>list</a></span>(),<span class='kw'>trace</span><span class='kw'>=</span><span class='fl'>FALSE</span>)
+<span class='fu'>ctmm.fit</span>(<span class='no'>data</span>,<span class='kw'>CTMM</span><span class='kw'>=</span><span class='fu'>ctmm</span>(),<span class='kw'>method</span><span class='kw'>=</span><span class='st'>"pHREML"</span>,<span class='kw'>COV</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>control</span><span class='kw'>=</span><span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/list'>list</a></span>(),<span class='kw'>trace</span><span class='kw'>=</span><span class='fl'>FALSE</span>)
 
 <span class='fu'>ctmm.select</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>verbose</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>IC</span><span class='kw'>=</span><span class='st'>"AICc"</span>,<span class='kw'>MSPE</span><span class='kw'>=</span><span class='st'>"position"</span>,<span class='kw'>trace</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>cores</span><span class='kw'>=</span><span class='fl'>1</span>,
             <span class='no'>...</span>)</pre>
@@ -205,7 +205,7 @@ The fitting functions wrap around <code>optim</code> and <code>ctmm.loglike</cod
     </tr>
     <tr>
       <th>control</th>
-      <td><p>An optional argument list with standardized numerical arguments.</p></td>
+      <td><p>An optional argument list for the optimizer.</p></td>
     </tr>
     <tr>
       <th>trace</th>
@@ -236,15 +236,15 @@ The fitting functions wrap around <code>optim</code> and <code>ctmm.loglike</cod
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>Model fitting and selection first requires a prototype model with guesstimated parameters (i.e., Brownian motion with a particular diffusion rate).
-The initial <code>ctmm</code> parameter guess can be generated by the output of <code>ctmm.guess</code>, <code>variogram.fit</code> or manually specified with the function <code>ctmm(...)</code>, where the argument <code>tau</code> is explained below and additonal model options described in <code>vignette("ctmm")</code>.</p>
+The initial <code>ctmm</code> parameter guess can be generated by the output of <code>ctmm.guess</code>, <code>variogram.fit</code> or manually specified with the function <code>ctmm(...)</code>, where the argument <code>tau</code> is explained below and additional model options described in <code>vignette("ctmm")</code>.</p>
 <p>By default, <code>tau</code> (\(\tau\)) is an ordered array of autocorrelation timescales.
 If <code>length(tau)==0</code>, then an IID bi-variate Gaussian model is fit to the data.
 If <code>length(tau)==1</code>, then an Ornstein-Uhlenbeck (OU) model (Brownian motion restricted to a finite home range) is fit the data, where <code>tau</code> is the position autocorrelation timescale. <code>tau=Inf</code> then yields Brownian motion (BM).
 If <code>length(tau)==2</code>, then the OUF model (continuous-velocity motion restricted to a finite home range) is fit to the data, where <code>tau[1]</code> is again the position autocorrelation timescale and <code>tau[2]</code> is the velocity autocorrelation timescale. <code>tau[1]=Inf</code> then yields integrated Ornstein-Uhlenbeck (IOU) motion, which is a spatially unrestricted continuous-velocity process.</p>
 <p>Two new models were introduced in ctmm version 0.5.2 for the case of <code>tau[1]==tau[2]</code>, which can happen with short tracks of data. When <code>tau[1]==tau[2]</code> and <code>omega==0</code>, the model is categorized as OUf---a special case of OUF---and the two <code>tau</code> parameters are treated as identical. On the other hand, when <code>tau[1]==tau[2]</code> and <code>omega&gt;0</code>, an oscillatory model is implemented, which we refer to as OU\(\Omega\).</p>
 <p>The potential fitting methods---maximum likelihood (<code>ML</code>), residual maximum likelihood (<code>REML</code>), perturbative REML (<code>pREML</code>), hybrid REML (<code>HREML</code>), and perturbative hybrid REML (<code>pHREML</code>)---are described in Fleming et al (2019). In general, <code>pHREML</code> is the best method, though when parameter estimates lie near boundaries it can fail, in which case <code>ctmm.fit</code> will fall back to <code>HREML</code>, as reported by the <code>method</code> slot of the resulting fit object.</p>
-<p>The <code>control</code> list can take the folowing arguments, with defaults shown:</p><dl class='dl-horizontal'>
-<dt><code>method="Nelder-Mead"</code></dt><dd><p><code><a href='https://www.rdocumentation.org/packages/stats/topics/optim'>optim</a></code> method for multiple parameters.</p></dd>
+<p>The <code>control</code> list can take the following arguments, with defaults shown:</p><dl class='dl-horizontal'>
+<dt><code>method="pNewton"</code></dt><dd><p>The partial-Newton method of <code><a href='optimizer.html'>optimizer</a></code> is default. See <code><a href='https://www.rdocumentation.org/packages/stats/topics/optim'>optim</a></code> for alternative methods in multiple dimensions.</p></dd>
 <dt><code>precision=1/2</code></dt><dd><p>Fraction of machine numerical precision to target in the maximized likelihood value. MLEs will necessarily have half this precision. On most computers, <code>precision=1</code> is approximately 16 decimal digits of precision for the likelihood and 8 for the MLEs.</p></dd>
 <dt><code>maxit=.Machine$integer.max</code></dt><dd><p>Maximum number of iterations allowed for optimization.</p></dd>
 </dl>
@@ -284,8 +284,7 @@ Kálmán filters for continuous-time movement models.
     
     <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
 
-    <p>The default <code><a href='https://www.rdocumentation.org/packages/stats/topics/optim'>optim</a></code> method here is <code>"Nelder-Mead"</code> with the largest allowable number of maximum iterations. Annecdotally, the faster <code>"BFGS"</code> and <code>"L-BFGS-B"</code> methods often perform poorly on these types of problems.
-However, Nelder Mead is not ideal and you may want to attempt a second fit, using the first fit as its initial guess.</p>
+    <p>The default optimization method in <code>ctmm</code> v0.5.7 and above is <code><a href='optimizer.html'>optimizer</a></code>'s <code>"pNewton"</code>. Annecdotally, on these problems, <code><a href='optimizer.html'>optimizer</a></code>'s <code>pNewton</code> method generally outperforms <code><a href='https://www.rdocumentation.org/packages/stats/topics/optim'>optim</a></code>'s <code>"Nelder-Mead"</code>, which generally outperforms <code><a href='https://www.rdocumentation.org/packages/stats/topics/optim'>optim</a></code>'s <code>"BFGS"</code> and <code>"L-BFGS-B"</code> methods. With default arguments, <code>"pNewton"</code> is about half as fast as <code>"Nelder-Mead"</code>, but is resolving about twice as much numerical precision.</p>
 <p>The AICs/BICs of endlessly diffusing models like BM and IOU cannot be easily compared to the AICs/BICs of range resident models like bivariate Gaussian, OU, and OUF, as their joint likelihood functions are infinitely different. Endlessly diffusing models have to be conditioned off of an initial state, which we derive in <code>ctmm</code> by taking the large range limit of a range-restricted process. I.e., BM is the limit OU(<code>Inf</code>) and IOU(<code>tau</code>) is the limit OUF(<code>Inf</code>,<code>tau</code>). Using comparable likelihood functions gives up statistical efficiency and the objective prior. Moreover, comparing conditional likelihoods---with the objective prior taken from the joint likelihood---does not appear to select the true model with a likelihood ratio test. Therefore, there does not appear to be a simple approach for selecting between range resident and endlessly diffusing movement models.</p>
 <p>Prior to v0.3.6, the univariate AICc formula was (mis)used, with the full parameter count treated as degrees of freedom in the mean. As of v.0.3.6, the mean and autocovariance parameters are treated separately in the approximate multivariate AICc formula (Burnham &amp; Anderson, Eq. 7.91). Still, this improved formula is only exact for IID data.</p>
 <p>Prior to v0.3.2, <code>ctmm.select</code> would consider every possible model.
@@ -311,14 +310,14 @@ This is no longer feasible with current versions of <code>ctmm</code>, as the nu
 #&gt; 
 #&gt; $DOF
 #&gt;       mean       area      speed 
-#&gt;   11.56881   22.74287 3445.15441 
+#&gt;   10.73354   18.13598 3445.13307 
 #&gt; 
 #&gt; $CI
 #&gt;                                 low         ML      high
-#&gt; area (square kilometers) 234.881419 371.589536 539.14881
-#&gt; t[position] (days)         4.047035   6.909876  11.79787
-#&gt; t[velocity] (minutes)     39.590608  42.091315  44.74998
-#&gt; speed (kilometers/day)    13.819031  14.053693  14.28830
+#&gt; area (square kilometers) 239.647397 403.458772 609.24110
+#&gt; τ[position] (days)         4.026012   7.505366  13.99164
+#&gt; τ[velocity] (minutes)     39.570325  42.069009  44.72547
+#&gt; speed (kilometers/day)    13.819957  14.054636  14.28926
 #&gt; </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">

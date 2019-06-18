@@ -30,7 +30,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.6</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.7</span>
       </span>
     </div>
 
@@ -86,7 +86,7 @@
       <h1>Telemetry error</h1>
                         <h4 class="author">Christen H. Fleming</h4>
             
-            <h4 class="date">2019-03-12</h4>
+            <h4 class="date">2019-06-17</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/ctmm-initiative/ctmm/blob/master/vignettes/error.Rmd"><code>vignettes/error.Rmd</code></a></small>
       <div class="hidden name"><code>error.Rmd</code></div>
@@ -195,10 +195,8 @@ turtle[[<span class="dv">3</span>]] &lt;-<span class="st"> </span>turtle[[<span 
 <p>For calibrated errors, we have to set <code>error=TRUE</code> in the model guess to fit with telemetry error accounted for.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># automated guestimates with circular covariance and calibrated errors</span>
 GUESS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.fit.html">ctmm.guess</a></span>(turtle[[<span class="dv">3</span>]],<span class="dt">CTMM=</span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">error=</span><span class="ot">TRUE</span>),<span class="dt">interactive=</span><span class="ot">FALSE</span>)
-<span class="co"># the beta optimizer is more reliable than the default optimizer</span>
-control &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">method=</span><span class="st">'pNewton'</span>)
 <span class="co"># stepwise fitting # CRAN policy limits us to 2 cores</span>
-FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.select</a></span>(turtle[[<span class="dv">3</span>]],GUESS,<span class="dt">control=</span>control,<span class="dt">trace=</span><span class="ot">TRUE</span>,<span class="dt">cores=</span><span class="dv">2</span>)</code></pre></div>
+FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.select</a></span>(turtle[[<span class="dv">3</span>]],GUESS,<span class="dt">trace=</span><span class="ot">TRUE</span>,<span class="dt">cores=</span><span class="dv">2</span>)</code></pre></div>
 <pre><code>## * Fitting model OUF isotropic error.</code></pre>
 <pre><code>## * Fitting models OUF anisotropic error.</code></pre>
 <pre><code>## * Fitting models OU anisotropic error, OUf anisotropic error.</code></pre>
@@ -208,13 +206,13 @@ FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fi
 ## [1] "OU anisotropic error"
 ## 
 ## $DOF
-##     mean     area    speed 
-## 14.90652 28.89106  0.00000 
+##    mean    area   speed 
+## 14.0105 24.1514  0.0000 
 ## 
 ## $CI
-##                          low        ML      high
-## area (hectares)    13.365481 19.973555 27.887939
-## τ[position] (days)  3.263703  5.272275  8.516977</code></pre>
+##                          low       ML     high
+## area (hectares)    13.672701 21.30649 30.60639
+## τ[position] (days)  3.294528  5.63697  9.64491</code></pre>
 <p><code>trace=TRUE</code> allows us to see the models considered. <code>verbose=TRUE</code> would save each model.</p>
 </div>
 <div id="fitting-with-uncalibrated-data" class="section level3">
@@ -229,7 +227,7 @@ turtle &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocu
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># cheat and use previous fit as initial guess</span>
 GUESS<span class="op">$</span>error &lt;-<span class="st"> </span><span class="dv">10</span> <span class="co"># 10 meter error guess</span>
 <span class="co"># fit parameter estimates</span>
-FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.select</a></span>(turtle[[<span class="dv">3</span>]],GUESS,<span class="dt">control=</span>control,<span class="dt">trace=</span><span class="ot">TRUE</span>,<span class="dt">cores=</span><span class="dv">2</span>)</code></pre></div>
+FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.select</a></span>(turtle[[<span class="dv">3</span>]],GUESS,<span class="dt">trace=</span><span class="ot">TRUE</span>,<span class="dt">cores=</span><span class="dv">2</span>)</code></pre></div>
 <pre><code>## * Fitting model OUF isotropic error.</code></pre>
 <pre><code>## * Fitting models OUF anisotropic error.</code></pre>
 <pre><code>## * Fitting models OU anisotropic error, OUf anisotropic error.</code></pre>
@@ -240,13 +238,13 @@ FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fi
 ## 
 ## $DOF
 ##     mean     area    speed 
-## 13.73097 26.50325  0.00000 
+## 12.83004 21.87085  0.00000 
 ## 
 ## $CI
-##                          low        ML      high
-## area (hectares)    12.735711 19.408989 27.465700
-## τ[position] (days)  3.401556  5.758166  9.747442
-## error (meters)      0.000000  8.761909 66.871824</code></pre>
+##                          low        ML     high
+## area (hectares)    13.020972 20.809256 30.39388
+## τ[position] (days)  3.416684  6.198589 11.24556
+## error (meters)      0.000000  8.784082 66.94771</code></pre>
 <p>Here, fitting the UERE simultaneously with the movement model produced a consistent result. This will not always be the case.</p>
 </div>
 </div>

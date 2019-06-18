@@ -23,7 +23,7 @@
 
 \S4method{projection}{list}(x,asText=TRUE)
 
-\S4method{projection}{NULL}(x,asText=TRUE)
+%\S4method{projection}{NULL}(x,asText=TRUE)
 
 \S4method{projection}{telemetry}(x) <- value
 

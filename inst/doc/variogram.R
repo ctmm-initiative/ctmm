@@ -82,7 +82,8 @@ FITS <- list(IID=M.IID,OU=M.OU,OUF=M.OUF)
 summary(FITS)
 
 ## ------------------------------------------------------------------------
-FITZ <- ctmm.select(Cilla,m.ouf,verbose=TRUE)
+# CRAN policy limits us to 2 cores
+FITZ <- ctmm.select(Cilla,m.ouf,verbose=TRUE,cores=2)
 summary(FITZ)
 
 ## ----  fig.show='hold'---------------------------------------------------

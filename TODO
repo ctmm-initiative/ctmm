@@ -1,5 +1,4 @@
 PRIORITY
-* test occurrence, Gaussian plot
 * conditional encounter density estimation: p_E(x) \propto p_1(x)*p_2(x) (Shauhin et al)
 * outlie crashes on Inf-VAR
 * uere(data) <- 10 in vignette

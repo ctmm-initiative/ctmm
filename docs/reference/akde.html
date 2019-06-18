@@ -63,7 +63,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.6</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.7</span>
       </span>
     </div>
 
@@ -128,13 +128,8 @@
     
     </div>
 
-    <pre class="usage"><span class='fu'>akde</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>VMM</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>debias</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>smooth</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>error</span><span class='kw'>=</span><span class='fl'>0.001</span>,<span class='kw'>res</span><span class='kw'>=</span><span class='fl'>10</span>,<span class='kw'>grid</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='no'>...</span>)
-
-<span class='co'># S3 method for telemetry</span>
-<span class='fu'>akde</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>VMM</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>debias</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>smooth</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>error</span><span class='kw'>=</span><span class='fl'>0.001</span>,<span class='kw'>res</span><span class='kw'>=</span><span class='fl'>10</span>,<span class='kw'>grid</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='no'>...</span>)
-
-<span class='co'># S3 method for list</span>
-<span class='fu'>akde</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>VMM</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>debias</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>smooth</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>error</span><span class='kw'>=</span><span class='fl'>0.001</span>,<span class='kw'>res</span><span class='kw'>=</span><span class='fl'>10</span>,<span class='kw'>grid</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='no'>...</span>)
+    <pre class="usage"><span class='fu'>akde</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>VMM</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>debias</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>weights</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>smooth</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>error</span><span class='kw'>=</span><span class='fl'>0.001</span>,<span class='kw'>res</span><span class='kw'>=</span><span class='fl'>10</span>,
+     <span class='kw'>grid</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='no'>...</span>)
 
 <span class='co'># S3 method for UD</span>
 <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/mean'>mean</a></span>(<span class='no'>x</span>,<span class='no'>...</span>)</pre>
@@ -163,6 +158,10 @@
       <td><p>"Smooth" out errors from the data.</p></td>
     </tr>
     <tr>
+      <th>weights</th>
+      <td><p>Optimally weight the data to account for temporal sampling bias (See <code><a href='bandwidth.html'>bandwidth</a></code> for details).</p></td>
+    </tr>
+    <tr>
       <th>error</th>
       <td><p>Target probability error.</p></td>
     </tr>
@@ -172,11 +171,11 @@
     </tr>
     <tr>
       <th>grid</th>
-      <td><p>Optional grid specification with columns labeled <code>x</code> and <code>y</code>. Not yet supported.</p></td>
+      <td><p>Optional grid specification via <code>raster</code>, <code>UD</code>, or list of arguments (See `Details' below).</p></td>
     </tr>
     <tr>
       <th>...</th>
-      <td><p>Arguments passed to all instances of <code><a href='bandwidth.html'>bandwidth</a></code>, such as <code>weights</code>.</p></td>
+      <td><p>Arguments passed to all instances of <code><a href='bandwidth.html'>bandwidth</a></code>.</p></td>
     </tr>
     <tr>
       <th>x</th>
@@ -186,8 +185,14 @@
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>For weighted AKDE, please note additional <code>...</code> arguments passed to <code><a href='bandwidth.html'>bandwidth</a></code> and the <code>weights=TRUE</code> argument, specifically.</p>
+    <p>For weighted AKDE, please note additional <code>...</code> arguments passed to <code><a href='bandwidth.html'>bandwidth</a></code>.</p>
 <p>When feeding in lists of <code>telemetry</code> and <code>ctmm</code> objects, all UDs will be calculated on the same grid. These UDs can be averaged with the <code>mean</code> command, however this is not an optimal way to calculate population ranges.</p>
+<p>If a <code>UD</code> or <code>raster</code> object is supplied in the <code>grid</code> argument, then the estimate will be calculated on the same grid. Alternatively, a list of grid arguments can be supplied, with any of the following components:</p><dl class='dl-horizontal'>
+<dt><code>r</code></dt><dd><p>A list with vectors <code>x</code> and <code>y</code> that define the grid-cell midpoints.</p></dd>
+<dt><code>dr</code></dt><dd><p>A vector setting the <code>x</code> and <code>y</code> cell widths in meters. Equivalent to <code>res</code> for <code>raster</code> objects.</p></dd>
+<dt><code>extent</code></dt><dd><p>The \(x\)-\(y\) extent of the grid cells, formatted as from the output of <code>extent</code>.</p></dd>
+<dt><code>align.to.origin</code></dt><dd><p>Logical value indicating that cell midpoint locations are aligned to be an integer number of <code>dr</code> steps from the projection origin.</p></dd>
+</dl>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 

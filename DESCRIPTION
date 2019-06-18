@@ -37,4 +37,4 @@ Description: Functions for identifying, fitting, and applying continuous-space, 
 License: GPL-3
 VignetteBuilder: knitr
 NeedsCompilation: no
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
