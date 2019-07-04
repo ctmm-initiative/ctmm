@@ -1,13 +1,15 @@
-ctmm 0.5.7 (2019-06-14)
+ctmm 0.5.7 (2019-07-03)
 ================
 
   * new function optimizer
   
   * 'pNewton' now the default optimization method
   
-  * 'pHREML' now the default estimator
+  * 'pHREML' now the default estimator & all CI names updated
   
   * grid argument now supported in akde and occurrence methods
+  
+  * new buffer argument in occurrence
   
   * head, tail methods for telemetry objects
 
@@ -18,6 +20,8 @@ ctmm 0.5.7 (2019-06-14)
   * bugfix in plot.UD gridlines
   
   * stability fix in ctmm.fit for BM/IOU models
+  
+  * AICc formulas fixed for tiny n
   
   * minor enhancements to cleave function
   

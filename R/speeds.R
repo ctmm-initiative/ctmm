@@ -60,7 +60,7 @@ speeds.slow <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,prior=FALS
   # bad return value
   INF <- array(c(0,Inf,Inf),c(3,n))
   INF <- t(INF)
-  colnames(INF) <- c("low","ML","high")
+  colnames(INF) <- NAMES.CI
 
   DOF <- summary(CTMM)$DOF['speed']
   if(!DOF)
@@ -181,7 +181,7 @@ speeds.slow <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,prior=FALS
   {
     alpha <- (1-level)/2
     CI <- vapply(1:nrow(SPEEDS),function(i){stats::quantile(SPEEDS[i,],c(alpha,0.5,1-alpha))},numeric(3)) # (3,t)
-    rownames(CI) <- c("low","ML","high")
+    rownames(CI) <- NAMES.CI
   }
   CI <- t(CI)
 

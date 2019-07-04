@@ -393,6 +393,7 @@ akde.bias <- function(CTMM,H,lag,DOF,weights)
 homerange <- function(data,CTMM,method="AKDE",...)
 { akde(data,CTMM,...) }
 
+
 # AKDE single or list
 # (C) C.H. Fleming (2016-2019)
 # (C) Kevin Winner & C.H. Fleming (2016)
@@ -539,12 +540,15 @@ kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=NULL,dr=NULL,EXT=NUL
     {
       if(length(dim(grid))==2) # assuming extent
       { grid <- list(extent=grid) }
-      else if(length(grid)==length(axes)) # assuming dr
+      else if(length(grid)==1 || length(grid)==length(axes)) # assuming dr
       { grid <- list(dr=grid) }
       else
       { stop("Malformed grid argument.") }
     }
   }
+
+  # recycle resolution if necessary
+  if("dr" %in% names(grid)) { grid$dr <- array(grid$dr,length(axes)); names(grid$dr) <- axes }
 
   # format extents canonically
   get.extent <- function(EXT)
@@ -565,8 +569,8 @@ kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=NULL,dr=NULL,EXT=NUL
     return(mu + n*by)
   }
 
-  # specify grid
-  if(class(grid)=="RasterLayer") # grid defined by raster
+  ### SPECIFY GRID ###
+  if(class(grid)=="RasterLayer") ### grid defined by raster ###
   {
     EXT <- raster::extent(grid)
     EXT <- cbind( c(EXT@xmin,EXT@xmax) , c(EXT@ymin,EXT@ymax) )
@@ -578,7 +582,7 @@ kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=NULL,dr=NULL,EXT=NUL
     # grid locations
     R <- list(x=raster::xFromCol(grid),y=rev(raster::yFromRow(grid)))
   } # end raster
-  else if(!is.null(grid$r)) # grid fully pre-specified
+  else if(!is.null(grid$r)) ### grid fully pre-specified ###
   {
     R <- grid$r
     # UD object will also have dr
@@ -587,10 +591,10 @@ kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=NULL,dr=NULL,EXT=NUL
     else
     { dr <- sapply(R,function(r){mean(diff(r))}) }
 
-    EXT <- sapply(1:length(axes),function(i){c(first(R[[i]]),last(R[[i]])) + c(-1,1)*dr[i]/2}) # (ext,axes)
-    dEXT <- EXT[2,]-EXT[1,]
+    #EXT <- sapply(1:length(axes),function(i){c(first(R[[i]]),last(R[[i]])) + c(-1,1)*dr[i]/2}) # (ext,axes)
+    #dEXT <- EXT[2,]-EXT[1,]
   }
-  else if(!is.null(grid$dr) && !is.null(grid$extent)) # grid fully pre-specified... with possible conflict
+  else if(!is.null(grid$dr) && !is.null(grid$extent)) ### grid fully pre-specified... with possible conflict ###
   { # resolution takes presidence over extent
     dr <- grid$dr
     EXT <- get.extent(grid$extent)
@@ -604,10 +608,10 @@ kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=NULL,dr=NULL,EXT=NUL
     # preserve dr
     R <- lapply(1:length(axes),function(i){cseq(mu[i],n=res[i],by=dr[i])})
     # correct extent
-    EXT <- sapply(1:length(axes),function(i){c(first(R[[i]]),last(R[[i]])) + c(-1,1)*dr[i]/2})
-    dEXT <- EXT[2,]-EXT[1,]
+    #EXT <- sapply(1:length(axes),function(i){c(first(R[[i]]),last(R[[i]])) + c(-1,1)*dr[i]/2})
+    #dEXT <- EXT[2,]-EXT[1,]
   }
-  else if(!is.null(grid$extent)) # grid extent specified, but not resolution
+  else if(!is.null(grid$extent)) ### grid extent specified, but not resolution ###
   {
     # align.to.origin doesn't make sense without dr specified
     EXT <- get.extent(grid$extent)
@@ -618,8 +622,8 @@ kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=NULL,dr=NULL,EXT=NUL
     dr <- dEXT/res # correct dr if necessary
 
     R <- lapply(1:length(axes),function(i){seq(EXT[1,i]+dr[i]/2,EXT[2,i]-dr[i]/2,length.out=res[i])})
-  }
-  else if(!is.null(grid$dr)) # grid resolution specified, but not extent
+  } ### end grid extent specified ###
+  else if(!is.null(grid$dr)) ### grid resolution specified, but not extent ###
   {
     dr <- grid$dr
 
@@ -639,12 +643,13 @@ kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=NULL,dr=NULL,EXT=NUL
     # grid center
     mu <- apply(EXT,2,mean)
     # preserve dr
-    R <- lapply(1:length(axes),function(i){cseq(mu[i],n=res[i],by=dr[i])})
+    # add one cell buffer on all sides for occurrence with zero-error IID models
+    R <- lapply(1:length(axes),function(i){cseq(mu[i],n=res[i]+2,by=dr[i])})
     # correct extent
-    EXT <- sapply(1:length(axes),function(i){c(first(R[[i]]),last(R[[i]])) + c(-1,1)*dr[i]/2})
-    dEXT <- EXT[2,]-EXT[1,]
-  }
-  else # grid not specified at all
+    #EXT <- sapply(1:length(axes),function(i){c(first(R[[i]]),last(R[[i]])) + c(-1,1)*dr[i]/2})
+    #dEXT <- EXT[2,]-EXT[1,]
+  } ### end grid resolution specified ###
+  else ### grid not specified at all ###
   {
     # align.to.origin doesn't make sense without dr
     R <- get.telemetry(data,axes) # (times,dim)
@@ -661,15 +666,18 @@ kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=NULL,dr=NULL,EXT=NUL
     dr <- dEXT/res
 
     # grid locations
-    R <- lapply(1:length(axes),function(i){ seq(EXT[1,i]+dr[i]/2,EXT[2,i]-dr[i]/2,length.out=res[i]) } ) # (grid,dim)
-  } # end no grid specification
+    # add one cell buffer on all sides for occurrence with zero-error IID models
+    R <- lapply(1:length(axes),function(i){ seq(EXT[1,i]-dr[i]/2,EXT[2,i]+dr[i]/2,length.out=res[i]+2) } ) # (grid,dim)
+  } ### end not grid specification at all ###
+  ### END SPECIFY GRID ###
 
   names(R) <- axes
   names(dr) <- axes
-  colnames(EXT) <- axes
-  rownames(EXT) <- c('min','max')
-  names(dEXT) <- axes
-  grid <- list(r=R,dH=dH,dr=dr,extent=EXT,dEXT=dEXT,axes=axes)
+  #colnames(EXT) <- axes
+  #rownames(EXT) <- c('min','max')
+  #names(dEXT) <- axes
+  #grid <- list(r=R,dH=dH,dr=dr,extent=EXT,dEXT=dEXT,axes=axes)
+  grid <- list(r=R,dH=dH,dr=dr,axes=axes)
   return(grid)
 }
 
@@ -718,11 +726,11 @@ kde <- function(data,H,axes=c("x","y"),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr
     SUB <- lapply(1:length(i1),function(d){ i1[d]:i2[d] })
 
     # I can't figure out how to do this in one line
-    if(length(SUB)==1)
+    if(length(SUB)==1) # 1D
     { PMF[SUB[[1]]] <- PMF[SUB[[1]]] + W[i]*pnorm1(R[[1]][SUB[[1]]]-r[i,1],H[i,,],dr,alpha) }
-    else if(length(SUB)==2)
+    else if(length(SUB)==2) # 2D
     { PMF[SUB[[1]],SUB[[2]]] <- PMF[SUB[[1]],SUB[[2]]] + W[i]*pnorm2(R[[1]][SUB[[1]]]-r[i,1],R[[2]][SUB[[2]]]-r[i,2],H[i,,],dr,alpha) }
-    else if(length(SUB)==3)
+    else if(length(SUB)==3) # 3D
     { PMF[SUB[[1]],SUB[[2]],SUB[[3]]] <- PMF[SUB[[1]],SUB[[2]],SUB[[3]]] + W[i]*pnorm3(R[[1]][SUB[[1]]]-r[i,1],R[[2]][SUB[[2]]]-r[i,2],R[[3]][SUB[[3]]]-r[i,3],H[i,,],dr,alpha) }
   }
 
@@ -988,23 +996,28 @@ pnorm2 <- function(X,Y,sigma,dr,alpha=0.001)
 
     for(i in 1:(length(z.cross)-1))
     {
-      # what cell is this line segment in?
+      # what cell(s) is the line segment in?
       z.mid <- mean(z.cross[i:(i+1)])
 
       x <- sqrt(s)*v[1]*z.mid
       y <- sqrt(s)*v[2]*z.mid
 
-      r <- abs(x-X) <= dx/2
-      c <- abs(y-Y) <= dy/2
+      r <- abs(x-X)
+      c <- abs(y-Y)
+      # the closest point(s)
+      r <- r==min(r)
+      c <- c==min(c)
 
       cdf[r,c] <- (stats::pnorm(z.cross[i+1])-stats::pnorm(z.cross[i]))/(sum(r)*sum(c))
     }
   }
   else if(ZERO==2) # point degeneracy
   {
+    r <- abs(X)
+    c <- abs(Y)
     # the closest point(s)
-    r <- abs(X) <= dx/2
-    c <- abs(Y) <= dy/2
+    r <- r==min(r)
+    c <- c==min(c)
 
     # increment the closest point(s)
     cdf[r,c] <- cdf[r,c] + 1/(sum(r)*sum(c))
@@ -1089,7 +1102,7 @@ CI.UD <- function(object,level.UD=0.95,level=0.95,P=FALSE)
 {
   if(is.null(object$DOF.area) && P)
   {
-    names(level.UD) <- "ML"
+    names(level.UD) <- NAMES.CI[2] # point estimate
     return(level.UD)
   }
 
@@ -1097,13 +1110,13 @@ CI.UD <- function(object,level.UD=0.95,level=0.95,P=FALSE)
 
   # point estimate
   area <- sum(object$CDF <= level.UD) * dV
-  names(area) <- "ML"
+  names(area) <- NAMES.CI[2] # point estimate
 
   # chi square approximation of uncertainty
   if(!is.null(object$DOF.area))
   {
     area <- chisq.ci(area,DOF=2*object$DOF.area[1],alpha=1-level)
-    names(area) <- c("low","ML","high")
+    names(area) <- NAMES.CI
   }
 
   if(!P) { return(area) }
@@ -1122,7 +1135,7 @@ CI.UD <- function(object,level.UD=0.95,level=0.95,P=FALSE)
   # recorrect point estimate level
   P[2] <- level.UD
 
-  names(P) <- c("low","ML","high")
+  names(P) <- NAMES.CI
   return(P)
 }
 
@@ -1145,7 +1158,7 @@ summary.UD <- function(object,level=0.95,level.UD=0.95,units=TRUE,...)
   area <- array(area/scale,c(1,3))
   rownames(area) <- paste("area (",name,")",sep="")
 
-  colnames(area) <- c("low","ML","high")
+  colnames(area) <- NAMES.CI
 
   SUM <- list()
 

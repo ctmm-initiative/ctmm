@@ -285,9 +285,23 @@ kalman <- function(z,u,dt,CTMM,error=NULL,smooth=FALSE,sample=FALSE,residual=FAL
       # update forcast estimates for next iteration
       if(i<n)
       {
-        #update forcast estimates now
+        # update forcast estimates now
         zFor[i+1,,] <- Green[i+1,,] %*% zCon[i,,] # (K*DIM,VEC)
-        sFor[i+1,,] <- ((Green[i+1,,] %*% sCon[i,,] %*% t(Green[i+1,,])) + Sigma[i+1,,]) # (K*DIM,K*DIM)
+        # work around for when initial location estimates are NULL
+        TCON <- sCon[i,,]
+        dim(TCON) <- c(K*DIM,K*DIM)
+        INF <- TCON==Inf
+        ANY <- any(INF)
+        if(ANY) { TCON[INF] <- 0 } # prevent lots of NaNs that should be zero
+        TCON <- Green[i+1,,] %*% TCON %*% t(Green[i+1,,]) + Sigma[i+1,,] # (K*DIM,K*DIM)
+        if(ANY) # restore Inf variances after avoiding NaNs -- delete finie correlations with infinite variance (impossible?)
+        {
+          INF <- diag(INF)
+          TCON[INF,] <- 0
+          TCON[,INF] <- 0
+          diag(TCON)[INF] <- Inf
+        }
+        sFor[i+1,,] <- TCON
       }
     }
 
@@ -462,12 +476,20 @@ kalman <- function(z,u,dt,CTMM,error=NULL,smooth=FALSE,sample=FALSE,residual=FAL
     # upgrade concurrent estimates to Kriged estimates (covariance only)
     for(i in (n-1):1)
     {
-      L[i,,] <- sCon[i,,] %*% t(Green[i+1,,]) %*% PDsolve(sFor[i+1,,],pseudo=TRUE) # (K*DIM,K*DIM)
+      TL <- nant(sCon[i,,] %*% t(Green[i+1,,]),0) %*% PDsolve(sFor[i+1,,],pseudo=TRUE) # (K*DIM,K*DIM)
+      INF <- diag(is.nan(TL))
+      if(any(INF))
+      {
+        TL[INF,] <- 0
+        TL[,INF] <- 0
+        diag(TL)[INF] <- 1 # Inf/Inf->1
+      }
+      L[i,,] <- TL
       # manifestly symmetric backsolver
       # sCon[i,,] <- sCon[i,,] + L %*% (sCon[i+1,,]-sFor[i+1,,]) %*% t(L)
       # manifestly PSD backsolver
       JOSEPH <- IdH - (L[i,,] %*% Green[i+1,,]) # (K*DIM,K*DIM)
-      sCon[i,,] <- (JOSEPH %*% sCon[i,,] %*% t(JOSEPH)) + (L[i,,] %*% (sCon[i+1,,]+Sigma[i+1,,]) %*% t(L[i,,])) # (K*DIM,K*DIM)
+      sCon[i,,] <- nant(JOSEPH %*% sCon[i,,],0) %*% t(JOSEPH) + (L[i,,] %*% (sCon[i+1,,]+Sigma[i+1,,]) %*% t(L[i,,])) # (K*DIM,K*DIM)
 
       #################
       # RANDOM SAMPLER

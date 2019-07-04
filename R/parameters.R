@@ -1,29 +1,39 @@
 POSITIVE.PARAMETERS <- c("major","minor","tau position","tau velocity","tau","omega","error")
 
 # clean up parameter arrays
-clean.parameters <- function(par)
+clean.parameters <- function(par,linear.cov=FALSE)
 {
   NAMES <- names(par)
 
   for(P in POSITIVE.PARAMETERS) { if(P %in% NAMES) { par[P] <- clamp(par[P],0,Inf) } }
 
-  if("minor" %in% NAMES) # covariance parameters
+  # covariance parameters
+  if("minor" %in% NAMES)
   {
-    # swap major and minor axis
-    if(par["minor"]>1)
+    if(!linear.cov)
     {
-      par["angle"] <- par["angle"] - pi/2
+      # swap major and minor axis
+      if(par["minor"]>1)
+      {
+        par["angle"] <- par["angle"] - pi/2
 
-      # not profiled
-      if('major' %in% NAMES) { par['major'] <- par['major'] * par['minor'] }
-      # else 'major' will be profiled
+        # not profiled
+        if('major' %in% NAMES) { par['major'] <- par['major'] * par['minor'] }
+        # else 'major' will be profiled
 
-      par['minor'] <- 1/par['minor']
+        par['minor'] <- 1/par['minor']
+      }
 
+      # wrap angle back
+      par["angle"] <- (((par["angle"]/pi+1/2) %% 1) - 1/2)*pi
     }
-
-    # wrap angle back
-    par["angle"] <- (((par["angle"]/pi+1/2) %% 1) - 1/2)*pi
+    else
+    {
+      # sigma[x,x] sigma[y,y]
+      MAX <- sqrt(prod(par[c('major','minor')]))
+      # sigma[x,y]
+      par['angle'] <- clamp(par['angle'],-MAX,MAX)
+    }
   }
 
   P <- c("tau position","tau velocity")
@@ -36,8 +46,9 @@ clean.parameters <- function(par)
 # identify autocovariance parameters in ctmm object
 # if profile==TRUE, some parameters can be solved exactly and so aren't identified
 # if linear==TRUE, only return linear non-problematic parameters
+# if linear.cov==TRUE, use linear covariance paramters for pREML
 # STRUCT determines the model structure incase some estimated parameters in CTMM are zero
-id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,UERE=FALSE,dt=0,df=0,dz=0,STRUCT=CTMM)
+id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE=FALSE,dt=0,df=0,dz=0,STRUCT=CTMM)
 {
   # identify and name autocovariance parameters
   NAMES <- NULL
@@ -74,9 +85,11 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,UERE=FALSE,dt=0,df=0,dz
   upper <- NULL
   period <- NULL
 
+  SIGMIN <- dz^2*ifelse(CTMM$range,1,df)
+
   if("major" %in% NAMES)
   {
-    parscale <- c(parscale,max(dz^2*ifelse(CTMM$range,1,df),sigma['major']))
+    parscale <- c(parscale,max(sigma['major'],SIGMIN))
     lower <- c(lower,0)
     upper <- c(upper,Inf)
     period <- c(period,FALSE)
@@ -85,10 +98,18 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,UERE=FALSE,dt=0,df=0,dz
   # minor and angle
   if("minor" %in% NAMES)
   {
-    parscale <- c(parscale,1,pi/2)
+    if(!linear.cov)
+    {
+      parscale <- c(parscale,1,pi/2)
+      period <- c(period,FALSE,pi)
+    }
+    else
+    {
+      parscale <- c(parscale,pmax(abs(sigma[c('minor','angle')]),SIGMIN))
+      period <- c(period,FALSE,FALSE)
+    }
     lower <- c(lower,0,-Inf)
     upper <- c(upper,Inf,Inf) # could make 1 for minor/major
-    period <- c(period,FALSE,pi)
   }
 
   if(!linear) # nonlinear autocorrelation parameters
@@ -139,7 +160,8 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,UERE=FALSE,dt=0,df=0,dz
 
 
 # pull out array of named autocovariance parameters
-get.parameters <- function(CTMM,NAMES)
+# linear.cov uses linear representation of covariance matrix
+get.parameters <- function(CTMM,NAMES,linear.cov=FALSE)
 {
   par <- numeric(length(NAMES))
   names(par) <- NAMES
@@ -147,10 +169,20 @@ get.parameters <- function(CTMM,NAMES)
   # can't loop this easily because R collapses NULL values
   getter <- function(NAME,VALUE=CTMM[[NAME]]) { if(NAME %in% NAMES) { par[NAME] <<- VALUE } }
 
-  sigma <- attr(CTMM$sigma,"par")
-  getter("major",sigma[1])
-  getter("minor",sigma[2])
-  getter("angle",sigma[3])
+  sigma <- CTMM$sigma
+  if(!linear.cov)
+  {
+    sigma <- attr(sigma,"par")
+    getter("major",sigma[1])
+    getter("minor",sigma[2])
+    getter("angle",sigma[3])
+  }
+  else
+  {
+    getter("major",sigma[1]) # sigma[x,x]
+    getter("minor",sigma[4]) # sigma[y,y]
+    getter("angle",sigma[2]) # sigma[x,y]
+  }
 
   tau <- CTMM$tau
   getter("tau position",if(length(tau)>0) { tau[1] } else { 0 })
@@ -166,14 +198,25 @@ get.parameters <- function(CTMM,NAMES)
 
 
 # write autocovariance parameter array into a CTMM object
-set.parameters <- function(CTMM,par)
+set.parameters <- function(CTMM,par,linear.cov=FALSE)
 {
   NAMES <- names(par)
 
-  sigma <- CTMM$sigma@par
-  NAME <- "major"; if(NAME %in% NAMES) { sigma[NAME] <- par[NAME] }
-  NAME <- "minor"; if(NAME %in% NAMES) { sigma[NAME] <- par[NAME] }
-  NAME <- "angle"; if(NAME %in% NAMES) { sigma[NAME] <- par[NAME] }
+  sigma <- CTMM$sigma
+  if(!linear.cov)
+  {
+    sigma <- sigma@par
+    NAME <- "major"; if(NAME %in% NAMES) { sigma[NAME] <- par[NAME] }
+    NAME <- "minor"; if(NAME %in% NAMES) { sigma[NAME] <- par[NAME] }
+    NAME <- "angle"; if(NAME %in% NAMES) { sigma[NAME] <- par[NAME] }
+  }
+  else
+  {
+    sigma <- methods::getDataPart(sigma)
+    NAME <- "major"; if(NAME %in% NAMES) { diag(sigma) <- par[c(NAME,NAME)] }
+    NAME <- "minor"; if(NAME %in% NAMES) { sigma[4] <- par[NAME] }
+    NAME <- "angle"; if(NAME %in% NAMES) { sigma[2:3] <- par[c(NAME,NAME)] }
+  }
   CTMM$sigma <- covm(sigma)
 
   NAME <- "tau position"; if(NAME %in% NAMES) { CTMM$tau[1] <- par[NAME] ; names(CTMM$tau)[1] <- 'position' }

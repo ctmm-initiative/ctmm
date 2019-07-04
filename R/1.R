@@ -1,3 +1,6 @@
+# universal names for confidence intervals & point estmate
+NAMES.CI <- c("low","est","high")
+
 # this is stuff that needs to be run first (and in the right order) for S4 crap to work
 
 methods::setOldClass("UERE")

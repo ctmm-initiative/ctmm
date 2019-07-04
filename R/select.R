@@ -4,6 +4,7 @@ alpha.ctmm <- function(CTMM,alpha)
   z <- stats::qnorm(alpha)
   z <- sqrt(z^2 + (CTMM$AICc-CTMM$AIC))
   alpha <- 1-stats::pnorm(z)
+  if(!length(alpha)) { alpha <- 0 }
   return(alpha)
 }
 
@@ -49,7 +50,8 @@ simplify.ctmm <- function(M,par)
 
   if("range" %in% par)
   {
-    M$sigma <- scale.covm(M$sigma,1/M$tau) # convert to diffusion matrix
+    # convert to diffusion matrix
+    if(M$tau[1]>0) { M$sigma <- scale.covm(M$sigma,1/M$tau[1]) }
     M$tau[1] <- Inf
     M$range <- FALSE
 
@@ -207,7 +209,7 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
     CI <- confint.ctmm(CTMM,alpha=beta)
     if(length(CTMM$tau)==2 && !is.na(IC)) # OUX -> OU
     {
-      if(!CTMM$omega && CTMM$tau[1]!=CTMM$tau[2]) # OUF -> OU
+      if(!CTMM$omega && CTMM$tau[1]!=CTMM$tau[2]) # OUF -> OU / IOU -> BM
       {
         Q <- CI["tau velocity",1]
         if(is.nan(Q) || (Q<=0))
@@ -236,7 +238,7 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
         }
       }
     }
-    else if(length(CTMM$tau)==1 && !is.na(IC)) # OU -> IID
+    else if(CTMM$range && length(CTMM$tau)==1 && !is.na(IC)) # OU -> IID
     {
       Q <- CI["tau position",1]
       if(is.nan(Q) || (Q<=0))
@@ -247,7 +249,7 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
     }
 
     # can autocorrelation timescales be distinguished?
-    if(length(CTMM$tau)==2 && CTMM$tau[1]<Inf && (CTMM$tau[1]!=CTMM$tau[2] || CTMM$omega))
+    if(CTMM$range && length(CTMM$tau)==2 && (CTMM$tau[1]!=CTMM$tau[2] || CTMM$omega))
     {
       TEMP <- get.taus(CTMM,zeroes=TRUE)
       nu <- TEMP$f.nu[2] # frequency/difference
@@ -259,7 +261,7 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
       if(Q<=0 || level==1 || is.na(IC))
       { GUESS <- c(GUESS,list(simplify.ctmm(MLE,"diff.tau"))) }
     }
-    else if(length(CTMM$tau)==2) # try other side if boundary if choosen model is critically damped
+    else if(CTMM$range && length(CTMM$tau)==2) # try other side if boundary if choosen model is critically damped
     {
       # try overdamped
       TEMP <- MLE
@@ -273,7 +275,7 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
       TEMP$omega <- sqrt(.Machine$double.eps)
       GUESS <- c(GUESS,list(TEMP))
     }
-    else if(length(CTMM$tau)==1 && level==1) # OU -> OUf (bimodal likelihood)
+    else if(CTMM$range && length(CTMM$tau)==1 && level==1) # OU -> OUf (bimodal likelihood)
     { GUESS <- c(GUESS,list(simplify.ctmm(MLE,"diff.tau"))) }
 
     # consider if there is no circulation

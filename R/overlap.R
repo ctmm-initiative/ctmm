@@ -37,7 +37,7 @@ overlap <- function(object,level=0.95,debias=TRUE,...)
   # fix diagonals
   diag(OVER[,,1]) <- diag(OVER[,,2]) <- diag(OVER[,,3]) <- 1
 
-  dimnames(OVER) <- list(names(object),names(object),c("low","ML","high"))
+  dimnames(OVER) <- list(names(object),names(object),NAMES.CI)
 
   return(OVER)
   # utils::getS3method("overlap",CLASS)(object,...)
@@ -170,7 +170,7 @@ overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,...)
 
     # transform from (square) distance to overlap measure
     CI <- exp(-rev(CI))
-    names(CI) <- c("low","ML","high")
+    names(CI) <- NAMES.CI
 
     return(CI)
   }
@@ -228,7 +228,7 @@ overlap.UD <- function(object,level=0.95,debias=TRUE,...)
   else
   { OVER <- c(NA,OVER,NA) }
 
-  names(OVER) <- c("low","ML","high")
+  names(OVER) <- NAMES.CI
   return(OVER)
 }
 

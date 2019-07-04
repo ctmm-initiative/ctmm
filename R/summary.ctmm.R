@@ -258,7 +258,7 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
   # anything else interesting from the mean function
   par <- rbind(drift@summary(object,level,level.UD),par)
 
-  colnames(par) <- c("low","ML","high")
+  colnames(par) <- NAMES.CI
 
   SUM <- list(name=name.ctmm(object))
 

@@ -2,27 +2,31 @@
 \alias{occurrence}
 \encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{Calculate a Kriged occurrence disribution estimate}
+\title{Calculate a Kriged occurrence distribution estimate}
 \description{
 This function calculates an occurrence distribution from \code{telemetry} data and a continuous-time movement model.
 }
 \usage{
-occurrence(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=0.05,dt.max=NULL)
+occurrence(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=0.05,dt.max=NULL,
+           buffer=TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{data}{ 2D timeseries telemetry data represented as a \code{telemetry} object. }
   \item{CTMM}{A \code{ctmm} movement model from the output of \code{ctmm.fit}.}
-  \item{H}{Optional additional banwidth matrix for future use.}
+  \item{H}{Optional additional bandwidth matrix for future use.}
   \item{res.time}{Number of temporal grid points per median timestep.}
   \item{res.space}{Number of grid points along each axis, relative to the average diffusion (per median timestep) from a stationary point.}
   \item{grid}{Optional grid specification via \code{raster}, \code{UD}, or list of arguments (See \code{\link{akde}} for details).}
   \item{cor.min}{Velocity correlation threshold for skipping gaps.}
   \item{dt.max}{Maximum absolute gap size (in seconds) for Kriging interpolation. If left \code{NULL}, the median of \code{diff(data$t)} will be used.}
+  \item{buffer}{Buffer the observation period, according to the minimum gap specified by \code{cor.min} and \code{dt.max}, to include more probable locations if possible.}
 }
 
 \details{
-The arguments \code{cor.min} or \code{dt.max} are used to prevent the interpolation of large gaps, which would bias the estimate to more resemble the movement model than the data. Because \code{cor.min} can produce an empty range with fractal movement models, the larger of the two rules is employed.
+The arguments \code{cor.min} or \code{dt.max} are used to prevent the interpolation of large gaps, which would bias the estimate to more resemble the movement model than the data. Because \code{cor.min} can produce an empty range with fractal movement models, the larger of the two rules is employed for interpolation.
+
+If \code{buffer=TRUE}, then the data are also extrapolated according to the minimum of the two rules (\code{cor.min} and \code{dt.max}) which is limited to cases where persistence of motion is modeled.
 }
 
 \value{Returns a \code{UD} object containing the sampled grid line locations \code{x} and \code{y}, the probability density and cumulative distribution functions evaluated on the sampled grid locations \code{PDF} & \code{CDF}, the optional bandwidth matrix \code{H}, and the area of each grid cell \code{dA}.

@@ -84,7 +84,7 @@ chisq.ci <- function(MLE,COV=NULL,level=0.95,alpha=1-level,DOF=2*MLE^2/COV,robus
     if(CI[3]<UPPER) { CI[3] <- UPPER }
   }
 
-  names(CI) <- c("low","ML","high")
+  names(CI) <- NAMES.CI
   return(CI)
 }
 
@@ -153,7 +153,7 @@ norm.ci <- function(MLE,COV,alpha=0.05)
   # normal ci
   CI <- MLE + z*sqrt(COV)
 
-  names(CI) <- c("low","ML","high")
+  names(CI) <- NAMES.CI
   return(CI)
 }
 

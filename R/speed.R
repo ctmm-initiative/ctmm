@@ -5,7 +5,7 @@ speed.ctmm <- function(object,data=NULL,level=0.95,robust=FALSE,units=TRUE,prior
 {
   # bad return value
   INF <- c(0,Inf,Inf)
-  names(INF) <- c("low","ML","high")
+  names(INF) <- NAMES.CI
   INF <- rbind(INF)
   rownames(INF) <- "speed (meters/second)"
   #attr(CI,"DOF") <- 0
@@ -63,7 +63,7 @@ speed.ctmm <- function(object,data=NULL,level=0.95,robust=FALSE,units=TRUE,prior
       else # ! prior
       {
         CI <- c(1,1,1)*MEAN
-        names(CI) <- c("low","ML","high")
+        names(CI) <- NAMES.CI
         DOF <- 0
       }
     }
@@ -169,7 +169,7 @@ speed.ctmm <- function(object,data=NULL,level=0.95,robust=FALSE,units=TRUE,prior
     {
       alpha <- (1-level)/2
       CI <- stats::quantile(SPEEDS,c(alpha,0.5,1-alpha))
-      names(CI) <- c("low","ML","high")
+      names(CI) <- NAMES.CI
     }
 
     close(pb)

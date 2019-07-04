@@ -339,7 +339,7 @@ summary.UERE <- function(object,level=0.95,...)
   UERE <- sapply(1:length(object),function(i){chisq.ci(object[i]^2,DOF=DOF[i],level=level)}) #(3CI,class*type)
   UERE <- sqrt(UERE)
   dim(UERE) <- c(3,dim(object)) # (3CI,class,type)
-  dimnames(UERE)[[1]] <- c("low","ML","high")
+  dimnames(UERE)[[1]] <- NAMES.CI
   dimnames(UERE)[2:3] <- dimnames(object)
   UERE <- aperm(UERE,c(2,1,3)) # (class,3CI,type)
   return(UERE)

@@ -225,8 +225,10 @@ smoother <- function(DATA,CTMM,precompute=FALSE,sample=FALSE,residual=FALSE,...)
 ########################################
 # fill in data gaps with missing observations of infinite error
 ########################################
-fill.data <- function(data,CTMM=ctmm(tau=Inf),verbose=FALSE,t=NULL,dt=NULL,res=1,cor.min=0,dt.max=NULL,DT=diff(t))
+fill.data <- function(data,CTMM=ctmm(tau=Inf),verbose=FALSE,t=NULL,dt=NULL,res=1,cor.min=0,dt.max=NULL,DT=diff(t),buffer=FALSE)
 {
+  DT.MAX <- dt.max # store for later
+
   # is this recorded data or empty gap
   data$record <- TRUE
 
@@ -241,8 +243,16 @@ fill.data <- function(data,CTMM=ctmm(tau=Inf),verbose=FALSE,t=NULL,dt=NULL,res=1
     # target resolution
     if(is.null(dt)){ dt <- stats::median(DT)/res }
 
-    # maximum gap to bridge
-    if(cor.min>0 && length(CTMM$tau)>1 && CTMM$tau[2]>0) { dt.max <- max(dt.max,-log(cor.min)*CTMM$tau[2]) }
+    # can cor.min argument be applied
+    if(length(CTMM$tau)<2 || CTMM$tau[2]<=0) { cor.min <- FALSE }
+
+    if(cor.min)
+    {
+      # convert from correlation to time
+      cor.min <- -log(cor.min)*CTMM$tau[2] # need for buffer=TRUE
+      # maximum gap to bridge
+      dt.max <- max(DT.MAX,cor.min)
+    }
     if(is.null(dt.max)) { dt.max <- Inf } # default don't skip gaps
     dt.max2 <- dt.max/2
 
@@ -274,7 +284,33 @@ fill.data <- function(data,CTMM=ctmm(tau=Inf),verbose=FALSE,t=NULL,dt=NULL,res=1
       t.new <- c(t.new,t.sub[c(-1,-n.sub)])
     }
 
-    # half weight repeated endpoints in grid
+    # buffer observation period
+    dt.max <- min(cor.min,DT.MAX) * buffer
+    if(dt.max)
+    {
+      if(cor.min==Inf) { stop("buffer=TRUE incompatible with cor.min=0.") }
+      dt.max2 <- dt.max/2
+
+      dt.buffer <- seq(0,dt.max2,by=dt)
+      buffer <- rev( t.grid[1] - dt.buffer )
+      t.grid <- c(buffer,t.grid)
+      t.new <- c(buffer[-length(buffer)],t.new)
+
+      buffer <- last(t.grid) + dt.buffer
+      t.grid <- c(t.grid,buffer)
+      t.new <- c(t.new,buffer[-1])
+
+      dt.buffer <- array(dt,length(dt.buffer))
+      dt.grid <- c(dt.buffer,dt.grid,dt.buffer)
+    }
+
+    # don't need to repeat if dt doesn't change
+    SAME <- diff(t.grid)==0 & diff(dt.grid)==0
+    SAME <- c(SAME,FALSE) # keep last time
+    t.grid <- t.grid[!SAME] # drop first same
+    dt.grid <- dt.grid[!SAME] # drop first same
+
+    # half weight repeated times
     w.grid <- dt.grid
     REPEAT <- which(diff(t.grid)==0)
     w.grid[REPEAT] <- w.grid[REPEAT]/2
@@ -315,7 +351,7 @@ fill.data <- function(data,CTMM=ctmm(tau=Inf),verbose=FALSE,t=NULL,dt=NULL,res=1
 # cor.min is roughly the correlation required between locations to bridge them
 # dt.max is (alternatively) the maximum gap allowed between locations to bridge them
 #################################
-occurrence <- function(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=0.05,dt.max=NULL)
+occurrence <- function(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=0.05,dt.max=NULL,buffer=TRUE)
 {
   validate.grid(data,grid)
 
@@ -333,7 +369,7 @@ occurrence <- function(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=
   MIN.ERR <- min(error) # Fix something here?
 
   # format data to be relatively evenly spaced with missing observations
-  data <- fill.data(data,CTMM,verbose=TRUE,res=res.time,cor.min=cor.min,dt.max=dt.max)
+  data <- fill.data(data,CTMM,verbose=TRUE,res=res.time,cor.min=cor.min,dt.max=dt.max,buffer=buffer)
   t.grid <- data$t.grid
   dt.grid <- data$dt.grid
   w.grid <- data$w.grid
