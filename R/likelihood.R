@@ -214,7 +214,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     # prepare variance/covariance of 1D/2D Kalman filters
     if(PROFILE==2 || (PROFILE && DIM==1)) { CTMM$sigma <- 1 } # could be rotated & squeezed
     else if(DIM==1) { CTMM$sigma <- area }
-    else if(DIM==2) { CTMM$sigma <- COVM(c(if(PROFILE){1}else{area},if(SQUEEZE){0}else{ecc},if(ROTATE){0}else{theta})) } # circle, !isotropic, UERE=1,2
+    else if(DIM==2) { CTMM$sigma <- COVM(c(ifelse(PROFILE,1,area),ifelse(SQUEEZE,0,ecc),ifelse(ROTATE,0,theta))) } # circle, !isotropic, UERE=1,2
     # else sigma is full covariance matrix
 
     KALMAN <- kalman(z,u,dt=dt,CTMM=CTMM,error=error)
