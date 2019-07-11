@@ -8,6 +8,8 @@ DOP.LIST <- list(unknown=list(axes=NA,geo=NA,DOP=NA,VAR=NA,COV=NA) ,
 # is the data calibrated
 is.calibrated <- function(data,type="horizontal")
 {
+  if(class(data)=="list") { return( mean( sapply(data,is.calibrated) ) ) }
+
   UERE <- attr(data,"UERE")
 
   # classes in data

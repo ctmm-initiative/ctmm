@@ -247,14 +247,17 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,AICc=FALSE,iterate=FALSE,robu
 
   ### outer loop: designing the weight matrix until estimate converges
   P0 <- P1 <- EST <- Transform(get.parameters(CTMM,NAMES)) # null model for parametric bootstrap
-  if(trace>1) { print(Transform(P0,inverse=TRUE)) }
+  #if(trace>1) { print(Transform(P0,inverse=TRUE)) }
   ERROR <- Inf -> ERROR.OLD
   BEST <- list()
   tol <- error*sqrt(length(NAMES)) # eigen-value tolerance for pseudo-inverse
   MAX <- max(1/error^2,length(NAMES)+1) # maximum sample size
   if(trace) { pb <- utils::txtProgressBar(style=3) }
-  while(ERROR>error)
+  while(ERROR>error && ERROR<=ERROR.OLD)
   {
+    # base progress
+    PG <- sqrt(error/ERROR.OLD)
+
     # initialize results
     SAMPLE <- NULL # sampling distribution sample (transformed)
     AVE <- array(0,length(NAMES)) # average of EST
@@ -276,6 +279,7 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,AICc=FALSE,iterate=FALSE,robu
 
     # inner loop: adding to ensemble until average converges
     precompute <- -1 # now use precomputed Kalman filter matrices
+    ERROR <- Inf
     while(N<=MAX && ERROR>=error) # standard error ratio criterias
     {
       # calculate burst of cores estimates
@@ -294,7 +298,7 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,AICc=FALSE,iterate=FALSE,robu
         if(is.nan(ERROR)) { ERROR <- Inf }
       }
 
-      if(trace) { utils::setTxtProgressBar(pb,clamp(max(N/MAX,(error/ERROR)^2))) }
+      if(trace) { utils::setTxtProgressBar(pb,PG+(1-PG)*max(N/MAX,sqrt(error/ERROR))) }
     } # END INNER LOOP
     VAR.AIC <- stats::var(AIC)
     AIC <- mean(AIC)
@@ -345,11 +349,10 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,AICc=FALSE,iterate=FALSE,robu
 
     P <- Transform(P1,inverse=TRUE)
     CTMM <- set.parameters(CTMM,P)
-    if(trace) { message("\nRelative error = ",ERROR) }
+    #if(trace) { message("\nRelative error = ",ERROR) }
     P1 -> P0
 
-    if(!iterate || ERROR>ERROR.OLD) { break }
-    if(trace>1) { print(P) }
+    #if(trace>1) { print(P) }
   } # END OUTER LOOP
 
   # fix COV[mean] with a verbose likelihood evaluation

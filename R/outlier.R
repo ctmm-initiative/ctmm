@@ -4,7 +4,7 @@ BESSEL_LIMIT <- 2^16
 # estimate and assign speeds to times
 outlie <- function(data,UERE=10,standardize=FALSE,plot=TRUE,...)
 {
-  if(class(data)=="list") { return( lapply(data, function(d){outlie(d,UERE=UERE,standardize=standardize,plot=plot)} ) ) }
+  if(class(data)=="list") { return( lapply(1:length(data), function(i){outlie(data[i],UERE=UERE,standardize=standardize,plot=plot); graphics::title(names(data)[i])} ) ) }
 
   error <- get.error(data,ctmm(error=UERE,axes=c("x","y")),circle=TRUE)
 
@@ -195,7 +195,8 @@ distanceMLE <- function(dr,error)
   x <- BesselSolver(y)
   # x = dr*dR/error
 
-  if(any(SUB)) { dr[SUB] <- error[SUB]/dr[SUB] * x }
+  # fixed for Inf error
+  if(any(SUB)) { dr[SUB] <- ifelse(error[SUB]<Inf,error[SUB]/dr[SUB]*x,0) }
 
   return(dr)
 }

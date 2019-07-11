@@ -5,13 +5,13 @@
 \title{Calculate an empirical variogram from movement data}
 \description{
 This function calculates the empirical variogram of multi-dimensional tracking data for visualizing stationary (time-averaged) autocorrelation structure.
-One of two algorithms is used. The slow \eqn{O(n^2)} algorithm is based upon Fleming & Calabrese et al (2014), but with interval-weights instead of lag-weights.
+One of two algorithms is used. The slow \eqn{O(n^2)} algorithm is based upon Fleming & Calabrese et al (2014), but with interval-weights instead of lag-weights and an iterative algorithm to adjust for calibrated errors.
 Additional modifications have also been included to accommodate drift in the sampling rate.
 The fast \eqn{O(n \log n)} algorithm is based upon the FFT method of Marcotte (1996), with some tweaks to better handle irregularly sampled data.
 Both methods reduce to the unbiased \dQuote{method of moments} estimator in the case of evenly \emph{scheduled} data, even with missing observations, but they produce slightly different outputs for irregularly sampled data.
 }
 \usage{
-variogram(data,dt=NULL,fast=TRUE,res=1,CI="Markov",axes=c("x","y"))
+variogram(data,dt=NULL,fast=TRUE,res=1,CI="Markov",axes=c("x","y"),precision=1/8)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -21,6 +21,8 @@ variogram(data,dt=NULL,fast=TRUE,res=1,CI="Markov",axes=c("x","y"))
   \item{res}{Increase the discretization resolution for irregularly sampled data with \code{res>1}. Decreases bias at the cost of smoothness.}
   \item{CI}{Defaults to only consider non-overlapping lags independent. All unique lags are considered independent with "IID".}
   \item{axes}{Array of axes to calculate an average (isotropic) variogram for.}
+  %\item{max.lag}{Maximum lag of the variogram to calculate when \code{fast=FALSE}, so to minimize computational cost.}
+  \item{precision}{Fraction of machine precision to target when adjusting for telemetry error (\code{fast=FALSE} with calibrated errors). \code{precision=1/8} returns about 2 decimal digits of precision.}
 }
 \details{
 If no \code{dt} is specified, the median sampling interval is used. This is typically a good assumption for most data, even when there are gaps. A \code{dt} coarser than the sampling interval may bias the variogram (particuarly if \code{fast=TRUE}) and so this should be reserved for poor data quality.
@@ -31,7 +33,10 @@ Alternatively, you might try the \code{fast=FALSE} option or aggregating multipl
 With irregularly sampled data, different size lags must be aggregated together, and with current fast methods there is a tradeoff between bias and smoothness. The default settings produce a relatively smooth estimate, while increasing \code{res} (or setting \code{fast=FALSE}) will produce a less biased estimate, which is very useful for \code{\link{correlogram}}.
 
 In standard variogram regression treatments, all lags are considered as independent (\code{CI="IID"}) for the purposes of confidence-interval estimation, even if they overlap in time. However, in high resolution datasets this will produce vastly underestimated confidence intervals. Therefore, the default \code{CI="Markov"} behavior is to consider only the maximum number of non-overlapping lags in calculating confidence intervals.
+
+If \code{fast=FALSE} and the tracking data are calibrated (see \code{\link{uere}}), then the variogram of the movement process (sans the telemetry-error process) is estimated using an iterative maximum-likelihood esitmator (Fleming et al, \emph{in preparation}). The variogram is targeted to have \code{precision} fraction of machine precision. If the data are very irregular, this algorithm can be slow to converge at time lags where there are few data pairs.
 }
+
 \value{
 Returns a variogram object (class variogram) which is a dataframe containing the time-lag, \code{lag}, the semi-variance estimate at that lag, \code{SVF}, and the approximate number of degrees of freedom associated with that semi-variance, \code{DOF}, with which its confidence intervals can be estimated.
 }

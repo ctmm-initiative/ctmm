@@ -1,4 +1,4 @@
-ctmm 0.5.7 (2019-07-03)
+ctmm 0.5.7 (2019-07-10)
 ================
 
   * new function optimizer
@@ -8,6 +8,8 @@ ctmm 0.5.7 (2019-07-03)
   * 'pHREML' now the default estimator & all CI names updated
   
   * grid argument now supported in akde and occurrence methods
+  
+  * error-adjusted variogram implemented when fast=FALSE
   
   * new buffer argument in occurrence
   

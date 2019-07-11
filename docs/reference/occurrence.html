@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Calculate a Kriged occurrence disribution estimate — occurrence • ctmm</title>
+<title>Calculate a Kriged occurrence distribution estimate — occurrence • ctmm</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -30,7 +30,7 @@
 
 
 
-<meta property="og:title" content="Calculate a Kriged occurrence disribution estimate — occurrence" />
+<meta property="og:title" content="Calculate a Kriged occurrence distribution estimate — occurrence" />
 
 <meta property="og:description" content="This function calculates an occurrence distribution from telemetry data and a continuous-time movement model." />
 <meta name="twitter:card" content="summary" />
@@ -117,7 +117,7 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Calculate a Kriged occurrence disribution estimate</h1>
+    <h1>Calculate a Kriged occurrence distribution estimate</h1>
     
     <div class="hidden name"><code>occurrence.Rd</code></div>
     </div>
@@ -128,7 +128,8 @@
     
     </div>
 
-    <pre class="usage"><span class='fu'>occurrence</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>H</span><span class='kw'>=</span><span class='fl'>0</span>,<span class='kw'>res.time</span><span class='kw'>=</span><span class='fl'>10</span>,<span class='kw'>res.space</span><span class='kw'>=</span><span class='fl'>10</span>,<span class='kw'>grid</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>cor.min</span><span class='kw'>=</span><span class='fl'>0.05</span>,<span class='kw'>dt.max</span><span class='kw'>=</span><span class='kw'>NULL</span>)</pre>
+    <pre class="usage"><span class='fu'>occurrence</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>H</span><span class='kw'>=</span><span class='fl'>0</span>,<span class='kw'>res.time</span><span class='kw'>=</span><span class='fl'>10</span>,<span class='kw'>res.space</span><span class='kw'>=</span><span class='fl'>10</span>,<span class='kw'>grid</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>cor.min</span><span class='kw'>=</span><span class='fl'>0.05</span>,<span class='kw'>dt.max</span><span class='kw'>=</span><span class='kw'>NULL</span>,
+           <span class='kw'>buffer</span><span class='kw'>=</span><span class='fl'>TRUE</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -143,7 +144,7 @@
     </tr>
     <tr>
       <th>H</th>
-      <td><p>Optional additional banwidth matrix for future use.</p></td>
+      <td><p>Optional additional bandwidth matrix for future use.</p></td>
     </tr>
     <tr>
       <th>res.time</th>
@@ -165,11 +166,16 @@
       <th>dt.max</th>
       <td><p>Maximum absolute gap size (in seconds) for Kriging interpolation. If left <code>NULL</code>, the median of <code><a href='https://www.rdocumentation.org/packages/base/topics/diff'>diff(data$t)</a></code> will be used.</p></td>
     </tr>
+    <tr>
+      <th>buffer</th>
+      <td><p>Buffer the observation period, according to the minimum gap specified by <code>cor.min</code> and <code>dt.max</code>, to include more probable locations if possible.</p></td>
+    </tr>
     </table>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>The arguments <code>cor.min</code> or <code>dt.max</code> are used to prevent the interpolation of large gaps, which would bias the estimate to more resemble the movement model than the data. Because <code>cor.min</code> can produce an empty range with fractal movement models, the larger of the two rules is employed.</p>
+    <p>The arguments <code>cor.min</code> or <code>dt.max</code> are used to prevent the interpolation of large gaps, which would bias the estimate to more resemble the movement model than the data. Because <code>cor.min</code> can produce an empty range with fractal movement models, the larger of the two rules is employed for interpolation.</p>
+<p>If <code>buffer=TRUE</code>, then the data are also extrapolated according to the minimum of the two rules (<code>cor.min</code> and <code>dt.max</code>) which is limited to cases where persistence of motion is modeled.</p>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
