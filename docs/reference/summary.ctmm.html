@@ -63,7 +63,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.5</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.7</span>
       </span>
     </div>
 
@@ -152,7 +152,7 @@
     </tr>
     <tr>
       <th>IC</th>
-      <td><p>Information criteria for sorting lists of <code>ctmm</code> objects. Can be <code>"AICc"</code>, <code>"AIC"</code>, <code>"BIC"</code> or none (<code>NA</code>). AICc is approximate.</p></td>
+      <td><p>Information criteria for sorting lists of <code>ctmm</code> objects. Can be <code>"AICc"</code>, <code>"AIC"</code>, <code>"BIC"</code>, <code>"LOOCV"</code>, or none (<code>NA</code>). AICc is approximate.</p></td>
     </tr>
     <tr>
       <th>MSPE</th>
@@ -178,6 +178,7 @@ This Gaussian estimate differs from the kernel density estimate of <code><a href
     <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
 
     <p>Confidence intervals on the autocorrelation timescales assume they are sufficiently greater than zero and less than infinity.</p>
+<p><code>IC="LOOCV"</code> can only be attempted if also specified during <code><a href='ctmm.fit.html'>ctmm.select</a></code>, as this argument requires additional calculations.</p>
 <p>In <code>ctmm</code> v0.5.1 the MSPE was averaged over all possible times instead of over all sampled times.</p>
 <p>In <code>ctmm</code> v0.3.4 the speed estimate was fixed to be the RMS velocity and not \(1/\sqrt{2}\) times the RMS velocity.</p>
     
@@ -204,14 +205,14 @@ This Gaussian estimate differs from the kernel density estimate of <code><a href
 #&gt; 
 #&gt; $DOF
 #&gt;       mean       area      speed 
-#&gt;   11.57180   22.76786 3445.14996 
+#&gt;   10.73354   18.13599 3445.13306 
 #&gt; 
 #&gt; $CI
-#&gt;                                 low         ML      high
-#&gt; area (square kilometers) 234.880897 371.484282 538.89633
-#&gt; τ[position] (days)         4.047462   6.907915  11.78993
-#&gt; τ[velocity] (minutes)     39.590614  42.091315  44.74997
-#&gt; speed (kilometers/day)    13.819035  14.053698  14.28831
+#&gt;                                 low        est      high
+#&gt; area (square kilometers) 239.647396 403.458667 609.24084
+#&gt; τ[position] (days)         4.026012   7.505364  13.99164
+#&gt; τ[velocity] (minutes)     39.570325  42.069009  44.72547
+#&gt; speed (kilometers/day)    13.819957  14.054636  14.28926
 #&gt; </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">

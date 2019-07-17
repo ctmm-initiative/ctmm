@@ -227,6 +227,7 @@ PDsolve <- function(M,force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
     if(DIM[1]==2)
     {
       DET <- M[1,1]*M[2,2]-M[1,2]*M[2,1]
+      if(DET<=0) { return(diag(Inf,2)) } # force positive definite / diagonal
       SWP <- M[1,1] ; M[1,1] <- M[2,2] ; M[2,2] <- SWP
       M[1,2] <- -M[1,2]
       M[2,1] <- -M[2,1]

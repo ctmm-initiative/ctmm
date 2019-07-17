@@ -46,7 +46,7 @@ tail(x,...)
   %\item{class.2D}{Assign location classes \code{"2D"} and \code{"3D"} to fixes with \code{3} and \code{>3} satellites.}
   \item{na.rm}{If some values are \code{NA} in the data frame, are the rows (times) deleted or are the columns (data types) deleted.}
   \item{mark.rm}{Delete Movebank manually marked outliers. Also see \code{\link{outlie}}.}
-  \item{keep}{Retain additonal columns after coercion.}
+  \item{keep}{Retain additonal columns after coercion. \code{keep=TRUE} retains all columns, while individual columns to retain can be specified by name.}
   \item{drop}{Only return a \code{telemetry} object for one individual if \code{TRUE}. Always return a \code{list} of telemetry objects if \code{FALSE}.}
   \item{...}{Optional arguments to be fed to \code{\link{fread}} or \code{\link{read.csv}}, in the case of compressed files.}
   \item{x}{\code{telemetry} object.}

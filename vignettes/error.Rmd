@@ -157,8 +157,8 @@ turtle <- lapply(turtle,function(t){ t[t$class=="3D",] })
 The only difference is that you have to provide an initial guess for the UERE. Otherwise, the steps are the same.
 
 ```{r}
-# cheat and use previous fit as initial guess
-GUESS$error <- 10 # 10 meter error guess
+# 10 meter error guess
+GUESS$error <- 10
 # fit parameter estimates
 FIT <- ctmm.select(turtle[[3]],GUESS,trace=TRUE,cores=2)
 summary(FIT)

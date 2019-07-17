@@ -1,4 +1,4 @@
-ctmm 0.5.7 (2019-07-10)
+ctmm 0.5.7 (2019-07-15)
 ================
 
   * new function optimizer
@@ -10,6 +10,8 @@ ctmm 0.5.7 (2019-07-10)
   * grid argument now supported in akde and occurrence methods
   
   * error-adjusted variogram implemented when fast=FALSE
+  
+  * LOOCV now supported in ctmm.select, summary
   
   * new buffer argument in occurrence
   

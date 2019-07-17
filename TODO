@@ -1,4 +1,5 @@
 PRIORITY
+* spatial polygon (error circle/ellipse) .telemetry
 * conditional encounter density estimation: p_E(x) \propto p_1(x)*p_2(x) (Grace, Shauhin et al)
 * uere(data) <- 10 in vignette
 * diffusion calculation with CIs (in summary)

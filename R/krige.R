@@ -232,7 +232,7 @@ fill.data <- function(data,CTMM=ctmm(tau=Inf),verbose=FALSE,t=NULL,dt=NULL,res=1
   # is this recorded data or empty gap
   data$record <- TRUE
 
-  if(!length(CTMM$tau) || CTMM$tau[1]==0) { t <- data$t } # don't add further times
+  if(is.null(t) && (!length(CTMM$tau) || CTMM$tau[1]==0)) { t <- data$t } # don't add further times
 
   # FIX THE TIME GRID TO AVOID TINY DT
   if(is.null(t))

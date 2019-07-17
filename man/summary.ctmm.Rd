@@ -13,7 +13,7 @@
   \item{level}{ Confidence level for parameter estimates. }
   \item{level.UD}{ Coverage level for the Gaussian home-range area. }
   \item{units}{Convert result to natural units.}
-  \item{IC}{Information criteria for sorting lists of \code{ctmm} objects. Can be \code{"AICc"}, \code{"AIC"}, \code{"BIC"} or none (\code{NA}). AICc is approximate.}
+  \item{IC}{Information criteria for sorting lists of \code{ctmm} objects. Can be \code{"AICc"}, \code{"AIC"}, \code{"BIC"}, \code{"LOOCV"}, or none (\code{NA}). AICc is approximate.}
   \item{MSPE}{Sort models with the same autocovariance structure by the mean square predictive error of \code{"position"}, \code{"velocity"}, or not (\code{NA}).}
   \item{...}{Unused options.}
 }
@@ -38,6 +38,8 @@ If summary is called on a list of \code{ctmm} objects output from \code{\link{ct
 \author{ C. H. Fleming. }
 
 \note{ Confidence intervals on the autocorrelation timescales assume they are sufficiently greater than zero and less than infinity.
+
+\code{IC="LOOCV"} can only be attempted if also specified during \code{\link{ctmm.select}}, as this argument requires additional calculations.
 
 In \code{ctmm} v0.5.1 the MSPE was averaged over all possible times instead of over all sampled times.
 

@@ -307,7 +307,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   na.rm <- match.arg(na.rm,c("row","col"))
 
   # make column names canonicalish
-  names(object) <- tolower(names(object))
+  # names(object) <- tolower(names(object))
 
   # manually marked outliers
   COL <- c("manually.marked.outlier","marked.outlier","outlier")
@@ -696,7 +696,11 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   #######################################
 
   # keep everything from original data.frame
-  if(keep) { DATA <- cbind(DATA,object) }
+  if(class(keep)=="logical" && keep)
+  { DATA <- cbind(DATA,object) }
+  else if(class(keep)=="character") # keep specified  columns
+  { DATA <- cbind(DATA,object[,keep,drop=FALSE]) }
+
 
   # do this or possibly get empty animals from subset
   DATA <- droplevels(DATA)

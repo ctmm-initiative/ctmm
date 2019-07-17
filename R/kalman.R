@@ -270,7 +270,8 @@ kalman <- function(z,u,dt,CTMM,error=NULL,smooth=FALSE,sample=FALSE,residual=FAL
       zRes[i,,] <- zRes[i,,] - (t(P) %*% zFor[i,,]) # (OBS*DIM,VEC) # zRes is initially just z
 
       Gain <- sForP %*% PDsolve(sRes[i,,]) # (K*DIM,OBS*DIM) # updated to invert Inf uncertainty to 0
-      Gain <- nant(Gain,1) # 0/0 NaN have Gain of 1
+      # 0/0 NaN have Gain of 1 (P) # # Inf*epsilon have Gain of 1 (P)
+      for(j in 1:ncol(Gain)) { if(any(is.nan(Gain[,j])) || any(abs(Gain[,j])==Inf)) { Gain[,j] <- P[,j] } }
 
       # concurrent estimates
       zCon[i,,] <- zFor[i,,] + (Gain %*% zRes[i,,]) # (K*DIM,VEC)
@@ -439,7 +440,7 @@ kalman <- function(z,u,dt,CTMM,error=NULL,smooth=FALSE,sample=FALSE,residual=FAL
 
       # log det autocorrelation matrix == trace log autocorrelation matrix
       if(CTMM$range) # this is 1/n times the full term
-      { logdet <- mean(log(apply(sRes,1,det))) }
+      { logdet <- mean(log( clamp(apply(sRes,1,det),0,Inf) )) }
       else # this is 1/(n-1) times the full term, after first is dropped
       { logdet <- mean(log(apply(sRes,1,det)[-1])) }
 

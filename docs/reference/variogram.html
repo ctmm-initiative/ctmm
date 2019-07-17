@@ -33,7 +33,7 @@
 <meta property="og:title" content="Calculate an empirical variogram from movement data — variogram" />
 
 <meta property="og:description" content="This function calculates the empirical variogram of multi-dimensional tracking data for visualizing stationary (time-averaged) autocorrelation structure.
-One of two algorithms is used. The slow \(O(n^2)\) algorithm is based upon Fleming &amp;amp; Calabrese et al (2014), but with interval-weights instead of lag-weights.
+One of two algorithms is used. The slow \(O(n^2)\) algorithm is based upon Fleming &amp;amp; Calabrese et al (2014), but with interval-weights instead of lag-weights and an iterative algorithm to adjust for calibrated errors.
 Additional modifications have also been included to accommodate drift in the sampling rate.
 The fast \(O(n \log n)\) algorithm is based upon the FFT method of Marcotte (1996), with some tweaks to better handle irregularly sampled data.
 Both methods reduce to the unbiased &amp;#8220;method of moments&amp;#8221; estimator in the case of evenly scheduled data, even with missing observations, but they produce slightly different outputs for irregularly sampled data." />
@@ -67,7 +67,7 @@ Both methods reduce to the unbiased &amp;#8220;method of moments&amp;#8221; esti
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.5</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.7</span>
       </span>
     </div>
 
@@ -129,14 +129,14 @@ Both methods reduce to the unbiased &amp;#8220;method of moments&amp;#8221; esti
     <div class="ref-description">
     
     <p>This function calculates the empirical variogram of multi-dimensional tracking data for visualizing stationary (time-averaged) autocorrelation structure.
-One of two algorithms is used. The slow \(O(n^2)\) algorithm is based upon Fleming &amp; Calabrese et al (2014), but with interval-weights instead of lag-weights.
+One of two algorithms is used. The slow \(O(n^2)\) algorithm is based upon Fleming &amp; Calabrese et al (2014), but with interval-weights instead of lag-weights and an iterative algorithm to adjust for calibrated errors.
 Additional modifications have also been included to accommodate drift in the sampling rate.
 The fast \(O(n \log n)\) algorithm is based upon the FFT method of Marcotte (1996), with some tweaks to better handle irregularly sampled data.
 Both methods reduce to the unbiased &#8220;method of moments&#8221; estimator in the case of evenly <em>scheduled</em> data, even with missing observations, but they produce slightly different outputs for irregularly sampled data.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>variogram</span>(<span class='no'>data</span>,<span class='kw'>dt</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>fast</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>res</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>CI</span><span class='kw'>=</span><span class='st'>"Markov"</span>,<span class='kw'>axes</span><span class='kw'>=</span><span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/c'>c</a></span>(<span class='st'>"x"</span>,<span class='st'>"y"</span>))</pre>
+    <pre class="usage"><span class='fu'>variogram</span>(<span class='no'>data</span>,<span class='kw'>dt</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>fast</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>res</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>CI</span><span class='kw'>=</span><span class='st'>"Markov"</span>,<span class='kw'>axes</span><span class='kw'>=</span><span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/c'>c</a></span>(<span class='st'>"x"</span>,<span class='st'>"y"</span>),<span class='kw'>precision</span><span class='kw'>=</span><span class='fl'>1</span>/<span class='fl'>8</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -165,6 +165,10 @@ Both methods reduce to the unbiased &#8220;method of moments&#8221; estimator in
       <th>axes</th>
       <td><p>Array of axes to calculate an average (isotropic) variogram for.</p></td>
     </tr>
+    <tr>
+      <th>precision</th>
+      <td><p>Fraction of machine precision to target when adjusting for telemetry error (<code>fast=FALSE</code> with calibrated errors). <code>precision=1/8</code> returns about 2 decimal digits of precision.</p></td>
+    </tr>
     </table>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
@@ -174,6 +178,7 @@ Both methods reduce to the unbiased &#8220;method of moments&#8221; estimator in
 Alternatively, you might try the <code>fast=FALSE</code> option or aggregating multiple individuals with <code><a href='mean.variogram.html'>mean.variogram</a></code>.</p>
 <p>With irregularly sampled data, different size lags must be aggregated together, and with current fast methods there is a tradeoff between bias and smoothness. The default settings produce a relatively smooth estimate, while increasing <code>res</code> (or setting <code>fast=FALSE</code>) will produce a less biased estimate, which is very useful for <code><a href='residuals.html'>correlogram</a></code>.</p>
 <p>In standard variogram regression treatments, all lags are considered as independent (<code>CI="IID"</code>) for the purposes of confidence-interval estimation, even if they overlap in time. However, in high resolution datasets this will produce vastly underestimated confidence intervals. Therefore, the default <code>CI="Markov"</code> behavior is to consider only the maximum number of non-overlapping lags in calculating confidence intervals.</p>
+<p>If <code>fast=FALSE</code> and the tracking data are calibrated (see <code><a href='uere.html'>uere</a></code>), then the variogram of the movement process (sans the telemetry-error process) is estimated using an iterative maximum-likelihood esitmator (Fleming et al, <em>in preparation</em>). The variogram is targeted to have <code>precision</code> fraction of machine precision. If the data are very irregular, this algorithm can be slow to converge at time lags where there are few data pairs.</p>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
