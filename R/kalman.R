@@ -439,10 +439,13 @@ kalman <- function(z,u,dt,CTMM,error=NULL,smooth=FALSE,sample=FALSE,residual=FAL
       sigma <- (zisRes %*% zRes)/(n*DIM) # REML fixes this exactly for BM/IOU
 
       # log det autocorrelation matrix == trace log autocorrelation matrix
+      logdet <- apply(sRes,1,det) # just determinants
+      # zero variances are improbable, but not balanced out elsewhere in log-like
+      logdet <- ifelse(logdet>0,log(abs(logdet)),Inf)
       if(CTMM$range) # this is 1/n times the full term
-      { logdet <- mean(log( clamp(apply(sRes,1,det),0,Inf) )) }
+      { logdet <- mean(logdet) }
       else # this is 1/(n-1) times the full term, after first is dropped
-      { logdet <- mean(log(apply(sRes,1,det)[-1])) }
+      { logdet <- mean(logdet[-1]) }
 
       return(list(mu=mu,W=W,iW=iW,sigma=sigma,logdet=logdet))
     }

@@ -837,6 +837,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
         P <- line.boxer(2*par.diff,p0=par,lower=lower,upper=upper,period=period)
         par.diff <- P - par # twice the old par.diff with no boundary (reflection=1)
         M <- sqrt(sum(par.diff^2)) # total search magnitude
+        M <- clamp(M,0,1) # assume parscale is reasonable, keep search step reasonable in case of bad Hessian
         SEQ <- seq(0,M,length.out=mc.min(4,cores)+1)[-1]
       }
       else if(LINE.TYPE=="Enclosure")
