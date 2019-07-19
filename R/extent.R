@@ -81,6 +81,9 @@ extent.UD <- function(x,level=0.95,level.UD=0.95,...)
   else # capture outer contour
   { P <- CI.UD(x,max(level.UD),max(level),P=TRUE)[3] }
 
+  # too coarse fix
+  P <- max(P,min(x$CDF))
+
   # do we extend this far?
   MAT <- (x$CDF <= P)
   X <- apply(MAT,1,any)

@@ -100,12 +100,13 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE=F
   {
     if(!linear.cov)
     {
-      parscale <- c(parscale,1,pi/2)
+      parscale <- c(parscale,sigma['minor'],pi/2)
       period <- c(period,FALSE,pi)
     }
     else
     {
-      parscale <- c(parscale,pmax(abs(sigma[c('minor','angle')]),SIGMIN))
+      sigma <- CTMM$sigma
+      parscale <- c(parscale,pmax(abs(sigma[c(4,2)]),SIGMIN))
       period <- c(period,FALSE,FALSE)
     }
     lower <- c(lower,0,-Inf)

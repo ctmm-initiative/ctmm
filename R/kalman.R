@@ -52,7 +52,7 @@ langevin <- function(dt,CTMM)
     {
       dtau <- dt/tau[2]
       Exp <- exp(-dtau)
-      DExp <- dexp1(dtau,Exp) # 1-exp(dt/tau[2]/2)^2 # 1-exp(dt/tau[2])
+      DExp <- dexp1(dtau,Exp) # 1-exp(dt/tau[2])
 
       if(dt<Inf)
       {
@@ -61,12 +61,13 @@ langevin <- function(dt,CTMM)
         Green[2,2] <- Exp
       }
 
-      # absorbing one 1/tau[1] into each sigma & Omega^2
-      c12 <- DExp^2 # (1-exp(dt/tau[2]/2)^2)^2 # modulo two powers of 1/tau[1]
-      Sigma[1,1] <- 2*dt - 2*tau[2]*DExp - c12/Omega2
-      if(dt<Inf) { Sigma[c(2,3)] <- TT*c12 } # 0 at dt=Inf
-      Sigma[2,2] <- Omega2 * dexp2(dtau,Exp)
-    }
+      # remember that sigma is D=sigma/tau[1]
+      DExp2 <- DExp^2 # (1-exp(-dt/tau[2]))^2
+      Sigma[1,1] <- clamp( 2*dt - tau[2]*(2*DExp+DExp2) ,0,Inf) # does this still underflow?
+      Sigma[2,2] <- dexp2(dtau,Exp)/tau[2]
+      if(dt<Inf) { Sigma[c(2,3)] <- clamp(DExp2,0, sqrt(Sigma[1,1]*Sigma[2,2]) ) } # how does this get so far off?
+      # 0 at dt=Inf
+    } # END IOU
     else if(dt<Inf) # (IOU,OUF/OUO,IID]
     {
       # function representation choice
@@ -340,6 +341,7 @@ kalman <- function(z,u,dt,CTMM,error=NULL,smooth=FALSE,sample=FALSE,residual=FAL
       dim(isRes) <- c(OBS*DIM,OBS*DIM,n) # R arrays are awful
       uisRes <- vapply(1:n,function(i){isRes[,,i] %*% zRes[i,,MEAN]},array(0,c(OBS*DIM,length(MEAN)))) # (OBS*DIM,MEAN,n) - dont need data terms
       dim(uisRes) <- c(OBS*DIM,length(MEAN),n) # R arrays are awful
+      uisRes <- nant(uisRes,0) # 0/0 infinite precision zero shouldn't be anything but zero in weighting
 
       ### everything below is hard-coded for OBS==1 ###
       # if DIM==1, none of this does anything interesting #
@@ -437,6 +439,15 @@ kalman <- function(z,u,dt,CTMM,error=NULL,smooth=FALSE,sample=FALSE,residual=FAL
       dim(zRes) <- c(n*OBS*DIM,length(DATA))
 
       sigma <- (zisRes %*% zRes)/(n*DIM) # REML fixes this exactly for BM/IOU
+      # divergence fix
+      INF <- diag(sigma)==Inf
+      if(any(INF))
+      {
+        # force positive definite
+        sigma[INF,] <- sigma[,INF] <- 0
+        # restore infinite variance
+        diag(sigma)[INF] <- Inf
+      }
 
       # log det autocorrelation matrix == trace log autocorrelation matrix
       logdet <- apply(sRes,1,det) # just determinants

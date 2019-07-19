@@ -98,12 +98,12 @@ get.taus <- function(CTMM,zeroes=FALSE)
   else if(K>1 && CTMM$tau[1]==Inf) # IOU
   {
     CTMM$tau.names <- "tau velocity"
-    CTMM$Omega2 <- 1/CTMM$tau[2] # mean square speed modulo diffusion coefficient (not really Omega^2)
+    CTMM$Omega2 <- 1/CTMM$tau[2] # tau[1]*Omega^2 (everything is renormalized via tau[1] for IOU)
     CTMM$J.Omega2 <- -1/CTMM$tau[2]^2
 
     CTMM$f <- 1/CTMM$tau
     CTMM$f.nu <- c( mean(CTMM$f) , +diff(CTMM$f)/2 ) # (f,nu)
-    CTMM$TfOmega2 <- 2*CTMM$f.nu[1]/CTMM$Omega2 # 2f/Omega^2 term
+    CTMM$TfOmega2 <- 2*CTMM$f.nu[1]/CTMM$Omega2 # 2f/Omega^2 with renormalized Omega^2 -> tau[1]*Omega^2
   }
   else if(K>1 && CTMM$tau[1]>CTMM$tau[2]) # overdamped
   {

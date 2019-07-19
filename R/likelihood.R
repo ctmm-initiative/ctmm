@@ -78,7 +78,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   }
 
   # check for bad variances
-  if(max(eigenvalues.covm(sigma))<=0)
+  if(min(eigenvalues.covm(sigma))<=0)
   {
     ZERO <- rep(FALSE,n)
     for(i in 1:dim(error)[2]) { ZERO <- ZERO | (error[,i,i]==0) }
@@ -288,6 +288,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
       dim(COV.mu) <- c(AXES*M,AXES*M)
     }
   }   ### END KALMAN FILTER RUNS ###
+  COV.mu <- nant(COV.mu,0)
 
   # discard infinite prior uncertainty in stationary mean for BM/IOU
   if(!CTMM$range) { logdetcov <- ifelse(M==1,0, -log(det(COV.mu[-(1:AXES),-(1:AXES)])) ) }
@@ -366,6 +367,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
 
   # mean structure terms
   if(REML) { loglike <- loglike + CTMM$REML.loglike + logdetcov/2 }
+  loglike <- nant(loglike,-Inf) # Inf - Inf
 
   if(verbose)
   {
@@ -415,6 +417,8 @@ telemetry.mins <- function(data,axes=c('x','y'))
 # FIT MODEL WITH LIKELIHOOD FUNCTION (convenience wrapper to optim)
 ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),trace=FALSE)
 {
+  method <- match.arg(method,c("ML","pREML","pHREML","HREML","REML"))
+
   axes <- CTMM$axes
 
     if(is.null(CTMM$sigma))
@@ -455,8 +459,6 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
 
     return(CTMM)
   }
-
-  method <- match.arg(method,c("ML","pREML","pHREML","HREML","REML"))
 
   default <- list(method="pNewton",precision=1/2,maxit=.Machine$integer.max)
   control <- replace(default,names(control),control)
@@ -583,11 +585,11 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
     store.pars(pars,finish=TRUE)
 
     profile <- FALSE # no longer solving covariance analytically
-    if(method %in% c("pREML","pHREML")) { linear.cov <- TRUE }
     setup.parameters(CTMM,profile=FALSE)
     ### COV CALCULATION #############
     if(COV || method %in% c("pREML","pHREML"))
     {
+      # if pREML, calculate Hessian in safe parameterization and then transform afterwards
       if(trace) { message("Calculating Hessian.") }
       DIFF <- genD(par=pars,fn=fn,zero=-CTMM$loglike,lower=lower,upper=upper,parscale=parscale,Richardson=2,mc.cores=1)
       hess <- DIFF$hessian
@@ -616,7 +618,23 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
       if(trace) { message("Calculating REML gradient.") }
       DIFF <- genD(par=pars,fn=fn,lower=lower,upper=upper,parscale=parscale,Richardson=2,order=1,mc.cores=1)
 
-      d.pars <- -c(CTMM$COV %*% DIFF$gradient)
+      J <- diag(length(pars))
+      dimnames(J) <- list(NAMES,NAMES)
+      # invoke Jacobian (major,minor/major,angle) -> linear parameterization !!!
+      if(!CTMM$isotropic)
+      {
+        # Jacobian matrix d sigma / d par
+        SUB <- names(CTMM$sigma@par)
+        J[SUB,SUB] <- J.sigma.par(CTMM$sigma@par)
+      }
+
+      # apply linear parameter correction
+      linear.cov <- TRUE
+      setup.parameters(CTMM,profile=FALSE)
+
+      # calculate linear parameter correction
+      d.pars <- -c(J %*% CTMM$COV %*% DIFF$gradient)
+      # Jacobians cancel out between inverse Hessian and gradient
 
       # increment transformed parameters
       # pars <- pars + d.pars
@@ -627,6 +645,9 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
       # store parameter correction
       profile <- FALSE
       store.pars(pars,profile=FALSE,finish=TRUE)
+
+      linear.cov <- FALSE
+      setup.parameters(CTMM,profile=FALSE)
     }
     else if(method %in% c("pREML",'pHREML'))
     {
@@ -634,7 +655,6 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
       if(method=='pREML') { method <- 'ML' }
       else if(method=='pHREML') { method <- 'HREML' }
     }
-    linear.cov <- FALSE
     ### end pREML correction ###
 
     ### profile linear REML parameters ###

@@ -1,7 +1,7 @@
 # cross-validation model-selection routines
 
 # leave-one-out cross validated likelihood for model selection
-LOOCV <- function(data,CTMM,cores=1,...)
+LOOCV <- function(data,CTMM,cores=1,method=CTMM$method,...)
 {
   cores <- resolveCores(cores,fast=FALSE)
   axes <- CTMM$axes
@@ -15,7 +15,7 @@ LOOCV <- function(data,CTMM,cores=1,...)
     dim(ERROR1) <- c(AXES,AXES)
 
     # predict ith location using the same class model
-    CTMM <- ctmm.fit(data[-i,],CTMM,method=CTMM$method,...)
+    CTMM <- ctmm.fit(data[-i,],CTMM,method=method,COV=FALSE,...)
     PRED <- predict(data[-i,],CTMM,t=data$t[i])
 
     # uncertainty matrix on the prediction

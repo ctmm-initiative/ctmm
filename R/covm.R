@@ -77,22 +77,34 @@ sigma.construct <- function(pars)
 # reduce covariance matrix to 1-3 parameters
 sigma.destruct <- function(sigma,isotropic=FALSE) # last arg not implemented
 {
-  stuff <- eigen(sigma)
-  stuff$values <- clamp(stuff$values,0,Inf)
-
-  major <- stuff$values[1]
-  minor <- stuff$values[2]
-
-  if(major==minor)
-  { theta <- 0 }
-  else
+  INF <- diag(sigma)==Inf
+  # catch infinite variances
+  if(any(INF))
   {
-    theta <- stuff$vectors[,1]
-    theta <- atan(theta[2]/theta[1])
+    # can only represent diagonal infinite matrix in that form
+    major <- Inf
+    minor <- 1
+    theta <- 0
   }
+  else # finite variances
+  {
+    stuff <- eigen(sigma)
+    stuff$values <- clamp(stuff$values,0,Inf)
 
-  if(major<=0) { minor <- 1 }
-  else { minor <- minor/major }
+    major <- stuff$values[1]
+    minor <- stuff$values[2]
+
+    if(major==minor)
+    { theta <- 0 }
+    else
+    {
+      theta <- stuff$vectors[,1]
+      theta <- atan(theta[2]/theta[1])
+    }
+
+    if(major<=0) { minor <- 1 }
+    else { minor <- minor/major }
+  }
 
   stuff <- c(major,minor,theta)
   names(stuff) <- c("major","minor","angle")
@@ -247,7 +259,7 @@ sqrtm.covm <- function(sigma)
 }
 
 
-####### calculate variance and variance-covaraince from major/minor information
+####### calculate variance and variance-covariance from major/minor information
 axes2var <- function(CTMM,MEAN=TRUE)
 {
   COV <- CTMM$COV
@@ -301,6 +313,34 @@ axes2var <- function(CTMM,MEAN=TRUE)
 }
 
 
+# gradient matrix d sigma / d par
+J.sigma.par <- function(par)
+{
+  major <- par["major"]
+  minor <- par["minor"]
+  theta <- par["angle"]
+
+  # s_xx = major*cos(theta)^2 + major*minor*sin(theta)^2
+  # s_yy = major*sin(theta)^2 + major*minor*cos(theta)^2
+  # s_xy = major*cos(theta)*sin(theta) - major*minor*sin(theta)*cos(theta)
+  #      = major*(1-minor)*sin(2*theta)/2
+
+  # gradient matrix d sigma / d par
+  grad <- diag(3)
+  names(grad) <- names(par)
+  # d sigma / d major
+  grad[,1] <- c( cos(theta)^2+minor*sin(theta)^2, sin(theta)^2+minor*cos(theta)^2, +(1-minor)*sin(2*theta)/2 )
+  # d sigma / d minor
+  grad[,2] <- c( major*sin(theta)^2, major*cos(theta)^2, -major*sin(2*theta)/2 )
+  # d sigma / d theta
+  grad[1,3] <- major*(-1 + minor)*sin(2*theta)
+  grad[2,3] <- major*(+1 - minor)*sin(2*theta)
+  grad[3,3] <- major*(+1 - minor)*cos(2*theta)
+
+  return(grad)
+}
+
+
 # return the COV matrix for covm par representation
 COV.covm <- function(sigma,n,k=1,REML=TRUE)
 {
@@ -327,26 +367,8 @@ COV.covm <- function(sigma,n,k=1,REML=TRUE)
     COV[3,] <- c( 2*sigma[1,1]*sigma[1,2] , 2*sigma[2,2]*sigma[1,2] , sigma[1,1]*sigma[2,2]+sigma[1,2]^2 )/n
     COV[,3] <- COV[3,]
 
-    major <- par["major"]
-    minor <- par["minor"]
-    theta <- par["angle"]
-
-    # s_xx = major*cos(theta)^2 + major*minor*sin(theta)^2
-    # s_yy = major*sin(theta)^2 + major*minor*cos(theta)^2
-    # s_xy = major*cos(theta)*sin(theta) - major*minor*sin(theta)*cos(theta)
-    #      = major*(1-minor)*sin(2*theta)/2
-
     # gradient matrix d sigma / d par
-    grad <- diag(3)
-    # d sigma / d major
-    grad[,1] <- c( cos(theta)^2+minor*sin(theta)^2, sin(theta)^2+minor*cos(theta)^2, +(1-minor)*sin(2*theta)/2 )
-    # d sigma / d minor
-    grad[,2] <- c( major*sin(theta)^2, major*cos(theta)^2, -major*sin(2*theta)/2 )
-    # d sigma / d theta
-    grad[1,3] <- major*(-1 + minor)*sin(2*theta)
-    grad[2,3] <- major*(+1 - minor)*sin(2*theta)
-    grad[3,3] <- major*(+1 - minor)*cos(2*theta)
-
+    grad <- J.sigma.par(par)
     # gradient matrix d par / d sigma via inverse function theorem
     grad <- solve(grad)
 
