@@ -1,7 +1,9 @@
-ctmm 0.5.7 (2019-07-17)
+ctmm 0.5.7 (2019-07-20)
 ================
 
   * new function optimizer
+  
+  * new function SpatialPolygonsDataFrame.telemetry for location estimate error circles/ellipses
   
   * 'pNewton' now the default optimization method
   

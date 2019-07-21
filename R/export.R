@@ -166,13 +166,56 @@ SpatialPointsDataFrame.telemetry <- function(object,...)
   return(SP)
 }
 
+
+########
+SpatialPolygonsDataFrame.telemetry <- function(object,level.UD=0.95,...)
+{
+  object <- listify(object)
+  identity <- unlist(sapply(object,function(o){ rep(attr(o,"info")$identity,length(o$t)) }))
+  timestamp <- do.call(c,lapply(object,function(o){ o$timestamp }))
+
+  proj <- projection(object)
+  if(length(proj)!=1) { stop("Inconsistent projections.") }
+
+  polygons <- list()
+  ID <- 1
+  for(i in 1:length(object))
+  {
+    R <- get.telemetry(object[[i]])
+    S <- get.error(object[[i]],ctmm(error=10),DIM=2) # UERE of 10 default
+
+    polygons[[i]] <- list()
+    for(j in 1:nrow(object[[i]]))
+    {
+      P <- ellipsograph(mu=R[j,],sigma=S[j,,],level=level.UD,PLOT=FALSE)
+      P <- rbind(P,P[1,]) # first=last
+      P <- sp::Polygon(P,hole=FALSE)
+      P <- sp::Polygons(list(P),ID=ID)
+      ID <- ID + 1 # annoying sp requirement
+      polygons[[i]][[j]] <- P
+    }
+  }
+  polygons <- do.call(c,polygons)
+  polygons <- sp::SpatialPolygons(polygons, proj4string=sp::CRS(proj))
+  # names(polygons) <- 1:length(polygons)
+
+  # spatial polygons data frame
+  DF <- data.frame(identity=identity,timestamp=timestamp,row.names=names(polygons))
+  names(DF) <- c("identity","timestamp") # weird namespace collision with identity()
+  polygons <- sp::SpatialPolygonsDataFrame(polygons,DF)
+
+  return(polygons)
+}
+
+
 ################
-writeShapefile.telemetry <- function(object,folder,file=NULL, ...)
+writeShapefile.telemetry <- function(object,folder,file=NULL,error=TRUE,level.UD=0.95,...)
 {
   if(is.null(file)) { file <- mean.info(object) }
 
   # make one long SPDF
-  SP <- SpatialPointsDataFrame.telemetry(object)
+  if(error) { SP <- SpatialPolygonsDataFrame.telemetry(object,level.UD=level.UD) }
+  else { SP <- SpatialPointsDataFrame.telemetry(object) }
 
   # make shape file from points
   rgdal::writeOGR(SP, dsn=folder, layer=file, driver="ESRI Shapefile",...)

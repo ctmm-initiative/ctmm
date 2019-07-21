@@ -520,7 +520,7 @@ plot.ctmm <- function(model,alpha=0.05,col="blue",bg=NA,...)
 ###################
 # mu - mean vector
 # sigma - covariance matrix
-ellipsograph <- function(mu,sigma,level=0.95,fg=graphics::par("col"),bg=NA,...)
+ellipsograph <- function(mu,sigma,level=0.95,fg=graphics::par("col"),bg=NA,PLOT=TRUE,...)
 {
   Eigen <- eigen(sigma)
   std <- Eigen$values
@@ -541,5 +541,6 @@ ellipsograph <- function(mu,sigma,level=0.95,fg=graphics::par("col"),bg=NA,...)
   x <- mu[1] + z*(Cos*std[1]*vec[1,1] + Sin*std[2]*vec[1,2])
   y <- mu[2] + z*(Cos*std[1]*vec[2,1] + Sin*std[2]*vec[2,2])
 
-  graphics::xspline(x, y=y, shape=-1, open=FALSE, border=fg, col=bg, ...)
+  if(PLOT) { graphics::xspline(x, y=y, shape=-1, open=FALSE, border=fg, col=bg, ...) }
+  else { return( cbind(x=x,y=y) ) }
 }
