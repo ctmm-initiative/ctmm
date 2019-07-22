@@ -664,14 +664,23 @@ uere.null <- function(data)
 {
   UERE <- value
 
-  # default ambiguous assignment
+  # default ambiguous assignment - overrides everything
   if(class(UERE)=="numeric" || class(UERE)=="integer")
   {
-    UERE <- cbind(UERE)
-    colnames(UERE) <- "horizontal"
-    if(is.null(names(value))) { rownames(UERE) <- "all" }
-    AIC <- NA*UERE[1,]
-    UERE <- new.UERE(UERE,DOF=NA*UERE,AICc=AIC,Zsq=AIC,VAR.Zsq=AIC,N=AIC)
+    # in case of different location classes
+    if(class(data)=="list")
+    {
+      data <- lapply(data,function(d){"uere<-"(d,value)})
+      return(data)
+    }
+
+    # at some point we might want to check the dimensions of value for different types
+
+    uere(data) <- NULL
+    UERE <- uere(data)
+    UERE[,] <- value
+    uere(data) <- UERE
+    return(data)
   }
 
   DOF <- attr(UERE,"DOF")

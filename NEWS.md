@@ -1,4 +1,4 @@
-ctmm 0.5.7 (2019-07-20)
+ctmm 0.5.7 (2019-07-21)
 ================
 
   * new function optimizer
@@ -19,7 +19,9 @@ ctmm 0.5.7 (2019-07-20)
   
   * head, tail methods for telemetry objects
 
-  * SpatialPointsDataFrame now includes timestamp 
+  * SpatialPointsDataFrame now includes timestamp
+  
+  * uere(data) <- numeric now overrides all location classes
   
   * bugfix in conditional simulations with dt argument
   

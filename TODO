@@ -3,7 +3,7 @@ PRIORITY
 * uere(data) <- 10 in vignette (turtle)
 * diffusion calculation with CIs (in summary)
 * as.telemetry.telemetry (do nothing)
-* bandwidth weights=TRUE dt>min(diff(t)) probably not subsetting data correctly (Pepper), need to "regularize" data for large dt
+* bandwidth weights=TRUE dt>min(diff(t)) probably not subsetting data correctly (Pepper), need to "regularize" data for large dt, maybe this just happens with no error in model?
 * summary.list needs to descend into lists recursively for uere objects
 * simulate.telemetry with no CTMM object to simulate error only 2D/3D
 * update optimizer to pracma::randortho
