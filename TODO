@@ -1,7 +1,7 @@
 PRIORITY
 * conditional encounter density estimation: p_E(x) \propto p_1(x)*p_2(x) (Grace, Shauhin et al)
-* uere(data) <- 10 in vignette (turtle)
 * diffusion calculation with CIs (in summary)
+* mode.UD
 * as.telemetry.telemetry (do nothing)
 * bandwidth weights=TRUE dt>min(diff(t)) probably not subsetting data correctly (Pepper), need to "regularize" data for large dt, maybe this just happens with no error in model?
 * summary.list needs to descend into lists recursively for uere objects

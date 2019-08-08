@@ -59,7 +59,7 @@ points(1/4,1)
 title("Detector Array")
 
 ## ------------------------------------------------------------------------
-# automated guestimates with circular covariance and calibrated errors
+# automated guestimate for calibrated data
 GUESS <- ctmm.guess(turtle[[3]],CTMM=ctmm(error=TRUE),interactive=FALSE)
 # stepwise fitting # CRAN policy limits us to 2 cores
 FIT <- ctmm.select(turtle[[3]],GUESS,trace=TRUE,cores=2)
@@ -68,13 +68,22 @@ summary(FIT)
 ## ------------------------------------------------------------------------
 # delete UERE information
 uere(turtle) <- NULL
-# toss out 2D locations for now
+# toss out 2D locations for this example, as we know they have a different/larger RMS UERE
 turtle <- lapply(turtle,function(t){ t[t$class=="3D",] })
 
 ## ------------------------------------------------------------------------
-# cheat and use previous fit as initial guess
-GUESS$error <- 10 # 10 meter error guess
-# fit parameter estimates
+# automated guestimate for uncalibrated data (with 10 meter RMS UERE guess)
+GUESS <- ctmm.guess(turtle[[3]],CTMM=ctmm(error=10),interactive=FALSE)
+# fit and select models
+FIT <- ctmm.select(turtle[[3]],GUESS,trace=TRUE,cores=2)
+summary(FIT)
+
+## ------------------------------------------------------------------------
+# assign 10 meter RMS UERE (2D class still deleted)
+uere(turtle) <- 10
+# automated guestimate for calibrated data
+GUESS <- ctmm.guess(turtle[[3]],CTMM=ctmm(error=TRUE),interactive=FALSE)
+# stepwise fitting # CRAN policy limits us to 2 cores
 FIT <- ctmm.select(turtle[[3]],GUESS,trace=TRUE,cores=2)
 summary(FIT)
 

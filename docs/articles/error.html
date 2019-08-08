@@ -86,7 +86,7 @@
       <h1>Telemetry error</h1>
                         <h4 class="author">Christen H. Fleming</h4>
             
-            <h4 class="date">2019-06-17</h4>
+            <h4 class="date">2019-07-23</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/ctmm-initiative/ctmm/blob/master/vignettes/error.Rmd"><code>vignettes/error.Rmd</code></a></small>
       <div class="hidden name"><code>error.Rmd</code></div>
@@ -112,10 +112,10 @@
 <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/summary">summary</a></span>(UERE)</code></pre></div>
 <pre><code>## , , horizontal
 ## 
-##          low        ML      high
+##          low       est      high
 ## 2D 22.786528 29.598802 36.397467
 ## 3D  6.477391  6.946024  7.414237</code></pre>
-<p>For GPS data, the UERE will typically be 10-15 meters. Here we have two location classes, “2D” and “3D”, which have substantially different UERE values. The UERE can then be assigned to a dataset with the <code>uere()&lt;-</code> command.</p>
+<p>For GPS data, the UERE will typically be 10-15 meters. Here we have two location classes, “2D” and “3D”, which have substantially different UERE values. (This will not necessarily be the case for other GPS tags.) The UERE can then be assigned to a dataset with the <code>uere()&lt;-</code> command.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/uere.html">uere</a></span>(turtle) &lt;-<span class="st"> </span>UERE
 <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/names">names</a></span>(turtle[[<span class="dv">3</span>]]) <span class="co"># now the data are calibrated, as VAR is present</span></code></pre></div>
 <pre><code>## [1] "t"      "HDOP"   "class"  "x"      "y"      "VAR.xy"</code></pre>
@@ -193,7 +193,7 @@ turtle[[<span class="dv">3</span>]] &lt;-<span class="st"> </span>turtle[[<span 
 <h3 class="hasAnchor">
 <a href="#fitting-with-calibrated-data" class="anchor"></a>Fitting with calibrated data</h3>
 <p>For calibrated errors, we have to set <code>error=TRUE</code> in the model guess to fit with telemetry error accounted for.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># automated guestimates with circular covariance and calibrated errors</span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># automated guestimate for calibrated data</span>
 GUESS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.fit.html">ctmm.guess</a></span>(turtle[[<span class="dv">3</span>]],<span class="dt">CTMM=</span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">error=</span><span class="ot">TRUE</span>),<span class="dt">interactive=</span><span class="ot">FALSE</span>)
 <span class="co"># stepwise fitting # CRAN policy limits us to 2 cores</span>
 FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.select</a></span>(turtle[[<span class="dv">3</span>]],GUESS,<span class="dt">trace=</span><span class="ot">TRUE</span>,<span class="dt">cores=</span><span class="dv">2</span>)</code></pre></div>
@@ -206,27 +206,27 @@ FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fi
 ## [1] "OU anisotropic error"
 ## 
 ## $DOF
-##    mean    area   speed 
-## 14.0105 24.1514  0.0000 
+##     mean     area    speed 
+## 14.01050 24.15177  0.00000 
 ## 
 ## $CI
-##                          low       ML     high
-## area (hectares)    13.672701 21.30649 30.60639
-## τ[position] (days)  3.294528  5.63697  9.64491</code></pre>
+##                          low       est     high
+## area (hectares)    13.672669 21.306356 30.60612
+## τ[position] (days)  3.294535  5.636969  9.64489</code></pre>
 <p><code>trace=TRUE</code> allows us to see the models considered. <code>verbose=TRUE</code> would save each model.</p>
 </div>
-<div id="fitting-with-uncalibrated-data" class="section level3">
+<div id="simultaneous-fitting-with-uncalibrated-data" class="section level3">
 <h3 class="hasAnchor">
-<a href="#fitting-with-uncalibrated-data" class="anchor"></a>Fitting with uncalibrated data</h3>
-<p>Fitting with unknown errors is a method of last resort. We have to provide an initial guess for <code>error</code>, which will be the device’s UERE. <code>error=10</code> is usually a good guess for GPS data. Unlike <code>uere.fit</code>, <code>ctmm.fit</code> is not yet coded to use the location classes.</p>
+<a href="#simultaneous-fitting-with-uncalibrated-data" class="anchor"></a>Simultaneous fitting with uncalibrated data</h3>
+<p>Fitting with unknown errors is a method of last resort. We have to provide an initial guess for <code>error</code>, which will be the device’s UERE. <code>error=10</code> is usually a good guess for GPS data (other than e-obs). Unlike <code>uere.fit</code>, <code>ctmm.fit</code> is not yet coded to use the location classes, as simultaneous fitting is a method of last resort that becomes increasingly dangerous with more location classes.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># delete UERE information</span>
 <span class="kw"><a href="../reference/uere.html">uere</a></span>(turtle) &lt;-<span class="st"> </span><span class="ot">NULL</span>
-<span class="co"># toss out 2D locations for now</span>
+<span class="co"># toss out 2D locations for this example, as we know they have a different/larger UERE</span>
 turtle &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">lapply</a></span>(turtle,<span class="cf">function</span>(t){ t[t<span class="op">$</span>class<span class="op">==</span><span class="st">"3D"</span>,] })</code></pre></div>
 <p>The only difference is that you have to provide an initial guess for the UERE. Otherwise, the steps are the same.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># cheat and use previous fit as initial guess</span>
-GUESS<span class="op">$</span>error &lt;-<span class="st"> </span><span class="dv">10</span> <span class="co"># 10 meter error guess</span>
-<span class="co"># fit parameter estimates</span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># automated guestimate for uncalibrated data (with 10 meter UERE guess)</span>
+GUESS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.fit.html">ctmm.guess</a></span>(turtle[[<span class="dv">3</span>]],<span class="dt">CTMM=</span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">error=</span><span class="dv">10</span>),<span class="dt">interactive=</span><span class="ot">FALSE</span>)
+<span class="co"># fit and select models</span>
 FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.select</a></span>(turtle[[<span class="dv">3</span>]],GUESS,<span class="dt">trace=</span><span class="ot">TRUE</span>,<span class="dt">cores=</span><span class="dv">2</span>)</code></pre></div>
 <pre><code>## * Fitting model OUF isotropic error.</code></pre>
 <pre><code>## * Fitting models OUF anisotropic error.</code></pre>
@@ -238,14 +238,42 @@ FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fi
 ## 
 ## $DOF
 ##     mean     area    speed 
-## 12.83004 21.87085  0.00000 
+## 12.83005 21.87087  0.00000 
 ## 
 ## $CI
-##                          low        ML     high
-## area (hectares)    13.020972 20.809256 30.39388
-## τ[position] (days)  3.416684  6.198589 11.24556
-## error (meters)      0.000000  8.784082 66.94771</code></pre>
+##                          low       est     high
+## area (hectares)    13.020972 20.809251 30.39386
+## τ[position] (days)  3.416684  6.198587 11.24555
+## error (meters)      0.000000  8.784081 66.94771</code></pre>
 <p>Here, fitting the UERE simultaneously with the movement model produced a consistent result. This will not always be the case.</p>
+</div>
+<div id="fitting-with-uncalibrated-data-under-a-prior" class="section level3">
+<h3 class="hasAnchor">
+<a href="#fitting-with-uncalibrated-data-under-a-prior" class="anchor"></a>Fitting with uncalibrated data under a prior</h3>
+<p>An alternative method of last resort is to simply assign a plausible UERE value to the data. Again, 10-meter error is usually a good guess for GPS data (other than e-obs).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># assign 10 meter UERE (2D class still deleted)</span>
+<span class="kw"><a href="../reference/uere.html">uere</a></span>(turtle) &lt;-<span class="st"> </span><span class="dv">10</span>
+<span class="co"># automated guestimate for calibrated data</span>
+GUESS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.fit.html">ctmm.guess</a></span>(turtle[[<span class="dv">3</span>]],<span class="dt">CTMM=</span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">error=</span><span class="ot">TRUE</span>),<span class="dt">interactive=</span><span class="ot">FALSE</span>)
+<span class="co"># stepwise fitting # CRAN policy limits us to 2 cores</span>
+FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.select</a></span>(turtle[[<span class="dv">3</span>]],GUESS,<span class="dt">trace=</span><span class="ot">TRUE</span>,<span class="dt">cores=</span><span class="dv">2</span>)</code></pre></div>
+<pre><code>## * Fitting model OUF isotropic error.</code></pre>
+<pre><code>## * Fitting models OUF anisotropic error.</code></pre>
+<pre><code>## * Fitting models OU anisotropic error, OUf anisotropic error.</code></pre>
+<pre><code>## * Fitting models IID anisotropic error, OU isotropic error.</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/summary">summary</a></span>(FIT)</code></pre></div>
+<pre><code>## $name
+## [1] "OU anisotropic error"
+## 
+## $DOF
+##     mean     area    speed 
+## 12.06150 20.48922  0.00000 
+## 
+## $CI
+##                          low       est     high
+## area (hectares)    12.638972 20.554517 30.36362
+## τ[position] (days)  3.629399  6.628391 12.10547</code></pre>
+<p>Some sensitivity analysis would be warranted here for the UERE parameter.</p>
 </div>
 </div>
 </div>

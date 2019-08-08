@@ -205,14 +205,14 @@ PDsolve <- function(M,force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
   {
     # 1/Inf == 0
     if(any(INF))
-    {
-      M[INF,] <- 0
-      M[,INF] <- 0
-      M[INF,INF] <- 0
-    }
+    { M[INF,INF] <- 0 }
 
     # 1/0 == Inf
-    if(any(ZERO)) { M[ZERO,ZERO] <- Inf }
+    if(any(ZERO))
+    {
+      M[ZERO,ZERO] <- 0
+      diag(M)[ZERO] <- Inf
+    }
 
     # regular inverse of remaining dimensions
     REM <- !(INF|ZERO)

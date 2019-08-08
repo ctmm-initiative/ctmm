@@ -445,6 +445,8 @@ variogram.slow <- function(data,error=NULL,dt=NULL,CI="Markov",axes=c("x","y"),A
     }
     else
     { ERROR <- 0 }
+
+    if(ACF || !calibrated) { break }
   }
   rm(I1,I2,W1,W2,VAR,SVF.OLD)
   if(!ACF) { rm(EVAR) }

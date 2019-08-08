@@ -63,7 +63,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.5</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.7</span>
       </span>
     </div>
 
@@ -135,6 +135,8 @@
 
 <span class='fu'>SpatialPointsDataFrame.telemetry</span>(<span class='no'>object</span>,<span class='no'>...</span>)
 
+<span class='fu'>SpatialPolygonsDataFrame.telemetry</span>(<span class='no'>object</span>,<span class='kw'>level.UD</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='no'>...</span>)
+
 <span class='fu'>SpatialPolygonsDataFrame.UD</span>(<span class='no'>object</span>,<span class='kw'>level.UD</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='no'>...</span>)
 
 <span class='co'># S4 method for UD,character</span>
@@ -143,7 +145,7 @@
 <span class='fu'>writeShapefile</span>(<span class='no'>object</span>,<span class='no'>folder</span>,<span class='kw'>file</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='no'>...</span>)
 
 <span class='co'># S3 method for telemetry</span>
-<span class='fu'>writeShapefile</span>(<span class='no'>object</span>,<span class='no'>folder</span>,<span class='kw'>file</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='no'>...</span>)
+<span class='fu'>writeShapefile</span>(<span class='no'>object</span>,<span class='no'>folder</span>,<span class='kw'>file</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>error</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>level.UD</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='no'>...</span>)
 
 <span class='co'># S3 method for UD</span>
 <span class='fu'>writeShapefile</span>(<span class='no'>object</span>,<span class='no'>folder</span>,<span class='kw'>file</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>level.UD</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='no'>...</span>)</pre>
@@ -188,6 +190,10 @@
       <td><p>Character name of files for shapefile.</p></td>
     </tr>
     <tr>
+      <th>error</th>
+      <td><p>Export error circles/ellipses as polygons if <code>TRUE</code>.</p></td>
+    </tr>
+    <tr>
       <th>...</th>
       <td><p>Optional arguments passed to <code><a href='https://www.rdocumentation.org/packages/raster/topics/writeRaster'>writeRaster</a></code>, <code><a href='https://www.rdocumentation.org/packages/rgdal/topics/writeOGR'>writeOGR</a></code>, etc..</p></td>
     </tr>
@@ -204,8 +210,9 @@
 <code>DF=PDF</code> gives the average probability density per cell,
 <code>DF=PMF</code> gives the total probability per cell,
 and <code>DF=CDF</code> gives the cumulative probability.</p>
-<p><code>SpatialPoints.telemetry</code> returns a single <code>spatialPoints</code> object for the <code>x</code>-<code>y</code> locations, with individual identity information lost.
-<code>SpatialPointsDataFrame.telemetry</code> returns a <code>SpatialPointsDataFrame</code> with the individual identities recorded in the data frame.</p>
+<p><code>SpatialPoints.telemetry</code> returns a single <code>spatialPoints</code> object for the <code>x</code>-<code>y</code> locations, with individual identity information lost.</p>
+<p><code>SpatialPointsDataFrame.telemetry</code> returns a <code>SpatialPointsDataFrame</code> with the individual identities recorded in the data frame.</p>
+<p><code>SpatialPolygonsDataFrame.telemetry</code> returns a <code>SpatialPolygonsDataFrame</code> that encodes the location estimate's error circles/ellipses.</p>
 <p><code>SpatialPolygonsDataFrame.UD</code> returns a <code>SpatialPolygonsDataFrame</code> of the low, ML, and high home-range area estimates, in the appropriate order for plotting.</p>
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>

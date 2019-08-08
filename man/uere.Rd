@@ -5,9 +5,9 @@
 \alias{summary.UERE}
 \encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{Estimate UERE from calibration data}
+\title{Estimate RMS UERE from calibration data}
 
-\description{Functions for estimating and assigning the User Equivalent Range Error (UERE) of a GPS device from calibration data.}
+\description{Functions for estimating and assigning the root-mean-square User Equivalent Range Error (UERE) of a GPS device from calibration data.}
 
 \usage{
 uere(data)
@@ -22,7 +22,7 @@ uere.fit(data,precision=1/2)
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{data}{\code{telemetry} object or list of telemetry objects, preferably with DOP columns.}
-  \item{value}{UERE value(s) to assign to telemetry data (see details).}
+  \item{value}{RMS UERE value(s) to assign to telemetry data (see details).}
   \item{precision}{Fraction of maximum possible digits of precision to target in categorical error fitting. \code{precision=1/2} results in about 7 decimal digits of precision.}
   \item{object}{\code{UERE} object to summarize or list of \code{UERE} objects to compare.}
   \item{level}{Confidence level for UERE estimate confidence intervals.}
@@ -30,15 +30,15 @@ uere.fit(data,precision=1/2)
   \item{...}{Further arguments are ignored.}
 }
 
-\details{Often times GPS animal tracking devices return HDOP values but do not specifiy the device's UERE necessary to transform the HDOP values into absolute errors.
-\code{uere.fit()} allows users to estimate the UERE from calibration data, where the device was left fixed over a period of time.
-The calibration UERE can then be applied to tracking data with the \code{uere()<-} assignment method.
-Otherwise, when \code{error=TRUE} in \code{\link{ctmm}}, \code{\link{ctmm.fit}} will estimate the UERE simultaneously with the movement model, which is less reliable than using calibration data.
+\details{Often times GPS animal tracking devices return HDOP values but do not specifiy the device's RMS UERE necessary to transform the HDOP values into absolute errors.
+\code{uere.fit()} allows users to estimate the RMS UERE from calibration data, where the device was left fixed over a period of time.
+The calibration RMS UERE can then be applied to tracking data with the \code{uere()<-} assignment method.
+Otherwise, when \code{error=TRUE} in \code{\link{ctmm}}, \code{\link{ctmm.fit}} will estimate the RMS UERE simultaneously with the movement model, which is less reliable than using calibration data.
 
-\code{summary()} applied to single \code{UERE} object will return UERE parameter estimates and confidence intervals, while \code{summary()} applied to a list of \code{UERE} objects will return a model-selection table, with AICc and reduced Z squared (goodness of fit) values.
+\code{summary()} applied to single \code{UERE} object will return RMS UERE parameter estimates and confidence intervals, while \code{summary()} applied to a list of \code{UERE} objects will return a model-selection table, with AICc and reduced Z squared (goodness of fit) values.
 }
 
-\value{The UERE estimate.}
+\value{The RMS UERE estimate.}
 
 %\references{}
 
@@ -58,12 +58,12 @@ data(turtle)
 # the first two datasets are calibration data
 names(turtle)
 
-# estimate UERE from calibration data
+# estimate RMS UERE from calibration data
 UERE <- uere.fit(turtle[1:2])
 # inspect UERE estimate
 summary(UERE)
 
-# assign UERE to entire dataset
+# assign RMS UERE to entire dataset
 uere(turtle) <- UERE
 
 # calculate residuals of calibration data

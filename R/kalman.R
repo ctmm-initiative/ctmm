@@ -264,15 +264,19 @@ kalman <- function(z,u,dt,CTMM,error=NULL,smooth=FALSE,sample=FALSE,residual=FAL
     for(i in 1:n)
     {
       # residual covariance
-      sForP <- sFor[i,,] %*% P # (K*DIM,OBS*DIM)
-      sRes[i,,] <- ((t(P) %*% sForP) + error[i,,]) # (OBS*DIM,OBS*DIM)
+      # 0*Inf -> 0; 0 projection of Inf covariance
+      sForP <- nant(sFor[i,,] %*% P,0) # (K*DIM,OBS*DIM)
+      sRes[i,,] <- (nant(t(P) %*% sForP,0) + error[i,,]) # (OBS*DIM,OBS*DIM)
+      # nant's here might be stop-gap solutions
 
       # forcast residuals
       zRes[i,,] <- zRes[i,,] - (t(P) %*% zFor[i,,]) # (OBS*DIM,VEC) # zRes is initially just z
 
       Gain <- sForP %*% PDsolve(sRes[i,,]) # (K*DIM,OBS*DIM) # updated to invert Inf uncertainty to 0
       # 0/0 NaN have Gain of 1 (P) # # Inf*epsilon have Gain of 1 (P)
-      for(j in 1:ncol(Gain)) { if(any(is.nan(Gain[,j])) || any(abs(Gain[,j])==Inf)) { Gain[,j] <- P[,j] } }
+      INF <- is.nan(Gain) | (Gain==Inf)
+      if(any(INF)) { Gain[INF] <- P[INF] }
+      #for(j in 1:ncol(Gain)) { if(any(is.nan(Gain[,j])) || any(abs(Gain[,j])==Inf)) { Gain[,j] <- P[,j] } }
 
       # concurrent estimates
       zCon[i,,] <- zFor[i,,] + (Gain %*% zRes[i,,]) # (K*DIM,VEC)
@@ -389,9 +393,17 @@ kalman <- function(z,u,dt,CTMM,error=NULL,smooth=FALSE,sample=FALSE,residual=FAL
       # fix for BM/IOU conditioning off first location (not really a model parameter)
       if(!CTMM$range && length(mu))
       {
+        DIMS <- dim(zRes)
+        dim(zRes) <- c(n,OBS,DIM,VEC)
         # overwrite NaN stationary mean value with first location (maximizes likelihood)
-        mu[1,] <- zRes[1,DATA]
-        # remove stationary mean terms from COV
+        if(DIM==1)
+        { mu[1,] <- zRes[1,1,,DATA] }
+        else # account for dimension packing in mean
+        { mu[1+c(0,nrow(mu)/2),1] <- zRes[1,1,,DATA] }
+        dim(zRes) <- DIMS
+        # ! TODO: remove stationary mean terms from COV
+        # ! TODO: remove stationary mean terms from COV
+        # ! TODO: remove stationary mean terms from COV
       }
 
       # separate data from trend

@@ -1,4 +1,4 @@
-ctmm 0.5.7 (2019-07-21)
+ctmm 0.5.7 (2019-08-07)
 ================
 
   * new function optimizer
@@ -27,7 +27,7 @@ ctmm 0.5.7 (2019-07-21)
   
   * bugfix in plot.UD gridlines
   
-  * stability fix in ctmm.fit for BM/IOU models
+  * stability fixes in ctmm.fit for BM/IOU models
   
   * further stability enhancements in ctmm.loglike and optimizer
   

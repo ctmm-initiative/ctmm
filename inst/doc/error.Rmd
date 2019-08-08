@@ -23,16 +23,16 @@ names(turtle) # two calibration datasets and two turtle datasets
 plot(turtle[1:2],col=rainbow(2)) # calibration data only
 ```
 
-The `uere` command is used to estimate the UERE parameter(s) from calibration data. Do not use this command on animal tracking data.
+The `uere` command is used to estimate the RMS UERE parameter(s) from calibration data. Do not use this command on animal tracking data.
 
 ```{r}
 UERE <- uere.fit(turtle[1:2]) # only using calibration data
 summary(UERE)
 ```
 
-For GPS data, the UERE will typically be 10-15 meters.
-Here we have two location classes, "2D" and "3D", which have substantially different UERE values.
-The UERE can then be assigned to a dataset with the `uere()<-` command.
+For GPS data, the RMS UERE will typically be 10-15 meters.
+Here we have two location classes, "2D" and "3D", which for this device have substantially different RMS UERE values.
+The UERE parameters can then be assigned to a dataset with the `uere()<-` command.
 
 ```{r}
 uere(turtle) <- UERE
@@ -73,7 +73,7 @@ We can see that the combination of location class and HDOP values yield the best
 both in terms of AICc and in terms of reduced Z squared.
 Reduced Z squared is a goodness-of-fit statistic akin to reduced chi squared, but designed for comparing error models.
 
-We had two calibration datasets, so we can also see if there is any substantial difference between the two GPS tags. We do this by making a list of individual UEREs to compare to the previous joint UERE.
+We had two calibration datasets, so we can also see if there is any substantial difference between the two GPS tags. We do this by making a list of individual UERE objects to compare to the previous joint UERE model.
 ```{r}
 UERES <- lapply(turtle[1:2],uere.fit)
 summary(list(joint=UERE,individual=UERES))
@@ -134,7 +134,7 @@ Furthermore, in cases with an error model, `ctmm.select()` is safer to use than 
 For calibrated errors, we have to set `error=TRUE` in the model guess to fit with telemetry error accounted for.
 
 ```{r}
-# automated guestimates with circular covariance and calibrated errors
+# automated guestimate for calibrated data
 GUESS <- ctmm.guess(turtle[[3]],CTMM=ctmm(error=TRUE),interactive=FALSE)
 # stepwise fitting # CRAN policy limits us to 2 cores
 FIT <- ctmm.select(turtle[[3]],GUESS,trace=TRUE,cores=2)
@@ -143,26 +143,42 @@ summary(FIT)
 
 `trace=TRUE` allows us to see the models considered. `verbose=TRUE` would save each model.
 
-### Fitting with uncalibrated data
+### Simultaneous fitting with uncalibrated data
 
-Fitting with unknown errors is a method of last resort. We have to provide an initial guess for `error`, which will be the device's UERE. `error=10` is usually a good guess for GPS data. Unlike `uere.fit`, `ctmm.fit` is not yet coded to use the location classes.
+Fitting with unknown errors is a method of last resort. We have to provide an initial guess for `error`, which will be the device's RMS UERE. `error=10` is usually a good guess for GPS data (other than e-obs). Unlike `uere.fit`, `ctmm.fit` is not yet coded to use the location classes, as simultaneous fitting is a method of last resort that becomes increasingly dangerous with more location classes.
 
 ```{r}
 # delete UERE information
 uere(turtle) <- NULL
-# toss out 2D locations for now
+# toss out 2D locations for this example, as we know they have a different/larger RMS UERE
 turtle <- lapply(turtle,function(t){ t[t$class=="3D",] })
 ```
 
-The only difference is that you have to provide an initial guess for the UERE. Otherwise, the steps are the same.
+The only difference is that you have to provide an initial guess for the RMS UERE. Otherwise, the steps are the same.
 
 ```{r}
-# cheat and use previous fit as initial guess
-GUESS$error <- 10 # 10 meter error guess
-# fit parameter estimates
+# automated guestimate for uncalibrated data (with 10 meter RMS UERE guess)
+GUESS <- ctmm.guess(turtle[[3]],CTMM=ctmm(error=10),interactive=FALSE)
+# fit and select models
 FIT <- ctmm.select(turtle[[3]],GUESS,trace=TRUE,cores=2)
 summary(FIT)
 ```
 
-Here, fitting the UERE simultaneously with the movement model produced a consistent result.
+Here, fitting the RMS UERE simultaneously with the movement model produced a consistent result.
 This will not always be the case.
+
+### Fitting with uncalibrated data under a prior
+
+An alternative method of last resort is to simply assign a plausible RMS UERE value to the data. Again, 10-meter error is usually a good guess for GPS data (other than e-obs).
+
+```{r}
+# assign 10 meter RMS UERE (2D class still deleted)
+uere(turtle) <- 10
+# automated guestimate for calibrated data
+GUESS <- ctmm.guess(turtle[[3]],CTMM=ctmm(error=TRUE),interactive=FALSE)
+# stepwise fitting # CRAN policy limits us to 2 cores
+FIT <- ctmm.select(turtle[[3]],GUESS,trace=TRUE,cores=2)
+summary(FIT)
+```
+
+Some sensitivity analysis would be warranted here for the UERE parameter.
