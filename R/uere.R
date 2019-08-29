@@ -14,7 +14,11 @@ is.calibrated <- function(data,type="horizontal")
 
   # classes in data
   CLASS <- levels(data$class)
-  if(!length(CLASS)) { CLASS <- "all" }
+  if(!length(CLASS))
+  {
+    CLASS <- "all"
+    if(is.null(dimnames(UERE))) { dimnames(UERE) <- list(CLASS,type) }
+  }
 
   # UERE of classes in data only
   UERE <- UERE[CLASS,type]

@@ -1,4 +1,4 @@
-ctmm 0.5.7 (2019-08-07)
+ctmm 0.5.7 (2019-08-29)
 ================
 
   * new function optimizer
@@ -30,6 +30,8 @@ ctmm 0.5.7 (2019-08-07)
   * stability fixes in ctmm.fit for BM/IOU models
   
   * further stability enhancements in ctmm.loglike and optimizer
+  
+  * bugfix in simultaneously fit RMS UERE CIs
   
   * AICc formulas fixed for tiny n
   

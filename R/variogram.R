@@ -72,8 +72,39 @@ variogram.dt <- function(data,dt=NULL,fast=NULL,res=1,CI="Markov",axes=c("x","y"
     else { fast <- TRUE }
   }
 
+  z <- get.telemetry(data,axes=axes)
   # telemetry error when UERE=1
   error <- get.error(data,ctmm(axes=axes,error=TRUE),circle=TRUE)
+  FLAG <- attr(error,'flag')
+
+  # merge repeated timestamps
+  REPEAT <- diff(data$t)==0 # repeating times
+  REPEAT <- c(FALSE,REPEAT) # count first as unique
+  UNIQUE <- !REPEAT
+  DATA <- data[UNIQUE,] # copy over unique times (and junk)
+  Z <- get.telemetry(DATA,axes=axes)
+  ERROR <- error[UNIQUE] # copy over unique times (and junk)
+  i <- 1
+  INDEX <- cumsum(UNIQUE) # indices of unique times
+  while(i < nrow(data))
+  {
+    if(REPEAT[i+1])
+    {
+      di <- 1
+      while(REPEAT[i+di+1]) { di <- di + 1 }
+
+      w <- 1/error[i + 0:di] # precisions
+      W <- sum(w) # total precision
+      w <- w/W # precision weights
+      Z[INDEX[i],] <- w %*% z[i + 0:di,] # precision weighted average
+      ERROR[INDEX[i]] <- 1/W # aggregate variance
+    }
+
+    i <- i + 1
+  }
+  data <- set.telemetry(DATA,Z,axes=axes)
+  error <- ERROR
+  rm(z,Z,ERROR,DATA) # clean up
 
   if(fast)
   { SVF <- variogram.fast(data=data,error=error,dt=dt,res=res,CI=CI,axes=axes) }
@@ -88,7 +119,7 @@ variogram.dt <- function(data,dt=NULL,fast=NULL,res=1,CI="Markov",axes=c("x","y"
   SVF$MSE[1] <- 0 # what about dupes?
 
   # clarify that this is not calibrated error
-  if(attr(error,'flag')<=2) { SVF <- rename(SVF,"MSE","MSDOP") }
+  if(FLAG<=2) { SVF <- rename(SVF,"MSE","MSDOP") }
 
   return(SVF)
 }

@@ -78,10 +78,10 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   }
 
   # check for bad variances
-  if(min(eigenvalues.covm(sigma))<=0)
+  if(min(eigenvalues.covm(sigma))<=.Machine$double.eps)
   {
     ZERO <- rep(FALSE,n)
-    for(i in 1:dim(error)[2]) { ZERO <- ZERO | (error[,i,i]==0) }
+    for(i in 1:dim(error)[2]) { ZERO <- ZERO | (error[,i,i]<=.Machine$double.eps) }
     if(any(ZERO)) { return(-Inf) }
   }
 
@@ -505,7 +505,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
     # initial guess for optimization
     pars <<- get.parameters(CTMM,NAMES,linear.cov=linear.cov)
   }
-  setup.parameters(CTMM)
+  setup.parameters(CTMM,profile=TRUE)
   if("error" %nin% NAMES) { CTMM$error <- as.logical(CTMM$error) } # fix numeric error when it should be logical
 
   # degrees of freedom, including the mean, variance/covariance, tau, and error model

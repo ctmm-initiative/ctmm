@@ -622,14 +622,15 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
       {
         z <- z[,1] + 1i*z[,2]
         z <- R * z
-        z <- cbind(Re(z),Im(z))
 
         if(K>1)
         {
-          v <- v[,] + 1i*v[,2]
-          v <- (R*v) + 1i*circle*z # mean zero here
+          v <- v[,1] + 1i*v[,2]
+          v <- (R*v) + 1i*circle*z # mean-zero z
           v <- cbind(Re(v),Im(v))
         }
+
+        z <- cbind(Re(z),Im(z))
       }
 
       # calculate mean function

@@ -458,7 +458,7 @@ uspline.init <- function(data,CTMM)
   # default domain of spline grid
   if(is.null(CTMM$domain)) { CTMM$domain <- c(data$t[1],last(data$t)) }
 
-  if(is.null(CTMM$mu)) { CTMM <- drift.init(CTMM) }
+  if(is.null(CTMM$mu)) { CTMM <- drift.init(data,CTMM) }
 
   return(CTMM)
 }

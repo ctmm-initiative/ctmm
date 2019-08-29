@@ -142,6 +142,9 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE=F
 
   if(STRUCT$error && UERE<3)
   {
+    # relative length scale
+    # SCALE <- ifelse(profile,sqrt(CTMM$sigma@par['major']),1)
+
     parscale <- c(parscale,max(dz,CTMM$error)) # minimum of dz error parscale
     lower <- c(lower,0)
     upper <- c(upper,Inf)

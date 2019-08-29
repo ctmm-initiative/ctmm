@@ -169,8 +169,8 @@ unit.ctmm <- function(CTMM,length=1,time=1)
 
     if("error" %in% NAMES)
     {
-      CTMM$COV["error",] <- CTMM$COV["error",]/length^2
-      CTMM$COV[,"error"] <- CTMM$COV[,"error"]/length^2
+      CTMM$COV["error",] <- CTMM$COV["error",]/length
+      CTMM$COV[,"error"] <- CTMM$COV[,"error"]/length
     }
 
     if("circle" %in% NAMES)

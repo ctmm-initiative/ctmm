@@ -97,7 +97,7 @@ new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,units=
     plot(ext, xlab=xlab, ylab=ylab, col=grDevices::rgb(1,1,1,0), asp=1, ...)
     # plot information for further layering
     projection <- unique(c(projection(data),projection(CTMM),projection(UD))) # some objects could be NULL
-    if(length(projection)>1) { stop("Multiple projections not yet supported.") }
+    if(length(projection)>1 && !RESIDUALS) { stop("Multiple projections not yet supported.") }
     assign("projection",projection,pos=plot.env)
     # dimensional type
     assign("x.dim","length",pos=plot.env)

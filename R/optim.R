@@ -304,7 +304,7 @@ mc.min <- function(min,cores=detectCores())
 ##################################
 mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
 {
-  DEBUG <- FALSE
+  DEBUG <- FALSE # can be overridden in control
   PMAP <- TRUE # periodic parameters are mapped locally: (-period/2,+period/2) -> (-Inf,Inf) during search steps
   # check complains about visible bindings
   fnscale <- parscale <- maxit <- precision <- trace <- cores <- hessian <- covariance <- NULL
@@ -419,7 +419,13 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
       # store to environmental variable so that I can debug?
       par <- par*parscale
       warning("Objective function failure at c(",paste(names(par),collapse=','),') = c(',paste(par,collapse=','),')')
-
+      if(DEBUG)
+      {
+        debug(ctmm.loglike)
+        # try again with debugging
+        if(ZERO) { FN <- try(fn(par*parscale,zero=zero*fnscale,...)) }
+        else { FN <- try(fn(par*parscale,...)) }
+      }
       FN <- Inf
     }
 
@@ -887,7 +893,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
         # DEBUG.LIST <<- list(par.all=par.all,fn.all=fn.all,parscale=parscale)
         if(trace) { message(sprintf("%s %s search",format(zero+fn.par,digits=16),LINE.TYPE)) }
 
-        if(DEBUG)
+        if(DEBUG>1)
         {
           graphics::plot((DIR.STEP %*% (par.all-par)),(fn.all-fn.par),xlab="Distance from MIN",ylab="Value over MIN")
           graphics::title(sprintf("%s search",LINE.TYPE))
