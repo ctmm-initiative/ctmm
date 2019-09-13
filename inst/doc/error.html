@@ -7,12 +7,13 @@
 <meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <meta name="author" content="Christen H. Fleming" />
 
-<meta name="date" content="2019-07-24" />
+<meta name="date" content="2019-09-12" />
 
 <title>Telemetry error</title>
 
@@ -70,7 +71,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
       if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
       var style = rule.style.cssText;
       // check if color or background-color is set
-      if (rule.style.color === '' || rule.style.backgroundColor === '') continue;
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
       // replace div.sourceCode by a pre.sourceCode rule
       sheets[i].deleteRule(j);
       sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
@@ -95,7 +96,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Telemetry error</h1>
 <h4 class="author">Christen H. Fleming</h4>
-<h4 class="date">2019-07-24</h4>
+<h4 class="date">2019-09-12</h4>
 
 
 
@@ -147,17 +148,17 @@ UERE.nothing &lt;-<span class="st"> </span><span class="kw">uere.fit</span>(t.no
 <p>We can now apply model selection to the UERE model fits by summarizing them in a list.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(<span class="kw">list</span>(<span class="dt">HDOP.class=</span>UERE,<span class="dt">class=</span>UERE.noHDOP,<span class="dt">HDOP=</span>UERE.noclass,<span class="dt">homoskedastic=</span>UERE.nothing))</code></pre></div>
 <pre><code>##                  ΔAICc  Z[red]²
-## HDOP.class      0.0000 3.741176
-## HDOP          286.5747 6.180647
-## class         418.5174 5.844317
-## homoskedastic 637.2580 7.401718</code></pre>
+## HDOP.class      0.0000 2.366617
+## HDOP          286.5747 3.908826
+## class         418.5174 3.696585
+## homoskedastic 637.2580 4.681067</code></pre>
 <p>We can see that the combination of location class and HDOP values yield the best error model, both in terms of AICc and in terms of reduced Z squared. Reduced Z squared is a goodness-of-fit statistic akin to reduced chi squared, but designed for comparing error models.</p>
 <p>We had two calibration datasets, so we can also see if there is any substantial difference between the two GPS tags. We do this by making a list of individual UERE objects to compare to the previous joint UERE model.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">UERES &lt;-<span class="st"> </span><span class="kw">lapply</span>(turtle[<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>],uere.fit)
 <span class="kw">summary</span>(<span class="kw">list</span>(<span class="dt">joint=</span>UERE,<span class="dt">individual=</span>UERES))</code></pre></div>
 <pre><code>##               ΔAICc  Z[red]²
-## joint      0.000000 3.741176
-## individual 3.314758 3.738773</code></pre>
+## joint      0.000000 2.366617
+## individual 3.314758 2.367412</code></pre>
 <p>In this case, performance of the individualized and joint error models are comparable, and AICc selects the joint model.</p>
 </div>
 </div>
@@ -204,12 +205,12 @@ FIT &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(turtle[[<s
 ## 
 ## $DOF
 ##     mean     area    speed 
-## 14.01050 24.15139  0.00000 
+## 14.01050 24.15146  0.00000 
 ## 
 ## $CI
-##                          low       est      high
-## area (hectares)    13.672700 21.306487 30.606392
-## τ[position] (days)  3.294527  5.636969  9.644911</code></pre>
+##                         low       est      high
+## area (hectares)    13.67271 21.306484 30.606372
+## τ[position] (days)  3.29453  5.636969  9.644904</code></pre>
 <p><code>trace=TRUE</code> allows us to see the models considered. <code>verbose=TRUE</code> would save each model.</p>
 </div>
 <div id="simultaneous-fitting-with-uncalibrated-data" class="section level3">
@@ -226,10 +227,6 @@ GUESS &lt;-<span class="st"> </span><span class="kw">ctmm.guess</span>(turtle[[<
 FIT &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(turtle[[<span class="dv">3</span>]],GUESS,<span class="dt">trace=</span><span class="ot">TRUE</span>,<span class="dt">cores=</span><span class="dv">2</span>)</code></pre></div>
 <pre><code>## * Fitting model OUF isotropic error.</code></pre>
 <pre><code>## * Fitting models OUF anisotropic error.</code></pre>
-<pre><code>## Warning in cov.loglike(hess, grad): MLE is near a boundary or optim()
-## failed.</code></pre>
-<pre><code>## Warning in ctmm.fit(data, g, trace = trace2, ...): pREML failure:
-## indefinite ML Hessian.</code></pre>
 <pre><code>## * Fitting models OU anisotropic error, OUf anisotropic error.</code></pre>
 <pre><code>## * Fitting models IID anisotropic error, OU isotropic error.</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(FIT)</code></pre></div>
@@ -238,13 +235,13 @@ FIT &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(turtle[[<s
 ## 
 ## $DOF
 ##     mean     area    speed 
-## 12.83005 21.87090  0.00000 
+## 12.83005 21.87087  0.00000 
 ## 
 ## $CI
 ##                          low       est     high
-## area (hectares)    13.020961 20.809225 30.39382
-## τ[position] (days)  3.416686  6.198588 11.24554
-## error (meters)      0.000000  8.784094 66.94771</code></pre>
+## area (hectares)    13.020972 20.809251 30.39386
+## τ[position] (days)  3.416684  6.198587 11.24555
+## error (meters)      6.967389  8.784082 10.59714</code></pre>
 <p>Here, fitting the RMS UERE simultaneously with the movement model produced a consistent result. This will not always be the case.</p>
 </div>
 <div id="fitting-with-uncalibrated-data-under-a-prior" class="section level3">
@@ -265,18 +262,21 @@ FIT &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(turtle[[<s
 ## [1] &quot;OU anisotropic error&quot;
 ## 
 ## $DOF
-##     mean     area    speed 
-## 12.06151 20.48959  0.00000 
+##    mean    area   speed 
+## 12.0615 20.4897  0.0000 
 ## 
 ## $CI
-##                         low       est     high
-## area (hectares)    12.63896 20.554404 30.36336
-## τ[position] (days)  3.62941  6.628388 12.10542</code></pre>
+##                          low       est     high
+## area (hectares)    12.638949 20.554348 30.36324
+## τ[position] (days)  3.629414  6.628391 12.10542</code></pre>
 <p>Some sensitivity analysis would be warranted here for the UERE parameter.</p>
 </div>
 </div>
 </div>
 
+
+
+<!-- code folding -->
 
 
 <!-- dynamically load mathjax for compatibility with self-contained -->

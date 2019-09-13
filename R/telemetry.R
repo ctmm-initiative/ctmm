@@ -157,7 +157,10 @@ pull.column <- function(object,NAMES,FUNC=as.numeric)
 {
   canonical <- function(NAME,UNIQUE=TRUE)
   {
-    NAME <- tolower(gsub("[.:_ -]","",NAME))
+    NAME <- gsub("[.:_ -]","",NAME) # remove separators
+    NAME <- gsub("\\(|\\)","",NAME) # remove parentheses
+    NAME <- gsub("\\[|\\]", "", NAME) # remove square brackets
+    NAME <- tolower(NAME)
     if(UNIQUE) { NAME <- unique(NAME) }
     return(NAME)
   }
@@ -303,7 +306,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   NAMES$nsat <- c("GPS.satellite.count","satellite.count","Sat.Count","Num.Sats","Sat.Num","Nr.Sat","satellites.used","Satellites","Sats","Satt") # Counts? Messages?
   NAMES$FIX <- c("GPS.fix.type","GPS.fix.type.raw","fix.type","type.of.fix","e.obs.type.of.fix","Fix.Attempt","GPS.Fix.Attempt","Telonics.Fix.Attempt","Fix.Status","sensor.type","Fix","2D/3D")
   NAMES$TTF <- c("GPS.time.to.fix","time.to.fix","GPS.TTF","TTF","GPS.fix.time","fix.time","time.to.get.fix","e.obs.used.time.to.get.fix","Duration","GPS.navigation.time","navigation.time","Time.On")
-  NAMES$z <- c("height.above.ellipsoid","height.above.msl","height.above.mean.sea.level","height.raw","height.(raw)","barometric.height","height","Argos.altitude","GPS.Altitude","altitude","barometric.depth","depth","Alt")
+  NAMES$z <- c("height.above.ellipsoid","height.above.msl","height.above.mean.sea.level","height.raw","height","height.m","barometric.height","Argos.altitude","GPS.Altitude","altitude","altitude.m","Alt","barometric.depth","depth")
 
   na.rm <- match.arg(na.rm,c("row","col"))
 
@@ -447,7 +450,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
 
   ############
   # EOBS calibrated GPS errors
-  COL <- c("eobs.horizontal.accuracy.estimate")
+  COL <- c("eobs.horizontal.accuracy.estimate","eobs.horizontal.accuracy.estimate.m","horizontal.accuracy.estimate","horizontal.accuracy.estimate.m")
   COL <- pull.column(object,COL)
   if(length(COL))
   {
@@ -549,7 +552,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     if(length(COL))
     {
       message("HDOP values not found. Approximating via # satellites.")
-      COL <- 10/(COL-2)
+      COL <- (12-2)/(COL-2) # min HDOP of 1
       DATA$HDOP <- COL
     }
   }
@@ -614,8 +617,11 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     {
       if(class(timeout)=="function") { timeout <- timeout(COL) }
       COL <- (COL<timeout)
+      # factor levels are based on what's present and not what's possible
+      COL <- c(TRUE,FALSE,COL)
       COL <- as.factor(COL)
       levels(COL) <- c("timeout","in-time")
+      COL <- COL[-(1:2)]
 
       if("class" %in% names(DATA)) # combine with existing class information
       {
@@ -789,10 +795,18 @@ rm.incomplete <- function(DF,COL)
 # clean up data
 telemetry.clean <- function(data,id)
 {
+  # test for out of order (or out of reverse order)
+  if(nrow(data)>1)
+  {
+    DIFF <- diff(data$t) # all positive if in forward order
+    DIFF <- DIFF * DIFF[DIFF!=0][1] # reverse order becomes all positive too
+    DIFF <- length(DIFF) && all(DIFF>0) # all in order
+    if(!DIFF) { warning("Times might be out of order or duplicated in ",id,". Make sure that timeformat and timezone are correctly specified.") }
+  }
+
   # sort in time
   ORDER <- sort.list(data$t,na.last=NA,method="quick")
   data <- data[ORDER,]
-  if(any(ORDER != 1:length(ORDER))) { warning("Times might be out of order or duplicated in ",id,". Make sure that timeformat and timezone are correctly specified.") }
 
   # remove duplicate observations
   ORDER <- length(data$t)

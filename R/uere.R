@@ -311,11 +311,29 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
   }
   t2 <- lapply(1:length(data),function(k){ clamp( beta[[k]] * u2[[k]] / ( alpha[[k]]^2 - alpha[[k]]*u2[[k]]/DOF[Ci[[k]]] ),0,Inf) }) # (animal,time)
   Z <- log(unlist(t2))/2
-  dofi <- unlist(dofi)
-  M <- -clamp(dofi-1,0,Inf)/dofi/(2*length(axes))
-  VAR <- (dofi+1)/dofi/(2*length(axes))
-  ERR <- VAR + M^2
-  Z2 <- (Z^2/ERR)
+  # M <- -clamp(dofi-1,0,Inf)/dofi/(2*length(axes)) # asymptotic only
+  # VAR <- (dofi+1)/dofi/(2*length(axes)) # asymptotic only
+  d1 <- length(axes)
+  d2 <- unlist(dofi)
+  if(length(CLASS)==1) { d2 <- d2[1] } # minimize computation if possible
+  d2 <- length(axes) * clamp(d2,0,Inf) # finish and fix for tiny samples in a class
+  M2 <- function(d2)
+  {
+    d1 <- d1/2
+    d2 <- d2/2
+
+    L1 <- -(log(d1)-digamma(d1))/2
+    L2 <- -(log(d2)-digamma(d2))/2
+
+    Q1 <- L1^2 + trigamma(d1)/4
+    Q2 <- L2^2 + trigamma(d2)/4
+
+    R <- Q1 + Q2 - 2*L1*L2
+
+    return(R)
+  }
+  V2 <- sapply(d2,M2)
+  Z2 <- (Z^2/V2)
 
   # fix missing UEREs
   if(any(BAD)) { UERE[BAD] <- NA }

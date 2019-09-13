@@ -1,4 +1,4 @@
-ctmm 0.5.7 (2019-08-29)
+ctmm 0.5.7 (2019-09-12)
 ================
 
   * new function optimizer
@@ -17,7 +17,9 @@ ctmm 0.5.7 (2019-08-29)
   
   * new buffer argument in occurrence
   
-  * head, tail methods for telemetry objects
+  * head, tail methods for telemetry objects\
+  
+  * new data object 'pelican'
 
   * SpatialPointsDataFrame now includes timestamp
   
@@ -27,6 +29,8 @@ ctmm 0.5.7 (2019-08-29)
   
   * bugfix in plot.UD gridlines
   
+  * bugfix in as.telemetry timeout argument when datasets lack timed-out values
+  
   * stability fixes in ctmm.fit for BM/IOU models
   
   * further stability enhancements in ctmm.loglike and optimizer
@@ -35,9 +39,13 @@ ctmm 0.5.7 (2019-08-29)
   
   * AICc formulas fixed for tiny n
   
+  * reduced Z^2 now exactly normalized in UERE objects
+  
   * minor enhancements to cleave function
   
   * as.telemetry no longer automatically calibrates e-obs errors (inconsistent with newer devices)
+  
+  * as.telemetry no longer complains on reverse-time-ordered files
 
 ctmm 0.5.6 (2019-05-14)
 ================
