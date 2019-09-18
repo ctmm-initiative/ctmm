@@ -25,7 +25,7 @@ R. Kays, B. T. Hirsch Data from: Stink or swim: techniques to meet the challenge
 
 %\note{}
 
-\seealso{ \code{\link{as.telemetry}}, \code{\link{plot.telemetry}}, \code{\link{buffalo}}, \code{\link{gazelle}}, \code{\link{turtle}}, \code{\link{wolf}}. }
+\seealso{ \code{\link{as.telemetry}}, \code{\link{plot.telemetry}}, \code{\link{buffalo}}, \code{\link{gazelle}}, \code{\link{pelican}}, \code{\link{turtle}}, \code{\link{wolf}}. }
 
 \examples{
 # Load package and data

@@ -1,4 +1,4 @@
-ctmm 0.5.7 (2019-09-12)
+ctmm 0.5.7 (2019-09-17)
 ================
 
   * new function optimizer
@@ -11,13 +11,15 @@ ctmm 0.5.7 (2019-09-12)
   
   * grid argument now supported in akde and occurrence methods
   
+  * outlie output now includes CIs with plot method
+  
   * error-adjusted variogram implemented when fast=FALSE
   
   * LOOCV now supported in ctmm.select, summary
   
   * new buffer argument in occurrence
   
-  * head, tail methods for telemetry objects\
+  * head, tail methods for telemetry objects
   
   * new data object 'pelican'
 

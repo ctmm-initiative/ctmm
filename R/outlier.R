@@ -10,6 +10,7 @@ outlie <- function(data,UERE=10,standardize=FALSE,plot=TRUE,...)
 
   Vs <- assign_speeds(data,UERE=error)
   v <- Vs$v.t
+  VAR.v <- Vs$VAR.t
 
   mu <- median.telemetry(data)
 
@@ -22,7 +23,9 @@ outlie <- function(data,UERE=10,standardize=FALSE,plot=TRUE,...)
   # distances from median
   d <- colSums(d^2)
   d <- sqrt(d)
-  d <- distanceMLE(d,error)
+  D <- distanceMLE(d,error)
+  VAR.d <- error/(2-(d^2-D^2)/error)
+  d <- D
 
   if(plot)
   {
@@ -45,11 +48,47 @@ outlie <- function(data,UERE=10,standardize=FALSE,plot=TRUE,...)
 
   if(standardize)
   {
-    v <- v/stats::mad(v)
-    d <- d/stats::mad(d)
+    MAD.v <- stats::mad(v)
+    v <- v/MAD.v
+    VAR.v <- VAR.v/MAD.v^2
+
+    MAD.d <- stats::mad(d)
+    d <- d/MAD.d
+    VAR.d <- VAR.d/MAD.d^2
   }
 
-  return(data.frame(speed=v,distance=d))
+  R <- data.frame(speed=v,distance=d,VAR.speed=VAR.v,VAR.distance=VAR.d)
+  R <- new.outlie(R)
+  return(R)
+}
+
+
+#########################
+# plot outlier information with error bars
+plot.outlie <- function(x,level=0.95,...)
+{
+  n <- nrow(x)
+  v <- x$speed
+  d <- x$distance
+
+  v <- sapply(1:n,function(i){tnorm.hdr(v[i],x$VAR.speed[i],level=level)})
+  d <- sapply(1:n,function(i){tnorm.hdr(d[i],x$VAR.distance[i],level=level)})
+
+  # unit conversions ...
+  UNITS <- unit(v,dimension='speed',concise=TRUE)
+  v <- v/UNITS$scale
+  ylab <- paste0("Minimum speed (",UNITS$name,")")
+
+  UNITS <- unit(d,dimension='length',concise=TRUE)
+  d <- d/UNITS$scale
+  xlab <- paste0("Core deviation (",UNITS$name,")")
+
+  # ERROR BAR PLOT
+  # (c) Laryx Decidua
+  # hack: we draw arrows but with very special "arrowheads"
+  plot(d[2,],v[2,],xlim=range(d),ylim=range(v),pch=19,xlab=xlab,ylab=ylab,...)
+  graphics::arrows(d[2,],v[1,],d[2,],v[3,],length=0.05,angle=90,code=3,...)
+  graphics::arrows(d[1,],v[2,],d[3,],v[2,],length=0.05,angle=90,code=3,...)
 }
 
 
@@ -65,10 +104,13 @@ assign_speeds <- function(data,dt=NULL,UERE=0,method="max")
 
   # inner speed estimates
   v.dt <- speedMLE(data,dt=dt,UERE=UERE,DT=DT)
+  VAR.dt <- v.dt$VAR
+  v.dt <- v.dt$X
   if(length(v.dt)==1)
   {
     v <- c(v.dt,v.dt)
-    return(list(v.t=v,v.dt=v.dt))
+    VAR <- c(VAR.dt,VAR.dt)
+    return(list(v.t=v,VAR.t=VAR,v.dt=v.dt,VAR.dt=VAR.dt))
   }
 
   if(length(UERE)==1)
@@ -84,10 +126,15 @@ assign_speeds <- function(data,dt=NULL,UERE=0,method="max")
     n <- length(data$t)
     v2 <- speedMLE(data[c(n-2,n),],dt=dt,UERE=UERE[c(n-2,n)])
   }
+  VAR1 <- v1$VAR; v1 <- v1$X
+  VAR2 <- v2$VAR; v2 <- v2$X
 
   # left and right estimates - n estimates, 1 lag apart
   v1 <- c(v1,v.dt)
   v2 <- c(v.dt,v2)
+
+  VAR1 <- c(VAR1,VAR.dt)
+  VAR2 <- c(VAR.dt,VAR2)
 
   if(method=="max")
   {
@@ -103,22 +150,30 @@ assign_speeds <- function(data,dt=NULL,UERE=0,method="max")
     vs <- vs$x
 
     v <- numeric(length(LESS))
+    VAR <- numeric(length(LESS))
     # assign blame for smallest speeds, from greatest to least, last/least taking precidence in R
     LESS <- LESS[is]
-    v[is+!LESS] <- vs
+    v[is+!LESS] <- vs # v.dt[is]
+    VAR[is+!LESS] <- VAR.dt[is]
 
     # assign blame for largest speeds, from least to greatest, last/greatest taking precidence in R
     LESS <- rev(LESS)
     is <- rev(is)
     vs <- rev(vs)
-    v[is+LESS] <- vs
+    v[is+LESS] <- vs # v.dt[is]
+    VAR[is+LESS] <- VAR.dt[is]
   }
   else if(method=="min")
   {
-    v <- pmin(v1,v2)
+    # v <- pmin(v1,v2)
+
+    v <- cbind(v1,v2)
+    is <- apply(v,1,which.min)
+    v <- vapply(1:nrow(v),function(i){v[i,is[i]]},v[,1])
+    VAR <- vapply(1:nrow(VAR),function(i){VAR[i,is[i]]},v)
   }
 
-  return(list(v.t=v,v.dt=v.dt))
+  return(list(v.t=v,VAR.t=VAR,v.dt=v.dt,VAR.dt=VAR.dt))
 }
 
 
@@ -177,10 +232,17 @@ speedMLE <- function(data,dt=NULL,UERE=0,CTMM=ctmm(error=UERE,axes=c("x","y"),ci
     # 2-time errors
     error <- error[-1] + error[-length(error)]
 
-    dr <- distanceMLE(dr,error)
+    DR <- distanceMLE(dr,error)
+    VAR <- error/(2-(dr^2-DR^2)/error)
+  }
+  else
+  {
+    DR <- dr
+    VAR <- numeric(length(dr))
   }
 
-  return(dr*f)
+  RETURN <- data.frame(X=DR*f,VAR=VAR*f^2)
+  return(RETURN)
 }
 
 

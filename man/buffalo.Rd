@@ -29,7 +29,7 @@ Movebank Data Repository. DOI:10.5441/001/1.j900f88t (2016).
 
 \note{In \code{ctmm} v0.3.2 the erroneous location fix \code{606} was removed from \code{buffalo[[4]]} "Pepper".}
 
-\seealso{ \code{\link{as.telemetry}}, \code{\link{plot.telemetry}}, \code{\link{coati}}, \code{\link{gazelle}}, \code{\link{turtle}}, \code{\link{wolf}}. }
+\seealso{ \code{\link{as.telemetry}}, \code{\link{plot.telemetry}}, \code{\link{coati}}, \code{\link{gazelle}}, \code{\link{pelican}}, \code{\link{turtle}}, \code{\link{wolf}}. }
 
 \examples{
 # Load package and data

@@ -24,7 +24,7 @@ Please contact Rogerio Cunha de Paula (rogercunha@gmail.com) if you want to publ
 
 %\references{}
 
-\seealso{ \code{\link{as.telemetry}}, \code{\link{plot.telemetry}}, \code{\link{buffalo}}, \code{\link{coati}}, \code{\link{gazelle}}, \code{\link{turtle}}. }
+\seealso{ \code{\link{as.telemetry}}, \code{\link{plot.telemetry}}, \code{\link{buffalo}}, \code{\link{coati}}, \code{\link{gazelle}}, \code{\link{pelican}}, \code{\link{turtle}}. }
 
 \examples{
 # Load package and data

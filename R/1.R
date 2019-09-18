@@ -23,6 +23,9 @@ methods::setOldClass("variogram")
 new.variogram <- methods::setClass("variogram",representation=methods::representation("data.frame",info="list"),
                                    prototype=methods::prototype(data.frame(),info=list()))
 
+methods::setOldClass("outlie")
+new.outlie <- methods::setClass("outlie",representation=methods::representation("data.frame"),prototype=methods::prototype(data.frame()))
+
 # existing functions -> S4 generics
 # this doesn't work
 #methods::setGeneric("SpatialPoints",package="sp",signature=signature("coords",...))

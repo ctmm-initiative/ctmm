@@ -5,7 +5,7 @@ unit <- function(data,dimension,thresh=1,concise=FALSE,SI=FALSE)
 {
   if(SI) { data <- 1.01 ; thresh <- 1 } # will always choose base units
 
-  if(dimension=="length")
+  if(dimension %in% c("length",'distance'))
   {
     name.list <- c("microns","milimeters","centimeters","meters","kilometers")
     abrv.list <- c("\u03BCm","mm","cm","m","km")
@@ -23,7 +23,7 @@ unit <- function(data,dimension,thresh=1,concise=FALSE,SI=FALSE)
     abrv.list <- c("\u03BCs","ms","sec","min","hr","day","mon","yr")
     scale.list <- c(1E-6,1/1000,1,60*c(1,60*c(1,24*c(1,29.53059,365.24))))
   }
-  else if(dimension=="speed")
+  else if(dimension %in% c("speed",'velocity'))
   {
     name.list <- c("microns/day","milimeters/day","centimeters/day","meters/day","kilometers/day")
     abrv.list <- c("\u03BCm/day","mm/day","cm/day","m/day","km/day")

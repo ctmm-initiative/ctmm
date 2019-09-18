@@ -1,5 +1,6 @@
 \name{outlie}
 \alias{outlie}
+\alias{plot.outlie}
 \encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Methods to facilitate outlier detection.}
@@ -7,6 +8,8 @@
 }
 \usage{
 outlie(data,UERE=10,standardize=FALSE,plot=TRUE,...)
+
+\S3method{plot}{outlie}(x,level=0.95,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -15,11 +18,16 @@ outlie(data,UERE=10,standardize=FALSE,plot=TRUE,...)
   \item{standardize}{Standardize speed and distance output by their median absolute deviation (MAD).}
   \item{plot}{Output a plot highlighting high speeds (blue) and distant locations (red).}
   \item{...}{Arguments passed to \code{plot}.}
+  \item{x}{\code{outlie} object to plot.}
+  \item{level}{Confidence level for error bars.}
 }
 
-\details{Distances are calculated from the median longitude & latitude, while speeds are calculated over the timesteps. Both estimates account for telemetry error and condition on as few data points as possible. The speed estimates furthermore account for timestamp truncation and assign each timestep's speed to the most likely offending time, based on its other adjacent speed estimate.
+\details{If \code{plot=TRUE} in \code{outlie()}, intervals of high speed are highlighted with blue segments, while distant locations are highlighted with red points.
 
-If \code{plot=TRUE}, intervals of high speed are highlighted with blue segments, while distant locations are highlighted with red points.}
+When plotting the \code{outlie} object itself, `core deviation' denotes distances from the median longitude & latitude, while `minimum speed' denotes the minimum speed required to explain the location estimate's displacement as straight-line motion. Both estimates account for telemetry error and condition on as few data points as possible. The speed estimates furthermore account for timestamp truncation and assign each timestep's speed to the most likely offending time, based on its other adjacent speed estimate.
+
+The output \code{outlie} object contains the above noted speed and distance estimates in a \code{data.frame}, with rows corresponding to those of the input \code{telemetry} object.
+}
 
 \value{Returns a \code{data.frame} of distances and speeds. Can also produce a plot as a side effect.}
 
@@ -36,13 +44,13 @@ If \code{plot=TRUE}, intervals of high speed are highlighted with blue segments,
 \examples{
 # Load package and data
 library(ctmm)
-data(buffalo)
+data(turtle)
 
-# look for outliers in Cilla
-OUT <- outlie(buffalo[[1]])
+# look for outliers in a turtle
+OUT <- outlie(turtle[[3]])
 
-# look at the distribution of speed esitmates
-hist(OUT$speed)
+# look at the distribution of estimates
+plot(OUT)
 }
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the
