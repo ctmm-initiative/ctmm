@@ -40,12 +40,13 @@ names(turtle[[3]]) # now the data are calibrated, as VAR is present
 plot(turtle[[3]],error=2) # turtle plot with 95% error discs
 ```
 
-If you have ARGOS or e-obs data, they will import with calibration already applied to the horizontal dimensions, but not the vertical dimension. These data only need their vertical errors calibrated.
+If you have ARGOS data, they will import with calibration already applied to the horizontal dimensions, but not the vertical dimension.
 
 ```{r}
-data(coati)
-names(coati[[1]]) # VAR already present
-plot(coati[[1]],error=2) # coati plot with 95% error discs
+data(pelican)
+names(pelican)
+names(pelican$argos) # error ellipse information (COV and VAR) already present
+plot(pelican$argos) # pelican ARGOS plot with 95% error ellipses
 ```
 
 ## Error model selection

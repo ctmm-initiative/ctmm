@@ -8,21 +8,25 @@
 
 <title>Changelog • ctmm</title>
 
+
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
 
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script>
 
 <!-- Font Awesome icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/all.min.css" integrity="sha256-nAmazAk6vS34Xqo0BSrTb+abbtFlgsFK7NKSi6o7Y78=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/v4-shims.min.css" integrity="sha256-6qHlizsOWFskGlwVOKuns+D1nB6ssZrHQrNj1wGplHc=" crossorigin="anonymous" />
 
 <!-- clipboard.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script>
 
-<!-- sticky kit -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script>
+<!-- headroom.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/headroom.min.js" integrity="sha256-DJFC1kqIhelURkuza0AvYal5RxMtpzLjFhsnVIeuk+U=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
@@ -30,7 +34,9 @@
 
 
 
+
 <meta property="og:title" content="Changelog" />
+
 
 
 
@@ -42,6 +48,7 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
+
 
 
   </head>
@@ -94,7 +101,6 @@
   </ul>
 </li>
       </ul>
-      
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/ctmm-initiative/ctmm">
@@ -109,6 +115,7 @@
 </div><!--/.navbar -->
 
       
+
       </header>
 
 <div class="row">
@@ -118,9 +125,9 @@
       <small>Source: <a href='https://github.com/ctmm-initiative/ctmm/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
     </div>
 
-    <div id="ctmm-0-5-7-2019-07-21" class="section level1">
+    <div id="ctmm-0-5-7-2019-09-17" class="section level1">
 <h1 class="page-header">
-<a href="#ctmm-0-5-7-2019-07-21" class="anchor"></a>ctmm 0.5.7 (2019-07-21)<small> Unreleased </small>
+<a href="#ctmm-0-5-7-2019-09-17" class="anchor"></a>ctmm 0.5.7 (2019-09-17)<small> Unreleased </small>
 </h1>
 <ul>
 <li><p>new function optimizer</p></li>
@@ -128,19 +135,25 @@
 <li><p>‘pNewton’ now the default optimization method</p></li>
 <li><p>‘pHREML’ now the default estimator &amp; all CI names updated</p></li>
 <li><p>grid argument now supported in akde and occurrence methods</p></li>
+<li><p>outlie output now includes CIs with plot method</p></li>
 <li><p>error-adjusted variogram implemented when fast=FALSE</p></li>
 <li><p>LOOCV now supported in ctmm.select, summary</p></li>
 <li><p>new buffer argument in occurrence</p></li>
 <li><p>head, tail methods for telemetry objects</p></li>
+<li><p>new data object ‘pelican’</p></li>
 <li><p>SpatialPointsDataFrame now includes timestamp</p></li>
 <li><p>uere(data) &lt;- numeric now overrides all location classes</p></li>
 <li><p>bugfix in conditional simulations with dt argument</p></li>
 <li><p>bugfix in plot.UD gridlines</p></li>
-<li><p>stability fix in ctmm.fit for BM/IOU models</p></li>
+<li><p>bugfix in as.telemetry timeout argument when datasets lack timed-out values</p></li>
+<li><p>stability fixes in ctmm.fit for BM/IOU models</p></li>
 <li><p>further stability enhancements in ctmm.loglike and optimizer</p></li>
+<li><p>bugfix in simultaneously fit RMS UERE CIs</p></li>
 <li><p>AICc formulas fixed for tiny n</p></li>
+<li><p>reduced Z^2 now exactly normalized in UERE objects</p></li>
 <li><p>minor enhancements to cleave function</p></li>
 <li><p>as.telemetry no longer automatically calibrates e-obs errors (inconsistent with newer devices)</p></li>
+<li><p>as.telemetry no longer complains on reverse-time-ordered files</p></li>
 </ul>
 </div>
     <div id="ctmm-0-5-6-2019-05-14" class="section level1">
@@ -603,7 +616,7 @@
     <div id="tocnav">
       <h2>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
-        <li><a href="#ctmm-0-5-7-2019-07-21">0.5.7</a></li>
+        <li><a href="#ctmm-0-5-7-2019-09-17">0.5.7</a></li>
         <li><a href="#ctmm-0-5-6-2019-05-14">0.5.6</a></li>
         <li><a href="#ctmm-0-5-5-2019-02-11">0.5.5</a></li>
         <li><a href="#ctmm-0-5-4-2019-02-07">0.5.4</a></li>
@@ -637,19 +650,23 @@
 
 </div>
 
+
       <footer>
       <div class="copyright">
   <p>Developed by Christen H. Fleming, Justin M. Calabrese.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.3.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.</p>
 </div>
+
       </footer>
    </div>
 
   
 
+
   </body>
 </html>
+
 

@@ -15,9 +15,10 @@ names(turtle[[3]]) # now the data are calibrated, as VAR is present
 plot(turtle[[3]],error=2) # turtle plot with 95% error discs
 
 ## ------------------------------------------------------------------------
-data(coati)
-names(coati[[1]]) # VAR already present
-plot(coati[[1]],error=2) # coati plot with 95% error discs
+data(pelican)
+names(pelican)
+names(pelican$argos) # error ellipse information (COV and VAR) already present
+plot(pelican$argos) # pelican ARGOS plot with 95% error ellipses
 
 ## ------------------------------------------------------------------------
 t.noHDOP  <- lapply(turtle,function(t){ t$HDOP  <- NULL; t })

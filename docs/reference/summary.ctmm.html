@@ -8,21 +8,25 @@
 
 <title>Summarize a continuous-time movement model — summary.ctmm • ctmm</title>
 
+
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
 
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script>
 
 <!-- Font Awesome icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/all.min.css" integrity="sha256-nAmazAk6vS34Xqo0BSrTb+abbtFlgsFK7NKSi6o7Y78=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/v4-shims.min.css" integrity="sha256-6qHlizsOWFskGlwVOKuns+D1nB6ssZrHQrNj1wGplHc=" crossorigin="anonymous" />
 
 <!-- clipboard.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script>
 
-<!-- sticky kit -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script>
+<!-- headroom.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/headroom.min.js" integrity="sha256-DJFC1kqIhelURkuza0AvYal5RxMtpzLjFhsnVIeuk+U=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
@@ -30,10 +34,11 @@
 
 
 
-<meta property="og:title" content="Summarize a continuous-time movement model — summary.ctmm" />
 
+<meta property="og:title" content="Summarize a continuous-time movement model — summary.ctmm" />
 <meta property="og:description" content="This function returns a list of biologically interesting parameters in human readable format, as derived from a continuous-time movement model." />
 <meta name="twitter:card" content="summary" />
+
 
 
 
@@ -45,6 +50,7 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
+
 
 
   </head>
@@ -97,7 +103,6 @@
   </ul>
 </li>
       </ul>
-      
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/ctmm-initiative/ctmm">
@@ -112,6 +117,7 @@
 </div><!--/.navbar -->
 
       
+
       </header>
 
 <div class="row">
@@ -123,14 +129,12 @@
     </div>
 
     <div class="ref-description">
-    
     <p>This function returns a list of biologically interesting parameters in human readable format, as derived from a continuous-time movement model.</p>
-    
     </div>
 
     <pre class="usage"><span class='co'># S3 method for ctmm</span>
-<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/summary'>summary</a></span>(<span class='no'>object</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>level.UD</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>units</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>IC</span><span class='kw'>=</span><span class='st'>"AICc"</span>,<span class='kw'>MSPE</span><span class='kw'>=</span><span class='st'>"position"</span>,<span class='no'>...</span>)</pre>
-    
+<span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span>(<span class='no'>object</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>level.UD</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>units</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>IC</span><span class='kw'>=</span><span class='st'>"AICc"</span>,<span class='kw'>MSPE</span><span class='kw'>=</span><span class='st'>"position"</span>,<span class='no'>...</span>)</pre>
+
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
@@ -163,34 +167,31 @@
       <td><p>Unused options.</p></td>
     </tr>
     </table>
-    
+
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>If summary is called with a single <code>ctmm</code> object output from <code><a href='ctmm.fit.html'>ctmm.fit</a></code>, then a list is returned with the effective sample sizes of various parameter estimates (<code>DOF</code>) and a parameter estimate table <code>CI</code>, with low, maximum likelihood, and high estimates for the following possible parameters:</p><dl class='dl-horizontal'>
 <dt><code>tau</code></dt><dd><p>The autocorrelation timescales. <code>tau position</code> is also the home-range crossing timescale.</p></dd>
 <dt><code>area</code></dt><dd><p>The Gaussian home-range area, where the point estimate has a significance level of <code>level.UD</code>. I.e., the core home range is where the animal is located 50% of the time with <code>level.UD=0.50</code>.
-This point estimate itself is subject to uncertainty, and is given confidence intervals derived from <code>level</code>.
-
-This Gaussian estimate differs from the kernel density estimate of <code><a href='summary.UD.html'>summary.UD</a></code>. The Gaussian estimate has more statistical efficiency, but is less related to space use for non-Gaussian processes.</p></dd>
+This point estimate itself is subject to uncertainty, and is given confidence intervals derived from <code>level</code>.This Gaussian estimate differs from the kernel density estimate of <code><a href='summary.UD.html'>summary.UD</a></code>. The Gaussian estimate has more statistical efficiency, but is less related to space use for non-Gaussian processes.</p></dd>
 <dt><code>speed</code></dt><dd><p>The Gaussian root-mean-square (RMS) velocity, which is a convenient measure of average speed but not the conventional measure of average speed (see <code><a href='speed.html'>speed</a></code>).</p></dd>
+
 </dl><p>If summary is called on a list of <code>ctmm</code> objects output from <code><a href='ctmm.fit.html'>ctmm.select</a></code>, then a table is returned with the model names and IC differences for comparison across autocovariance structures. Given non-stationary models and <code>MSPE&gt;0</code>, the mean square prediction error (MSPE) is also returned for comparison across trend structures (with autocovariance structure fixed). For the model names, "IID" denotes the uncorrelated bi-variate Gaussian model, "OU" denotes the continuous-position Ornstein-Uhlenbeck model, and "OUF" denotes the continuous-velocity Ornstein-Uhlenbeck-F model.</p>
-    
     <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
 
     <p>Confidence intervals on the autocorrelation timescales assume they are sufficiently greater than zero and less than infinity.</p>
 <p><code>IC="LOOCV"</code> can only be attempted if also specified during <code><a href='ctmm.fit.html'>ctmm.select</a></code>, as this argument requires additional calculations.</p>
 <p>In <code>ctmm</code> v0.5.1 the MSPE was averaged over all possible times instead of over all sampled times.</p>
 <p>In <code>ctmm</code> v0.3.4 the speed estimate was fixed to be the RMS velocity and not \(1/\sqrt{2}\) times the RMS velocity.</p>
-    
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code><a href='ctmm.fit.html'>ctmm.fit</a></code>, <code><a href='ctmm.fit.html'>ctmm.select</a></code>.</p></div>
-    
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='co'># Load package and data</span>
-<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/library'>library</a></span>(<span class='no'>ctmm</span>)
-<span class='fu'><a href='https://www.rdocumentation.org/packages/utils/topics/data'>data</a></span>(<span class='no'>buffalo</span>)
+    <pre class="examples"><div class='input'><span class='co'># \donttest{</span>
+<span class='co'># Load package and data</span>
+<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>ctmm</span>)
+<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='no'>buffalo</span>)
 
 <span class='co'># Extract movement data for a single animal</span>
 <span class='no'>Cilla</span> <span class='kw'>&lt;-</span> <span class='no'>buffalo</span>$<span class='no'>Cilla</span>
@@ -200,32 +201,28 @@ This Gaussian estimate differs from the kernel density estimate of <code><a href
 <span class='no'>FIT</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='ctmm.fit.html'>ctmm.fit</a></span>(<span class='no'>Cilla</span>,<span class='no'>GUESS</span>)
 
 <span class='co'># Tell us something interpretable</span>
-<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/summary'>summary</a></span>(<span class='no'>FIT</span>)</div><div class='output co'>#&gt; $name
+<span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span>(<span class='no'>FIT</span>)</div><div class='output co'>#&gt; $name
 #&gt; [1] "OUF anisotropic"
 #&gt; 
 #&gt; $DOF
 #&gt;       mean       area      speed 
-#&gt;   10.73354   18.13599 3445.13306 
+#&gt;   10.73354   18.13597 3445.13307 
 #&gt; 
 #&gt; $CI
 #&gt;                                 low        est      high
-#&gt; area (square kilometers) 239.647396 403.458667 609.24084
-#&gt; τ[position] (days)         4.026012   7.505364  13.99164
+#&gt; area (square kilometers) 239.647400 403.458801 609.24116
+#&gt; τ[position] (days)         4.026012   7.505367  13.99165
 #&gt; τ[velocity] (minutes)     39.570325  42.069009  44.72547
 #&gt; speed (kilometers/day)    13.819957  14.054636  14.28926
-#&gt; </div></pre>
+#&gt; </div><div class='input'># }</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
-      
       <li><a href="#value">Value</a></li>
-
       <li><a href="#note">Note</a></li>
-
       <li><a href="#see-also">See also</a></li>
-      
       <li><a href="#examples">Examples</a></li>
     </ul>
 
@@ -234,19 +231,23 @@ This Gaussian estimate differs from the kernel density estimate of <code><a href
   </div>
 </div>
 
+
       <footer>
       <div class="copyright">
   <p>Developed by Christen H. Fleming, Justin M. Calabrese.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.3.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.</p>
 </div>
+
       </footer>
    </div>
 
   
 
+
   </body>
 </html>
+
 

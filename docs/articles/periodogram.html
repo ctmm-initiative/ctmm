@@ -7,8 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Periodic movement models • ctmm</title>
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous">
-<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script><!-- sticky kit --><script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/all.min.css" integrity="sha256-nAmazAk6vS34Xqo0BSrTb+abbtFlgsFK7NKSi6o7Y78=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/v4-shims.min.css" integrity="sha256-6qHlizsOWFskGlwVOKuns+D1nB6ssZrHQrNj1wGplHc=" crossorigin="anonymous">
+<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/headroom.min.js" integrity="sha256-DJFC1kqIhelURkuza0AvYal5RxMtpzLjFhsnVIeuk+U=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
 <script src="../pkgdown.js"></script><meta property="og:title" content="Periodic movement models">
 <meta property="og:description" content="">
 <meta name="twitter:card" content="summary">
@@ -80,13 +81,14 @@
 <!--/.navbar -->
 
       
+
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1>Periodic movement models</h1>
                         <h4 class="author">Guillaume Péron, Christen H. Fleming, and Justin M. Calabrese</h4>
             
-            <h4 class="date">2019-06-17</h4>
+            <h4 class="date">2019-09-19</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/ctmm-initiative/ctmm/blob/master/vignettes/periodogram.Rmd"><code>vignettes/periodogram.Rmd</code></a></small>
       <div class="hidden name"><code>periodogram.Rmd</code></div>
@@ -96,8 +98,8 @@
     
     
 <p>In this vignette, we walk through periodogram for movement data and periodic movement model fitting and selection. It is assumed that you are already familiar with data preparation with ctmm, as well as the maximum likelihood procedure described in the <code>variogram</code> vignette. Our example maned wolf data is already prepared into a <code>telemetry</code> object.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(ctmm)
-<span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/data">data</a></span>(wolf)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span>(ctmm)
+<span class="kw"><a href="https://rdrr.io/r/utils/data.html">data</a></span>(wolf)
 Gamba &lt;-<span class="st"> </span>wolf<span class="op">$</span>Gamba
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(Gamba)</code></pre></div>
 <p><img src="periodogram_files/figure-html/unnamed-chunk-1-1.png" width="700"></p>
@@ -120,8 +122,8 @@ Gamba &lt;-<span class="st"> </span>wolf<span class="op">$</span>Gamba
 <p>Circulatory patterns can be incorporated into stochastic continuous time movement models in two ways: via the mean of the process, modelling that the animal reverts to a point that moves periodically through time, or via the stochastic component, by including a rotation effect. The first is called a periodic-mean process, and the second is called a circulation process.</p>
 <p>For periodic-mean processes, you need to specify one or more period values that you want <code>ctmm</code> to consider.</p>
 <p>In our example, we are going to specify a period of a day, which is what the periodogram was saying. Other individuals in this population were also exhibiting a weekly periodicity, and in similar species, lunar cycles are well-known to affect ranging behaviors.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">PROTO &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">mean=</span><span class="st">"periodic"</span>,<span class="dt">period=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="dv">24</span> <span class="op">%#%</span><span class="st"> "hours"</span>,<span class="dv">1</span> <span class="op">%#%</span><span class="st"> "month"</span>),<span class="dt">circle=</span><span class="ot">TRUE</span>)</code></pre></div>
-<p>The <code>mean="periodic"</code> option tells <code>ctmm</code> that you want a periodic-mean process. The default is <code>mean="stationary"</code>. The period values are all specified in seconds (SI unit) by the <code>%#%</code> function (see <code><a href="https://www.rdocumentation.org/packages/utils/topics/help">help("%#%")</a></code> for more information).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">PROTO &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">mean=</span><span class="st">"periodic"</span>,<span class="dt">period=</span><span class="kw"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="dv">24</span> <span class="op">%#%</span><span class="st"> "hours"</span>,<span class="dv">1</span> <span class="op">%#%</span><span class="st"> "month"</span>),<span class="dt">circle=</span><span class="ot">TRUE</span>)</code></pre></div>
+<p>The <code>mean="periodic"</code> option tells <code>ctmm</code> that you want a periodic-mean process. The default is <code>mean="stationary"</code>. The period values are all specified in seconds (SI unit) by the <code><a href="../reference/unit.html">%#%</a></code> function (see <code><a href="https://rdrr.io/r/utils/help.html">help("%#%")</a></code> for more information).</p>
 <p>The <code>circle=TRUE</code> option tells ctmm that you want to try and fit a model in which there is stochastic circulation on top of the periodicity in the process mean. For circulation processes, you do not need to specify candidate period values. The period of the circulation is estimated from the data.</p>
 <p>As with other uses of ctmm, the next step is to generate an initial guess of the parameter values to feed to the likelihood optimization routine. You can do this using your intuition, by visually examining the variogram, or by letting <code>ctmm</code> do it for you.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">SVF &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.html">variogram</a></span>(Gamba,<span class="dt">res=</span><span class="dv">3</span>)
@@ -132,59 +134,59 @@ GUESS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/vario
 FITS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.select</a></span>(Gamba,GUESS,<span class="dt">verbose=</span><span class="ot">TRUE</span>,<span class="dt">cores=</span><span class="dv">2</span>)</code></pre></div>
 <pre><code>## Nyquist frequency estimated at harmonic 3 88.5917639444444 of the period.</code></pre>
 <p>With <code>verbose=TRUE</code>, we obtain a list fitted <code>ctmm</code> objects, one for each relevant combination of effects, where the first element of that list is the preferred model.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/summary">summary</a></span>(FITS)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(FITS)</code></pre></div>
 <pre><code>##                                               ΔAICc  ΔRMSPE (m) DOF[area]
 ## OUF anisotropic harmonic 2 0               0.000000   60.815821  175.8871
-## OUF anisotropic harmonic 1 0              20.689425   63.785895  179.2759
-## OUF anisotropic harmonic 2 1               5.493885   89.639599  169.4066
+## OUF anisotropic harmonic 1 0              20.689425   63.785874  179.2759
+## OUF anisotropic harmonic 2 1               5.493885   89.639600  169.4066
 ## OUF anisotropic harmonic 1 1              26.103584   91.796918  172.8667
-## OUF anisotropic harmonic 0 0             123.673098  157.298556  205.5584
-## OUF anisotropic harmonic 0 1             128.448440  177.809093  200.7891
+## OUF anisotropic harmonic 0 0             123.673098  157.298501  205.5584
+## OUF anisotropic harmonic 0 1             128.448440  177.809127  200.7891
 ## OUF anisotropic harmonic 3 0             -17.231893 2496.228990  174.7865
 ## OUf anisotropic harmonic 2 0              19.477244    0.000000  237.2510
 ## OUf anisotropic harmonic 1 0              39.906174    5.147749  240.7653
 ## OUf anisotropic harmonic 0 0             124.354647  131.232070  233.3832
-## OU anisotropic harmonic 2 0               34.440063   67.757512  146.6522
-## OU anisotropic harmonic 1 0               51.739611   69.857170  150.1455
-## OU anisotropic harmonic 0 0              193.520195  177.510804  163.4152
+## OU anisotropic harmonic 2 0               34.440063   67.757511  146.6522
+## OU anisotropic harmonic 1 0               51.739611   69.857173  150.1455
+## OU anisotropic harmonic 0 0              193.520195  177.510805  163.4152
 ## OUF isotropic harmonic 2 0                88.869590  236.982416  163.4619
-## OUF isotropic harmonic 1 0               113.063969  238.575574  166.0153
-## OUF isotropic harmonic 0 0               230.160697  323.668046  196.4267
-## OUF anisotropic circulation harmonic 0 0 124.426467  160.554258  204.2181
-## OUF isotropic circulation harmonic 0 0   231.141563  327.779262  195.1978</code></pre>
+## OUF isotropic harmonic 1 0               113.063969  238.575576  166.0153
+## OUF isotropic harmonic 0 0               230.160697  323.668050  196.4267
+## OUF anisotropic circulation harmonic 0 0 124.426467  160.554376  204.2180
+## OUF isotropic circulation harmonic 0 0   231.141563  327.779265  195.1978</code></pre>
 <p>From the first model, We see that the velocity autocorrelation (OUF), anisotropy, and <code>2</code> harmonics of daily periodicity were all selected. Given how we specified the prototype, <code>harmonic 2 0</code> means that this preferred model has no lunar periodicity, but has two harmonics of the one-day periodicity. This fittingly corresponds to what the periodogram was saying. If there was some moon-related pattern of space use and given how we specified our prototype, we would have had a non-zero value as the second <code>harmonic</code> value.</p>
 <p>The sorting of our candidate models is more complex than in previous stationary examples. For a given autocovariance model, the different non-stationary models are sorted by mean square predictive error (MSPE) and not the information criteria. As we will demonstrate, likelihood-based model selection can badly overfit with these types of models. For sorting between the autocovariance models (each with best non-stationary model), the information criteria is used. MSPE is not valid for general purpose selection.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># these are sorted by MSPE</span>
-SUB &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/grep">grepl</a></span>(<span class="st">"OUF anisotropic harmonic"</span>,<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/names">names</a></span>(FITS))
-<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/summary">summary</a></span>(FITS[SUB])</code></pre></div>
+SUB &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/grep.html">grepl</a></span>(<span class="st">"OUF anisotropic harmonic"</span>,<span class="kw"><a href="https://rdrr.io/r/base/names.html">names</a></span>(FITS))
+<span class="kw"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(FITS[SUB])</code></pre></div>
 <pre><code>##                                   ΔAICc  ΔRMSPE (m) DOF[area]
 ## OUF anisotropic harmonic 2 0   0.000000    0.000000  175.8871
-## OUF anisotropic harmonic 1 0  20.689425    2.970074  179.2759
-## OUF anisotropic harmonic 2 1   5.493885   28.823778  169.4066
+## OUF anisotropic harmonic 1 0  20.689425    2.970052  179.2759
+## OUF anisotropic harmonic 2 1   5.493885   28.823779  169.4066
 ## OUF anisotropic harmonic 1 1  26.103584   30.981097  172.8667
-## OUF anisotropic harmonic 0 0 123.673098   96.482735  205.5584
-## OUF anisotropic harmonic 0 1 128.448440  116.993272  200.7891
-## OUF anisotropic harmonic 3 0 -17.231893 2435.413168  174.7865</code></pre>
+## OUF anisotropic harmonic 0 0 123.673098   96.482680  205.5584
+## OUF anisotropic harmonic 0 1 128.448440  116.993305  200.7891
+## OUF anisotropic harmonic 3 0 -17.231893 2435.413169  174.7865</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># these are sorted by IC</span>
-SUB &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/grep">gsub</a></span>(<span class="st">'[0-9]+'</span>,<span class="st">''</span>,<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/names">names</a></span>(FITS))
-SUB &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">sapply</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/unique">unique</a></span>(SUB),<span class="cf">function</span>(s){<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/which">which</a></span>(SUB<span class="op">==</span>s)[<span class="dv">1</span>]})
-<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/summary">summary</a></span>(FITS[SUB])</code></pre></div>
+SUB &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/grep.html">gsub</a></span>(<span class="st">'[0-9]+'</span>,<span class="st">''</span>,<span class="kw"><a href="https://rdrr.io/r/base/names.html">names</a></span>(FITS))
+SUB &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span>(<span class="kw"><a href="https://rdrr.io/r/base/unique.html">unique</a></span>(SUB),<span class="cf">function</span>(s){<span class="kw"><a href="https://rdrr.io/r/base/which.html">which</a></span>(SUB<span class="op">==</span>s)[<span class="dv">1</span>]})
+<span class="kw"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(FITS[SUB])</code></pre></div>
 <pre><code>##                                              ΔAICc ΔRMSPE (m) DOF[area]
 ## OUF anisotropic harmonic 2 0               0.00000   60.81582  175.8871
 ## OUf anisotropic harmonic 2 0              19.47724    0.00000  237.2510
 ## OU anisotropic harmonic 2 0               34.44006   67.75751  146.6522
 ## OUF isotropic harmonic 2 0                88.86959  236.98242  163.4619
-## OUF anisotropic circulation harmonic 0 0 124.42647  160.55426  204.2181
+## OUF anisotropic circulation harmonic 0 0 124.42647  160.55438  204.2180
 ## OUF isotropic circulation harmonic 0 0   231.14156  327.77926  195.1978</code></pre>
 <p>If only the information criteria was used, we would have selected <code>harmonic 3 0</code> over <code>harmonic 2 0</code>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># sorting by IC only</span>
-<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/summary">summary</a></span>(FITS,<span class="dt">MSPE=</span><span class="ot">NA</span>)</code></pre></div>
+<span class="kw"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(FITS,<span class="dt">MSPE=</span><span class="ot">NA</span>)</code></pre></div>
 <pre><code>##                                              ΔAICc DOF[mean]
 ## OUF anisotropic harmonic 3 0               0.00000 106.67983
 ## OUF anisotropic harmonic 2 0              17.23189 105.76775
 ## OUF anisotropic harmonic 2 1              22.72578 103.79740
 ## OUf anisotropic harmonic 2 0              36.70914 149.25890
-## OUF anisotropic harmonic 1 0              37.92132 107.66571
+## OUF anisotropic harmonic 1 0              37.92132 107.66572
 ## OUF anisotropic harmonic 1 1              43.33548 105.71558
 ## OU anisotropic harmonic 2 0               51.67196  79.90435
 ## OUf anisotropic harmonic 1 0              57.13807 151.46287
@@ -199,28 +201,28 @@ SUB &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumen
 ## OUF isotropic harmonic 0 0               247.39259 119.70643
 ## OUF isotropic circulation harmonic 0 0   248.37346 119.73740</code></pre>
 <p>Next we do some sanity checking on our results. The sampling interval for Gamba is fairly steady at</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="st">"hour"</span> <span class="op">%#%</span><span class="st"> </span>stats<span class="op">::</span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/median">median</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/diff">diff</a></span>(Gamba<span class="op">$</span>t))</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="st">"hour"</span> <span class="op">%#%</span><span class="st"> </span>stats<span class="op">::</span><span class="kw"><a href="https://rdrr.io/r/stats/median.html">median</a></span>(<span class="kw"><a href="https://rdrr.io/r/base/diff.html">diff</a></span>(Gamba<span class="op">$</span>t))</code></pre></div>
 <pre><code>## [1] 4</code></pre>
 <p>4 hours, which (ideally) corresponds to a Nyquist period of 8 (2 <span class="math inline">\(\times\)</span> 4) hours, or 3 (24/8) times per day, or 3 harmonics of the day. The Nyquist period/frequency is an information limit on discretely sampled data. We expect to be able to extract a maximum of 3 harmonics from uniformly sampled data. Therefore, we should limit our consideration to harmonics of the day <span class="math inline">\(\leq\)</span> 3, while for lower quality data, we might have to limit our consideration even further.</p>
 <p>Consistent with these considerations, let us look at harmonics 3 and 2 of the day.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">SUB &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/colnames">rownames</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/summary">summary</a></span>(FITS,<span class="dt">MSPE=</span><span class="ot">NA</span>))[<span class="dv">1</span>]
-<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/summary">summary</a></span>(FITS[[SUB]]) <span class="co"># harmonic 3 0 # selected by IC</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">SUB &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span>(<span class="kw"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(FITS,<span class="dt">MSPE=</span><span class="ot">NA</span>))[<span class="dv">1</span>]
+<span class="kw"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(FITS[[SUB]]) <span class="co"># harmonic 3 0 # selected by IC</span></code></pre></div>
 <pre><code>## $name
 ## [1] "OUF anisotropic harmonic 3 0"
 ## 
 ## $DOF
 ##        mean        area       speed 
-## 106.6798346 174.7864575   0.8479798 
+## 106.6798345 174.7864575   0.8479798 
 ## 
 ## $CI
-##                                low         ML       high
+##                                low        est       high
 ## rotation/deviation %     74.380390  91.679710 100.000000
 ## rotation/speed %         96.735689  98.970180 100.000000
 ## area (square kilometers) 41.910582  48.890071  56.399203
 ## τ[position] (hours)       7.019750   9.335749  12.415855
 ## τ[velocity] (hours)       1.108651   1.599096   2.306504
 ## speed (kilometers/day)   12.330893 103.010394 205.062999</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/summary">summary</a></span>(FITS[[<span class="dv">1</span>]])   <span class="co"># harmonic 2 0 # selected by MSPE</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(FITS[[<span class="dv">1</span>]])   <span class="co"># harmonic 2 0 # selected by MSPE</span></code></pre></div>
 <pre><code>## $name
 ## [1] "OUF anisotropic harmonic 2 0"
 ## 
@@ -229,7 +231,7 @@ SUB &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumen
 ## 105.7677 175.8871 139.8130 
 ## 
 ## $CI
-##                                 low        ML      high
+##                                 low       est      high
 ## rotation/deviation %     23.6554767 28.855685 35.199060
 ## rotation/speed %         24.2563566 29.787735 36.580479
 ## area (square kilometers) 41.5574968 48.453880 55.871898
@@ -245,11 +247,11 @@ SUB &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumen
 <code>circulation period</code> is the period of the stochastic circulations. On average, the animal re-pass through the same neighborhoods every estimated number of months (or days, or hours, depending on the automated unit specification).</li>
 </ul>
 <p>Note that, aside from the rotational indices, these two models are largely consistent, and the 3 harmonic model has an extrordinarily uncertain speed estimate. We can get a better idea of what is happening by comparing the variograms.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">xlim &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="dv">0</span>,<span class="dv">1</span><span class="op">/</span><span class="dv">2</span>) <span class="op">%#%</span><span class="st"> "month"</span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">xlim &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="dv">0</span>,<span class="dv">1</span><span class="op">/</span><span class="dv">2</span>) <span class="op">%#%</span><span class="st"> "month"</span>
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>FITS[[SUB]],<span class="dt">xlim=</span>xlim)
-<span class="kw"><a href="https://www.rdocumentation.org/packages/graphics/topics/title">title</a></span>(<span class="st">"3 Harmonics"</span>)
+<span class="kw"><a href="https://rdrr.io/r/graphics/title.html">title</a></span>(<span class="st">"3 Harmonics"</span>)
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>FITS[[<span class="dv">1</span>]],<span class="dt">xlim=</span>xlim)
-<span class="kw"><a href="https://www.rdocumentation.org/packages/graphics/topics/title">title</a></span>(<span class="st">"2 Harmonics"</span>)</code></pre></div>
+<span class="kw"><a href="https://rdrr.io/r/graphics/title.html">title</a></span>(<span class="st">"2 Harmonics"</span>)</code></pre></div>
 <p><img src="periodogram_files/figure-html/unnamed-chunk-12-1.png" width="700"><img src="periodogram_files/figure-html/unnamed-chunk-12-2.png" width="700"></p>
 <p>While the confidence bands encompass the empirical variogram, the 3 harmonic model has clearly overfit in attempting to match the Nyquist period (3/day) with less than ideal data.</p>
 </div>
@@ -261,9 +263,11 @@ SUB &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumen
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
+
       </div>
 
 </div>
+
 
 
       <footer><div class="copyright">
@@ -271,12 +275,14 @@ SUB &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumen
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.3.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.</p>
 </div>
+
       </footer>
 </div>
 
   
+
 
   </body>
 </html>

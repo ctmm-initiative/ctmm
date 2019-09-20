@@ -7,8 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Variograms and Model Selection • ctmm</title>
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous">
-<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script><!-- sticky kit --><script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/all.min.css" integrity="sha256-nAmazAk6vS34Xqo0BSrTb+abbtFlgsFK7NKSi6o7Y78=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/v4-shims.min.css" integrity="sha256-6qHlizsOWFskGlwVOKuns+D1nB6ssZrHQrNj1wGplHc=" crossorigin="anonymous">
+<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/headroom.min.js" integrity="sha256-DJFC1kqIhelURkuza0AvYal5RxMtpzLjFhsnVIeuk+U=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
 <script src="../pkgdown.js"></script><meta property="og:title" content="Variograms and Model Selection">
 <meta property="og:description" content="">
 <meta name="twitter:card" content="summary">
@@ -80,13 +81,14 @@
 <!--/.navbar -->
 
       
+
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1>Variograms and Model Selection</h1>
                         <h4 class="author">Christen H. Fleming and Justin M. Calabrese</h4>
             
-            <h4 class="date">2019-06-17</h4>
+            <h4 class="date">2019-09-19</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/ctmm-initiative/ctmm/blob/master/vignettes/variogram.Rmd"><code>vignettes/variogram.Rmd</code></a></small>
       <div class="hidden name"><code>variogram.Rmd</code></div>
@@ -99,23 +101,23 @@
 <div id="data-preparation" class="section level1">
 <h1 class="hasAnchor">
 <a href="#data-preparation" class="anchor"></a>Data Preparation</h1>
-<p>We highly recommend that you get your data onto <a href="http://www.movebank.org/">Movebank</a>. This will help ensure that your data are of the correct format for <code>ctmm</code>, help you identify outliers, and you can keep your data completely private if you wish. <code>ctmm</code> requires that your dataframe conforms to <a href="https://www.movebank.org/node/2381">Movebank naming conventions</a> (see <code><a href="https://www.rdocumentation.org/packages/utils/topics/help">help(as.telemetry)</a></code>). The next step is then to import your MoveBank csv file:</p>
+<p>We highly recommend that you get your data onto <a href="http://www.movebank.org/">Movebank</a>. This will help ensure that your data are of the correct format for <code>ctmm</code>, help you identify outliers, and you can keep your data completely private if you wish. <code>ctmm</code> requires that your dataframe conforms to <a href="https://www.movebank.org/node/2381">Movebank naming conventions</a> (see <code><a href="https://rdrr.io/r/utils/help.html">help(as.telemetry)</a></code>). The next step is then to import your MoveBank csv file:</p>
 <pre><code>yourAnimals &lt;- as.telemetry("yourAnimalsMoveBank.csv")</code></pre>
 <p>Alternatively, if you want to clean your csv file first, you can import it as a data frame</p>
 <pre><code>yourAnimalsDF &lt;- read.csv("yourAnimalsMoveBank.csv")</code></pre>
 <p>and then edit the data frame before converting it into a <code>telemetry</code> object for <code>ctmm</code> via</p>
 <pre><code>yourAnimals &lt;- as.telemetry(yourAnimalsDF)</code></pre>
-<p><code>as.telemetry</code> also works on <code>Move</code> objects, which can be useful as the <code>move</code> package interfaces directly with MoveBank through <code>R</code> (see <code><a href="https://www.rdocumentation.org/packages/utils/topics/help">help(move::getMovebankData)</a></code>).</p>
-<p>A flat projection is necessary and for most species the default two-point equidistant projection will be fine. However, you can provide any PROJ.4 formatted projection with the <code>projection</code> argument (see <code><a href="https://www.rdocumentation.org/packages/utils/topics/help">help(as.telemetry)</a></code>). A single fixed projection should be used if you are going to plot groups of individuals that span multiple MoveBank files. This is done by default if multiple individuals are included in a single data frame.</p>
+<p><code>as.telemetry</code> also works on <code>Move</code> objects, which can be useful as the <code>move</code> package interfaces directly with MoveBank through <code>R</code> (see <code><a href="https://rdrr.io/r/utils/help.html">help(move::getMovebankData)</a></code>).</p>
+<p>A flat projection is necessary and for most species the default two-point equidistant projection will be fine. However, you can provide any PROJ.4 formatted projection with the <code>projection</code> argument (see <code><a href="https://rdrr.io/r/utils/help.html">help(as.telemetry)</a></code>). A single fixed projection should be used if you are going to plot groups of individuals that span multiple MoveBank files. This is done by default if multiple individuals are included in a single data frame.</p>
 <p>The output of <code>as.telemetry</code> will be an individual <code>telemetry</code> object or list of <code>telemetry</code> objects, depending on how many individual animals are in your csv file. The basic structure of a <code>telemetry</code> object is a data frame with columns <code>t</code> for time in seconds, and <code>x</code> and <code>y</code> for the projected locations in meters. Messages generated by <code>as.telemetry</code> may warn users about improper time formatting or spurious relocations. Possible outliers can be examined with the help of the <code>outlie</code> function.</p>
 <p>Our example buffalo data is already prepared into a list of <code>telemetry</code> objects. Let us look at the first buffalo and then every buffalo:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(ctmm)
-<span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/data">data</a></span>(<span class="st">"buffalo"</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span>(ctmm)
+<span class="kw"><a href="https://rdrr.io/r/utils/data.html">data</a></span>(<span class="st">"buffalo"</span>)
 Cilla &lt;-<span class="st"> </span>buffalo<span class="op">$</span>Cilla
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(Cilla)
-<span class="kw"><a href="https://www.rdocumentation.org/packages/graphics/topics/title">title</a></span>(<span class="st">"1 Buffalo"</span>)
-<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(buffalo,<span class="dt">col=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/grDevices/topics/palettes">rainbow</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/length">length</a></span>(buffalo)))
-<span class="kw"><a href="https://www.rdocumentation.org/packages/graphics/topics/title">title</a></span>(<span class="st">"5 Buffalo"</span>)</code></pre></div>
+<span class="kw"><a href="https://rdrr.io/r/graphics/title.html">title</a></span>(<span class="st">"1 Buffalo"</span>)
+<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(buffalo,<span class="dt">col=</span><span class="kw"><a href="https://rdrr.io/r/grDevices/palettes.html">rainbow</a></span>(<span class="kw"><a href="https://rdrr.io/r/base/length.html">length</a></span>(buffalo)))
+<span class="kw"><a href="https://rdrr.io/r/graphics/title.html">title</a></span>(<span class="st">"5 Buffalo"</span>)</code></pre></div>
 <p><img src="variogram_files/figure-html/unnamed-chunk-1-1.png" width="700"><img src="variogram_files/figure-html/unnamed-chunk-1-2.png" width="700"></p>
 <p>Looking at the raw movement tracks is a good way to pick out any obvious migratory behaviors. In the future, we will have migration models to select, but for now all of our models are range resident and so only those portions of the data should be selected. These buffalo all look fairly range resident, and so we can move on to variograms.</p>
 </div>
@@ -124,12 +126,12 @@ Cilla &lt;-<span class="st"> </span>buffalo<span class="op">$</span>Cilla
 <a href="#variograms" class="anchor"></a>Variograms</h1>
 <p>Variograms are an unbiased way to visualize autocorrelation structure when migration, range shifting, drift, or other translations of the mean location are not happening. When drift occurs in the data, then the variogram represents a mixture of both the drift and the autocorrelation structure, each of which contains distinct movement behaviors. In the future, we will have models that can allow for drift, but the current models assume range residence, which we can check with the variogram.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">SVF &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.html">variogram</a></span>(Cilla)
-level &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="fl">0.5</span>,<span class="fl">0.95</span>) <span class="co"># 50% and 95% CIs</span>
-xlim &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="dv">0</span>,<span class="dv">12</span> <span class="op">%#%</span><span class="st"> "hour"</span>) <span class="co"># 0-12 hour window</span>
+level &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">0.5</span>,<span class="fl">0.95</span>) <span class="co"># 50% and 95% CIs</span>
+xlim &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="dv">0</span>,<span class="dv">12</span> <span class="op">%#%</span><span class="st"> "hour"</span>) <span class="co"># 0-12 hour window</span>
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">xlim=</span>xlim,<span class="dt">level=</span>level)
-<span class="kw"><a href="https://www.rdocumentation.org/packages/graphics/topics/title">title</a></span>(<span class="st">"zoomed in"</span>)
+<span class="kw"><a href="https://rdrr.io/r/graphics/title.html">title</a></span>(<span class="st">"zoomed in"</span>)
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level)
-<span class="kw"><a href="https://www.rdocumentation.org/packages/graphics/topics/title">title</a></span>(<span class="st">"zoomed out"</span>)</code></pre></div>
+<span class="kw"><a href="https://rdrr.io/r/graphics/title.html">title</a></span>(<span class="st">"zoomed out"</span>)</code></pre></div>
 <p><img src="variogram_files/figure-html/unnamed-chunk-2-1.png" width="700"><img src="variogram_files/figure-html/unnamed-chunk-2-2.png" width="700"></p>
 <p>The first plot is zoomed in to the short lag behavior, while the second plot is zoomed out. You can do this on the fly with <code>zoom(Cilla)</code> in R-studio. The variogram represents the average square distance traveled (vertical axis) within some time lag (horizontal axis).</p>
 <p>For the long range behavior we can see that the variogram flattens (asymptotes) at approximately 20 days. This is, roughly, how coarse you need to make the timeseries so that methods assuming independence (no autocorrelation) can be valid. This includes, conventional kernel density estimation (KDE), minimum convex polygon (MCP), conventional species distribution modeling (SDM), and a host of other analyses.</p>
@@ -142,23 +144,23 @@ xlim &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocume
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">m.iid &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">sigma=</span><span class="dv">23</span> <span class="op">%#%</span><span class="st"> "km^2"</span>)
 m.ou &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">sigma=</span><span class="dv">23</span> <span class="op">%#%</span><span class="st"> "km^2"</span>,<span class="dt">tau=</span><span class="dv">6</span> <span class="op">%#%</span><span class="st"> "day"</span>)
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>m.iid,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">"red"</span>)
-<span class="kw"><a href="https://www.rdocumentation.org/packages/graphics/topics/title">title</a></span>(<span class="st">"Independent and identically distributed data"</span>)
+<span class="kw"><a href="https://rdrr.io/r/graphics/title.html">title</a></span>(<span class="st">"Independent and identically distributed data"</span>)
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>m.ou,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">"purple"</span>)
-<span class="kw"><a href="https://www.rdocumentation.org/packages/graphics/topics/title">title</a></span>(<span class="st">"Ornstein-Uhlenbeck movement"</span>)</code></pre></div>
+<span class="kw"><a href="https://rdrr.io/r/graphics/title.html">title</a></span>(<span class="st">"Ornstein-Uhlenbeck movement"</span>)</code></pre></div>
 <p><img src="variogram_files/figure-html/unnamed-chunk-3-1.png" width="700"><img src="variogram_files/figure-html/unnamed-chunk-3-2.png" width="700"></p>
-<p>where for both the models <code>m.iid</code> and <code>m.ou</code>, <code>sigma</code> (σ) is the asymptotic variance. In the Ornstein-Uhlenbeck (OU) model <code>m.ou</code>, <code>tau</code> (τ) is a single timescale that governs the autocorrelation in position and dictates the animal’s home-range crossing time. The independent and identically distributed (IID) null model <code>m.iid</code> has no autocorrelation. Notice that all units are in meters and seconds, as output by the utility function <code>%#%</code> (see <code><a href="https://www.rdocumentation.org/packages/utils/topics/help">help("%#%")</a></code>.</p>
+<p>where for both the models <code>m.iid</code> and <code>m.ou</code>, <code>sigma</code> (σ) is the asymptotic variance. In the Ornstein-Uhlenbeck (OU) model <code>m.ou</code>, <code>tau</code> (τ) is a single timescale that governs the autocorrelation in position and dictates the animal’s home-range crossing time. The independent and identically distributed (IID) null model <code>m.iid</code> has no autocorrelation. Notice that all units are in meters and seconds, as output by the utility function <code><a href="../reference/unit.html">%#%</a></code> (see <code><a href="https://rdrr.io/r/utils/help.html">help("%#%")</a></code>.</p>
 <p>The IID model <code>m.iid</code> is obviously incorrect and in the zoomed in plot we can also see that the OU model <code>m.ou</code> is incorrectly linear at short lags, whereas the empirical variogram actually curves up for an hour or two before it becomes linear. Let us introduce a model that incorporates this behavior.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">m.ouf &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">sigma=</span><span class="dv">23</span> <span class="op">%#%</span><span class="st"> "km^2"</span>,<span class="dt">tau=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="dv">6</span> <span class="op">%#%</span><span class="st"> "day"</span>,<span class="dv">1</span> <span class="op">%#%</span><span class="st"> "hour"</span>))
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">m.ouf &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">sigma=</span><span class="dv">23</span> <span class="op">%#%</span><span class="st"> "km^2"</span>,<span class="dt">tau=</span><span class="kw"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="dv">6</span> <span class="op">%#%</span><span class="st"> "day"</span>,<span class="dv">1</span> <span class="op">%#%</span><span class="st"> "hour"</span>))
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>m.ou,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">"purple"</span>,<span class="dt">xlim=</span>xlim)
-<span class="kw"><a href="https://www.rdocumentation.org/packages/graphics/topics/title">title</a></span>(<span class="st">"Ornstein-Uhlenbeck movement"</span>)
+<span class="kw"><a href="https://rdrr.io/r/graphics/title.html">title</a></span>(<span class="st">"Ornstein-Uhlenbeck movement"</span>)
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>m.ouf,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">"blue"</span>,<span class="dt">xlim=</span>xlim)
-<span class="kw"><a href="https://www.rdocumentation.org/packages/graphics/topics/title">title</a></span>(<span class="st">"Ornstein-Uhlenbeck-F movement"</span>)</code></pre></div>
+<span class="kw"><a href="https://rdrr.io/r/graphics/title.html">title</a></span>(<span class="st">"Ornstein-Uhlenbeck-F movement"</span>)</code></pre></div>
 <p><img src="variogram_files/figure-html/unnamed-chunk-4-1.png" width="700"><img src="variogram_files/figure-html/unnamed-chunk-4-2.png" width="700"></p>
 <p>The confidence intervals at short lags are also very narrow, though both of these models look the same at coarser scales and so the discrepancy is only revealed by high resolution data.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>m.ou,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">"purple"</span>)
-<span class="kw"><a href="https://www.rdocumentation.org/packages/graphics/topics/title">title</a></span>(<span class="st">"Ornstein-Uhlenbeck movement"</span>)
+<span class="kw"><a href="https://rdrr.io/r/graphics/title.html">title</a></span>(<span class="st">"Ornstein-Uhlenbeck movement"</span>)
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>m.ouf,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">"blue"</span>)
-<span class="kw"><a href="https://www.rdocumentation.org/packages/graphics/topics/title">title</a></span>(<span class="st">"Ornstein-Uhlenbeck-F movement"</span>)</code></pre></div>
+<span class="kw"><a href="https://rdrr.io/r/graphics/title.html">title</a></span>(<span class="st">"Ornstein-Uhlenbeck-F movement"</span>)</code></pre></div>
 <p><img src="variogram_files/figure-html/unnamed-chunk-5-1.png" width="700"><img src="variogram_files/figure-html/unnamed-chunk-5-2.png" width="700"></p>
 <p>The Ornstein-Uhlenbeck-F (OUF) model <code>m.ouf</code> introduces an additional autocorrelation timescale for the animal’s velocity, so that it more closely matches the initial behavior of the variogram. The initial curve upwards tells us that there is continuity in the animal’s velocity at this timescale. Conventional Markovian animal movement models do not capture this, which leads to the same kind of bias and underestimation of confidence intervals as when ignoring autocorrelation entirely.</p>
 <p>The linear regime of the variogram (regular diffusion) is just as important as the asymptotic regime. In the linear regime it is reasonable to assume a Markovian model as with step selection functions (SSF) and Brownian bridges (BB). Therefore, the variogram has informed us as to how much we need to coarsen our data for it to be appropriate in many common analyses that neglect various aspects of movement.</p>
@@ -174,11 +176,11 @@ m.ou &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.f
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># simulate fake buffalo with the same sampling schedule</span>
 willa &lt;-<span class="st"> </span><span class="kw"><a href="../reference/simulate.ctmm.html">simulate</a></span>(m.ouf,<span class="dt">t=</span>Cilla<span class="op">$</span>t)
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(willa)
-<span class="kw"><a href="https://www.rdocumentation.org/packages/graphics/topics/title">title</a></span>(<span class="st">"simulation"</span>)
+<span class="kw"><a href="https://rdrr.io/r/graphics/title.html">title</a></span>(<span class="st">"simulation"</span>)
 <span class="co"># now calculate and plot its variogram</span>
 SVF2 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.html">variogram</a></span>(willa)
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF2,<span class="dt">CTMM=</span>m.ouf,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">"blue"</span>)
-<span class="kw"><a href="https://www.rdocumentation.org/packages/graphics/topics/title">title</a></span>(<span class="st">"simulation"</span>)</code></pre></div>
+<span class="kw"><a href="https://rdrr.io/r/graphics/title.html">title</a></span>(<span class="st">"simulation"</span>)</code></pre></div>
 <p><img src="variogram_files/figure-html/unnamed-chunk-6-1.png" width="700"><img src="variogram_files/figure-html/unnamed-chunk-6-2.png" width="700"></p>
 <p>In this case, the blue curve is the true model, while the (black) empirical variogram is our estimate calculated from the data. The undulations in the empirical variogram are caused by autocorrelation between its errors and are not features of the underlying model.</p>
 </div>
@@ -186,15 +188,15 @@ SVF2 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variog
 <h3 class="hasAnchor">
 <a href="#irregular-sampling-schedules" class="anchor"></a>Irregular Sampling Schedules</h3>
 <p>Random gaps in the data are acceptable and fully accounted for in both variogram estimation and model fitting. However, if under any condition the sampling rate changes during data collection, then you will have to account for that in the variogram with the <code>dt</code> argument. In the following example, the collar was programmed to cycle between 1, 5, 25 hour sampling intervals</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/data">data</a></span>(<span class="st">"gazelle"</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://rdrr.io/r/utils/data.html">data</a></span>(<span class="st">"gazelle"</span>)
 SVF3 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.html">variogram</a></span>(gazelle[[<span class="dv">18</span>]])
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF3,<span class="dt">fraction=</span><span class="fl">0.85</span>,<span class="dt">level=</span>level)
-<span class="kw"><a href="https://www.rdocumentation.org/packages/graphics/topics/title">title</a></span>(<span class="st">"Default method"</span>)
+<span class="kw"><a href="https://rdrr.io/r/graphics/title.html">title</a></span>(<span class="st">"Default method"</span>)
 <span class="co"># 1, 5, 25 hour sampling intervals</span>
-dt &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="dv">1</span>,<span class="dv">5</span>,<span class="dv">25</span>) <span class="op">%#%</span><span class="st"> "hour"</span>
+dt &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="dv">1</span>,<span class="dv">5</span>,<span class="dv">25</span>) <span class="op">%#%</span><span class="st"> "hour"</span>
 SVF3 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.html">variogram</a></span>(gazelle[[<span class="dv">18</span>]],<span class="dt">dt=</span>dt)
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF3,<span class="dt">fraction=</span><span class="fl">0.85</span>,<span class="dt">level=</span>level)
-<span class="kw"><a href="https://www.rdocumentation.org/packages/graphics/topics/title">title</a></span>(<span class="st">"Multi method"</span>)</code></pre></div>
+<span class="kw"><a href="https://rdrr.io/r/graphics/title.html">title</a></span>(<span class="st">"Multi method"</span>)</code></pre></div>
 <p><img src="variogram_files/figure-html/unnamed-chunk-7-1.png" width="700"><img src="variogram_files/figure-html/unnamed-chunk-7-2.png" width="700"></p>
 <p>With small amounts of highly irregular data, you may also want to try <code>fast=FALSE</code>.</p>
 </div>
@@ -203,10 +205,10 @@ SVF3 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variog
 <a href="#pooling-variograms" class="anchor"></a>Pooling Variograms</h3>
 <p>If multiple individuals exhibit similar movement behaviors, then we can pool their individual variograms to create a more precise population variogram. You should be careful though, if the individual movement behaviors and sampling schedules are not identical, then there will be discontinuities at lags where one timeseries runs out of data.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># buffalo 4 is bad</span>
-SVF4 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/lapply">lapply</a></span>(buffalo[<span class="op">-</span><span class="dv">4</span>],variogram)
-SVF4 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/mean">mean</a></span>(SVF4)
+SVF4 &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(buffalo[<span class="op">-</span><span class="dv">4</span>],variogram)
+SVF4 &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/mean.html">mean</a></span>(SVF4)
 <span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF4,<span class="dt">fraction=</span><span class="fl">0.35</span>,<span class="dt">level=</span>level)
-<span class="kw"><a href="https://www.rdocumentation.org/packages/graphics/topics/title">title</a></span>(<span class="st">"Population variogram"</span>)</code></pre></div>
+<span class="kw"><a href="https://rdrr.io/r/graphics/title.html">title</a></span>(<span class="st">"Population variogram"</span>)</code></pre></div>
 <p><img src="variogram_files/figure-html/unnamed-chunk-8-1.png" width="700"></p>
 </div>
 <div id="non-stationarity-in-stationary-variograms" class="section level3">
@@ -225,7 +227,7 @@ SVF4 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocume
 <a href="#maximum-likelihood-fitting-the-hard-way" class="anchor"></a>Maximum Likelihood Fitting the Hard Way</h2>
 <p>Here we take our guestimates from variogram fitting the hard way and perform model selection manually. Later we will finish everything off the easy way. First let us fit each of our proposed models <code>m.iid</code>, <code>m.ou</code>, <code>m.ouf</code>, store the corresponding best-fit result in <code>M.IID</code>, <code>M.OU</code>, <code>M.OUF</code>, and then compare some of their outputs.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">M.IID &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(Cilla,m.iid)
-<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/summary">summary</a></span>(M.IID)</code></pre></div>
+<span class="kw"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(M.IID)</code></pre></div>
 <pre><code>## $name
 ## [1] "IID anisotropic"
 ## 
@@ -234,42 +236,42 @@ SVF4 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocume
 ##  3527  3526     0 
 ## 
 ## $CI
-##                               low       ML     high
+##                               low      est     high
 ## area (square kilometers) 356.9248 369.0051 381.2837</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">M.OU &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(Cilla,m.ou)
-<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/summary">summary</a></span>(M.OU)</code></pre></div>
+<span class="kw"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(M.OU)</code></pre></div>
 <pre><code>## $name
 ## [1] "OU anisotropic"
 ## 
 ## $DOF
 ##     mean     area    speed 
-## 5.430229 8.231785 0.000000 
+## 5.430229 8.231786 0.000000 
 ## 
 ## $CI
-##                                 low        ML      high
-## area (square kilometers) 181.703264 414.86725 742.63019
+##                                 low       est      high
+## area (square kilometers) 181.703270 414.86725 742.63018
 ## τ[position] (days)         5.232246  16.55615  52.38784</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">M.OUF &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(Cilla,m.ouf)
-<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/summary">summary</a></span>(M.OUF)</code></pre></div>
+<span class="kw"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(M.OUF)</code></pre></div>
 <pre><code>## $name
 ## [1] "OUF anisotropic"
 ## 
 ## $DOF
 ##       mean       area      speed 
-##   10.73354   18.13596 3445.13307 
+##   10.73353   18.13595 3445.13307 
 ## 
 ## $CI
-##                                 low         ML      high
-## area (square kilometers) 239.647390 403.458835 609.24126
-## τ[position] (days)         4.026011   7.505368  13.99165
+##                                 low        est      high
+## area (square kilometers) 239.647386 403.458913 609.24146
+## τ[position] (days)         4.026011   7.505369  13.99166
 ## τ[velocity] (minutes)     39.570325  42.069009  44.72547
 ## speed (kilometers/day)    13.819957  14.054636  14.28926</code></pre>
 <p>Notice how tiny the (Gaussian) area uncertainty is in IID model <code>M.IID</code>. Let us look into some details of the models.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">FITS &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">IID=</span>M.IID,<span class="dt">OU=</span>M.OU,<span class="dt">OUF=</span>M.OUF)
-<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/summary">summary</a></span>(FITS)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">FITS &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="dt">IID=</span>M.IID,<span class="dt">OU=</span>M.OU,<span class="dt">OUF=</span>M.OUF)
+<span class="kw"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(FITS)</code></pre></div>
 <pre><code>##         ΔAICc ΔRMSPE (m)   DOF[area]
-## OUF     0.000   352.8536   18.135964
-## OU   1565.291   779.5549    8.231785
+## OUF     0.000   352.8543   18.135951
+## OU   1565.291   779.5549    8.231786
 ## IID 38112.149     0.0000 3526.000000</code></pre>
 <p><code>AICc</code> is the (linearly) corrected Akaike information criteria. AIC balances likelihood against model complexity in a way that is good if we want to make optimal predictions. A lower AIC is better. Getting the AIC to go down by 5 is great, while getting the AIC to go down by 10 is awesome. Our AIC is going down by thousands.</p>
 <p>The fit parameter <code>DOF[mean]</code> is the number of degrees of freedom worth of data we have to estimate the stationary mean parameter, assuming that the model is correct. Notice that the IID model perceives thousands of independent data points, while the autocorrelated OU and OUF models only see a handful of independent data points. This is why the IID model produced tiny confidence intervals on the predicted (Gaussian) area.</p>
@@ -280,25 +282,25 @@ SVF4 &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocume
 <p>If you have a complex, hypothetical model in mind, say the OUF <code>m.ouf</code> as you would get from variogram fitting the easy way, then you can perform model selection more conveniently with the <code>ctmm.select</code> function. <code>ctmm.select</code> considers the initial guess (hypothesis) and then iterates this model to select the best model based upon an information criteria.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># CRAN policy limits us to 2 cores</span>
 FITZ &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.select</a></span>(Cilla,m.ouf,<span class="dt">verbose=</span><span class="ot">TRUE</span>,<span class="dt">cores=</span><span class="dv">2</span>)
-<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/summary">summary</a></span>(FITZ)</code></pre></div>
+<span class="kw"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(FITZ)</code></pre></div>
 <pre><code>##                     ΔAICc ΔRMSPE (km)  DOF[area]
-## OUF anisotropic    0.0000    1.776669  18.136018
-## OUF isotropic     67.7508    1.912066  17.912943
+## OUF anisotropic    0.0000    1.776668  18.136042
+## OUF isotropic     67.7508    1.912066  17.912945
 ## OU anisotropic  1565.2907    2.203373   8.231784
 ## OUf anisotropic 1863.8799    0.000000 345.919684</code></pre>
 <!--Note that `level=1` is set here for demonstration purposes only, to attempt every nearest model no matter how unlikely it may seem.-->
 <p>The isotropic and anisotropic (<code>isotropic=FALSE</code>) flags correspond to circular and elliptical covariances respectively—an option we did not consider above. <!-- The Ornstein-Uhlenbeck-F (OUF) model is continuous in position and velocity (`M.OUF`),
 the Ornstein-Uhlenbeck (OU) model is continuous in position only (`M.OU`),
-and the independent and identically distributed (IID) model has no autocorrelation (`M.IID`). --> The OUf model is a special case of the OUF model where the two autocorrelation timescales, τ position and τ velocity, cannot be distinguished. This model is usually only relevant for short tracks of data. The IID model was never considered here by <code>ctmm.select</code> because it first requires selecting OU over OUF in the nested model hierarchy. See <code><a href="https://www.rdocumentation.org/packages/utils/topics/help">help("ctmm")</a></code> for more options.</p>
+and the independent and identically distributed (IID) model has no autocorrelation (`M.IID`). --> The OUf model is a special case of the OUF model where the two autocorrelation timescales, τ position and τ velocity, cannot be distinguished. This model is usually only relevant for short tracks of data. The IID model was never considered here by <code>ctmm.select</code> because it first requires selecting OU over OUF in the nested model hierarchy. See <code><a href="https://rdrr.io/r/utils/help.html">help("ctmm")</a></code> for more options.</p>
 </div>
 <div id="variograms-as-a-disgnostic-for-maximum-likelihood" class="section level2">
 <h2 class="hasAnchor">
 <a href="#variograms-as-a-disgnostic-for-maximum-likelihood" class="anchor"></a>Variograms as a Disgnostic for Maximum Likelihood</h2>
 <p>Now its time to make sure that our selected model is explaining the most significant features of the animal’s movement. Let us plot the variogram again with our fit models</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>FITS,<span class="dt">col.CTMM=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="st">"red"</span>,<span class="st">"purple"</span>,<span class="st">"blue"</span>),<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span><span class="fl">0.5</span>)
-<span class="kw"><a href="https://www.rdocumentation.org/packages/graphics/topics/title">title</a></span>(<span class="st">"zoomed out"</span>)
-<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>FITS,<span class="dt">col.CTMM=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="st">"red"</span>,<span class="st">"purple"</span>,<span class="st">"blue"</span>),<span class="dt">xlim=</span>xlim,<span class="dt">level=</span><span class="fl">0.5</span>)
-<span class="kw"><a href="https://www.rdocumentation.org/packages/graphics/topics/title">title</a></span>(<span class="st">"zoomed in"</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>FITS,<span class="dt">col.CTMM=</span><span class="kw"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"red"</span>,<span class="st">"purple"</span>,<span class="st">"blue"</span>),<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span><span class="fl">0.5</span>)
+<span class="kw"><a href="https://rdrr.io/r/graphics/title.html">title</a></span>(<span class="st">"zoomed out"</span>)
+<span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(SVF,<span class="dt">CTMM=</span>FITS,<span class="dt">col.CTMM=</span><span class="kw"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"red"</span>,<span class="st">"purple"</span>,<span class="st">"blue"</span>),<span class="dt">xlim=</span>xlim,<span class="dt">level=</span><span class="fl">0.5</span>)
+<span class="kw"><a href="https://rdrr.io/r/graphics/title.html">title</a></span>(<span class="st">"zoomed in"</span>)</code></pre></div>
 <p><img src="variogram_files/figure-html/unnamed-chunk-14-1.png" width="700"><img src="variogram_files/figure-html/unnamed-chunk-14-2.png" width="700"></p>
 <p>Notice that the purple OU model <code>M.OU</code> is significantly biased downward and is underestimating diffusion. This is because the continuous-velocity behavior at short time lags, which <code>M.OU</code> does not account for, is throwing off the estimate. The IID model <code>M.IID</code> is ignoring autocorrelation completely, while the OU model <code>M.OU</code> is ignoring autocorrelation in the buffalo’s velocity.</p>
 <p>While the OUF <code>M.OUF</code> is the selected model among all candidates, <code>M.OUF</code> looks slightly biased upwards in comparison to the variogram fit <code>m.ouf</code>. Some of this is due to sampling variability, which be (partially) remedied in the <code>variogram</code> method by increasing the <code>res</code> argument. Differences here can also arise from not accounting for telemetry error, which is unfortunately not annotated in this data.</p>
@@ -307,6 +309,7 @@ and the independent and identically distributed (IID) model has no autocorrelati
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
+
         <div id="tocnav">
       <h2 class="hasAnchor">
 <a href="#tocnav" class="anchor"></a>Contents</h2>
@@ -332,17 +335,20 @@ and the independent and identically distributed (IID) model has no autocorrelati
 </div>
 
 
+
       <footer><div class="copyright">
   <p>Developed by Christen H. Fleming, Justin M. Calabrese.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.3.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.</p>
 </div>
+
       </footer>
 </div>
 
   
+
 
   </body>
 </html>
