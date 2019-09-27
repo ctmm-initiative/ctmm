@@ -2,6 +2,8 @@
 \alias{residuals.ctmm}
 \alias{residuals.telemetry}
 \alias{correlogram}
+\alias{mag}
+\alias{mag.telemetry}
 \encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Calculate model fit residuals and assess their autocorrelation}
@@ -9,6 +11,7 @@
 These functions calculate the residuals of a CTMM or UERE calibration model, which should be standardized and IID if the model correctly specified.
 A correlogram method is also provided to assess autocorrelation.
 This function is analogous to \code{acf}, but can handle missing data and multiple dimensions.
+Finally, \code{mag} calculates residual magnitudes, which is useful for comparing against potential covariates.
 }
 \usage{
 \S3method{residuals}{ctmm}(object,data,...)
@@ -16,6 +19,10 @@ This function is analogous to \code{acf}, but can handle missing data and multip
 \S3method{residuals}{telemetry}(object,CTMM=NULL,...)
 
 correlogram(data,dt=NULL,fast=TRUE,res=1,axes=c("x","y"))
+
+mag(x,...)
+
+\S3method{mag}{telemetry}(x,axes=c('x','y'),...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -26,7 +33,8 @@ correlogram(data,dt=NULL,fast=TRUE,res=1,axes=c("x","y"))
   \item{dt}{ Lag bin width. An ordered array will yield a progressive coarsening of the lags. Defaults to the median sampling interval.}
   \item{fast}{ Use the lag-weighted algorithm if \code{FALSE} or the FFT algorithm if \code{TRUE}. The slow algorithm outputs a progress bar.}
   \item{res}{Increase the discretization resolution for irregularly sampled data with \code{res>1}. Decreases bias at the cost of smoothness.}
-  \item{axes}{Array of axes to calculate an average (isotropic) correlogram for.}
+  \item{axes}{Array of axes for which to calculate residual correlogram or magnitudes.}
+  \item{x}{\code{telemetry} object from the output of \code{residuals}.}
 }
 \details{
 Given a \code{telemetry} dataset and \code{ctmm} model, \code{residuals} calculates the standardized residuals of the Kalman filter, which can be tested for independence. The residuals object can then be plotted with \code{plot} or fed into the \code{correlogram} method to test independence. Output of the correlogram can then be plotted as well, though \code{zoom} is much more useful.

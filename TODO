@@ -247,12 +247,7 @@ population fitting without correlation
 population fit of list
 population akde of lists
 
-optional columns with NAs are being discarded
-or maybe report if NAs are discarded?
-
 Lapack GE solve -> Lapack PO/SY solve.
-
-as.telemetry option: minimal columns, maximum columns, specified columns to keep
 
 profile CIs
 

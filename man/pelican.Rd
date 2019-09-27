@@ -6,7 +6,7 @@
 \title{Brown Pelican GPS and ARGOS data.}
 
 \description{GPS and ARGOS data on a single brown pelican (Pelecanus occidentalis).
-Please contact Autumn-Lynn Harrison (HarrisonAL@si.edu) if you want to publish with these data
+Please contact Autumn-Lynn Harrison (HarrisonAL@si.edu) if you want to publish with these data.
 
 Funding for Brown Pelican tracking was provided by the Friends of the National Zoo Conservation Research Grant and ConocoPhillips Global Signature Program. Field support provided by D. Brinker.}
 

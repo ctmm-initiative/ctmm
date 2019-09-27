@@ -452,7 +452,7 @@ akde <- function(data,CTMM,VMM=NULL,debias=TRUE,weights=FALSE,smooth=TRUE,error=
     else
     { stop(paste("CTMM argument is of class",class(CTMM))) }
 
-    if(debias) { DEBIAS[[i]] <- KDE[[i]]$bias }
+    DEBIAS[[i]] <- ifelse(debias,KDE[[i]]$bias,FALSE)
   } # end loop over individuals
 
   COL <- length(axes)

@@ -77,6 +77,7 @@ get.telemetry <- function(data,axes=c("x","y"))
   return(data)
 }
 
+
 ########
 set.telemetry <- function(data,value,axes=colnames(value))
 {
@@ -151,6 +152,7 @@ Move2CSV <- function(object,timeformat="",timezone="UTC",projection=NULL,...)
   return(DATA)
 }
 
+
 # pull out a column with different possible names
 # consider alternative spellings of NAMES, but preserve order (preference) of NAMES
 pull.column <- function(object,NAMES,FUNC=as.numeric)
@@ -174,19 +176,31 @@ pull.column <- function(object,NAMES,FUNC=as.numeric)
     {
       # preference non-empty columns
       COL <- FUNC(object[,NAME])
-      if(!all(is.na(COL))) {return(COL) }
+      NAS <- is.na(COL)
+      if(!all(NAS))
+      {
+        # otherwise NA is not a level... which is the whole point of this
+        if(class(COL)=="factor" && any(NAS))
+        {
+          COL <- addNA(COL)
+          NAS <- is.na(levels(COL))
+          levels(COL)[NAS] <- "NA" # level can't literally be NA, because NA is not a value
+        }
+        return(COL)
+      }
     }
   }
   # nothing non-empty matched
   return(NULL)
 }
 
+
 # some columns are missing when fix is inferior class
 # do we need a new location class for this
 missing.class <- function(DATA,TYPE)
 {
   LEVELS <- paste0("[",TYPE,"]")
-  LEVELS[2] <- paste0("NA",LEVELS)
+  LEVELS[2] <- paste0("[NA-",TYPE,"]")
 
   # column to check for NAs
   if(TYPE=="speed") { COL <- "speed" }
@@ -200,18 +214,10 @@ missing.class <- function(DATA,TYPE)
     # are these NAs specific to a location class
     if('class' %in% names(DATA))
     {
-      IN <- unique(DATA$class[NAS])
-      OUT <- unique(DATA$class[!NAS])
-      OVER <- intersect(IN,OUT)
+      MISS <- as.factor(NAS)
+      levels(MISS) <- LEVELS
       # do we need an additional location class for missing TYPE?
-      if(length(OVER))
-      {
-        OVER <- as.factor(NAS)
-        levels(OVER) <- LEVELS
-        DATA$class <- paste(as.character(DATA$class),as.character(OVER))
-        DATA$class <- as.factor(DATA$class)
-        rm(OVER)
-      }
+      DATA$class <- merge.class(DATA$class,MISS)
       # otherwise, current location classes are sufficient
     }
     else # we need a location class for missing TYPE
@@ -236,11 +242,39 @@ missing.class <- function(DATA,TYPE)
       # adjust calibrated errors --- shouldn't be necessary
       if(VAR %in% names(DATA)) { DATA[[VAR]][NAS] <- Inf }
     }
-    else if(TYPE=="HDOP")
+    else if(TYPE %in% c("HDOP","VDOP"))
     { DATA[[COL]][NAS] <- 100 }
-  }
+  } # end if(any(NAS))
 
   return(DATA)
+}
+
+
+# merge two location classes with minimal levels
+merge.class <- function(class1,class2)
+{
+  LEVEL2 <- levels(class2)
+  N <- length(LEVEL2)
+  CLASS12 <- list()
+  for(i in 1:N) { CLASS12[[i]] <- unique( class1[ class2==LEVEL2[i] ] ) }
+
+  # do we need additional location classes
+  OVER <- matrix(0,N,N)
+  for(i in 1:N) { for(j in 1:N) { OVER[i,j] <- sum( length( intersect(CLASS12[[i]],CLASS12[[j]]) ) ) } }
+  diag(OVER) <- 0 # don't count self similarity
+  OVER <- sum(OVER)/2
+
+  if(OVER)
+  {
+    class1 <- as.character(class1)
+    class2 <- as.character(class2)
+    class <- paste(class1,class2)
+    class <- as.factor(class)
+  }
+  else
+  { class <- class1 }
+
+  return(class)
 }
 
 
@@ -306,7 +340,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   NAMES$nsat <- c("GPS.satellite.count","satellite.count","Sat.Count","Num.Sats","Sat.Num","Nr.Sat","satellites.used","Satellites","Sats","Satt") # Counts? Messages?
   NAMES$FIX <- c("GPS.fix.type","GPS.fix.type.raw","fix.type","type.of.fix","e.obs.type.of.fix","Fix.Attempt","GPS.Fix.Attempt","Telonics.Fix.Attempt","Fix.Status","sensor.type","Fix","2D/3D")
   NAMES$TTF <- c("GPS.time.to.fix","time.to.fix","GPS.TTF","TTF","GPS.fix.time","fix.time","time.to.get.fix","e.obs.used.time.to.get.fix","Duration","GPS.navigation.time","navigation.time","Time.On")
-  NAMES$z <- c("height.above.ellipsoid","height.above.msl","height.above.mean.sea.level","height.raw","height","height.m","barometric.height","Argos.altitude","GPS.Altitude","altitude","altitude.m","Alt","barometric.depth","depth")
+  NAMES$z <- c("height.above.ellipsoid","height.above.msl","height.above.mean.sea.level","height.raw","height","height.m","barometric.height","Argos.altitude","GPS.Altitude","altitude","altitude.m","Alt","barometric.depth","depth","elevation","elev")
 
   na.rm <- match.arg(na.rm,c("row","col"))
 
@@ -417,13 +451,21 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     { DATA[[DOP.LIST$horizontal$VAR]] <- pull.column(object,"Argos.error.radius")^2/2 }
     else
     { DATA[[DOP.LIST$horizontal$VAR]] <- (DATA$COV.minor + DATA$COV.major)/2 }
+
+    ARGOS <- TRUE
+    NAS <- is.na(COL) # missing error ellipse rows
+  }
+  else
+  {
+    ARGOS <- FALSE
+    NAS <- rep(NA,nrow(object)) # no error ellipse information
   }
 
   # ARGOS error categories (older ARGOS data <2011)
   # converted to error ellipses from ...
   COL <- c("Argos.location.class","Argos.lc")
   COL <- pull.column(object,COL,as.factor)
-  if(!all(c("COV.angle","COV.major","COV.major") %in% names(DATA)) && length(COL))
+  if(length(COL) && any(NAS)) # ARGOS location classes present, but no error ellipses
   {
     # major axis always longitude
     DATA$COV.angle <- 90
@@ -435,129 +477,61 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     # error radii (average variance)
     ARGOS.radii <- (ARGOS.major+ARGOS.minor)/2
 
-    message("ARGOS error ellipses not found. Using location class estimates from McClintock et al (2015).")
-    DATA$class <- COL
+    message(sum(NAS)," ARGOS error ellipses missing. Using location class estimates from McClintock et al (2015).")
     COL <- as.character(COL) # factors are weird
-    DATA$COV.minor <- ARGOS.minor[COL]
-    DATA$COV.major <- ARGOS.major[COL]
-    DATA[[DOP.LIST$horizontal$VAR]] <- ARGOS.radii[COL]
-    DATA$HDOP <- sqrt(2*ARGOS.radii)[COL]
 
-    # remove Z class for now
-    object <- object[COL!="Z",]
-    DATA <- DATA[COL!="Z",]
+    DATA$COV.minor[NAS] <- ARGOS.minor[COL][NAS]
+    DATA$COV.major[NAS] <- ARGOS.major[COL][NAS]
+    DATA[[DOP.LIST$horizontal$VAR]][NAS] <- ARGOS.radii[COL][NAS]
+    DATA$HDOP[NAS] <- sqrt(2*ARGOS.radii)[COL][NAS]
+
+    # classify Kalman filtered locations separately
+    if(any(!NAS)) { COL[!NAS] <- "KF" }
+
+    DATA$class <- as.factor(COL)
+
+    # remove Z class (no calibration data)
+    SUB <- (NAS & COL!="Z") | !NAS
+    object <- object[SUB,]
+    DATA <- DATA[SUB,]
+
+    ARGOS <- TRUE
   }
 
-  ############
-  # EOBS calibrated GPS errors
-  COL <- c("eobs.horizontal.accuracy.estimate","eobs.horizontal.accuracy.estimate.m","horizontal.accuracy.estimate","horizontal.accuracy.estimate.m")
-  COL <- pull.column(object,COL)
-  if(length(COL))
+  # get dop values, but don't overwrite ARGOS GDOP if also present in ARGOS/GPS data
+  try.dop <- function(DOPS,MESS=NULL,FN=identity)
   {
-    DATA$HDOP <- COL
-    # estimated from calibration data of Scott LaPoint; Thomas Pfeiffer & Bernd-Ulrich Meyburg
-    # DATA[[DOP.LIST$horizontal$VAR]] <- (1.673414^2/2) * COL^2
-    # calibration inconsistent with newer e-obs devices
-
-    NAS <- is.na(DATA$HDOP)
-    if(any(NAS))
+    if(ARGOS || !("HDOP" %in% names(DATA)))
     {
-      DATA$HDOP[NAS] <- 1000
-      #DATA[[DOP.LIST$horizontal$VAR]][NAS] <- Inf
-      DATA$class <- as.factor(NAS)
-      levels(DATA$class) <- c('complete','incomplete')
-    }
-  }
-
-  ###########
-  # Telonics Gen4 GPS errors
-  COL <- c("Horizontal.Error","GPS.Horizontal.Error","Telonics.Horizontal.Error")
-  COL <- pull.column(object,COL)
-  if(length(COL))
-  {
-    TELONICS <- TRUE
-
-    if(FALSE) # this information does not generally perform well
-    {
-      COL <- COL/10 # put on similar scale with HDOP
-
-      DATA$HDOP <- sqrt(2)*COL
-
-      # approximate UERE lower bound for cases where NA error and !NA HDOP
-      COL <- NAMES$HDOP
-      COL <- pull.column(object,COL)
+      COL <- pull.column(object,DOPS)
       if(length(COL))
       {
-        NAS <- is.na(DATA$HDOP) & !is.na(COL) # errors that need to be calibrated
-        if(any(NAS)) { DATA$HDOP[NAS] <- COL[NAS] }
-        rm(NAS)
+        # HDOPS to assign
+        if(ARGOS) { NAS <- is.na(DATA$HDOP) }
+        else { NAS <- rep(NA,length(COL)) }
+
+        # don't overwrite ARGOS GDOPs
+        if(any(NAS))
+        {
+          if(length(MESS)) { message(MESS) }
+          DATA$HDOP[NAS] <<- FN(COL[NAS])
+        }
+
+        # don't make ARGOS expcetion again (2 DOP types)
+        ARGOS <<- FALSE
       }
-      else
-      { stop("Telonics data detected, but missing HDOP column.") }
     }
   }
-  else
-  { TELONICS <- FALSE }
+  # try to get dop values from best to worst
+  COL <- c("eobs.horizontal.accuracy.estimate","eobs.horizontal.accuracy.estimate.m","horizontal.accuracy.estimate","horizontal.accuracy.estimate.m")
+  try.dop(COL) # EOBS calibrated GPS errors
+  try.dop(NAMES$HDOP)
+  try.dop(NAMES$DOP,"HDOP values not found. Using ambiguous DOP.")
+  try.dop(NAMES$PDOP,"HDOP values not found. Using PDOP.")
+  try.dop(NAMES$GDOP,"HDOP values not found. Using GDOP.")
+  try.dop(NAMES$nsat,"HDOP values not found. Approximating via # satellites.",function(x){(12-2)/(x-2)})
 
-  ###################################
-  # HDOP
-  if(!("HDOP" %in% names(DATA)))
-  {
-    COL <- NAMES$HDOP
-    COL <- pull.column(object,COL)
-    if(length(COL)) { DATA$HDOP <- COL }
-  }
-
-  # DOP
-  if(!("HDOP" %in% names(DATA)))
-  {
-    COL <- NAMES$DOP
-    COL <- pull.column(object,COL)
-    if(length(COL))
-    {
-      message("HDOP values not found. Using ambiguous DOP values.")
-      DATA$HDOP <- COL
-    }
-  }
-
-  # PDOP
-  if(!("HDOP" %in% names(DATA)))
-  {
-    COL <- NAMES$PDOP
-    COL <- pull.column(object,COL)
-    if(length(COL))
-    {
-      message("HDOP values not found. Using PDOP values.")
-      DATA$HDOP <- COL
-    }
-  }
-
-  # GDOP
-  if(!("HDOP" %in% names(DATA)))
-  {
-    COL <- NAMES$GDOP
-    COL <- pull.column(object,COL)
-    if(length(COL))
-    {
-      message("HDOP values not found. Using GDOP values.")
-      DATA$HDOP <- COL
-    }
-  }
-
-  # approximate DOP from # satellites if necessary
-  if(!("HDOP" %in% names(DATA)))
-  {
-    COL <- NAMES$nsat
-    COL <- pull.column(object,COL)
-    if(length(COL))
-    {
-      message("HDOP values not found. Approximating via # satellites.")
-      COL <- (12-2)/(COL-2) # min HDOP of 1
-      DATA$HDOP <- COL
-    }
-  }
-
-  # GPS-ARGOS hybrid data
+  # GPS-ARGOS hybrid data clean-up
   COL <- "sensor.type"
   COL <- pull.column(object,COL,FUNC=as.factor)
   if(length(COL))
@@ -567,24 +541,29 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     if(('gps' %in% LEVELS) && any(grepl('argos',LEVELS)))
     {
       GPS <- (COL=='gps')
+      # missing GPS HDOP fix
+      if(all(is.na(DATA$HDOP[GPS]))) { DATA$HDOP[GPS] <- 1 }
+      # GPS errors are relatively small
+      DATA$VAR.xy[GPS] <- 0
       DATA$COV.angle[GPS] <- 0
       DATA$COV.major[GPS] <- 0
       DATA$COV.minor[GPS] <- 0
-      DATA$HDOP[GPS & is.na(DATA$HDOP)] <- 1
-      DATA$VAR.xy[GPS & is.na(DATA$VAR.xy)] <- 0
       rm(GPS)
     }
     rm(LEVELS)
   }
 
-  # account for missing DOP values
-  if("HDOP" %in% names(DATA)) { DATA <- missing.class(DATA,"HDOP") }
+  ###########
+  # Telonics Gen4 GPS errors
+  COL <- c("Horizontal.Error","GPS.Horizontal.Error","Telonics.Horizontal.Error")
+  COL <- pull.column(object,COL)
+  TELONICS <- length(COL)
 
   ###########################
   # generic location classes
   # includes Telonics Gen4 location classes (use with HDOP information)
   COL <- pull.column(object,NAMES$FIX,FUNC=as.factor)
-  if(length(COL)) { DATA$class <- COL }
+  if(length(COL)) { DATA$class <- merge.class(COL,DATA$class) } # retain ARGOS location classes if mixed
 
   # detect if Telonics by location classes
   if(!TELONICS && "class" %in% names(DATA))
@@ -606,6 +585,9 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     # some QFP locations can be missing HDOP, etc.
     DATA <- missing.class(DATA,"HDOP")
   }
+
+  # account for missing DOP values
+  if("HDOP" %in% names(DATA)) { DATA <- missing.class(DATA,"HDOP") }
 
   #######################
   # timed-out fixes

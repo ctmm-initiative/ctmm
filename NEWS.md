@@ -1,4 +1,4 @@
-ctmm 0.5.7 (2019-09-17)
+ctmm 0.5.7 (2019-09-26)
 ================
 
   * new function optimizer
@@ -26,6 +26,10 @@ ctmm 0.5.7 (2019-09-17)
   * SpatialPointsDataFrame now includes timestamp
   
   * uere(data) <- numeric now overrides all location classes
+  
+  * improved support for ARGOS-GPS hybrid data
+  
+  * missing DOP values now correctly treated as separate location class
   
   * bugfix in conditional simulations with dt argument
   

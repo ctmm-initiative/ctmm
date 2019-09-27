@@ -88,7 +88,7 @@
       <h1>Variograms and Model Selection</h1>
                         <h4 class="author">Christen H. Fleming and Justin M. Calabrese</h4>
             
-            <h4 class="date">2019-09-19</h4>
+            <h4 class="date">2019-09-24</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/ctmm-initiative/ctmm/blob/master/vignettes/variogram.Rmd"><code>vignettes/variogram.Rmd</code></a></small>
       <div class="hidden name"><code>variogram.Rmd</code></div>
@@ -258,19 +258,19 @@ SVF4 &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/b
 ## 
 ## $DOF
 ##       mean       area      speed 
-##   10.73353   18.13595 3445.13307 
+##   10.73354   18.13598 3445.13307 
 ## 
 ## $CI
 ##                                 low        est      high
-## area (square kilometers) 239.647386 403.458913 609.24146
-## τ[position] (days)         4.026011   7.505369  13.99166
+## area (square kilometers) 239.647400 403.458771 609.24109
+## τ[position] (days)         4.026012   7.505366  13.99164
 ## τ[velocity] (minutes)     39.570325  42.069009  44.72547
 ## speed (kilometers/day)    13.819957  14.054636  14.28926</code></pre>
 <p>Notice how tiny the (Gaussian) area uncertainty is in IID model <code>M.IID</code>. Let us look into some details of the models.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">FITS &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="dt">IID=</span>M.IID,<span class="dt">OU=</span>M.OU,<span class="dt">OUF=</span>M.OUF)
 <span class="kw"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(FITS)</code></pre></div>
 <pre><code>##         ΔAICc ΔRMSPE (m)   DOF[area]
-## OUF     0.000   352.8543   18.135951
+## OUF     0.000   352.8530   18.135976
 ## OU   1565.291   779.5549    8.231786
 ## IID 38112.149     0.0000 3526.000000</code></pre>
 <p><code>AICc</code> is the (linearly) corrected Akaike information criteria. AIC balances likelihood against model complexity in a way that is good if we want to make optimal predictions. A lower AIC is better. Getting the AIC to go down by 5 is great, while getting the AIC to go down by 10 is awesome. Our AIC is going down by thousands.</p>
@@ -284,9 +284,9 @@ SVF4 &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/b
 FITZ &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.select</a></span>(Cilla,m.ouf,<span class="dt">verbose=</span><span class="ot">TRUE</span>,<span class="dt">cores=</span><span class="dv">2</span>)
 <span class="kw"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(FITZ)</code></pre></div>
 <pre><code>##                     ΔAICc ΔRMSPE (km)  DOF[area]
-## OUF anisotropic    0.0000    1.776668  18.136042
-## OUF isotropic     67.7508    1.912066  17.912945
-## OU anisotropic  1565.2907    2.203373   8.231784
+## OUF anisotropic    0.0000    1.776671  18.135975
+## OUF isotropic     67.7508    1.912066  17.912940
+## OU anisotropic  1565.2907    2.203373   8.231785
 ## OUf anisotropic 1863.8799    0.000000 345.919684</code></pre>
 <!--Note that `level=1` is set here for demonstration purposes only, to attempt every nearest model no matter how unlikely it may seem.-->
 <p>The isotropic and anisotropic (<code>isotropic=FALSE</code>) flags correspond to circular and elliptical covariances respectively—an option we did not consider above. <!-- The Ornstein-Uhlenbeck-F (OUF) model is continuous in position and velocity (`M.OUF`),

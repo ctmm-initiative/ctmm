@@ -88,6 +88,10 @@ By default, \code{ctmm.loglike} returns the log-likelihood of the model \code{CT
 }
 }
 
+\section{Warnings}{
+The warnings "MLE is near a boundary or optim() failed" and "pREML failure: indefinite ML Hessian" are normal if some autocorrelation parameters cannot be well resolved.
+}
+
 \references{
 K. P. Burnham, D. R. Anderson.
 Model Selection and Multimodel Inference: A Practical Information-Theoretic Approach.
@@ -110,7 +114,7 @@ Kálmán filters for continuous-time movement models.
 \author{ C. H. Fleming and G. Péron. }
 
 \note{
-The default optimization method in \code{ctmm} v0.5.7 and above is \code{\link{optimizer}}'s \code{"pNewton"}. Annecdotally, on these problems, \code{\link{optimizer}}'s \code{pNewton} method generally outperforms \code{\link{optim}}'s \code{"Nelder-Mead"}, which generally outperforms \code{\link{optim}}'s \code{"BFGS"} and \code{"L-BFGS-B"} methods. With default arguments, \code{"pNewton"} is about half as fast as \code{"Nelder-Mead"}, but is resolving about twice as much numerical precision.
+The default optimization method in \code{ctmm} v0.5.7 and above is \code{\link{optimizer}}'s \code{"pNewton"}. Annecdotally, on these problems, \code{\link{optimizer}}'s \code{pNewton} method generally outperforms \code{\link{optim}}'s \code{"Nelder-Mead"}, which generally outperforms \code{\link{optim}}'s \code{"BFGS"} and \code{"L-BFGS-B"} methods. With default arguments, \code{"pNewton"} is about half as fast as \code{"Nelder-Mead"}, but is resolving about twice as much numerical precision by default.
 
 The AICs/BICs of endlessly diffusing models like BM and IOU cannot be easily compared to the AICs/BICs of range resident models like bivariate Gaussian, OU, and OUF, as their joint likelihood functions are infinitely different. Endlessly diffusing models have to be conditioned off of an initial state, which we derive in \code{ctmm} by taking the large range limit of a range-restricted process. I.e., BM is the limit OU(\code{Inf}) and IOU(\code{tau}) is the limit OUF(\code{Inf},\code{tau}). Using comparable likelihood functions gives up statistical efficiency and the objective prior. Moreover, comparing conditional likelihoods---with the objective prior taken from the joint likelihood---does not appear to select the true model with a likelihood ratio test. Therefore, there does not appear to be a simple approach for selecting between range resident and endlessly diffusing movement models.
 
