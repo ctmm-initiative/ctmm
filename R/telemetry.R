@@ -253,6 +253,9 @@ missing.class <- function(DATA,TYPE)
 # merge two location classes with minimal levels
 merge.class <- function(class1,class2)
 {
+  if(is.null(class2)) { return(class1) }
+  if(is.null(class1)) { return(class2) }
+
   LEVEL2 <- levels(class2)
   N <- length(LEVEL2)
   CLASS12 <- list()
@@ -458,7 +461,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   else
   {
     ARGOS <- FALSE
-    NAS <- rep(NA,nrow(object)) # no error ellipse information
+    NAS <- rep(TRUE,nrow(object)) # no error ellipse information
   }
 
   # ARGOS error categories (older ARGOS data <2011)
@@ -508,7 +511,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
       {
         # HDOPS to assign
         if(ARGOS) { NAS <- is.na(DATA$HDOP) }
-        else { NAS <- rep(NA,length(COL)) }
+        else { NAS <- rep(TRUE,length(COL)) }
 
         # don't overwrite ARGOS GDOPs
         if(any(NAS))
