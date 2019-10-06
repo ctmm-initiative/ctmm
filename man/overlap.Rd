@@ -26,8 +26,8 @@
 %% ~put references to the literature/web site here ~
 \references{
 K. Winner, M. J. Noonan, C. H. Fleming, K. Olson, T. Mueller, D. Sheldon, J. M. Calabrese.
-Statistical inference for home range overlap.
-\href{https://besjournals.onlinelibrary.wiley.com/doi/10.1111/2041-210X.13027}{Methods in Ecology and Evolution, DOI:10.1111/2041-210X.13027 (2018)}.
+``Statistical inference for home range overlap'',
+\href{https://besjournals.onlinelibrary.wiley.com/doi/10.1111/2041-210X.13027}{Methods in Ecology and Evolution, 9:7, 1679-1691 (2018)}.
 }
 
 \author{C. H. Fleming and K. Winner}

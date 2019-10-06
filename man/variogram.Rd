@@ -41,10 +41,10 @@ If \code{fast=FALSE} and the tracking data are calibrated (see \code{\link{uere}
 Returns a variogram object (class variogram) which is a dataframe containing the time-lag, \code{lag}, the semi-variance estimate at that lag, \code{SVF}, and the approximate number of degrees of freedom associated with that semi-variance, \code{DOF}, with which its confidence intervals can be estimated.
 }
 \references{
-D. Marcotte. Fast variogram computation with FFT. \emph{Computers and Geosciences} 22(10), 1175-1186 (1996).
+D. Marcotte, ``Fast variogram computation with FFT'', {Computers and Geosciences} 22:10, 1175-1186 (1996).
 
-C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, W. F. Fagan.
-From fine-scale foraging to home ranges: A semi-variance approach to identifying movement modes across spatiotemporal scales.
+C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, W. F. Fagan,
+``From fine-scale foraging to home ranges: A semi-variance approach to identifying movement modes across spatiotemporal scales'',
 \href{http://www.jstor.org/discover/10.1086/675504}{The American Naturalist, 183:5, E154-E167 (2014)}.
 }
 

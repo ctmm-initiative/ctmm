@@ -30,7 +30,11 @@ ctmm.boot(data,CTMM,method=CTMM$method,AICc=FALSE,iterate=FALSE,robust=FALSE,err
 
 \value{A model fit object with relatively unbiased estimates of location covariance, and autocorrelation timescales (and more accurate CIs than \code{ctmm.fit}). If \code{AICc=TRUE}, then, in addition to an updated \code{AICc} slot, the model fit object will also contain a \code{VAR.AICc} slot quantifying the numerical variance in the \code{AICc} estimate. This variance can be decreased by decreasing argument \code{error}.}
 
-%\references{}
+\references{
+C. H. Fleming, M. J. Noonan, E. P. Medici, J. M. Calabrese,
+``Overcoming the challenge of small effective sample sizes in home-range estimation'',
+\href{https://besjournals.onlinelibrary.wiley.com/doi/10.1111/2041-210X.13270}{Methods in Ecology and Evolution 10:10, 1679-1689 (2019)}.
+}
 
 \author{ C. H. Fleming. }
 

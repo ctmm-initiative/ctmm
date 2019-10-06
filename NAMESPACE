@@ -69,6 +69,7 @@ export(correlogram,ctmm,ctmm.guess,ctmm.fit,ctmm.loglike,ctmm.select,ctmm.boot)
 S3method(residuals,ctmm)
 S3method(residuals,telemetry)
 S3method(summary,ctmm)
+S3method(str,ctmm)
 
 #MEAN FUNCTIONS
 

@@ -46,8 +46,8 @@ When calculating correlograms, minimizing bias is more important than producing 
 \code{residuals} return a residual object (class \code{telemetry}, but flagged as residual) and \code{correlogram} returns a correlogram object (class \code{variogram}, but flagged as an ACF).
 }
 \references{
-C. H. Fleming, D. Sheldon, E. Gurarie, W. F. Fagan, S. LaPoint, J. M. Calabrese.
-Kálmán filters for continuous-time movement models.
+C. H. Fleming, D. Sheldon, E. Gurarie, W. F. Fagan, S. LaPoint, J. M. Calabrese,
+``Kálmán filters for continuous-time movement models'',
 \href{http://www.sciencedirect.com/science/article/pii/S1574954117301115}{Ecological Informatics, 40, 8-21 (2017)}.
 }
 

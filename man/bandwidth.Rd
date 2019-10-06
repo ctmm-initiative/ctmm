@@ -39,18 +39,18 @@ On the other hand, if the data contain some very tiny time intervals, say 1 seco
 \value{Returns a bandwidth \code{matrix} object, which is to be the optimal covariance matrix of the individual kernels of the kernel density estimate.}
 
 \references{
-T. F. Chan.
-An Optimal Circulant Preconditioner for Toeplitz Systems.
+T. F. Chan,
+``An Optimal Circulant Preconditioner for Toeplitz Systems'',
 SIAM Journal on Scientific and Statistical Computing, 9:4, 766-771 (1988).
 
-D. Marcotte. Fast variogram computation with FFT. \emph{Computers and Geosciences} 22:10, 1175-1186 (1996).
+D. Marcotte, ``Fast variogram computation with FFT'', {Computers and Geosciences} 22:10, 1175-1186 (1996).
 
-C. H. Fleming, W. F. Fagan, T. Mueller, K. A. Olson, P. Leimgruber, J. M. Calabrese.
-Rigorous home-range estimation with movement data: A new autocorrelated kernel-density estimator.
+C. H. Fleming, W. F. Fagan, T. Mueller, K. A. Olson, P. Leimgruber, J. M. Calabrese,
+``Rigorous home-range estimation with movement data: A new autocorrelated kernel-density estimator'',
 \href{https://esajournals.onlinelibrary.wiley.com/doi/abs/10.1890/14-2010.1}{Ecology, 96:5, 1182-1188 (2015)}.
 
-C. H. Fleming, D. Sheldon, W. F. Fagan, P. Leimgruber, T. Mueller, D. Nandintsetseg, M. J. Noonan, K. A. Olson, E. Setyawan, A. Sianipar, J. M. Calabrese.
-Correcting for missing and irregular data in home-range estimation.
+C. H. Fleming, D. Sheldon, W. F. Fagan, P. Leimgruber, T. Mueller, D. Nandintsetseg, M. J. Noonan, K. A. Olson, E. Setyawan, A. Sianipar, J. M. Calabrese,
+``Correcting for missing and irregular data in home-range estimation'',
 \href{https://esajournals.onlinelibrary.wiley.com/doi/abs/10.1002/eap.1704}{Ecological Applications, 28:4, 1003-1010 (2018)}.
 }
 

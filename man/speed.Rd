@@ -9,7 +9,7 @@
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Estimate the average speed of a tracked animal}
 \description{
-Given a \code{ctmm} movement model and \code{telemetry} data, \code{speed} simulates multiple realizations of the individual's trajectory to estimate the time-averaged speed, which is proportional to distance traveled, while \code{speeds} estimates instantaneous speeds at a specified array of times \code{t}. Both tortuosity (non straight-line motion between the data) and telemetry error can be accounted for. Given only a \code{ctmm} movement model and no data, \code{speed} calculates the average speed of the Gaussian movement process.
+Given a \code{ctmm} movement model and \code{telemetry} data, \code{speed} simulates multiple realizations of the individual's trajectory to estimate the time-averaged speed, which is proportional to distance traveled, while \code{speeds} estimates instantaneous speeds at a specified array of times \code{t}. Both tortuosity (non straight-line motion between the data) and telemetry error can be accounted for. Given only a \code{ctmm} movement model and no data, \code{speed} calculates the average speed of the Gaussian movement process. Both methods are described in Noonan & Fleming et al (\emph{in press}).
 }
 \usage{
 speed(object,...)
@@ -54,7 +54,11 @@ If data quality is poor and velocity can barely be resolved, then the sampling d
 
 \value{ Returns the estimated mean speed of the sampled trajectory with CIs by default. If \code{level=NULL}, then the ensemble of mean speeds is returned instead. }
 
-%\references{ }
+\references{
+M. J. Noonan, C. H. Fleming, T. S. Akre, J. Drescher-Lehman, E. Gurarie, A.-L. Harrison, R. Kays, Justin Calabrese,
+``Scale-insensitive estimation of speed and distance traveled from animal tracking data'',
+Movement Ecology, \emph{in press}.
+}
 
 \author{ C. H. Fleming. }
 

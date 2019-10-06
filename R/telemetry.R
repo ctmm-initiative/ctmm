@@ -328,7 +328,7 @@ asPOSIXct <- function(x,timeformat="",timezone="UTC",...)
 as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projection=NULL,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
 {
   NAMES <- list()
-  NAMES$timestamp <- c('timestamp','Acquisition.Start.Time','Acquisition.Time','Date.Time','Date.Time.GMT','UTC.Date.Time',"DT.TM",'time','Date.GMT','Date.Local','GMT.Time','Date')
+  NAMES$timestamp <- c('timestamp','Acquisition.Start.Time','Acquisition.Time','Date.Time','Date.Time.GMT','UTC.Date.Time',"DT.TM",'Time.GMT','GMT.Time','time','Date.GMT','Date','Date.Local')
   NAMES$id <- c("animal.ID","individual.local.identifier","local.identifier","individual.ID","Name","ID","ID.Names","tag.local.identifier","tag.ID","deployment.ID","track.ID","band.number","band.num","device.info.serial","Animal","Device.ID","collar.id","Full.ID")
   NAMES$long <- c("location.long","Longitude","long","lon","GPS.Longitude")
   NAMES$lat <- c("location.lat","Latitude","latt","lat","GPS.Latitude")

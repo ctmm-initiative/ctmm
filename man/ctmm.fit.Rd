@@ -93,21 +93,25 @@ The warnings "MLE is near a boundary or optim() failed" and "pREML failure: inde
 }
 
 \references{
-K. P. Burnham, D. R. Anderson.
-Model Selection and Multimodel Inference: A Practical Information-Theoretic Approach.
+K. P. Burnham, D. R. Anderson,
+``Model Selection and Multimodel Inference: A Practical Information-Theoretic Approach'',
 Springer, 2nd edition (2003).
 
-C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, W. F. Fagan.
-From fine-scale foraging to home ranges: A semi-variance approach to identifying movement modes across spatiotemporal scales.
+C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, W. F. Fagan,
+``From fine-scale foraging to home ranges: A semi-variance approach to identifying movement modes across spatiotemporal scales'',
 \href{http://www.jstor.org/discover/10.1086/675504}{The American Naturalist, 183:5, E154-E167 (2014)}.
 
-C. H. Fleming, Y. Subasi, J. M. Calabrese.
-A maximum-entropy description of animal movement.
+C. H. Fleming, Y. Subasi, J. M. Calabrese,
+``A maximum-entropy description of animal movement'',
 \href{http://journals.aps.org/pre/abstract/10.1103/PhysRevE.91.032107}{Physical Review E, 91, 032107 (2015)}.
 
-C. H. Fleming, D. Sheldon, E. Gurarie, W. F. Fagan, S. LaPoint, J. M. Calabrese.
-Kálmán filters for continuous-time movement models.
+C. H. Fleming, D. Sheldon, E. Gurarie, W. F. Fagan, S. LaPoint, J. M. Calabrese,
+``Kálmán filters for continuous-time movement models'',
 \href{http://www.sciencedirect.com/science/article/pii/S1574954117301115}{Ecological Informatics, 40, 8-21 (2017)}.
+
+C. H. Fleming, M. J. Noonan, E. P. Medici, J. M. Calabrese,
+``Overcoming the challenge of small effective sample sizes in home-range estimation'',
+\href{https://besjournals.onlinelibrary.wiley.com/doi/10.1111/2041-210X.13270}{Methods in Ecology and Evolution 10:10, 1679-1689 (2019)}.
 }
 
 

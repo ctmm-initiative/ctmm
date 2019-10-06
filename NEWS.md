@@ -1,4 +1,4 @@
-ctmm 0.5.7 (2019-09-26)
+ctmm 0.5.7 (2019-10-05)
 ================
 
   * new function optimizer
@@ -20,6 +20,8 @@ ctmm 0.5.7 (2019-09-26)
   * new buffer argument in occurrence
   
   * head, tail methods for telemetry objects
+  
+  * str method for ctmm objects
   
   * new data object 'pelican'
 

@@ -60,12 +60,12 @@ If the sampling schedule is irregular, then this can result in faster simulation
 \value{ A simulated animal-tracking \code{telemetry} object with components \code{t}, \code{x}, and \code{y}, or a predicted \code{telemetry} object that also includes \code{x}-\code{y} covariances for the location point estimates \code{x} and \code{y}. }
 
 \references{
-C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, W. F. Fagan.
-From fine-scale foraging to home ranges: A semi-variance approach to identifying movement modes across spatiotemporal scales.
+C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, W. F. Fagan,
+``From fine-scale foraging to home ranges: A semi-variance approach to identifying movement modes across spatiotemporal scales'',
 \href{http://www.jstor.org/discover/10.1086/675504}{The American Naturalist, 183:5, E154-E167 (2014)}.
 
-C. H. Fleming, D. Sheldon, E. Gurarie, W. F. Fagan, S. LaPoint, J. M. Calabrese.
-Kálmán filters for continuous-time movement models.
+C. H. Fleming, D. Sheldon, E. Gurarie, W. F. Fagan, S. LaPoint, J. M. Calabrese,
+``Kálmán filters for continuous-time movement models'',
 \href{http://www.sciencedirect.com/science/article/pii/S1574954117301115}{Ecological Informatics, 40, 8-21 (2017)}.
 }
 
