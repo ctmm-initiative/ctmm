@@ -155,7 +155,7 @@ Move2CSV <- function(object,timeformat="",timezone="UTC",projection=NULL,...)
 
 # pull out a column with different possible names
 # consider alternative spellings of NAMES, but preserve order (preference) of NAMES
-pull.column <- function(object,NAMES,FUNC=as.numeric)
+pull.column <- function(object,NAMES,FUNC=as.numeric,name.only=FALSE)
 {
   canonical <- function(NAME,UNIQUE=TRUE)
   {
@@ -179,6 +179,8 @@ pull.column <- function(object,NAMES,FUNC=as.numeric)
       NAS <- is.na(COL)
       if(!all(NAS))
       {
+        if(name.only) { return(NAME) }
+
         # otherwise NA is not a level... which is the whole point of this
         if(class(COL)=="factor" && any(NAS))
         {
@@ -186,6 +188,7 @@ pull.column <- function(object,NAMES,FUNC=as.numeric)
           NAS <- is.na(levels(COL))
           levels(COL)[NAS] <- "NA" # level can't literally be NA, because NA is not a value
         }
+
         return(COL)
       }
     }
@@ -362,8 +365,19 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   # timestamp column
   options(digits.secs=6) # otherwise, R will truncate to seconds...
   COL <- NAMES$timestamp
-  COL <- pull.column(object,COL,FUNC=as.character)
-  COL <- asPOSIXct(COL,timeformat=timeformat,timezone=timezone)
+  COL <- pull.column(object,COL,FUNC=as.character,name.only=TRUE)
+  if("POSIXct" %in% class(object[1,COL])) # numeric timestamp
+  {
+    COL <- pull.column(object,COL,FUNC=identity)
+    # overwrite timezone argument with existing timezone
+    timezone <- format(COL,format="%Z")
+    timezone <- unique(timezone)
+  }
+  else # character timestamp
+  {
+    COL <- pull.column(object,COL,FUNC=as.character)
+    COL <- asPOSIXct(COL,timeformat=timeformat,timezone=timezone)
+  }
   DATA <- data.frame(timestamp=COL)
 
   COL <- NAMES$id

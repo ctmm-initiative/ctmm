@@ -1,5 +1,4 @@
 PRIORITY
-* move object timezone information retention
 * diffusion calculation with CIs (in summary)
 ** check diffusion code  circulation + OU, OUF, OUO, OUf
 ** diffusion units
