@@ -273,23 +273,29 @@ By default, <code>ctmm.loglike</code> returns the log-likelihood of the model <c
 
 </dl>
 
+    <h2 class="hasAnchor" id="warnings"><a class="anchor" href="#warnings"></a>Warnings</h2>
+
+    <p>The warnings "MLE is near a boundary or optim() failed" and "pREML failure: indefinite ML Hessian" are normal if some autocorrelation parameters cannot be well resolved.</p>
     <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
 
-    <p>K. P. Burnham, D. R. Anderson.
-Model Selection and Multimodel Inference: A Practical Information-Theoretic Approach.
+    <p>K. P. Burnham, D. R. Anderson,
+``Model Selection and Multimodel Inference: A Practical Information-Theoretic Approach'',
 Springer, 2nd edition (2003).</p>
-<p>C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, W. F. Fagan.
-From fine-scale foraging to home ranges: A semi-variance approach to identifying movement modes across spatiotemporal scales.
+<p>C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, W. F. Fagan,
+``From fine-scale foraging to home ranges: A semi-variance approach to identifying movement modes across spatiotemporal scales'',
 <a href='http://www.jstor.org/discover/10.1086/675504'>The American Naturalist, 183:5, E154-E167 (2014)</a>.</p>
-<p>C. H. Fleming, Y. Subasi, J. M. Calabrese.
-A maximum-entropy description of animal movement.
+<p>C. H. Fleming, Y. Subasi, J. M. Calabrese,
+``A maximum-entropy description of animal movement'',
 <a href='http://journals.aps.org/pre/abstract/10.1103/PhysRevE.91.032107'>Physical Review E, 91, 032107 (2015)</a>.</p>
-<p>C. H. Fleming, D. Sheldon, E. Gurarie, W. F. Fagan, S. LaPoint, J. M. Calabrese.
-Kálmán filters for continuous-time movement models.
+<p>C. H. Fleming, D. Sheldon, E. Gurarie, W. F. Fagan, S. LaPoint, J. M. Calabrese,
+``Kálmán filters for continuous-time movement models'',
 <a href='http://www.sciencedirect.com/science/article/pii/S1574954117301115'>Ecological Informatics, 40, 8-21 (2017)</a>.</p>
+<p>C. H. Fleming, M. J. Noonan, E. P. Medici, J. M. Calabrese,
+``Overcoming the challenge of small effective sample sizes in home-range estimation'',
+<a href='https://besjournals.onlinelibrary.wiley.com/doi/10.1111/2041-210X.13270'>Methods in Ecology and Evolution 10:10, 1679-1689 (2019)</a>.</p>
     <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
 
-    <p>The default optimization method in <code>ctmm</code> v0.5.7 and above is <code><a href='optimizer.html'>optimizer</a></code>'s <code>"pNewton"</code>. Annecdotally, on these problems, <code><a href='optimizer.html'>optimizer</a></code>'s <code>pNewton</code> method generally outperforms <code><a href='https://rdrr.io/r/stats/optim.html'>optim</a></code>'s <code>"Nelder-Mead"</code>, which generally outperforms <code><a href='https://rdrr.io/r/stats/optim.html'>optim</a></code>'s <code>"BFGS"</code> and <code>"L-BFGS-B"</code> methods. With default arguments, <code>"pNewton"</code> is about half as fast as <code>"Nelder-Mead"</code>, but is resolving about twice as much numerical precision.</p>
+    <p>The default optimization method in <code>ctmm</code> v0.5.7 and above is <code><a href='optimizer.html'>optimizer</a></code>'s <code>"pNewton"</code>. Annecdotally, on these problems, <code><a href='optimizer.html'>optimizer</a></code>'s <code>pNewton</code> method generally outperforms <code><a href='https://rdrr.io/r/stats/optim.html'>optim</a></code>'s <code>"Nelder-Mead"</code>, which generally outperforms <code><a href='https://rdrr.io/r/stats/optim.html'>optim</a></code>'s <code>"BFGS"</code> and <code>"L-BFGS-B"</code> methods. With default arguments, <code>"pNewton"</code> is about half as fast as <code>"Nelder-Mead"</code>, but is resolving about twice as much numerical precision by default.</p>
 <p>The AICs/BICs of endlessly diffusing models like BM and IOU cannot be easily compared to the AICs/BICs of range resident models like bivariate Gaussian, OU, and OUF, as their joint likelihood functions are infinitely different. Endlessly diffusing models have to be conditioned off of an initial state, which we derive in <code>ctmm</code> by taking the large range limit of a range-restricted process. I.e., BM is the limit OU(<code>Inf</code>) and IOU(<code>tau</code>) is the limit OUF(<code>Inf</code>,<code>tau</code>). Using comparable likelihood functions gives up statistical efficiency and the objective prior. Moreover, comparing conditional likelihoods---with the objective prior taken from the joint likelihood---does not appear to select the true model with a likelihood ratio test. Therefore, there does not appear to be a simple approach for selecting between range resident and endlessly diffusing movement models.</p>
 <p>Prior to v0.3.6, the univariate AICc formula was (mis)used, with the full parameter count treated as degrees of freedom in the mean. As of v.0.3.6, the mean and autocovariance parameters are treated separately in the approximate multivariate AICc formula (Burnham &amp; Anderson, Eq. 7.91). Still, this improved formula is only exact for IID data.</p>
 <p>Prior to v0.3.2, <code>ctmm.select</code> would consider every possible model.
@@ -330,6 +336,7 @@ This is no longer feasible with current versions of <code>ctmm</code>, as the nu
       <li><a href="#arguments">Arguments</a></li>
       <li><a href="#details">Details</a></li>
       <li><a href="#value">Value</a></li>
+      <li><a href="#warnings">Warnings</a></li>
       <li><a href="#references">References</a></li>
       <li><a href="#note">Note</a></li>
       <li><a href="#see-also">See also</a></li>

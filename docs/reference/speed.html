@@ -36,7 +36,7 @@
 
 
 <meta property="og:title" content="Estimate the average speed of a tracked animal — speed" />
-<meta property="og:description" content="Given a ctmm movement model and telemetry data, speed simulates multiple realizations of the individual's trajectory to estimate the time-averaged speed, which is proportional to distance traveled, while speeds estimates instantaneous speeds at a specified array of times t. Both tortuosity (non straight-line motion between the data) and telemetry error can be accounted for. Given only a ctmm movement model and no data, speed calculates the average speed of the Gaussian movement process." />
+<meta property="og:description" content="Given a ctmm movement model and telemetry data, speed simulates multiple realizations of the individual's trajectory to estimate the time-averaged speed, which is proportional to distance traveled, while speeds estimates instantaneous speeds at a specified array of times t. Both tortuosity (non straight-line motion between the data) and telemetry error can be accounted for. Given only a ctmm movement model and no data, speed calculates the average speed of the Gaussian movement process. Both methods are described in Noonan &amp;amp; Fleming et al (in press)." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -129,7 +129,7 @@
     </div>
 
     <div class="ref-description">
-    <p>Given a <code>ctmm</code> movement model and <code>telemetry</code> data, <code>speed</code> simulates multiple realizations of the individual's trajectory to estimate the time-averaged speed, which is proportional to distance traveled, while <code>speeds</code> estimates instantaneous speeds at a specified array of times <code>t</code>. Both tortuosity (non straight-line motion between the data) and telemetry error can be accounted for. Given only a <code>ctmm</code> movement model and no data, <code>speed</code> calculates the average speed of the Gaussian movement process.</p>
+    <p>Given a <code>ctmm</code> movement model and <code>telemetry</code> data, <code>speed</code> simulates multiple realizations of the individual's trajectory to estimate the time-averaged speed, which is proportional to distance traveled, while <code>speeds</code> estimates instantaneous speeds at a specified array of times <code>t</code>. Both tortuosity (non straight-line motion between the data) and telemetry error can be accounted for. Given only a <code>ctmm</code> movement model and no data, <code>speed</code> calculates the average speed of the Gaussian movement process. Both methods are described in Noonan &amp; Fleming et al (<em>in press</em>).</p>
     </div>
 
     <pre class="usage"><span class='fu'>speed</span>(<span class='no'>object</span>,<span class='no'>...</span>)
@@ -224,6 +224,11 @@
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>Returns the estimated mean speed of the sampled trajectory with CIs by default. If <code>level=NULL</code>, then the ensemble of mean speeds is returned instead.</p>
+    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
+
+    <p>M. J. Noonan, C. H. Fleming, T. S. Akre, J. Drescher-Lehman, E. Gurarie, A.-L. Harrison, R. Kays, Justin Calabrese,
+``Scale-insensitive estimation of speed and distance traveled from animal tracking data'',
+Movement Ecology, <em>in press</em>.</p>
     <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
 
     <p>The average speeds estimated here are mean speeds. The speeds reported by <code><a href='summary.ctmm.html'>summary.ctmm</a></code> are root-mean-square (RMS) speeds. These quantities are sometimes proportional, but not equivalent.</p>
@@ -254,6 +259,7 @@
       <li><a href="#arguments">Arguments</a></li>
       <li><a href="#details">Details</a></li>
       <li><a href="#value">Value</a></li>
+      <li><a href="#references">References</a></li>
       <li><a href="#note">Note</a></li>
       <li><a href="#see-also">See also</a></li>
       <li><a href="#examples">Examples</a></li>

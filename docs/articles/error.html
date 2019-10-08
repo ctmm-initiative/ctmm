@@ -88,7 +88,7 @@
       <h1>Telemetry error</h1>
                         <h4 class="author">Christen H. Fleming</h4>
             
-            <h4 class="date">2019-09-24</h4>
+            <h4 class="date">2019-10-08</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/ctmm-initiative/ctmm/blob/master/vignettes/error.Rmd"><code>vignettes/error.Rmd</code></a></small>
       <div class="hidden name"><code>error.Rmd</code></div>
@@ -210,13 +210,13 @@ FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fi
 ## [1] "OU anisotropic error"
 ## 
 ## $DOF
-##     mean     area    speed 
-## 14.01050 24.15146  0.00000 
+##    mean    area   speed 
+## 14.0105 24.1515  0.0000 
 ## 
 ## $CI
-##                          low       est      high
-## area (hectares)    13.672697 21.306469 30.606352
-## τ[position] (days)  3.294529  5.636969  9.644908</code></pre>
+##                         low       est      high
+## area (hectares)    13.67270 21.306461 30.606332
+## τ[position] (days)  3.29453  5.636969  9.644904</code></pre>
 <p><code>trace=TRUE</code> allows us to see the models considered. <code>verbose=TRUE</code> would save each model.</p>
 </div>
 <div id="simultaneous-fitting-with-uncalibrated-data" class="section level3">
@@ -242,13 +242,13 @@ FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fi
 ## 
 ## $DOF
 ##     mean     area    speed 
-## 12.83005 21.87088  0.00000 
+## 12.83005 21.87087  0.00000 
 ## 
 ## $CI
 ##                          low       est     high
 ## area (hectares)    13.020972 20.809251 30.39386
-## τ[position] (days)  3.416684  6.198586 11.24554
-## error (meters)      6.967387  8.784081 10.59714</code></pre>
+## τ[position] (days)  3.416684  6.198587 11.24555
+## error (meters)      6.967388  8.784082 10.59714</code></pre>
 <p>Here, fitting the RMS UERE simultaneously with the movement model produced a consistent result. This will not always be the case.</p>
 </div>
 <div id="fitting-with-uncalibrated-data-under-a-prior" class="section level3">
@@ -271,12 +271,12 @@ FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fi
 ## 
 ## $DOF
 ##     mean     area    speed 
-## 12.06150 20.48933  0.00000 
+## 12.06150 20.48958  0.00000 
 ## 
 ## $CI
 ##                          low       est     high
-## area (hectares)    12.638978 20.554495 30.36356
-## τ[position] (days)  3.629403  6.628391 12.10545</code></pre>
+## area (hectares)    12.638975 20.554422 30.36338
+## τ[position] (days)  3.629414  6.628392 12.10542</code></pre>
 <p>Some sensitivity analysis would be warranted here for the UERE parameter.</p>
 </div>
 </div>

@@ -38,7 +38,8 @@
 <meta property="og:title" content="Calculate model fit residuals and assess their autocorrelation — residuals.ctmm" />
 <meta property="og:description" content="These functions calculate the residuals of a CTMM or UERE calibration model, which should be standardized and IID if the model correctly specified.
 A correlogram method is also provided to assess autocorrelation.
-This function is analogous to acf, but can handle missing data and multiple dimensions." />
+This function is analogous to acf, but can handle missing data and multiple dimensions.
+Finally, mag calculates residual magnitudes, which is useful for comparing against potential covariates." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -133,7 +134,8 @@ This function is analogous to acf, but can handle missing data and multiple dime
     <div class="ref-description">
     <p>These functions calculate the residuals of a CTMM or UERE calibration model, which should be standardized and IID if the model correctly specified.
 A correlogram method is also provided to assess autocorrelation.
-This function is analogous to <code>acf</code>, but can handle missing data and multiple dimensions.</p>
+This function is analogous to <code>acf</code>, but can handle missing data and multiple dimensions.
+Finally, <code>mag</code> calculates residual magnitudes, which is useful for comparing against potential covariates.</p>
     </div>
 
     <pre class="usage"><span class='co'># S3 method for ctmm</span>
@@ -142,7 +144,12 @@ This function is analogous to <code>acf</code>, but can handle missing data and 
 <span class='co'># S3 method for telemetry</span>
 <span class='fu'><a href='https://rdrr.io/r/stats/residuals.html'>residuals</a></span>(<span class='no'>object</span>,<span class='kw'>CTMM</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='no'>...</span>)
 
-<span class='fu'>correlogram</span>(<span class='no'>data</span>,<span class='kw'>dt</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>fast</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>res</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>axes</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"x"</span>,<span class='st'>"y"</span>))</pre>
+<span class='fu'>correlogram</span>(<span class='no'>data</span>,<span class='kw'>dt</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>fast</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>res</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>axes</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"x"</span>,<span class='st'>"y"</span>))
+
+<span class='fu'>mag</span>(<span class='no'>x</span>,<span class='no'>...</span>)
+
+<span class='co'># S3 method for telemetry</span>
+<span class='fu'>mag</span>(<span class='no'>x</span>,<span class='kw'>axes</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>'x'</span>,<span class='st'>'y'</span>),<span class='no'>...</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -177,7 +184,11 @@ This function is analogous to <code>acf</code>, but can handle missing data and 
     </tr>
     <tr>
       <th>axes</th>
-      <td><p>Array of axes to calculate an average (isotropic) correlogram for.</p></td>
+      <td><p>Array of axes for which to calculate residual correlogram or magnitudes.</p></td>
+    </tr>
+    <tr>
+      <th>x</th>
+      <td><p><code>telemetry</code> object from the output of <code>residuals</code>.</p></td>
     </tr>
     </table>
 
@@ -190,8 +201,8 @@ This function is analogous to <code>acf</code>, but can handle missing data and 
     <p><code>residuals</code> return a residual object (class <code>telemetry</code>, but flagged as residual) and <code>correlogram</code> returns a correlogram object (class <code>variogram</code>, but flagged as an ACF).</p>
     <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
 
-    <p>C. H. Fleming, D. Sheldon, E. Gurarie, W. F. Fagan, S. LaPoint, J. M. Calabrese.
-Kálmán filters for continuous-time movement models.
+    <p>C. H. Fleming, D. Sheldon, E. Gurarie, W. F. Fagan, S. LaPoint, J. M. Calabrese,
+``Kálmán filters for continuous-time movement models'',
 <a href='http://www.sciencedirect.com/science/article/pii/S1574954117301115'>Ecological Informatics, 40, 8-21 (2017)</a>.</p>
     <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
 
