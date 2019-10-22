@@ -1,4 +1,5 @@
 PRIORITY
+* p-value function for outlie() return object using v_max or CTMM object
 * diffusion calculation with CIs (in summary)
 ** check diffusion code  circulation + OU, OUF, OUO, OUf
 ** diffusion units

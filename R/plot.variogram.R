@@ -372,6 +372,15 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, units=TRUE, fraction=0.5, c
   }
   # PLOT LEFTOVER MODELS USING THE LAST DATA
   if(n<m) { for(i in n:m) { plot.svf(lag,CTMM[[i]],error=MSE,alpha=alpha,type=type,col=col.CTMM[[i]]) } }
+
+  # no projection for variograms
+  assign("projection",NULL,pos=plot.env)
+  # dimensional type
+  assign("x.dim","time",pos=plot.env)
+  assign("y.dim","area",pos=plot.env)
+  # unit conversion
+  assign("x.scale",lag.scale,pos=plot.env)
+  assign("y.scale",SVF.scale,pos=plot.env)
 }
 # PLOT.VARIOGRAM METHODS
 #methods::setMethod("plot",signature(x="variogram",y="missing"), function(x,y,...) plot.variogram(x,...))

@@ -51,12 +51,12 @@ writeShapefile(object,folder,file=NULL,...)
 
 \details{\code{writeRaster} writes a raster file to disk, with pixel values corresponding to the density function.
 
-\code{writeShapefile} writes a shapefile to disk, with UD polygons corresponding to the low, ML, and high home-range area estimates.}
+\code{writeShapefile} writes a shapefile to disk, with UD polygons corresponding to the low-CI, point-estimate, and high-CI home-range area estimates.}
 
-\value{\code{raster.UD} returns a \code{raster} of the maximum likelihood (ML) distribution function \code{DF}.
-\code{DF=PDF} gives the average probability density per cell,
-\code{DF=PMF} gives the total probability per cell,
-and \code{DF=CDF} gives the cumulative probability.
+\value{\code{raster} returns a \code{raster} of the point-estimate distribution function \code{DF}, given a \code{UD} object.
+\code{DF="PDF"} gives the average probability density per cell,
+\code{DF="PMF"} gives the total probability per cell,
+and \code{DF="CDF"} gives the cumulative probability.
 
 \code{SpatialPoints.telemetry} returns a single \code{spatialPoints} object for the \code{x}-\code{y} locations, with individual identity information lost.
 
@@ -64,7 +64,7 @@ and \code{DF=CDF} gives the cumulative probability.
 
 \code{SpatialPolygonsDataFrame.telemetry} returns a \code{SpatialPolygonsDataFrame} that encodes the location estimate's error circles/ellipses.
 
-\code{SpatialPolygonsDataFrame.UD} returns a \code{SpatialPolygonsDataFrame} of the low, ML, and high home-range area estimates, in the appropriate order for plotting.
+\code{SpatialPolygonsDataFrame.UD} returns a \code{SpatialPolygonsDataFrame} of the low-CI, point-estimate, and high-CI home-range area estimates, in the appropriate order for plotting.
 }
 
 %\references{}

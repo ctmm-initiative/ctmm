@@ -1,7 +1,7 @@
 Encoding: UTF-8
 Package: ctmm
-Version: 0.5.7
-Date: 2019-10-06
+Version: 0.5.8
+Date: 2019-10-21
 Title: Continuous-Time Movement Modeling
 Authors@R: c(person(c("Christen","H."),"Fleming",email="flemingc@si.edu",role=c("aut","cre")),
              person(c("Justin","M."),"Calabrese",email="calabresej@si.edu",role="aut"),
@@ -16,7 +16,8 @@ Authors@R: c(person(c("Christen","H."),"Fleming",email="flemingc@si.edu",role=c(
              person("Thomas","Mueller",role="dtc"),
              person(c("Rogério","C."),"de Paula",role="dtc"),
              person("Thomas","Akre",role="dtc"),
-             person("Jonathan","Drescher-Lehman",role="dtc"))
+             person("Jonathan","Drescher-Lehman",role="dtc"),
+             person("Autumn-Lynn","Harrison",role="dtc"))
 URL: https://github.com/ctmm-initiative/ctmm, http://biology.umd.edu/movement.html
 Depends: R (>= 3.5.0)
 Imports: data.table, expm, fasttime, Gmedian, graphics, grDevices, gsl, manipulate, MASS, methods, numDeriv, pbivnorm, pracma, raster, rgdal, shape, sp, stats, utils
