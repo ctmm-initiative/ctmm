@@ -1,8 +1,12 @@
-ctmm 0.5.8 (2019-10-21)
+ctmm 0.5.8 (2019-10-29)
 ================
 
-  * 
+  * improvements to ctmm.select stepwise selection, especially with error and circulation
 
+  * units of speed supported by %#% operator
+
+  * options(time.units='mean') and options(time.units='calendar') for %#% operator and display units
+  
 ctmm 0.5.7 (2019-10-06)
 ================
 

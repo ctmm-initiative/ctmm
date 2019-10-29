@@ -392,11 +392,6 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
 }
 
 
-# environment for storing MLE when using pREML/pHREML/HREML
-MLE.env <- new.env()
-empty.env(MLE.env) # default to empty
-
-
 # smallest resolutions in data (for soft bounding parameter guesstimates)
 telemetry.mins <- function(data,axes=c('x','y'))
 {
@@ -418,10 +413,10 @@ telemetry.mins <- function(data,axes=c('x','y'))
 ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),trace=FALSE)
 {
   method <- match.arg(method,c("ML","pREML","pHREML","HREML","REML"))
-
   axes <- CTMM$axes
+  CTMM <- get.mle(CTMM) # if has better start for pREML/HREML/pHREML
 
-    if(is.null(CTMM$sigma))
+  if(is.null(CTMM$sigma))
   {
     if(is.null(CTMM$tau))
     { CTMM$sigma <- covm(stats::cov(get.telemetry(data,axes)),isotropic=CTMM$isotropic,axes=axes) }
@@ -600,14 +595,8 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
       dimnames(CTMM$COV) <- list(NAMES,NAMES)
     }
 
-    # store MLE for faster model selection (ML is what is optimized, not pREML or HREML)
-    if(method %in% c("pREML","pHREML","HREML"))
-    {
-      assign("EMPTY",FALSE,pos=MLE.env)
-      assign("MLE",unscale.ctmm(CTMM),pos=MLE.env) # convert units back and store
-    }
-    else
-    { empty.env(MLE.env) }
+    # store MLE for faster re-optimization #
+    MLE <- unscale.ctmm(CTMM)
 
     ### pREML correction ########## only do pREML if sufficiently away from boundaries
     if(method %in% c("pREML","pHREML") && mat.min(hess) > .Machine$double.eps*length(NAMES))
@@ -711,6 +700,14 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
 
   # would be temporary ML COV for pREML/pHREML
   if(!COV) { CTMM$COV <- NULL }
+
+  if(method %in% c('pREML','pHREML','HREML') && length(CTMM$tau))
+  {
+    # calculate checksum
+    MLE$checksum <- digest::digest(CTMM,algo="md5")
+    CTMM$MLE <- MLE
+    # now if anyone modifies CTMM, then MLE will not be used
+  }
 
   return(CTMM)
 }

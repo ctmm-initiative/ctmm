@@ -1,9 +1,11 @@
 PRIORITY
+* review ctmm.select, wolf test, turtle test, Nick test
+* uere()<- ctmm calibrate with simultaneously fit RMS UERE
 * p-value function for outlie() return object using v_max or CTMM object
 * diffusion calculation with CIs (in summary)
-** check diffusion code  circulation + OU, OUF, OUO, OUf
-** diffusion units
-** integrate into summary()
+  * check diffusion code  circulation + OU, OUF, OUO, OUf
+  * diffusion units
+  * integrate into summary()
 * default: pHREML with range-resident models and REML with non-stationary models ?
 * conditional encounter density estimation: p_E(x) \propto p_1(x)*p_2(x) (Grace, Shauhin et al)
 * merge dt==0 times (and shrink errors) for variogram/correlogram
@@ -45,6 +47,26 @@ PRIORITY
 * ctmm.fit -> id.parameters : force.error argument for when error is estimated to be 0
 * error vignette - check back on variogram, correlogram
 * reference Guillaume's paper at the beginning of the periodogram vignette
+
+OPTIMIZER
+* take multiple starting guesses---useful with ctmm.select phase I---useful with simplex method
+* pNewton || pN
+** (partial) pNewton-Nelder-Mead || pNNM
+** (derivative-free) dfNewton-Nelder-Mead || dfNNM
+  * make line search a function that returns the end point (and stuff)
+  * initial pattern search for simplex, using expansion line search
+  ** numerical 1st derivative at best estimate (pNNM)
+  ** 1st derivative estimated from simpled (dfNNM)
+  * line search from worst vertex to predicted estimate
+* split-parameter optimization (for periodic parameters like angle) with funnelling error target
+* Somehow optimizer can stop on stage 1 without proceeding to stage 2
+* Stop on encapsulated?
+* STAGE ?1/4? - pattern search
+* try to fit Gamba with error
+* mc.optimize cross curvature if queue allows space
+* mc.optimize fill up queue with higher-order derivatives if further space allows
+* mc.genD cross correlations are wrong
+
 
 OVERLAP
 * overlap needs to return DOFs in an overlap object - and then define a summary function for the overlap object
@@ -129,18 +151,6 @@ PERIODIC
 
 VIGNETTES & EXAMPLES
 * explain effective sample sizes (DOF of summary)
-
-OPTIMIZER
-* split-parameter optimization (for periodic parameters like angle) with funnelling error target
-* convex perimeter tracker
-* Somehow optimizer can stop on stage 1 without proceeding to stage 2
-* Stop on encapsulated
-* local tangent transformation on periodic variables
-* STAGE 4 - pattern search
-* try to fit Gamba with error
-* mc.optimize cross curvature if queue allows space
-* mc.optimize fill up queue with higher-order derivatives if further space allows
-* mc.genD cross correlations are wrong
 
 Aligned Krige UDs
 pregridder composite dimension?

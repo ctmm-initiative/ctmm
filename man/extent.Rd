@@ -5,6 +5,8 @@
 \alias{extent,UD-method}
 \alias{extent,variogram-method}
 \alias{extent,list-method}
+\alias{extent,data.frame-method}
+\alias{extent,matrix-method}
 \encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Extent}
@@ -20,6 +22,10 @@
 \S4method{extent}{variogram}(x,level=0.95,threshold=2,...)
 
 \S4method{extent}{list}(x,...)
+
+\S4method{extent}{data.frame}(x,level=1,...)
+
+\S4method{extent}{matrix}(x,level=1,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

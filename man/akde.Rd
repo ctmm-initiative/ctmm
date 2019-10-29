@@ -67,6 +67,8 @@ C. H. Fleming, D. Sheldon, W. F. Fagan, P. Leimgruber, T. Mueller, D. Nandintset
 
 \note{ In the case of coarse grids, the value of \code{PDF} in a grid cell corresponds to the average probability density over the entire rectangular cell.
 
+The \code{PDF} estimate is not re-normalized to 1, and may fall short of this by the target numerical \code{error}. If inspecting quantiles that are very far from the data, the quantiles may hit the grid boundary or become erratic, making it necessary to reduce the numerical \code{error} target. However, default arguments should be able to render any quantiles of reasonable accuracy.
+
 Prior to \code{ctmm} v0.3.2, the default AKDE method was the autocorrelated Gaussian reference function bandwidth.
 Starting in v0.3.2, the default AKDE method is the autocorrelated Gaussian reference function bandwidth with debiased area.
 

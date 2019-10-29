@@ -82,7 +82,7 @@ attr(prototype.drift,"summary") <- drift.summary
 attr(prototype.drift,"velocity") <- function(t,CTMM) { rep(0,length(t)) }
 
 new.drift <- methods::setClass("drift",
-              representation("function",energy="function",init="function",name="function",refine="function",scale="function",shift="function",speed="function",summary="function",svf="function",velocity="function"),
+              representation("function",energy="function",init="function",is.stationary="function",name="function",refine="function",scale="function",shift="function",speed="function",summary="function",svf="function",velocity="function"),
               prototype=prototype.drift)
 
 #################################
@@ -90,6 +90,8 @@ new.drift <- methods::setClass("drift",
 #################################
 stationary.drift <- function(t,CTMM) { cbind( array(1,length(t)) ) }
 stationary.velocity <- function(t,CTMM) { cbind( array(0,length(t)) ) }
+
+stationary.is.stationary <- function(CTMM) { TRUE }
 
 # svf of mean function
 stationary.svf <- function(CTMM)
@@ -108,11 +110,13 @@ stationary.speed <- function(CTMM) { list(EST=0,VAR=0) }
 stationary.energy <- function(CTMM) { list(UU=1,VV=0) }
 
 # combine this all together for convenience
-stationary <- new.drift(stationary.drift,energy=stationary.energy,speed=stationary.speed,svf=stationary.svf,velocity=stationary.velocity)
+stationary <- new.drift(stationary.drift,is.stationary=stationary.is.stationary,energy=stationary.energy,speed=stationary.speed,svf=stationary.svf,velocity=stationary.velocity)
 
 ############################
 # Periodic drift function
 ############################
+periodic.is.stationary <- function(CTMM) { !sum(CTMM$harmonic) }
+
 # periodic mean/drift function
 periodic.drift <- function(t,CTMM)
 {
@@ -392,11 +396,13 @@ periodic.stuff <- function(CTMM)
 }
 
 # combine this all together for convenience
-periodic <- new.drift(periodic.drift,energy=periodic.energy,init=periodic.init,name=periodic.name,refine=periodic.refine,scale=periodic.scale,speed=periodic.speed,summary=periodic.summary,svf=periodic.svf,velocity=periodic.velocity)
+periodic <- new.drift(periodic.drift,is.stationary=periodic.is.stationary,energy=periodic.energy,init=periodic.init,name=periodic.name,refine=periodic.refine,scale=periodic.scale,speed=periodic.speed,summary=periodic.summary,svf=periodic.svf,velocity=periodic.velocity)
 
 #################################
 # continuous uniform spline mean functions
 #################################
+uspline.is.stationary <- function(CTMM) { !sum(CTMM$knot) }
+
 uspline.drift <- function(t,CTMM)
 {
   degree <- CTMM$degree
@@ -552,11 +558,13 @@ uspline.stuff <- function(CTMM)
 }
 
 # convenience function
-uspline <- new.drift(uspline.drift,init=uspline.init,scale=uspline.scale,shift=uniform.shift,refine=uspline.refine,name=uspline.name)
+uspline <- new.drift(uspline.drift,is.stationary=uspline.is.stationary,init=uspline.init,scale=uspline.scale,shift=uniform.shift,refine=uspline.refine,name=uspline.name)
 
 #################################
 # piecewise-stationary mean/drift function
 #################################
+pwstationary.is.stationary <- function(CTMM) { !length(CTMM$breaks) }
+
 pwstationary.drift <- function(t,CTMM)
 {
   breaks <- CTMM$breaks
@@ -605,4 +613,4 @@ pwstationary.scale <- function(CTMM,time)
 }
 
 # combine this all together for convenience
-pwstationary <- new.drift(pwstationary.drift,shift=uniform.shift,speed=stationary.speed,svf=stationary.svf)
+pwstationary <- new.drift(pwstationary.drift,is.stationary=pwstationary.is.stationary,shift=uniform.shift,speed=stationary.speed,svf=stationary.svf)

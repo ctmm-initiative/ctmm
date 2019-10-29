@@ -5,57 +5,11 @@ match.arg <- function(arg,choices,...)
   else { return(base::match.arg(arg,choices,...)) }
 }
 
-# is a package installed?
-is.installed <- function(pkg) is.element(pkg, utils::installed.packages()[,1])
-
 # does this thing exist and, if so, is it true
 true <- function(x) { !is.null(x) & !is.na(x) & x }
 
 # not in #
 "%nin%" <- function(x, table) { match(x, table, nomatch = 0) == 0 }
-
-# generic FFT functions
-FFT <- function(X,inverse=FALSE)
-{
-  if(is.null(ncol(X)) || is.na(ncol(X)))
-  {
-    if(!inverse) { X <- stats::fft(X) }
-    else { X <- stats::fft(X,inverse=TRUE)/length(X) }
-  }
-  else
-  {
-    if(!inverse) { X <- stats::mvfft(X) }
-    else { X <- stats::mvfft(X,inverse=TRUE)/nrow(X) }
-  }
-
-  return(X)
-}
-
-# fastest FFT functions... don't use on integers
-FFTW <- function(X,inverse=FALSE)
-{
-  if(is.null(ncol(X)) || is.na(ncol(X)))
-  {
-    if(!inverse) { X <- fftw::FFT(X) }
-    else { X <- fftw::IFFT(X) }
-  }
-  else
-  {
-    if(!inverse) { X <- sapply(1:ncol(X),function(j){ fftw::FFT(X[,j]) }) }
-    else { X <- sapply(1:ncol(X),function(j){ fftw::IFFT(X[,j]) }) }
-  }
-
-  return(X)
-}
-
-.onLoad <- function(...)
-{
-  # choose FFTW if installed
-  if(is.installed("fftw")) { utils::assignInMyNamespace("FFT", FFTW) }
-}
-.onAttach <- .onLoad
-
-IFFT <- function(X,plan=NULL) { FFT(X,inverse=TRUE) }
 
 composite <- function(n) { 2^ceiling(log(n,2)) }
 
@@ -156,6 +110,10 @@ is.odd <- Vectorize(function(x) {x %% 2 != 0})
 # generalized covariance from -likelihood derivatives
 cov.loglike <- function(hess,grad=rep(0,nrow(hess)))
 {
+  # in case of bad derivatives, use worst-case numbers
+  grad <- nant(grad,Inf)
+  hess <- nant(hess,0)
+
   # if hessian is likely to be positive definite
   if(all(diag(hess)>0))
   {
@@ -182,7 +140,7 @@ cov.loglike <- function(hess,grad=rep(0,nrow(hess)))
 
   EIGEN <- eigen(hess)
   values <- EIGEN$values
-  if(any(values<=0)) { warning("MLE is near a boundary or optim() failed.") }
+  if(any(values<=0)) { warning("MLE is near a boundary or optimizer failed.") }
   values <- clamp(values,0,Inf)
   vectors <- EIGEN$vectors
 

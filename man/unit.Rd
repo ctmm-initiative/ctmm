@@ -17,7 +17,10 @@ x \%#\% y
   \item{y}{A unit character label for the quantity \code{x} to be converted to SI units, or a numeric quantity in SI units to be converted into unit label \code{x}.}
 }
 
-\details{If \code{x} is a number and \code{y} is a character unit label, then \code{x} is converted from units \code{y} to SI units. If \code{x} is a character unit label and \code{y} is a number, then \code{y} is converted from SI units to units \code{x}.}
+\details{If \code{x} is a number and \code{y} is a character unit label, then \code{x} is converted from units \code{y} to SI units. If \code{x} is a character unit label and \code{y} is a number, then \code{y} is converted from SI units to units \code{x}.
+
+The default non-SI units include the mean solar \code{'day'}, mean synodic \code{'month'} and mean tropical \code{'year'}. These defaults can be changed to conventional calendar units via \code{options(time.units='calendar')}.
+}
 
 \value{Returns a numeric in SI units or units specified by character label \code{x}.}
 
@@ -49,6 +52,9 @@ x \%#\% y
 
 # 6 miles per hour -> meters per second
 "hour" \%#\% 6 \%#\% "mile"
+
+# the same conversion in one step
+6 \%#\% "mph"
 }
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the

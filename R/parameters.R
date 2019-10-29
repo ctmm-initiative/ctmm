@@ -233,3 +233,37 @@ set.parameters <- function(CTMM,par,linear.cov=FALSE)
 
   return(CTMM)
 }
+
+
+# copy autocovariance parameters 'par' from 'value' to 'x', which might have more parameters
+copy.parameters <- function(x,value,par=value$features,destructive=TRUE)
+{
+  Pv <- par
+  Px <- x$features
+
+  if('minor' %in% Pv) { x$isotropic <- value$isotropic }
+  if('minor' %in% Pv || 'minor' %nin% Px) # copy over full covariance matrix
+  { x$sigma <- value$sigma }
+  else # copy over variance only
+  {
+    sigma <- x$sigma@par
+    sigma['major'] <- value$sigma@par['major']
+    x$sigma <- covm(sigma,isotropic=FALSE,axes=x$axes)
+  }
+
+  if("tau position" %in% Pv) { x$tau[1] <- value$tau[1] }
+  if("tau velocity" %in% Pv) { x$tau[2] <- value$tau[2] }
+  if("tau" %in% Pv) { x$tau <- value$tau }
+  if("omega" %in% Pv) { x$omega <- value$omega }
+  if("circle" %in% Pv) { x$circle <- value$circle }
+  if("error" %in% Pv) { x$error <- value$error }
+
+  # don't think I need this
+  if("MLE" %in% names(x))
+  {
+    if("MLE" %in% names(value)) { value <- value$MLE }
+    x$MLE <- copy.parameters(x$MLE,value,par=par,destructive=destructive)
+  }
+
+  return(x)
+}

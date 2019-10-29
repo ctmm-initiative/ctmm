@@ -162,6 +162,7 @@ pull.column <- function(object,NAMES,FUNC=as.numeric,name.only=FALSE)
     NAME <- gsub("[.:_ -]","",NAME) # remove separators
     NAME <- gsub("\\(|\\)","",NAME) # remove parentheses
     NAME <- gsub("\\[|\\]", "", NAME) # remove square brackets
+    NAME <- gsub("\\\uFF08|\\\uFF09","",NAME) # THIS DOES NOT WORK
     NAME <- tolower(NAME)
     if(UNIQUE) { NAME <- unique(NAME) }
     return(NAME)
@@ -344,7 +345,8 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   NAMES$zone <- c("GPS.UTM.zone","UTM.zone","zone")
   NAMES$east <- c("GPS.UTM.Easting","GPS.UTM.East","GPS.UTM.x","UTM.Easting","UTM.East","UTM.x","Easting","East","x")
   NAMES$north <- c("GPS.UTM.Northing","GPS.UTM.North","GPS.UTM.y","UTM.Northing","UTM.North","UTM.y","Northing","North","y")
-  NAMES$HDOP <- c("GPS.HDOP","HDOP","Horizontal.DOP","GPS.Horizontal.Dilution","Horizontal.Dilution","Hor.Dil","Hor.DOP","HPE","\u8AA4\u5DEE","\u8AA4\u5DEE.m")
+  NAMES$HDOP <- c("eobs.horizontal.accuracy.estimate","eobs.horizontal.accuracy.estimate.m","horizontal.accuracy.estimate","horizontal.accuracy.estimate.m",
+                  "GPS.HDOP","HDOP","Horizontal.DOP","GPS.Horizontal.Dilution","Horizontal.Dilution","Hor.Dil","Hor.DOP","HPE","\u8AA4\u5DEE","\u8AA4\u5DEE.m","\u8AA4\u5DEE\uFF08m\uFF09")
   NAMES$DOP <- c("GPS.DOP","DOP","GPS.Dilution","Dilution","Dil")
   NAMES$PDOP <- c("GPS.PDOP","PDOP","Position.DOP","GPS.Position.Dilution","Position.Dilution","Pos.Dil","Pos.DOP")
   NAMES$GDOP <- c("GPS.GDOP","GDOP","Geometric.DOP","GPS.Geometric.Dilution","Geometric.Dilution","Geo.Dil","Geo.DOP")
@@ -548,8 +550,6 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     }
   }
   # try to get dop values from best to worst
-  COL <- c("eobs.horizontal.accuracy.estimate","eobs.horizontal.accuracy.estimate.m","horizontal.accuracy.estimate","horizontal.accuracy.estimate.m")
-  try.dop(COL) # EOBS calibrated GPS errors
   try.dop(NAMES$HDOP)
   try.dop(NAMES$DOP,"HDOP values not found. Using ambiguous DOP.")
   try.dop(NAMES$PDOP,"HDOP values not found. Using PDOP.")
@@ -689,9 +689,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
       COL <- pull.column(object,COL)
       if(length(COL) && FALSE) # e-obs column is terrible for error estimation, location error estimates are better # but they do not cross validate
       {
-        # UERE from Scott's calibration data
         DATA[[DOP.LIST$speed$DOP]] <- COL
-        DATA[[DOP.LIST$speed$VAR]] <- 0.115475648329319^2/2 * COL^2
       }
       else if("HDOP" %in% names(DATA)) # USE HDOP as approximate SDOP
       {

@@ -1,9 +1,20 @@
+UNITS <- list()
+UNITS$mean <- list()
+UNITS$mean$DAY <- 86400.002 # mean solar day
+UNITS$mean$YEAR <- 365.24217 * UNITS$mean$DAY # mean tropical year
+UNITS$mean$MONTH <- 2.8 + 60*( 44 + 60*( 12 + 24*29 ) ) # mean synodic month
+UNITS$calendar <- list()
+UNITS$calendar$DAY <- 86400
+UNITS$calendar$YEAR <- 365 * UNITS$calendar$DAY
+UNITS$calendar$MONTH <- 30 * UNITS$calendar$DAY
+
 # CHOOSE BEST UNITS FOR A LIST OF DATA
 # thresh is threshold for switching to coarser unit
 # concise gives abbreviated names
 unit <- function(data,dimension,thresh=1,concise=FALSE,SI=FALSE)
 {
   if(SI) { data <- 1.01 ; thresh <- 1 } # will always choose base units
+  OP <- getOption("time.units")
 
   if(dimension %in% c("length",'distance'))
   {
@@ -21,13 +32,16 @@ unit <- function(data,dimension,thresh=1,concise=FALSE,SI=FALSE)
   {
     name.list <- c("microseconds","miliseconds","seconds","minutes","hours","days","months","years")
     abrv.list <- c("\u03BCs","ms","sec","min","hr","day","mon","yr")
-    scale.list <- c(1E-6,1/1000,1,60*c(1,60*c(1,24*c(1,29.53059,365.24))))
+    scale.list <- c(1E-6,1/1000,1,60*c(1,60)) # through minutes
+    scale.list[6] <- UNITS[[OP]]$DAY
+    scale.list[7] <- UNITS[[OP]]$MONTH
+    scale.list[8] <- UNITS[[OP]]$YEAR
   }
   else if(dimension %in% c("speed",'velocity'))
   {
     name.list <- c("microns/day","milimeters/day","centimeters/day","meters/day","kilometers/day")
     abrv.list <- c("\u03BCm/day","mm/day","cm/day","m/day","km/day")
-    scale.list <- c(1E-6,1/1000,1/100,1,1000)/(60*60*24)
+    scale.list <- c(1E-6,1/1000,1/100,1,1000)/UNITS[[OP]]$DAY
 
     # SI units fix
     if(SI)
@@ -41,7 +55,7 @@ unit <- function(data,dimension,thresh=1,concise=FALSE,SI=FALSE)
   {
     name.list <- c("square microns/day","square milimeters/day","square centimeters/day","square meters/day","hectares/day","square kilometers/day")
     abrv.list <- c("\u03BCm\u00B2/day","mm\u00B2/day","cm\u00B2/day","m\u00B2/day","hm\u00B2/day","km\u00B2/day")
-    scale.list <- c(1E-12,1/1000^2,1/100^2,1,100^2,1000^2)/(60*60*24)
+    scale.list <- c(1E-12,1/1000^2,1/100^2,1,100^2,1000^2)/UNITS[[OP]]$DAY
 
     # SI units fix
     if(SI)
@@ -224,6 +238,16 @@ unit.variogram <- function(SVF,time=1,area=1)
     pow <- -1
   }
 
+  name <- tolower(name)
+
+  # DIV <- grepl("/",name)
+  # if(DIV)
+  # {
+  #   #
+  # }
+
+  OP <- getOption("time.units")
+
   alias <- list()
   scale <- c()
 
@@ -240,10 +264,10 @@ unit.variogram <- function(SVF,time=1,area=1)
   add(c("s","s.","sec","sec.","second","seconds"),1)
   add(c("min","min.","minute","minutes"),60)
   add(c("h","h.","hr","hr.","hour","hours"),60^2)
-  add(c("day","days"),(23*60+56)*60+4.0910) # stellar day
-  add(c("wk","wk.","week","weeks"),7*24*60^2) # calendar week
-  add(c("mon","mon.","month","months"),((29*24+12)*60+44)*60+2.8016) # synodic month
-  add(c("yr","yr.","year","years"),365.24219 * 24*60^2) # tropical year
+  add(c("day","days"),UNITS[[OP]]$DAY) #day
+  add(c("wk","wk.","week","weeks"),7*UNITS[[OP]]$DAY) # week
+  add(c("mon","mon.","month","months"),UNITS[[OP]]$MONTH) # month
+  add(c("yr","yr.","year","years"),UNITS[[OP]]$YEAR) # year
 
   # Distance conversions
   add(c("\u03BCm","\u03BCm.","micron","microns","micrometer","micrometers"),1E-6)
@@ -267,6 +291,13 @@ unit.variogram <- function(SVF,time=1,area=1)
   add(c("ft\u00B2","ft.\u00B2","foot\u00B2","feet\u00B2","ft^2","ft.^2","foot^2","feet^2","square foot","square feet","foot squared","feet squared"),0.3048^2)
   add(c("yd\u00B2","yd.\u00B2","yard\u00B2","yards\u00B2","yd^2","yd.^2","yard^2","yards^2","square yard","square yards","yard squared","yards squared"),(0.3048*3)^2)
   add(c("mi\u00B2","mi.\u00B2","mile\u00B2","miles\u00B2","mi^2","mi.^2","mile^2","miles^2","square mile","square miles","mile squared","miles squared"),(0.3048*5280)^2)
+
+  # speed
+  add(c("mps","m/s","m/sec","meter/sec","meter/second","meters/second"),1)
+  add(c("kmph","kph","km/h","km/h","km/hr","kilometer/hour","kilometers/hour"),0.277777777777777777777)
+  add(c("mph","mi/h","mi/hr","mile/h","mile/hr","mile/hour","miles/hour"),0.44704)
+  add(c("fps","ft/s","ft/sec","feet/second"),0.3048)
+  add(c('kt','kn','knot','knots'),1.852 * 0.277777777777777777777)
 
   for(i in 1:length(alias))
   {

@@ -57,3 +57,52 @@ modes <- function(object,...) UseMethod("modes")
 
 # internal S3 generic function
 pars <- function(...) { UseMethod("pars") }
+
+# generic FFT functions
+FFT <- function(X,inverse=FALSE)
+{
+  if(is.null(ncol(X)) || is.na(ncol(X)))
+  {
+    if(!inverse) { X <- stats::fft(X) }
+    else { X <- stats::fft(X,inverse=TRUE)/length(X) }
+  }
+  else
+  {
+    if(!inverse) { X <- stats::mvfft(X) }
+    else { X <- stats::mvfft(X,inverse=TRUE)/nrow(X) }
+  }
+
+  return(X)
+}
+
+# fastest FFT functions... don't use on integers
+FFTW <- function(X,inverse=FALSE)
+{
+  if(is.null(ncol(X)) || is.na(ncol(X)))
+  {
+    if(!inverse) { X <- fftw::FFT(X) }
+    else { X <- fftw::IFFT(X) }
+  }
+  else
+  {
+    if(!inverse) { X <- sapply(1:ncol(X),function(j){ fftw::FFT(X[,j]) }) }
+    else { X <- sapply(1:ncol(X),function(j){ fftw::IFFT(X[,j]) }) }
+  }
+
+  return(X)
+}
+
+IFFT <- function(X,plan=NULL) { FFT(X,inverse=TRUE) }
+
+# is a package installed?
+is.installed <- function(pkg) is.element(pkg, utils::installed.packages()[,1])
+
+.onLoad <- function(...)
+{
+  # new global options
+  if(is.null(getOption("time.units"))) { options(time.units='mean') }
+
+  # choose FFTW if installed
+  if(is.installed("fftw")) { utils::assignInMyNamespace("FFT", FFTW) }
+}
+.onAttach <- .onLoad

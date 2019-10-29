@@ -2,25 +2,38 @@
 # I can't get the raster generic to work?? It won't accept my classes?
 # extent <- function(x,...) UseMethod("extent")
 
+as.matrix.Extent <- function(x,...)
+{
+  x <- cbind(x=c(x@xmin,x@xmax),y=c(x@ymin,x@ymax))
+  rownames(x) <- c('min','max')
+  return(x)
+}
+
+
 # what is the range of a list of objects of any type
 extent.list <- function(x,...)
 {
   # list of element ranges
-  RANGE <- lapply(x,function(d){extent(d,...)})
+  RANGE <- lapply(x,function(y){extent(y,...)})
   # concatenate ranges
   RANGE <- Reduce(rbind,RANGE)
   # final range x & y
-  RANGE <- extent.telemetry(RANGE,level=1)
+  RANGE <- extent(RANGE,level=1)
   # level has already been applied
   return(RANGE)
 }
-# raster doesn't really need this?
 setMethod('extent', signature(x='list'), extent.list)
 
 
-# range of telemetry data
+# extent of telemetry data
 extent.telemetry <- function(x,level=1,...)
 {
+  if(is.null(colnames(x)))
+  {
+    if(ncol(x)==2) { colnames(x) <- c('x','y') }
+    else { stop('Ambiguous extent: ',x) }
+  }
+
   alpha <- (1-level)/2
   X <- stats::quantile(x$x,probs=c(alpha,1-alpha),na.rm=TRUE)
   Y <- stats::quantile(x$y,probs=c(alpha,1-alpha),na.rm=TRUE)
@@ -29,6 +42,18 @@ extent.telemetry <- function(x,level=1,...)
   return(RANGE)
 }
 setMethod('extent', signature(x='telemetry'), extent.telemetry)
+setMethod('extent', signature(x='data.frame'), extent.telemetry)
+
+
+# extent of matrix/extent
+extent.matrix <- function(x,level=1,...)
+{
+  NAMES <- colnames(x)
+  x <- data.frame(x)
+  colnames(x) <- NAMES # preserve NULL
+  extent(x,level=level,...)
+}
+setMethod('extent', signature(x='matrix'), extent.matrix)
 
 
 # range of Gaussian contours
@@ -163,3 +188,4 @@ min.extent <- function(...,na.rm=FALSE)
 
   return(MIN)
 }
+
