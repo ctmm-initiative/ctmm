@@ -2,10 +2,8 @@
 # calculate first and second derivatives efficiently
 # assumes to start with approximant of maximum (par) and inverse hessian (covariance)
 ####################
-genD <- function(par,fn,zero=FALSE,lower=-Inf,upper=Inf,step=NULL,precision=1/2,parscale=NULL,mc.cores=detectCores(),Richardson=2,order=2,...)
+genD <- function(par,fn,zero=FALSE,lower=-Inf,upper=Inf,step=NULL,precision=1/2,parscale=NULL,mc.cores=detectCores(),Richardson=2,order=2,drop=TRUE,...)
 {
-  DIM <- length(par)
-
   if(is.null(parscale)) { parscale <- pmin(abs(par),abs(par-lower),abs(upper-par)) }
   if(any(parscale==0)) { parscale[parscale==0] <- 1 }
 
@@ -19,13 +17,15 @@ genD <- function(par,fn,zero=FALSE,lower=-Inf,upper=Inf,step=NULL,precision=1/2,
 
   d <- 0.01
   zero.tol <- sqrt(.Machine$double.eps/7e-7)
-  n <- length(par)
+  n <- length(par) # input dimension
 
   # calculate hessian and gradient simultaneously
+  # output dimension is assumed 1
   if(order==2)
   {
     method.args <- list(eps=1e-4,d=d,zero.tol=zero.tol,r=Richardson,v=2,show.details=FALSE)
-    D <- numDeriv::genD(func,par,method.args=method.args,...)$D
+    STUFF <- numDeriv::genD(func,par,method.args=method.args,...)
+    D <- STUFF$D
 
     grad <- D[1:n]
     D <- D[-(1:n)]
@@ -46,7 +46,7 @@ genD <- function(par,fn,zero=FALSE,lower=-Inf,upper=Inf,step=NULL,precision=1/2,
     # seems like there should have been a more consise way to do that
   }
   else
-  { hess <- array(NA,c(n,n)) }
+  { hess <- array(NA,c(n,n)) } # wrong for N>1
 
   # gradient directions: NA is symmetric
   side <- rep(NA,n)
@@ -76,12 +76,17 @@ genD <- function(par,fn,zero=FALSE,lower=-Inf,upper=Inf,step=NULL,precision=1/2,
   if(any(!is.na(side)) || order==1)
   {
     method.args <- list(eps=1e-4,d=0.0001,zero.tol=zero.tol,r=Richardson,v=2,show.details=FALSE)
-    grad <- numDeriv::grad(func,par,side=side,method.args=method.args,...)
+    grad <- numDeriv::jacobian(func,par,side=side,method.args=method.args,...)
   }
 
   # convert back from natural units
-  grad <- grad / parscale
-  hess <- t(hess / parscale) / parscale
+  if(is.null(dim(grad)) || drop && nrow(grad)==1)
+  {
+    grad <- c(grad)/parscale
+    hess <- t(hess / parscale) / parscale
+  }
+  else
+  { grad <- t( t(grad) / parscale ) }
 
   return(list(gradient=grad,hessian=hess))
 }

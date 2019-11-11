@@ -205,3 +205,14 @@ validate.grid <- function(data,grid)
     if(proj1 != proj2) { stop("Grid projection does not match data projection.") }
   }
 }
+
+
+# check for consistent projections
+check.projections <- function(object)
+{
+  PROJ <- projection(object)
+  if(length(PROJ)==0) { stop("Missing projection.") }
+  if(length(PROJ)>1) { stop("Inconsistent projections.") }
+  return(PROJ)
+}
+

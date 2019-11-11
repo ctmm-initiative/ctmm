@@ -39,7 +39,7 @@ variogram.guess <- function(variogram,CTMM=ctmm())
   else if(length(CTMM$tau)==1)
   { CTMM$tau[2] <- min(CTMM$tau[1],tau[2]) }
 
-  if(!CTMM$range) { sigma <- D ; tau[1] <- Inf }
+  if(!CTMM$range) { sigma <- D ; CTMM$tau[1] <- Inf }
 
   # preserve orientation and eccentricity if available/necessary
   if(is.null(CTMM$sigma))

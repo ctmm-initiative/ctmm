@@ -49,7 +49,10 @@ ctmm <- function(tau=NULL,omega=FALSE,isotropic=FALSE,range=TRUE,circle=FALSE,er
   }
   List$range <- range
 
-  if(!range & circle) { stop("Inconsistent model options: range=FALSE, circle=TRUE.") }
+  if(!range && length(tau)>1 && tau[1]==tau[2])
+  { stop("Ballistic motion not yet supported.") }
+
+  if(!range && circle) { stop("Inconsistent model options: range=FALSE, circle=TRUE.") }
 
   # default mean function
   if(is.null(List$mean)) { List$mean <- "stationary" }

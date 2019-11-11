@@ -343,18 +343,19 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   NAMES$long <- c("location.long","Longitude","long","lon","GPS.Longitude","\u7D4C\u5EA6")
   NAMES$lat <- c("location.lat","Latitude","latt","lat","GPS.Latitude","\u7DEF\u5EA6")
   NAMES$zone <- c("GPS.UTM.zone","UTM.zone","zone")
-  NAMES$east <- c("GPS.UTM.Easting","GPS.UTM.East","GPS.UTM.x","UTM.Easting","UTM.East","UTM.x","Easting","East","x")
-  NAMES$north <- c("GPS.UTM.Northing","GPS.UTM.North","GPS.UTM.y","UTM.Northing","UTM.North","UTM.y","Northing","North","y")
-  NAMES$HDOP <- c("eobs.horizontal.accuracy.estimate","eobs.horizontal.accuracy.estimate.m","horizontal.accuracy.estimate","horizontal.accuracy.estimate.m",
-                  "GPS.HDOP","HDOP","Horizontal.DOP","GPS.Horizontal.Dilution","Horizontal.Dilution","Hor.Dil","Hor.DOP","HPE","\u8AA4\u5DEE","\u8AA4\u5DEE.m","\u8AA4\u5DEE\uFF08m\uFF09")
+  NAMES$east <- c("GPS.UTM.Easting","GPS.UTM.East","GPS.UTM.x","UTM.Easting","UTM.East","UTM.E","UTM.x","Easting","East","x")
+  NAMES$north <- c("GPS.UTM.Northing","GPS.UTM.North","GPS.UTM.y","UTM.Northing","UTM.North","UTM.N","UTM.y","Northing","North","y")
+  NAMES$HDOP <- c("eobs.horizontal.accuracy.estimate","eobs.horizontal.accuracy.estimate.m","horizontal.accuracy.estimate","horizontal.accuracy.estimate.m","error.m",
+                  "GPS.HDOP","HDOP","Horizontal.DOP","GPS.Horizontal.Dilution","Horizontal.Dilution","Hor.Dil","Hor.DOP","HPE",
+                  "\u8AA4\u5DEE","\u8AA4\u5DEE.m","\u8AA4\u5DEE\uFF08m\uFF09")
   NAMES$DOP <- c("GPS.DOP","DOP","GPS.Dilution","Dilution","Dil")
   NAMES$PDOP <- c("GPS.PDOP","PDOP","Position.DOP","GPS.Position.Dilution","Position.Dilution","Pos.Dil","Pos.DOP")
   NAMES$GDOP <- c("GPS.GDOP","GDOP","Geometric.DOP","GPS.Geometric.Dilution","Geometric.Dilution","Geo.Dil","Geo.DOP")
   NAMES$VDOP <- c("GPS.VDOP","VDOP","Vertical.DOP","GPS.Vertical.Dilusion","Vertical.Dilution","Ver.Dil","Ver.DOP")
-  NAMES$nsat <- c("GPS.satellite.count","satellite.count","Sat.Count","Num.Sats","Nr.Sat","NSat","NSats","Sat.Num","satellites.used","Satellites","Sats","SVs.in.use") # Counts? Messages?
+  NAMES$nsat <- c("GPS.satellite.count","satellite.count","Sat.Count","Number.of.Sats","Num.Sats","Nr.Sat","NSat","NSats","Sat.Num","satellites.used","Satellites","Sats","SVs.in.use") # Counts? Messages?
   NAMES$FIX <- c("GPS.fix.type","GPS.fix.type.raw","fix.type","type.of.fix","e.obs.type.of.fix","Fix.Attempt","GPS.Fix.Attempt","Telonics.Fix.Attempt","Fix.Status","sensor.type","Fix","2D/3D")
   NAMES$TTF <- c("GPS.time.to.fix","time.to.fix","GPS.TTF","TTF","GPS.fix.time","fix.time","time.to.get.fix","used.time.to.get.fix","e.obs.used.time.to.get.fix","Duration","GPS.navigation.time","navigation.time","Time.On")
-  NAMES$z <- c("height.above.ellipsoid","height.above.msl","height.above.mean.sea.level","height.raw","height","height.m","barometric.height","Argos.altitude","GPS.Altitude","altitude","altitude.m","Alt","barometric.depth","depth","elevation","elev")
+  NAMES$z <- c("height.above.ellipsoid","height.above.msl","height.above.mean.sea.level","height.raw","height","height.m","barometric.height","Argos.altitude","GPS.Altitude","altitude","altitude.m","Alt","barometric.depth","depth","elevation","elevation.m","elev")
   NAMES$v <- c("ground.speed",'speed.over.ground',"speed","GPS.speed")
   NAMES$heading <- c("heading","heading.degree","GPS.heading","Course")
 

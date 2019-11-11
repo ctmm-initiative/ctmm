@@ -418,10 +418,18 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
 
   if(is.null(CTMM$sigma))
   {
-    if(is.null(CTMM$tau))
+    K <- length(CTMM$tau)
+    if(K==0 && CTMM$range)
     { CTMM$sigma <- covm(stats::cov(get.telemetry(data,axes)),isotropic=CTMM$isotropic,axes=axes) }
-    else # above fails for IOU
-    { CTMM <- ctmm.guess(data,CTMM=CTMM,interactive=FALSE) }
+    else # above fails for IOU/BM
+    {
+      CTMM <- ctmm.guess(data,CTMM=CTMM,interactive=FALSE)
+      # preserve continuity
+      if(K==0 && !CTMM$range) # assume BM
+      { CTMM$tau <- Inf }
+      else if(K==1) # OU/BM
+      { CTMM$tau <- CTMM$tau[1] }
+    }
   }
 
   # standardize data for numerical stability
@@ -555,6 +563,8 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
     # fast calculation of sigma covariance
     COVSTUFF <- COV.covm(CTMM$sigma,n=n,k=k.mean,REML=REML)
     CTMM$COV <- COVSTUFF$COV
+
+    MLE <- NULL
   }
   else ### all further cases require optimization ###
   {
@@ -701,7 +711,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
   # would be temporary ML COV for pREML/pHREML
   if(!COV) { CTMM$COV <- NULL }
 
-  if(method %in% c('pREML','pHREML','HREML') && length(CTMM$tau))
+  if(method %in% c('pREML','pHREML','HREML') && !is.null(MLE))
   {
     # calculate checksum
     MLE$checksum <- digest::digest(CTMM,algo="md5")

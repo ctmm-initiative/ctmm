@@ -761,7 +761,7 @@ kde <- function(data,H,axes=c("x","y"),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr
   { CDF <- pmf2cdf(PMF) }
 
   dV <- prod(dr)
-  result <- list(PDF=PMF/dV,CDF=CDF,r=R,dr=dr)
+  result <- list(PDF=PMF/dV,CDF=CDF,axes=axes,r=R,dr=dr)
   return(result)
 }
 

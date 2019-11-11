@@ -1,5 +1,7 @@
 PRIORITY
-* review ctmm.select, wolf test, turtle test, Nick test
+* TEST: encounter
+* lasso + outlie
+* half-sample IC
 * uere()<- ctmm calibrate with simultaneously fit RMS UERE
 * p-value function for outlie() return object using v_max or CTMM object
 * diffusion calculation with CIs (in summary)

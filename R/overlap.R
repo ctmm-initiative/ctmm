@@ -3,12 +3,9 @@
 # forwarding function for list of a particular datatype
 overlap <- function(object,level=0.95,debias=TRUE,...)
 {
-  CLASS <- class(object[[1]])
+  check.projections(object)
 
-  # check for consistent projections
-  PROJ <- projection(object)
-  if(length(PROJ)==0) { stop("Missing projection.") }
-  if(length(PROJ)>1) { stop("Inconsistent projections.") }
+  CLASS <- class(object[[1]])
 
   if(CLASS=="ctmm")
   { OverlapFun <- overlap.ctmm }
@@ -50,73 +47,11 @@ overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,...)
   CTMM1 <- object[[1]]
   CTMM2 <- object[[2]]
 
-  # ML parameters
-  par <- NULL
-  parscale <- NULL
-  lower <- NULL
-  upper <- NULL
-
-  # first mean
-  par <- c(par, CTMM1$mu[1,] )
-  parscale <- c(parscale, sqrt(diag(CTMM1$sigma)) )
-  lower <- c(lower, c(-Inf,-Inf) )
-  upper <- c(upper, c(Inf,Inf) )
-
-  # first covariance
-  par <- c(par,CTMM1$sigma@par)
-  parscale <- c(parscale, c(CTMM1$sigma@par[1:2],pi/2) )
-  lower <- c(lower, c(0,0,-Inf) )
-  upper <- c(upper, c(Inf,Inf,Inf) )
-
-  # second mean
-  par <- c(par,CTMM2$mu[1,])
-  parscale <- c(parscale, sqrt(diag(CTMM2$sigma)) )
-  lower <- c(lower, c(-Inf,-Inf) )
-  upper <- c(upper, c(Inf,Inf) )
-
-  # second covariance
-  par <- c(par,CTMM2$sigma@par)
-  parscale <- c(parscale, c(CTMM2$sigma@par[1:2],pi/2) )
-  lower <- c(lower, c(0,0,-Inf) )
-  upper <- c(upper, c(Inf,Inf,Inf) )
-
-  D <- function(p)
-  {
-    CTMM1$mu[1,] <- p[1:2]
-    CTMM1$sigma <- covm(p[3:5],isotropic=CTMM1$isotropic)
-
-    CTMM2$mu[1,] <- p[6:7]
-    CTMM2$sigma <- covm(p[8:10],isotropic=CTMM2$isotropic)
-
-    return(BhattacharyyaD(CTMM1,CTMM2))
-  }
-
-  VAR <- 0
-  # propagate uncertainty - slightly wasteful if isotropic
-  if(COV)
-  {
-    # grad <- numDeriv::grad(D,par)
-    grad <- genD(par,D,lower=lower,upper=upper,parscale=parscale,mc.cores=1,order=1,...)$gradient
-
-    VAR <- VAR + abs(grad[1:2] %*% CTMM1$COV.mu %*% grad[1:2])
-    if(CTMM1$isotropic)
-    { VAR <- VAR + abs(grad[3] * CTMM1$COV[1,1] * grad[3]) }
-    else
-    { VAR <- VAR + abs(grad[3:5] %*% CTMM1$COV[1:3,1:3] %*% grad[3:5]) }
-
-    VAR <- VAR + abs(grad[6:7] %*% CTMM2$COV.mu %*% grad[6:7])
-    if(CTMM2$isotropic)
-    { VAR <- VAR + abs(grad[8] * CTMM2$COV[1,1] * grad[8]) }
-    else
-    { VAR <- VAR + abs(grad[8:10] %*% CTMM2$COV[1:3,1:3] %*% grad[8:10]) }
-
-    VAR <- as.numeric(VAR)
-  }
-
+  STUFF <- gauss.comp(BhattacharyyaD,object,COV=COV)
+  MLE <- c(STUFF$MLE)
+  VAR <- c(STUFF$COV)
   # this quantity is roughly chi-square
-  MLE <- BhattacharyyaD(CTMM1,CTMM2)
   DOF <- 2*MLE^2/VAR
-
 
   # approximate debiasing, correct for IID, equal covariance, REML
   ########################
@@ -180,8 +115,11 @@ overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,...)
 
 ####################
 # square distance between stationary Gaussian distributions
-BhattacharyyaD <- function(CTMM1,CTMM2)
+BhattacharyyaD <- function(CTMM)
 {
+  CTMM1 <- CTMM[[1]]
+  CTMM2 <- CTMM[[2]]
+
   sigma <- (CTMM1$sigma + CTMM2$sigma)/2
   mu <- CTMM1$mu[1,] - CTMM2$mu[1,]
 

@@ -105,8 +105,7 @@ For sorting between the autocovariance models (each with best non-stationary mod
 SUB <- grepl("OUF anisotropic harmonic",names(FITS))
 summary(FITS[SUB])
 # these are sorted by IC
-SUB <- gsub('[0-9]+','',names(FITS))
-SUB <- sapply(unique(SUB),function(s){which(SUB==s)[1]})
+SUB <- grepl('0 0',names(FITS))
 summary(FITS[SUB])
 ```
 
@@ -133,7 +132,7 @@ Consistent with these considerations, let us look at harmonics 3 and 2 of the da
 ```{r}
 SUB <- rownames(summary(FITS,MSPE=NA))[1]
 summary(FITS[[SUB]]) # harmonic 3 0 # selected by IC
-summary(FITS[[1]])   # harmonic 2 0 # selected by MSPE
+summary(FITS[[1]])   # harmonic 2 0 # selected by IC/MSPE
 ```
 
 * `rotation/deviation %` corresponds to $100 \eta_P$ from the Péron et al (2017). It is interpreted as the proportion of the variance in the animal`s location that is caused by the periodicity in the mean.

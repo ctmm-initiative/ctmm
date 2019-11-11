@@ -1,4 +1,4 @@
-ctmm 0.5.8 (2019-10-29)
+ctmm 0.5.8 (2019-11-10)
 ================
 
   * improvements to ctmm.select stepwise selection, especially with error and circulation

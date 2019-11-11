@@ -117,3 +117,6 @@ export(annotate,color)
 
 # GUI selection methods
 export(lasso,marquee,cleave)
+
+# ENCOUNTER FUNCTIONS
+export(encounter)
