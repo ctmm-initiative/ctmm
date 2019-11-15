@@ -1,7 +1,9 @@
-ctmm 0.5.8 (2019-11-10)
+ctmm 0.5.8 (2019-11-15)
 ================
 
   * improvements to ctmm.select stepwise selection, especially with error and circulation
+  
+  * improvements in ctmm.fit for nearly linear homeranges with error
 
   * units of speed supported by %#% operator
 

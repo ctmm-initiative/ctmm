@@ -1,5 +1,5 @@
 PRIORITY
-* TEST: encounter
+* tplot: plot(...,axes=c('t','...'x')) or plot(...,axes=c('x','t')), possibly with 2 axes?, '-x'?
 * lasso + outlie
 * half-sample IC
 * uere()<- ctmm calibrate with simultaneously fit RMS UERE

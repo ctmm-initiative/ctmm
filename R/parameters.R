@@ -87,31 +87,46 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE=F
 
   SIGMIN <- dz^2*ifelse(CTMM$range,1,df)
 
-  if("major" %in% NAMES)
-  {
-    parscale <- c(parscale,max(sigma['major'],SIGMIN))
-    lower <- c(lower,0)
-    upper <- c(upper,Inf)
-    period <- c(period,FALSE)
-  }
+  MAX <- eigenvalues.covm(CTMM$sigma)[1]
+  MAX <- max(MAX,SIGMIN)
 
-  # minor and angle
-  if("minor" %in% NAMES)
+  if(!linear.cov) # nonlinear sigma: major, major/minor, angle
   {
-    if(!linear.cov)
+    if("major" %in% NAMES)
     {
-      parscale <- c(parscale,sigma['minor'],pi/2)
+      parscale <- c(parscale,MAX)
+      lower <- c(lower,0)
+      upper <- c(upper,Inf)
+      period <- c(period,FALSE)
+    }
+
+    # minor and angle
+    if("minor" %in% NAMES)
+    {
+      parscale <- c(parscale,1,pi/2)
+      lower <- c(lower,0,-Inf)
+      upper <- c(upper,Inf,Inf) # could be 1 for minor/major
       period <- c(period,FALSE,pi)
     }
-    else
+  }
+  else # linear sigma: xx, yy, xy
+  {
+    if("major" %in% NAMES)
     {
-      sigma <- CTMM$sigma
-      parscale <- c(parscale,pmax(abs(sigma[c(4,2)]),SIGMIN))
+      parscale <- c(parscale,MAX)
+      lower <- c(lower,0)
+      upper <- c(upper,Inf)
+      period <- c(period,FALSE)
+    }
+
+    if("minor" %in% NAMES)
+    {
+      parscale <- c(parscale,MAX,MAX)
+      lower <- c(lower,0,-Inf)
+      upper <- c(upper,Inf,Inf)
       period <- c(period,FALSE,FALSE)
     }
-    lower <- c(lower,0,-Inf)
-    upper <- c(upper,Inf,Inf) # could make 1 for minor/major
-  }
+  } # end linear sigma
 
   if(!linear) # nonlinear autocorrelation parameters
   {
