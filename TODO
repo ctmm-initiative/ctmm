@@ -1,4 +1,5 @@
 PRIORITY
+* make boundary warnings only for ctmm.fit and not ctmm.select (R function for calling function?)
 * tplot: plot(...,axes=c('t','...'x')) or plot(...,axes=c('x','t')), possibly with 2 axes?, '-x'?
 * lasso + outlie
 * half-sample IC

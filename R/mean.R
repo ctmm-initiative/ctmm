@@ -28,7 +28,7 @@ drift.init <- function(data,CTMM)
   CTMM$sigma <- (t(z) %*% z) / (n-1)
   if(n==2) { CTMM$sigma <- diag(mean(diag(CTMM$sigma)),nrow=nrow(CTMM$sigma)) }
 
-  # remove error from variability
+  # remove error from variability # can make this better !!!
   if(CTMM$error)
   {
     error <- sum(error) / (n-1)
@@ -111,6 +111,16 @@ stationary.energy <- function(CTMM) { list(UU=1,VV=0) }
 
 # combine this all together for convenience
 stationary <- new.drift(stationary.drift,is.stationary=stationary.is.stationary,energy=stationary.energy,speed=stationary.speed,svf=stationary.svf,velocity=stationary.velocity)
+
+############################
+# mean zero process
+############################
+
+zero.drift <- function(t,CTMM) { cbind( array(0,length(t)) ) }
+
+zero.energy <- function(CTMM) { list(UU=1,VV=0) }
+
+zero <- new.drift(zero.drift,is.stationary=stationary.is.stationary,energy=zero.energy,speed=stationary.speed,svf=stationary.svf,velocity=stationary.velocity)
 
 ############################
 # Periodic drift function

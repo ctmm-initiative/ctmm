@@ -202,6 +202,7 @@ kalman <- function(z,u,dt,CTMM,error=NULL,smooth=FALSE,sample=FALSE,residual=FAL
   if(precompute>=0)
   {
     n <- nrow(z)
+    if(CTMM$range) { N <- n } else { N <- n-1 } # condition off first point
 
     DIM <- dim(CTMM$sigma)[1] # infer necessary dimension
     if(is.null(DIM)) { DIM <- 1 } # default dimension, scalar sigma
@@ -388,10 +389,10 @@ kalman <- function(z,u,dt,CTMM,error=NULL,smooth=FALSE,sample=FALSE,residual=FAL
       # if DIM==1, dim(D)==c(M,2), else dim(D)==c(2*M,1) - reversed order
       rm(uisRes)
 
-      mu <- iW %*% D # (MEAN,DATA)
+      mu <- nant(iW %*% D,0) # (MEAN,DATA)
       # if DIM==1, dim(mu)==c(M,2), else dim(mu)==c(2*M,1) - reversed order
       # fix for BM/IOU conditioning off first location (not really a model parameter)
-      if(!CTMM$range && length(mu))
+      if(!CTMM$range && length(mu) && CTMM$mean!="zero")
       {
         DIMS <- dim(zRes)
         dim(zRes) <- c(n,OBS,DIM,VEC)
@@ -450,7 +451,7 @@ kalman <- function(z,u,dt,CTMM,error=NULL,smooth=FALSE,sample=FALSE,residual=FAL
       # match on right for space-time trace
       dim(zRes) <- c(n*OBS*DIM,length(DATA))
 
-      sigma <- (zisRes %*% zRes)/(n*DIM) # REML fixes this exactly for BM/IOU
+      sigma <- (zisRes %*% zRes)/(N*DIM)
       # divergence fix
       INF <- diag(sigma)==Inf
       if(any(INF))

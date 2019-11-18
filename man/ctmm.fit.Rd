@@ -40,7 +40,7 @@ ctmm.select(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position",trace=FALS
   \item{control}{An optional argument list for the optimizer.}
   \item{trace}{Report progress updates. Can be among \code{0:2} with increasing detail.}
   \item{level}{Attempt to simplify a model if a feature's non-existence falls within this level of confidence interval.}
-  \item{IC}{Information criteria used for selection. Can be \code{"AICc"}, \code{"AIC"}, \code{"BIC"}, \code{"LOOCV"} or none (\code{NA}). AICc is approximate.}
+  \item{IC}{Information criteria used for selection. Can be \code{"AICc"}, \code{"AIC"}, \code{"BIC"}, \code{"LOOCV"}, \code{"HSCV"}, or none (\code{NA}). AICc is approximate.}
   \item{MSPE}{Reject non-stationary features that increase the mean square predictive error of \code{"position"}, \code{"velocity"}, or not (\code{NA}).}
   \item{cores}{Maximum number of models to fit in parallel. cores=0 will use all cores, while cores<0 will reserve abs(cores).}
   \item{...}{Further arguments passed to \code{ctmm.fit}.}
@@ -69,7 +69,10 @@ The \code{control} list can take the following arguments, with defaults shown:
 Model selection in \code{ctmm.select} proceeds in two phases. If there are a large number of parameters that must be fit numerically (such as when error is modeled), then the target model (argument \code{CTMM}) is worked toward by first fitting simpler, compatible models. The second phase proceeds by attempting to simplify the autocorrelation model and complexify the deterministic (trend) model until the information criteria fails to improve. The intent of working in these directions is to improve numerical convergence and avoid fitting trends to autocorrelation.
 Note that simpler models in a nested hierarchy will only be attempted if they appear credible, which can be adjusted with the \code{level} argument. \code{level=1} will, therefore, always attempt a simpler model.
 
-The leave-one-out cross validation IC, \code{IC="LOOCV"}, is (-2 times) the sum of log-likelihoods of the validation data, after fitting to and conditioning on the training data. This information criteria is intended for small amounts of data where AIC/BIC are not valid, and where the questions of interest are targeted at the finest scales of the data, such as speed or occurrence. Unlike other model-selection criteria, the computational complexity of LOOCV is \eqn{O(n^2)}, which is very slow for sample sizes on the order of 10-100 thousand locations. Furthermore, as autocorrelation in the validation data is ignored, this information criteria is totally invalid for making inferences as scales coarser than the sampling interval, such as home range.
+The leave-one-out cross validation IC, \code{IC="LOOCV"}, is (-2 times) the sum of log-likelihoods of the validation data, after fitting to and conditioning on the training data. This information criterion is intended for small amounts of data where AIC/BIC are not valid, and where the questions of interest are targeted at the finest scales of the data, such as speed or occurrence. Unlike other model-selection criteria, the computational complexity of LOOCV is \eqn{O(n^2)}, which is very slow for sample sizes on the order of 10-100 thousand locations. Furthermore, as autocorrelation in the validation data is ignored, this information criteria is totally invalid for making inferences as scales coarser than the sampling interval, such as home range.
+
+The half-sample cross validation IC, \code{IC="HSCV"}, is (-2 times) the sum of log-likelihoods of the validation data, after fitting to and conditioning on the training data consisting of the first (and second) halves of the data when split temporally. This information criterion is intended for when few range crossings are observed and AIC/BIC may not be valid.
+
 }
 
 \value{

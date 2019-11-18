@@ -140,7 +140,7 @@ get.mle <- function(FIT)
 # keep removing uncertain parameters until AIC stops improving
 ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position",trace=FALSE,cores=1,...)
 {
-  CV <- c("LOOCV")
+  CV <- c("LOOCV","HSCV")
   IC <- match.arg(IC,c("AICc","AIC","BIC",CV,NA))
   MSPE <- match.arg(MSPE,c("position","velocity",NA))
 
@@ -221,8 +221,8 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
       # cross-validate
       if(CV)
       {
-        if(trace) { message("** Cross validating model ",names(GUESS)[i]) }
-        GUESS[[i]][[IC]] <- do.call(IC,list(data=data,CTMM=GUESS[[i]],cores=cores,...))
+        if(trace) { message("** Cross validating model ",names(GUESS)[1]) }
+        GUESS[[1]][[IC]] <- do.call(IC,list(data=data,CTMM=GUESS[[1]],cores=cores,...))
       }
     }
     names(GUESS) <- sapply(GUESS,name.ctmm)
@@ -479,7 +479,7 @@ name.ctmm <- function(CTMM,whole=TRUE)
 ########
 sort.ctmm <- function(x,decreasing=FALSE,IC="AICc",MSPE="position",flatten=TRUE,INF=FALSE,...)
 {
-  CV <- c("LOOCV")
+  CV <- c("LOOCV","HSCV")
   CV <- IC %in% CV
 
   if(is.na(MSPE))
@@ -558,7 +558,7 @@ min.ctmm <- function(x,IC="AICc",MSPE="position",...)
 ########
 summary.ctmm.list <- function(object, IC="AICc", MSPE="position", units=TRUE, ...)
 {
-  CV <- c("LOOCV")
+  CV <- c("LOOCV","HSCV")
   IC <- match.arg(IC,c("AICc","AIC","BIC",CV,NA))
   MSPE <- match.arg(MSPE,c("position","velocity",NA))
   CV <- IC %in% CV
