@@ -1,5 +1,6 @@
 \name{outlie}
 \alias{outlie}
+\alias{outlier}
 \alias{plot.outlie}
 \encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
@@ -9,17 +10,18 @@
 \usage{
 outlie(data,UERE=10,standardize=FALSE,plot=TRUE,...)
 
-\S3method{plot}{outlie}(x,level=0.95,...)
+\S3method{plot}{outlie}(x,level=0.95,units=TRUE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{data}{\code{telemetry} object.}
-  \item{UERE}{Device-dependent telemetry error in meters. Only necessary for uncalibrated data.}
+  \item{UERE}{Device-dependent telemetry error in meters (RMS UERE). Only necessary for uncalibrated data.}
   \item{standardize}{Standardize speed and distance output by their median absolute deviation (MAD).}
   \item{plot}{Output a plot highlighting high speeds (blue) and distant locations (red).}
   \item{...}{Arguments passed to \code{plot}.}
   \item{x}{\code{outlie} object to plot.}
   \item{level}{Confidence level for error bars.}
+  \item{units}{Convert axes to natural units.}
 }
 
 \details{If \code{plot=TRUE} in \code{outlie()}, intervals of high speed are highlighted with blue segments, while distant locations are highlighted with red points.

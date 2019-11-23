@@ -140,7 +140,27 @@ cov.loglike <- function(hess,grad=rep(0,nrow(hess)))
 
   EIGEN <- eigen(hess)
   values <- EIGEN$values
-  if(any(values<=0)) { warning("MLE is near a boundary or optimizer failed.") }
+  if(any(values<=0))
+  {
+    # shouldn't need to warn if using ctmm.select
+    WARN <- TRUE
+    N <- sys.nframe()
+    if(N>=2)
+    {
+      for(i in 2:N)
+      {
+        CALL <- deparse(sys.call(-i))
+        CALL <- grepl("ctmm.select",CALL)
+        if(CALL)
+        {
+          WARN <- FALSE
+          break
+        }
+      }
+    }
+    # warn if weren't using ctmm.select
+    if(WARN) { warning("MLE is near a boundary or optimizer failed.") }
+  }
   values <- clamp(values,0,Inf)
   vectors <- EIGEN$vectors
 

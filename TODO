@@ -1,8 +1,6 @@
 PRIORITY
-* make boundary warnings only for ctmm.fit and not ctmm.select (R function for calling function?)
 * tplot: plot(...,axes=c('t','...'x')) or plot(...,axes=c('x','t')), possibly with 2 axes?, '-x'?
 * lasso + outlie
-* half-sample IC
 * uere()<- ctmm calibrate with simultaneously fit RMS UERE
 * p-value function for outlie() return object using v_max or CTMM object
 * diffusion calculation with CIs (in summary)
@@ -10,7 +8,6 @@ PRIORITY
   * diffusion units
   * integrate into summary()
 * default: pHREML with range-resident models and REML with non-stationary models ?
-* conditional encounter density estimation: p_E(x) \propto p_1(x)*p_2(x) (Grace, Shauhin et al)
 * merge dt==0 times (and shrink errors) for variogram/correlogram
 * mode.UD
 * as.telemetry.telemetry (do nothing)

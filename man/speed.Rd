@@ -9,7 +9,7 @@
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Estimate the average speed of a tracked animal}
 \description{
-Given a \code{ctmm} movement model and \code{telemetry} data, \code{speed} simulates multiple realizations of the individual's trajectory to estimate the time-averaged speed, which is proportional to distance traveled, while \code{speeds} estimates instantaneous speeds at a specified array of times \code{t}. Both tortuosity (non straight-line motion between the data) and telemetry error can be accounted for. Given only a \code{ctmm} movement model and no data, \code{speed} calculates the average speed of the Gaussian movement process. Both methods are described in Noonan & Fleming et al (\emph{in press}).
+Given a \code{ctmm} movement model and \code{telemetry} data, \code{speed} simulates multiple realizations of the individual's trajectory to estimate the time-averaged speed, which is proportional to distance traveled, while \code{speeds} estimates instantaneous speeds at a specified array of times \code{t}. Both tortuosity (non straight-line motion between the data) and telemetry error can be accounted for. Given only a \code{ctmm} movement model and no data, \code{speed} calculates the mean speed of the Gaussian movement process. All methods are described in Noonan & Fleming et al (2019).
 }
 \usage{
 speed(object,...)
@@ -38,8 +38,8 @@ speeds(object,...)
   \item{level}{Confidence level to report on the estimated average speed.}
   \item{robust}{Use robust statistics for the ensemble average and its confidence intervals (see Details).}
   \item{units}{Convert result to natural units.}
-  \item{prior}{Account for model uncertainty.}
-  \item{fast}{Whether or not to invoke the central-limit theorem (see \code{\link{emulate}}) when \code{prior=TRUE}.}
+  \item{prior}{Account for model parameter uncertainty.}
+  \item{fast}{Whether or not to invoke the central-limit theorem when propagating parameter uncertainty (see \code{\link{emulate}}).}
   \item{cor.min}{Velocity correlation threshold for skipping gaps.}
   \item{dt.max}{Absolute gap sizes to skip (in seconds), alternative to \code{cor.min}.}
   \item{error}{Target (relative) standard error.}
@@ -57,7 +57,7 @@ If data quality is poor and velocity can barely be resolved, then the sampling d
 \references{
 M. J. Noonan, C. H. Fleming, T. S. Akre, J. Drescher-Lehman, E. Gurarie, A.-L. Harrison, R. Kays, Justin Calabrese,
 ``Scale-insensitive estimation of speed and distance traveled from animal tracking data'',
-Movement Ecology, \emph{in press}.
+\href{https://movementecologyjournal.biomedcentral.com/articles/10.1186/s40462-019-0177-1}{Movement Ecology, 7:35 (2019)}.
 }
 
 \author{ C. H. Fleming. }

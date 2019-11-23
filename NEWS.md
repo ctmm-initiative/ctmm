@@ -1,4 +1,4 @@
-ctmm 0.5.8 (2019-11-17)
+ctmm 0.5.8 (2019-11-22)
 ================
 
   * improvements to ctmm.select stepwise selection, especially with error and/or circulation
@@ -8,8 +8,12 @@ ctmm 0.5.8 (2019-11-17)
   * bug fix in ctmm.loglike for BM/IOU models with error
 
   * units of speed supported by %#% operator
+  
+  * new units argument in plot.outlie
 
   * options(time.units='mean') and options(time.units='calendar') for %#% operator and display units
+  
+  * ctmm.select no longer warns when model features are not supported (ctmm.fit does)
   
 ctmm 0.5.7 (2019-10-06)
 ================

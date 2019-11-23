@@ -298,6 +298,10 @@ unit.variogram <- function(SVF,time=1,area=1)
   add(c("mph","mi/h","mi/hr","mile/h","mile/hr","mile/hour","miles/hour"),0.44704)
   add(c("fps","ft/s","ft/sec","feet/second"),0.3048)
   add(c('kt','kn','knot','knots'),1.852 * 0.277777777777777777777)
+  add(c("km/s","kmps","km/sec"),1000)
+  add(c("cm/s","cmps","cm/sec"),1/100)
+  add(c("mm/s","mmps","mm/sec"),1/1000)
+  add(c("\u03BCm/s","\u03BCmps","\u03BCm/sec"),1E-6)
 
   for(i in 1:length(alias))
   {
