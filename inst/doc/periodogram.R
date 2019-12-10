@@ -20,6 +20,7 @@ GUESS <- ctmm.guess(Gamba,PROTO,variogram=SVF,interactive=FALSE)
 ## ------------------------------------------------------------------------
 # CRAN policy limits to 2 processes (cores)
 FITS <- ctmm.select(Gamba,GUESS,verbose=TRUE,cores=2)
+# if you get errors on your platform, then try cores=1
 
 ## ------------------------------------------------------------------------
 summary(FITS)
@@ -29,8 +30,7 @@ summary(FITS)
 SUB <- grepl("OUF anisotropic harmonic",names(FITS))
 summary(FITS[SUB])
 # these are sorted by IC
-SUB <- gsub('[0-9]+','',names(FITS))
-SUB <- sapply(unique(SUB),function(s){which(SUB==s)[1]})
+SUB <- grepl('0 0',names(FITS))
 summary(FITS[SUB])
 
 ## ------------------------------------------------------------------------
@@ -43,7 +43,7 @@ summary(FITS,MSPE=NA)
 ## ------------------------------------------------------------------------
 SUB <- rownames(summary(FITS,MSPE=NA))[1]
 summary(FITS[[SUB]]) # harmonic 3 0 # selected by IC
-summary(FITS[[1]])   # harmonic 2 0 # selected by MSPE
+summary(FITS[[1]])   # harmonic 2 0 # selected by IC/MSPE
 
 ## ---- fig.show='hold'----------------------------------------------------
 xlim <- c(0,1/2) %#% "month"

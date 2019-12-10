@@ -64,6 +64,7 @@ title("Detector Array")
 GUESS <- ctmm.guess(turtle[[3]],CTMM=ctmm(error=TRUE),interactive=FALSE)
 # stepwise fitting # CRAN policy limits us to 2 cores
 FIT <- ctmm.select(turtle[[3]],GUESS,trace=TRUE,cores=2)
+# if you get errors on your platform, then try cores=1
 summary(FIT)
 
 ## ------------------------------------------------------------------------
@@ -75,8 +76,9 @@ turtle <- lapply(turtle,function(t){ t[t$class=="3D",] })
 ## ------------------------------------------------------------------------
 # automated guestimate for uncalibrated data (with 10 meter RMS UERE guess)
 GUESS <- ctmm.guess(turtle[[3]],CTMM=ctmm(error=10),interactive=FALSE)
-# fit and select models
+# fit and select models # CRAN policy limits us to 2 cores
 FIT <- ctmm.select(turtle[[3]],GUESS,trace=TRUE,cores=2)
+# if you get errors on your platform, then try cores=1
 summary(FIT)
 
 ## ------------------------------------------------------------------------
@@ -86,5 +88,6 @@ uere(turtle) <- 10
 GUESS <- ctmm.guess(turtle[[3]],CTMM=ctmm(error=TRUE),interactive=FALSE)
 # stepwise fitting # CRAN policy limits us to 2 cores
 FIT <- ctmm.select(turtle[[3]],GUESS,trace=TRUE,cores=2)
+# if you get weird errors on your platform, then try cores=1
 summary(FIT)
 

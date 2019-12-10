@@ -149,7 +149,7 @@ cov.loglike <- function(hess,grad=rep(0,nrow(hess)))
     {
       for(i in 2:N)
       {
-        CALL <- deparse(sys.call(-i))
+        CALL <- deparse(sys.call(-i))[1]
         CALL <- grepl("ctmm.select",CALL)
         if(CALL)
         {

@@ -71,7 +71,7 @@ Internally, all ctmm objects are specified in SI units, and so this is a utility
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.8</span>
       </span>
     </div>
 
@@ -154,6 +154,7 @@ Internally, all <code>ctmm</code> objects are specified in SI units, and so this
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>If <code>x</code> is a number and <code>y</code> is a character unit label, then <code>x</code> is converted from units <code>y</code> to SI units. If <code>x</code> is a character unit label and <code>y</code> is a number, then <code>y</code> is converted from SI units to units <code>x</code>.</p>
+<p>The default non-SI units include the mean solar <code>'day'</code>, mean synodic <code>'month'</code> and mean tropical <code>'year'</code>. These defaults can be changed to conventional calendar units via <code><a href='https://rdrr.io/r/base/options.html'>options(time.units='calendar')</a></code>.</p>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>Returns a numeric in SI units or units specified by character label <code>x</code>.</p>
@@ -167,9 +168,11 @@ Internally, all <code>ctmm</code> objects are specified in SI units, and so this
 <span class='co'># one meter -&gt; yards</span>
 <span class='st'>"yard"</span> <span class='kw'>%#%</span> <span class='fl'>1</span></div><div class='output co'>#&gt; [1] 1.093613</div><div class='input'>
 <span class='co'># 1 month -&gt; days</span>
-<span class='st'>"day"</span> <span class='kw'>%#%</span> <span class='fl'>1</span> <span class='kw'>%#%</span> <span class='st'>"month"</span></div><div class='output co'>#&gt; [1] 29.61144</div><div class='input'>
+<span class='st'>"day"</span> <span class='kw'>%#%</span> <span class='fl'>1</span> <span class='kw'>%#%</span> <span class='st'>"month"</span></div><div class='output co'>#&gt; [1] 29.53059</div><div class='input'>
 <span class='co'># 6 miles per hour -&gt; meters per second</span>
-<span class='st'>"hour"</span> <span class='kw'>%#%</span> <span class='fl'>6</span> <span class='kw'>%#%</span> <span class='st'>"mile"</span></div><div class='output co'>#&gt; [1] 2.68224</div></pre>
+<span class='st'>"hour"</span> <span class='kw'>%#%</span> <span class='fl'>6</span> <span class='kw'>%#%</span> <span class='st'>"mile"</span></div><div class='output co'>#&gt; [1] 2.68224</div><div class='input'>
+<span class='co'># the same conversion in one step</span>
+<span class='fl'>6</span> <span class='kw'>%#%</span> <span class='st'>"mph"</span></div><div class='output co'>#&gt; [1] 2.68224</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

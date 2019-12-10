@@ -69,7 +69,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.8</span>
       </span>
     </div>
 
@@ -217,6 +217,7 @@
     <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
 
     <p>In the case of coarse grids, the value of <code>PDF</code> in a grid cell corresponds to the average probability density over the entire rectangular cell.</p>
+<p>The <code>PDF</code> estimate is not re-normalized to 1, and may fall short of this by the target numerical <code>error</code>. If inspecting quantiles that are very far from the data, the quantiles may hit the grid boundary or become erratic, making it necessary to reduce the numerical <code>error</code> target. However, default arguments should be able to render any quantiles of reasonable accuracy.</p>
 <p>Prior to <code>ctmm</code> v0.3.2, the default AKDE method was the autocorrelated Gaussian reference function bandwidth.
 Starting in v0.3.2, the default AKDE method is the autocorrelated Gaussian reference function bandwidth with debiased area.</p>
 <p>Prior to <code>ctmm</code> v0.3.1, AKDEs included only errors due to autocorrelation uncertainty, which are insignificant in cases such as IID data.

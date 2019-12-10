@@ -1,4 +1,4 @@
-ctmm 0.5.8 (2019-11-22)
+ctmm 0.5.8 (2019-12-09)
 ================
 
   * improvements to ctmm.select stepwise selection, especially with error and/or circulation
@@ -14,6 +14,8 @@ ctmm 0.5.8 (2019-11-22)
   * options(time.units='mean') and options(time.units='calendar') for %#% operator and display units
   
   * ctmm.select no longer warns when model features are not supported (ctmm.fit does)
+  
+  * compatibility fix for R version 4
   
 ctmm 0.5.7 (2019-10-06)
 ================

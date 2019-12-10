@@ -69,7 +69,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.8</span>
       </span>
     </div>
 
@@ -135,7 +135,7 @@
     <pre class="usage"><span class='fu'>outlie</span>(<span class='no'>data</span>,<span class='kw'>UERE</span><span class='kw'>=</span><span class='fl'>10</span>,<span class='kw'>standardize</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>plot</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='no'>...</span>)
 
 <span class='co'># S3 method for outlie</span>
-<span class='fu'><a href='plot.telemetry.html'>plot</a></span>(<span class='no'>x</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='no'>...</span>)</pre>
+<span class='fu'><a href='plot.telemetry.html'>plot</a></span>(<span class='no'>x</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>units</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='no'>...</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -146,7 +146,7 @@
     </tr>
     <tr>
       <th>UERE</th>
-      <td><p>Device-dependent telemetry error in meters. Only necessary for uncalibrated data.</p></td>
+      <td><p>Device-dependent telemetry error in meters (RMS UERE). Only necessary for uncalibrated data.</p></td>
     </tr>
     <tr>
       <th>standardize</th>
@@ -167,6 +167,10 @@
     <tr>
       <th>level</th>
       <td><p>Confidence level for error bars.</p></td>
+    </tr>
+    <tr>
+      <th>units</th>
+      <td><p>Convert axes to natural units.</p></td>
     </tr>
     </table>
 

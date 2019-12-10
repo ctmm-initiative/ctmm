@@ -36,7 +36,7 @@
 
 
 <meta property="og:title" content="Estimate the average speed of a tracked animal — speed" />
-<meta property="og:description" content="Given a ctmm movement model and telemetry data, speed simulates multiple realizations of the individual's trajectory to estimate the time-averaged speed, which is proportional to distance traveled, while speeds estimates instantaneous speeds at a specified array of times t. Both tortuosity (non straight-line motion between the data) and telemetry error can be accounted for. Given only a ctmm movement model and no data, speed calculates the average speed of the Gaussian movement process. Both methods are described in Noonan &amp;amp; Fleming et al (in press)." />
+<meta property="og:description" content="Given a ctmm movement model and telemetry data, speed simulates multiple realizations of the individual's trajectory to estimate the time-averaged speed, which is proportional to distance traveled, while speeds estimates instantaneous speeds at a specified array of times t. Both tortuosity (non straight-line motion between the data) and telemetry error can be accounted for. Given only a ctmm movement model and no data, speed calculates the mean speed of the Gaussian movement process. All methods are described in Noonan &amp;amp; Fleming et al (2019)." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -69,7 +69,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.8</span>
       </span>
     </div>
 
@@ -129,7 +129,7 @@
     </div>
 
     <div class="ref-description">
-    <p>Given a <code>ctmm</code> movement model and <code>telemetry</code> data, <code>speed</code> simulates multiple realizations of the individual's trajectory to estimate the time-averaged speed, which is proportional to distance traveled, while <code>speeds</code> estimates instantaneous speeds at a specified array of times <code>t</code>. Both tortuosity (non straight-line motion between the data) and telemetry error can be accounted for. Given only a <code>ctmm</code> movement model and no data, <code>speed</code> calculates the average speed of the Gaussian movement process. Both methods are described in Noonan &amp; Fleming et al (<em>in press</em>).</p>
+    <p>Given a <code>ctmm</code> movement model and <code>telemetry</code> data, <code>speed</code> simulates multiple realizations of the individual's trajectory to estimate the time-averaged speed, which is proportional to distance traveled, while <code>speeds</code> estimates instantaneous speeds at a specified array of times <code>t</code>. Both tortuosity (non straight-line motion between the data) and telemetry error can be accounted for. Given only a <code>ctmm</code> movement model and no data, <code>speed</code> calculates the mean speed of the Gaussian movement process. All methods are described in Noonan &amp; Fleming et al (2019).</p>
     </div>
 
     <pre class="usage"><span class='fu'>speed</span>(<span class='no'>object</span>,<span class='no'>...</span>)
@@ -189,11 +189,11 @@
     </tr>
     <tr>
       <th>prior</th>
-      <td><p>Account for model uncertainty.</p></td>
+      <td><p>Account for model parameter uncertainty.</p></td>
     </tr>
     <tr>
       <th>fast</th>
-      <td><p>Whether or not to invoke the central-limit theorem (see <code><a href='emulate.ctmm.html'>emulate</a></code>) when <code>prior=TRUE</code>.</p></td>
+      <td><p>Whether or not to invoke the central-limit theorem when propagating parameter uncertainty (see <code><a href='emulate.ctmm.html'>emulate</a></code>).</p></td>
     </tr>
     <tr>
       <th>cor.min</th>
@@ -228,7 +228,7 @@
 
     <p>M. J. Noonan, C. H. Fleming, T. S. Akre, J. Drescher-Lehman, E. Gurarie, A.-L. Harrison, R. Kays, Justin Calabrese,
 ``Scale-insensitive estimation of speed and distance traveled from animal tracking data'',
-Movement Ecology, <em>in press</em>.</p>
+<a href='https://movementecologyjournal.biomedcentral.com/articles/10.1186/s40462-019-0177-1'>Movement Ecology, 7:35 (2019)</a>.</p>
     <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
 
     <p>The average speeds estimated here are mean speeds. The speeds reported by <code><a href='summary.ctmm.html'>summary.ctmm</a></code> are root-mean-square (RMS) speeds. These quantities are sometimes proportional, but not equivalent.</p>
@@ -251,7 +251,7 @@ Movement Ecology, <em>in press</em>.</p>
 #&gt; speed (kilometers/day) 11.81996 12.16713 12.51417</div><div class='input'>
 <span class='co'># conditional estimate</span>
 <span class='fu'>speed</span>(<span class='no'>FIT</span>,<span class='no'>Gabs</span>)</div><div class='output co'>#&gt;   |                                                                              |                                                                      |   0%  |                                                                              |=======                                                               |  10%  |                                                                              |==========                                                            |  15%  |                                                                              |==============                                                        |  20%  |                                                                              |==================                                                    |  25%  |                                                                              |=====================                                                 |  30%  |                                                                              |========================                                              |  35%  |                                                                              |============================                                          |  40%  |                                                                              |================================                                      |  45%  |                                                                              |===================================                                   |  50%  |                                                                              |======================================                                |  55%  |                                                                              |==========================================                            |  60%  |                                                                              |==============================================                        |  65%  |                                                                              |=================================================                     |  70%  |                                                                              |====================================================                  |  75%  |                                                                              |========================================================              |  80%  |                                                                              |============================================================          |  85%  |                                                                              |===============================================================       |  90%  |                                                                              |==================================================================    |  95%  |                                                                              |======================================================================| 100%</div><div class='output co'>#&gt;                             low      est     high
-#&gt; speed (kilometers/day) 11.08221 11.46951 11.86006</div><div class='input'># }</div></pre>
+#&gt; speed (kilometers/day) 11.11715 11.45912 11.80363</div><div class='input'># }</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

@@ -8,7 +8,7 @@ covm <- function(pars,isotropic=FALSE,axes=c("x","y"))
 {
   if(is.null(pars)) { return(NULL) }
 
-  if(class(pars)=="covm") { pars <- pars@par }
+  if(class(pars)[1]=="covm") { pars <- pars@par }
 
   if(length(axes)==1)
   {
@@ -29,7 +29,7 @@ covm <- function(pars,isotropic=FALSE,axes=c("x","y"))
     else if(length(pars)==4)
     {
       sigma <- pars
-      if(class(pars)=="covm") { pars <- attr(pars,'par') }
+      if(class(pars)[1]=="covm") { pars <- attr(pars,'par') }
       else { pars <- sigma.destruct(sigma,isotropic=isotropic) }
     }
 

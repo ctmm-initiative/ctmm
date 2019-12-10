@@ -1,4 +1,6 @@
 PRIORITY
+* meta analysis -> akde -> overlap
+* uncalibrate coati
 * tplot: plot(...,axes=c('t','...'x')) or plot(...,axes=c('x','t')), possibly with 2 axes?, '-x'?
 * lasso + outlie
 * uere()<- ctmm calibrate with simultaneously fit RMS UERE

@@ -70,7 +70,7 @@ The fitting functions wrap around optim and ctmm.loglike to fit continuous-time 
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.8</span>
       </span>
     </div>
 
@@ -221,7 +221,7 @@ The fitting functions wrap around <code>optim</code> and <code>ctmm.loglike</cod
     </tr>
     <tr>
       <th>IC</th>
-      <td><p>Information criteria used for selection. Can be <code>"AICc"</code>, <code>"AIC"</code>, <code>"BIC"</code>, <code>"LOOCV"</code> or none (<code>NA</code>). AICc is approximate.</p></td>
+      <td><p>Information criteria used for selection. Can be <code>"AICc"</code>, <code>"AIC"</code>, <code>"BIC"</code>, <code>"LOOCV"</code>, <code>"HSCV"</code>, or none (<code>NA</code>). AICc is approximate.</p></td>
     </tr>
     <tr>
       <th>MSPE</th>
@@ -256,7 +256,8 @@ If <code>length(tau)==2</code>, then the OUF model (continuous-velocity motion r
 
 <p>Model selection in <code>ctmm.select</code> proceeds in two phases. If there are a large number of parameters that must be fit numerically (such as when error is modeled), then the target model (argument <code>CTMM</code>) is worked toward by first fitting simpler, compatible models. The second phase proceeds by attempting to simplify the autocorrelation model and complexify the deterministic (trend) model until the information criteria fails to improve. The intent of working in these directions is to improve numerical convergence and avoid fitting trends to autocorrelation.
 Note that simpler models in a nested hierarchy will only be attempted if they appear credible, which can be adjusted with the <code>level</code> argument. <code>level=1</code> will, therefore, always attempt a simpler model.</p>
-<p>The leave-one-out cross validation IC, <code>IC="LOOCV"</code>, is (-2 times) the sum of log-likelihoods of the validation data, after fitting to and conditioning on the training data. This information criteria is intended for small amounts of data where AIC/BIC are not valid, and where the questions of interest are targeted at the finest scales of the data, such as speed or occurrence. Unlike other model-selection criteria, the computational complexity of LOOCV is \(O(n^2)\), which is very slow for sample sizes on the order of 10-100 thousand locations. Furthermore, as autocorrelation in the validation data is ignored, this information criteria is totally invalid for making inferences as scales coarser than the sampling interval, such as home range.</p>
+<p>The leave-one-out cross validation IC, <code>IC="LOOCV"</code>, is (-2 times) the sum of log-likelihoods of the validation data, after fitting to and conditioning on the training data. This information criterion is intended for small amounts of data where AIC/BIC are not valid, and where the questions of interest are targeted at the finest scales of the data, such as speed or occurrence. Unlike other model-selection criteria, the computational complexity of LOOCV is \(O(n^2)\), which is very slow for sample sizes on the order of 10-100 thousand locations. Furthermore, as autocorrelation in the validation data is ignored, this information criteria is totally invalid for making inferences as scales coarser than the sampling interval, such as home range.</p>
+<p>The half-sample cross validation IC, <code>IC="HSCV"</code>, is (-2 times) the sum of log-likelihoods of the validation data, after fitting to and conditioning on the training data consisting of the first (and second) halves of the data when split temporally. This information criterion is intended for when few range crossings are observed and AIC/BIC may not be valid.</p>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>The function <code>ctmm</code> returns a prototype <code>ctmm</code> movement-model object.
@@ -324,7 +325,7 @@ This is no longer feasible with current versions of <code>ctmm</code>, as the nu
 #&gt; 
 #&gt; $CI
 #&gt;                                 low        est      high
-#&gt; area (square kilometers) 239.647398 403.458702 609.24092
+#&gt; area (square kilometers) 239.647410 403.458701 609.24090
 #&gt; τ[position] (days)         4.026012   7.505365  13.99164
 #&gt; τ[velocity] (minutes)     39.570325  42.069009  44.72547
 #&gt; speed (kilometers/day)    13.819957  14.054636  14.28926

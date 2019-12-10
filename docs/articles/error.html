@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.8</span>
       </span>
     </div>
 
@@ -88,7 +88,7 @@
       <h1>Telemetry error</h1>
                         <h4 class="author">Christen H. Fleming</h4>
             
-            <h4 class="date">2019-10-08</h4>
+            <h4 class="date">2019-12-09</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/ctmm-initiative/ctmm/blob/master/vignettes/error.Rmd"><code>vignettes/error.Rmd</code></a></small>
       <div class="hidden name"><code>error.Rmd</code></div>
@@ -202,21 +202,22 @@ GUESS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/vario
 <span class="co"># stepwise fitting # CRAN policy limits us to 2 cores</span>
 FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.select</a></span>(turtle[[<span class="dv">3</span>]],GUESS,<span class="dt">trace=</span><span class="ot">TRUE</span>,<span class="dt">cores=</span><span class="dv">2</span>)</code></pre></div>
 <pre><code>## * Fitting model OUF isotropic error.</code></pre>
-<pre><code>## * Fitting models OUF anisotropic error.</code></pre>
+<pre><code>## * Fitting model OUF anisotropic error.</code></pre>
 <pre><code>## * Fitting models OU anisotropic error, OUf anisotropic error.</code></pre>
-<pre><code>## * Fitting models IID anisotropic error, OU isotropic error.</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(FIT)</code></pre></div>
+<pre><code>## * Fitting model IID anisotropic error.</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># if you get errors on your platform, then try cores=1</span>
+<span class="kw"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(FIT)</code></pre></div>
 <pre><code>## $name
 ## [1] "OU anisotropic error"
 ## 
 ## $DOF
-##    mean    area   speed 
-## 14.0105 24.1515  0.0000 
+##     mean     area    speed 
+## 14.01050 24.15146  0.00000 
 ## 
 ## $CI
-##                         low       est      high
-## area (hectares)    13.67270 21.306461 30.606332
-## τ[position] (days)  3.29453  5.636969  9.644904</code></pre>
+##                          low       est      high
+## area (hectares)    13.672724 21.306509 30.606408
+## τ[position] (days)  3.294531  5.636969  9.644898</code></pre>
 <p><code>trace=TRUE</code> allows us to see the models considered. <code>verbose=TRUE</code> would save each model.</p>
 </div>
 <div id="simultaneous-fitting-with-uncalibrated-data" class="section level3">
@@ -230,13 +231,14 @@ turtle &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r
 <p>The only difference is that you have to provide an initial guess for the RMS UERE. Otherwise, the steps are the same.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># automated guestimate for uncalibrated data (with 10 meter RMS UERE guess)</span>
 GUESS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.fit.html">ctmm.guess</a></span>(turtle[[<span class="dv">3</span>]],<span class="dt">CTMM=</span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">error=</span><span class="dv">10</span>),<span class="dt">interactive=</span><span class="ot">FALSE</span>)
-<span class="co"># fit and select models</span>
+<span class="co"># fit and select models # CRAN policy limits us to 2 cores</span>
 FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.select</a></span>(turtle[[<span class="dv">3</span>]],GUESS,<span class="dt">trace=</span><span class="ot">TRUE</span>,<span class="dt">cores=</span><span class="dv">2</span>)</code></pre></div>
 <pre><code>## * Fitting model OUF isotropic error.</code></pre>
-<pre><code>## * Fitting models OUF anisotropic error.</code></pre>
+<pre><code>## * Fitting model OUF anisotropic error.</code></pre>
 <pre><code>## * Fitting models OU anisotropic error, OUf anisotropic error.</code></pre>
-<pre><code>## * Fitting models IID anisotropic error, OU isotropic error.</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(FIT)</code></pre></div>
+<pre><code>## * Fitting model IID anisotropic error.</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># if you get errors on your platform, then try cores=1</span>
+<span class="kw"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(FIT)</code></pre></div>
 <pre><code>## $name
 ## [1] "OU anisotropic error"
 ## 
@@ -262,21 +264,22 @@ GUESS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/vario
 <span class="co"># stepwise fitting # CRAN policy limits us to 2 cores</span>
 FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.select</a></span>(turtle[[<span class="dv">3</span>]],GUESS,<span class="dt">trace=</span><span class="ot">TRUE</span>,<span class="dt">cores=</span><span class="dv">2</span>)</code></pre></div>
 <pre><code>## * Fitting model OUF isotropic error.</code></pre>
-<pre><code>## * Fitting models OUF anisotropic error.</code></pre>
+<pre><code>## * Fitting model OUF anisotropic error.</code></pre>
 <pre><code>## * Fitting models OU anisotropic error, OUf anisotropic error.</code></pre>
-<pre><code>## * Fitting models IID anisotropic error, OU isotropic error.</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(FIT)</code></pre></div>
+<pre><code>## * Fitting model IID anisotropic error.</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># if you get weird errors on your platform, then try cores=1</span>
+<span class="kw"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(FIT)</code></pre></div>
 <pre><code>## $name
 ## [1] "OU anisotropic error"
 ## 
 ## $DOF
 ##     mean     area    speed 
-## 12.06150 20.48958  0.00000 
+## 12.06150 20.48943  0.00000 
 ## 
 ## $CI
 ##                          low       est     high
-## area (hectares)    12.638975 20.554422 30.36338
-## τ[position] (days)  3.629414  6.628392 12.10542</code></pre>
+## area (hectares)    12.638975 20.554464 30.36349
+## τ[position] (days)  3.629407  6.628389 12.10544</code></pre>
 <p>Some sensitivity analysis would be warranted here for the UERE parameter.</p>
 </div>
 </div>

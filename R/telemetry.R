@@ -500,12 +500,12 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     # error eigen variances
     ARGOS.minor <- c('3'=157,'2'=259,'1'=494, '0'=2271,'A'=762, 'B'=4596,'Z'=Inf)^2
     ARGOS.major <- c('3'=295,'2'=485,'1'=1021,'0'=3308,'A'=1244,'B'=7214,'Z'=Inf)^2
-    # numbers from McClintock et al (2015)
+    # numbers from Vincent et al (2002)
 
     # error radii (average variance)
     ARGOS.radii <- (ARGOS.major+ARGOS.minor)/2
 
-    message(sum(NAS)," ARGOS error ellipses missing. Using location class estimates from McClintock et al (2015).")
+    message(sum(NAS)," ARGOS error ellipses missing. Using location class estimates from Vincent et al (2002).")
     COL <- as.character(COL) # factors are weird
 
     DATA$COV.minor[NAS] <- ARGOS.minor[COL][NAS]
