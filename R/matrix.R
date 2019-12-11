@@ -249,7 +249,7 @@ PDsolve <- function(M,force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
   # try ordinary inverse
   M.try <- try(qr.solve(M,tol=tol),silent=TRUE)
   # fall back on decomposition
-  if( class(M.try) == "matrix")
+  if( class(M.try)[1] == "matrix")
   { M <- M.try }
   else
   { M <- PDfunc(M,func=function(m){1/m},force=force,pseudo=pseudo,tol=tol) }
@@ -269,7 +269,7 @@ PDsolve <- function(M,force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
 # also, my matrices are PSD
 sqrtm <- function(M,force=FALSE,pseudo=FALSE)
 {
-  if(class(M)=="covm")
+  if(class(M)[1]=="covm")
   {
     par <- attr(M,"par")
     par['area'] <- sqrt(par['area'])

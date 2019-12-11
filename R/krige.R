@@ -441,7 +441,7 @@ occurrence <- function(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=
 # SIMULATE DATA over time array t
 simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1,complete=FALSE,precompute=FALSE,...)
 {
-  if(class(nsim) %in% c("data.frame","telemetry"))
+  if(class(nsim)[1] %in% c("data.frame","telemetry"))
   {
     data <- nsim
     nsim <- 1
@@ -458,7 +458,7 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
   axes <- object$axes
   AXES <- length(axes)
 
-  CLASS <- class(data)
+  CLASS <- class(data)[1]
   CONDITIONAL <- FALSE
   if(CLASS=="telemetry" || CLASS=='data.frame')
   {
@@ -679,7 +679,7 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
 
 simulate.telemetry <- function(object,nsim=1,seed=NULL,CTMM=NULL,t=NULL,dt=NULL,res=1,complete=FALSE,precompute=FALSE,...)
 {
-  if(class(nsim)=="ctmm")
+  if(class(nsim)[1]=="ctmm")
   {
     CTMM <- nsim
     nsim <- 1

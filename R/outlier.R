@@ -4,7 +4,7 @@ BESSEL_LIMIT <- 2^16
 # estimate and assign speeds to times
 outlie <- function(data,UERE=10,standardize=FALSE,plot=TRUE,...)
 {
-  if(class(data)=="list") { return( lapply(1:length(data), function(i){outlie(data[i],UERE=UERE,standardize=standardize,plot=plot); graphics::title(names(data)[i])} ) ) }
+  if(class(data)[1]=="list") { return( lapply(1:length(data), function(i){outlie(data[i],UERE=UERE,standardize=standardize,plot=plot); graphics::title(names(data)[i])} ) ) }
 
   error <- get.error(data,ctmm(error=UERE,axes=c("x","y")),circle=TRUE)
 

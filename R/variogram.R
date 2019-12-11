@@ -14,7 +14,7 @@ subset.variogram <- function(x,...)
   info <- attr(x,"info")
   x <- data.frame(x)
   x <- "[.data.frame"(x,...)
-  # if(class(x)=="data.frame") { x <- new.variogram(x,info=info) }
+  # if(class(x)[1]=="data.frame") { x <- new.variogram(x,info=info) }
   x <- new.variogram(x,info=info)
   return(x)
 }
@@ -603,7 +603,7 @@ mean.variogram <- function(x,...)
 # consolodate info attributes from multiple datasets
 mean.info <- function(x)
 {
-  if(class(x) != "list") { return( attr(x,"info")$identity ) }
+  if(class(x)[1] != "list") { return( attr(x,"info")$identity ) }
 
   # mean identity
   identity <- sapply(x , function(v) { attr(v,"info")$identity } )

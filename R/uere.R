@@ -8,7 +8,7 @@ DOP.LIST <- list(unknown=list(axes=NA,geo=NA,DOP=NA,VAR=NA,COV=NA) ,
 # is the data calibrated
 is.calibrated <- function(data,type="horizontal")
 {
-  if(class(data)=="list") { return( mean( sapply(data,is.calibrated) ) ) }
+  if(class(data)[1]=="list") { return( mean( sapply(data,is.calibrated) ) ) }
 
   UERE <- attr(data,"UERE")
 
@@ -61,9 +61,9 @@ get.dop.types <- function(data)
 # return the UERE from set data
 uere <- function(data)
 {
-  if(class(data)=="list" && length(data)==1)
+  if(class(data)[1]=="list" && length(data)==1)
   { data <- data[[1]] }
-  if(class(data)=="telemetry")
+  if(class(data)[1]=="telemetry")
   {
     UERE <- attr(data,"UERE")
     return(UERE)
@@ -353,7 +353,7 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
 # summarize uere object
 summary.UERE <- function(object,level=0.95,...)
 {
-  if(class(object)=="list") { return(summary.UERE.list(object,level=level,...)) }
+  if(class(object)[1]=="list") { return(summary.UERE.list(object,level=level,...)) }
 
   TYPE <- colnames(object)
   N <- sapply(TYPE,function(type){length(DOP.LIST[[type]]$axes)}) # (type)
@@ -382,12 +382,12 @@ summary.UERE.list <- function(object,level=0.95,drop=TRUE,CI=FALSE,...)
   TYPES <- NULL
   for(i in 1:length(object))
   {
-    if(class(object[[i]])=="UERE") # these should be all the same
+    if(class(object[[i]])[1]=="UERE") # these should be all the same
     {
       TYPES <- c(TYPES,names(attr(object[[i]],"AICc")))
       TYPES <- unique(TYPES)
     }
-    else if(class(object[[i]])=="list") # these can differ within list
+    else if(class(object[[i]])[1]=="list") # these can differ within list
     {
       for(j in 1:length(object[[i]]))
       {
@@ -400,7 +400,7 @@ summary.UERE.list <- function(object,level=0.95,drop=TRUE,CI=FALSE,...)
   # aggregate lists of individual models to compare with joint models
   for(i in 1:length(object))
   {
-    if(class(object[[i]])=="list")
+    if(class(object[[i]])[1]=="list")
     {
       AICc <- rep(0,length(TYPES))
       names(AICc) <- TYPES
@@ -687,10 +687,10 @@ uere.null <- function(data)
   UERE <- value
 
   # default ambiguous assignment - overrides everything
-  if(class(UERE)=="numeric" || class(UERE)=="integer")
+  if(class(UERE)[1]=="numeric" || class(UERE)[1]=="integer")
   {
     # in case of different location classes
-    if(class(data)=="list")
+    if(class(data)[1]=="list")
     {
       data <- lapply(data,function(d){"uere<-"(d,value)})
       return(data)
@@ -709,7 +709,7 @@ uere.null <- function(data)
 
   # promote to list and revert back if DROP
   DROP <- FALSE
-  if(class(data)=="telemetry" || class(data)=="data.frame")
+  if(class(data)[1]=="telemetry" || class(data)[1]=="data.frame")
   {
     data <- list(data)
     DROP <- TRUE

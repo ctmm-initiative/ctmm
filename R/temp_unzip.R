@@ -11,13 +11,13 @@ temp_unzip <- function(filename, fun, ...){
   temp_dir <- tempdir()
   # test if it's zip
   files_in_zip <- try(utils::unzip(filename, list = TRUE)$Name, silent = TRUE)
-  if (class(files_in_zip) == "character") {
-    # hidden files can be ignored: starting with ., ending with $, __MACOSX folder 
-    visible_files <- files_in_zip[!grepl("((^__MACOSX\\/.*)|(^\\..*)|(^.*\\$$))", 
+  if (class(files_in_zip)[1] == "character") {
+    # hidden files can be ignored: starting with ., ending with $, __MACOSX folder
+    visible_files <- files_in_zip[!grepl("((^__MACOSX\\/.*)|(^\\..*)|(^.*\\$$))",
                                           files_in_zip)]
     # will not continue for multiple non-hidden files since behavior is not well defined.
-    if(length(visible_files)>1) { 
-      stop(paste0("Zip file contains multiple visible files:\n", 
+    if(length(visible_files)>1) {
+      stop(paste0("Zip file contains multiple visible files:\n",
                   paste0("    ", visible_files, collapse = "\n")))
     }
     if(length(visible_files) == 0) { stop("\n  No visible file found in Zip file")}

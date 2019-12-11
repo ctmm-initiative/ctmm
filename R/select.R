@@ -154,9 +154,9 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
 
   # accept list as completed candidates after first
   # for internal recursion, not for end users
-  if(class(CTMM)=="ctmm")
+  if(class(CTMM)[1]=="ctmm")
   { MODELS <- list(CTMM) }
-  else if(class(CTMM)=="list")
+  else if(class(CTMM)[1]=="list")
   {
     MODELS <- CTMM
     CTMM <- MODELS[[1]]

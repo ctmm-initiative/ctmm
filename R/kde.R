@@ -81,9 +81,9 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,precisi
       }
     }
 
-    if(!WEIGHTS) # class(weights)=='numeric' || class(weights)=='integer' ||  # fixed weight lag information
+    if(!WEIGHTS) # class(weights)[1]=='numeric' || class(weights)[1]=='integer' ||  # fixed weight lag information
     {
-      # if(class(weights)=='numeric' || class(weights)=='integer') # fixed weights
+      # if(class(weights)[1]=='numeric' || class(weights)[1]=='integer') # fixed weights
       # { weights <- weights/sum(weights) }
       # else # uniform weights
       # { weights <- rep(1/n,n) }
@@ -402,7 +402,7 @@ akde <- function(data,CTMM,VMM=NULL,debias=TRUE,weights=FALSE,smooth=TRUE,error=
   if(length(projection(data))>1) { stop("Data not in single coordinate system.") }
   validate.grid(data,grid)
 
-  DROP <- class(data)!="list"
+  DROP <- class(data)[1] != "list"
   data <- listify(data)
   CTMM <- listify(CTMM)
   VMM <- listify(VMM)
@@ -417,7 +417,7 @@ akde <- function(data,CTMM,VMM=NULL,debias=TRUE,weights=FALSE,smooth=TRUE,error=
   for(i in 1:n)
   {
     CTMM0[[i]] <- CTMM[[i]] # original model fit
-    if(class(CTMM[[i]])=="ctmm") # calculate bandwidth etc.
+    if(class(CTMM[[i]])[1]=="ctmm") # calculate bandwidth etc.
     {
       axes <- CTMM[[i]]$axes
 
@@ -444,13 +444,13 @@ akde <- function(data,CTMM,VMM=NULL,debias=TRUE,weights=FALSE,smooth=TRUE,error=
       # calculate optimal bandwidth and some other information
       KDE[[i]] <- bandwidth(data=data[[i]],CTMM=CTMM[[i]],VMM=VMM[[i]],weights[i],verbose=TRUE,...)
     }
-    else if(class(CTMM)=="bandwidth") # bandwidth information was precalculated
+    else if(class(CTMM)[1]=="bandwidth") # bandwidth information was precalculated
     {
       KDE[[i]] <- CTMM[[i]]
       axes <- names(KDE[[i]]$h)
     }
     else
-    { stop(paste("CTMM argument is of class",class(CTMM))) }
+    { stop(paste("CTMM argument is of class",class(CTMM)[1])) }
 
     DEBIAS[[i]] <- ifelse(debias,KDE[[i]]$bias,FALSE)
   } # end loop over individuals
@@ -482,7 +482,7 @@ akde <- function(data,CTMM,VMM=NULL,debias=TRUE,weights=FALSE,smooth=TRUE,error=
 
     KDE[[i]] <- new.UD(KDE[[i]],info=attr(data[[i]],"info"),type='range',CTMM=ctmm())
     # in case bandwidth is pre-calculated...
-    if(class(CTMM0[[i]])=="ctmm") { attr(KDE[[i]],"CTMM") <- CTMM0[[i]] }
+    if(class(CTMM0[[i]])[1]=="ctmm") { attr(KDE[[i]],"CTMM") <- CTMM0[[i]] }
   }
 
   names(KDE) <- names(data)
@@ -531,11 +531,11 @@ kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=NULL,dr=NULL,EXT=NUL
   dH <- t(dH) # (times,dim)
 
   # format lazy grid arguments
-  if(!is.null(grid) && class(grid)=="list" && all(axes %in% names(grid))) # assuming coordinate list
+  if(!is.null(grid) && class(grid)[1]=="list" && all(axes %in% names(grid))) # assuming coordinate list
   { grid <- list(r=grid) }
-  else if(!is.null(grid) && class(grid) %nin% c("list","UD","RasterLayer"))
+  else if(!is.null(grid) && class(grid)[1] %nin% c("list","UD","RasterLayer"))
   {
-    if(class(grid)=="Extent")
+    if(class(grid)[1]=="Extent")
     { grid <- list(extent=grid) }
     else # assuming extent or dr
     {
@@ -560,7 +560,7 @@ kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=NULL,dr=NULL,EXT=NUL
   }
 
   ### SPECIFY GRID ###
-  if(class(grid)=="RasterLayer") ### grid defined by raster ###
+  if(class(grid)[1]=="RasterLayer") ### grid defined by raster ###
   {
     EXT <- raster::extent(grid)
     EXT <- cbind( c(EXT@xmin,EXT@xmax) , c(EXT@ymin,EXT@ymax) )

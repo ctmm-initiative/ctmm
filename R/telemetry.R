@@ -14,7 +14,7 @@ subset.telemetry <- function(x,...)
   UERE <- attr(x,"UERE")
   x <- data.frame(x)
   x <- "[.data.frame"(x,...)
-  # if(class(x)=="data.frame") { x <- new.telemetry(x,info=info) }
+  # if(class(x)[1]=="data.frame") { x <- new.telemetry(x,info=info) }
   x <- new.telemetry(x,info=info,UERE=UERE)
   return(x)
 }
@@ -183,7 +183,7 @@ pull.column <- function(object,NAMES,FUNC=as.numeric,name.only=FALSE)
         if(name.only) { return(NAME) }
 
         # otherwise NA is not a level... which is the whole point of this
-        if(class(COL)=="factor" && any(NAS))
+        if(class(COL)[1]=="factor" && any(NAS))
         {
           COL <- addNA(COL)
           NAS <- is.na(levels(COL))
@@ -293,7 +293,7 @@ as.telemetry.character <- function(object,timeformat="",timezone="UTC",projectio
   data <- tryCatch( suppressWarnings( data.table::fread(object,data.table=FALSE,check.names=TRUE,nrows=5) ) , error=function(e){"error"} )
   # if fread fails, then decompress zip to temp file, read data, remove temp file
   # previous data.table will generate error when reading zip, now it's warning and result is an empty data.frame.
-  if(class(data) == "data.frame" && nrow(data) > 0) { data <- data.table::fread(object,data.table=FALSE,check.names=TRUE,...) }
+  if(class(data)[1] == "data.frame" && nrow(data) > 0) { data <- data.table::fread(object,data.table=FALSE,check.names=TRUE,...) }
   else {
     data <- tryCatch( temp_unzip(object, data.table::fread, data.table=FALSE,check.names=TRUE,...) , error=function(e){"error"} )
     if(identical(data,"error"))
@@ -314,7 +314,7 @@ as.telemetry.character <- function(object,timeformat="",timezone="UTC",projectio
 asPOSIXct <- function(x,timeformat="",timezone="UTC",...)
 {
   # try fastPOSIXct
-  if(class(x)=="character" && timeformat=="" && timezone %in% c("UTC","GMT"))
+  if(class(x)[1]=="character" && timeformat=="" && timezone %in% c("UTC","GMT"))
   {
     y <- fasttime::fastPOSIXct(x,tz=timezone)
     # did fastPOSIXct fail?
@@ -623,7 +623,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     COL <- pull.column(object,COL)
     if(length(COL))
     {
-      if(class(timeout)=="function") { timeout <- timeout(COL) }
+      if(class(timeout)[1]=="function") { timeout <- timeout(COL) }
       COL <- (COL<timeout)
       # factor levels are based on what's present and not what's possible
       COL <- c(TRUE,FALSE,COL)
@@ -708,9 +708,9 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   #######################################
 
   # keep everything from original data.frame
-  if(class(keep)=="logical" && keep)
+  if(class(keep)[1]=="logical" && keep)
   { DATA <- cbind(DATA,object) }
-  else if(class(keep)=="character") # keep specified  columns
+  else if(class(keep)[1]=="character") # keep specified  columns
   { DATA <- cbind(DATA,object[,keep,drop=FALSE]) }
 
 
@@ -841,7 +841,7 @@ telemetry.clean <- function(data,id)
 # summarize telemetry data
 summary.telemetry <- function(object,...)
 {
-  if(class(object)=="telemetry")
+  if(class(object)[1]=="telemetry")
   {
     result <- attr(object,"info")
 
@@ -863,7 +863,7 @@ summary.telemetry <- function(object,...)
     result <- c(result,list(lat=lat))
     names(result)[length(result)] <- "latitude range"
   }
-  else if(class(object)=="list")
+  else if(class(object)[1]=="list")
   {
     # NAME <- sapply(object,function(o){ attr(o,"info")$identity })
     DT <- sapply(object,function(o){ stats::median(diff(o$t)) })

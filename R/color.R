@@ -1,7 +1,7 @@
 # attach lunar, solar, and seasonal phases to telemetry object
 annotate <- function(object,by="all",cores=1,...)
 {
-  if(class(object)=="list") { return(plapply(object,annotate,cores=cores,fast=FALSE)) }
+  if(class(object)[1]=="list") { return(plapply(object,annotate,cores=cores,fast=FALSE)) }
   # else one at a time below
 
   if(by=='all' || 'moon' %in% by)
@@ -62,7 +62,7 @@ color <- function(object,by="time",col.fn=NULL,alpha=1,dt=NULL,cores=1,...)
     { col.fn <- function(i,alpha){grDevices::rgb(i,0,1-i,alpha)} }
   }
 
-  if(class(object[[1]]) %in% c('UD','CTMM')) # color densities by individual only
+  if(class(object[[1]])[1] %in% c('UD','CTMM')) # color densities by individual only
   {
     if(by!='individual') { stop("Only by='individual' supported by object class.") }
 
@@ -150,7 +150,7 @@ color.individual <- function(object,cores=1,...)
   if(n==2) { return(c(0,1/2)) }
   if(n==3) { return(c(0,1/3,2/3)) }
 
-  CLASS <- class(object[[1]])
+  CLASS <- class(object[[1]])[1]
   # could update this to robust overlap calculation
   if(CLASS %in% c('telemetry','data.frame'))
   { OVER <- plapply(object,function(o){ ctmm.fit(o,ctmm(isotropic=(nrow(o)<3)),method='ML',COV=FALSE) },cores=cores) }

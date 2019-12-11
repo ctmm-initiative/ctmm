@@ -45,7 +45,7 @@ mpsigamma <- function(x,deriv=0,dim=1)
 # forwarding function for list of a particular datatype
 zoom.list <- function(x,...)
 {
-  CLASS <- class(x[[1]])
+  CLASS <- class(x[[1]])[1]
   #utils::getS3method("zoom",CLASS)(x,...)
   methods::getMethod("zoom",signature=CLASS)(x,...)
 }
@@ -55,7 +55,7 @@ methods::setMethod("zoom",signature(x="list"), function(x,...) zoom.list(x,...))
 # forwarding function for list of a particular datatype
 mean.list <- function(x,...)
 {
-  CLASS <- class(x[[1]])
+  CLASS <- class(x[[1]])[1]
   utils::getS3method("mean",CLASS)(x,...)
 }
 #methods::setMethod("mean",signature(x="list"), function(x,...) mean.list(x,...))
@@ -64,7 +64,7 @@ mean.list <- function(x,...)
 # forwarding function for list of a particular datatype
 median.list <- function(x,na.rm=FALSE,...)
 {
-  CLASS <- class(x[[1]])
+  CLASS <- class(x[[1]])[1]
   utils::getS3method("median",CLASS)(x,na.rm=na.rm,...)
 }
 
@@ -72,7 +72,7 @@ median.list <- function(x,na.rm=FALSE,...)
 # forwarding function for list of a particular datatype
 plot.list <- function(x,...)
 {
-  CLASS <- class(x[[1]])
+  CLASS <- class(x[[1]])[1]
   utils::getS3method("plot",CLASS)(x,...)
 }
 #methods::setMethod("plot",signature(x="list"), function(x,...) plot.list(x,...))
@@ -80,14 +80,14 @@ plot.list <- function(x,...)
 # forwarding function for list of a particular datatype
 summary.list <- function(object,...)
 {
-  CLASS <- class(object[[1]])
+  CLASS <- class(object[[1]])[1]
   utils::getS3method("summary",CLASS)(object,...)
 }
 
 # forwarding function for list of a particular datatype
 writeShapefile.list <- function(object,folder,file=NULL,...)
 {
-  CLASS <- class(object[[1]])
+  CLASS <- class(object[[1]])[1]
   utils::getS3method("writeShapefile",CLASS)(object,folder,file=file,...)
 }
 
@@ -118,7 +118,7 @@ cov.loglike <- function(hess,grad=rep(0,nrow(hess)))
   if(all(diag(hess)>0))
   {
     COV <- try(PDsolve(hess))
-    if(class(COV)=="matrix" && all(diag(COV)>0)) { return(COV) }
+    if(class(COV)[1]=="matrix" && all(diag(COV)>0)) { return(COV) }
   }
   # one of the curvatures is negative or close to negative
   # return something sensible just in case we are on a boundary and this makes sense
@@ -267,7 +267,7 @@ listify <- function(x)
 {
   if(is.null(x)) { return(x) }
 
-  if(class(x) != "list")
+  if(class(x)[1] != "list")
   {
     x <- list(x)
     names(x) <- attr(x[[1]],'info')$identity

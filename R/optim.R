@@ -20,7 +20,7 @@ optimizer <- function(par,fn,...,method="pNewton",lower=-Inf,upper=Inf,period=FA
     func <- function(par,...)
     {
       FN <- try(fn(par,...))
-      if(class(FN)!="numeric" || is.nan(FN))
+      if(class(FN)[1] != "numeric" || is.nan(FN))
       {
         warning("Objective function failure at c(",paste(names(par),collapse=','),') = c(',paste(par,collapse=','),')')
         FN <- Inf
@@ -413,7 +413,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
     else { FN <- try(fn(par*parscale,...)) }
     # ordinary objective function
 
-    if(class(FN)=="numeric" && !is.nan(FN)) { FN <- FN/fnscale }
+    if(class(FN)[1]=="numeric" && !is.nan(FN)) { FN <- FN/fnscale }
     else
     {
       # store to environmental variable so that I can debug?

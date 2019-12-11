@@ -836,7 +836,7 @@ ctmm.guess <- function(data,CTMM=ctmm(),variogram=NULL,name="GUESS",interactive=
   u <- drift(data$t,CTMM)
 
   # estimate circulation period if circle=TRUE
-  if(CTMM$circle && class(CTMM$circle)=="logical")
+  if(CTMM$circle && class(CTMM$circle)[1]=="logical")
   {
     # residuals
     z <- get.telemetry(data,CTMM$axes)

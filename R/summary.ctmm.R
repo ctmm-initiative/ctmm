@@ -102,7 +102,7 @@ ci.tau <- function(tau,COV,alpha=0.05,min=0,max=Inf)
 ###
 summary.ctmm <- function(object,level=0.95,level.UD=0.95,units=TRUE,IC="AICc",MSPE="position",...)
 {
-  CLASS <- class(object)
+  CLASS <- class(object)[1]
   if(CLASS=="ctmm")
   { return(summary.ctmm.single(object,level=level,level.UD=level.UD,units=units)) }
   else if(CLASS=="list")

@@ -134,7 +134,7 @@ unit.ctmm <- function(CTMM,length=1,time=1)
     CTMM <- drift@scale(CTMM,time)
   }
 
-  if(class(CTMM$error)=='numeric') { CTMM$error <- CTMM$error/length } # don't divide logicals
+  if(class(CTMM$error)[1]=='numeric') { CTMM$error <- CTMM$error/length } # don't divide logicals
 
   if("sigma" %in% names(CTMM))
   {

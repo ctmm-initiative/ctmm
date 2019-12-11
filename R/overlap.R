@@ -5,7 +5,7 @@ overlap <- function(object,level=0.95,debias=TRUE,...)
 {
   check.projections(object)
 
-  CLASS <- class(object[[1]])
+  CLASS <- class(object[[1]])[1]
 
   if(CLASS=="ctmm")
   { OverlapFun <- overlap.ctmm }

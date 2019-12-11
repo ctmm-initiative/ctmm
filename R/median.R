@@ -46,7 +46,7 @@ cartesian2ellipsoid <- function(mu)
 # median of dataset
 median.telemetry <- function(x,na.rm=FALSE,...)
 {
-  if(class(x)=="list")
+  if(class(x)[1]=="list")
   {
     if(length(x)>1)
     {

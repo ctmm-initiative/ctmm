@@ -32,7 +32,7 @@ setMethod('projection',signature(x='list'),projection.list)
 # change the projection on a list of objects
 "projection<-.list" <- function(x,value)
 {
-  lapply(x,function(y){methods::getMethod("projection<-",signature=class(y))(y,value)})
+  lapply(x,function(y){methods::getMethod("projection<-",signature=class(y)[1])(y,value)})
 }
 setMethod('projection<-', signature(x='list'), `projection<-.list`)
 
@@ -147,9 +147,9 @@ rotate.north <- function(u,heading)
 # put projection into character format
 format.projection <- function(proj,datum="WGS84")
 {
-  if(class(proj)=="CRS")
+  if(class(proj)[1]=="CRS")
   { proj <- as.character(proj) }
-  else if(class(proj)!="character")
+  else if(class(proj)[1] != "character")
   {
     # pull out geodesic coordinates and format into matrix
     proj <- as.matrix(rbind(proj)[,c("longitude","latitude")])
@@ -176,8 +176,8 @@ format.projection <- function(proj,datum="WGS84")
 # only allow compatible projections
 validate.projection <- function(projection)
 {
-  if(class(projection)=="character") { projection <- sp::CRS(projection) } # this adds missing longlat specification
-  if(class(projection)=="CRS") { projection <- as.character(projection) }
+  if(class(projection)[1]=="character") { projection <- sp::CRS(projection) } # this adds missing longlat specification
+  if(class(projection)[1]=="CRS") { projection <- as.character(projection) }
 
   if(grepl("longlat",projection,fixed=TRUE) || grepl("latlong",projection,fixed=TRUE))
   { stop("A projected coordinate system must be specified.") }
@@ -190,7 +190,7 @@ validate.projection <- function(projection)
 # projection check data against grid
 validate.grid <- function(data,grid)
 {
-  if(class(grid) %in% c("UD","RasterLayer") && !is.null(projection(data)) && !is.null(projection(grid)))
+  if(class(grid)[1] %in% c("UD","RasterLayer") && !is.null(projection(data)) && !is.null(projection(grid)))
   {
     proj1 <- projection(data)
     proj2 <- projection(grid)

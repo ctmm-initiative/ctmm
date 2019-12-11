@@ -129,7 +129,7 @@ writeShapefile.UD <- function(object,folder,file=NULL,level.UD=0.95,level=0.95,.
 # convert to spatialpoints object
 SpatialPoints.telemetry <- function(object,...)
 {
-  CLASS <- class(object)
+  CLASS <- class(object)[1]
   # promote to list if not already
   object <- listify(object)
 

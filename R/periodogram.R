@@ -16,7 +16,7 @@ subset.periodogram <- function(x,...)
   info <- attr(x,"info")
   x <- data.frame(x)
   x <- "[.data.frame"(x,...)
-  # if(class(x)=="data.frame") { x <- new.periodogram(x,info=info) }
+  # if(class(x)[1]=="data.frame") { x <- new.periodogram(x,info=info) }
   x <- new.periodogram(x,info=info)
   return(x)
 }
