@@ -69,7 +69,7 @@ The \code{control} list can take the following arguments, with defaults shown:
 Model selection in \code{ctmm.select} proceeds in two phases. If there are a large number of parameters that must be fit numerically (such as when error is modeled), then the target model (argument \code{CTMM}) is worked toward by first fitting simpler, compatible models. The second phase proceeds by attempting to simplify the autocorrelation model and complexify the deterministic (trend) model until the information criteria fails to improve. The intent of working in these directions is to improve numerical convergence and avoid fitting trends to autocorrelation.
 Note that simpler models in a nested hierarchy will only be attempted if they appear credible, which can be adjusted with the \code{level} argument. \code{level=1} will, therefore, always attempt a simpler model.
 
-The leave-one-out cross validation IC, \code{IC="LOOCV"}, is (-2 times) the sum of log-likelihoods of the validation data, after fitting to and conditioning on the training data. This information criterion is intended for small amounts of data where AIC/BIC are not valid, and where the questions of interest are targeted at the finest scales of the data, such as speed or occurrence. Unlike other model-selection criteria, the computational complexity of LOOCV is \eqn{O(n^2)}, which is very slow for sample sizes on the order of 10-100 thousand locations. Furthermore, as autocorrelation in the validation data is ignored, this information criteria is totally invalid for making inferences as scales coarser than the sampling interval, such as home range.
+The leave-one-out cross validation IC, \code{IC="LOOCV"}, is (-2 times) the sum of log-likelihoods of the validation data, after fitting to and conditioning on the training data. This information criterion is intended for small amounts of data where AIC/BIC are not valid, and where the questions of interest are targeted at the finest scales of the data, such as speed or occurrence. Unlike other model-selection criteria, the computational complexity of LOOCV is \eqn{O(n^2)}, which is very slow for sample sizes on the order of 10-100 thousand locations. Furthermore, as autocorrelation in the validation data is ignored, this information criteria is not valid for making inferences at scales coarser than the sampling interval, such as home range.
 
 The half-sample cross validation IC, \code{IC="HSCV"}, is (-2 times) the sum of log-likelihoods of the validation data, after fitting to and conditioning on the training data consisting of the first (and second) halves of the data when split temporally. This information criterion is intended for when few range crossings are observed and AIC/BIC may not be valid.
 
@@ -102,7 +102,7 @@ Springer, 2nd edition (2003).
 
 C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, W. F. Fagan,
 ``From fine-scale foraging to home ranges: A semi-variance approach to identifying movement modes across spatiotemporal scales'',
-\href{http://www.jstor.org/discover/10.1086/675504}{The American Naturalist, 183:5, E154-E167 (2014)}.
+\href{http://www.jstor.org/stable/info/10.1086/675504}{The American Naturalist, 183:5, E154-E167 (2014)}.
 
 C. H. Fleming, Y. Subasi, J. M. Calabrese,
 ``A maximum-entropy description of animal movement'',

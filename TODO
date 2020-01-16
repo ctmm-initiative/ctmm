@@ -1,4 +1,6 @@
 PRIORITY
+* ctmm.select TRT list includes GUESS & FIT s
+* as.telemetry multiple fix type columns (3D validated, etc.)
 * meta analysis -> akde -> overlap
 * uncalibrate coati
 * tplot: plot(...,axes=c('t','...'x')) or plot(...,axes=c('x','t')), possibly with 2 axes?, '-x'?

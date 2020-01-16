@@ -19,7 +19,7 @@ variogram(data,dt=NULL,fast=TRUE,res=1,CI="Markov",axes=c("x","y"),precision=1/8
   \item{dt}{ Lag bin width. An ordered array will yield a progressive coarsening of the lags. Defaults to the median sampling interval.}
   \item{fast}{ Use the interval-weighted algorithm if \code{FALSE} or the FFT algorithm if \code{TRUE}. The slow algorithm outputs a progress bar.}
   \item{res}{Increase the discretization resolution for irregularly sampled data with \code{res>1}. Decreases bias at the cost of smoothness.}
-  \item{CI}{Defaults to only consider non-overlapping lags independent. All unique lags are considered independent with "IID".}
+  \item{CI}{Argument for confidence-interval estimation. Can be \code{"IID"} to consider all unique lags as independent, \code{"Markov"} to consider only non-overlapping lags as independent, or \code{"Gauss"} for an exact calculation (see Details below).}
   \item{axes}{Array of axes to calculate an average (isotropic) variogram for.}
   %\item{max.lag}{Maximum lag of the variogram to calculate when \code{fast=FALSE}, so to minimize computational cost.}
   \item{precision}{Fraction of machine precision to target when adjusting for telemetry error (\code{fast=FALSE} with calibrated errors). \code{precision=1/8} returns about 2 decimal digits of precision.}
@@ -32,7 +32,7 @@ Alternatively, you might try the \code{fast=FALSE} option or aggregating multipl
 
 With irregularly sampled data, different size lags must be aggregated together, and with current fast methods there is a tradeoff between bias and smoothness. The default settings produce a relatively smooth estimate, while increasing \code{res} (or setting \code{fast=FALSE}) will produce a less biased estimate, which is very useful for \code{\link{correlogram}}.
 
-In standard variogram regression treatments, all lags are considered as independent (\code{CI="IID"}) for the purposes of confidence-interval estimation, even if they overlap in time. However, in high resolution datasets this will produce vastly underestimated confidence intervals. Therefore, the default \code{CI="Markov"} behavior is to consider only the maximum number of non-overlapping lags in calculating confidence intervals.
+In conventional variogram regression treatments, all lags are considered as independent (\code{CI="IID"}) for the purposes of confidence-interval estimation, even if they overlap in time. However, in high resolution datasets this will produce vastly underestimated confidence intervals. Therefore, the default \code{CI="Markov"} behavior is to consider only the maximum number of non-overlapping lags in calculating confidence intervals, though this is a crude approximation and is overly conservative at large lags. \code{CI="Gauss"} implements exact confidence intervals under the assumption of a stationary Gaussian process, but this algorithm is \eqn{O(n^2 \log n)} even when \code{fast=TRUE}.
 
 If \code{fast=FALSE} and the tracking data are calibrated (see \code{\link{uere}}), then the variogram of the movement process (sans the telemetry-error process) is estimated using an iterative maximum-likelihood esitmator (Fleming et al, \emph{in preparation}). The variogram is targeted to have \code{precision} fraction of machine precision. If the data are very irregular, this algorithm can be slow to converge at time lags where there are few data pairs.
 }
@@ -45,7 +45,7 @@ D. Marcotte, ``Fast variogram computation with FFT'', {Computers and Geosciences
 
 C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, W. F. Fagan,
 ``From fine-scale foraging to home ranges: A semi-variance approach to identifying movement modes across spatiotemporal scales'',
-\href{http://www.jstor.org/discover/10.1086/675504}{The American Naturalist, 183:5, E154-E167 (2014)}.
+\href{http://www.jstor.org/stable/info/10.1086/675504}{The American Naturalist, 183:5, E154-E167 (2014)}.
 }
 
 \author{ C. H. Fleming and J. M. Calabrese. }

@@ -80,7 +80,15 @@ plot.list <- function(x,...)
 # forwarding function for list of a particular datatype
 summary.list <- function(object,...)
 {
-  CLASS <- class(object[[1]])[1]
+  # recurse if necessary
+  CLASS <- "list"
+  DATA <- object
+  while(CLASS=="list")
+  {
+    DATA <- DATA[[1]]
+    CLASS <- class(DATA)
+  }
+
   utils::getS3method("summary",CLASS)(object,...)
 }
 

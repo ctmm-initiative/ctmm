@@ -1,6 +1,18 @@
 # global variable
 DATA.EARTH <- list(R.EQ=6378137,R.PL=6356752.3142) # equatorial & polar radii
 
+#setGeneric("projection", function(x,...) { standardGeneric("projection") }, signature='x')
+#setGeneric("projection<-", function(x,value,...) { standardGeneric("projection<-") }, signature='x')
+
+# setMethod('projection',signature(x='Raster'),raster::projection)
+# setMethod('projection',signature(x='RasterLayer'),raster::projection)
+# setMethod('projection',signature(x='RasterStack'),raster::projection)
+# setMethod('projection',signature(x='RasterBrick'),raster::projection)
+# setMethod('projection<-',signature(x='Raster'),raster::projection)
+# setMethod('projection<-',signature(x='RasterLayer'),raster::projection)
+# setMethod('projection<-',signature(x='RasterStack'),raster::projection)
+# setMethod('projection<-',signature(x='RasterBrick'),raster::projection)
+
 # otherwise returns NA
 projection.NULL <- function(x,asText=TRUE) { return(NULL) }
 setMethod('projection', signature(x='NULL'), projection.NULL)
@@ -13,7 +25,9 @@ projection.telemetry <- function(x,asText=TRUE)
   return(proj)
 }
 setMethod('projection', signature(x='telemetry'), projection.telemetry)
+projection.ctmm <- projection.telemetry
 setMethod('projection', signature(x='ctmm'), projection.telemetry)
+projection.UD <- projection.telemetry
 setMethod('projection', signature(x='UD'), projection.telemetry)
 
 

@@ -1,3 +1,10 @@
+ctmm 0.5.9 (2019-01-15)
+================
+
+  * exact variogram CI argument "Gauss"
+  
+  * bugfix for infinte loop in ctmm.select
+
 ctmm 0.5.8 (2019-12-09)
 ================
 

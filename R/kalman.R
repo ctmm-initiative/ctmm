@@ -176,10 +176,27 @@ langevin <- function(dt,CTMM)
 
 
 ########################
+# 0/0 -> NaN -> to
+# fixes a priori known limits
 nant <- function(x,to)
 {
   NAN <- is.nan(x)
   if(any(NAN)) { x[NAN] <- to }
+  return(x)
+}
+
+# fix for infite PD matrix
+# useful after nant(x,Inf)
+inft <- function(x,to=0)
+{
+  INF <- diag(x)==Inf
+  if(any(INF))
+  {
+    # force positive definite
+    x[INF,] <- x[,INF] <- 0
+    # restore infinite variance
+    diag(x)[INF] <- Inf
+  }
   return(x)
 }
 
@@ -301,13 +318,8 @@ kalman <- function(z,u,dt,CTMM,error=NULL,smooth=FALSE,sample=FALSE,residual=FAL
         ANY <- any(INF)
         if(ANY) { TCON[INF] <- 0 } # prevent lots of NaNs that should be zero
         TCON <- Green[i+1,,] %*% TCON %*% t(Green[i+1,,]) + Sigma[i+1,,] # (K*DIM,K*DIM)
-        if(ANY) # restore Inf variances after avoiding NaNs -- delete finie correlations with infinite variance (impossible?)
-        {
-          INF <- diag(INF)
-          TCON[INF,] <- 0
-          TCON[,INF] <- 0
-          diag(TCON)[INF] <- Inf
-        }
+        # restore Inf variances after avoiding NaNs -- delete finie correlations with infinite variance (impossible?)
+        if(ANY) { TCON <- inft(TCON) }
         sFor[i+1,,] <- TCON
       }
     }
@@ -504,14 +516,29 @@ kalman <- function(z,u,dt,CTMM,error=NULL,smooth=FALSE,sample=FALSE,residual=FAL
     # upgrade concurrent estimates to Kriged estimates (covariance only)
     for(i in (n-1):1)
     {
-      TL <- nant(sCon[i,,] %*% t(Green[i+1,,]),0) %*% PDsolve(sFor[i+1,,],pseudo=TRUE) # (K*DIM,K*DIM)
-      INF <- diag(is.nan(TL))
-      if(any(INF))
+      # Inf * 0 -> 0
+      TL <- nant( sCon[i,,] %*% t(Green[i+1,,]) ,0)
+      INV <- PDsolve(sFor[i+1,,],force=TRUE,tol=0)
+      # 0/0 & Inf/Inf -> 1
+      #NAN <- diag(TL)==0 & diag(INV)==Inf
+      # Inf * 1 -> Inf # even though off-diagnals contribute Inf * 0
+      # INF <- diag(TL)!=0 & diag(INV)==Inf
+      # complete multiplication
+      TL <- TL %*% INV # (K*DIM,K*DIM)
+      NAN <- is.nan(diag(TL))
+      # now take limits
+      if(any(NAN))
       {
-        TL[INF,] <- 0
-        TL[,INF] <- 0
-        diag(TL)[INF] <- 1 # Inf/Inf->1
+        TL[NAN,] <- 0
+        TL[,NAN] <- 0
+        diag(TL)[NAN] <- 1 # Inf/Inf->1
       }
+      # if(any(INF))
+      # {
+      #   TL[INF,] <- 0
+      #   TL[,INF] <- 0
+      #   diag(TL)[INF] <- Inf # Inf*1->Inf
+      # }
       L[i,,] <- TL
       # manifestly symmetric backsolver
       # sCon[i,,] <- sCon[i,,] + L %*% (sCon[i+1,,]-sFor[i+1,,]) %*% t(L)

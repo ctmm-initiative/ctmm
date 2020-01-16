@@ -46,7 +46,9 @@ CI.lower <- Vectorize(function(k,Alpha){stats::qchisq(Alpha/2,k,lower.tail=TRUE)
 chisq.ci <- function(MLE,COV=NULL,level=0.95,alpha=1-level,DOF=2*MLE^2/COV,robust=FALSE,HDR=FALSE)
 {
   # try to do something reasonable on failure cases
-  if(is.nan(DOF)) { DOF <- 0 } # this comes from infinite variance divsion
+  if(is.nan(DOF) || is.na(DOF)) { DOF <- 0 } # NaN comes from infinite variance divsion
+  if(is.na(MLE)) { MLE <- Inf }
+
   if(DOF==Inf)
   { CI <- c(1,1,1)*MLE }
   else if(DOF==0)

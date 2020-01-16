@@ -163,6 +163,7 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
   }
   names(MODELS) <- sapply(MODELS,name.ctmm)
   CAND <- length(MODELS) - 1 # number of extra candidate models included
+  TRYS <- names(MODELS)[-1] # models that we have tried
 
   UERE <- get.error(data,CTMM,flag=TRUE) # error flag only
 
@@ -180,9 +181,9 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
     names(DROP) <- sapply(DROP,name.ctmm)
     names(REFINE) <- sapply(REFINE,name.ctmm)
 
-    # remove models already fit
-    DROP <- DROP[!(names(DROP) %in% names(MODELS))]
-    REFINE <- REFINE[!(names(REFINE) %in% names(MODELS))]
+    # remove models already attempted
+    DROP <- DROP[!(names(DROP) %in% TRYS)]
+    REFINE <- REFINE[!(names(REFINE) %in% TRYS)]
 
     # copy over best initial parameter guess for refined drops
     if(!drift@is.stationary(CTMM) && length(DROP))
@@ -205,11 +206,17 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
     } # end refined drop adjustments
 
     GUESS <- c(DROP,REFINE)
+    # add to TRYS before potential feature collapse
+    if(length(GUESS))
+    {
+      TRYS <<- c(TRYS,names(GUESS))
+      TRYS <<- unique(TRYS)
+    }
 
    if(length(GUESS)>1) # keep selecting (recursive)
     {
       # fit every model
-      if(trace) { message("* Fitting models ",paste(names(GUESS),collapse=", "),".") }
+      if(trace && FALSE) { message("* Fitting models ",paste(names(GUESS),collapse=", "),".") }
       GUESS <- plapply(GUESS,function(g){ctmm.select(data,c(list(g),MODELS),verbose=TRUE,level=0,IC=IC,MSPE=MSPE,trace=trace,...)},cores=cores)
       if(length(GUESS)) { GUESS <- do.call(c,GUESS) } # concatenate list of lists
     }
@@ -226,6 +233,13 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
       }
     }
     names(GUESS) <- sapply(GUESS,name.ctmm)
+    # add to TRYS after potential feature collapse
+    if(length(GUESS))
+    {
+      TRYS <<- c(TRYS,names(GUESS))
+      TRYS <<- unique(TRYS)
+    }
+    # TRYS can be longer than MODELS
 
     MODELS <<- c(GUESS,MODELS)
 
@@ -242,7 +256,7 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
     OLD <<- CTMM
     CTMM <<- MODELS[[1]]
     # CTMM <<- min.ctmm(c(GUESS,list(CTMM)),IC=IC,MSPE=MSPE)
-  }
+  } # end iterate()
 
   ########################
   # PHASE 0: pair down to essential features for 'compatibility'
