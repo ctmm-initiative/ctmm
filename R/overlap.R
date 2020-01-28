@@ -173,16 +173,18 @@ overlap.UD <- function(object,level=0.95,debias=TRUE,...)
 
 ###################
 # average aligned UDs
-mean.UD <- function(x,...)
+mean.UD <- function(x,weights=NULL,...)
 {
+  if(is.null(weights)) { weights <- rep(1,length(x)) }
+  weights <- weights/sum(weights)
+
   info <- mean.info(x)
   dV <- prod(x[[1]]$dr)
   n <- length(x)
   N <- sum(sapply(x,function(y){ y$DOF.area }))
 
-  M <- lapply(x,function(ud){ ud$PDF })
+  M <- lapply(1:n,function(i){ weights[i] * x[[i]]$PDF })
   M <- Reduce('+',M)
-  M <- M/n # now the average PDF
 
   x <- x[[1]]
   x$PDF <- M

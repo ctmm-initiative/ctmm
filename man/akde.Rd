@@ -2,7 +2,6 @@
 \alias{akde}
 \alias{akde.telemetry}
 \alias{akde.list}
-\alias{mean.UD}
 \encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Calculate an autocorrelated kernel density estimate}
@@ -12,9 +11,6 @@ This function calculates autocorrelated kernel density home-range estimates from
 \usage{
 akde(data,CTMM,VMM=NULL,debias=TRUE,weights=FALSE,smooth=TRUE,error=0.001,res=10,
      grid=NULL,...)
-
-\S3method{mean}{UD}(x,...)
-
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -28,12 +24,11 @@ akde(data,CTMM,VMM=NULL,debias=TRUE,weights=FALSE,smooth=TRUE,error=0.001,res=10
   \item{res}{Number of grid points along each axis, relative to the bandwidth.}
   \item{grid}{Optional grid specification via \code{raster}, \code{UD}, or list of arguments (See `Details' below).}
   \item{...}{Arguments passed to all instances of \code{\link{bandwidth}}.}
-  \item{x}{A list of \code{UD}s calculated on the same grid.}
 }
 
 \details{For weighted AKDE, please note additional \code{...} arguments passed to \code{\link{bandwidth}}.
 
-When feeding in lists of \code{telemetry} and \code{ctmm} objects, all UDs will be calculated on the same grid. These UDs can be averaged with the \code{mean} command, however this is not an optimal way to calculate population ranges.
+When feeding in lists of \code{telemetry} and \code{ctmm} objects, all UDs will be calculated on the same grid. These UDs can be averaged with the \code{\link{mean.UD}} command.
 
 If a \code{UD} or \code{raster} object is supplied in the \code{grid} argument, then the estimate will be calculated on the same grid. Alternatively, a list of grid arguments can be supplied, with any of the following components:
 \describe{
@@ -79,7 +74,7 @@ In v0.3.2, this method was further improved to use \code{DOF.area} from the Gaus
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
-\seealso{ \code{\link{bandwidth}}, \code{\link{raster,UD-method}} }
+\seealso{ \code{\link{bandwidth}}, \code{\link{mean.UD}}, \code{\link{raster,UD-method}} }
 
 \examples{\donttest{
 # Load package and data

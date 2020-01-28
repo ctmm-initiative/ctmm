@@ -45,6 +45,7 @@ CI.lower <- Vectorize(function(k,Alpha){stats::qchisq(Alpha/2,k,lower.tail=TRUE)
 # calculate chi^2 confidence intervals from MLE and COV estimates
 chisq.ci <- function(MLE,COV=NULL,level=0.95,alpha=1-level,DOF=2*MLE^2/COV,robust=FALSE,HDR=FALSE)
 {
+  #DEBUG <<- list(MLE=MLE,COV=COV,level=level,alpha=alpha,DOF=DOF,robust=robust,HDR=HDR)
   # try to do something reasonable on failure cases
   if(is.nan(DOF) || is.na(DOF)) { DOF <- 0 } # NaN comes from infinite variance divsion
   if(is.na(MLE)) { MLE <- Inf }
@@ -82,8 +83,8 @@ chisq.ci <- function(MLE,COV=NULL,level=0.95,alpha=1-level,DOF=2*MLE^2/COV,robus
     if(is.null(COV)) { COV <- 2*MLE^2/DOF }
     UPPER <- norm.ci(CI[2],COV,alpha=alpha)[3]
     # qchisq upper.tail is too small when DOF<<1
-    # probably an R bug that no regular use of chi-square/gamma would come across
-    if(CI[3]<UPPER) { CI[3] <- UPPER }
+    # qchisq bug that no regular use of chi-square/gamma would come across
+    if(is.nan(CI[3]) || CI[3]<UPPER) { CI[3] <- UPPER }
   }
 
   names(CI) <- NAMES.CI

@@ -1,7 +1,9 @@
-ctmm 0.5.9 (2019-01-15)
+ctmm 0.5.9 (2019-01-28)
 ================
 
-  * exact variogram CI argument "Gauss"
+  * new exact variogram CI argument "Gauss"
+  
+  * new mean.UD argument weights
   
   * bugfix for infinte loop in ctmm.select
 

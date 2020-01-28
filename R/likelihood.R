@@ -437,7 +437,8 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
   # pre-standardizing the data should also help
   SCALE <- sqrt(mean(get.telemetry(data,axes)^2))
   # standardize time by median diff time
-  TSCALE <- stats::median(diff(data$t))
+  DT <- diff(data$t)
+  TSCALE <- stats::median(DT[DT>0])
   data <- unit.telemetry(data,length=SCALE,time=TSCALE)
   CTMM <- unit.ctmm(CTMM,length=SCALE,time=TSCALE)
 
