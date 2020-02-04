@@ -1,4 +1,4 @@
-ctmm 0.5.9 (2019-01-28)
+ctmm 0.5.9 (2019-02-03)
 ================
 
   * new exact variogram CI argument "Gauss"
@@ -6,6 +6,14 @@ ctmm 0.5.9 (2019-01-28)
   * new mean.UD argument weights
   
   * bugfix for infinte loop in ctmm.select
+  
+  * improvements in ctmm.select for collapsing variance/error estimates
+  
+  * improvements in optimizer for degenerate likelihood surfaces
+  
+  * improvements in optimization for bad covariance estimates---fit object has structure changed
+  
+  * bugfix in IID pREML CIs
 
 ctmm 0.5.8 (2019-12-09)
 ================

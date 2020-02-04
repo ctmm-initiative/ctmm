@@ -151,15 +151,17 @@ unit.ctmm <- function(CTMM,length=1,time=1)
   {
     NAMES <- dimnames(CTMM$COV)[[1]]
 
-    if("major" %in% NAMES)
+    PAR <- c('major','minor')
+    PAR <- PAR[PAR %in% NAMES]
+    if(length(PAR))
     {
-      CTMM$COV["major",] <- CTMM$COV["major",]/length^2
-      CTMM$COV[,"major"] <- CTMM$COV[,"major"]/length^2
+      CTMM$COV[PAR,] <- CTMM$COV[PAR,]/length^2
+      CTMM$COV[,PAR] <- CTMM$COV[,PAR]/length^2
 
       if(!CTMM$range)
       {
-        CTMM$COV["major",] <- CTMM$COV["major",]*time
-        CTMM$COV[,"major"] <- CTMM$COV[,"major"]*time
+        CTMM$COV[PAR,] <- CTMM$COV[PAR,]*time
+        CTMM$COV[,PAR] <- CTMM$COV[,PAR]*time
       }
     }
 

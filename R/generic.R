@@ -196,6 +196,7 @@ cov.loglike <- function(hess,grad=rep(0,nrow(hess)))
   }
 
   COV <- array(0,dim(hess))
+  values <- nant(values,Inf) # worst case NaN fix
   SUB <- values<Inf
   if(any(SUB)) # separate out the finite part
   { COV <- COV + Reduce("+",lapply((1:length(grad))[SUB],function(i){ values[i] * outer(vectors[,i]) })) }

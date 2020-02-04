@@ -359,28 +359,28 @@ conditionNumber <- function(M)
 
 
 # Positive definite part of matrix
-PDclamp <- function(M)
+PDclamp <- function(M,lower=0,upper=Inf)
 {
-  # check for Inf
+  # Inf fix
   INF <- diag(M)==Inf
   if(any(INF))
   {
     if(any(INF))
     {
       M[INF,INF] <- 0
-      diag(M)[INF] <- Inf
+      diag(M)[INF] <- upper # Inf
     }
 
     # regular clamp of remaining dimensions
     REM <- !INF
-    if(any(REM)) { M[REM,REM] <- PDclamp(M[REM,REM,drop=FALSE]) }
+    if(any(REM)) { M[REM,REM] <- PDclamp(M[REM,REM,drop=FALSE],lower=lower,upper=upper) }
   }
   else
   {
     # symmetrize
     M <- He(M)
 
-    M <- PDfunc(M,function(m){clamp(m,0,Inf)},pseudo=TRUE)
+    M <- PDfunc(M,function(m){clamp(m,lower,upper)},pseudo=TRUE)
 
     # symmetrize
     M <- He(M)

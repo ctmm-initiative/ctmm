@@ -6,7 +6,7 @@
 \encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Specify, fit, and select continuous-time movement models}
-\description{These functions allow one to propose hypothetical movement models (with initial estimates), fit those models to the data, and select among those models via an information criteria.
+\description{These functions allow one to propose hypothetical movement models (with initial estimates), fit those models to the data, and select among those models via an information criterion.
 The fitting functions wrap around \code{optim} and \code{ctmm.loglike} to fit continuous-time movement models to 2D animal tracking data as described in Fleming et al (2014) and Fleming et al (2015), and Fleming et al (2017).
 }
 \usage{
@@ -40,7 +40,7 @@ ctmm.select(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position",trace=FALS
   \item{control}{An optional argument list for the optimizer.}
   \item{trace}{Report progress updates. Can be among \code{0:2} with increasing detail.}
   \item{level}{Attempt to simplify a model if a feature's non-existence falls within this level of confidence interval.}
-  \item{IC}{Information criteria used for selection. Can be \code{"AICc"}, \code{"AIC"}, \code{"BIC"}, \code{"LOOCV"}, \code{"HSCV"}, or none (\code{NA}). AICc is approximate.}
+  \item{IC}{Information criterion used for selection. Can be \code{"AICc"}, \code{"AIC"}, \code{"BIC"}, \code{"LOOCV"}, \code{"HSCV"}, or none (\code{NA}). AICc is approximate.}
   \item{MSPE}{Reject non-stationary features that increase the mean square predictive error of \code{"position"}, \code{"velocity"}, or not (\code{NA}).}
   \item{cores}{Maximum number of models to fit in parallel. cores=0 will use all cores, while cores<0 will reserve abs(cores).}
   \item{...}{Further arguments passed to \code{ctmm.fit}.}
@@ -66,10 +66,10 @@ The \code{control} list can take the following arguments, with defaults shown:
 \item{\code{maxit=.Machine$integer.max}}{Maximum number of iterations allowed for optimization.}
 }
 
-Model selection in \code{ctmm.select} proceeds in two phases. If there are a large number of parameters that must be fit numerically (such as when error is modeled), then the target model (argument \code{CTMM}) is worked toward by first fitting simpler, compatible models. The second phase proceeds by attempting to simplify the autocorrelation model and complexify the deterministic (trend) model until the information criteria fails to improve. The intent of working in these directions is to improve numerical convergence and avoid fitting trends to autocorrelation.
+Model selection in \code{ctmm.select} proceeds in two phases. If there are a large number of parameters that must be fit numerically (such as when error is modeled), then the target model (argument \code{CTMM}) is worked toward by first fitting simpler, compatible models. The second phase proceeds by attempting to simplify the autocorrelation model and complexify the deterministic (trend) model until the information criterion fails to improve. The intent of working in these directions is to improve numerical convergence and avoid fitting trends to autocorrelation.
 Note that simpler models in a nested hierarchy will only be attempted if they appear credible, which can be adjusted with the \code{level} argument. \code{level=1} will, therefore, always attempt a simpler model.
 
-The leave-one-out cross validation IC, \code{IC="LOOCV"}, is (-2 times) the sum of log-likelihoods of the validation data, after fitting to and conditioning on the training data. This information criterion is intended for small amounts of data where AIC/BIC are not valid, and where the questions of interest are targeted at the finest scales of the data, such as speed or occurrence. Unlike other model-selection criteria, the computational complexity of LOOCV is \eqn{O(n^2)}, which is very slow for sample sizes on the order of 10-100 thousand locations. Furthermore, as autocorrelation in the validation data is ignored, this information criteria is not valid for making inferences at scales coarser than the sampling interval, such as home range.
+The leave-one-out cross validation IC, \code{IC="LOOCV"}, is (-2 times) the sum of log-likelihoods of the validation data, after fitting to and conditioning on the training data. This information criterion is intended for small amounts of data where AIC/BIC are not valid, and where the questions of interest are targeted at the finest scales of the data, such as speed or occurrence. Unlike other model-selection criteria, the computational complexity of LOOCV is \eqn{O(n^2)}, which is very slow for sample sizes on the order of 10-100 thousand locations. Furthermore, as autocorrelation in the validation data is ignored, this information criterion is not valid for making inferences at scales coarser than the sampling interval, such as home range.
 
 The half-sample cross validation IC, \code{IC="HSCV"}, is (-2 times) the sum of log-likelihoods of the validation data, after fitting to and conditioning on the training data consisting of the first (and second) halves of the data when split temporally. This information criterion is intended for when few range crossings are observed and AIC/BIC may not be valid.
 
@@ -92,7 +92,9 @@ By default, \code{ctmm.loglike} returns the log-likelihood of the model \code{CT
 }
 
 \section{Warnings}{
-The warnings "MLE is near a boundary or optim() failed" and "pREML failure: indefinite ML Hessian" are normal if some autocorrelation parameters cannot be well resolved.
+The warning "MLE is near a boundary or optim() failed" indicates that you should be using \code{ctmm.select} rather than \code{ctmm.fit}, because some features are not well supported by the data.
+
+The warning "pREML failure: indefinite ML Hessian" is normal if some autocorrelation parameters cannot be well resolved.
 }
 
 \references{
@@ -123,7 +125,7 @@ C. H. Fleming, M. J. Noonan, E. P. Medici, J. M. Calabrese,
 \note{
 The default optimization method in \code{ctmm} v0.5.7 and above is \code{\link{optimizer}}'s \code{"pNewton"}. Annecdotally, on these problems, \code{\link{optimizer}}'s \code{pNewton} method generally outperforms \code{\link{optim}}'s \code{"Nelder-Mead"}, which generally outperforms \code{\link{optim}}'s \code{"BFGS"} and \code{"L-BFGS-B"} methods. With default arguments, \code{"pNewton"} is about half as fast as \code{"Nelder-Mead"}, but is resolving about twice as much numerical precision by default.
 
-The AICs/BICs of endlessly diffusing models like BM and IOU cannot be easily compared to the AICs/BICs of range resident models like bivariate Gaussian, OU, and OUF, as their joint likelihood functions are infinitely different. Endlessly diffusing models have to be conditioned off of an initial state, which we derive in \code{ctmm} by taking the large range limit of a range-restricted process. I.e., BM is the limit OU(\code{Inf}) and IOU(\code{tau}) is the limit OUF(\code{Inf},\code{tau}). Using comparable likelihood functions gives up statistical efficiency and the objective prior. Moreover, comparing conditional likelihoods---with the objective prior taken from the joint likelihood---does not appear to select the true model with a likelihood ratio test. Therefore, there does not appear to be a simple approach for selecting between range resident and endlessly diffusing movement models.
+The AICs/BICs of endlessly diffusing models like BM and IOU cannot be easily compared to the AICs/BICs of range resident models like bivariate Gaussian, OU, and OUF, as their joint likelihood functions are infinitely different. Endlessly diffusing models have to be conditioned off of an initial state, which we derive in \code{ctmm} by taking the large range limit of a range-restricted process. I.e., BM is the limit OU(\code{Inf}) and IOU(\code{tau}) is the limit OUF(\code{Inf},\code{tau}). Using comparable likelihood functions gives up statistical efficiency and the objective prior. Moreover, comparing conditional likelihoods---with the objective prior taken from the joint likelihood---does not appear to select the true model with a likelihood ratio test. Different criteria must be used to select between range resident and endlessly diffusing movement models.
 
 Prior to v0.3.6, the univariate AICc formula was (mis)used, with the full parameter count treated as degrees of freedom in the mean. As of v.0.3.6, the mean and autocovariance parameters are treated separately in the approximate multivariate AICc formula (Burnham & Anderson, Eq. 7.91). Still, this improved formula is only exact for IID data.
 

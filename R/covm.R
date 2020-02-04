@@ -2,7 +2,7 @@ new.covm <- methods::setClass("covm", representation("matrix",par="numeric",isot
 
 # 2D covariance matrix universal format
 # major - variance along major axis
-# minor - ratio of minor/major variances (1/condition number)
+# minor - variance along minor axis
 # angle - angle of major axis
 covm <- function(pars,isotropic=FALSE,axes=c("x","y"))
 {
@@ -21,7 +21,7 @@ covm <- function(pars,isotropic=FALSE,axes=c("x","y"))
   {
     if(length(pars)==1)
     {
-      pars <- c(pars,1,0)
+      pars <- c(pars,pars,0)
       sigma <- diag(pars[1],2)
     }
     else if(length(pars)==3)
@@ -36,7 +36,8 @@ covm <- function(pars,isotropic=FALSE,axes=c("x","y"))
     # isotropic error check
     if(isotropic)
     {
-      pars <- c(pars[1]*(1+pars[2])/2,1,0)
+      pars <- mean(pars[1:2])
+      pars <- c(pars,pars,0)
       sigma <- diag(pars[1],2)
     }
 
@@ -55,20 +56,20 @@ sigma.construct <- function(pars)
   if(length(pars)==1) # isotropic
   {
     major <- pars[1]
-    minor <- 1
+    minor <- pars[1]
     theta <- 0
   }
   else
   {
-    major <- pars[1]
-    minor <- pars[2]
-    theta <- pars[3]
+    major <- max(pars[1:2])
+    minor <- min(pars[1:2])
+    theta <- ifelse(pars[1]==major,pars[3],pars[3]+pi/2) # rotate if out of order
   }
 
   u <- c(cos(theta),sin(theta))
   v <- c(-sin(theta),cos(theta))
 
-  sigma <- major*( (u%o%u) + minor*(v%o%v) )
+  sigma <- major*(u%o%u) + minor*(v%o%v)
 
   return(sigma)
 }
@@ -81,9 +82,9 @@ sigma.destruct <- function(sigma,isotropic=FALSE) # last arg not implemented
   # catch infinite variances
   if(any(INF))
   {
-    # can only represent diagonal infinite matrix in that form
-    major <- Inf
-    minor <- 1
+    # can only represent diagonal matrix in that form
+    major <- max(diag(sigma))
+    minor <- min(diag(sigma))
     theta <- 0
   }
   else # finite variances
@@ -101,9 +102,6 @@ sigma.destruct <- function(sigma,isotropic=FALSE) # last arg not implemented
       theta <- stuff$vectors[,1]
       theta <- atan(theta[2]/theta[1])
     }
-
-    if(major<=0) { minor <- 1 }
-    else { minor <- minor/major }
   }
 
   stuff <- c(major,minor,theta)
@@ -118,7 +116,8 @@ eigenvalues.covm <- function(sigma)
   if(ncol(sigma)==1) { return(sigma@par['major']) }
 
   sigma <- attr(sigma,'par')[c('major','minor')]
-  sigma['minor'] <- sigma['minor']*sigma['major']
+
+  sigma <- sort(sigma,decreasing=TRUE)
 
   return(sigma)
 }
@@ -159,7 +158,7 @@ area.covm <- function(sigma) { return( det.covm(sigma,ave=TRUE) ) }
 scale.covm <- function(sigma,value=1/var.covm(sigma,ave=TRUE))
 {
   sigma <- sigma * value
-  attr(sigma,'par')['major'] <- attr(sigma,'par')['major'] * value
+  attr(sigma,'par')[c('major','minor')] <- attr(sigma,'par')[c('major','minor')] * value
   return(sigma)
 }
 
@@ -168,10 +167,10 @@ scale.covm <- function(sigma,value=1/var.covm(sigma,ave=TRUE))
 squeezable.covm <- function(CTMM)
 {
   AXES <- length(CTMM$axes)
-  minor <- CTMM$sigma@par['minor'] # NA in 1D
+  vars <- eigenvalues.covm(CTMM$sigma)
 
   # ratio of major axis to (geometric) mean axis (meters/meters)
-  fact <- (1/minor)^(1/4)
+  fact <- (max(vars)/min(vars))^(1/4)
   # extreme eccentricity --- cannot squeeze data to match variances
   able <- AXES==2 && !is.nan(fact) && 4*abs(log(fact))<log(1/.Machine$double.eps)
 
@@ -207,20 +206,9 @@ squeeze.covm <- function(sigma,smgm=NULL,circle=FALSE)
 
   sigma <- attr(sigma,"par")
   if(circle)
-  {
-    sigma['major'] <- sigma['major'] * sqrt(sigma['minor'])
-    sigma['minor'] <- 1
-  }
+  { sigma['major'] <- sigma['minor'] <- sqrt(sigma['major']*sigma['minor']) }
   else
-  {
-    sigma['minor'] <- sigma['minor'] * sigma['major']
-    sigma[c("major","minor")] <- c(1/smgm,smgm)^2 * sigma[c("major","minor")]
-
-    major <- max(sigma[1:2])
-    if(major>0) { minor <- min(sigma[1:2])/major }
-
-    sigma[c("major","minor")] <- c(major,minor)
-  }
+  { sigma[c("major","minor")] <- c(1/smgm,smgm)^2 * sigma[c("major","minor")] }
   sigma <- covm(sigma,isotropic=isotropic,axes=axes)
 
   return(sigma)
@@ -235,7 +223,8 @@ solve.covm <- function(sigma,pseudo=FALSE)
 
   sigma <- attr(sigma,"par")
   PARS <- 1:min(2,length(sigma)) # major, (minor)
-  sigma[PARS] <- 1/sigma[PARS]
+  sigma[PARS] <- rev(1/sigma[PARS]) # order matters
+  if(length(sigma)>1) { sigma['angle'] <- sigma['angle'] + pi/2 } # reverse ordered
 
   sigma <- covm(sigma,isotropic=isotropic,axes=axes)
 
@@ -260,6 +249,7 @@ sqrtm.covm <- function(sigma)
 
 
 ####### calculate variance and variance-covariance from major/minor information
+# assumes that variance/covariance parameters come first in COV
 axes2var <- function(CTMM,MEAN=TRUE)
 {
   COV <- CTMM$COV
@@ -279,12 +269,8 @@ axes2var <- function(CTMM,MEAN=TRUE)
   {
     NAMES <- c("variance",NAMES[-(1:3)])
 
-    sigma <- CTMM$sigma@par
-    major <- sigma['major']
-    minor <- sigma['minor']
-
     # convert major,minor/major uncertainty into mean-variance uncertainty
-    grad <- c(1+minor,major,0)  # total x-y variance
+    grad <- c(1,1,0)  # gradient of total x-y variance
     if(MEAN) { grad <- grad/2 } # average x-y variance
 
     P <- nrow(COV)
@@ -320,22 +306,22 @@ J.sigma.par <- function(par)
   minor <- par["minor"]
   theta <- par["angle"]
 
-  # s_xx = major*cos(theta)^2 + major*minor*sin(theta)^2
-  # s_yy = major*sin(theta)^2 + major*minor*cos(theta)^2
-  # s_xy = major*cos(theta)*sin(theta) - major*minor*sin(theta)*cos(theta)
-  #      = major*(1-minor)*sin(2*theta)/2
+  # s_xx = major*cos(theta)^2 + minor*sin(theta)^2
+  # s_yy = major*sin(theta)^2 + minor*cos(theta)^2
+  # s_xy = major*cos(theta)*sin(theta) - minor*sin(theta)*cos(theta)
+  #      = (major-minor)*sin(2*theta)/2
 
   # gradient matrix d sigma / d par
   grad <- diag(3)
-  names(grad) <- names(par)
+  dimnames(grad) <- list(c('xx','yy','xy'),names(par))
   # d sigma / d major
-  grad[,1] <- c( cos(theta)^2+minor*sin(theta)^2, sin(theta)^2+minor*cos(theta)^2, +(1-minor)*sin(2*theta)/2 )
+  grad[,'major'] <- c( cos(theta)^2, sin(theta)^2, +sin(2*theta)/2 )
   # d sigma / d minor
-  grad[,2] <- c( major*sin(theta)^2, major*cos(theta)^2, -major*sin(2*theta)/2 )
+  grad[,'minor'] <- c( sin(theta)^2, cos(theta)^2, -sin(2*theta)/2 )
   # d sigma / d theta
-  grad[1,3] <- major*(-1 + minor)*sin(2*theta)
-  grad[2,3] <- major*(+1 - minor)*sin(2*theta)
-  grad[3,3] <- major*(+1 - minor)*cos(2*theta)
+  grad['xx','angle'] <- (minor-major)*sin(2*theta)
+  grad['yy','angle'] <- (major-minor)*sin(2*theta)
+  grad['xy','angle'] <- (major-minor)*cos(2*theta)
 
   return(grad)
 }
@@ -363,9 +349,11 @@ COV.covm <- function(sigma,n,k=1,REML=TRUE)
   {
     # covariance matrix for c( sigma_xx , sigma_yy , sigma_xy )
     COV <- diag(0,3)
-    COV[1:2,1:2] <- 2/n * sigma^2
-    COV[3,] <- c( 2*sigma[1,1]*sigma[1,2] , 2*sigma[2,2]*sigma[1,2] , sigma[1,1]*sigma[2,2]+sigma[1,2]^2 )/n
-    COV[,3] <- COV[3,]
+    NAMES <- c('xx','yy','xy')
+    dimnames(COV) <- list(NAMES,NAMES)
+    COV[c('xx','yy'),c('xx','yy')] <- 2/n * sigma^2
+    COV['xy',] <- c( 2*sigma[1,1]*sigma[1,2] , 2*sigma[2,2]*sigma[1,2] , sigma[1,1]*sigma[2,2]+sigma[1,2]^2 )/n
+    COV[,'xy'] <- COV['xy',]
 
     # gradient matrix d sigma / d par
     grad <- J.sigma.par(par)

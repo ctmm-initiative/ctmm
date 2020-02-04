@@ -57,6 +57,7 @@ emulate.ctmm <- function(object,data=NULL,fast=FALSE,...)
     COV[P,] <- COV[P,]/par[P]
     COV[,P] <- t(t(COV[,P])/par[P])
 
+    if(par[P]==0) { stop("fast=TRUE (CLT) not possible when ",P," = ",par[P]) }
     par[P] <- log(par[P])
   }
 
@@ -114,7 +115,9 @@ ctmm.reduce <- function(CTMM)
     ZERO <- !P & (NAMES %in% POSITIVE.PARAMETERS)
     names(ZERO) <- NAMES
 
-    if("minor" %in% NAMES && ZERO['major']) { ZERO['minor'] <- ZERO['angle'] <- TRUE }
+    # remove angle if removed major and minor axes (!isotropic)
+    if("minor" %in% NAMES && ZERO['major'] && ZERO['minor']) { ZERO['angle'] <- TRUE }
+    # restructure tau if contains zeros
     P <- "tau velocity"; if(P %in% NAMES && ZERO[P]) { CTMM$tau <- CTMM$tau[1] }
     P <- "tau position"; if(P %in% NAMES && ZERO[P]) { CTMM$tau <- NULL }
     P <- "tau"; if(P %in% NAMES && ZERO[P]) { CTMM$tau <- NULL }

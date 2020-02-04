@@ -13,22 +13,24 @@ gauss.comp <- function(fn,CTMM,COV=TRUE,...)
   # get parameter vector information
   for(i in 1:length(CTMM))
   {
+    MAX <- max(eigenvalues.covm(CTMM[[i]]$sigma))
+
     par <- c(par, CTMM[[i]]$mu[1,] )
-    parscale <- c(parscale, sqrt(diag(CTMM[[i]]$sigma)) )
+    parscale <- c(parscale, sqrt(MAX) )
     lower <- c(lower, c(-Inf,-Inf) )
     upper <- c(upper, c(Inf,Inf) )
 
     if(CTMM[[i]]$isotropic)
     {
       par <- c(par,CTMM[[i]]$sigma@par[1])
-      parscale <- c(parscale, CTMM[[i]]$sigma@par[1] )
+      parscale <- c(parscale, MAX )
       lower <- c(lower, 0 )
       upper <- c(upper, Inf )
     }
     else
     {
       par <- c(par,CTMM[[i]]$sigma@par)
-      parscale <- c(parscale, c(CTMM[[i]]$sigma@par[1],1,pi/2) )
+      parscale <- c(parscale, c(MAX,MAX,pi/2) )
       lower <- c(lower, c(0,0,-Inf) )
       upper <- c(upper, c(Inf,Inf,Inf) )
     }

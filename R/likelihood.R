@@ -70,22 +70,23 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   UERE <- attr(error,"flag")
 
   # check for bad time intervals
-  ZERO <- which(dt==0)
+  ZERO <- which(dt<=.Machine$double.eps)
   if(length(ZERO) && length(CTMM$tau) && CTMM$tau[1])
   {
     if(CTMM$error==FALSE) { warning("Duplicate timestamps require an error model.") ; return(-Inf) }
     # check for HDOP==0 just in case
     ZERO <- error[ZERO,,,drop=FALSE]
     ZERO <- apply(ZERO,1,det)
-    if(any(ZERO<=0)) { warning("Duplicate timestamps require an error model.") ; return(-Inf) }
+    ZERO <- min(ZERO) * CTMM$error^4
+    if(ZERO<=.Machine$double.eps^2) { warning("Duplicate timestamps require an error model.") ; return(-Inf) }
   }
 
   # check for bad variances
   if(min(eigenvalues.covm(sigma))<=.Machine$double.eps)
   {
-    ZERO <- rep(FALSE,n)
-    for(i in 1:dim(error)[2]) { ZERO <- ZERO | (error[,i,i]<=.Machine$double.eps) }
-    if(any(ZERO)) { return(-Inf) }
+    ZERO <- apply(error,1,det)
+    ZERO <- min(ZERO) * CTMM$error^4
+    if(ZERO<=.Machine$double.eps^2) { return(-Inf) }
   }
 
   ### what kind of profiling is possible
@@ -156,12 +157,12 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     rm(R)
   }
 
-  # largest variance (to profile)
+  # largest variance (to profile) --- used to be max, now really mean
   max.var <- 0
   update.max.var <- function(sigma)
   {
-    max.var <<- mean(eigenvalues.covm(sigma))
-    if(UERE<3) { max.var <<- max(max.var,CTMM$error^2) }
+    max.var <<- mean(eigenvalues.covm(sigma)) # really profiling the variance with mean?
+    if(UERE<3) { max.var <<- max.var + CTMM$error^2/AXES } # comparable error variance (@DOP==1)
   }
   update.max.var(M.sigma)
 
@@ -246,7 +247,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   {
     # prepare variance/covariance of 1D/2D Kalman filters
     if(PROFILE==2 || DIM==1) # could be rotated & squeezed
-    { CTMM$sigma <- K.sigma@par['major'] }
+    { CTMM$sigma <- var.covm(K.sigma,ave=TRUE) }
     else if(DIM==2) # circle, !isotropic, UERE=1,2
     { CTMM$sigma <- K.sigma } # else sigma is full covariance matrix
 
@@ -392,7 +393,8 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
 # smallest resolutions in data (for soft bounding parameter guesstimates)
 telemetry.mins <- function(data,axes=c('x','y'))
 {
-  dt <- stats::median(diff(data$t)) # median time difference
+  dt <- diff(data$t)
+  dt <- stats::median(dt[dt>0]) # median time difference
 
   df <- 2*pi/(last(data$t)-data$t[1]) # smallest frequency
 
@@ -404,6 +406,7 @@ telemetry.mins <- function(data,axes=c('x','y'))
 
   return(list(dt=dt,df=df,dz=dz))
 }
+
 
 ###########################################################
 # FIT MODEL WITH LIKELIHOOD FUNCTION (convenience wrapper to optim)
@@ -503,6 +506,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
     lower <<- STUFF$lower
     upper <<- STUFF$upper
     period <<- STUFF$period
+    # reflect <<- STUFF$reflect
     # initial guess for optimization
     pars <<- get.parameters(CTMM,NAMES,linear.cov=linear.cov)
   }
@@ -551,8 +555,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
     if(method=="pREML")
     {
       VAR.MULT <- (1+k.mean/n)
-      CTMM$sigma <- VAR.MULT * CTMM$sigma
-      CTMM$sigma@par["area"] <- VAR.MULT * CTMM$sigma@par["area"]
+      CTMM$sigma <- scale.covm(CTMM$sigma,VAR.MULT)
       CTMM$COV.mu <- VAR.MULT * CTMM$COV.mu
     }
 
@@ -617,7 +620,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
 
       J <- diag(length(pars))
       dimnames(J) <- list(NAMES,NAMES)
-      # invoke Jacobian (major,minor/major,angle) -> linear parameterization !!!
+      # invoke Jacobian (major,minor,angle) -> linear parameterization !!!
       if(!CTMM$isotropic)
       {
         # Jacobian matrix d sigma / d par

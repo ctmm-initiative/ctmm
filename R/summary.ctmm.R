@@ -286,7 +286,7 @@ DOF.area <- function(CTMM)
   else
   {
     P <- c('major','minor')
-    GRAD <- c( sqrt(sigma['minor']) , sigma['major']/sqrt(sigma['minor'])/2 )
+    GRAD <- AREA / sigma[P] / 2
     VAR <- c( GRAD %*% CTMM$COV[P,P] %*% GRAD )
   }
 

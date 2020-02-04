@@ -97,8 +97,8 @@ Given how we specified the prototype, `harmonic 2 0` means that this preferred m
 If there was some moon-related pattern of space use and given how we specified our prototype, we would have had a non-zero value as the second `harmonic` value.
 
 The sorting of our candidate models is more complex than in previous stationary examples.
-For a given autocovariance model, the different non-stationary models are sorted by mean square predictive error (MSPE) and not the information criteria. As we will demonstrate, likelihood-based model selection can badly overfit with these types of models.
-For sorting between the autocovariance models (each with best non-stationary model), the information criteria is used. MSPE is not valid for general purpose selection.
+For a given autocovariance model, the different non-stationary models are sorted by mean square predictive error (MSPE) and not the information criterion. As we will demonstrate, likelihood-based model selection can badly overfit with these types of models.
+For sorting between the autocovariance models (each with best non-stationary model), the information criterion is used. MSPE is not valid for general purpose selection.
 
 ```{r}
 # these are sorted by MSPE
@@ -109,7 +109,7 @@ SUB <- grepl('0 0',names(FITS))
 summary(FITS[SUB])
 ```
 
-If only the information criteria was used, we would have selected `harmonic 3 0` over `harmonic 2 0`.
+If only the information criterion was used, we would have selected `harmonic 3 0` over `harmonic 2 0`.
 
 ```{r}
 # sorting by IC only

@@ -2,6 +2,7 @@
 # make a wrapper that applies optim then afterwards numDeriv, possibly on a boundary with one-sided derivatives if necessary
 optimizer <- function(par,fn,...,method="pNewton",lower=-Inf,upper=Inf,period=FALSE,control=list())
 {
+  DEBUG <- FALSE
   method <- match.arg(method,c("pNewton","Nelder-Mead","BFGS","CG","L-BFGS-B","SANN","Brent"))
 
   precision <- maxit <- NULL
@@ -10,10 +11,26 @@ optimizer <- function(par,fn,...,method="pNewton",lower=-Inf,upper=Inf,period=FA
   # R check does not like attach
   NAMES <- names(control) ; for(i in 1:length(control)) { assign(NAMES[i],control[[i]]) }
 
-  if(any(parscale==0)) { parscale[parscale==0] <- 1 }
+  if(any(parscale==0)) { parscale[parscale<=.Machine$double.eps] <- 1 }
 
   if(method=="pNewton") # use mc.optim
-  { RESULT <- mc.optim(par=par,fn=fn,lower=lower,upper=upper,period=period,control=control) }
+  {
+    if(!DEBUG)
+    { RESULT <- mc.optim(par=par,fn=fn,lower=lower,upper=upper,period=period,control=control) }
+    else
+    {
+      if(!exists(".Random.seed")) { set.seed(NULL) }
+      SEED <- .Random.seed
+      RESULT <- try(mc.optim(par=par,fn=fn,lower=lower,upper=upper,period=period,control=control))
+      while(class(RESULT)!="list")
+      {
+        debug(mc.optim)
+        .Random.seed <- SEED
+        RESULT <- try(mc.optim(par=par,fn=fn,lower=lower,upper=upper,period=period,control=control))
+      }
+      if(isdebugged(mc.optim)) { undebug(mc.optim) }
+    } # end DEBUG
+  }
   else
   {
     # wrap objective function in try()
@@ -22,7 +39,7 @@ optimizer <- function(par,fn,...,method="pNewton",lower=-Inf,upper=Inf,period=FA
       FN <- try(fn(par,...))
       if(class(FN)[1] != "numeric" || is.nan(FN))
       {
-        warning("Objective function failure at c(",paste(names(par),collapse=','),') = c(',paste(par,collapse=','),')')
+        warning("Objective function failure at c(",paste0(names(par),"=",par,collapse=', '),")")
         FN <- Inf
       }
       return(FN)
@@ -78,23 +95,26 @@ box.search <- function(p0,grad,hess,cov=PDsolve(hess),lower=-Inf,upper=Inf,perio
   n <- length(p0)
   lambda <- rep(1,n)
 
+  # limit uncertainty to std.dev
+  # cov <- PDclamp(cov,lower=0,upper=std.max^2)
   # naive target
   dp <- -c(cov %*% grad)
   p1 <- p0 + dp
 
   # passes through lower boundary ?
   dlo <- lower-p1
-  LO <- (dlo>=0)
-  if(!any(is.nan(LO)) && any(LO)) { lambda[LO] <- ifelse( dp[LO]<0 , 1 - abs( dlo[LO]/dp[LO] ) , 1 ) }
+  LO <- p1==lower | (dlo>=0) # Inf fix
+  if(any(LO)) { lambda[LO] <- ifelse( dp[LO]<0 , 1 - abs( dlo[LO]/dp[LO] ) , 1 ) }
 
   # passes through upper boundary ?
   dhi <- p1-upper
-  HI <- (dhi>=0)
-  if(!any(is.nan(HI)) && any(HI)) { lambda[HI] <- ifelse( dp[HI]>0 , 1 - abs( dhi[HI]/dp[HI] ) , 1 ) }
+  HI <- p1==upper | (dhi>=0) # Inf fix
+  if(any(HI)) { lambda[HI] <- ifelse( dp[HI]>0 , 1 - abs( dhi[HI]/dp[HI] ) , 1 ) }
 
   PER <- as.logical(period)
   if(any(PER)) { lambda[PER] <- min(1, abs(dp[PER])/(period[PER]*period.max) ) }
 
+  lambda <- nant(lambda,1) # ignore Inf @ Inf
   MIN <- which.min(lambda)
   if(lambda[MIN]<1)
   {
@@ -117,7 +137,7 @@ box.search <- function(p0,grad,hess,cov=PDsolve(hess),lower=-Inf,upper=Inf,perio
 ######################
 # apply box constraints to travel in a straight line from p0 by dp
 ######################
-line.boxer <- function(dp,p0=dp[,1],lower=-Inf,upper=Inf,period=F,period.max=1/2)
+line.boxer <- function(dp,p0=dp[,1],lower=-Inf,upper=Inf,period=F,period.max=1/2,tol=.Machine$double.eps)
 {
   DIM <- dim(dp)
   if(is.null(dim(dp))) { dp <- cbind(dp) }
@@ -128,8 +148,8 @@ line.boxer <- function(dp,p0=dp[,1],lower=-Inf,upper=Inf,period=F,period.max=1/2
     p <- p0 + dp
 
     # did we hit a boundary?
-    LO <- (p-lower) <= .Machine$double.eps
-    UP <- (upper-p) <= .Machine$double.eps
+    LO <- p==lower | (p-lower) <= .Machine$double.eps # Inf fix
+    UP <- p==upper | (upper-p) <= .Machine$double.eps # Inf fix
 
     # are we trying to push through that boundary?
     if(any(LO)) { LO <- LO & (dp<0) }
@@ -137,9 +157,13 @@ line.boxer <- function(dp,p0=dp[,1],lower=-Inf,upper=Inf,period=F,period.max=1/2
 
     # stop when we hit the boundary
     # time until we hit the first new boundary
-    if(any(LO)) { t.lo <- (lower-p0)[LO]/dp[LO] } else { t.lo <- 1 }
-    if(any(UP)) { t.up <- (upper-p0)[UP]/dp[UP] } else { t.up <- 1 }
-    t <- min(t.lo,t.up)
+    t.lo <- ifelse(LO, (lower-p0)[LO]/dp[LO], 1)
+    t.up <- ifelse(UP, (upper-p0)[UP]/dp[UP], 1)
+
+    t <- c(t.lo,t.up)
+    t <- nant(t,Inf)
+    t <- t[t>tol] # avoid boundary trap from numerical error
+    t <- min(t.lo,t.up,na.rm=TRUE) # first non-trapping boundary
 
     # circular parameters prevented from going more than half a period
     PERIOD <- as.logical(period)
@@ -148,12 +172,8 @@ line.boxer <- function(dp,p0=dp[,1],lower=-Inf,upper=Inf,period=F,period.max=1/2
     # stop at first boundary
     p <- p0 + t*dp
 
-    # correct machine precision?
-    LO <- (p-lower) <= .Machine$eps
-    UP <- (upper-p) <= .Machine$eps
-
-    if(any(LO)) { p[LO] <- lower[LO] }
-    if(any(UP)) { p[UP] <- upper[UP] }
+    # fix to machine precision
+    p <- clamp(p,lower,upper)
 
     return(p)
   }
@@ -192,6 +212,7 @@ QuadSolve <- function(P0,P1,P2,DIR,F0,F1,F2)
 
   return(list(gradient=gradient,hessian=hessian))
 }
+
 
 # does this data look roughly quadratic near the minimum?
 QuadTest <- function(x,y,MIN=which.min(y),thresh=0.5)
@@ -256,29 +277,34 @@ Gram.Schmidt <- function(DIR,vec)
 # correlation-preserving rank-1 update
 rank1update <- function(H.LINE,LINE,hessian,covariance)
 {
-  LINE <- LINE/sqrt(sum(LINE^2))
+  if(!is.na(H.LINE) && H.LINE>=.Machine$double.eps)
+  {
+    LINE <- LINE/sqrt(sum(LINE^2))
 
-  # Hessian diagonal element correction factor
-  H0 <- c(LINE %*% hessian %*% LINE)
-  FACT <- abs(H.LINE / H0)
-  FACT <- sqrt(FACT)
+    # Hessian diagonal element correction factor
+    H0 <- c(LINE %*% hessian %*% LINE)
+    FACT <- abs(H.LINE / H0)
+    FACT <- sqrt(FACT)
 
-  # rank-1 Hessian update - no matrix-matrix multiplication
-  A <- FACT-1
-  B <- c(hessian %*% LINE)
-  O <- outer(LINE)
-  hessian <- hessian + A^2*H0*O
-  B <- outer(LINE,B)
-  B <- B + t(B)
-  hessian <- hessian + A*B
+    # rank-1 Hessian update - no matrix-matrix multiplication
+    A <- FACT-1
+    B <- c(hessian %*% LINE)
+    O <- outer(LINE)
+    hessian <- hessian + A^2*H0*O
+    B <- outer(LINE,B)
+    B <- B + t(B)
+    hessian <- hessian + A*B
 
-  # rank-1 covariance update - no matrix-matrix multiplication
-  A <- 1/FACT-1
-  B <- c(covariance %*% LINE)
-  covariance <- covariance + A^2*c(LINE%*%B)*O
-  B <- outer(LINE,B)
-  B <- B + t(B)
-  covariance <- covariance + A*B
+    # rank-1 covariance update - no matrix-matrix multiplication
+    A <- 1/FACT-1
+    B <- c(covariance %*% LINE)
+    covariance <- covariance + A^2*c(LINE%*%B)*O
+    B <- outer(LINE,B)
+    B <- B + t(B)
+    covariance <- covariance + A*B
+  }
+  else
+  { FACT <- 0 }
 
   return(list(hessian=hessian,covariance=covariance,condition=FACT))
 }
@@ -293,16 +319,17 @@ mc.min <- function(min,cores=detectCores())
   return(x)
 }
 
+
 #################################
 # Parallelized optimizers
-# 1 - quasi-Newton-Raphson - custom method with efficient Hessian update
+# 0 - (TODO) Pattern Search
+# 1 - partial-Newton-Raphson - custom method with efficient Hessian update
 #   - TODO: full Hessian option when DIM small
 #   - TODO: filling up mc queue if p>2n+1
 # 2 - Preconditioned Non-linear Conjugate Gradient - Polak-Ribiere with automatic restarts
 # 3 - Preconditioned Gradient Descent
-# 4 - (TODO) Pattern Search
 ##################################
-mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
+mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,control=list())
 {
   DEBUG <- FALSE # can be overridden in control
   PMAP <- TRUE # periodic parameters are mapped locally: (-period/2,+period/2) -> (-Inf,Inf) during search steps
@@ -314,6 +341,8 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
   # check does not like attach
   NAMES <- names(control)
   for(i in 1:length(control)) { assign(NAMES[i],control[[i]]) }
+  # something is stripping par names
+  NAMES <- names(par)
 
   cores <- resolveCores(cores)
 
@@ -337,6 +366,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
   STEP <- .Machine$double.eps^c(0.25,0.5,0.5,1)
   # machine tolerances for various stage calculations
   TOL <- .Machine$double.eps^c(0.5,1,1,1)
+  TOL.LINE <- sqrt(TOL[1]) # tolernace for rank-1 update
   # goal errors
   TOL.GOAL <- .Machine$double.eps^precision
 
@@ -350,20 +380,32 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
   # start with the canonical directions
   # DIR <- diag(1,DIM) # rows of column vectors
 
+  # sometimes initial covariance/hessian is garbage because previous data/model were garbage
   if(!is.null(covariance))
   {
     covariance <- t(t(covariance/parscale)/parscale)
-    if(is.null(hessian)) { hessian <- PDsolve(covariance) }
+    TEST <- eigen(covariance,only.values=TRUE)$values
+    TEST <- any(TEST<=TOL[1]) || any(TEST>=1/TOL[1]) || min(TEST)/max(TEST)<=TOL[1]
+    if(TEST) { covariance <- NULL }
   }
-  else if(!is.null(hessian))
+  # fall back --- unlikely
+  if(!is.null(hessian))
   {
     hessian <- t(t(hessian*parscale)*parscale)
-    if(is.null(covariance)) { covariance <- PDsolve(hessian) }
+    TEST <- 1/eigen(hessian,only.values=TRUE)$values
+    TEST <- any(TEST<=TOL[1]) || any(TEST>=1/TOL[1]) || min(TEST)/max(TEST)<=TOL[1]
+    if(TEST) { hessian <- NULL }
   }
-  else # use parscale
+  # preconditioning is safe
+  if(!is.null(covariance))
+  { hessian <- PDsolve(covariance) }
+  else if(!is.null(hessian))
+  { covariance <- PDsolve(hessian) }
+  else # use parscale to start
   {
     covariance <- diag(1,DIM) # inverse hessian
     hessian <- diag(1,DIM) # hesssian
+    # LINE.DO <- TRUE
   }
 
   # what we will actually be evaluating
@@ -404,6 +446,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
   else
   { PMAP <- FALSE }
 
+  # wrap objective function
   func <- function(par,...)
   {
     if(PMAP) { par <- pmap(par,theta,inverse=TRUE) }
@@ -418,7 +461,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
     {
       # store to environmental variable so that I can debug?
       par <- par*parscale
-      warning("Objective function failure at c(",paste(names(par),collapse=','),') = c(',paste(par,collapse=','),')')
+      warning("Objective function failure at c(",paste0(NAMES,"=",par,collapse=', '),')')
       if(DEBUG)
       {
         debug(ctmm.loglike)
@@ -438,8 +481,8 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
   is.boxed <- function(par,fix.dir=FALSE)
   {
     # what points are on the boundary, so that we have to do one-sided derivatives
-    LO <- (par-lower) <= .Machine$double.eps
-    UP <- (upper-par) <= .Machine$double.eps
+    LO <- par==lower | (par-lower) <= .Machine$double.eps
+    UP <- par==upper | (upper-par) <= .Machine$double.eps
     BOX <- (LO | UP)
 
     # rotate coordinates so that DIR[,BOX] points strictly towards boundary
@@ -485,8 +528,8 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
     if(any(BOX)) { P2[,BOX] <- 2*P1[,BOX] }
 
     # apply these displacements within box constraints
-    P1 <- line.boxer(P1,p0=p0,lower=lower,upper=upper,period=period)
-    P2 <- line.boxer(P2,p0=p0,lower=lower,upper=upper,period=period)
+    P1 <- line.boxer(P1,p0=p0,lower=lower,upper=upper,period=period,tol=TOL[i])
+    P2 <- line.boxer(P2,p0=p0,lower=lower,upper=upper,period=period,tol=TOL[i])
     # columns are now boxed coordinates
 
     return(list(P1=P1,P2=P2))
@@ -552,7 +595,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
     }
 
     ## update hessian from line-search result (Rank-1 update)
-    if(UPDATE && STAGE==1 && LINE.DID && hessian.LINE>0)
+    if(UPDATE && STAGE==1 && LINE.DID && hessian.LINE>=.Machine$double.eps)
     {
       DIFF <- rank1update(hessian.LINE,DIR.STEP,hessian,covariance)
       hessian <- DIFF$hessian
@@ -695,6 +738,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
       covariance <- DIR %*% covariance %*% t(DIR)
 
       if(trace) { message(sprintf("%s Newton-Raphson overstep (encapsulated=%d/%d; condition=%f:%f)",format(zero+fn.par,digits=16),sum(encapsulated),DIM,condition[1],condition[2])) }
+      if(trace==2) { message("\tc(",paste0(NAMES,"=",par,collapse=', '),")") }
 
       LINE.TYPE <- "Enclosure"
     }
@@ -770,16 +814,20 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
 
           # search direction
           par.dir[FREE] <- -c(COV %*% gradient[FREE]) + (beta * par.dir[FREE])
+          par.dir[BOXED] <- 0
 
           # approximate search step (exact if hessian is correct)
           if(any(abs(par.dir[FREE])>.Machine$double.eps))
-          { par.diff[FREE] <- c(gradient[FREE] %*% par.dir[FREE]) / c(par.dir[FREE] %*% hessian[FREE,FREE] %*% par.dir[FREE]) * par.dir[FREE] }
+          {
+            par.diff[FREE] <- c(gradient[FREE] %*% par.dir[FREE]) / c(par.dir[FREE] %*% hessian[FREE,FREE] %*% par.dir[FREE]) * par.dir[FREE]
+            par.diff[BOXED] <- 0
+          }
           else # don't divide by zero
           { par.diff[FREE] <- par.dir[FREE] }
         }
 
         # where we aim to evaluate next
-        par.target <- line.boxer(par.diff,p0=par,lower=lower,upper=upper,period=period)
+        par.target <- line.boxer(par.diff,p0=par,lower=lower,upper=upper,period=period,tol=TOL[i])
       } # end conjugate-gradient code
       if(any(BOXED)) { par.diff[BOXED] <- 0 }
 
@@ -796,6 +844,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
         else if(STAGE==3)
         { message(sprintf("%s Gradient Descent step (encapsulated=%d/%d)",format(zero+fn.par,digits=16),sum(encapsulated),DIM)) }
       }
+      if(trace==2) { message("\tc(",paste0(NAMES,"=",par,collapse=', '),")") }
       LINE.TYPE <- "Prospection"
     } # end step code
 
@@ -810,7 +859,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
       if(ERROR < TOL.STAGE + TOL.ZERO) { LINE.DO <- TRUE }
 
       # are rank-1 updates safe?
-      if(STAGE==1 && ERROR>sqrt(TOL.STAGE)) { UPDATE <- TRUE } else { UPDATE <- FALSE }
+      if(STAGE==1 && ERROR>TOL.LINE) { UPDATE <- TRUE } else { UPDATE <- FALSE }
     }
     fn.target.old <- fn.target
     gradient.old <- gradient
@@ -840,7 +889,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
       if(LINE.TYPE=="Prospection")
       {
         # generate a linear sequence of points from par to the other side of par.target
-        P <- line.boxer(2*par.diff,p0=par,lower=lower,upper=upper,period=period)
+        P <- line.boxer(2*par.diff,p0=par,lower=lower,upper=upper,period=period,tol=TOL[i])
         par.diff <- P - par # twice the old par.diff with no boundary (reflection=1)
         M <- sqrt(sum(par.diff^2)) # total search magnitude
         M <- clamp(M,0,1) # assume parscale is reasonable, keep search step reasonable in case of bad Hessian
@@ -859,7 +908,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
       }
 
       # new points to evaluate
-      P <- line.boxer((DIR.STEP %o% SEQ),p0=par,lower=lower,upper=upper,period=period)
+      P <- line.boxer((DIR.STEP %o% SEQ),p0=par,lower=lower,upper=upper,period=period,tol=TOL[i])
 
       # start iteration loop
       while(counts < maxit)
@@ -892,6 +941,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
 
         # DEBUG.LIST <<- list(par.all=par.all,fn.all=fn.all,parscale=parscale)
         if(trace) { message(sprintf("%s %s search",format(zero+fn.par,digits=16),LINE.TYPE)) }
+        if(trace==2) { message("\tc(",paste0(NAMES,"=",par,collapse=', '),")") }
 
         if(DEBUG>1)
         {
@@ -935,7 +985,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
           {
             # generate a linear sequence of points that terminate at the eventual boundary
             SEQ <- seq(0,M.BOX,length.out=cores+1)[-1]
-            P <- line.boxer((DIR.STEP %o% SEQ),p0=par,lower=lower,upper=upper,period=period)
+            P <- line.boxer((DIR.STEP %o% SEQ),p0=par,lower=lower,upper=upper,period=period,tol=TOL[i])
           }
           else # we didn't hit a boundary and we never will, because there is no boundary
           {
@@ -945,7 +995,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
             # geometric sequence
             SEQ <- 2^(1:cores) * M
 
-            P <- line.boxer((DIR.STEP %o% SEQ),p0=par,lower=lower,upper=upper,period=period,period.max=Inf)
+            P <- line.boxer((DIR.STEP %o% SEQ),p0=par,lower=lower,upper=upper,period=period,period.max=Inf,tol=TOL[i])
           }
 
           # goto evaluate iteration step
@@ -996,7 +1046,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
           SEQ <- c(-rev(SEQ),seq(0,M2,length.out=n2+2)[-c(1,n2+2)])
 
           # combine for evaluation
-          P <- line.boxer((DIR.STEP %o% SEQ),p0=par,lower=lower,upper=upper,period=period,period.max=Inf)
+          P <- line.boxer((DIR.STEP %o% SEQ),p0=par,lower=lower,upper=upper,period=period,period.max=Inf,tol=TOL[i])
 
           LINE.SORTED <- FALSE
           next
@@ -1025,7 +1075,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
           SEQ <- c(-M1*SEQ,M2*rev(SEQ))
 
           # combine for evaluation
-          P <- line.boxer((DIR.STEP %o% SEQ),p0=par,lower=lower,upper=upper,period=period,period.max=Inf)
+          P <- line.boxer((DIR.STEP %o% SEQ),p0=par,lower=lower,upper=upper,period=period,period.max=Inf,tol=TOL[i])
           LINE.SORTED <- FALSE
           # goto evaluate iteration step
           next
@@ -1092,6 +1142,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=F,control=list())
 
   if(counts<maxit) { convergence <- 0} else { convergence <- 1 }
   if(trace) { message(sprintf("%s in %d parallel function evaluations.",ifelse(convergence,"No convergence","Convergence"),counts)) }
+  if(trace==2) { message("\tc(",paste0(NAMES,"=",par,collapse=', '),")") }
 
   if(PMAP) { par <- pmap(par,theta,inverse=TRUE) }
 

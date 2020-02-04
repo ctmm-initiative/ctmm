@@ -46,7 +46,7 @@ smoother <- function(DATA,CTMM,precompute=FALSE,sample=FALSE,residual=FALSE,...)
     # u <- CTMM$mean.vec
     # mu <- CTMM$mu
 
-    # orient the data along the major an minor axes of sigma
+    # orient the data along the major and minor axes of sigma
     ROTATE <- !isotropic && !ECC.EXT
     if(ROTATE)
     {
