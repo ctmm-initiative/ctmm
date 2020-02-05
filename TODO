@@ -1,6 +1,4 @@
 PRIORITY
-* major-minor test on buggy data
-* clarify projection arguments as for output (not input) in as.telemetry
 * as.telemetry multiple fix type columns (3D validated, etc.)
 * meta analysis -> akde -> overlap
 * uncalibrate coati
