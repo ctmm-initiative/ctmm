@@ -7,7 +7,7 @@ dexp1 <- function(x,Exp=exp(-x)) { ifelse(Exp<0.5,1-Exp,2*sqrt(Exp)*sinh(x/2)) }
 ###############################
 # Propagator/Green's function and Two-time correlation from Langevin equation for Kalman filter and simulations
 # random CTMM objects need to be run through get.taus() first, to precompute various parameters
-langevin <- function(dt,CTMM)
+langevin <- function(dt,CTMM,DIM=1)
 {
   K <- CTMM$K
   tau <- CTMM$tau
@@ -151,11 +151,12 @@ langevin <- function(dt,CTMM)
   }
 
   # fix the dimension of the filter
-  DIM <- dim(sigma)[1]
-  if(is.null(DIM)) # 1D filter
+  if(DIM==1) # 1D filter
   { Sigma <- sigma * Sigma }
   else # 2D filter
   {
+    if(length(sigma)==1) { sigma <- diag(sigma,DIM) }
+
     K <- max(1,K)
 
     Sigma <- outer(Sigma,sigma) # (k,k,d,d)
@@ -213,7 +214,7 @@ inft <- function(x,to=0)
 # # FALSE: don't assume or return computed glob
 # # +1: store a computed glob in the environment
 # # -1: use a computed glob from the environment
-kalman <- function(z,u,dt,CTMM,error=NULL,smooth=FALSE,sample=FALSE,residual=FALSE,precompute=FALSE)
+kalman <- function(z,u,dt,CTMM,error=NULL,DIM=1,smooth=FALSE,sample=FALSE,residual=FALSE,precompute=FALSE)
 {
   # STUFF THAT CAN BE PRECOMPUTED IF DOING MULTIPLE SIMULATIONS
   if(precompute>=0)
@@ -221,8 +222,6 @@ kalman <- function(z,u,dt,CTMM,error=NULL,smooth=FALSE,sample=FALSE,residual=FAL
     n <- nrow(z)
     if(CTMM$range) { N <- n } else { N <- n-1 } # condition off first point
 
-    DIM <- dim(CTMM$sigma)[1] # infer necessary dimension
-    if(is.null(DIM)) { DIM <- 1 } # default dimension, scalar sigma
     if(is.null(error)) { error <- array(0,c(n,DIM,DIM)) }
 
     tau <- CTMM$tau
@@ -270,7 +269,7 @@ kalman <- function(z,u,dt,CTMM,error=NULL,smooth=FALSE,sample=FALSE,residual=FAL
     {
       # does the time lag change values? Then update the propagators.
       if(i==1 || dt[i] != dt[i-1])
-      { Langevin <- langevin(dt=dt[i],CTMM=CTMM) }
+      { Langevin <- langevin(dt=dt[i],CTMM=CTMM,DIM=DIM) }
 
       Green[i,,] <- Langevin$Green # (K*DIM,K*DIM)
       Sigma[i,,] <- Langevin$Sigma # (K*DIM,K*DIM)

@@ -1,4 +1,5 @@
 PRIORITY
+* exact line search in optimizer
 * as.telemetry multiple fix type columns (3D validated, etc.)
 * meta analysis -> akde -> overlap
 * uncalibrate coati

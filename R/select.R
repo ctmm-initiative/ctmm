@@ -360,13 +360,13 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
       if(!CTMM$omega && CTMM$tau[1]!=CTMM$tau[2]) # OUF -> OU / IOU -> BM
       {
         Q <- CI["tau velocity",1]
-        if(is.nan(Q) || (Q<=0))
+        if(is.na(Q) || (Q<=0))
         { GUESS <- c(GUESS,list(simplify.ctmm(MLE,'tau velocity'))) }
       }
       else if(!CTMM$omega) # OUf -> OU, IID
       {
         Q <- CI["tau",1]
-        if(is.nan(Q) || (Q<=0))
+        if(is.na(Q) || (Q<=0))
         {
           GUESS <- c(GUESS,list(simplify.ctmm(MLE,'tau'))) # OUf -> IID
           GUESS <- c(GUESS,list(simplify.ctmm(MLE,'tau velocity'))) # OUf -> OU
@@ -375,14 +375,14 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
       else # OUO -> OUf
       {
         Q <- 1/CI["tau period",3]
-        if(is.nan(Q) || (Q<=0))
+        if(is.na(Q) || (Q<=0))
         { GUESS <- c(GUESS,list(simplify.ctmm(MLE,'omega'))) }
       }
     } # end # OUX -> OUx
     else if(CTMM$range && length(CTMM$tau)==1 && !is.na(IC)) # OU -> IID
     {
       Q <- CI["tau position",1]
-      if(is.nan(Q) || (Q<=0))
+      if(is.na(Q) || (Q<=0))
       { GUESS <- c(GUESS,list(simplify.ctmm(MLE,'tau position'))) }
     } # end # OU -> IID
 
@@ -396,7 +396,7 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
       Q <- c(J %*% CTMM$COV[Q,Q] %*% J) # variance of nu
       Q <- ci.tau(nu,Q,alpha=beta)[1]
 
-      if(Q<=0 || level==1 || is.na(IC))
+      if(is.na(Q) || Q<=0 || level==1 || is.na(IC))
       { GUESS <- c(GUESS,list(simplify.ctmm(MLE,"diff.tau"))) }
     }
     else if(CTMM$range && length(CTMM$tau)==2) # try other side if boundary if choosen model is critically damped
@@ -418,7 +418,7 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
     if(CTMM$circle)
     {
       Q <- CI["circle",3]
-      if(is.nan(Q) || (Q==Inf) || is.na(IC))
+      if(is.na(Q) || (Q==Inf) || is.na(IC))
       { GUESS <- c(GUESS,list(simplify.ctmm(MLE,"circle"))) }
     }
 
@@ -430,7 +430,7 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
       SD <- ifelse(all(Q %in% CTMM$features),sqrt(c(GRAD %*% CTMM$COV[Q,Q] %*% GRAD)),Inf) # variance could collapse early
       Q <- log(CTMM$sigma@par['major']/CTMM$sigma@par['minor'])
       Q <- stats::qnorm(beta/2,mean=Q,sd=SD)
-      if(Q<=0 || is.na(IC))
+      if(is.na(Q) || Q<=0 || is.na(IC))
       { GUESS <- c(GUESS,list(simplify.ctmm(MLE,"minor"))) }
     }
 

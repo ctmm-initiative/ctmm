@@ -2,16 +2,34 @@
 # calculate first and second derivatives efficiently
 # assumes to start with approximant of maximum (par) and inverse hessian (covariance)
 ####################
-genD <- function(par,fn,zero=FALSE,lower=-Inf,upper=Inf,step=NULL,precision=1/2,parscale=NULL,mc.cores=detectCores(),Richardson=2,order=2,drop=TRUE,...)
+genD <- function(par,fn,zero=FALSE,lower=-Inf,upper=Inf,step=NULL,precision=1/2,parscale=NULL,mc.cores=detectCores(),Richardson=2,order=2,drop=TRUE,control=list(),...)
 {
   if(is.null(parscale)) { parscale <- pmin(abs(par),abs(par-lower),abs(upper-par)) }
   if(any(parscale==0)) { parscale[parscale==0] <- 1 }
 
   if(is.null(step)) { step <- sqrt(2*.Machine$double.eps^precision) }
 
+  DEBUG <- control$DEBUG
+  if(is.null(DEBUG)) { DEBUG <- FALSE }
+
   # convert to natural units - prevents confusion with zero tolerance (bacterium)
   par <- par/parscale
-  func <- function(par) { fn(parscale*par) }
+  func <- function(par)
+  {
+    RETURN <- try(fn(parscale*par))
+    if(class(RETURN)[1]!="numeric")
+    {
+      # debugging bad likelihoods
+      if(DEBUG)
+      {
+        debug(fn)
+        try(fn(parscale*par))
+        undebug(fn)
+      }
+      RETURN <- Inf
+    }
+    return(RETURN)
+  }
 
   ### nuDeriv specific code ###
 
@@ -87,6 +105,10 @@ genD <- function(par,fn,zero=FALSE,lower=-Inf,upper=Inf,step=NULL,precision=1/2,
   }
   else
   { grad <- t( t(grad) / parscale ) }
+
+  # Inf fix
+  hess <- nant(hess,0) # seems reasonable for inverse covariance
+  grad <- nant(grad,0) # not sure about this
 
   return(list(gradient=grad,hessian=hess))
 }

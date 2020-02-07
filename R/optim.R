@@ -460,14 +460,14 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,control=list()
     else
     {
       # store to environmental variable so that I can debug?
-      par <- par*parscale
-      warning("Objective function failure at c(",paste0(NAMES,"=",par,collapse=', '),')')
+      warning("Objective function failure at c(",paste0(NAMES,"=",par*parscale,collapse=', '),')')
       if(DEBUG)
       {
         debug(ctmm.loglike)
         # try again with debugging
         if(ZERO) { FN <- try(fn(par*parscale,zero=zero*fnscale,...)) }
         else { FN <- try(fn(par*parscale,...)) }
+        undebug(ctmm.loglike)
       }
       FN <- Inf
     }
@@ -983,15 +983,16 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,control=list()
           # we didn't hit a boundary yet, but we will eventually hit a boundary, so let's just do that
           if(M.BOX<Inf)
           {
+            LINE.TYPE <- "Expansion (bounded)"
             # generate a linear sequence of points that terminate at the eventual boundary
             SEQ <- seq(0,M.BOX,length.out=cores+1)[-1]
             P <- line.boxer((DIR.STEP %o% SEQ),p0=par,lower=lower,upper=upper,period=period,tol=TOL[i])
           }
           else # we didn't hit a boundary and we never will, because there is no boundary
           {
+            LINE.TYPE <- "Expansion (unbounded)"
             # make sure we are accelerating
-            M <- max(M,last(diff(SEQ)))
-
+            M <- max(1,M,abs(SEQ))
             # geometric sequence
             SEQ <- 2^(1:cores) * M
 
@@ -1028,18 +1029,19 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,control=list()
           # refining aims to make the grid even when filling in gaps adjacent to MIN
           # how many points to refine on each side of MIN
           n <- mc.min(2,cores)
-          # left solution if points were continuous
-          n1 <- ((n+1)*M1-M2)/(M1+M2)
-          # positive constraints on n1, n2
-          n1 <- max(0,n1)
-          n1 <- min(n,n1)
-          # nearest discrete solutions
-          n1 <- c(floor(n1),ceiling(n1))
-          n2 <- n-n1
-          # difference in gap sizes
-          dev <- abs(M1/(n1+1) - M2/(n2+1))
-          # discrete solution
-          n1 <- n1[which.min(dev)]
+
+          # # distribute n to n1 (left) and n2 (right) as proportional to M1 and M2 as possible while maintaining >0 progress constraint
+          # n1 <- n2 <- 1
+          # while(n1+n2<n)
+          # {
+          #   # preference right in ties, as that's the original search direction
+          #   if(n1/M1>n2/M2) { n2 <- n2 + 1 }
+          #   else { n1 <- n1 + 1 }
+          # }
+
+          n1 <- M1/(M1+M2)*n # left solution if points were continuous
+          n1 <- clamp(n1,1,n-1)
+          n1 <- floor(n1) # bias to n2, original search direction
           n2 <- n-n1
 
           SEQ <- seq(0,M1,length.out=n1+2)[-c(1,n1+2)]

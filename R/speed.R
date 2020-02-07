@@ -52,10 +52,13 @@ speed.ctmm <- function(object,data=NULL,level=0.95,robust=FALSE,units=TRUE,prior
       {
         GRAD <- genD(par=PAR,fn=fn,lower=lower,upper=upper,parscale=parscale,Richardson=2,mc.cores=1)$grad
         # GRAD <- numDeriv::grad(fn,PAR) # don't step outside of (0,1)
-        VAR <- c(GRAD %*% object$COV %*% GRAD)
+        if("COV" %in% names(object))
+        { VAR <- c(GRAD %*% object$COV[NAMES,NAMES] %*% GRAD) } # emulate can lose features
+        else
+        { VAR <- Inf }
 
         # propagate errors chi -> chi^2
-        DOF <- (2*MEAN)^2*VAR
+        DOF <- 2*MEAN^2/VAR
         CI <- chisq.ci(MEAN^2,DOF,alpha=1-level)
         # transform back
         CI <- sqrt(CI)

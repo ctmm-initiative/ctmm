@@ -146,7 +146,7 @@ smoother <- function(DATA,CTMM,precompute=FALSE,sample=FALSE,residual=FALSE,...)
       error <- error[,1,1,drop=FALSE] # isotropic && UERE redundant error information
     }
 
-    KALMAN <- kalman(z,u=NULL,dt=dt,CTMM=CTMM,error=error,precompute=precompute,sample=sample,residual=residual,...)
+    KALMAN <- kalman(z,u=NULL,dt=dt,CTMM=CTMM,error=error,DIM=DIM,precompute=precompute,sample=sample,residual=residual,...)
     # point estimates will be correct but eccentricity is missing from variances
 
     if(residual) { return(KALMAN) }

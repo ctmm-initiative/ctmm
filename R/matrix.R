@@ -393,7 +393,7 @@ PDclamp <- function(M,lower=0,upper=Inf)
 # relatively smallest eigen value of matrix
 mat.min <- function(M)
 {
-  if(any(diag(M)==0)) { return(0) }
+  if(any(is.na(M)) || any(abs(M)==Inf) || any(diag(M)==0)) { return(0) }
   diag(M) <- abs(diag(M))
   M <- stats::cov2cor(M)
   M <- eigen(M,only.values=TRUE)$values

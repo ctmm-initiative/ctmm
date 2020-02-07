@@ -13,9 +13,13 @@ ctmm 0.5.9 (2019-02-04)
   
   * improvements in optimizer for degenerate likelihood surfaces
   
-  * improvements in optimization for bad covariance estimates---fit object has structure changed
+  * improvements in optimization for bad covariance estimates---fit object structure changed
+  
+  * bugfix in speed when fast=FALSE and sampled models lose features
   
   * bugfix in IID pREML CIs
+  
+  * bugfix in optimizer expansion search step size not increasing
 
 ctmm 0.5.8 (2019-12-09)
 ================

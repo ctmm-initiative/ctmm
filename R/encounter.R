@@ -107,13 +107,13 @@ encounter.ctmm <- function(CTMM,include=NULL,exclude=NULL,...)
   I <- 1:AXES
   mu <- STUFF$MLE[I]
   names(mu) <- axes
-  COV.mu <- STUFF$COV[I,I]
+  COV.mu <- STUFF$COV[I,I,drop=FALSE]
   dimnames(COV.mu) <- list(axes,axes)
 
   I <- (AXES+1):length(STUFF$MLE)
   sigma <- STUFF$MLE[I]
   sigma <- covm(sigma,axes=axes,isotropic=isotropic)
-  COV <- STUFF$COV[I,I]
+  COV <- STUFF$COV[I,I,drop=FALSE]
   NAMES <- names(sigma@par)[1:length(I)] # isotropic
   dimnames(COV) <- list(NAMES,NAMES)
 
