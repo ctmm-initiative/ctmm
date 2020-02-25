@@ -142,6 +142,9 @@ get.mle <- function(FIT)
 # keep removing uncertain parameters until AIC stops improving
 ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position",trace=FALSE,cores=1,...)
 {
+  LIST <- list(...)
+  if(!is.null(LIST$control$message)) { message <- LIST$control$message }
+
   CV <- c("LOOCV","HSCV")
   IC <- match.arg(IC,c("AICc","AIC","BIC",CV,NA))
   MSPE <- match.arg(MSPE,c("position","velocity",NA))
