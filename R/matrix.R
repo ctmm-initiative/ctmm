@@ -116,7 +116,7 @@ Adj <- function(M) { t(Conj(M)) }
 He <- function(M) { (M + Adj(M))/2 }
 
 
-# map function for PSD matrices
+# map function for real-valued PSD matrices
 PDfunc <-function(M,func=function(m){1/m},force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
 {
   DIM <- dim(M)[1]
@@ -165,9 +165,9 @@ PDfunc <-function(M,func=function(m){1/m},force=FALSE,pseudo=FALSE,tol=.Machine$
   {
     M <- eigen(M)
     V <- M$vectors
-    M <- M$values
+    M <- Re(M$values)
 
-    V <- vapply(1:DIM,function(i){V[,i] %o% Conj(V[,i])},diag(1,DIM))
+    V <- vapply(1:DIM,function(i){Re(V[,i] %o% Conj(V[,i]))},diag(1,DIM))
   }
 
   if(any(M<0) && !force && !pseudo) { stop("Matrix not positive definite.") }
@@ -352,9 +352,15 @@ sqrtm <- function(M,force=FALSE,pseudo=FALSE)
 # condition number
 conditionNumber <- function(M)
 {
-  M <- eigen(M)$values
-  M <- range(M)
-  return(M[2]/M[1])
+  M <- try(eigen(M,only.values=TRUE)$values)
+  if(class(M)[1]=="numeric")
+  {
+    M <- last(M)/M[1]
+    M <- nant(M,Inf) # worst case
+    return(M)
+  }
+  else
+  { return(Inf) } # worst case
 }
 
 

@@ -20,6 +20,9 @@ telemetry.mins <- function(data,axes=c('x','y'))
 # FIT MODEL WITH LIKELIHOOD FUNCTION (convenience wrapper to optim)
 ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),trace=FALSE)
 {
+  #DEBUG.FIT <<- list(data=data,CTMM=CTMM,method=method,COV=COV,control=control,trace=trace,SEED=.Random.seed)
+  if(!is.null(control$message)) { message <- control$message }
+
   method <- match.arg(method,c("ML","pREML","pHREML","HREML","REML"))
   axes <- CTMM$axes
   CTMM <- get.mle(CTMM) # if has better start for pREML/HREML/pHREML
@@ -191,12 +194,14 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
       names(pars) <- NAMES
       pars <- clean.parameters(pars,linear.cov=linear.cov)
 
-      CTMM <<- set.parameters(CTMM,pars,linear.cov=linear.cov)
+      CTMM <- set.parameters(CTMM,pars,linear.cov=linear.cov)
 
       # this is a wasted evaluation !!! store verbose glob in environment?
-      if(finish) { CTMM <<- ctmm.loglike(data,CTMM,REML=REML,verbose=TRUE,profile=profile) }
+      if(finish) { CTMM <- ctmm.loglike(data,CTMM,REML=REML,verbose=TRUE,profile=profile) }
+
+      return(CTMM)
     }
-    store.pars(pars,finish=TRUE)
+    CTMM <- store.pars(pars,finish=TRUE)
 
     profile <- FALSE # no longer solving covariance analytically
     setup.parameters(CTMM,profile=FALSE)
@@ -218,7 +223,8 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
     MLE <- unscale.ctmm(CTMM)
 
     ### pREML correction ########## only do pREML if sufficiently away from boundaries
-    if(method %in% c("pREML","pHREML") && mat.min(hess) > .Machine$double.eps*length(NAMES))
+    PREML.FAIL <- method %in% c("pREML","pHREML") && mat.min(hess) <= .Machine$double.eps*length(NAMES)
+    if(method %in% c("pREML","pHREML") && !PREML.FAIL)
     {
       # parameter correction
       REML <- TRUE
@@ -244,22 +250,36 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
       d.pars <- -c(J %*% CTMM$COV %*% DIFF$gradient)
       # Jacobians cancel out between inverse Hessian and gradient
 
+      # gradient or something else was bad
+      PREML.FAIL <- any(is.na(d.pars)) || any(abs(d.pars)==Inf)
+
       # increment transformed parameters
       # pars <- pars + d.pars
-      # safety catch for bad models near boundaries
-      pars <- line.boxer(d.pars,pars,lower=lower,upper=upper,period=period)
-      names(pars) <- NAMES
+      if(!PREML.FAIL)
+      {
+        # safety catch for bad models near boundaries
+        pars <- line.boxer(d.pars,pars,lower=lower,upper=upper,period=period)
+        names(pars) <- NAMES
 
-      # store parameter correction
-      profile <- FALSE
-      store.pars(pars,profile=FALSE,finish=TRUE)
-
-      linear.cov <- FALSE
-      setup.parameters(CTMM,profile=FALSE)
+        # store parameter correction
+        profile <- FALSE
+        # this can still fail if parameters are crazy
+        TEST <- store.pars(pars,profile=FALSE,finish=TRUE)
+        if(class(TEST)[1]=="ctmm")
+        {
+          CTMM <- TEST
+          linear.cov <- FALSE
+          setup.parameters(CTMM,profile=FALSE)
+        }
+        else # parameters crashed likelihood function
+        { PREML.FAIL <- TRUE }
+      }
+      linear.cov <- FALSE # 2 fail cases need this
     }
-    else if(method %in% c("pREML",'pHREML'))
+    # revert to ML/HREML if pREML step failed
+    if(method %in% c("pREML","pHREML") && PREML.FAIL)
     {
-      warning("pREML failure: indefinite ML Hessian.")
+      warning("pREML failure: indefinite ML Hessian or divergent REML gradient.")
       if(method=='pREML') { method <- 'ML' }
       else if(method=='pHREML') { method <- 'HREML' }
     }
@@ -284,7 +304,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
         pars <- clean.parameters(RESULT$par)
       }
       # includes free profile
-      store.pars(pars,profile=TRUE,finish=TRUE)
+      CTMM <- store.pars(pars,profile=TRUE,finish=TRUE)
     }
 
     ### FINAL COVARIANCE ESTIMATE ###

@@ -16,10 +16,15 @@ speed.ctmm <- function(object,data=NULL,level=0.95,robust=FALSE,units=TRUE,prior
     return(INF)
   }
 
-  if(prior && fast && any(eigen(object$COV,only.values=TRUE)$values<=.Machine$double.eps))
+  if(prior && fast)
   {
-    warning("Indefinite covariance matrix estimate. Consider fast=FALSE.")
-    return(INF)
+    TEST <- try(any(eigen(object$COV,only.values=TRUE)$values<=.Machine$double.eps))
+    TEST <- class(TEST)[1]!="logical" || TEST
+    if(TEST)
+    {
+      warning("Indefinite covariance matrix estimate. Consider fast=FALSE.")
+      return(INF)
+    }
   }
 
   if(is.null(data) && prior && !fast)

@@ -1,4 +1,4 @@
-ctmm 0.5.9 (2019-02-04)
+ctmm 0.5.9 (2019-02-24)
 ================
 
   * new exact variogram CI argument "Gauss"
@@ -10,6 +10,8 @@ ctmm 0.5.9 (2019-02-04)
   * bugfix for infinte loop in ctmm.select
   
   * improvements in ctmm.select for collapsing variance/error estimates
+  
+  * rewrite of optimizer's line search to be more exact & reliable
   
   * improvements in optimizer for degenerate likelihood surfaces
   

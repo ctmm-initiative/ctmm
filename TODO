@@ -1,5 +1,6 @@
 PRIORITY
-* exact line search in optimizer
+* i=14: Error in abs(vec[c(lo, hi)]) : non-numeric argument to mathematical function
+* plot axis lables override default
 * as.telemetry multiple fix type columns (3D validated, etc.)
 * meta analysis -> akde -> overlap
 * uncalibrate coati
@@ -53,40 +54,33 @@ PRIORITY
 * reference Guillaume's paper at the beginning of the periodogram vignette
 
 OPTIMIZER
-* take multiple starting guesses---useful with ctmm.select phase I---useful with simplex method
-* pNewton || pN
-** (partial) pNewton-Nelder-Mead || pNNM
-** (derivative-free) dfNewton-Nelder-Mead || dfNNM
-  * make line search a function that returns the end point (and stuff)
-  * initial pattern search for simplex, using expansion line search
-  ** numerical 1st derivative at best estimate (pNNM)
-  ** 1st derivative estimated from simpled (dfNNM)
-  * line search from worst vertex to predicted estimate
-* split-parameter optimization (for periodic parameters like angle) with funnelling error target
-* Somehow optimizer can stop on stage 1 without proceeding to stage 2
-* Stop on encapsulated?
-* STAGE ?1/4? - pattern search
-* try to fit Gamba with error
-* mc.optimize cross curvature if queue allows space
-* mc.optimize fill up queue with higher-order derivatives if further space allows
-* mc.genD cross correlations are wrong
+* don't update hessian unless gradient decreases
+* if line search finishes with even steps on left and right of MIN & >STEP[1], then it can be safe to update the hessian from those results
+* wrap !DEBUG in try() with data.table() and set() each time its improved?
+  * need to reset parscale, though?
+* keep track of simplex
+  * if gradient^2<gradient.old^2 && hessian>TOL.STAGE fails, line search from worst to best (linear search)
+* repeat first evaluation only if ZERO
+* Newton Nelder Mead (NNM, Stage-0)
+  * estimate gradient from simplex (DIM+1)
+  * estimate NR target, if not in simplex, then target centroid
+  * line search from worst location -> target; replace worst location with line-search result
+  * rank-1 update to Hessian/Covariance
+  ** degeneracy check
+* exact NR Hessian option, or if queue allows space
 
+ERROR PAPER
+* include error calibration uncertainty in ctmm.fit
+* how does error change variogram DOF calculation?
+* exact 4x4 matrix inverse relations in PDsolve()
+* UERE error propagation from calibration (do not use as prior!)
+* kGcluster with tpeqd projection suggestion
+* predict can return VAR.xy for isotropic with UERE<4
+* propagation of error uncertainty
 
 OVERLAP
 * overlap needs to return DOFs in an overlap object - and then define a summary function for the overlap object
 * overlaps' correlated errors
-
-ERROR PAPER
-* include error uncertainty in ctmm.fit output
-* how does error change variogram DOF calculation?
-* errors on x,y,z variograms
-* errors on periodograms?
-* exact 4x4 matrix inverse relations in PDsolve()
-* UERE error propagation from calibration (do not use as prior!)
-* email ARGOS about McClintock formula
-* kGcluster with tpeqd projection suggestion
-* predict can return VAR.xy for isotropic with UERE<4
-* propagation of error uncertainty
 
 PROJECTION
 * check projection same for plot.telemetry

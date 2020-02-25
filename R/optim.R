@@ -88,7 +88,8 @@ optimizer <- function(par,fn,...,method="pNewton",lower=-Inf,upper=Inf,period=FA
 }
 
 
-# search up to and along a boundary/period
+## search up to and and then along a boundary/period (recursively)
+# this is used by NR step only, not by line-search algorithm
 box.search <- function(p0,grad,hess,cov=PDsolve(hess),lower=-Inf,upper=Inf,period=F,period.max=1/2)
 {
   # how far we can go before boundary
@@ -104,32 +105,51 @@ box.search <- function(p0,grad,hess,cov=PDsolve(hess),lower=-Inf,upper=Inf,perio
   # passes through lower boundary ?
   dlo <- lower-p1
   LO <- p1==lower | (dlo>=0) # Inf fix
-  if(any(LO)) { lambda[LO] <- ifelse( dp[LO]<0 , 1 - abs( dlo[LO]/dp[LO] ) , 1 ) }
 
   # passes through upper boundary ?
   dhi <- p1-upper
   HI <- p1==upper | (dhi>=0) # Inf fix
-  if(any(HI)) { lambda[HI] <- ifelse( dp[HI]>0 , 1 - abs( dhi[HI]/dp[HI] ) , 1 ) }
 
-  PER <- as.logical(period)
-  if(any(PER)) { lambda[PER] <- min(1, abs(dp[PER])/(period[PER]*period.max) ) }
-
-  lambda <- nant(lambda,1) # ignore Inf @ Inf
-  MIN <- which.min(lambda)
-  if(lambda[MIN]<1)
+  if(any(LO) || any(HI))
   {
-    p2 <- p1 # target beyond boundary
-    p1 <- p0 + lambda[MIN]*dp # go to boundary and stop
-
-    # remaning dimensions
-    if(length(lambda)>1)
+    M <- sqrt(sum(dp^2)) # step length
+    if(M>=1) # stop at first boundary or unit step (suggested step size rediculous)
     {
-      # gradient estimated on boundary
-      grad <- hess %*% (p1-p2) # should I use this?
-      # search along remaining dimensions
-      p1[-MIN] <- box.search(p1[-MIN],grad[-MIN],hess[-MIN,-MIN],lower=lower[-MIN],upper=upper[-MIN],period=period[-MIN],period.max=period.max)
+      dp <- dp/M # prevent numerical errors from extreme M
+      p1 <- line.boxer(dp,p0,lower=lower,upper=upper,period=period,period.max=period.max)
     }
-  }
+    else # recursive search along boundaries
+    {
+      if(any(LO)) { lambda[LO] <- ifelse( dp[LO]<0 , 1 - abs( dlo[LO]/dp[LO] ) , 1 ) }
+      if(any(HI)) { lambda[HI] <- ifelse( dp[HI]>0 , 1 - abs( dhi[HI]/dp[HI] ) , 1 ) }
+
+      PER <- as.logical(period)
+      if(any(PER)) { lambda[PER] <- min(1, abs(dp[PER])/(period[PER]*period.max) ) }
+
+      lambda <- nant(lambda,1) # ignore Inf @ Inf
+      MIN <- which.min(lambda)
+      if(lambda[MIN]<1)
+      {
+        p2 <- p1 # target beyond boundary
+        p1 <- p0 + lambda[MIN]*dp # go to boundary and stop
+
+        # correct small numerical errors
+        LO <- (p1<lower)
+        if(any(LO)) { p1[LO] <- lower[LO] }
+        HI <- (p1>upper)
+        if(any(HI)) { p1[HI] <- upper[HI] }
+
+        # remaning dimensions
+        if(length(lambda)>1)
+        {
+          # gradient estimated on boundary
+          grad <- hess %*% (p1-p2) # should I use this?
+          # search along remaining dimensions
+          p1[-MIN] <- box.search(p1[-MIN],grad[-MIN],hess[-MIN,-MIN],lower=lower[-MIN],upper=upper[-MIN],period=period[-MIN],period.max=period.max)
+        }
+      } # end recurse
+    } # end recursive boundary search
+  } # end boundary consideration
 
   return(p1)
 }
@@ -137,7 +157,7 @@ box.search <- function(p0,grad,hess,cov=PDsolve(hess),lower=-Inf,upper=Inf,perio
 ######################
 # apply box constraints to travel in a straight line from p0 by dp
 ######################
-line.boxer <- function(dp,p0=dp[,1],lower=-Inf,upper=Inf,period=F,period.max=1/2,tol=.Machine$double.eps)
+line.boxer <- function(dp,p0=dp[,1],lower=-Inf,upper=Inf,period=F,period.max=1/2,tol=.Machine$double.eps*length(p0))
 {
   DIM <- dim(dp)
   if(is.null(dim(dp))) { dp <- cbind(dp) }
@@ -206,9 +226,15 @@ QuadSolve <- function(P0,P1,P2,DIR,F0,F1,F2)
   G2 <- F2/M2
   # Hessian estimates, not necessarily assuming that par is between P1 & P2
   hessian <- (G2-G1)/(M2-M1)*2
+  hessian <- nant(hessian,0)
+  INF <- abs(hessian)==Inf
+  if(any(INF)) { hessian[INF] <- sign(hessian[INF])/.Machine$double.eps }
 
   # gradient estimates, also not assuming that par is between P1 & P2
   gradient <- (G2/M2-G1/M1)/(1/M2-1/M1)
+  gradient <- nant(gradient,0)
+  INF <- abs(gradient)==Inf
+  if(any(INF)) { gradient[INF] <- sign(gradient[INF])/.Machine$double.eps }
 
   return(list(gradient=gradient,hessian=hessian))
 }
@@ -366,9 +392,11 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,control=list()
   STEP <- .Machine$double.eps^c(0.25,0.5,0.5,1)
   # machine tolerances for various stage calculations
   TOL <- .Machine$double.eps^c(0.5,1,1,1)
-  TOL.LINE <- sqrt(TOL[1]) # tolernace for rank-1 update
   # goal errors
   TOL.GOAL <- .Machine$double.eps^precision
+  # tolerance for BFGS update (its not very good/reliable)
+  TOL.BFGS <- sqrt(TOL[1])
+  STEP.BFGS <- sqrt(STEP[1])
 
   DIM <- length(par)
   period <- array(period,DIM)
@@ -497,12 +525,12 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,control=list()
     else { abs(diff(fns))/fn0<=TOL.STAGE }
   }
 
-  is.toosmallp <- function(ps,p0)
+  is.toosmallp <- function(ps,p0,tol=STEP[STAGE])
   {
     SCL <- pmax(abs(p0),1)
-    # relative step size
+    # relative step sizes
     dp <- sqrt(abs(c((ps[,2]-ps[,1])^2 %*% SCL^2))) # formula explained in numderiv.diff()
-    return(dp <= STEP[STAGE])
+    return(dp <= tol)
   }
 
   numderiv.diff <- function(p0,DIR)
@@ -528,37 +556,48 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,control=list()
     if(any(BOX)) { P2[,BOX] <- 2*P1[,BOX] }
 
     # apply these displacements within box constraints
-    P1 <- line.boxer(P1,p0=p0,lower=lower,upper=upper,period=period,tol=TOL[i])
-    P2 <- line.boxer(P2,p0=p0,lower=lower,upper=upper,period=period,tol=TOL[i])
+    P1 <- line.boxer(P1,p0=p0,lower=lower,upper=upper,period=period)
+    P2 <- line.boxer(P2,p0=p0,lower=lower,upper=upper,period=period)
     # columns are now boxed coordinates
 
     return(list(P1=P1,P2=P2))
+  }
+
+  # distance to next boundary
+  m.box <- function(M=1)
+  {
+    MB <- c(((upper-par)/(M*DIR.STEP))[M*DIR.STEP>0],((lower-par)/(M*DIR.STEP))[M*DIR.STEP<0])
+    MB <- nant(MB,0)
+    if(!length(MB)) { MB <- 0 }
+    MB <- min(MB,na.rm=TRUE)
+    MB <- max(0,MB)
+    return(MB)
   }
 
   # initializing stuff checked in loop
   STAGE <- stages[1] # 1-Newton, 2-Conjugate Gradient, 3-Gradient Descent, 4-nothing yet
   ERROR <- Inf
   counts <- 0
-  UPDATE <- TRUE # apply rank-1 updates
-  LINE.DO <- TRUE # else do line searches in between Newton-Raphson iterations (always initially)
-  LINE.DID <- FALSE # did we do a line search previously
   par.target <- par # where to evaluate around next
-  par.target.old <- par
+  par.old <- par
   fn.par <- Inf # current best objective value fn(par)
   condition <- Inf
   gradient.old <- rep(Inf,DIM)
   hessian.LINE <- NULL # line-search hessian
-  par.dir <- rep(0,DIM) # search direction for conjugate gradient
+  CG.RESET <- TRUE # reset conjugate gradient to gradient descent
+  REVERSE <- FALSE
+  cg.dir <- rep(0,DIM) # conjugate gradient direction
   par.diff <- rep(0,DIM)
+  NR <- FALSE # line search hessian/gradient are good
   ######################
   # MAIN LOOP
   ######################
-  while(counts < maxit)
+  while(STAGE<=last(stages) && counts<=maxit)
   {
-    # adjust zero shift
+    # udpate zero shift
     if(ZERO && fn.par<Inf) { zero <- zero + fn.par }
 
-    # update local tangent frame
+    # update local tangent frame for periodic variables
     if(PMAP)
     {
       # update tangent origins
@@ -567,51 +606,37 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,control=list()
       # update tangent variables
       par <- put.theta(par,theta.old,theta)
       par.target <- put.theta(par.target,theta.old,theta)
-      par.target.old <- put.theta(par.target.old,theta.old,theta)
+      par.old <- put.theta(par.old,theta.old,theta)
     }
 
     DIR <- diag(1,DIM)
     BOX <- is.boxed(par.target,fix.dir=TRUE)
 
     # revert stage on big changes
-    for(i in stages)
-    { if(STAGE>i && ERROR>=TOL[i] && TOL[i]>=TOL.GOAL) { STAGE <- i ; break } }
+    for(i in stages) { if(STAGE>i && ERROR>=TOL[i]+TOL.ZERO && TOL[i]>=TOL.GOAL) { STAGE <- i ; break } }
 
-    # advance stage through stages
+    # advance through requested stages only
     STAGE <- (stages[stages>=STAGE])[1]
     if(is.na(STAGE)) { break }
 
     # set stage information
     TOL.STAGE <- max(TOL.GOAL,TOL[STAGE])
-    if(STAGE>1)
-    {
-      # must always do line search for gradient descent
-      LINE.DO <- TRUE
-    }
-    if(STAGE!=2)
-    {
-      # reset conjugate gradient direction for next time STAGE==2
-      par.dir <- rep(0,DIM)
-    }
+    if(STAGE<2) { CG.RESET <- TRUE } # reset conjugate gradient direction for next time STAGE==2
 
+    # now line searching to tolerance, so no point in this...
     ## update hessian from line-search result (Rank-1 update)
-    if(UPDATE && STAGE==1 && LINE.DID && hessian.LINE>=.Machine$double.eps)
-    {
-      DIFF <- rank1update(hessian.LINE,DIR.STEP,hessian,covariance)
-      hessian <- DIFF$hessian
-      covariance <- DIFF$covariance
-    }
+    # if(STAGE==1 && NR)
+    # {
+    #   DIFF <- rank1update(hessian.LINE,DIR.STEP,hessian,covariance)
+    #   hessian <- DIFF$hessian
+    #   covariance <- DIFF$covariance
+    # }
 
     ## lots of choices here for the basis
     # we could stick with the canonical basis
     if(STAGE==1 && sum(!BOX)>1)
     {
-      ## eigen basis
-      # I could make this O(n^2) if we decide on this choice?
-      # DIR[!BOX,!BOX] <- eigen(hessian[!BOX,!BOX])$vectors
-
       ## random basis
-      # not sure if I can make this better than O(n^3)
       n <- sum(!BOX)
       dir <- matrix(0,n,n)
       # random angles near zero
@@ -632,514 +657,532 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,control=list()
     P1 <- PS$P1
     P2 <- PS$P2
     # mc evaluate all points
-    P <- cbind(par,par.target,P1,P2)
-    # par must be re-evaluated againt to prevent zero shift roundoff error
+    # par must be re-evaluated to prevent zero shift roundoff error if(ZERO)
+    P <- cbind(par.target,P1,P2)
     counts.diff <- ceiling(ncol(P)/cores)
     counts <- counts + counts.diff
     fn.queue <- unlist(plapply(split(P,col(P)),func,cores=cores))
     # separate back into parts
-    fn.par <- fn.queue[1]
-    fn.target <- fn.queue[2]
-    F1 <- fn.queue[2+1:DIM]
-    F2 <- fn.queue[2+DIM+1:DIM]
+    par <- par.target
+    fn.par <- fn.target <- fn.queue[1]
+    F1 <- fn.queue[1+1:DIM]
+    F2 <- fn.queue[1+DIM+1:DIM]
 
     # update estimate of round-off error in zeroing
     if(counts>counts.diff && ZERO) { TOL.ZERO <- max(TOL.ZERO,abs(fn.par)) }
 
     # is the minimum encapsulated?
-    encapsulated <- (fn.target<F1) & (fn.target<F2)
+    # encapsulated <- (fn.target<F1) & (fn.target<F2)
 
     # calculate axial derivatives to second order
     DIFF <- QuadSolve(par.target,P1,P2,DIR,fn.target,F1,F2)
     gradient <- DIFF$gradient
 
-    # Newton-Raphson (diagonal update)
+    M <- sqrt(sum(gradient^2))
+    if(M<=.Machine$double.eps)
+    {
+      # need to move on to next stage regardless of objective
+      ERROR <- TOL[STAGE] * 0.99 # proceed to next stage (fake number)
+      STAGE <- STAGE + 1
+    }
+
+    # reset Hessian, if previous line search went backwards
+    if( REVERSE ) { covariance <- hessian <- diag(1,DIM) }
+
+    # Newton-Raphson (pNR diagonal update)
     if(STAGE==1)
     {
       hessian.diag <- DIFF$hessian
 
-      # ERROR CHECKING
-
+      ### ERROR CHECKING ###
       # will need line search if not normal looking
-      TEST <- is.nan(hessian.diag)
+      TEST <- is.na(hessian.diag)
       if(any(TEST)) { hessian.diag[TEST] <- 0 }
-      if(any(hessian.diag<=.Machine$double.eps)) { LINE.DO <- TRUE }
 
-      # if the gradient is null in one direction, then we've likely profiled that axis to machine precision
+      # fix after condition report
+      # condition <- hessian.diag/diag(hessian)
+      # MIN <- which.min(abs(condition))
+      # MAX <- which.max(abs(condition))
+      # condition <- condition[c(MIN,MAX)]
+      # condition <- sign(condition) * sqrt(abs(condition))
+
+      # if the gradient is null in one direction, then we've likely profiled that axis to tolerance
       # fix profiled dimensions to change nothing, else will get 0/0
-      TEST <- TEST | abs(F1-fn.target)<=.Machine$double.eps | abs(F2-fn.target)<=.Machine$double.eps
+      TEST <- TEST | abs(F1-fn.target)<=TOL[STAGE] | abs(F2-fn.target)<=TOL[STAGE]
       if(any(TEST))
       {
         gradient[TEST] <- 0
         hessian.diag[TEST] <- diag(hessian)[TEST]
       }
 
-      # stick with old estimate
-      TEST <- abs(hessian.diag)<=.Machine$double.eps
+      # stick with old estimate if new estimate is bad
+      TEST <- hessian.diag<=TOL[1] | hessian.diag>=1/TOL[1]
       if(any(TEST)) { hessian.diag[TEST] <- diag(hessian)[TEST] }
-
-      condition <- hessian.diag/diag(hessian)
-      MIN <- which.min(abs(condition))
-      MAX <- which.max(abs(condition))
-      condition <- condition[c(MIN,MAX)]
-      condition <- sign(condition) * sqrt(abs(condition))
 
       # transform gradient back to canonical coordinates
       gradient <- c(DIR %*% gradient)
     } # end Newton Raphson diagonal update
 
-    # update hessian from Newton-Raphson result (rank-1)
+    # BFGS update (rank-1)
     # we do this before the better local derivative update
-    # also this provides an objective check on NR step quality
+    # also this provides an objective check on Newton-Raphson step quality
     ########################################
-    if(UPDATE && STAGE==1 && counts>counts.diff)
+    if(STAGE==1 && counts>counts.diff)
     {
       # search direction
-      DIFF <- par.target-par.target.old
-      MAG <- sqrt(sum(DIFF^2))
-      DIFF <- DIFF/MAG
+      DIR.STEP <- par-par.old
+      M <- sqrt(sum(DIR.STEP^2))
+      DIR.STEP <- nant(DIR.STEP/M,0)
 
       # hessian along line between centers where derivatives were calculated
-      gradient.diff <- gradient-gradient.old
-      hessian.DIFF <- c( DIFF%*%gradient.diff ) / MAG
-      if(is.nan(hessian.DIFF)) { hessian.DIFF <- 0 }
+      gradient.LINE <- gradient-gradient.old # canonical coordinates
+      hessian.LINE <- c( DIR.STEP%*%gradient.LINE )/M
+      hessian.LINE <- nant(hessian.LINE,0)
 
-      # if we just did a line search, then we can compare the two to see if step would have given a bad Hessian update
-      if(LINE.DID)
-      {
-        # relative comparison between curvature estimates along search direction
-        TEST <- abs(log(abs(hessian.LINE/hessian.DIFF)))
-        # NR with a factor of 2 curvature estimate?
-        if(is.nan(TEST) || TEST >= log(2)) { LINE.DO <- TRUE }
-      }
-
-      # will need line search if not normal looking
-      if(hessian.DIFF<=.Machine$double.eps) { LINE.DO <- TRUE }
-
-      # can we improve with hessian information
-      if((!LINE.DID || hessian.LINE<=0) && sum(gradient^2)<sum(gradient.old^2) && abs(hessian.DIFF)>.Machine$double.eps)
+      # does this info look good? Was the step big enough to justify the inaccuracy of this method? Then update along search direction
+      if(sum(gradient^2)<sum(gradient.old^2) && M>STEP.BFGS && hessian.LINE>TOL.BFGS && hessian.LINE<1/TOL.BFGS)
       {
         # transform DIFF to same frame as hessian/covariance
-        DIFF <- rank1update(hessian.DIFF,c(t(DIR)%*%DIFF),hessian,covariance)
+        DIFF <- rank1update(hessian.LINE,c(t(DIR)%*%DIR.STEP),hessian,covariance)
         hessian <- DIFF$hessian
         covariance <- DIFF$covariance
       }
     }
-    par.target.old <- par.target
 
-    # Newton-Raphson failed, do an enclosure search
-    if(STAGE==1 && counts>counts.diff && fn.par<=fn.target && !LINE.DID)
+    # new best par
+    par <- par.target
+    fn.par <- fn.target
+
+    if(STAGE==1) # Newton-Raphson
     {
-      # Newton-Raphson failed, so don't update the Hessian with local information from here (its worse than where we were)
-      LINE.DO <- TRUE
+      ####################################
+      # DIAGONAL UPDATE (Rank-DIM)
+      # curvature correction factor: new curvature / old curvature (current coordinates)
+      FACT <- sqrt(hessian.diag/diag(hessian)) # correction factor diagonal
+      # update curvatures while preserving correlations
+      hessian <- t(t(hessian*FACT)*FACT)
+      # update covariances the same way as Hessian (prevents requirement of matrix inversion)
+      covariance <- t(t(covariance/FACT)/FACT)
 
       # transform Hessian back to canonical coordinates
       hessian <- DIR %*% hessian %*% t(DIR)
       covariance <- DIR %*% covariance %*% t(DIR)
-
-      if(trace) { message(sprintf("%s Newton-Raphson overstep (encapsulated=%d/%d; condition=%f:%f)",format(zero+fn.par,digits=16),sum(encapsulated),DIM,condition[1],condition[2])) }
-      if(trace==2) { message("\tc(",paste0(NAMES,"=",par,collapse=', '),")") }
-
-      LINE.TYPE <- "Enclosure"
     }
-    else # step forward with various search types
+
+    ####################################
+    # sanity check on hessian/covariance
+    TEST <- max(-Inf,conditionNumber(covariance),conditionNumber(hessian),na.rm=TRUE)
+    TEST <- TEST<=TOL.STAGE[1] || TEST>=1/TOL.STAGE[1]
+    # reset hessian/covariance if bad
+    if(TEST) { covariance <- hessian <- diag(1,DIM) }
+    ## orthogonality test
+    # COS <- covariance %*% gradient
+    # COS <- c(gradient %*% COS)/sqrt(sum(gradient^2) * sum(COS^2))
+
+    # par could have been updated, updating boxed pars
+    BOX <- is.boxed(par,fix.dir=TRUE)
+    # what dimensions are pushing through the boundaries
+    BOXED <- BOX & c(gradient%*%DIR)<0
+
+    par.old <- par.target # need for BFGS
+    if(STAGE==1 || STAGE==3)
     {
-      # new best par
-      par <- par.target
-      fn.par <- fn.target
+      LINE.TYPE <- "Newton-Raphson"
+      # Newton-Raphson search step from par.target (can optimize along boundary)
+      # if(DEBUG) { DEBUG.STEP <<- list(LINE.TYPE=LINE.TYPE,par=par,gradient=gradient,hessian=hessian,covariance=covariance,lower=lower,upper=upper,period=period) }
+      par.target <- box.search(par,gradient,hessian,covariance,lower=lower,upper=upper,period=period)
+    }
+    else if(STAGE==2) # conjugate gradient (preconditioned)
+    {
+      LINE.TYPE <- "Conjugate gradient"
+      # if(DEBUG) { DEBUG.STEP <<- list(LINE.TYPE=LINE.TYPE,par=par,gradient=gradient,hessian=hessian,covariance=covariance,lower=lower,upper=upper,period=period,BOXED=BOXED,DIR=DIR) }
 
-      if(STAGE==1) # Newton-Raphson
+      if(any(!BOXED))
       {
-        # DIAGONAL UPDATE (Rank-DIM)
-        ####################################
-        # curvature correction factor: new curvature / old curvature (current coordinates)
-        FACT <- sqrt(abs(hessian.diag/diag(hessian))) # correction factor diagonal
-        # update curvatures while preserving correlations
-        hessian <- t(t(hessian*FACT)*FACT)
-        # update covariances the same way as Hessian (prevents requirement of matrix inversion)
-        covariance <- t(t(covariance/FACT)/FACT)
+        FREE <- !BOXED # now the free dimensions
 
-        # transform Hessian back to canonical coordinates
-        hessian <- DIR %*% hessian %*% t(DIR)
-        covariance <- DIR %*% covariance %*% t(DIR)
-      }
+        if(any(BOXED) && any(FREE)) { COV <- PDsolve(hessian[FREE,FREE]) }
+        else { COV <- covariance } # avoid costly matrix inversion if possible
 
-      # par could have been updated, updating boxed pars
-      BOX <- is.boxed(par,fix.dir=TRUE)
-      # what dimensions are pushing through the boundaries
-      BOXED <- BOX & c(gradient%*%DIR)<0
-
-      if(STAGE==1 || STAGE==3)
-      {
-        # Newton-Raphson search step from par.target (can optimize along boundary)
-        par.target <- box.search(par,gradient,hessian,covariance,lower=lower,upper=upper,period=period)
-        par.diff <- par.target-par
-
-        # # this is also preconditioned gradient descent
-        # if(!any(BOXED))
-        # { par.diff <- -c(covariance %*% gradient) }
-        # else if(any(!BOXED)) # constrained search
-        # {
-        #   BOXED <- !BOXED # now the free dimensions
-        #   par.diff[BOXED] <- -PDsolve(hessian[BOXED,BOXED]) %*% gradient[BOXED]
-        #   # there are more exact relations if the global optimum is behind the boundary and the cost function is still quadratic on the boundary... not generally true here
-        # }
-      }
-      else if(STAGE==2) # conjugate gradient (preconditioned)
-      {
-        if(!any(BOXED))
+        if(!CG.RESET) # continue with preconditioned conjugate gradient
         {
-          # Polak-Ribiere formula (preconditoned)
-          beta <- c(gradient %*% covariance %*% (gradient - gradient.old)) / c(gradient.old %*% covariance %*% gradient.old)
-          beta <- max(0,beta)
-          if(is.nan(beta) || is.na(beta) || abs(beta)==Inf) { beta <- 0 } # initialized by gradient.old
-
-          # search direction
-          par.dir <- -c(covariance %*% gradient) + (beta * par.dir)
-
-          # approximate search step (exact if hessian is correct)
-          if(any(abs(par.dir) > .Machine$double.eps))
-          { par.diff <- c(gradient %*% par.dir) / c(par.dir %*% hessian %*% par.dir) * par.dir }
-          else # don't divide by zero
-          { par.diff <- par.dir }
-        }
-        else if(any(!BOXED))
-        {
-          FREE <- !BOXED # now the free dimensions
-          COV <- PDsolve(hessian[FREE,FREE])
           # Polak-Ribiere formula (preconditoned)
           beta <- c(gradient[FREE] %*% COV %*% (gradient - gradient.old)[FREE]) / c(gradient.old[FREE] %*% COV %*% gradient.old[FREE])
-          beta <- max(0,beta)
-          if(is.nan(beta) || is.na(beta) || abs(beta)==Inf) { beta <- 0 } # initialized by gradient.old
-
-          # search direction
-          par.dir[FREE] <- -c(COV %*% gradient[FREE]) + (beta * par.dir[FREE])
-          par.dir[BOXED] <- 0
-
-          # approximate search step (exact if hessian is correct)
-          if(any(abs(par.dir[FREE])>.Machine$double.eps))
-          {
-            par.diff[FREE] <- c(gradient[FREE] %*% par.dir[FREE]) / c(par.dir[FREE] %*% hessian[FREE,FREE] %*% par.dir[FREE]) * par.dir[FREE]
-            par.diff[BOXED] <- 0
-          }
-          else # don't divide by zero
-          { par.diff[FREE] <- par.dir[FREE] }
+          # direction reset
+          if(is.na(beta) || beta<0 || beta>=1/STEP[STAGE]) { CG.RESET <- TRUE }
         }
 
-        # where we aim to evaluate next
-        par.target <- line.boxer(par.diff,p0=par,lower=lower,upper=upper,period=period,tol=TOL[i])
-      } # end conjugate-gradient code
-      if(any(BOXED)) { par.diff[BOXED] <- 0 }
+        # initialize with preconditioned gradient descent
+        if(CG.RESET)
+        {
+          LINE.TYPE <- "Gradient descent"
+          beta <- 0
+        }
 
-      if(sum(par.diff^2) <= .Machine$double.eps) { ERROR <- 0 ; STAGE <- STAGE + 1 ; next }
-      # new search direction
-      DIR.STEP <- par.diff / sqrt(sum(par.diff^2))
+        # update search direction # works even if beta==0
+        cg.dir[FREE] <- -c(COV %*% gradient[FREE]) + (beta * cg.dir[FREE])
+        cg.dir[BOXED] <- 0
 
-      if(trace)
-      {
-        if(STAGE==1)
-        { message(sprintf("%s Newton-Raphson step (encapsulated=%d/%d; condition=%f:%f)",format(zero+fn.par,digits=16),sum(encapsulated),DIM,condition[1],condition[2])) }
-        else if(STAGE==2)
-        { message(sprintf("%s Conjugate Gradient step (encapsulated=%d/%d)",format(zero+fn.par,digits=16),sum(encapsulated),DIM)) }
-        else if(STAGE==3)
-        { message(sprintf("%s Gradient Descent step (encapsulated=%d/%d)",format(zero+fn.par,digits=16),sum(encapsulated),DIM)) }
+        CG.RESET <- FALSE
       }
-      if(trace==2) { message("\tc(",paste0(NAMES,"=",par,collapse=', '),")") }
-      LINE.TYPE <- "Prospection"
-    } # end step code
 
-    # step stopping conditions here
-    # alternative stopping conditions in line search
-    if(!LINE.DO && !LINE.DID)
+      # where we aim to evaluate next
+      par.target <- line.boxer(cg.dir,p0=par,lower=lower,upper=upper,period=period)
+    } # end conjugate-gradient code
+    gradient.old <- gradient # need for BFGS & CG
+    par.diff <- par.target-par
+
+    if(any(BOXED)) { par.diff[BOXED] <- 0 }
+
+    # never quit before line search, unless you really must
+    if(is.toosmallp(cbind(par.target,par),par,tol=.Machine$double.eps))
     {
-      if(ZERO) { ERROR <- abs(fn.target.old-fn.par) }
-      else { ERROR <- abs((fn.target.old-fn.par)/fn.par) }
-
-      # check with line search one last time before quiting
-      if(ERROR < TOL.STAGE + TOL.ZERO) { LINE.DO <- TRUE }
-
-      # are rank-1 updates safe?
-      if(STAGE==1 && ERROR>TOL.LINE) { UPDATE <- TRUE } else { UPDATE <- FALSE }
+      # need to move on to next stage regardless of objective
+      ERROR <- TOL[STAGE] * 0.99 # proceed to next stage (fake number)
+      STAGE <- STAGE + 1
+      next
     }
-    fn.target.old <- fn.target
-    gradient.old <- gradient
 
+    # predicted search step size
+    M <- sqrt(sum(par.diff^2))
+    # new search direction
+    DIR.STEP <- par.diff / M
 
-    LINE.DID <- FALSE
+    # distance to boundary
+    M.BOX <- m.box()
+    # not too small, not too big
+    M <- clamp(M,.Machine$double.eps,M.BOX)
+
+    ###################
+    # LINE SEARCH START
+    ###################
+    par.start <- par
+    fn.start <- fn.par
+
+    # initialize (all) storage results
+    par.all <- cbind(par)
+    fn.all <- fn.par
+
+    hessian.LINE <- c(DIR.STEP %*% hessian %*% DIR.STEP)
+    gradient.LINE <- c(DIR.STEP %*% gradient)
+    # generate a linear sequence of points from par to the other side of par.target
+    P2 <- line.boxer(1.5*par.diff,p0=par,lower=lower,upper=upper,period=period)
+    P1 <- line.boxer(1.0*par.diff,p0=par,lower=lower,upper=upper,period=period)
+    M <- sqrt(sum((P1-par)^2)) # M is unsigned!
+    M1 <- min(1,M/2) # 1 in case hessian is bad
+    M2 <- sqrt(sum((P2-par)^2))
+    # sample to target or boundary
+    if(abs(M2)<M.BOX || M2-M>=STEP[STAGE]) # sample P1/2 to P1 to P2
+    {
+      if(abs(M2)<M.BOX) { LINE.TYPE <- paste(LINE.TYPE,"prospection") }
+      else { LINE.TYPE <- paste(LINE.TYPE,"boundary-prospection") }
+
+      n <- mc.min(3,cores)
+
+      SEQ <- M # target
+      n <- n-1 # remaining points
+
+      # under-estimates -- proportional-ish to M-M1
+      n1 <- (M-M1)/(M2-M1)*(n+2) - 1
+      n1 <- clamp(n1,1,n-1)
+      n1 <- round(n1)
+      # over-estimates -- proportional-ish to M2-M
+      n2 <- n-n1
+
+      SEQ <- c( seq(M1,M,length.out=n1+1), seq(M,M2,length.out=n2+1)[-1] )
+    }
+    else # sample only P2/2 to P2 to fit search within boundary
+    {
+      LINE.TYPE <- paste(LINE.TYPE,"boundary")
+      n <- mc.min(2,cores)
+      SEQ <- seq(M1,M2,length.out=n)
+    }
+    # new points to evaluate
+    P <- line.boxer((DIR.STEP %o% SEQ),p0=par,lower=lower,upper=upper,period=period)
+
     ##################
     # LINE SEARCH LOOP
     ##################
-    if(LINE.DO)
+    while(counts < maxit)
     {
-      LINE.DID <- TRUE
-      LINE.DO <- FALSE
-      LINE.SORTED <- TRUE
+      counts <- counts + ceiling(ncol(P)/cores)
 
-      # start of line search
-      par.start <- par
-      fn.start <- fn.par
+      # most expensive part
+      # evaluate objective function at new P and store to fn.queue
+      fn.queue <- unlist(plapply(split(P,col(P)),func,cores=cores))
+      PROGRESS <- any(fn.queue<fn.par) # did this iteration improve things?
 
-      # initialize (all) storage results
-      par.all <- cbind(par)
-      fn.all <- fn.par
+      # combine with older results
+      par.all <- cbind(par.all,P)
+      fn.all <- c(fn.all,fn.queue)
 
-      par.diff <- par.target - par
-      if(sum(par.diff^2) <= .Machine$double.eps) { ERROR <- 0 ; STAGE <- STAGE + 1 ; next } # this actually happened once
+      # sort along DIR.STEP
+      SORT <- c(DIR.STEP %*% (par.all-par))
+      SORT <- sort(SORT,method="quick",index.return=TRUE)$ix
+      par.all <- par.all[,SORT,drop=FALSE] # ARGH!
+      fn.all <- fn.all[SORT]
 
-      if(LINE.TYPE=="Prospection")
+      # new best estimate
+      MIN <- which.min(fn.all)
+      par <- par.all[,MIN]
+      fn.par <- fn.all[MIN]
+
+      END <- (MIN==1 || MIN==length(fn.all))
+
+      if(trace) { message(sprintf("%s %s search",format(zero+fn.par,digits=16),LINE.TYPE)) }
+      if(trace>1) { message("\tc(",paste0(NAMES,"=",par,collapse=', '),")") }
+
+      # if(DEBUG>1)
+      # {
+      #   graphics::plot((DIR.STEP %*% (par.all-par)),(fn.all-fn.par),xlab="Distance from MIN",ylab="Value over MIN")
+      #   graphics::abline(h=c(fn.start-fn.par,0),col=scales::alpha(c('black','blue'),0.5))
+      #   graphics::abline(v=c(DIR.STEP %*% (par.start-par),0),col=scales::alpha(c('black','blue'),0.5))
+      #   graphics::points(c(DIR.STEP %*% (P-par)),fn.queue-fn.par,pch=16,col="red")
+      #   graphics::points(DIR.STEP %*% (par.start-par),fn.start-fn.par,pch=16)
+      #   graphics::title(sprintf("%s search",LINE.TYPE))
+      # }
+
+      ## calculted steps were too small on one side to proceede
+      # no where to go
+      TEST <- FALSE
+      if(MIN>1) { TEST <- TEST || is.toosmallp(par.all[,MIN-1:0,drop=FALSE],par,tol=.Machine$double.eps) }
+      if(MIN<length(fn.all)) { TEST <- TEST || is.toosmallp(par.all[,MIN+0:1,drop=FALSE],par,tol=.Machine$double.eps) }
+      if(TEST) { break }
+      # we met our objective
+      TEST <- FALSE
+      if(MIN>1) { TEST <- TEST || is.toosmallf(fn.all[MIN-1:0],fn.par) }
+      if(MIN<length(fn.all)) { TEST <- TEST || is.toosmallf(fn.all[MIN+0:1],fn.par) }
+      if(TEST && !PROGRESS) { break }
+      # we didn't meet our objective and probably won't make further progress
+      TEST <- FALSE
+      if(MIN>1) { TEST <- TEST || is.toosmallp(par.all[,MIN-1:0,drop=FALSE],par) }
+      if(MIN<length(fn.all)) { TEST <- TEST || is.toosmallp(par.all[,MIN+0:1,drop=FALSE],par) }
+      if(TEST && !PROGRESS) { break }
+
+
+      ################################
+      # 1D Newton-Raphson info
+      ################################
+      if(MIN==1)
+      { i <- MIN+1; j <- MIN+2 }
+      else if(MIN==length(fn.all))
+      { i <- MIN-1; j <- MIN-2 }
+      else
+      { i <- MIN-1; j <- MIN+1 }
+      DIFF <- QuadSolve(par,par.all[,i],par.all[,j],DIR.STEP,fn.par,fn.all[i],fn.all[j])
+
+      # did this improve like it should
+      if(DIFF$gradient^2<gradient.LINE^2 && DIFF$hessian>=TOL[STAGE] && DIFF$hessian<1/TOL[STAGE])
       {
-        # generate a linear sequence of points from par to the other side of par.target
-        P <- line.boxer(2*par.diff,p0=par,lower=lower,upper=upper,period=period,tol=TOL[i])
-        par.diff <- P - par # twice the old par.diff with no boundary (reflection=1)
-        M <- sqrt(sum(par.diff^2)) # total search magnitude
-        M <- clamp(M,0,1) # assume parscale is reasonable, keep search step reasonable in case of bad Hessian
-        SEQ <- seq(0,M,length.out=mc.min(4,cores)+1)[-1]
-      }
-      else if(LINE.TYPE=="Enclosure")
-      {
-        # generate a linear sequence of points between par and par.target (already evaluated)
-        M <- sqrt(sum(par.diff^2))
-        SEQ <- seq(0,M,length.out=mc.min(3,cores)+2)[-1]
-        SEQ <- SEQ[-length(SEQ)]
+        NR <- TRUE # will try NR step
+        M <- -DIFF$gradient/DIFF$hessian # M is signed!
 
-        par.all <- cbind(par.all,par.target)
-        fn.all <- cbind(fn.all,fn.target)
-        LINE.SORTED <- FALSE
-      }
+        # distance to next boundary in number of Ms
+        M.BOX <- m.box(M)
 
-      # new points to evaluate
-      P <- line.boxer((DIR.STEP %o% SEQ),p0=par,lower=lower,upper=upper,period=period,tol=TOL[i])
-
-      # start iteration loop
-      while(counts < maxit)
-      {
-        counts <- counts + ceiling(ncol(P)/cores)
-
-        # most expensive part
-        # evaluate objective function at new P and store to fn.queue
-        fn.queue <- unlist(plapply(split(P,col(P)),func,cores=cores))
-
-        # combine with older results
-        par.all <- cbind(par.all,P)
-        fn.all <- c(fn.all,fn.queue)
-
-        # sort along DIR.STEP
-        if(!LINE.SORTED)
-        {
-          SORT <- c(DIR.STEP %*% (par.all-par))
-          SORT <- sort(SORT,method="quick",index.return=TRUE)$ix
-          par.all <- par.all[,SORT,drop=FALSE] # ARGH!
-          fn.all <- fn.all[SORT]
-
-          LINE.SORTED <- TRUE
-        }
-
-        # new best estimate
-        MIN <- which.min(fn.all)
-        par <- par.all[,MIN]
-        fn.par <- fn.all[MIN]
-
-        # DEBUG.LIST <<- list(par.all=par.all,fn.all=fn.all,parscale=parscale)
-        if(trace) { message(sprintf("%s %s search",format(zero+fn.par,digits=16),LINE.TYPE)) }
-        if(trace==2) { message("\tc(",paste0(NAMES,"=",par,collapse=', '),")") }
-
-        if(DEBUG>1)
-        {
-          graphics::plot((DIR.STEP %*% (par.all-par)),(fn.all-fn.par),xlab="Distance from MIN",ylab="Value over MIN")
-          graphics::title(sprintf("%s search",LINE.TYPE))
-        }
-
-        # numerical degeneracy check
-        TEST <- FALSE
-        if(MIN>1)
-        {
-          TEST <- TEST || is.toosmallf(fn.all[MIN-1:0],fn.par)
-          TEST <- TEST || is.toosmallp(par.all[,MIN-1:0,drop=FALSE],par)
-        }
-        if(MIN<length(fn.all))
-        {
-          TEST <- TEST || is.toosmallf(fn.all[MIN+0:1],fn.par)
-          TEST <- TEST || is.toosmallp(par.all[,MIN+0:1,drop=FALSE],par)
-        }
-        if(TEST) { break }
-
-        #####################################
-        # we didn't go far enough or we hit a boundary
-        if(MIN==length(fn.all))
-        {
-          # if we hit a boundary, then we can stop at the boundary
-          if(any(is.boxed(par) & !BOX))
-          {
-            par.target <- par
-            break
-          }
-
-          LINE.TYPE <- "Expansion"
-          LINE.DO <- TRUE
-
-          # Distance to first boundary that we will hit going in direction DIR.STEP>0
-          M.BOX <- min(((upper-par)/DIR.STEP)[DIR.STEP>0],((lower-par)/DIR.STEP)[DIR.STEP<0])
-
-          # we didn't hit a boundary yet, but we will eventually hit a boundary, so let's just do that
-          if(M.BOX<Inf)
-          {
-            LINE.TYPE <- "Expansion (bounded)"
-            # generate a linear sequence of points that terminate at the eventual boundary
-            SEQ <- seq(0,M.BOX,length.out=cores+1)[-1]
-            P <- line.boxer((DIR.STEP %o% SEQ),p0=par,lower=lower,upper=upper,period=period,tol=TOL[i])
-          }
-          else # we didn't hit a boundary and we never will, because there is no boundary
-          {
-            LINE.TYPE <- "Expansion (unbounded)"
-            # make sure we are accelerating
-            M <- max(1,M,abs(SEQ))
-            # geometric sequence
-            SEQ <- 2^(1:cores) * M
-
-            P <- line.boxer((DIR.STEP %o% SEQ),p0=par,lower=lower,upper=upper,period=period,period.max=Inf,tol=TOL[i])
-          }
-
-          # goto evaluate iteration step
-          next
-        } # end expansion search setup
-
-        ################################
-        # our grid isn't refined enough to check for local quadratic behavior
-        TEST <- (MIN<=2) || (MIN>=length(fn.all)-1)
-        # did we do a good search
-        if(!TEST) { TEST <- !WolfeTest(x=c(DIR.STEP %*% par.all),y=fn.all,grad.i=c(DIR.STEP%*%gradient),i=which.min(c(DIR.STEP%*%(par.all-par.start))^2),MIN=MIN) }
-        # in either case, we need refinement
-        if(TEST)
-        {
-          LINE.TYPE <- "Refinement"
-          LINE.DO <- TRUE
-
-          # boundary limits
-          M1 <- min(((par-lower)/DIR.STEP)[DIR.STEP>0],((upper-par)/-DIR.STEP)[DIR.STEP<0],Inf)
-          M2 <- min(((par-lower)/-DIR.STEP)[DIR.STEP<0],((upper-par)/DIR.STEP)[DIR.STEP>0],Inf)
-
-          # adjacence limits
-          if(MIN>1) { M1 <- min(M1,DIR.STEP%*%(par-par.all[,MIN-1])) }
-          if(MIN<length(fn.all)) { M2 <- min(M2,DIR.STEP%*%(par.all[,MIN+1]-par)) }
-
-          # reflect if unknown
-          if(M1==Inf) { M1 <- M2 }
-          if(M2==Inf) { M2 <- M1 }
-
-          # refining aims to make the grid even when filling in gaps adjacent to MIN
-          # how many points to refine on each side of MIN
-          n <- mc.min(2,cores)
-
-          # # distribute n to n1 (left) and n2 (right) as proportional to M1 and M2 as possible while maintaining >0 progress constraint
-          # n1 <- n2 <- 1
-          # while(n1+n2<n)
-          # {
-          #   # preference right in ties, as that's the original search direction
-          #   if(n1/M1>n2/M2) { n2 <- n2 + 1 }
-          #   else { n1 <- n1 + 1 }
-          # }
-
-          n1 <- M1/(M1+M2)*n # left solution if points were continuous
-          n1 <- clamp(n1,1,n-1)
-          n1 <- floor(n1) # bias to n2, original search direction
-          n2 <- n-n1
-
-          SEQ <- seq(0,M1,length.out=n1+2)[-c(1,n1+2)]
-          SEQ <- c(-rev(SEQ),seq(0,M2,length.out=n2+2)[-c(1,n2+2)])
-
-          # combine for evaluation
-          P <- line.boxer((DIR.STEP %o% SEQ),p0=par,lower=lower,upper=upper,period=period,period.max=Inf,tol=TOL[i])
-
-          LINE.SORTED <- FALSE
-          next
-        }
-
-        # seems like this shouldn't happen?
-        if(all(par==par.start))
-        {
-          LINE.TYPE <- "Shrink"
-          LINE.DO <- TRUE
-
-          # boundary limits
-          M1 <- min(((par-lower)/DIR.STEP)[DIR.STEP>0],((upper-par)/-DIR.STEP)[DIR.STEP<0],Inf)
-          M2 <- min(((par-lower)/-DIR.STEP)[DIR.STEP<0],((upper-par)/DIR.STEP)[DIR.STEP>0],Inf)
-
-          # adjacence limits
-          if(MIN>1) { M1 <- min(M1,(DIR.STEP%*%(par-par.all[,MIN-1]))/2) }
-          if(MIN<length(fn.all)) { M2 <- min(M2,(DIR.STEP%*%(par.all[,MIN+1]-par))/2) }
-
-          # reflect if unknown
-          if(M1==Inf) { M1 <- M2 }
-          if(M2==Inf) { M2 <- M1 }
-
-          # generate geometrically tightening sequence around par
-          SEQ <- (1/2)^(1:ceiling(cores/2)-1)
-          SEQ <- c(-M1*SEQ,M2*rev(SEQ))
-
-          # combine for evaluation
-          P <- line.boxer((DIR.STEP %o% SEQ),p0=par,lower=lower,upper=upper,period=period,period.max=Inf,tol=TOL[i])
-          LINE.SORTED <- FALSE
-          # goto evaluate iteration step
-          next
-        }
-
-        # everything must be good, line search finished
-        break
-      }
-      # end line search iteration loop
-      ######################################
-      # we improved our estimate and can stop the line search
-
-      #####################
-      # LINE SEARCH FINISHER
-      ######################
-      # interpolate to an even better point
-
-      i <- ifelse(MIN==1,MIN+2,MIN-1)
-      P1 <- par.all[,i]
-      F1 <- fn.all[i]
-
-      i <- ifelse(MIN==length(fn.all),MIN-2,MIN+1)
-      P2 <- par.all[,i]
-      F2 <- fn.all[i]
-
-      # calculate gradient and curvature
-      DIFF <- QuadSolve(par,P1,P2,DIR.STEP,fn.par,F1,F2)
-      gradient.LINE <- DIFF$gradient
-      hessian.LINE <- abs(DIFF$hessian)
-      # will update search direction hessian with this during next iteration
-
-      # estimate better location if we didn't hit a boundary
-      if(UPDATE && 1<MIN && MIN<length(fn.all) && !is.nan(gradient.LINE) && !is.nan(hessian.LINE) && hessian.LINE>0)
-      {
-        # what was our target (closest if boundary)
-        MIN.start <- which.min( colSums((par.target-par.all)^2) )
-        # should we do a line search next time? Would Newton-Raphson have outright failed?
-        if(fn.start<fn.all[MIN.start]) { LINE.DO <- TRUE }
-
-        par.diff <- -(gradient.LINE/hessian.LINE)
-        if(TRUE) { par.target <- par + par.diff*DIR.STEP } # non-monotonic
-        # what we predict this will be valued at
-        fn.predict <- fn.par - hessian.LINE*par.diff^2/2
-
-        if(ZERO) { ERROR <- abs(fn.target.old-fn.predict) }
-        else { ERROR <- abs((fn.target.old-fn.predict)/fn.predict) }
+        # Is estimated NR step plausible for a convex objective?
+        if(M.BOX<=.Machine$double.eps) # past boundary, M useless
+        { NR <- FALSE }
+        else if(MIN>1 && M<=(par.all[,MIN-1]-par)%*%DIR.STEP ) # M left of MIN-1
+        { NR <- FALSE }
+        else if(MIN<length(fn.all) && M>=(par.all[,MIN+1]-par)%*%DIR.STEP) # M right of M+1
+        { NR <- FALSE }
       }
       else
       {
-        hessian.LINE <- 0 # don't update because we didn't refine
-        par.target <- par
-        LINE.DO <- TRUE
-
-        if(ZERO) { ERROR <- abs(fn.target.old-fn.par) }
-        else { ERROR <- abs((fn.target.old-fn.par)/fn.par) }
+        NR <- FALSE
+        M <- 0
       }
 
-      ### error-check wrapup ###
-      if(ERROR < TOL.STAGE + TOL.ZERO) { STAGE <- STAGE + 1 }
-      # stop using interpolation before end of STAGE=1
-      if(STAGE==1 && ERROR>sqrt(TOL.STAGE)) { UPDATE <- TRUE } else { UPDATE <- FALSE }
-    } # go back to differentiation
+      # good to update local information
+      if(NR)
+      {
+        gradient.LINE <- DIFF$gradient
+        hessian.LINE <- DIFF$hessian
+
+        # predicted step is too small to calculate anything
+        if(abs(M)<=.Machine$double.eps)
+        {
+          if(MIN==1 || MIN==length(fn.par)) # but we should keep going
+          { NR <- FALSE; M <- 0 } # try heuristic search instead of NR
+          else # and we can stop
+          { break }
+        }
+      }
+
+      # TEST <- (MIN<=2) || (MIN>=length(fn.all)-1)
+      # if(!TEST) { TEST <- !WolfeTest(x=c(DIR.STEP %*% par.all),y=fn.all,grad.i=c(DIR.STEP%*%gradient),i=which.min(c(DIR.STEP%*%(par.all-par.start))^2),MIN=MIN) }
+
+      # distance to first boundary
+      M.BOX <- m.box()
+      # terminated on boundary---do not refine
+      if(M.BOX<=.Machine$double.eps && END) { break }
+
+      #########################
+      # setup next search steps
+      #########################
+
+      # if(DEBUG) { DEBUG.LINE <<- list(NR=NR,M=M,MIN=MIN,fn.all=fn.all,par.all=par.all,par=par,fn.par=fn.par,M.BOX=M.BOX,cores=cores,DIR.STEP=DIR.STEP,lower=lower,upper=upper,period=period,BOX=BOX,par.start=par.start,STEP=STEP,STAGE=STAGE) }
+
+      # setup searches
+      if(NR && M) # extrapolation search
+      {
+        if((MIN==1 && M<=0) || (MIN==length(fn.all) && M>=0))
+        {
+          if(abs(M)<abs(M.BOX))
+          {
+            LINE.TYPE <- "1D Newton-Raphson expansion"
+
+            n <- cores
+            if(abs(M)>1) # in case hessian is bad
+            {
+              n <- mc.min(2,cores)
+              M1 <- sign(M)
+            }
+            else
+            { M1 <- M/2 }
+            M2 <- sign(M) * min(1.5*abs(M),M.BOX)
+
+            n <- n-1
+            SEQ <- M
+
+            n1 <- (M-M1)/(M2-M1)*(n+2) - 1
+            n1 <- clamp(n1,0,n)
+            n1 <- round(n1)
+            n2 <- n-n1
+
+            SEQ <- c( seq(M1,M,length.out=n1+1)[-(n1+1)] , seq(M,M2,length.out=n2+1) )
+          }
+          else
+          {
+            LINE.TYPE <- "1D Newton-Raphson boundary"
+            M <- M.BOX
+
+            n <- cores
+            if(abs(M)>1) # in case hessian is bad
+            {
+              n <- mc.min(2,cores)
+              M1 <- sign(M)
+            }
+            else
+            { M1 <- M/n }
+
+            SEQ <- seq(M1,M,length.out=n)
+          }
+        }
+        else # interpolation search
+        {
+          LINE.TYPE <- "1D Newton-Raphson refinement"
+          n <- cores
+          M1 <- M
+          # step to next point after M
+          M2 <- sign(M)*sqrt(sum((par.all[,MIN+ifelse(M>=0,1,-1)]-par)^2))
+
+          SEQ <- M
+          n <- n-1
+
+          if(n)
+          {
+            n1 <- (M1)/(M2)*(n+2) - 1
+            n1 <- clamp(n1,0,n)
+            n1 <- round(n1)
+            n2 <- n-n1
+
+            SEQ <- c( seq(0,M1,length.out=n1+2)[-1], seq(M1,M2,length.out=n2+2)[-c(1,n2+2)] )
+          }
+        }
+      } # end targeted search
+      else # untargeted searches: heuristic -- not Newton-Raphson
+      {
+        # terminated on (or starting from) boundary # convex solution is adjacent
+        if(M.BOX<=.Machine$double.eps || (END && sqrt(sum((par.start-par)^2))<=.Machine$double.eps))
+        {
+          n <- cores
+
+          # step inward to previous point (too far)
+          M <- c( (par.all[,MIN+ifelse(MIN==1,1,-1)] - par.all[,MIN]) %*% DIR.STEP )
+
+          if(abs(M)/(n+1)<=STEP[STAGE]) # not enough room for geometric sequence
+          {
+            LINE.TYPE <- "Linear refinement"
+            SEQ <- seq(0,M,length.out=n+2)[-c(1,n+2)]
+          }
+          else if(abs(M)/2^n>=STEP[STAGE])
+          {
+            LINE.TYPE <- "Binary refinement"
+            SEQ <- (1/2)^(1:n) * M
+          }
+          else # that became too small
+          {
+            LINE.TYPE <- "Geometric refinement"
+            SEQ <- sign(M) * STEP[STAGE]^((1:n)/n)
+          }
+        }
+        else if(END) # expansion searches
+        {
+          # previous step
+          M <- c( (par.all[,MIN] - par.all[,MIN+ifelse(MIN==1,1,-1)]) %*% DIR.STEP )
+
+          n <- cores
+
+          if(2^n*abs(M)<=M.BOX) # boundary is far away
+          {
+            LINE.TYPE <- "Binary expansion"
+            SEQ <- 2^(1:n) * M
+          }
+          else if(n==1 || M.BOX/n<=abs(M)) # boundary is close
+          {
+            LINE.TYPE <- "Linear boundary"
+            SEQ <- seq(0,sign(M)*M.BOX,length.out=n+1)[-1]
+          }
+          else # intermediate
+          {
+            LINE.TYPE <- "Geometric boundary"
+            SEQ <- n^((1:n - n)/(n-1)) * sign(M) * M.BOX
+          }
+        }
+        else # would like golden search here, but that requires consistent spacing...
+        {
+          LINE.TYPE <- "Ternary refinement"
+
+          n <- mc.min(2,cores)
+
+          M1 <- sqrt(sum((par-par.all[,MIN-1])^2))
+          M2 <- sqrt(sum((par-par.all[,MIN+1])^2))
+
+          n1 <- M1/(M1+M2)*(n+2) - 1
+          n1 <- clamp(n1,1,n-1)
+          n1 <- round(n1)
+          n2 <- n-n1
+
+          SEQ <- c( -seq(0,M1,length.out=n1+2)[-c(1,n1+2)], seq(0,M2,length.out=n2+2)[-c(1,n2+2)] )
+        }
+      } # end search setups
+      P <- line.boxer((DIR.STEP %o% SEQ),p0=par,lower=lower,upper=upper,period=period)
+      # goto search evaluation
+    } # end line search iteration loop via break
+
+    # did the search finish backwards?
+    REVERSE <- c( DIR.STEP %*% (par-par.start) ) < 0
+
+    par.target <- par # for outer loop
+
+    if(ZERO) { ERROR <- abs(fn.start-fn.par) }
+    else { ERROR <- abs((fn.start-fn.par)/fn.par) }
+
+    # error-check wrapup
+    if(ERROR <= TOL.STAGE + TOL.ZERO)
+    { STAGE <- STAGE + 1 }
+    else # didn't go anywhere
+    {
+      TEST <- is.toosmallp(cbind(par,par.start),par,tol=.Machine$double.eps)
+      if(TEST)
+      {
+        ERROR <- TOL[STAGE] * 0.99 # proceed to next stage (fake number)
+        STAGE <- STAGE + 1
+      }
+    }
+
   } # end main loop
 
   if(counts<maxit) { convergence <- 0} else { convergence <- 1 }

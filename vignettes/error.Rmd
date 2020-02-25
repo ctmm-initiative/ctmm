@@ -40,13 +40,13 @@ names(turtle[[3]]) # now the data are calibrated, as VAR is present
 plot(turtle[[3]],error=2) # turtle plot with 95% error discs
 ```
 
-If you have ARGOS data, they will import with calibration already applied to the horizontal dimensions, but not the vertical dimension.
+If you have Argos data, they will import with calibration already applied to the horizontal dimensions, but not the vertical dimension.
 
 ```{r}
 data(pelican)
 names(pelican)
 names(pelican$argos) # error ellipse information (COV and VAR) already present
-plot(pelican$argos) # pelican ARGOS plot with 95% error ellipses
+plot(pelican$argos) # pelican Argos plot with 95% error ellipses
 ```
 
 ## Error model selection
@@ -109,13 +109,13 @@ Datasets may have multiple outliers. In pathological situations, there may be no
 
 ## Variograms
 
-If we were working with ARGOS data or high resolution GPS data on a small animal, then we can get a "nugget" effect in the variogram that looks like an initial discontinuity at short time lags.
+If we were working with Argos data or high resolution GPS data on a small animal, then we can get a "nugget" effect in the variogram that looks like an initial discontinuity at short time lags.
 
 ```{r,  fig.show='hold', echo=FALSE}
-# ARGOS type errors
+# Argos type errors
 curve(1+x,0,5,xlab="Short time lag",ylab="Semi-variance",ylim=c(0,6))
 points(c(0,0),c(0,1))
-title("ARGOS")
+title("Argos")
 # detector array type errors (qualitatively only)
 curve((1-exp(-2*x))/(1-exp(-2/4)),0,1/4,xlab="Short time lag",ylab="Semi-variance",ylim=c(0,6),xlim=c(0,5),add=FALSE)
 curve(3/4+x,1/4,5,xlab="Short time lag",ylab="Semi-variance",ylim=c(0,6),add=TRUE,xlim=c(0,5))
