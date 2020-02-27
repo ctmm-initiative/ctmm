@@ -101,12 +101,18 @@ as.telemetry.MoveStack <- function(object,timeformat="",timezone="UTC",projectio
   NAMES <- move::trackId(object)
   NAMES <- levels(NAMES)
 
+  # preserve Move object projection if possible
+  if(is.null(projection) && !raster::isLonLat(object)) { projection <- raster::projection(object) }
+
   # convert individually
   object <- move::split(object)
   object <- lapply(object,function(mv){ as.telemetry.Move(mv,timeformat=timeformat,timezone=timezone,projection=projection,datum=datum,timeout=timeout,na.rm=na.rm,mark.rm=mark.rm,keep=keep,...) })
   # name by MoveStack convention
   names(object) <- NAMES
   for(i in 1:length(object)) { attr(object,"info")$identity <- NAMES[i] }
+
+  # unified projection if missing (somewhat redundant, but whatever)
+  if(is.null(projection)) { projection(object) <- median(object,k=2) }
 
   if(drop && length(object)==1) { object <- object[[1]] }
 

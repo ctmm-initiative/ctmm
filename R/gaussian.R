@@ -16,7 +16,7 @@ gauss.comp <- function(fn,CTMM,COV=TRUE,...)
     MAX <- max(eigenvalues.covm(CTMM[[i]]$sigma))
 
     par <- c(par, CTMM[[i]]$mu[1,] )
-    parscale <- c(parscale, sqrt(MAX) )
+    parscale <- c(parscale, rep(sqrt(MAX),AXES) )
     lower <- c(lower, c(-Inf,-Inf) )
     upper <- c(upper, c(Inf,Inf) )
 

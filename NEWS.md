@@ -1,4 +1,4 @@
-ctmm 0.5.9 (2019-02-24)
+ctmm 0.5.9 (2019-02-26)
 ================
 
   * new exact variogram CI argument "Gauss"
@@ -22,6 +22,8 @@ ctmm 0.5.9 (2019-02-24)
   * bugfix in IID pREML CIs
   
   * bugfix in optimizer expansion search step size not increasing
+  
+  * MoveStack objects are given a single projection if not projected
 
 ctmm 0.5.8 (2019-12-09)
 ================
