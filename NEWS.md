@@ -1,4 +1,4 @@
-ctmm 0.5.9 (2019-03-01)
+ctmm 0.5.9 (2019-03-03)
 ================
 
   * new exact variogram CI argument "Gauss"

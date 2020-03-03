@@ -1,5 +1,4 @@
 PRIORITY
-* i=14: Error in abs(vec[c(lo, hi)]) : non-numeric argument to mathematical function
 * plot axis lables override default
 * as.telemetry multiple fix type columns (3D validated, etc.)
 * meta analysis -> akde -> overlap

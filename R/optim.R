@@ -112,43 +112,40 @@ box.search <- function(p0,grad,hess,cov=PDsolve(hess),lower=-Inf,upper=Inf,perio
 
   if(any(LO) || any(HI))
   {
-    M <- sqrt(sum(dp^2)) # step length
-    if(M>=1) # stop at first boundary or unit step (suggested step size rediculous)
+    if(any(LO)) { lambda[LO] <- ifelse( dp[LO]<0 , 1 - abs( dlo[LO]/dp[LO] ) , 1 ) }
+    if(any(HI)) { lambda[HI] <- ifelse( dp[HI]>0 , 1 - abs( dhi[HI]/dp[HI] ) , 1 ) }
+
+    PER <- as.logical(period)
+    if(any(PER)) { lambda[PER] <- min(1, abs(dp[PER])/(period[PER]*period.max) ) }
+
+    lambda <- nant(lambda,1) # ignore Inf @ Inf
+    MIN <- which.min(lambda)
+    M <- sqrt(sum(dp^2)) # step length @ lambda=1
+    if(lambda[MIN]*M>=1) # stop at first boundary or unit step (suggested step size rediculous)
     {
       dp <- dp/M # prevent numerical errors from extreme M
       p1 <- line.boxer(dp,p0,lower=lower,upper=upper,period=period,period.max=period.max)
     }
-    else # recursive search along boundaries
+    else if(lambda[MIN]<1)  # recursive search along boundaries
     {
-      if(any(LO)) { lambda[LO] <- ifelse( dp[LO]<0 , 1 - abs( dlo[LO]/dp[LO] ) , 1 ) }
-      if(any(HI)) { lambda[HI] <- ifelse( dp[HI]>0 , 1 - abs( dhi[HI]/dp[HI] ) , 1 ) }
+      p2 <- p1 # target beyond boundary
+      p1 <- p0 + lambda[MIN]*dp # go to boundary and stop
 
-      PER <- as.logical(period)
-      if(any(PER)) { lambda[PER] <- min(1, abs(dp[PER])/(period[PER]*period.max) ) }
+      # correct small numerical errors
+      LO <- (p1<lower)
+      if(any(LO)) { p1[LO] <- lower[LO] }
+      HI <- (p1>upper)
+      if(any(HI)) { p1[HI] <- upper[HI] }
 
-      lambda <- nant(lambda,1) # ignore Inf @ Inf
-      MIN <- which.min(lambda)
-      if(lambda[MIN]<1)
+      # remaning dimensions
+      if(length(lambda)>1)
       {
-        p2 <- p1 # target beyond boundary
-        p1 <- p0 + lambda[MIN]*dp # go to boundary and stop
-
-        # correct small numerical errors
-        LO <- (p1<lower)
-        if(any(LO)) { p1[LO] <- lower[LO] }
-        HI <- (p1>upper)
-        if(any(HI)) { p1[HI] <- upper[HI] }
-
-        # remaning dimensions
-        if(length(lambda)>1)
-        {
-          # gradient estimated on boundary
-          grad <- hess %*% (p1-p2) # should I use this?
-          # search along remaining dimensions
-          p1[-MIN] <- box.search(p1[-MIN],grad[-MIN],hess[-MIN,-MIN],lower=lower[-MIN],upper=upper[-MIN],period=period[-MIN],period.max=period.max)
-        }
-      } # end recurse
-    } # end recursive boundary search
+        # gradient estimated on boundary
+        grad <- hess %*% (p1-p2) # should I use this?
+        # search along remaining dimensions
+        p1[-MIN] <- box.search(p1[-MIN],grad[-MIN],hess[-MIN,-MIN],lower=lower[-MIN],upper=upper[-MIN],period=period[-MIN],period.max=period.max)
+      }
+    } # end recurse
   } # end boundary consideration
 
   return(p1)
@@ -489,7 +486,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
     {
       # store to environmental variable so that I can debug?
       warning("Objective function failure at c(",paste0(NAMES,"=",par*parscale,collapse=', '),')')
-      if(DEBUG)
+      if(FALSE && DEBUG)
       {
         debug(ctmm.loglike)
         # try again with debugging
@@ -579,7 +576,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
   ERROR <- Inf
   counts <- 0
   par.target <- par # where to evaluate around next
-  par.old <- par
+  par.old <- par.start <- par
   fn.par <- Inf # current best objective value fn(par)
   # condition <- Inf
   gradient.old <- rep(0,DIM)
@@ -616,9 +613,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
       # rescale parameters
       TEMP <- rescale
       rescale <- nant(TEMP/par,1)
-      par <- TEMP
-      par.target <- nant(par.target*rescale,0)
-      par.old <- nant(par.old*rescale,0)
+      par <- par.target <- par.old <- TEMP
       # reset gradients
       CG.RESET <- TRUE
       gradient.old <- rep(0,DIM)

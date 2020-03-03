@@ -20,7 +20,7 @@ telemetry.mins <- function(data,axes=c('x','y'))
 # FIT MODEL WITH LIKELIHOOD FUNCTION (convenience wrapper to optim)
 ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),trace=FALSE)
 {
-  # DEBUG.FIT <<- list(data=data,CTMM=CTMM,method=method,COV=COV,control=control,trace=trace,SEED=.Random.seed)
+  if(!is.null(control$DEBUG) && control$DEBUG) { DEBUG.FIT <<- list(data=data,CTMM=CTMM,method=method,COV=COV,control=control,trace=trace,SEED=.Random.seed) }
   if(!is.null(control$message)) { message <- control$message }
 
   method <- match.arg(method,c("ML","pREML","pHREML","HREML","REML"))
@@ -169,8 +169,12 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
         }
       } # end major-minor swap
 
+      # swap tau velocity and tau position if they become reversed (to keep parscale sane)
+      if("tau position" %in% NAMES && "tau velocity" %in% NAMES)
+      { p[c("tau velocity","tau position")] <- sort( p[c("tau velocity","tau position")] ) }
+
       # shift back to (-pi/2,pi/2)
-      # if("angle" %in% NAMES) { p["angle"] <- (((p["angle"]/pi+1/2) %% 1) - 1/2)*pi }
+      if("angle" %in% NAMES) { p["angle"] <- (((p["angle"]/pi+1/2) %% 1) - 1/2)*pi }
     } # end !linear.cov
 
     return(p)
