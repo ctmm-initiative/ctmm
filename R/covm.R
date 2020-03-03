@@ -25,7 +25,13 @@ covm <- function(pars,isotropic=FALSE,axes=c("x","y"))
       sigma <- diag(pars[1],2)
     }
     else if(length(pars)==3)
-    { sigma <- sigma.construct(pars) }
+    {
+      major <- max(pars[1:2]) # fix if out of order
+      minor <- min(pars[1:2])
+      theta <- ifelse(pars[1]==major,pars[3],pars[3]+pi/2) # rotate if out of order
+      pars <- c(major,minor,theta)
+      sigma <- sigma.construct(pars)
+    }
     else if(length(pars)==4)
     {
       sigma <- pars
@@ -58,18 +64,20 @@ sigma.construct <- function(pars)
     major <- pars[1]
     minor <- pars[1]
     theta <- 0
+
+    sigma <- diag(major,2)
   }
   else
   {
-    major <- max(pars[1:2])
-    minor <- min(pars[1:2])
-    theta <- ifelse(pars[1]==major,pars[3],pars[3]+pi/2) # rotate if out of order
+    major <- pars[1]
+    minor <- pars[2]
+    theta <- pars[3]
+
+    u <- c(cos(theta),sin(theta))
+    v <- c(-sin(theta),cos(theta))
+
+    sigma <- major*(u%o%u) + minor*(v%o%v)
   }
-
-  u <- c(cos(theta),sin(theta))
-  v <- c(-sin(theta),cos(theta))
-
-  sigma <- major*(u%o%u) + minor*(v%o%v)
 
   return(sigma)
 }

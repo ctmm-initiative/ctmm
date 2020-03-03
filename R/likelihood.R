@@ -1,3 +1,12 @@
+# variance to profile
+profiled.var <- function(CTMM,sigma=CTMM$sigma,UERE)
+{
+  AXES <- length(CTMM$axes)
+  max.var <- mean(eigenvalues.covm(sigma)) # really profiling the variance with mean?
+  if(UERE<3) { max.var <- max.var + CTMM$error^2/AXES } # comparable error variance (@DOP==1)
+  return(max.var)
+}
+
 ####################################
 # log likelihood function
 ####################################
@@ -159,13 +168,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   }
 
   # largest variance (to profile) --- used to be max, now really mean
-  max.var <- 0
-  update.max.var <- function(sigma)
-  {
-    max.var <<- mean(eigenvalues.covm(sigma)) # really profiling the variance with mean?
-    if(UERE<3) { max.var <<- max.var + CTMM$error^2/AXES } # comparable error variance (@DOP==1)
-  }
-  update.max.var(M.sigma)
+  max.var <- profiled.var(CTMM,M.sigma,UERE)
 
   ### calibrate unknown errors given PROFILE state
   if(UERE && UERE<3) # calibrate errors
@@ -186,7 +189,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     {
       COV <- VAR.MULT*COV
       M.sigma <<- COVM(COV)
-      update.max.var(M.sigma)
+      max.var <<- profiled.var(CTMM,M.sigma,UERE)
     }
   }
   else if(PROFILE) # unit max-variance filters
@@ -295,18 +298,18 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   }   ### END KALMAN FILTER RUNS ###
   COV.mu <- nant(COV.mu,0)
 
-  # discard infinite prior uncertainty in stationary mean for BM/IOU
-  if(!CTMM$range) { logdetcov <- ifelse(M==1,0, -log(det(COV.mu[-(1:AXES),-(1:AXES)])) ) }
-
   # missing variances/covariances from profiling
   if(UNIT)
   {
     if(UNIT==1) { log.det.sigma <- AXES*log(max.var) }
     else if(UNIT==2) { log.det.sigma <- log(det.covm(M.sigma)) }
 
-    logdetCOV <- logdetCOV + log.det.sigma # per n
-    logdetcov <- logdetcov + M*log.det.sigma # absolute
+    logdetCOV <- logdetCOV + log.det.sigma # per n || n-1
+    logdetcov <- logdetcov + M*log.det.sigma # absolute # !range handled below
   }
+
+  # discard infinite prior uncertainty in stationary mean for BM/IOU
+  if(!CTMM$range) { logdetcov <- ifelse(M==1,0, -log(det(COV.mu[-(1:AXES),-(1:AXES)])) ) }
 
   if(SQUEEZE) # de-squeeze
   {
@@ -352,17 +355,16 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
 
   # re-write all of this to calculate constant, divide constant by n || (n-1), and then subtract off from sum term by term?
   # likelihood constant/n: 2pi from det second term from variance-profiled quadratic term (which we will subtract if variance is not profiled)
-  LL.CONST <- -AXES/2*log(2*pi)/VAR.MULT - AXES/2
-  # not fixing this second term for REML yet... not wrong, but suboptimal maybe
+  LL.CONST <- -AXES/2*log(2*pi) - AXES/2/VAR.MULT # why was VAR.MULT previously in the first term here?
 
   ### loglike: ( quadratic term of loglikelihood first )
   if(PROFILE && profile) { RATIO <- 1/VAR.MULT } # everything could be profiled - or transformed to variances whose mean could be profiled
-  else if(!PROFILE) { RATIO <- mean(diag(cbind(R.sigma))) } # couldn't profile anything and didn't # residuals fully standardized by model
+  else if(!PROFILE) { RATIO <- mean(diag(cbind(R.sigma))) } # couldn't profile anything and didn't # residuals standardized by model
   # PROFILE && !profile was filter specific !
   # finish off the loglikelihood calculation # RATIO is variance ratio from above
-  loglike <- -AXES/2*(RATIO-1) - logdetCOV/2 #
+  loglike <- -AXES/2*(RATIO-1/VAR.MULT) - logdetCOV/2 # per n || n-1
   loglike <- N * (loglike + (LL.CONST-zero/N)) # I expect the last part (all constants) to mostly cancel out
-  logdetCOV <- N * logdetCOV # what is this for?
+  # logdetCOV <- N * logdetCOV # what is this for?
 
   # mean structure terms
   if(REML) { loglike <- loglike + CTMM$REML.loglike + logdetcov/2 }

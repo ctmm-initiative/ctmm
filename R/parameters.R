@@ -97,7 +97,6 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE=F
       lower <- c(lower,0)
       upper <- c(upper,Inf)
       period <- c(period,FALSE)
-      # reflect <- c(reflect,FALSE)
     }
 
     # minor and angle
@@ -107,7 +106,6 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE=F
       lower <- c(lower,0,-Inf)
       upper <- c(upper,Inf,Inf)
       period <- c(period,FALSE,pi)
-      # reflect <- c(reflect,TRUE,FALSE) # minor < major constraint under optmization
     }
   }
   else # linear sigma: xx, yy, xy
@@ -118,7 +116,6 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE=F
       lower <- c(lower,0)
       upper <- c(upper,Inf)
       period <- c(period,FALSE)
-      # reflect <- c(reflect,FALSE)
     }
 
     if("minor" %in% NAMES) # yy & xy
@@ -127,7 +124,6 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE=F
       lower <- c(lower,0,-Inf)
       upper <- c(upper,Inf,Inf)
       period <- c(period,FALSE,FALSE)
-      # reflect <- c(reflect,FALSE,FALSE)
     }
   } # end linear sigma
 
@@ -139,7 +135,6 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE=F
       lower <- c(lower,rep(0,length(TAU)))
       upper <- c(upper,rep(Inf,length(TAU)))
       period <- c(period,rep(FALSE,length(TAU)))
-      #  <- c(reflect,rep(FALSE,length(TAU)))
     }
 
     if(STRUCT$omega)
@@ -148,7 +143,6 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE=F
       lower <- c(lower,0)
       upper <- c(upper,Inf)
       period <- c(period,FALSE)
-      # reflect <- c(reflect,FALSE)
     }
 
     if(STRUCT$circle)
@@ -157,7 +151,6 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE=F
       lower <- c(lower,-Inf)
       upper <- c(upper,Inf)
       period <- c(period,FALSE)
-      # reflect <- c(reflect,FALSE)
     }
   }
 
@@ -170,7 +163,6 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE=F
     lower <- c(lower,0)
     upper <- c(upper,Inf)
     period <- c(period,FALSE)
-    # reflect <- c(reflect,FALSE)
   }
 
   if(length(parscale))
@@ -179,7 +171,6 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE=F
     names(lower) <- NAMES
     names(upper) <- NAMES
     names(period) <- NAMES
-    # names(reflect) <- NAMES
   }
 
   return(list(NAMES=NAMES,parscale=parscale,lower=lower,upper=upper,period=period))

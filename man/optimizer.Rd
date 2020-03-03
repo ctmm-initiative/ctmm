@@ -5,7 +5,7 @@
 \title{Minimize a function}
 \description{This function serves as a wrapper around \code{\link{optimize}}, \code{\link{optim}}, and \code{ctmm}'s partial-Newton optimization routine, with standardized arguments and return values. It finds the optimal parameters that minimize a function, whether it be a cost, loss, risk, or negative log-likelihood function.}
 \usage{
-optimizer(par,fn,...,method="pNewton",lower=-Inf,upper=Inf,period=FALSE,control=list())
+optimizer(par,fn,...,method="pNewton",lower=-Inf,upper=Inf,period=FALSE,reset=identity,control=list())
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -16,6 +16,7 @@ optimizer(par,fn,...,method="pNewton",lower=-Inf,upper=Inf,period=FALSE,control=
   \item{lower}{Lower bound for parameters.}
   \item{upper}{Upper bound for parameters.}
   \item{period}{Period of circular parameters if not \code{FALSE}.}
+  \item{reset}{Optional function to re-center parameters, if symmetry permits, to prevent numerical underflow.}
   \item{control}{Argument list for the optimization routine (see 'Details' below).}
 }
 

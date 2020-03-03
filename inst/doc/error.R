@@ -18,7 +18,7 @@ plot(turtle[[3]],error=2) # turtle plot with 95% error discs
 data(pelican)
 names(pelican)
 names(pelican$argos) # error ellipse information (COV and VAR) already present
-plot(pelican$argos) # pelican ARGOS plot with 95% error ellipses
+plot(pelican$argos) # pelican Argos plot with 95% error ellipses
 
 ## ------------------------------------------------------------------------
 t.noHDOP  <- lapply(turtle,function(t){ t$HDOP  <- NULL; t })
@@ -49,10 +49,10 @@ turtle[[3]] <- turtle[[3]][-BAD,]
 outlie(turtle[[3]]) -> OUT
 
 ## ----  fig.show='hold', echo=FALSE---------------------------------------
-# ARGOS type errors
+# Argos type errors
 curve(1+x,0,5,xlab="Short time lag",ylab="Semi-variance",ylim=c(0,6))
 points(c(0,0),c(0,1))
-title("ARGOS")
+title("Argos")
 # detector array type errors (qualitatively only)
 curve((1-exp(-2*x))/(1-exp(-2/4)),0,1/4,xlab="Short time lag",ylab="Semi-variance",ylim=c(0,6),xlim=c(0,5),add=FALSE)
 curve(3/4+x,1/4,5,xlab="Short time lag",ylab="Semi-variance",ylim=c(0,6),add=TRUE,xlim=c(0,5))

@@ -1,4 +1,4 @@
-ctmm 0.5.9 (2019-02-26)
+ctmm 0.5.9 (2019-03-01)
 ================
 
   * new exact variogram CI argument "Gauss"
@@ -9,7 +9,7 @@ ctmm 0.5.9 (2019-02-26)
   
   * bugfix for infinte loop in ctmm.select
   
-  * improvements in ctmm.select for collapsing variance/error estimates
+  * improvements in ctmm.select, ctmm.loglike for collapsing variance/error estimates
   
   * rewrite of optimizer's line search to be more exact & reliable
   
@@ -23,7 +23,7 @@ ctmm 0.5.9 (2019-02-26)
   
   * bugfix in optimizer expansion search step size not increasing
   
-  * MoveStack objects are given a single projection if not projected
+  * MoveStack objects are given a common projection if not projected
 
 ctmm 0.5.8 (2019-12-09)
 ================

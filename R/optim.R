@@ -1,6 +1,6 @@
 ###################################
 # make a wrapper that applies optim then afterwards numDeriv, possibly on a boundary with one-sided derivatives if necessary
-optimizer <- function(par,fn,...,method="pNewton",lower=-Inf,upper=Inf,period=FALSE,control=list())
+optimizer <- function(par,fn,...,method="pNewton",lower=-Inf,upper=Inf,period=FALSE,reset=identity,control=list())
 {
   DEBUG <- FALSE
   method <- match.arg(method,c("pNewton","Nelder-Mead","BFGS","CG","L-BFGS-B","SANN","Brent"))
@@ -16,17 +16,17 @@ optimizer <- function(par,fn,...,method="pNewton",lower=-Inf,upper=Inf,period=FA
   if(method=="pNewton") # use mc.optim
   {
     if(!DEBUG)
-    { RESULT <- mc.optim(par=par,fn=fn,lower=lower,upper=upper,period=period,control=control) }
+    { RESULT <- mc.optim(par=par,fn=fn,lower=lower,upper=upper,period=period,reset=reset,control=control) }
     else
     {
       if(!exists(".Random.seed")) { set.seed(NULL) }
       SEED <- .Random.seed
-      RESULT <- try(mc.optim(par=par,fn=fn,lower=lower,upper=upper,period=period,control=control))
+      RESULT <- try(mc.optim(par=par,fn=fn,lower=lower,upper=upper,period=period,reset=reset,control=control))
       while(class(RESULT)!="list")
       {
         debug(mc.optim)
         .Random.seed <- SEED
-        RESULT <- try(mc.optim(par=par,fn=fn,lower=lower,upper=upper,period=period,control=control))
+        RESULT <- try(mc.optim(par=par,fn=fn,lower=lower,upper=upper,period=period,reset=reset,control=control))
       }
       if(isdebugged(mc.optim)) { undebug(mc.optim) }
     } # end DEBUG
@@ -355,7 +355,7 @@ mc.min <- function(min,cores=detectCores())
 # 2 - Preconditioned Non-linear Conjugate Gradient - Polak-Ribiere with automatic restarts
 # 3 - Preconditioned Gradient Descent
 ##################################
-mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,control=list())
+mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity,control=list())
 {
   DEBUG <- FALSE # can be overridden in control
   PMAP <- TRUE # periodic parameters are mapped locally: (-period/2,+period/2) -> (-Inf,Inf) during search steps
@@ -581,9 +581,9 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,control=list()
   par.target <- par # where to evaluate around next
   par.old <- par
   fn.par <- Inf # current best objective value fn(par)
-  condition <- Inf
-  gradient.old <- rep(Inf,DIM)
-  hessian.LINE <- NULL # line-search hessian
+  # condition <- Inf
+  gradient.old <- rep(0,DIM)
+  # hessian.LINE <- NULL # line-search hessian
   CG.RESET <- TRUE # reset conjugate gradient to gradient descent
   REVERSE <- FALSE
   cg.dir <- rep(0,DIM) # conjugate gradient direction
@@ -597,16 +597,46 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,control=list()
     # udpate zero shift
     if(ZERO && fn.par<Inf) { zero <- zero + fn.par }
 
-    # update local tangent frame for periodic variables
-    if(PMAP)
+    ## update local tangent frame for periodic variables
+    if(PMAP) # back transform
     {
       # update tangent origins
       theta -> theta.old
-      theta <- get.theta(par,theta)
-      # update tangent variables
-      par <- put.theta(par,theta.old,theta)
-      par.target <- put.theta(par.target,theta.old,theta)
-      par.old <- put.theta(par.old,theta.old,theta)
+
+      # transform back
+      par <- pmap(par,theta,inverse=TRUE)
+      par.target <- pmap(par.target,theta,inverse=TRUE)
+      par.old <- pmap(par.old,theta,inverse=TRUE)
+    }
+
+    ## shift back near origin to prevent overflow
+    rescale <- reset(par*parscale)/parscale
+    if(sqrt(sum((rescale-par)^2))>DIM*.Machine$double.eps)
+    {
+      # rescale parameters
+      TEMP <- rescale
+      rescale <- nant(TEMP/par,1)
+      par <- TEMP
+      par.target <- nant(par.target*rescale,0)
+      par.old <- nant(par.old*rescale,0)
+      # reset gradients
+      CG.RESET <- TRUE
+      gradient.old <- rep(0,DIM)
+      covariance <- hessian <- diag(1,DIM)
+    }
+
+    ## finish local tangent update
+    if(PMAP) # forward transform
+    {
+      # new tangent origin (theta)
+      theta <- par[PERIOD]
+      # transform forward
+      par <- pmap(par,theta)
+      par.target <- pmap(par.target,theta)
+      par.old <- pmap(par.old,theta)
+
+      # change of variables 3x
+      gradient.old[PERIOD] <- gradient.old[PERIOD] / ( 1 + (par.old[PERIOD]/PSCALE)^2 )
     }
 
     DIR <- diag(1,DIM)
@@ -789,13 +819,13 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,control=list()
     {
       LINE.TYPE <- "Newton-Raphson"
       # Newton-Raphson search step from par.target (can optimize along boundary)
-      # if(DEBUG) { DEBUG.STEP <<- list(LINE.TYPE=LINE.TYPE,par=par,gradient=gradient,hessian=hessian,covariance=covariance,lower=lower,upper=upper,period=period) }
+      if(DEBUG) { DEBUG.STEP <<- list(LINE.TYPE=LINE.TYPE,par=par,gradient=gradient,hessian=hessian,covariance=covariance,lower=lower,upper=upper,period=period) }
       par.target <- box.search(par,gradient,hessian,covariance,lower=lower,upper=upper,period=period)
     }
     else if(STAGE==2) # conjugate gradient (preconditioned)
     {
       LINE.TYPE <- "Conjugate gradient"
-      # if(DEBUG) { DEBUG.STEP <<- list(LINE.TYPE=LINE.TYPE,par=par,gradient=gradient,hessian=hessian,covariance=covariance,lower=lower,upper=upper,period=period,BOXED=BOXED,DIR=DIR) }
+      if(DEBUG) { DEBUG.STEP <<- list(LINE.TYPE=LINE.TYPE,par=par,gradient=gradient,hessian=hessian,covariance=covariance,lower=lower,upper=upper,period=period,BOXED=BOXED,DIR=DIR) }
 
       if(any(!BOXED))
       {
@@ -872,11 +902,9 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,control=list()
     M1 <- min(1,M/2) # 1 in case hessian is bad
     M2 <- sqrt(sum((P2-par)^2))
     # sample to target or boundary
-    if(abs(M2)<M.BOX || M2-M>=STEP[STAGE]) # sample P1/2 to P1 to P2
+    if(abs(M)<=M.BOX) # sample P1/2 to P1 to P2
     {
-      if(abs(M2)<M.BOX) { LINE.TYPE <- paste(LINE.TYPE,"prospection") }
-      else { LINE.TYPE <- paste(LINE.TYPE,"boundary-prospection") }
-
+      LINE.TYPE <- paste(LINE.TYPE,"prospection")
       n <- mc.min(3,cores)
 
       SEQ <- M # target
@@ -884,7 +912,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,control=list()
 
       # under-estimates -- proportional-ish to M-M1
       n1 <- (M-M1)/(M2-M1)*(n+2) - 1
-      n1 <- clamp(n1,1,n-1)
+      n1 <- clamp(n1,0+(M-M1>=STEP[STAGE]),n-(M2-M>=STEP[STAGE]))
       n1 <- round(n1)
       # over-estimates -- proportional-ish to M2-M
       n2 <- n-n1
@@ -895,7 +923,8 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,control=list()
     {
       LINE.TYPE <- paste(LINE.TYPE,"boundary")
       n <- mc.min(2,cores)
-      SEQ <- seq(M1,M2,length.out=n)
+
+      SEQ <- seq(0,M2,length.out=n+1)[-1]
     }
     # new points to evaluate
     P <- line.boxer((DIR.STEP %o% SEQ),p0=par,lower=lower,upper=upper,period=period)
@@ -932,15 +961,15 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,control=list()
       if(trace) { message(sprintf("%s %s search",format(zero+fn.par,digits=16),LINE.TYPE)) }
       if(trace>1) { message("\tc(",paste0(NAMES,"=",par,collapse=', '),")") }
 
-      # if(DEBUG>1)
-      # {
-      #   graphics::plot((DIR.STEP %*% (par.all-par)),(fn.all-fn.par),xlab="Distance from MIN",ylab="Value over MIN")
-      #   graphics::abline(h=c(fn.start-fn.par,0),col=scales::alpha(c('black','blue'),0.5))
-      #   graphics::abline(v=c(DIR.STEP %*% (par.start-par),0),col=scales::alpha(c('black','blue'),0.5))
-      #   graphics::points(c(DIR.STEP %*% (P-par)),fn.queue-fn.par,pch=16,col="red")
-      #   graphics::points(DIR.STEP %*% (par.start-par),fn.start-fn.par,pch=16)
-      #   graphics::title(sprintf("%s search",LINE.TYPE))
-      # }
+      if(DEBUG>1)
+      {
+        graphics::plot((DIR.STEP %*% (par.all-par)),(fn.all-fn.par),xlab="Distance from MIN",ylab="Value over MIN")
+        graphics::abline(h=c(fn.start-fn.par,0),col=scales::alpha(c('black','blue'),0.5))
+        graphics::abline(v=c(DIR.STEP %*% (par.start-par),0),col=scales::alpha(c('black','blue'),0.5))
+        graphics::points(c(DIR.STEP %*% (P-par)),fn.queue-fn.par,pch=16,col="red")
+        graphics::points(DIR.STEP %*% (par.start-par),fn.start-fn.par,pch=16)
+        graphics::title(sprintf("%s search",LINE.TYPE))
+      }
 
       ## calculted steps were too small on one side to proceede
       # no where to go
@@ -981,7 +1010,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,control=list()
         M.BOX <- m.box(M)
 
         # Is estimated NR step plausible for a convex objective?
-        if(M.BOX<=.Machine$double.eps) # past boundary, M useless
+        if(M.BOX<=.Machine$double.eps || abs(M)<=.Machine$double.eps) # past boundary, or no change
         { NR <- FALSE }
         else if(MIN>1 && M<=(par.all[,MIN-1]-par)%*%DIR.STEP ) # M left of MIN-1
         { NR <- FALSE }
@@ -1022,7 +1051,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,control=list()
       # setup next search steps
       #########################
 
-      # if(DEBUG) { DEBUG.LINE <<- list(NR=NR,M=M,MIN=MIN,fn.all=fn.all,par.all=par.all,par=par,fn.par=fn.par,M.BOX=M.BOX,cores=cores,DIR.STEP=DIR.STEP,lower=lower,upper=upper,period=period,BOX=BOX,par.start=par.start,STEP=STEP,STAGE=STAGE) }
+      if(DEBUG) { DEBUG.LINE <<- list(NR=NR,M=M,MIN=MIN,fn.all=fn.all,par.all=par.all,par=par,fn.par=fn.par,M.BOX=M.BOX,cores=cores,DIR.STEP=DIR.STEP,lower=lower,upper=upper,period=period,BOX=BOX,par.start=par.start,STEP=STEP,STAGE=STAGE) }
 
       # setup searches
       if(NR && M) # extrapolation search

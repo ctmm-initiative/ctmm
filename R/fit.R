@@ -20,11 +20,12 @@ telemetry.mins <- function(data,axes=c('x','y'))
 # FIT MODEL WITH LIKELIHOOD FUNCTION (convenience wrapper to optim)
 ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),trace=FALSE)
 {
-  #DEBUG.FIT <<- list(data=data,CTMM=CTMM,method=method,COV=COV,control=control,trace=trace,SEED=.Random.seed)
+  # DEBUG.FIT <<- list(data=data,CTMM=CTMM,method=method,COV=COV,control=control,trace=trace,SEED=.Random.seed)
   if(!is.null(control$message)) { message <- control$message }
 
   method <- match.arg(method,c("ML","pREML","pHREML","HREML","REML"))
   axes <- CTMM$axes
+  AXES <- length(axes)
   CTMM <- get.mle(CTMM) # if has better start for pREML/HREML/pHREML
 
   if(is.null(CTMM$sigma))
@@ -81,9 +82,6 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
   op.method <- control$method
   control$method <- NULL
 
-  if(method=="REML") { REML <- TRUE }
-  else { REML <- FALSE }
-
   # clean/validate
   CTMM <- ctmm.ctmm(CTMM)
   drift <- get(CTMM$mean)
@@ -127,6 +125,12 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
   # degrees of freedom, including the mean, variance/covariance, tau, and error model
   k.mean <- ncol(CTMM$mean.vec)
 
+  # no reason to do pREML with infinite-variance processes
+  if(!range && k.mean==1 && method %in% c('pREML','pHREML','HREML')) { method <- "REML" }
+
+  if(method=="REML") { REML <- TRUE }
+  else { REML <- FALSE }
+
   # OPTIMIZATION FUNCTION (fn)
   # optional argument lengths: TAU, TAU+1, TAU+SIGMA
   fn <- function(p,zero=0)
@@ -138,6 +142,39 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
     # negative log likelihood
     return(-ctmm.loglike(data,CTMM,REML=REML,zero=-zero,profile=profile))
   }
+
+  # shift parameters back near origin to prevent overflow in optimizer
+  reset <- function(p)
+  {
+    names(p) <- NAMES
+    if(!linear.cov)
+    {
+      # swap minor and major axes if minor is getting too big
+      if("minor" %in% NAMES && "major" %nin% NAMES) # major axis is being profiled
+      {
+        major <- CTMM$sigma@par['major']
+        ERROR <- "error" %in% NAMES
+        TEST <- (p['minor']>major)
+        if(ERROR) { TEST <- TEST && p['minor']>p['error']^2 }
+        if(TEST) # swap major-minor
+        {
+          # rotate to true minor axis
+          p["angle"] <- p["angle"] + pi/2
+
+          # existing variance ratios to maintain
+          RATIO <- major/p['minor'] # <1
+
+          p['minor'] <- RATIO * major # old major is the new minor (proportionally)
+          if(ERROR) { p['error'] <- sqrt(RATIO) * p['error'] }
+        }
+      } # end major-minor swap
+
+      # shift back to (-pi/2,pi/2)
+      # if("angle" %in% NAMES) { p["angle"] <- (((p["angle"]/pi+1/2) %% 1) - 1/2)*pi }
+    } # end !linear.cov
+
+    return(p)
+  } # end reset
 
   # construct covoariance matrix guess
   covariance <- function()
@@ -184,7 +221,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
     control$covariance <- covariance()
     control$parscale <- parscale
     control$zero <- TRUE
-    RESULT <- optimizer(par=pars,fn=fn,method=op.method,lower=lower,upper=upper,period=period,control=control)
+    RESULT <- optimizer(par=pars,fn=fn,method=op.method,lower=lower,upper=upper,period=period,reset=reset,control=control)
     pars <- clean.parameters(RESULT$par)
     # copy over hessian from fit to COV.init ?
 
@@ -271,7 +308,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
           linear.cov <- FALSE
           setup.parameters(CTMM,profile=FALSE)
         }
-        else # parameters crashed likelihood function
+        else # parameters crashed likelihood function---this is rare
         { PREML.FAIL <- TRUE }
       }
       linear.cov <- FALSE # 2 fail cases need this
@@ -285,7 +322,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
     }
     ### end pREML correction ###
 
-    ### profile linear REML parameters ###
+    ### HREML STEP: profile linear REML parameters ###
     if(method %in% c('pHREML','HREML'))
     {
       REML <- TRUE
@@ -300,11 +337,19 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
         control$covariance <- covariance()
         control$parscale <- parscale
         control$zero <- TRUE
-        RESULT <- optimizer(par=pars,fn=fn,method=op.method,lower=lower,upper=upper,period=period,control=control)
+        RESULT <- optimizer(par=pars,fn=fn,method=op.method,lower=lower,upper=upper,period=period,reset=reset,control=control)
         pars <- clean.parameters(RESULT$par)
       }
+
       # includes free profile
-      CTMM <- store.pars(pars,profile=TRUE,finish=TRUE)
+      TEST <- store.pars(pars,profile=TRUE,finish=TRUE)
+      if(class(TEST)[1]=="ctmm")
+      { CTMM <- TEST }
+      else # parameters crashed likelihood function---this is extremely rare
+      {
+        if(method=="pHREML") { method <- "pREML" }
+        else if(method=="HREML") { method <- "ML" }
+      }
     }
 
     ### FINAL COVARIANCE ESTIMATE ###

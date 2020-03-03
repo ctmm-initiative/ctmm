@@ -212,20 +212,30 @@ ctmm.prepare <- function(data,CTMM,precompute=TRUE,tau=TRUE,DIM=length(CTMM$axes
     U <- drift(data$t,CTMM)
     CTMM$mean.vec <- U
 
-    UU <- t(U) %*% U
-    CTMM$UU <- UU
-    CTMM$REML.loglike <- length(CTMM$axes)/2*log(det(UU)) # extra term for REML likelihood
+    range <- CTMM$range
+    AXES <- length(CTMM$axes)
+    if(!range && ncol(U)==1)
+    {
+      CTMM$UU <- matrix(0,1,1)
+      CTMM$REML.loglike <- 0  # extra term for REML likelihood (no stationary contributions here)
+    }
+    else
+    {
+      UU <- t(U) %*% U
+      if(!range) { UU[1,1] <- 0 } # zero stationary contribution (remove below)
+      CTMM$UU <- UU
+      CTMM$REML.loglike <- AXES/2*log(det(UU[-1,-1])) # extra term for REML likelihood
+    }
 
     # construct error matrix, if UERE is unknown construct error matrix @ UERE=1
     ERROR <- CTMM
     ERROR$error <- as.logical(ERROR$error)
     CTMM$error.mat <- get.error(data,ERROR,DIM=DIM) # store error matrix (modulo UERE if fit)
     # this is more of an error structure matrix (modulo variance)
-  }
+  } # end precomputed matrices
 
   return(CTMM)
 }
-
 # undo the above
 ctmm.repair <- function(CTMM,K=length(CTMM$tau))
 {
