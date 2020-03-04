@@ -1,4 +1,4 @@
-ctmm 0.5.9 (2019-03-03)
+ctmm 0.5.9 (2019-03-04)
 ================
 
   * new exact variogram CI argument "Gauss"
@@ -16,6 +16,8 @@ ctmm 0.5.9 (2019-03-03)
   * improvements in optimizer for degenerate likelihood surfaces
   
   * improvements in optimization for bad covariance estimates---fit object structure changed
+  
+  * bugfix in uere.fit with multiple location classes in different orders
   
   * bugfix in speed when fast=FALSE and sampled models lose features
   

@@ -52,10 +52,14 @@ PRIORITY
 * error vignette - check back on variogram, correlogram
 * reference Guillaume's paper at the beginning of the periodogram vignette
 
+META ANALYSIS
+* Wishart - Inverse Wishart
+  * this is all we need for the range residence paper
+* Wishart - Log-Normal
+* investigate Log-Wishart off-diagonal distribution
+* Exp-Log-Chi^2 + Exp-Log-? - Log-Normal
+
 OPTIMIZER
-* numerical issues when "minor/major" blows past 1 and gets to large numbers
-* don't update hessian unless gradient decreases
-* if line search finishes with even steps on left and right of MIN & >STEP[1], then it can be safe to update the hessian from those results
 * wrap !DEBUG in try() with data.table() and set() each time its improved?
   * need to reset parscale, though?
 * keep track of simplex

@@ -27,7 +27,7 @@ Noonan & Fleming et al (2019) <doi:10.1186/s40462-019-0177-1>.
 Package: \tab ctmm\cr
 Type: \tab Package\cr
 Version: \tab 0.5.9 \cr
-Date: \tab 2019-03-03 \cr
+Date: \tab 2019-03-04 \cr
 License: \tab GPL-3 \cr
 }
 

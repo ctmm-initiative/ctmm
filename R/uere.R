@@ -224,7 +224,7 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
     }
     else # unknown mean
     {
-      # precicion weights
+      # precision weights
       Pck <- vapply(1:length(data),function(i){c(w[[i]] %*% Cim[[i]]) * (1/UERE^2)},UERE) # (class,animals)
       dim(Pck) <- c(length(UERE),length(data))
       Pc <- rowSums(Pck) # (class)
@@ -262,8 +262,7 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
     UERE2 <- UERE2[EST]
 
     ERROR <- abs(UERE2-UERE[EST])/max(UERE[EST],UERE2)
-    NANS <- is.nan(ERROR)
-    if(any(NANS)) { ERROR[NANS] <- 0 }
+    ERROR <- nant(ERROR,0)
     ERROR <- max(ERROR)
 
     UERE[EST] <- UERE2
@@ -800,21 +799,16 @@ uere.null <- function(data)
 
 #####
 # class index at times
-# make robust to LEVELS being different from levels
 get.class <- function(data,LEVELS=levels(data$class))
 {
   if("class" %in% names(data))
   {
-    Ci <- as.integer(data$class)
+    Ci <- rep(NA_integer_,nrow(data))
 
-    Levels <- levels(data$class)
-    if(any(LEVELS %nin% Levels)) # some LEVELS not in data
+    for(i in 1:length(LEVELS))
     {
-      MISS <- LEVELS[LEVELS %nin% Levels]
-      Levels <- c(Levels,MISS) # append missing LEVELS
-
-      LEVELS <- sapply(Levels,function(L){ which(LEVELS==L) })
-      Ci <- LEVELS[Ci]
+      SUB <- which(data$class==LEVELS[i])
+      if(length(SUB)) { Ci[SUB] <- i }
     }
   }
   else
