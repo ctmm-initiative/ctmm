@@ -501,8 +501,6 @@ ic.ctmm <- function(CTMM,n)
 ###################
 ctmm.guess <- function(data,CTMM=ctmm(),variogram=NULL,name="GUESS",interactive=TRUE)
 {
-  #
-
   # use intended axes
   if(is.null(variogram)) { variogram = variogram(data,axes=CTMM$axes) }
   else { CTMM$axes <- attr(variogram,"info")$axes }

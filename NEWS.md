@@ -1,4 +1,4 @@
-ctmm 0.5.9 (2019-03-04)
+ctmm 0.5.9 (2019-03-07)
 ================
 
   * new exact variogram CI argument "Gauss"
@@ -22,6 +22,8 @@ ctmm 0.5.9 (2019-03-04)
   * bugfix in speed when fast=FALSE and sampled models lose features
   
   * bugfix in IID pREML CIs
+  
+  * bugfix in ctmm.guess with large errors causing eigen() to fail
   
   * bugfix in optimizer expansion search step size not increasing
   

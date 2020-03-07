@@ -2,6 +2,7 @@
 # guess some parameters and check the model parameter sanity
 drift.init <- function(data,CTMM)
 {
+  AXES <- length(CTMM$axes)
   z <- get.telemetry(data,CTMM$axes)
 
   # weights from errors
@@ -25,20 +26,18 @@ drift.init <- function(data,CTMM)
 
   n <- length(data$t)
   z <- z - (u %*% CTMM$mu)
-  CTMM$sigma <- (t(z) %*% z) / (n-1)
-  if(n==2) { CTMM$sigma <- diag(mean(diag(CTMM$sigma)),nrow=nrow(CTMM$sigma)) }
 
-  # remove error from variability # can make this better !!!
-  if(CTMM$error)
-  {
-    error <- sum(error) / (n-1)
-    CTMM$sigma <- CTMM$sigma - error * diag(length(CTMM$axes))
+  V1 <- sum(w)
+  V2 <- sum(w^2)
 
-    # don't let variance estimate go below error estimate (or can become negative)
-    STUFF <- eigen(CTMM$sigma)
-    STUFF$values <- pmax(STUFF$values,error)
-    CTMM$sigma <- STUFF$vectors %*% diag(STUFF$values,nrow=length(STUFF$values)) %*% t(STUFF$vectors)
-  }
+  z <- vapply(1:n,function(i){ w[i] * (z[i,] %o% z[i,]) },diag(1,AXES)) # [AXES,AXES,n]
+  dim(z) <- c(AXES^2,n)
+  z <- rowSums(z)
+  dim(z) <- c(AXES,AXES)
+  z <- z/(V1-V2/V1)
+  CTMM$sigma <- z
+
+  if(n==2) { CTMM$sigma <- diag(mean(diag(CTMM$sigma)),nrow=AXES) }
 
   CTMM$sigma <- covm(CTMM$sigma,isotropic=CTMM$isotropic,axes=CTMM$axes)
 

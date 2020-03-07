@@ -245,6 +245,15 @@ variogram.fast <- function(data,error=NULL,dt=NULL,res=1,CI="Markov",axes=c("x",
   z <- get.telemetry(data,axes)
   COL <- ncol(z)
 
+  # discard terrible estimates
+  if(!is.null(error))
+  {
+    GOOD <- (error<Inf)
+    t <- t[GOOD]
+    z <- z[GOOD,]
+    error <- error[GOOD]
+  }
+
   # smear the data over an evenly spaced time grid (possibly at finer resolution)
   if(!ACF) { z <- cbind(error,z) }
   GRID <- gridder(t,z,dt=dt,res=res)
