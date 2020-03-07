@@ -89,11 +89,17 @@ ctmm.ctmm <- function(CTMM)
 
 
 # compute all tau/omega related quantities that we need
-get.taus <- function(CTMM,zeroes=FALSE)
+get.taus <- function(CTMM,zeroes=FALSE,simplify=FALSE)
 {
   CTMM$tau <- sort(CTMM$tau,decreasing=TRUE)
+  if(simplify) { CTMM$tau <- CTMM$tau[CTMM$tau>0] }
   K <- if(zeroes) { length(CTMM$tau) } else { continuity(CTMM) }
   CTMM$K <- K
+
+  if(!simplify)
+  { VARS <- dimnames(CTMM$COV)[[1]] } # variances estimated (can be NULL)
+  else
+  { VARS <- NULL } # don't care what model was attempted
 
   # can't use range boolean because of approximations in ctmm.loglike
   if(K==1 && CTMM$tau[1]<Inf) # OU
@@ -108,7 +114,7 @@ get.taus <- function(CTMM,zeroes=FALSE)
     CTMM$f.nu <- c( mean(CTMM$f) , +diff(CTMM$f)/2 ) # (f,nu)
     CTMM$TfOmega2 <- 2*CTMM$f.nu[1]/CTMM$Omega2 # 2f/Omega^2 with renormalized Omega^2 -> tau[1]*Omega^2
   }
-  else if(K>1 && CTMM$tau[1]>CTMM$tau[2]) # overdamped
+  else if(K>1 && (CTMM$tau[1]>CTMM$tau[2] || all(c("tau position","tau velocity") %in% VARS))) # overdamped
   {
     # the canonical parameterization in this regime is (tau1,tau2) as this includes (0,0) and extends to (Inf,Inf) with rectangular boundary conditions
     CTMM$tau.names <- c('tau position','tau velocity')
@@ -129,7 +135,7 @@ get.taus <- function(CTMM,zeroes=FALSE)
     # dOmega^2/d(tau1,tau2) # needed for speed CIs
     CTMM$J.Omega2 <- -CTMM$Omega2/CTMM$tau
   }
-  else if(K>1 && CTMM$tau[1]==CTMM$tau[2] && !CTMM$omega) # critically damped
+  else if(K>1 && CTMM$tau[1]==CTMM$tau[2] && !CTMM$omega && "omega"%nin%VARS) # critically damped
   {
     # the canonical parameterization in this regime is (tau) as this includes (0) and extends to (Inf)
     CTMM$tau.names <- c('tau')
@@ -143,7 +149,7 @@ get.taus <- function(CTMM,zeroes=FALSE)
 
     CTMM$J.Omega2 <- -2/CTMM$tau[1]^3
   }
-  else if(K>1 && CTMM$omega) # underdamped
+  else if(K>1 && (CTMM$omega || "omega"%in%VARS)) # underdamped
   {
     # the canonical parameterization in this regime is utlimately (tau,omega) as this includes (0,0) and extends to (Inf,Inf)
     CTMM$tau.names <- c('tau','omega')

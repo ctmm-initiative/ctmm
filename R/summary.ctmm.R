@@ -11,6 +11,7 @@ confint.ctmm <- function(model,alpha=0.05,UNICODE=FALSE)
   K <- length(tau)
 
   COV <- model$COV
+  VARS <- dimnames(COV)[[1]]
 
   par <- NULL
   NAME <- NULL
@@ -19,7 +20,7 @@ confint.ctmm <- function(model,alpha=0.05,UNICODE=FALSE)
   if(K>0)
   {
     NAME <- model$tau.names # canonical parameter names
-    if(K==2 && model$omega) # oscillatory model
+    if(K==2 && "omega" %in% VARS) # oscillatory model
     {
       TAU <- model$TAU # human-readible parameters
       COV.TAU <- model$J.TAU.tau %*% COV[NAME,NAME] %*% t(model$J.TAU.tau)
@@ -28,7 +29,7 @@ confint.ctmm <- function(model,alpha=0.05,UNICODE=FALSE)
       if(UNICODE) { NAME <- c("\u03C4[decay]","\u03C4[period]") }
       else { NAME <- c("tau decay","tau period") }
     }
-    else if(K>1 && tau[1]==tau[2]) # identical timescales
+    else if(K>1 && "tau" %in% VARS) # identical timescales
     {
       par <- rbind(par,ci.tau(tau[1],COV[NAME,NAME],alpha=alpha))
       if(UNICODE) { NAME <- "\u03C4" }
@@ -43,7 +44,7 @@ confint.ctmm <- function(model,alpha=0.05,UNICODE=FALSE)
 
   # circulation period
   circle <- model$circle
-  if(circle)
+  if("circle" %in% VARS)
   {
     NAME <- c(NAME,"circle")
     VAR <- COV["circle","circle"]

@@ -4,6 +4,8 @@
 ####################
 genD <- function(par,fn,zero=FALSE,lower=-Inf,upper=Inf,step=NULL,precision=1/2,parscale=NULL,mc.cores=detectCores(),Richardson=2,order=2,drop=TRUE,control=list(),...)
 {
+  NAMES <- names(par)
+
   if(is.null(parscale)) { parscale <- pmin(abs(par),abs(par-lower),abs(upper-par)) }
   if(any(parscale==0)) { parscale[parscale==0] <- 1 }
 
@@ -109,6 +111,9 @@ genD <- function(par,fn,zero=FALSE,lower=-Inf,upper=Inf,step=NULL,precision=1/2,
   # Inf fix
   hess <- nant(hess,0) # seems reasonable for inverse covariance
   grad <- nant(grad,0) # not sure about this
+
+  names(grad) <- NAMES
+  dimnames(hess) <- list(NAMES,NAMES)
 
   return(list(gradient=grad,hessian=hess))
 }

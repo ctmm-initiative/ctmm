@@ -116,7 +116,7 @@ is.odd <- Vectorize(function(x) {x %% 2 != 0})
 
 
 # generalized covariance from -likelihood derivatives
-cov.loglike <- function(hess,grad=rep(0,nrow(hess)))
+cov.loglike <- function(hess,grad=rep(0,sqrt(length(hess))),tol=.Machine$double.eps)
 {
   # in case of bad derivatives, use worst-case numbers
   grad <- nant(grad,Inf)
@@ -137,8 +137,7 @@ cov.loglike <- function(hess,grad=rep(0,nrow(hess)))
   V <- pmax(V,abs(grad))
 
   # don't divide by zero
-  # TOL <- .Machine$double.eps * length(V)
-  TEST <- V==0
+  TEST <- V<=tol
   if(any(TEST)) { V[TEST] <- 1 }
 
   W <- V %o% V
@@ -187,7 +186,6 @@ cov.loglike <- function(hess,grad=rep(0,nrow(hess)))
     { values[i] <- ((sqrt(DET)-grad[i])/values[i])^2 }
     else # minimum loglike? optim probably failed or hit a boundary
     {
-      # warning("MLE is near a boundary.")
       # (parameter distance to worst parameter * 1/2 / loglike difference to worst parameter)^2
       # values[i] <- 1/grad[i]^2
       # pretty close to the other formula, so just using that

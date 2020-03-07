@@ -356,17 +356,19 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
     MLE <- get.mle(CTMM)
     beta <- alpha.ctmm(CTMM,alpha)
 
+    VARS <- dimnames(CTMM$COV)[[1]] # could be NULL
+
     # consider if smallest timescale is zero
     CI <- confint.ctmm(CTMM,alpha=beta)
     if(length(CTMM$tau)==2 && !is.na(IC)) # OUX -> OUx
     {
-      if(!CTMM$omega && CTMM$tau[1]!=CTMM$tau[2]) # OUF -> OU / IOU -> BM
+      if("tau velocity" %in% VARS) # OUF -> OU / IOU -> BM
       {
         Q <- CI["tau velocity",1]
         if(is.na(Q) || (Q<=0))
         { GUESS <- c(GUESS,list(simplify.ctmm(MLE,'tau velocity'))) }
       }
-      else if(!CTMM$omega) # OUf -> OU, IID
+      else if("omega" %nin% VARS) # OUf -> OU, IID
       {
         Q <- CI["tau",1]
         if(is.na(Q) || (Q<=0))
@@ -390,7 +392,7 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
     } # end # OU -> IID
 
     # can autocorrelation timescales be distinguished?
-    if(CTMM$range && length(CTMM$tau)==2 && (CTMM$tau[1]!=CTMM$tau[2] || CTMM$omega))
+    if(all(c('tau position','tau velocity') %in% VARS) || "omega" %in% VARS) # isn't omega redundant?
     {
       TEMP <- get.taus(CTMM,zeroes=TRUE)
       nu <- TEMP$f.nu[2] # frequency/difference
@@ -402,7 +404,7 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
       if(is.na(Q) || Q<=0 || level==1 || is.na(IC))
       { GUESS <- c(GUESS,list(simplify.ctmm(MLE,"diff.tau"))) }
     }
-    else if(CTMM$range && length(CTMM$tau)==2) # try other side if boundary if choosen model is critically damped
+    else if("tau" %in% VARS) # try other side if boundary if choosen model is critically damped
     {
       # try overdamped
       TEMP <- TARGET
@@ -414,11 +416,11 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
       if(!TEMP$omega) { TEMP$omega <- sqrt(.Machine$double.eps) }
       GUESS <- c(GUESS,list(complexify.ctmm(MLE,"omega",TEMP)))
     }
-    else if(CTMM$range && length(CTMM$tau)==1 && level==1) # OU -> OUf (bimodal likelihood)
+    else if("tau position" %in% VARS && level==1) # OU -> OUf (bimodal likelihood)
     { GUESS <- c(GUESS,list(simplify.ctmm(MLE,"diff.tau"))) }
 
     # consider if there is no circulation
-    if(CTMM$circle)
+    if("circle" %in% VARS)
     {
       Q <- CI["circle",3]
       if(is.na(Q) || (Q==Inf) || is.na(IC))
@@ -438,7 +440,7 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
     }
 
     # is the animal even moving?
-    if(!CTMM$sigma@par['major'] && CTMM$error)
+    if(!CTMM$sigma@par['major'] && "error"%in%VARS)
     { GUESS <- c(GUESS,list(simplify.ctmm(MLE,"major"))) }
 
     # consider if we can relax range residence (non-likelihood comparison only)

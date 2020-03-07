@@ -224,6 +224,7 @@ kalman <- function(z,u,dt,CTMM,error=NULL,DIM=1,smooth=FALSE,sample=FALSE,residu
 
     if(is.null(error)) { error <- array(0,c(n,DIM,DIM)) }
 
+    CTMM <- get.taus(CTMM,simplify=TRUE) # pre-compute some stuff for Langevin equation solutions
     tau <- CTMM$tau
     K <- max(1,length(tau))  # dimension of hidden state per spatial dimension
     OBS <- 1 # observed dynamical dimensions: OBS <= K
@@ -264,7 +265,6 @@ kalman <- function(z,u,dt,CTMM,error=NULL,DIM=1,smooth=FALSE,sample=FALSE,residu
     Sigma <- array(0,c(n,K*DIM,K*DIM))
 
     # Propagators from Langevin equation
-    CTMM <- get.taus(CTMM) # pre-compute some stuff for Langevin equation solutions
     for(i in 1:n)
     {
       # does the time lag change values? Then update the propagators.

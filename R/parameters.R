@@ -62,13 +62,15 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE=F
 
   if(!linear) # nonlinear autocorrelation parameters
   {
-    TAU <- CTMM$tau
+    TAU <- STRUCT$tau # for structure here
     if(!STRUCT$range) { TAU <- TAU[-1] }
     if(length(TAU))
     {
       if(length(TAU)==2 && TAU[1]==TAU[2]) { TAU <- TAU[1] ; NAMES <- c(NAMES,"tau") } # identical timescales
       else { NAMES <- c(NAMES,paste("tau",names(TAU))) } # distinct timescales
     }
+    TAU <- CTMM$tau # for parscale later
+    if("tau" %in% NAMES) { TAU <- mean(TAU) } # just the one
 
     if(STRUCT$omega) { NAMES <- c(NAMES,"omega") }
 
