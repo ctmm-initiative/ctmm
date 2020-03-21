@@ -1,6 +1,7 @@
 PRIORITY
+** as.telemetry multiple fix type columns (3D validated, etc.)
+** test on all calibration data - clean data - mark outliers
 * plot axis lables override default
-* as.telemetry multiple fix type columns (3D validated, etc.)
 * meta analysis -> akde -> overlap
 * uncalibrate coati
 * tplot: plot(...,axes=c('t','...'x')) or plot(...,axes=c('x','t')), possibly with 2 axes?, '-x'?

@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.8</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.9</span>
       </span>
     </div>
 
@@ -88,7 +88,7 @@
       <h1>Telemetry error</h1>
                         <h4 class="author">Christen H. Fleming</h4>
             
-            <h4 class="date">2019-12-09</h4>
+            <h4 class="date">2020-03-09</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/ctmm-initiative/ctmm/blob/master/vignettes/error.Rmd"><code>vignettes/error.Rmd</code></a></small>
       <div class="hidden name"><code>error.Rmd</code></div>
@@ -123,16 +123,15 @@
 <pre><code>## [1] "t"      "HDOP"   "class"  "x"      "y"      "VAR.xy"</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(turtle[[<span class="dv">3</span>]],<span class="dt">error=</span><span class="dv">2</span>) <span class="co"># turtle plot with 95% error discs</span></code></pre></div>
 <p><img src="error_files/figure-html/unnamed-chunk-3-1.png" width="700"></p>
-<p>If you have ARGOS data, they will import with calibration already applied to the horizontal dimensions, but not the vertical dimension.</p>
+<p>If you have Argos data, they will import with calibration already applied to the horizontal dimensions, but not the vertical dimension.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://rdrr.io/r/utils/data.html">data</a></span>(pelican)
 <span class="kw"><a href="https://rdrr.io/r/base/names.html">names</a></span>(pelican)</code></pre></div>
 <pre><code>## [1] "gps"   "argos"</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://rdrr.io/r/base/names.html">names</a></span>(pelican<span class="op">$</span>argos) <span class="co"># error ellipse information (COV and VAR) already present</span></code></pre></div>
-<pre><code>##  [1] "timestamp" "longitude" "latitude"  "t"         "COV.angle"
-##  [6] "HDOP"      "COV.major" "COV.minor" "VAR.xy"    "class"    
-## [11] "z"         "VDOP"      "x"         "y"         "COV.x.x"  
-## [16] "COV.x.y"   "COV.y.y"</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(pelican<span class="op">$</span>argos) <span class="co"># pelican ARGOS plot with 95% error ellipses</span></code></pre></div>
+<pre><code>##  [1] "timestamp" "longitude" "latitude"  "t"         "COV.angle" "HDOP"     
+##  [7] "COV.major" "COV.minor" "VAR.xy"    "class"     "z"         "VDOP"     
+## [13] "x"         "y"         "COV.x.x"   "COV.x.y"   "COV.y.y"</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plot.telemetry.html">plot</a></span>(pelican<span class="op">$</span>argos) <span class="co"># pelican Argos plot with 95% error ellipses</span></code></pre></div>
 <p><img src="error_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
 <div id="error-model-selection" class="section level2">
 <h2 class="hasAnchor">
@@ -185,7 +184,7 @@ turtle[[<span class="dv">3</span>]] &lt;-<span class="st"> </span>turtle[[<span 
 <div id="variograms" class="section level2">
 <h2 class="hasAnchor">
 <a href="#variograms" class="anchor"></a>Variograms</h2>
-<p>If we were working with ARGOS data or high resolution GPS data on a small animal, then we can get a “nugget” effect in the variogram that looks like an initial discontinuity at short time lags.</p>
+<p>If we were working with Argos data or high resolution GPS data on a small animal, then we can get a “nugget” effect in the variogram that looks like an initial discontinuity at short time lags.</p>
 <p><img src="error_files/figure-html/unnamed-chunk-12-1.png" width="700"><img src="error_files/figure-html/unnamed-chunk-12-2.png" width="700"></p>
 <p>The height of this initial discontinuity corresponds to the variance of uncorrelated location errors. The second plot is the kind of initial discontinuity one has with detector array data. The end of the (slope) discontinuity is highlighted with a circle. This discontinuity is smooth because the movement and detection are correlated. The height of this initial discontinuity is also (at least roughly) the variance of the location errors.</p>
 </div>
@@ -201,10 +200,8 @@ turtle[[<span class="dv">3</span>]] &lt;-<span class="st"> </span>turtle[[<span 
 GUESS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.fit.html">ctmm.guess</a></span>(turtle[[<span class="dv">3</span>]],<span class="dt">CTMM=</span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">error=</span><span class="ot">TRUE</span>),<span class="dt">interactive=</span><span class="ot">FALSE</span>)
 <span class="co"># stepwise fitting # CRAN policy limits us to 2 cores</span>
 FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.select</a></span>(turtle[[<span class="dv">3</span>]],GUESS,<span class="dt">trace=</span><span class="ot">TRUE</span>,<span class="dt">cores=</span><span class="dv">2</span>)</code></pre></div>
-<pre><code>## * Fitting model OUF isotropic error.</code></pre>
-<pre><code>## * Fitting model OUF anisotropic error.</code></pre>
-<pre><code>## * Fitting models OU anisotropic error, OUf anisotropic error.</code></pre>
-<pre><code>## * Fitting model IID anisotropic error.</code></pre>
+<pre><code>## * Fitting model OUF isotropic error</code></pre>
+<pre><code>## * Fitting model OUF anisotropic error</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># if you get errors on your platform, then try cores=1</span>
 <span class="kw"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(FIT)</code></pre></div>
 <pre><code>## $name
@@ -212,12 +209,12 @@ FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fi
 ## 
 ## $DOF
 ##     mean     area    speed 
-## 14.01050 24.15146  0.00000 
+## 14.01052 24.15160  0.00000 
 ## 
 ## $CI
-##                          low       est      high
-## area (hectares)    13.672724 21.306509 30.606408
-## τ[position] (days)  3.294531  5.636969  9.644898</code></pre>
+##                         low       est      high
+## area (hectares)    13.67270 21.306440 30.606280
+## τ[position] (days)  3.29453  5.636959  9.644867</code></pre>
 <p><code>trace=TRUE</code> allows us to see the models considered. <code>verbose=TRUE</code> would save each model.</p>
 </div>
 <div id="simultaneous-fitting-with-uncalibrated-data" class="section level3">
@@ -233,10 +230,8 @@ turtle &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r
 GUESS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.fit.html">ctmm.guess</a></span>(turtle[[<span class="dv">3</span>]],<span class="dt">CTMM=</span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">error=</span><span class="dv">10</span>),<span class="dt">interactive=</span><span class="ot">FALSE</span>)
 <span class="co"># fit and select models # CRAN policy limits us to 2 cores</span>
 FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.select</a></span>(turtle[[<span class="dv">3</span>]],GUESS,<span class="dt">trace=</span><span class="ot">TRUE</span>,<span class="dt">cores=</span><span class="dv">2</span>)</code></pre></div>
-<pre><code>## * Fitting model OUF isotropic error.</code></pre>
-<pre><code>## * Fitting model OUF anisotropic error.</code></pre>
-<pre><code>## * Fitting models OU anisotropic error, OUf anisotropic error.</code></pre>
-<pre><code>## * Fitting model IID anisotropic error.</code></pre>
+<pre><code>## * Fitting model OUF isotropic error</code></pre>
+<pre><code>## * Fitting model OUF anisotropic error</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># if you get errors on your platform, then try cores=1</span>
 <span class="kw"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(FIT)</code></pre></div>
 <pre><code>## $name
@@ -244,13 +239,13 @@ FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fi
 ## 
 ## $DOF
 ##     mean     area    speed 
-## 12.83005 21.87087  0.00000 
+## 12.83005 21.87091  0.00000 
 ## 
 ## $CI
 ##                          low       est     high
-## area (hectares)    13.020972 20.809251 30.39386
-## τ[position] (days)  3.416684  6.198587 11.24555
-## error (meters)      6.967388  8.784082 10.59714</code></pre>
+## area (hectares)    13.020972 20.809242 30.39384
+## τ[position] (days)  3.416685  6.198584 11.24553
+## error (meters)      6.967389  8.784082 10.59714</code></pre>
 <p>Here, fitting the RMS UERE simultaneously with the movement model produced a consistent result. This will not always be the case.</p>
 </div>
 <div id="fitting-with-uncalibrated-data-under-a-prior" class="section level3">
@@ -263,10 +258,8 @@ FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fi
 GUESS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/variogram.fit.html">ctmm.guess</a></span>(turtle[[<span class="dv">3</span>]],<span class="dt">CTMM=</span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm</a></span>(<span class="dt">error=</span><span class="ot">TRUE</span>),<span class="dt">interactive=</span><span class="ot">FALSE</span>)
 <span class="co"># stepwise fitting # CRAN policy limits us to 2 cores</span>
 FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.select</a></span>(turtle[[<span class="dv">3</span>]],GUESS,<span class="dt">trace=</span><span class="ot">TRUE</span>,<span class="dt">cores=</span><span class="dv">2</span>)</code></pre></div>
-<pre><code>## * Fitting model OUF isotropic error.</code></pre>
-<pre><code>## * Fitting model OUF anisotropic error.</code></pre>
-<pre><code>## * Fitting models OU anisotropic error, OUf anisotropic error.</code></pre>
-<pre><code>## * Fitting model IID anisotropic error.</code></pre>
+<pre><code>## * Fitting model OUF isotropic error</code></pre>
+<pre><code>## * Fitting model OUF anisotropic error</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># if you get weird errors on your platform, then try cores=1</span>
 <span class="kw"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(FIT)</code></pre></div>
 <pre><code>## $name
@@ -274,12 +267,12 @@ FIT &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fi
 ## 
 ## $DOF
 ##     mean     area    speed 
-## 12.06150 20.48943  0.00000 
+## 12.06154 20.48968  0.00000 
 ## 
 ## $CI
 ##                          low       est     high
-## area (hectares)    12.638975 20.554464 30.36349
-## τ[position] (days)  3.629407  6.628389 12.10544</code></pre>
+## area (hectares)    12.638982 20.554409 30.36334
+## τ[position] (days)  3.629413  6.628366 12.10533</code></pre>
 <p>Some sensitivity analysis would be warranted here for the UERE parameter.</p>
 </div>
 </div>

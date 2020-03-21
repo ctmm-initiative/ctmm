@@ -69,7 +69,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.8</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.9</span>
       </span>
     </div>
 
@@ -132,7 +132,8 @@
     <p>This function serves as a wrapper around <code><a href='https://rdrr.io/r/stats/optimize.html'>optimize</a></code>, <code><a href='https://rdrr.io/r/stats/optim.html'>optim</a></code>, and <code>ctmm</code>'s partial-Newton optimization routine, with standardized arguments and return values. It finds the optimal parameters that minimize a function, whether it be a cost, loss, risk, or negative log-likelihood function.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>optimizer</span>(<span class='no'>par</span>,<span class='no'>fn</span>,<span class='no'>...</span>,<span class='kw'>method</span><span class='kw'>=</span><span class='st'>"pNewton"</span>,<span class='kw'>lower</span><span class='kw'>=</span>-<span class='fl'>Inf</span>,<span class='kw'>upper</span><span class='kw'>=</span><span class='fl'>Inf</span>,<span class='kw'>period</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>control</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>())</pre>
+    <pre class="usage"><span class='fu'>optimizer</span>(<span class='no'>par</span>,<span class='no'>fn</span>,<span class='no'>...</span>,<span class='kw'>method</span><span class='kw'>=</span><span class='st'>"pNewton"</span>,<span class='kw'>lower</span><span class='kw'>=</span>-<span class='fl'>Inf</span>,<span class='kw'>upper</span><span class='kw'>=</span><span class='fl'>Inf</span>,<span class='kw'>period</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>reset</span><span class='kw'>=</span><span class='no'>identity</span>,
+          <span class='kw'>control</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>())</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -164,6 +165,10 @@
     <tr>
       <th>period</th>
       <td><p>Period of circular parameters if not <code>FALSE</code>.</p></td>
+    </tr>
+    <tr>
+      <th>reset</th>
+      <td><p>Optional function to re-center parameters, if symmetry permits, to prevent numerical underflow.</p></td>
     </tr>
     <tr>
       <th>control</th>

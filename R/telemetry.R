@@ -362,7 +362,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   NAMES$GDOP <- c("GPS.GDOP","GDOP","Geometric.DOP","GPS.Geometric.Dilution","Geometric.Dilution","Geo.Dil","Geo.DOP")
   NAMES$VDOP <- c("GPS.VDOP","VDOP","Vertical.DOP","GPS.Vertical.Dilusion","Vertical.Dilution","Ver.Dil","Ver.DOP")
   NAMES$nsat <- c("GPS.satellite.count","satellite.count","Sat.Count","Number.of.Sats","Num.Sats","Nr.Sat","NSat","NSats","Sat.Num","satellites.used","Satellites","Sats","SVs.in.use") # Counts? Messages?
-  NAMES$FIX <- c("GPS.fix.type","GPS.fix.type.raw","fix.type","type.of.fix","e.obs.type.of.fix","Fix.Attempt","GPS.Fix.Attempt","Telonics.Fix.Attempt","Fix.Status","sensor.type","Fix","2D/3D","Nav","Validated")
+  NAMES$FIX <- c("GPS.fix.type","GPS.fix.type.raw","fix.type","type.of.fix","e.obs.type.of.fix","Fix.Attempt","GPS.Fix.Attempt","Telonics.Fix.Attempt","Fix.Status","sensor.type","Fix","2D/3D","Nav","Validated","VALID")
   NAMES$TTF <- c("GPS.time.to.fix","time.to.fix","GPS.TTF","TTF","GPS.fix.time","fix.time","time.to.get.fix","used.time.to.get.fix","e.obs.used.time.to.get.fix","Duration","GPS.navigation.time","navigation.time","Time.On")
   NAMES$z <- c("height.above.ellipsoid","height.above.msl","height.above.mean.sea.level","height.raw","height","height.m","barometric.height","Argos.altitude","GPS.Altitude","altitude","altitude.m","Alt","barometric.depth","depth","elevation","elevation.m","elev")
   NAMES$v <- c("ground.speed",'speed.over.ground',"speed","GPS.speed")
@@ -608,8 +608,18 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   ###########################
   # generic location classes
   # includes Telonics Gen4 location classes (use with HDOP information)
-  COL <- pull.column(object,NAMES$FIX,FUNC=as.factor)
-  if(length(COL)) { DATA$class <- merge.class(COL,DATA$class) } # retain ARGOS location classes if mixed
+  # unlike other data, don't use first choice but loop over all columns
+  # retain ARGOS location classes if mixed, and any previous class
+  for(COL in NAMES$FIX)
+  {
+    if(COL %in% names(object))
+    {
+      CLASS <- as.factor(object[[COL]])
+      DATA$class <- merge.class(CLASS,DATA$class)
+    }
+  }
+  #COL <- pull.column(object,NAMES$FIX,FUNC=as.factor)
+  #if(length(COL)) { DATA$class <- merge.class(COL,DATA$class) }
 
   # detect if Telonics by location classes
   if(!TELONICS && "class" %in% names(DATA))

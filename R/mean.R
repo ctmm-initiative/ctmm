@@ -9,7 +9,7 @@ drift.init <- function(data,CTMM)
   if(CTMM$error)
   {
     error <- get.error(data,CTMM,circle=TRUE)
-    w <- 1/error
+    w <- clamp(1/error,0,1) # zero-error GPS approximation versus km-error ARGOS
   }
   else
   { w <- rep(1,length(data$t)) }

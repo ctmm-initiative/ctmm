@@ -36,7 +36,9 @@ mpsigamma <- function(x,deriv=0,dim=1)
 {
   PSI <- 1 - 1:dim
   PSI <- x + PSI/2
-  PSI <- sapply(PSI,function(p) psigamma(p,deriv=deriv))
+  if(deriv>=0) { PSI <- sapply(PSI,function(p) psigamma(p,deriv=deriv)) }
+  else if(deriv==-1) { PSI <- sapply(PSI,function(p) lgamma(p)) }
+  else { stop("Derivative ",deriv+1," of log(Gamma(x)) not supported.") }
   PSI <- sum(PSI)
   return(PSI)
 }

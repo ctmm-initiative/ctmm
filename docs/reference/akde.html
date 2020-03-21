@@ -69,7 +69,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.8</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.9</span>
       </span>
     </div>
 
@@ -133,10 +133,7 @@
     </div>
 
     <pre class="usage"><span class='fu'>akde</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>VMM</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>debias</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>weights</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>smooth</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>error</span><span class='kw'>=</span><span class='fl'>0.001</span>,<span class='kw'>res</span><span class='kw'>=</span><span class='fl'>10</span>,
-     <span class='kw'>grid</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='no'>...</span>)
-
-<span class='co'># S3 method for UD</span>
-<span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span>(<span class='no'>x</span>,<span class='no'>...</span>)</pre>
+     <span class='kw'>grid</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='no'>...</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -181,16 +178,12 @@
       <th>...</th>
       <td><p>Arguments passed to all instances of <code><a href='bandwidth.html'>bandwidth</a></code>.</p></td>
     </tr>
-    <tr>
-      <th>x</th>
-      <td><p>A list of <code>UD</code>s calculated on the same grid.</p></td>
-    </tr>
     </table>
 
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>For weighted AKDE, please note additional <code>...</code> arguments passed to <code><a href='bandwidth.html'>bandwidth</a></code>.</p>
-<p>When feeding in lists of <code>telemetry</code> and <code>ctmm</code> objects, all UDs will be calculated on the same grid. These UDs can be averaged with the <code>mean</code> command, however this is not an optimal way to calculate population ranges.</p>
+<p>When feeding in lists of <code>telemetry</code> and <code>ctmm</code> objects, all UDs will be calculated on the same grid. These UDs can be averaged with the <code><a href='mean.html'>mean.UD</a></code> command.</p>
 <p>If a <code>UD</code> or <code>raster</code> object is supplied in the <code>grid</code> argument, then the estimate will be calculated on the same grid. Alternatively, a list of grid arguments can be supplied, with any of the following components:</p><dl class='dl-horizontal'>
 <dt><code>r</code></dt><dd><p>A list with vectors <code>x</code> and <code>y</code> that define the grid-cell midpoints.</p></dd>
 <dt><code>dr</code></dt><dd><p>A vector setting the <code>x</code> and <code>y</code> cell widths in meters. Equivalent to <code>res</code> for <code>raster</code> objects.</p></dd>
@@ -225,7 +218,7 @@ Starting in v0.3.1, <code>akde</code> calculated an effective sample size <code>
 In v0.3.2, this method was further improved to use <code>DOF.area</code> from the Gaussian reference function approximation.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><code><a href='bandwidth.html'>bandwidth</a></code>, <code><a href='export.html'>raster,UD-method</a></code></p></div>
+    <div class='dont-index'><p><code><a href='bandwidth.html'>bandwidth</a></code>, <code><a href='mean.html'>mean.UD</a></code>, <code><a href='export.html'>raster,UD-method</a></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='co'># \donttest{</span>

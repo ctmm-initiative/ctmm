@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.8</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.9</span>
       </span>
     </div>
 
@@ -88,7 +88,7 @@
       <h1>Variograms and Model Selection</h1>
                         <h4 class="author">Christen H. Fleming and Justin M. Calabrese</h4>
             
-            <h4 class="date">2019-12-09</h4>
+            <h4 class="date">2020-03-09</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/ctmm-initiative/ctmm/blob/master/vignettes/variogram.Rmd"><code>vignettes/variogram.Rmd</code></a></small>
       <div class="hidden name"><code>variogram.Rmd</code></div>
@@ -232,12 +232,12 @@ SVF4 &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/b
 ## [1] "IID anisotropic"
 ## 
 ## $DOF
-##   mean   area  speed 
-## 3527.0 2189.5    0.0 
+##     mean     area    speed 
+## 3527.000 3522.146    0.000 
 ## 
 ## $CI
-##                              low      est     high
-## area (square kilometers) 353.709 369.0051 384.6205</code></pre>
+##                               low      est     high
+## area (square kilometers) 356.9182 369.0051 381.2905</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">M.OU &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(Cilla,m.ou)
 <span class="kw"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(M.OU)</code></pre></div>
 <pre><code>## $name
@@ -245,11 +245,11 @@ SVF4 &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/b
 ## 
 ## $DOF
 ##     mean     area    speed 
-## 5.430229 8.231786 0.000000 
+## 5.430229 8.231785 0.000000 
 ## 
 ## $CI
 ##                                 low       est      high
-## area (square kilometers) 181.703269 414.86725 742.63017
+## area (square kilometers) 181.703267 414.86725 742.63020
 ## τ[position] (days)         5.232246  16.55615  52.38784</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">M.OUF &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span>(Cilla,m.ouf)
 <span class="kw"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(M.OUF)</code></pre></div>
@@ -258,21 +258,21 @@ SVF4 &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/b
 ## 
 ## $DOF
 ##       mean       area      speed 
-##   10.73356   18.13614 3445.13305 
+##   10.73354   18.13596 3445.13306 
 ## 
 ## $CI
 ##                                 low        est      high
-## area (square kilometers) 239.647484 403.457834 609.23866
-## τ[position] (days)         4.026018   7.505349  13.99156
-## τ[velocity] (minutes)     39.570326  42.069010  44.72547
+## area (square kilometers) 239.647385 403.458850 609.24131
+## τ[position] (days)         4.026011   7.505368  13.99165
+## τ[velocity] (minutes)     39.570325  42.069009  44.72547
 ## speed (kilometers/day)    13.819957  14.054636  14.28926</code></pre>
 <p>Notice how tiny the (Gaussian) area uncertainty is in IID model <code>M.IID</code>. Let us look into some details of the models.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">FITS &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="dt">IID=</span>M.IID,<span class="dt">OU=</span>M.OU,<span class="dt">OUF=</span>M.OUF)
 <span class="kw"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(FITS)</code></pre></div>
 <pre><code>##         ΔAICc ΔRMSPE (m)   DOF[area]
-## OUF     0.000   352.8444   18.136140
-## OU   1565.291   779.5549    8.231786
-## IID 38112.149     0.0000 2189.500412</code></pre>
+## OUF     0.000   352.8538   18.135960
+## OU   1565.291   779.5550    8.231785
+## IID 38112.149     0.0000 3522.145533</code></pre>
 <p><code>AICc</code> is the (linearly) corrected Akaike information criteria. AIC balances likelihood against model complexity in a way that is good if we want to make optimal predictions. A lower AIC is better. Getting the AIC to go down by 5 is great, while getting the AIC to go down by 10 is awesome. Our AIC is going down by thousands.</p>
 <p>The fit parameter <code>DOF[mean]</code> is the number of degrees of freedom worth of data we have to estimate the stationary mean parameter, assuming that the model is correct. Notice that the IID model perceives thousands of independent data points, while the autocorrelated OU and OUF models only see a handful of independent data points. This is why the IID model produced tiny confidence intervals on the predicted (Gaussian) area.</p>
 </div>
@@ -284,10 +284,10 @@ SVF4 &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/b
 FITZ &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.fit.html">ctmm.select</a></span>(Cilla,m.ouf,<span class="dt">verbose=</span><span class="ot">TRUE</span>,<span class="dt">cores=</span><span class="dv">2</span>)
 <span class="kw"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(FITZ)</code></pre></div>
 <pre><code>##                     ΔAICc ΔRMSPE (km)  DOF[area]
-## OUF anisotropic    0.0000    1.776672  18.135961
-## OUF isotropic     67.7508    1.912066  17.912945
-## OU anisotropic  1565.2907    2.203373   8.231786
-## OUf anisotropic 1863.8799    0.000000 345.919684</code></pre>
+## OUF anisotropic    0.0000    1.776671  18.135994
+## OUF isotropic     67.7508    1.912066  17.912939
+## OU anisotropic  1565.2907    2.203373   8.231784
+## OUf anisotropic 1863.8799    0.000000 345.919726</code></pre>
 <!--Note that `level=1` is set here for demonstration purposes only, to attempt every nearest model no matter how unlikely it may seem.-->
 <p>The isotropic and anisotropic (<code>isotropic=FALSE</code>) flags correspond to circular and elliptical covariances respectively—an option we did not consider above. <!-- The Ornstein-Uhlenbeck-F (OUF) model is continuous in position and velocity (`M.OUF`),
 the Ornstein-Uhlenbeck (OU) model is continuous in position only (`M.OU`),

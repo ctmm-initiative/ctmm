@@ -73,7 +73,7 @@ Both methods reduce to the unbiased &amp;#8220;method of moments&amp;#8221; esti
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.8</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.9</span>
       </span>
     </div>
 
@@ -163,7 +163,7 @@ Both methods reduce to the unbiased &#8220;method of moments&#8221; estimator in
     </tr>
     <tr>
       <th>CI</th>
-      <td><p>Defaults to only consider non-overlapping lags independent. All unique lags are considered independent with "IID".</p></td>
+      <td><p>Argument for confidence-interval estimation. Can be <code>"IID"</code> to consider all unique lags as independent, <code>"Markov"</code> to consider only non-overlapping lags as independent, or <code>"Gauss"</code> for an exact calculation (see Details below).</p></td>
     </tr>
     <tr>
       <th>axes</th>
@@ -181,7 +181,7 @@ Both methods reduce to the unbiased &#8220;method of moments&#8221; estimator in
 <p>For irregularly sampled data, it may be useful to provide an array of time-lag bin widths to progressively coarsen the variogram. I.e., if you made the very bad choice of changing your sampling interval on the fly from <code>dt1</code> to <code>dt2</code>, where <code>dt1</code> \(&lt;\) <code>dt2</code>, the an appropriate choice would be <code>dt=c(dt1,dt2)</code>. On the other hand, if your sampling is itself a noisy process, then you might want to introduce larger and larger <code>dt</code> components as the visual appearance of the variogram breaks down with increasing lags.
 Alternatively, you might try the <code>fast=FALSE</code> option or aggregating multiple individuals with <code><a href='mean.variogram.html'>mean.variogram</a></code>.</p>
 <p>With irregularly sampled data, different size lags must be aggregated together, and with current fast methods there is a tradeoff between bias and smoothness. The default settings produce a relatively smooth estimate, while increasing <code>res</code> (or setting <code>fast=FALSE</code>) will produce a less biased estimate, which is very useful for <code><a href='residuals.html'>correlogram</a></code>.</p>
-<p>In standard variogram regression treatments, all lags are considered as independent (<code>CI="IID"</code>) for the purposes of confidence-interval estimation, even if they overlap in time. However, in high resolution datasets this will produce vastly underestimated confidence intervals. Therefore, the default <code>CI="Markov"</code> behavior is to consider only the maximum number of non-overlapping lags in calculating confidence intervals.</p>
+<p>In conventional variogram regression treatments, all lags are considered as independent (<code>CI="IID"</code>) for the purposes of confidence-interval estimation, even if they overlap in time. However, in high resolution datasets this will produce vastly underestimated confidence intervals. Therefore, the default <code>CI="Markov"</code> behavior is to consider only the maximum number of non-overlapping lags in calculating confidence intervals, though this is a crude approximation and is overly conservative at large lags. <code>CI="Gauss"</code> implements exact confidence intervals under the assumption of a stationary Gaussian process, but this algorithm is \(O(n^2 \log n)\) even when <code>fast=TRUE</code>.</p>
 <p>If <code>fast=FALSE</code> and the tracking data are calibrated (see <code><a href='uere.html'>uere</a></code>), then the variogram of the movement process (sans the telemetry-error process) is estimated using an iterative maximum-likelihood esitmator (Fleming et al, <em>in preparation</em>). The variogram is targeted to have <code>precision</code> fraction of machine precision. If the data are very irregular, this algorithm can be slow to converge at time lags where there are few data pairs.</p>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
@@ -191,7 +191,7 @@ Alternatively, you might try the <code>fast=FALSE</code> option or aggregating m
     <p>D. Marcotte, ``Fast variogram computation with FFT'', Computers and Geosciences 22:10, 1175-1186 (1996).</p>
 <p>C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, W. F. Fagan,
 ``From fine-scale foraging to home ranges: A semi-variance approach to identifying movement modes across spatiotemporal scales'',
-<a href='http://www.jstor.org/discover/10.1086/675504'>The American Naturalist, 183:5, E154-E167 (2014)</a>.</p>
+<a href='http://www.jstor.org/stable/info/10.1086/675504'>The American Naturalist, 183:5, E154-E167 (2014)</a>.</p>
     <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
 
     <p>Prior to <code>ctmm</code> v0.3.6, <code>fast=FALSE</code> used the lag-weighted esitmator of Fleming et al (2014). Lag weights have been abandoned in favor of interval weights, which are less sensitive to sampling irregularity. The same weighting formulas are used, but with <code>dt</code> instead of the current lag.</p>

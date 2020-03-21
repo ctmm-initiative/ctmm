@@ -67,7 +67,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.8</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.9</span>
       </span>
     </div>
 
@@ -125,9 +125,30 @@
       <small>Source: <a href='https://github.com/ctmm-initiative/ctmm/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
     </div>
 
+    <div id="ctmm-0-5-9-2019-03-07" class="section level1">
+<h1 class="page-header">
+<a href="#ctmm-0-5-9-2019-03-07" class="anchor"></a>ctmm 0.5.9 (2019-03-07)<small> Unreleased </small>
+</h1>
+<ul>
+<li><p>new exact variogram CI argument “Gauss”</p></li>
+<li><p>new mean.UD argument weights</p></li>
+<li><p>new datum argument in as.telemetry—input and ouput datums can now differ</p></li>
+<li><p>bugfix for infinte loop in ctmm.select</p></li>
+<li><p>improvements in ctmm.select, ctmm.loglike for collapsing variance/error estimates</p></li>
+<li><p>rewrite of optimizer’s line search to be more exact &amp; reliable</p></li>
+<li><p>improvements in optimizer for degenerate likelihood surfaces</p></li>
+<li><p>improvements in optimization for bad covariance estimates—fit object structure changed</p></li>
+<li><p>bugfix in uere.fit with multiple location classes in different orders</p></li>
+<li><p>bugfix in speed when fast=FALSE and sampled models lose features</p></li>
+<li><p>bugfix in IID pREML CIs</p></li>
+<li><p>bugfix in ctmm.guess with large errors causing eigen() to fail</p></li>
+<li><p>bugfix in optimizer expansion search step size not increasing</p></li>
+<li><p>MoveStack objects are given a common projection if not projected</p></li>
+</ul>
+</div>
     <div id="ctmm-0-5-8-2019-12-09" class="section level1">
 <h1 class="page-header">
-<a href="#ctmm-0-5-8-2019-12-09" class="anchor"></a>ctmm 0.5.8 (2019-12-09)<small> Unreleased </small>
+<a href="#ctmm-0-5-8-2019-12-09" class="anchor"></a>ctmm 0.5.8 (2019-12-09)<small> 2019-12-11 </small>
 </h1>
 <ul>
 <li><p>improvements to ctmm.select stepwise selection, especially with error and/or circulation</p></li>
@@ -634,6 +655,7 @@
     <div id="tocnav">
       <h2>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
+        <li><a href="#ctmm-0-5-9-2019-03-07">0.5.9</a></li>
         <li><a href="#ctmm-0-5-8-2019-12-09">0.5.8</a></li>
         <li><a href="#ctmm-0-5-7-2019-10-06">0.5.7</a></li>
         <li><a href="#ctmm-0-5-6-2019-05-14">0.5.6</a></li>

@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.8</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.9</span>
       </span>
     </div>
 
@@ -88,7 +88,7 @@
       <h1>Periodic movement models</h1>
                         <h4 class="author">Guillaume Péron, Christen H. Fleming, and Justin M. Calabrese</h4>
             
-            <h4 class="date">2019-12-09</h4>
+            <h4 class="date">2020-03-09</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/ctmm-initiative/ctmm/blob/master/vignettes/periodogram.Rmd"><code>vignettes/periodogram.Rmd</code></a></small>
       <div class="hidden name"><code>periodogram.Rmd</code></div>
@@ -139,46 +139,46 @@ FITS &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ctmm.f
 <pre><code>##                                               ΔAICc  ΔRMSPE (m) DOF[area]
 ## OUF anisotropic harmonic 2 0               0.000000   60.815821  175.8871
 ## OUF anisotropic harmonic 1 0              20.689425   63.785895  179.2759
-## OUF anisotropic harmonic 2 1               5.493885   89.639599  169.4066
-## OUF anisotropic harmonic 1 1              26.103584   91.796911  172.8667
-## OUF anisotropic harmonic 0 0             123.673098  157.298556  205.5584
-## OUF anisotropic harmonic 0 1             128.448440  177.809098  200.7891
-## OUF anisotropic harmonic 3 0             -17.231893 2496.228990  174.7865
+## OUF anisotropic harmonic 2 1               5.493885   89.639597  169.4066
+## OUF anisotropic harmonic 1 1              26.103584   91.796918  172.8667
+## OUF anisotropic harmonic 0 0             123.673098  157.298557  205.5584
+## OUF anisotropic harmonic 0 1             128.448440  177.809102  200.7891
+## OUF anisotropic harmonic 3 0             -17.231893 2496.228988  174.7865
 ## OUf anisotropic harmonic 2 0              19.477244    0.000000  237.2510
 ## OUf anisotropic harmonic 1 0              39.906174    5.147749  240.7653
-## OUf anisotropic harmonic 0 0             124.354647  131.232070  233.3832
-## OU anisotropic harmonic 2 0               34.440063   67.757512  146.6522
+## OUf anisotropic harmonic 0 0             124.354647  131.232070  233.3833
+## OU anisotropic harmonic 2 0               34.440063   67.757511  146.6522
 ## OU anisotropic harmonic 1 0               51.739611   69.857170  150.1455
-## OU anisotropic harmonic 0 0              193.520195  177.510803  163.4152
-## OUF isotropic harmonic 2 0                88.869590  236.982415  163.4619
-## OUF isotropic harmonic 1 0               113.063969  238.575576  166.0153
-## OUF isotropic harmonic 0 0               230.160697  323.668049  196.4267
-## OUF anisotropic circulation harmonic 0 0 124.426467  160.554314  204.2181
-## OUF isotropic circulation harmonic 0 0   231.141563  327.779261  195.1978</code></pre>
+## OU anisotropic harmonic 0 0              193.520195  177.510805  163.4152
+## OUF isotropic harmonic 2 0                88.869590  236.982418  163.4619
+## OUF isotropic harmonic 1 0               113.063969  238.575577  166.0153
+## OUF isotropic harmonic 0 0               230.160697  323.668046  196.4267
+## OUF anisotropic circulation harmonic 0 0 124.426466  160.554185  204.4379
+## OUF isotropic circulation harmonic 0 0   231.141563  327.779222  195.1978</code></pre>
 <p>From the first model, We see that the velocity autocorrelation (OUF), anisotropy, and <code>2</code> harmonics of daily periodicity were all selected. Given how we specified the prototype, <code>harmonic 2 0</code> means that this preferred model has no lunar periodicity, but has two harmonics of the one-day periodicity. This fittingly corresponds to what the periodogram was saying. If there was some moon-related pattern of space use and given how we specified our prototype, we would have had a non-zero value as the second <code>harmonic</code> value.</p>
-<p>The sorting of our candidate models is more complex than in previous stationary examples. For a given autocovariance model, the different non-stationary models are sorted by mean square predictive error (MSPE) and not the information criteria. As we will demonstrate, likelihood-based model selection can badly overfit with these types of models. For sorting between the autocovariance models (each with best non-stationary model), the information criteria is used. MSPE is not valid for general purpose selection.</p>
+<p>The sorting of our candidate models is more complex than in previous stationary examples. For a given autocovariance model, the different non-stationary models are sorted by mean square predictive error (MSPE) and not the information criterion. As we will demonstrate, likelihood-based model selection can badly overfit with these types of models. For sorting between the autocovariance models (each with best non-stationary model), the information criterion is used. MSPE is not valid for general purpose selection.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># these are sorted by MSPE</span>
 SUB &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/grep.html">grepl</a></span>(<span class="st">"OUF anisotropic harmonic"</span>,<span class="kw"><a href="https://rdrr.io/r/base/names.html">names</a></span>(FITS))
 <span class="kw"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(FITS[SUB])</code></pre></div>
 <pre><code>##                                   ΔAICc  ΔRMSPE (m) DOF[area]
 ## OUF anisotropic harmonic 2 0   0.000000    0.000000  175.8871
 ## OUF anisotropic harmonic 1 0  20.689425    2.970074  179.2759
-## OUF anisotropic harmonic 2 1   5.493885   28.823778  169.4066
-## OUF anisotropic harmonic 1 1  26.103584   30.981090  172.8667
-## OUF anisotropic harmonic 0 0 123.673098   96.482735  205.5584
-## OUF anisotropic harmonic 0 1 128.448440  116.993277  200.7891
-## OUF anisotropic harmonic 3 0 -17.231893 2435.413169  174.7865</code></pre>
+## OUF anisotropic harmonic 2 1   5.493885   28.823776  169.4066
+## OUF anisotropic harmonic 1 1  26.103584   30.981096  172.8667
+## OUF anisotropic harmonic 0 0 123.673098   96.482736  205.5584
+## OUF anisotropic harmonic 0 1 128.448440  116.993281  200.7891
+## OUF anisotropic harmonic 3 0 -17.231893 2435.413167  174.7865</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># these are sorted by IC</span>
 SUB &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/grep.html">grepl</a></span>(<span class="st">'0 0'</span>,<span class="kw"><a href="https://rdrr.io/r/base/names.html">names</a></span>(FITS))
 <span class="kw"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(FITS[SUB])</code></pre></div>
 <pre><code>##                                                ΔAICc ΔRMSPE (m) DOF[area]
 ## OUF anisotropic harmonic 0 0               0.0000000   26.06649  205.5584
-## OUf anisotropic harmonic 0 0               0.6815490    0.00000  233.3832
-## OUF anisotropic circulation harmonic 0 0   0.7533689   29.32224  204.2181
+## OUf anisotropic harmonic 0 0               0.6815490    0.00000  233.3833
+## OUF anisotropic circulation harmonic 0 0   0.7533684   29.32211  204.4379
 ## OU anisotropic harmonic 0 0               69.8470969   46.27873  163.4152
 ## OUF isotropic harmonic 0 0               106.4875996  192.43598  196.4267
-## OUF isotropic circulation harmonic 0 0   107.4684651  196.54719  195.1978</code></pre>
-<p>If only the information criteria was used, we would have selected <code>harmonic 3 0</code> over <code>harmonic 2 0</code>.</p>
+## OUF isotropic circulation harmonic 0 0   107.4684648  196.54715  195.1978</code></pre>
+<p>If only the information criterion was used, we would have selected <code>harmonic 3 0</code> over <code>harmonic 2 0</code>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># sorting by IC only</span>
 <span class="kw"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(FITS,<span class="dt">MSPE=</span><span class="ot">NA</span>)</code></pre></div>
 <pre><code>##                                              ΔAICc DOF[mean]
@@ -195,11 +195,11 @@ SUB &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/ba
 ## OUF isotropic harmonic 1 0               130.29586  94.69244
 ## OUF anisotropic harmonic 0 0             140.90499 131.12270
 ## OUf anisotropic harmonic 0 0             141.58654 149.16251
-## OUF anisotropic circulation harmonic 0 0 141.65836 131.20178
-## OUF anisotropic harmonic 0 1             145.68033 129.27965
+## OUF anisotropic circulation harmonic 0 0 141.65836 131.20179
+## OUF anisotropic harmonic 0 1             145.68033 129.27966
 ## OU anisotropic harmonic 0 0              210.75209  88.86910
 ## OUF isotropic harmonic 0 0               247.39259 119.70643
-## OUF isotropic circulation harmonic 0 0   248.37346 119.73740</code></pre>
+## OUF isotropic circulation harmonic 0 0   248.37346 119.73741</code></pre>
 <p>Next we do some sanity checking on our results. The sampling interval for Gamba is fairly steady at</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="st">"hour"</span> <span class="op">%#%</span><span class="st"> </span>stats<span class="op">::</span><span class="kw"><a href="https://rdrr.io/r/stats/median.html">median</a></span>(<span class="kw"><a href="https://rdrr.io/r/base/diff.html">diff</a></span>(Gamba<span class="op">$</span>t))</code></pre></div>
 <pre><code>## [1] 4</code></pre>
@@ -212,14 +212,14 @@ SUB &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/ba
 ## 
 ## $DOF
 ##        mean        area       speed 
-## 106.6798345 174.7864575   0.8479798 
+## 106.6798338 174.7864550   0.8479798 
 ## 
 ## $CI
 ##                                low        est       high
-## rotation/deviation %     74.380390  91.679710 100.000000
+## rotation/deviation %     74.360524  91.679710 100.000000
 ## rotation/speed %         96.735689  98.970180 100.000000
 ## area (square kilometers) 41.910582  48.890071  56.399203
-## τ[position] (hours)       7.019750   9.335749  12.415855
+## τ[position] (hours)       7.019750   9.335749  12.415856
 ## τ[velocity] (hours)       1.108651   1.599096   2.306504
 ## speed (kilometers/day)   12.330893 103.010397 205.063003</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(FITS[[<span class="dv">1</span>]])   <span class="co"># harmonic 2 0 # selected by IC/MSPE</span></code></pre></div>
@@ -232,7 +232,7 @@ SUB &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/ba
 ## 
 ## $CI
 ##                                 low       est      high
-## rotation/deviation %     23.6554767 28.855685 35.199060
+## rotation/deviation %     23.4517770 28.855685 35.504796
 ## rotation/speed %         24.2563566 29.787735 36.580479
 ## area (square kilometers) 41.5574968 48.453880 55.871898
 ## τ[position] (hours)       7.2915577  9.600382 12.640280

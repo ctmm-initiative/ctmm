@@ -814,13 +814,13 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
     {
       LINE.TYPE <- "Newton-Raphson"
       # Newton-Raphson search step from par.target (can optimize along boundary)
-      if(DEBUG) { DEBUG.STEP <<- list(LINE.TYPE=LINE.TYPE,par=par,gradient=gradient,hessian=hessian,covariance=covariance,lower=lower,upper=upper,period=period) }
+      # if(DEBUG) { DEBUG.STEP <<- list(LINE.TYPE=LINE.TYPE,par=par,gradient=gradient,hessian=hessian,covariance=covariance,lower=lower,upper=upper,period=period) }
       par.target <- box.search(par,gradient,hessian,covariance,lower=lower,upper=upper,period=period)
     }
     else if(STAGE==2) # conjugate gradient (preconditioned)
     {
       LINE.TYPE <- "Conjugate gradient"
-      if(DEBUG) { DEBUG.STEP <<- list(LINE.TYPE=LINE.TYPE,par=par,gradient=gradient,hessian=hessian,covariance=covariance,lower=lower,upper=upper,period=period,BOXED=BOXED,DIR=DIR) }
+      # if(DEBUG) { DEBUG.STEP <<- list(LINE.TYPE=LINE.TYPE,par=par,gradient=gradient,hessian=hessian,covariance=covariance,lower=lower,upper=upper,period=period,BOXED=BOXED,DIR=DIR) }
 
       if(any(!BOXED))
       {
@@ -956,15 +956,15 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
       if(trace) { message(sprintf("%s %s search",format(zero+fn.par,digits=16),LINE.TYPE)) }
       if(trace>1) { message("\tc(",paste0(NAMES,"=",par,collapse=', '),")") }
 
-      if(DEBUG>1)
-      {
-        graphics::plot((DIR.STEP %*% (par.all-par)),(fn.all-fn.par),xlab="Distance from MIN",ylab="Value over MIN")
-        graphics::abline(h=c(fn.start-fn.par,0),col=scales::alpha(c('black','blue'),0.5))
-        graphics::abline(v=c(DIR.STEP %*% (par.start-par),0),col=scales::alpha(c('black','blue'),0.5))
-        graphics::points(c(DIR.STEP %*% (P-par)),fn.queue-fn.par,pch=16,col="red")
-        graphics::points(DIR.STEP %*% (par.start-par),fn.start-fn.par,pch=16)
-        graphics::title(sprintf("%s search",LINE.TYPE))
-      }
+      # if(DEBUG>1)
+      # {
+      #   graphics::plot((DIR.STEP %*% (par.all-par)),(fn.all-fn.par),xlab="Distance from MIN",ylab="Value over MIN")
+      #   graphics::abline(h=c(fn.start-fn.par,0),col=scales::alpha(c('black','blue'),0.5))
+      #   graphics::abline(v=c(DIR.STEP %*% (par.start-par),0),col=scales::alpha(c('black','blue'),0.5))
+      #   graphics::points(c(DIR.STEP %*% (P-par)),fn.queue-fn.par,pch=16,col="red")
+      #   graphics::points(DIR.STEP %*% (par.start-par),fn.start-fn.par,pch=16)
+      #   graphics::title(sprintf("%s search",LINE.TYPE))
+      # }
 
       ## calculted steps were too small on one side to proceede
       # no where to go
@@ -1046,7 +1046,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
       # setup next search steps
       #########################
 
-      if(DEBUG) { DEBUG.LINE <<- list(NR=NR,M=M,MIN=MIN,fn.all=fn.all,par.all=par.all,par=par,fn.par=fn.par,M.BOX=M.BOX,cores=cores,DIR.STEP=DIR.STEP,lower=lower,upper=upper,period=period,BOX=BOX,par.start=par.start,STEP=STEP,STAGE=STAGE) }
+      # if(DEBUG) { DEBUG.LINE <<- list(NR=NR,M=M,MIN=MIN,fn.all=fn.all,par.all=par.all,par=par,fn.par=fn.par,M.BOX=M.BOX,cores=cores,DIR.STEP=DIR.STEP,lower=lower,upper=upper,period=period,BOX=BOX,par.start=par.start,STEP=STEP,STAGE=STAGE) }
 
       # setup searches
       if(NR && M) # extrapolation search
