@@ -25,7 +25,7 @@
 C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, and W. F. Fagan. Data from: From fine-scale foraging to home ranges: A semi-variance approach to identifying movement modes across spatiotemporal scales. \href{http://dx.doi.org/10.5061/dryad.45157}{Dryad Digital Repository, DOI:10.5061/dryad.45157 (2014)}.
 }
 
-\seealso{ \code{\link{as.telemetry}}, \code{\link{plot.telemetry}}, \code{\link{buffalo}}, \code{\link{coati}}, \code{\link{pelican}}, \code{\link{turtle}}, \code{\link{wolf}}. }
+\seealso{ \code{\link{as.telemetry}}, \code{\link{plot.telemetry}}, \code{\link{buffalo}}, \code{\link{coati}}, \code{\link{jaguar}}, \code{\link{pelican}}, \code{\link{turtle}}, \code{\link{wolf}}. }
 
 \examples{
 # Load package and data

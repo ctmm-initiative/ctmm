@@ -1,4 +1,4 @@
-ctmm 0.5.9 (2019-03-21)
+ctmm 0.5.9 (2019-03-22)
 ================
 
   * new exact variogram CI argument "Gauss"
@@ -6,6 +6,8 @@ ctmm 0.5.9 (2019-03-21)
   * new mean.UD argument weights
   
   * new datum argument in as.telemetry---input and ouput datums can now differ
+  
+  * new data 'jaguar'
   
   * bugfix for infinte loop in ctmm.select
   

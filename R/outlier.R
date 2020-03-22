@@ -87,8 +87,12 @@ plot.outlie <- function(x,level=0.95,units=TRUE,...)
   # (c) Laryx Decidua
   # hack: we draw arrows but with very special "arrowheads"
   plot(d[2,],v[2,],xlim=range(d),ylim=range(v),pch=19,xlab=xlab,ylab=ylab,...)
-  graphics::arrows(d[2,],v[1,],d[2,],v[3,],length=0.05,angle=90,code=3,...)
-  graphics::arrows(d[1,],v[2,],d[3,],v[2,],length=0.05,angle=90,code=3,...)
+  # very annoying warning when zero length --- cannot be suppressed with suppressWarnings()
+  SUB <- v[1,]<v[3,] # still does not avoid annoying warning
+  suppressWarnings( graphics::arrows(d[2,SUB],v[1,SUB],d[2,SUB],v[3,SUB],length=0.05,angle=90,code=3,...) )
+  SUB <- d[1,]<d[3,] # still does not avoid annoying warning
+  suppressWarnings( graphics::arrows(d[1,SUB],v[2,SUB],d[3,SUB],v[2,SUB],length=0.05,angle=90,code=3,...) )
+  # will need to switch from arrows to segment to just avoid annoying warning...
 }
 
 

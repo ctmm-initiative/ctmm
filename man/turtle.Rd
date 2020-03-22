@@ -24,7 +24,7 @@ Please contact Tom Akre (akret@si.edu) if you want to publish with these data.}
 
 %\references{}
 
-\seealso{ \code{\link{as.telemetry}}, \code{\link{plot.telemetry}}, \code{\link{uere}}, \code{\link{buffalo}}, \code{\link{coati}}, \code{\link{gazelle}}, \code{\link{pelican}}, \code{\link{wolf}}. }
+\seealso{ \code{\link{as.telemetry}}, \code{\link{plot.telemetry}}, \code{\link{uere}}, \code{\link{buffalo}}, \code{\link{coati}}, \code{\link{gazelle}}, \code{\link{jaguar}}, \code{\link{pelican}}, \code{\link{wolf}}. }
 
 \examples{
 # Load package and data
