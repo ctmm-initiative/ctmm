@@ -24,7 +24,7 @@ Please cite Morato et al (2018) when publishing with these data.}
 
 \references{
 R. G. Morato et al,
-``Jaguar movement database: a GPS‐based movement dataset of an apex predator in the Neotropic'',
+``Jaguar movement database: a GPS-based movement dataset of an apex predator in the Neotropic'',
 \href{https://esajournals.onlinelibrary.wiley.com/doi/full/10.1002/ecy.2379}{Ecology, 99:7, 1691-1691 (2018)}.
 }
 
