@@ -50,16 +50,14 @@ color <- function(object,by="time",col.fn=NULL,alpha=1,dt=NULL,cores=1,...)
 {
   object <- listify(object)
 
-  # determine color function
+  # color wheel placements
+  if(by=="individual") { index <- color.individual(object,cores=cores,...) }
+
+  # default color functions
   if(is.null(col.fn))
   {
-    if(by=="individual")
-    {
-      index <- color.individual(object,cores=cores,...)
-      col.fn <- function(i,alpha){grDevices::hsv(i,alpha=alpha)}
-    }
-    else
-    { col.fn <- function(i,alpha){grDevices::rgb(i,0,1-i,alpha)} }
+    if(by=="individual") { col.fn <- function(i,alpha){grDevices::hsv(i,alpha=alpha)} }
+    else { col.fn <- function(i,alpha){grDevices::rgb(i,0,1-i,alpha)} }
   }
 
   if(class(object[[1]])[1] %in% c('UD','CTMM')) # color densities by individual only
