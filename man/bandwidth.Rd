@@ -56,7 +56,7 @@ C. H. Fleming, D. Sheldon, W. F. Fagan, P. Leimgruber, T. Mueller, D. Nandintset
 
 \author{ C. H. Fleming. }
 
-\note{ To obtain a bandwidth scalar representing the variance of each kernel, a \code{ctmm} object with \code{isotropic=TRUE} is required.  In this case, \code{bandwidth} will return bandwidth matrix with identical variances along its diagonal. Note that this will provide an inaccurate estimate for very eccentric distributions.}
+\note{ To obtain a bandwidth scalar representing the variance of each kernel, a \code{ctmm} object with \code{isotropic=TRUE} is required.  In this case, \code{bandwidth} will return bandwidth matrix with identical variances along its diagonal. Note that forcing \code{isotropic=TRUE} will provide an inaccurate estimate for very eccentric distributions.}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
