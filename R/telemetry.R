@@ -161,23 +161,24 @@ Move2CSV <- function(object,timeformat="",timezone="UTC",projection=NULL,datum=N
 }
 
 
+# make names canonical
+canonical.name <- function(NAME,UNIQUE=TRUE)
+{
+  NAME <- gsub("[.:_ -]","",NAME) # remove separators
+  NAME <- gsub("\\(|\\)","",NAME) # remove parentheses
+  NAME <- gsub("\\[|\\]", "", NAME) # remove square brackets
+  NAME <- gsub("\\\uFF08|\\\uFF09","",NAME) # THIS DOES NOT WORK
+  NAME <- tolower(NAME)
+  if(UNIQUE) { NAME <- unique(NAME) }
+  return(NAME)
+}
+
 # pull out a column with different possible names
 # consider alternative spellings of NAMES, but preserve order (preference) of NAMES
 pull.column <- function(object,NAMES,FUNC=as.numeric,name.only=FALSE)
 {
-  canonical <- function(NAME,UNIQUE=TRUE)
-  {
-    NAME <- gsub("[.:_ -]","",NAME) # remove separators
-    NAME <- gsub("\\(|\\)","",NAME) # remove parentheses
-    NAME <- gsub("\\[|\\]", "", NAME) # remove square brackets
-    NAME <- gsub("\\\uFF08|\\\uFF09","",NAME) # THIS DOES NOT WORK
-    NAME <- tolower(NAME)
-    if(UNIQUE) { NAME <- unique(NAME) }
-    return(NAME)
-  }
-
-  NAMES <- canonical(NAMES)
-  names(object) <- canonical(names(object),FALSE) -> COLS
+  NAMES <- canonical.name(NAMES)
+  names(object) <- canonical.name(names(object),FALSE) -> COLS
 
   for(NAME in NAMES)
   {
@@ -349,8 +350,8 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   NAMES$id <- c("animal.ID","individual.local.identifier","local.identifier","individual.ID","Name","ID","ID.Names","Animal","Full.ID",
                 "tag.local.identifier","tag.ID","band.number","band.num","device.info.serial","Device.ID","collar.id","Logger",
                 "Deployment","deployment.ID","track.ID")
-  NAMES$long <- c("location.long","Longitude","long","lon","GPS.Longitude","\u7D4C\u5EA6")
-  NAMES$lat <- c("location.lat","Latitude","latt","lat","GPS.Latitude","\u7DEF\u5EA6")
+  NAMES$long <- c("location.long","Longitude","longitude.WGS84","long","lon","GPS.Longitude","\u7D4C\u5EA6")
+  NAMES$lat <- c("location.lat","Latitude","latitude.WGS84","latt","lat","GPS.Latitude","\u7DEF\u5EA6")
   NAMES$zone <- c("GPS.UTM.zone","UTM.zone","zone")
   NAMES$east <- c("GPS.UTM.Easting","GPS.UTM.East","GPS.UTM.x","UTM.Easting","UTM.East","UTM.E","UTM.x","Easting","East","x")
   NAMES$north <- c("GPS.UTM.Northing","GPS.UTM.North","GPS.UTM.y","UTM.Northing","UTM.North","UTM.N","UTM.y","Northing","North","y")
@@ -362,11 +363,16 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   NAMES$GDOP <- c("GPS.GDOP","GDOP","Geometric.DOP","GPS.Geometric.Dilution","Geometric.Dilution","Geo.Dil","Geo.DOP")
   NAMES$VDOP <- c("GPS.VDOP","VDOP","Vertical.DOP","GPS.Vertical.Dilusion","Vertical.Dilution","Ver.Dil","Ver.DOP")
   NAMES$nsat <- c("GPS.satellite.count","satellite.count","Sat.Count","Number.of.Sats","Num.Sats","Nr.Sat","NSat","NSats","Sat.Num","satellites.used","Satellites","Sats","SVs.in.use") # Counts? Messages?
-  NAMES$FIX <- c("GPS.fix.type","GPS.fix.type.raw","fix.type","type.of.fix","e.obs.type.of.fix","Fix.Attempt","GPS.Fix.Attempt","Telonics.Fix.Attempt","Fix.Status","sensor.type","Fix","2D/3D","Nav","Validated","VALID")
-  NAMES$TTF <- c("GPS.time.to.fix","time.to.fix","GPS.TTF","TTF","GPS.fix.time","fix.time","time.to.get.fix","used.time.to.get.fix","e.obs.used.time.to.get.fix","Duration","GPS.navigation.time","navigation.time","Time.On")
-  NAMES$z <- c("height.above.ellipsoid","height.above.msl","height.above.mean.sea.level","height.raw","height","height.m","barometric.height","Argos.altitude","GPS.Altitude","altitude","altitude.m","Alt","barometric.depth","depth","elevation","elevation.m","elev")
-  NAMES$v <- c("ground.speed",'speed.over.ground',"speed","GPS.speed")
-  NAMES$heading <- c("heading","heading.degree","GPS.heading","Course")
+  NAMES$FIX <- c("GPS.fix.type","GPS.fix.type.raw","fix.type","type.of.fix","e.obs.type.of.fix","Fix.Attempt","GPS.Fix.Attempt","Telonics.Fix.Attempt","Fix.Status","sensor.type","Fix","eobs.type.of.fix","2D/3D","X3.equals.3dfix.2.equals.2dfix","Nav","Validated","VALID")
+  NAMES$TTF <- c("GPS.time.to.fix","time.to.fix","time.to.GPS.fix","time.to.GPS.fix.s","GPS.TTF","TTF","GPS.fix.time","fix.time","time.to.get.fix","used.time.to.get.fix","e.obs.used.time.to.get.fix","Duration","GPS.navigation.time","navigation.time","Time.On")
+  NAMES$z <- c("height.above.ellipsoid","height.above.elipsoid","height.above.ellipsoid.m","height.above.elipsoid.m","height.above.msl","height.above.mean.sea.level","height.raw","height","height.m","barometric.height","altimeter","altimeter.m","Argos.altitude","GPS.Altitude","altitude","altitude.m","Alt","barometric.depth","depth","elevation","elevation.m","elev")
+  NAMES$v <- c("ground.speed",'speed.over.ground','speed.over.ground.m.s',"speed","GPS.speed")
+  NAMES$heading <- c("heading","heading.degree","heading.degrees","GPS.heading","Course","direction","direction.deg")
+
+  # UNIT CONVERSIONS
+  COL <- c("speed.km.h")
+  COL <- pull.column(object,COL)
+  if(length(COL)) { object$speed <- COL * (1000/60^2) }
 
   na.rm <- match.arg(na.rm,c("row","col"))
 
@@ -481,6 +487,26 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   }
 
   DATA$t <- as.numeric(DATA$timestamp)
+
+  #################################
+  # ESTABLISH BASE LOCATION CLASSES BEFOR MISSINGNESS CLASSES
+  ###########################
+  # generic location classes
+  # includes Telonics Gen4 location classes (use with HDOP information)
+  # unlike other data, don't use first choice but loop over all columns
+  # retain ARGOS location classes if mixed, and any previous class
+  for(COL in canonical.name(NAMES$FIX))
+  {
+    PULL <- which(COL==canonical.name(names(object)))
+    if(any(PULL))
+    {
+      COL <- names(object)[PULL[1]]
+      CLASS <- as.factor(object[[COL]])
+      DATA$class <- merge.class(CLASS,DATA$class)
+    }
+  }
+  #COL <- pull.column(object,NAMES$FIX,FUNC=as.factor)
+  #if(length(COL)) { DATA$class <- merge.class(COL,DATA$class) }
 
   ##################################
   # ARGOS error ellipse/circle (newer ARGOS data >2011)
@@ -605,22 +631,6 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   COL <- pull.column(object,COL)
   TELONICS <- length(COL)
 
-  ###########################
-  # generic location classes
-  # includes Telonics Gen4 location classes (use with HDOP information)
-  # unlike other data, don't use first choice but loop over all columns
-  # retain ARGOS location classes if mixed, and any previous class
-  for(COL in NAMES$FIX)
-  {
-    if(COL %in% names(object))
-    {
-      CLASS <- as.factor(object[[COL]])
-      DATA$class <- merge.class(CLASS,DATA$class)
-    }
-  }
-  #COL <- pull.column(object,NAMES$FIX,FUNC=as.factor)
-  #if(length(COL)) { DATA$class <- merge.class(COL,DATA$class) }
-
   # detect if Telonics by location classes
   if(!TELONICS && "class" %in% names(DATA))
   {
@@ -698,6 +708,9 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
 
     # do we need a location class for missing heights?
     DATA <- missing.class(DATA,"vertical")
+
+    # account for missing DOP values
+    if("VDOP" %in% names(DATA)) { DATA <- missing.class(DATA,"VDOP") }
   }
 
   ########################################
@@ -762,9 +775,12 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     # delete empty columns in case collars/tags are different
     for(COL in names(telist[[i]]))
     {
-      BAD <- is.na(telist[[i]][[COL]])
-      if(all(BAD) || (na.rm=="col" && any(BAD))) { telist[[i]][[COL]] <- NULL } # delete the whole column
-      else if(na.rm=="row" && any(BAD)) { telist[[i]] <- telist[[i]][!BAD,] } # only delete the rows
+      if(COL %nin% keep)
+      {
+        BAD <- is.na(telist[[i]][[COL]])
+        if(all(BAD) || (na.rm=="col" && any(BAD))) { telist[[i]][[COL]] <- NULL } # delete the whole column
+        else if(na.rm=="row" && any(BAD)) { telist[[i]] <- telist[[i]][!BAD,] } # only delete the rows
+      }
     }
 
     # delete incomplete vector data (caused by partial NAs)
