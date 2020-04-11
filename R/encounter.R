@@ -81,9 +81,14 @@ encounter.ctmm <- function(CTMM,include=NULL,exclude=NULL,...)
       {
         Pi <- PDsolve(CTMM[[i]]$sigma)
         Pj <- PDsolve(CTMM[[j]]$sigma)
-        sigma <- PDsolve(Pi + Pj)
+        prec <- Pi + Pj
+        sigma <- PDsolve(prec)
+
         mu <- sigma %*% (Pi %*% CTMM[[i]]$mu[1,] + Pj %*% CTMM[[j]]$mu[1,])
         mu <- c(mu)
+
+        # intrinsic weight from multiplying two densities and renormalizing
+        include[i,j] <- include[i,j] / sqrt( det(CTMM[[i]]$sigma) * det(CTMM[[j]]$sigma) * det(prec) )
 
         IN <- IN + include[i,j]
         M1 <- M1 + include[i,j] * mu

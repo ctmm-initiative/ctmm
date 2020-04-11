@@ -54,6 +54,7 @@ speed <- function(object,...) UseMethod("speed")
 speeds <- function(object,...) UseMethod("speeds")
 mag <- function(x,...) UseMethod("mag")
 modes <- function(object,...) UseMethod("modes")
+ridges <- function(object,...) UseMethod("ridges")
 
 # internal S3 generic function
 pars <- function(...) { UseMethod("pars") }

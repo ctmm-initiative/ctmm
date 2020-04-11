@@ -783,9 +783,13 @@ debias.volume <- function(PMF,bias=1)
 
   # evaluate the debiased cdf on the original volume grid
   CDF <- stats::approx(x=VOL/bias,y=CDF,xout=VOL,yleft=0,yright=1)$y
+  # fix tiny numerical errors from ?roundoff?
+  CDF <- sort(CDF)
 
   # recalculate pdf
   PMF <- cdf2pmf(CDF)
+  # fix inconsistency from yright=1
+  CDF <- cumsum(PMF)
 
   # back in spatial order # back in table form
   PMF[IND] <- PMF
@@ -835,10 +839,10 @@ pmf2cdf <- function(PMF,finish=TRUE)
   DIM <- dim(PMF)
   PMF <- c(PMF) # flatten table
 
-  PMF <- sort(PMF,decreasing=TRUE,method="quick",index.return=TRUE)
+  PMF <- sort(PMF,decreasing=TRUE,index.return=TRUE)
 
-  IND <- PMF[[2]] # sorted indices
-  PMF <- PMF[[1]]
+  IND <- PMF$ix # sorted indices
+  PMF <- PMF$x  # sorted values
 
   PMF <- cumsum(PMF)
 
@@ -858,23 +862,27 @@ cdf2pmf <- function(CDF)
 {
   # this method has some numerical noise from discretization/aliasing
   PMF <- diff(c(0,CDF))
+  # should now be positive from re-sort
+  # but its not necessarily decreasing like its supposed to, because of small numerical errors
+  for(i in 2:length(PMF)) { PMF[i] <- min(PMF[i-1:0]) }
 
-  # ties or something is causing numerical errors with this transformation
-  # I don't completely understand the issue, but it seems to follow a pattern
-  DECAY <- diff(PMF)
-  # this quantity should be negative, increasing
-  for(i in 1:length(DECAY))
-  {
-    # when its positive, its usually adjoining a comparable negative value
-    if(DECAY[i]>0)
-    {
-      # find the adjoining error
-      j <- which.min(DECAY[i + -1:1]) - 2 + i
-      # tie out the errors
-      DECAY[i:j] <- mean(DECAY[i:j])
-    }
-  }
-  PMF <- -rev(cumsum(c(0,rev(DECAY))))
+  # # OLD SOLUTION
+  # # ties or something is causing numerical errors with this transformation
+  # # I don't completely understand the issue, but it seems to follow a pattern
+  # DECAY <- diff(PMF)
+  # # this quantity should be negative, increasing to zero
+  # for(i in 1:length(DECAY))
+  # {
+  #   # when its positive, its usually adjoining a comparable negative value
+  #   if(DECAY[i]>0)
+  #   {
+  #     # find the adjoining error
+  #     j <- which.min(DECAY[i + -1:1]) - 2 + i
+  #     # tie out the errors
+  #     DECAY[i:j] <- mean(DECAY[i:j])
+  #   }
+  # }
+  # PMF <- -rev(cumsum(c(0,rev(DECAY))))
 
   return(PMF)
 }

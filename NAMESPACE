@@ -10,6 +10,7 @@ importFrom("raster",projection,"projection<-")
 
 # non-base generics to export
 export(plot,simulate,predict,median,head,tail)
+#export(modes,ridges)
 export(extent,raster,writeRaster,zoom)
 export(projection,"projection<-")
 export(emulate,speed,speeds,writeShapefile)
@@ -26,6 +27,12 @@ S3method(median,list)
 S3method(plot,list)
 S3method(summary,list)
 export("%#%",mag,optimizer)
+
+# modes and ridges
+#S3method(modes,numeric)
+#S3method(modes,ctmm)
+#S3method(modes,UD)
+#S3method(ridges,UD)
 
 #S3method(extent,list)
 #S3method(extent,telemetry)

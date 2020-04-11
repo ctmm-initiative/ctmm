@@ -1,4 +1,4 @@
-ctmm 0.5.10 (2019-04-01)
+ctmm 0.5.10 (2019-04-10)
 ================
 
   * as.telemetry location class code improved

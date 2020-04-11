@@ -256,6 +256,22 @@ sqrtm.covm <- function(sigma)
 }
 
 
+# matrix power
+mpow.covm <- function(sigma,pow)
+{
+  isotropic <- sigma@isotropic
+  axes <- colnames(sigma)
+
+  sigma <- attr(sigma,"par")
+  PARS <- 1:min(2,length(sigma)) # major, (minor)
+  sigma[PARS] <- sigma[PARS]^pow
+
+  sigma <- covm(sigma,isotropic=isotropic,axes=axes)
+
+  return(sigma)
+}
+
+
 ####### calculate variance and variance-covariance from major/minor information
 # assumes that variance/covariance parameters come first in COV
 axes2var <- function(CTMM,MEAN=TRUE)

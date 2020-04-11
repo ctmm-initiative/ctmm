@@ -1,5 +1,5 @@
 PRIORITY
-** test on all calibration data - clean data - mark outliers
+* rm.mark=FALSE warning
 * plot axis lables override default
 * meta analysis -> akde -> overlap
 * uncalibrate coati

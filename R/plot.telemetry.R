@@ -124,6 +124,8 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
   x <- listify(x)
   CTMM <- listify(CTMM)
   UD <- listify(UD)
+  # fix argument order
+  if(class(CTMM[[1]])=="UD") { TEMP <- CTMM; CTMM <- UD; UD <- TEMP; rm(TEMP) }
 
   # median time step of data
   dt <- lapply(x,function(X){diff(X$t)})
