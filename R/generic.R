@@ -293,6 +293,15 @@ rename <- function(object,name1,name2)
   return(object)
 }
 
+rename.matrix <- function(object,name1,name2)
+{
+  NAMES <- dimnames(object)[[1]]
+  IND <- which(NAMES==name1)
+  NAMES[IND] <- name2
+  dimnames(object) <- list(NAMES,NAMES)
+  return(object)
+}
+
 
 # glue strings together if they different
 glue <- function(...)

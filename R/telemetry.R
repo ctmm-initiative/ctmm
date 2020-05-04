@@ -348,7 +348,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
                        'Date.GMT','Date','Date.Local',"\u65E5\u4ED8",
                        't','t_dat')
   NAMES$id <- c("animal.ID","individual.local.identifier","local.identifier","individual.ID","Name","ID","ID.Names","Animal","Full.ID",
-                "tag.local.identifier","tag.ID","band.number","band.num","device.info.serial","Device.ID","collar.id","Logger",
+                "tag.local.identifier","tag.ID","band.number","band.num","device.info.serial","Device.ID","collar.id","Logger","Logger.ID",
                 "Deployment","deployment.ID","track.ID")
   NAMES$long <- c("location.long","Longitude","longitude.WGS84","long","lon","GPS.Longitude","\u7D4C\u5EA6")
   NAMES$lat <- c("location.lat","Latitude","latitude.WGS84","latt","lat","GPS.Latitude","\u7DEF\u5EA6")
@@ -379,13 +379,19 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   # make column names canonicalish
   # names(object) <- tolower(names(object))
 
-  # manually marked outliers
-  COL <- c("manually.marked.outlier","marked.outlier","outlier")
+  # marked outliers
+  COL <- c("manually.marked.outlier","algorithm.marked.outlier","import.marked.outlier","marked.outlier","outlier")
   COL <- pull.column(object,COL,as.logical)
-  if(mark.rm && length(COL))
+  if(length(COL))
   {
-    COL <- is.na(COL) | !COL
-    object <- object[COL,]
+    if(mark.rm)
+    {
+      COL <- is.na(COL) | !COL # ignore outlier=NA
+      object <- object[COL,]
+      message(sum(!COL,na.rm=T)," marked outliers removed.")
+    }
+    else
+    { message(sum(COL,na.rm=T)," marked outliers ignored.") }
   }
 
   # timestamp column

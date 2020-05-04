@@ -1,5 +1,5 @@
 PRIORITY
-* rm.mark=FALSE warning
+* go back and apply matrix-logarithm and debias work from mean.ctmm to emulate.ctmm
 * plot axis lables override default
 * meta analysis -> akde -> overlap
 * uncalibrate coati

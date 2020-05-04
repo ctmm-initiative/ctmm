@@ -1,9 +1,13 @@
-ctmm 0.5.10 (2019-04-10)
+ctmm 0.5.10 (2020-05-04)
 ================
 
   * as.telemetry location class code improved
+  
+  * as.telemetry message for marked outliers
+  
+  * jaguar data in sync with ctmmweb
 
-ctmm 0.5.9 (2019-03-23)
+ctmm 0.5.9 (2020-03-23)
 ================
 
   * new exact variogram CI argument "Gauss"
