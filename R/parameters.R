@@ -70,6 +70,7 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE=F
       else { NAMES <- c(NAMES,paste("tau",names(TAU))) } # distinct timescales
     }
     TAU <- CTMM$tau # for parscale later
+    if(!STRUCT$range) { TAU <- TAU[-1] }
     if("tau" %in% NAMES) { TAU <- mean(TAU) } # just the one
 
     if(STRUCT$omega) { NAMES <- c(NAMES,"omega") }

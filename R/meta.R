@@ -91,7 +91,7 @@ meta.normal <- function(MU,SIGMA,debias=TRUE,isotropic=FALSE,precision=1/2)
   # TODO AIC
   # TODO exact AICc
 
-  return(list(mu=mu,sigma=sigma,COV.mu=COV.mu,COV.sigma=COV.sigma,loglike=loglike))
+  return(list(mu=mu,sigma=sigma,COV.mu=COV.mu,COV.sigma=COV.sigma,loglike=loglike,isotropic=isotropic))
 }
 
 
@@ -101,17 +101,14 @@ meta.normal <- function(MU,SIGMA,debias=TRUE,isotropic=FALSE,precision=1/2)
 # matrix casts location covariance, diffusion rate, velocity covariance all as distinct matrices for above bias correction
 log.ctmm <- function(CTMM,features,debias=TRUE)
 {
+  isotropic <- CTMM$isotropic
   par <- get.parameters(CTMM,features)
   COV <- CTMM$COV
 
-  #!!! re-write to diagonalize sigma first
-  #!!! then log transform everything
-  #!!! then diagonalize everything according to COV
-  #!!! then find element that most overlaps zero off-diagonal
-  #!!! bias correct all other elements as if chi^2
-
+  ### log transform all positive parameters
   # features to log transform
-  SUB <- features[features %in% dimnames(COV)[[1]] && features %in% POSITIVE.PARAMETERS && par>0]
+  COV.NAMES <- dimnames(COV)[[1]]
+  SUB <- features[(features %in% COV.NAMES) & (features %in% POSITIVE.PARAMETERS) & (par>0)]
 
   # Jacobian for log transformation
   J.new <- function()
@@ -131,34 +128,54 @@ log.ctmm <- function(CTMM,features,debias=TRUE)
   # transform covariance (from logarithms)
   COV <- J %*% COV %*% t(J)
 
-  # diagonalize and log-chi^2 debias relevant parameter estimates
-  EIGEN <- eigen(COV[SUB,SUB])
-  par[SUB] <- t(EIGEN$vectors) %*% par[SUB] # diagonalize parameters
-  DOF <- 2/EIGEN$values # log-chi^2 VAR-DOF relation
-  par[SUB] <- par[SUB] + (digamma(DOF/2)-log(DOF/2)) # log-chi^2 bias correction
-  par[SUB] <- EIGEN$vectors %*% par[SUB] # transform back (still under logarithm)
+  # finish logarithm of sigma matrix (and not just eigen values)
+  if(!isotropic)
+  {
+    angle <- par['angle']
+    par['angle'] <- 0 # off-diagonal of log(sigma) after rotation by -angle
 
-  # transform from major-minor-angle to xx-yy-xy basis for aggregation
+    J <- J.new()
+    J['angle','angle'] <- par['major'] - par['minor']
+    COV <- J %*% COV %*% t(J)
+  }
+
+  # log chi^2 bias correction
+  if(debias)
+  {
+    # diagonalize and log-chi^2 debias relevant parameter estimates
+    EIGEN <- eigen(COV[SUB,SUB])
+    dimnames(EIGEN$vectors) <- list(SUB,SUB)
+    names(EIGEN$values) <- SUB
+    # fix signs
+    if(isotropic) { VAR <- "major" } else { VAR <- c("major","minor") }
+    # VAR goes in log numerator for chi^2 variates: variance, diffusion, MS speed, ...
+    for(i in 1:nrow(EIGEN$vectors)) { if(sum(EIGEN$vectors[i,VAR])<0) { EIGEN$vectors[i,] <- -EIGEN$vectors[i,] } }
+    # transform to diagonalized basis with VARs in log numerator
+    par[SUB] <- t(EIGEN$vectors) %*% par[SUB] # diagonalize parameters
+    DOF <- 2/EIGEN$values # log-chi^2 VAR-DOF relation
+    BIAS <- digamma(DOF/2)-log(DOF/2) # negative bias for log(chi^2) variates
+    if(!isotropic)
+    {
+      # some of the eigen parameter is orientation - which is ~Gaussian and not ~log chi^2 (no bias)
+      OVER <- abs(EIGEN$vectors['angle',]) # overlap with orientation eigen-parameter
+      BIAS <- (1-OVER)*BIAS # first-order correction (could start at second-order?)
+    }
+    par[SUB] <- par[SUB] + BIAS # log-chi^2 bias correction
+    par[SUB] <- EIGEN$vectors %*% par[SUB] # transform back (still under logarithm)
+  }
+
+  # un-diagonalize log(sigma)
   if(!CTMM$isotropic)
   {
-    # transform COV back
+    u <- c(cos(angle),sin(angle))
+    v <- c(-sin(angle),cos(angle))
+    NAMES <- c("major","minor","angle") # input
+    UP <- c(1,4,2) # "xx","yy","xy" # upper triangle of log(sigma) # output
+
+    par[NAMES] <- par['major']*(u%o%u)[UP] + par['minor']*(v%o%v)[UP]
+
     J <- J.new()
-    sigma <- exp(par[c('major','minor')])
-    J['major','major'] <- sigma['major']
-    J['minor','minor'] <- sigma['minor']
-    COV <- J %*% COV %*% t(J)
-
-    # now transform the whole matrix forward under logarithm
-    J <- J.new()
-
-    theta <- par["angle"]
-    u <- c(cos(theta),sin(theta))
-    v <- c(-sin(theta),cos(theta))
-    NAMES <- c("major","minor","angle")
-    DUP <- c(1,4,2) # "xx","yy","xy" # upper triangle
-
-    par[NAMES] <- par['major']*(u%o%u)[DUP] + par['minor']*(v%o%v)[DUP]
-    J[NAMES,NAMES] <- cbind( (u%o%u)[DUP]/sigma['major'], (v%o%v)[DUP]/sigma['minor'], (par['major']-par['minor'])*(u%o%v+v%o%u)[DUP] )
+    J[NAMES,NAMES] <- cbind( (u%o%u)[UP], (v%o%v)[UP], (u%o%v+v%o%u)[UP] )
     COV <- J %*% COV %*% t(J)
   }
 
@@ -172,11 +189,129 @@ log.ctmm <- function(CTMM,features,debias=TRUE)
   return(list(par=par,COV=COV))
 }
 
+# orthogonal transformation on matrix -> linear transformation on vector
+# t(O) %*% M %*% O -> L %*% m
+orth2lin <- function(O,sym=TRUE)
+{
+  N <- dim(O)[1]
+  L <- array(0,c(N,N,N,N))
+
+  for(i in 1:N)
+  {
+    for(j in 1:N)
+    {
+      IN <- array(0,c(N,N))
+      IN[i,j] <- 1
+      OUT <- t(O) %*% IN %*% O
+      L[,,i,j] <- OUT
+    }
+  }
+
+  dim(L) <- c(N^2,N^2)
+  return(L)
+}
+
 #####################
 # inverse transformation of above
-exp.ctmm <- function(sigma,COV,debias=TRUE)
+exp.ctmm <- function(object,debias=TRUE)
 {
+  mu <- object$mu # mean log parameters (log chi^2)
+  COV.mu <- object$COV.mu # uncertainty in mean log parameters
+  sigma <- object$sigma # dispersion of mean logs (determines chi^2 DOFs)
+  COV.sigma <- object$COV.sigma # uncertainty in dispersion of mean logs
 
+  isotropic <- object$isotropic
+  NAMES <- names(mu)
+  N <- length(mu)
+
+  J.new <- function()
+  {
+    J <- diag(1,N)
+    dimnames(J) <- list(NAMES,NAMES)
+    return(J)
+  }
+
+  # diagonalize log(sigma)
+  if(!isotropic)
+  {
+    SIGMA <- matrix(sigma[c("major","angle","angle","minor")],c(2,2))
+    EIGEN <- eigen(SIGMA)
+    U <- EIGEN$vectors
+
+    # t(U) %*% SIGMA %*% U
+    mu[c('major','minor')] <- EIGEN$values
+    mu['angle'] <- 0
+    angle <- U[,1] # major axis
+    angle <- sign(angle[1]) * angle # positive x component
+    angle <- atan2(angle[2],angle[1])
+
+    # transformation matrix J: "xx","yy","xy" -> "major","minor","0-off"
+    J <- J.new()
+    SIG <- c("major","minor","angle")
+    J[SIG,SIG] <- orth2lin(U)[c(1,2,4),c(1,2,4)]
+
+    # linear transform on major, minor, angle
+    COV.mu <- J %*% COV.mu %*% t(J)
+    sigma <- J %*% sigma %*% t(J)
+
+    # same kind of thing but in even more dimensions
+    LJ <- orth2lin(t(J))
+    COV.sigma <- LJ %*% COV.sigma %*% LJ
+  }
+
+  # reverse bias correction
+  if(debias)
+  {
+    EIGEN <- eigen(COV.mu)
+    names(EIGEN$values) <- NAMES
+    dimnames(EIGEN$vectors) <- list(NAMES,NAMES)
+    # fix signs
+    if(isotropic) { VAR <- "major" } else { VAR <- c("major","minor") } # these go in the numerator before log
+    for(i in 1:nrow(EIGEN$vectors)) { if(sum(EIGEN$vectors[i,VAR])<0) { EIGEN$vectors[i,] <- -EIGEN$vectors[i,] } }
+    # transform to diagonalized basis with VARs in log numerator
+    mu <- t(EIGEN$vectors) %*% mu
+    DOF <- 2/EIGEN$values # log-chi^2 VAR-DOF relation
+    BIAS <- digamma(DOF/2)-log(DOF/2) # negative bias for log(chi^2) variates
+    if(!isotropic)
+    {
+      # some of the eigen parameter is orientation - which is ~Gaussian and not ~log chi^2 (no bias)
+      OVER <- abs(EIGEN$vectors['angle',]) # overlap with orientation eigen-parameter
+      BIAS <- (1-OVER)*BIAS # first-order correction (could start at second-order?)
+    }
+    mu <- mu - BIAS # log-chi^2 bias addition
+    mu <- EIGEN$vectors %*% mu # transform back (still under logarithm)
+  }
+
+  # exp transformation
+  SUB <- NAMES %in% POSITIVE.PARAMETERS
+  mu[SUB] <- exp(mu[SUB])
+
+  J <- J.new()
+  for(s in SUB) { J[s,s] <- mu[s] }
+
+  COV.mu <- J %*% COV.mu %*% t(J) # delta method
+  sigma <- J %*% sigma %*% t(J) # not exactly sure about this?
+  LJ <- orth2lin(t(J))                 # would be true if above is true
+  COV.sigma <- LJ %*% COV.sigma %*% t(LJ) # would be true if above is true
+
+  # undiagonalize sigma-location
+  if(!isotropic)
+  {
+    mu['angle'] <- angle
+
+    # transform uncertainty
+    J <- J.new()
+    J['angle','angle'] <- 1/(mu['major']-mu['minor'])
+
+    COV.mu <- J %*% COV.mu %*% t(J)
+
+    # transform sigma-par
+    sigma <- J %*% sigma %*% t(J)
+    LJ <- orth2lin(t(J))
+    COV.sigma <- LJ %*% COV.sigma %*% t(LJ)
+  }
+
+  return(list(mu=mu,COV.mu=COV.mu,sigma=sigma,COV.sigma=COV.sigma))
 }
 
 
@@ -211,16 +346,15 @@ mean.ctmm <- function(x,sufficient="Wishart",prior="Inverse-Wishart",method="exa
     # !!!
   }
   STUFF <- meta.normal(MU,SIGMA,debias=debias)
-  mu <- STUFF$mu
-  COV.mu <- STUFF$COV.mu
-  sigma.mu <- STUFF$sigma
-  COV.sigma.mu <- STUFF$COV.sigma
-
+  mu <- STUFF$mu # mean of means
+  COV.mu <- STUFF$COV.mu # uncertainty in mean of means estimate
+  PCOV.mu <- STUFF$sigma # dispersion of means
+  COV.PCOV.mu <- STUFF$COV.sigma # uncertainty in dispersion of means
 
   #####################
   # VARIANCE/COVARIANCE STUFF
   #####################
-  features <- x[[1]]$features
+  features <- unique( sapply(x,function(y){y$features}) )
 
   # analyticlly solvable
   if(method %in% c("exact","Laplace") && sufficient=="log-normal" && prior=="log-normal")
@@ -231,18 +365,19 @@ mean.ctmm <- function(x,sufficient="Wishart",prior="Inverse-Wishart",method="exa
 
     for(i in 1:N)
     {
-      STUFF <- log.ctmm(x[[1]])
-      log.sigma <- STUFF$log.sigma
-      P <- length(log.sigma)
-      MU[1:P] <- log.sigma
-      J <- diag(1,c(DIM,DIM))
-      J[1:P,1:P] <- STUFF$d.log.sigma
+      STUFF <- log.ctmm(x[[1]],features,debias=debias)
+      MU[i,] <- STUFF$par
+      SIGMA[i,,] <- STUFF$COV
     }
 
-
-    # debias shift
-
-
+    # aggregate log parameters
+    STUFF <- meta.normal(MU,SIGMA,debias=debias)
+    # transform results back
+    STUFF <- exp.ctmm(STUFF,debias=debias)
+    par <- STUFF$mu
+    COV <- STUFF$COV.mu
+    PCOV <- STUFF$sigma
+    COV.PCOV <- STUFF$COV.sigma
   }
   else if(method=="exact" && sufficient=="Wishart" && prior=="Inverse-Wishart")
   {
@@ -343,5 +478,7 @@ mean.ctmm <- function(x,sufficient="Wishart",prior="Inverse-Wishart",method="exa
   ####################
   # AIC/BIC/MSPE...
   ####################
+
+
 
 }

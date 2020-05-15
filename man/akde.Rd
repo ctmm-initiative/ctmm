@@ -26,7 +26,7 @@ akde(data,CTMM,VMM=NULL,debias=TRUE,weights=FALSE,smooth=TRUE,error=0.001,res=10
   \item{...}{Arguments passed to all instances of \code{\link{bandwidth}}.}
 }
 
-\details{For weighted AKDE, please note additional \code{...} arguments passed to \code{\link{bandwidth}}.
+\details{For weighted AKDE, please note additional \code{...} arguments passed to \code{\link{bandwidth}}, which can have a large impact on computation time in certain cases.
 
 When feeding in lists of \code{telemetry} and \code{ctmm} objects, all UDs will be calculated on the same grid. These UDs can be averaged with the \code{\link{mean.UD}} command.
 

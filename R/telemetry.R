@@ -391,7 +391,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
       message(sum(!COL,na.rm=T)," marked outliers removed.")
     }
     else
-    { message(sum(COL,na.rm=T)," marked outliers ignored.") }
+    { message(sum(COL,na.rm=T)," outlier markings ignored.") }
   }
 
   # timestamp column
