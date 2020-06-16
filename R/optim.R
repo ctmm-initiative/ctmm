@@ -1192,7 +1192,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
     par.target <- par # for outer loop
 
     if(ZERO) { ERROR <- abs(fn.start-fn.par) }
-    else { ERROR <- abs((fn.start-fn.par)/fn.par) }
+    else { ERROR <- abs(fn.start-fn.par)/max(1,abs(fn.par)) } # fnscale=1 effectively; avoid underflow from non-zeroed objective functions
 
     # error-check wrapup
     if(ERROR <= TOL.STAGE + TOL.ZERO)

@@ -226,7 +226,7 @@ set.parameters <- function(CTMM,par,linear.cov=FALSE,optimize=FALSE)
   sigma <- CTMM$sigma
   if(!linear.cov)
   {
-    sigma <- sigma@par
+    sigma <- attr(sigma,"par")
     NAME <- "major"; if(NAME %in% NAMES) { sigma[NAME] <- par[NAME]; if(length(CTMM$axes)>1) { sigma['minor'] <- par[NAME] } } # incase of isotropic
     NAME <- "minor"; if(NAME %in% NAMES) { sigma[NAME] <- par[NAME] }
     NAME <- "angle"; if(NAME %in% NAMES) { sigma[NAME] <- par[NAME] }

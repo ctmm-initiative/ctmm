@@ -269,6 +269,35 @@ chi.dof <- function(M1,M2,error=1/2)
 }
 
 
+# (scaled) chi^2 degrees-of-freedom from median and interquartile range
+chisq.dof <- function(MED,IQR,alpha=0.25)
+{
+  if(IQR==0) { return(Inf) }
+  if(IQR==Inf) { return(0) }
+  if(MED==0) { return(0) }
+
+  cost <- function(nu,zero=0)
+  {
+    if(nu==0) { return(Inf) }
+    if(nu==Inf) { return(Inf) }
+
+    Q1 <- stats::qchisq(1/4,df=nu)/nu # Q1/mean
+    M <- stats::qchisq(1/2,df=nu)/nu # median/mean
+    Q2 <- stats::qchisq(3/4,df=nu)/nu # Q2/mean
+    R <- M/(Q2-Q1) # IQR/MED from nu
+    r <- MED/IQR # IQR/MED from data
+
+    return((R-r)^2)
+  }
+
+  # initial guess (asymptotic relation)
+  nu <- (MED/IQR)^2 / 0.2747632133101263
+  R <- optimizer(nu,cost,lower=0,upper=Inf,control=list(parscale=1))
+
+  return(R$par)
+}
+
+
 # highest density region of truncated normal distribution
 # mu is mode
 # lower <= mu <= upper

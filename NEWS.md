@@ -1,5 +1,7 @@
-ctmm 0.5.11 (2020-05-15)
+ctmm 0.5.11 (2020-06-16)
 ================
+
+  * new function meta for meta-analysis
 
   * bugfix in ctmm.fit for IOU model
 
