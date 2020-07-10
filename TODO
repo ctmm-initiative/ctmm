@@ -1,6 +1,5 @@
 PRIORITY
-* area meta-analysis
-** IC=NA
+* 2-point !isotropic fits linear COV; 1-point fits zero-COV
 * speed meta-analysis (chi)
 ** CTMM, speed.summary
 * overlap meta-analysis (beta?)

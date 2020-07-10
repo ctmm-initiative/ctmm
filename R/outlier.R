@@ -57,6 +57,9 @@ outlie <- function(data,UERE=10,standardize=FALSE,plot=TRUE,...)
     VAR.d <- VAR.d/MAD.d^2
   }
 
+  VAR.v <- nant(VAR.v,0)
+  VAR.d <- nant(VAR.d,0)
+
   R <- data.frame(speed=v,distance=d,VAR.speed=VAR.v,VAR.distance=VAR.d)
   R <- new.outlie(R)
   return(R)

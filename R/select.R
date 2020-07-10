@@ -404,11 +404,11 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
       if(is.na(Q) || Q<=0 || level==1 || is.na(IC))
       { GUESS <- c(GUESS,list(simplify.ctmm(MLE,"diff.tau"))) }
     }
-    else if("tau" %in% VARS) # try other side if boundary if choosen model is critically damped
+    else if("tau" %in% VARS) # try other side if boundary if chosen model is critically damped
     {
       # try overdamped
       TEMP <- TARGET
-      if(!TEMP$tau[2] || TEMP$tau[2] >= MLE$tau[1]) { TEMP$tau <- MLE$tau * exp(c(1,-1)*sqrt(.Machine$double.eps)) }
+      if(length(TEMP$tau)<2 || !TEMP$tau[2] || TEMP$tau[2] >= MLE$tau[1]) { TEMP$tau <- MLE$tau * exp(c(1,-1)*sqrt(.Machine$double.eps)) }
       GUESS <- c(GUESS,list(complexify.ctmm(MLE,"tau velocity",TEMP)))
 
       # try underdamped

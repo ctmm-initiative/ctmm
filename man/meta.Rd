@@ -3,11 +3,11 @@
 \encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Meta-analysis of movement-model parameters}
-\description{These functions to estimate population-level parameters from individual movement models and related estimates, including AKDE home-range areas, while taking into account estimation uncertainty.
+\description{These functions estimate population-level parameters from individual movement models and related estimates, including AKDE home-range areas, while taking into account estimation uncertainty.
 }
 \usage{
-meta(x,level=0.95,level.UD=0.95,level.pop=0.95,robust=FALSE,IC="AIC",boot=FALSE,error=0.01,
-     debias=TRUE,units=TRUE,plot=TRUE,...)
+meta(x,level=0.95,level.UD=0.95,level.pop=0.95,robust=FALSE,IC="AIC",boot=FALSE,
+     error=0.01,debias=TRUE,units=TRUE,plot=TRUE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

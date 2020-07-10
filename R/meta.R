@@ -15,39 +15,30 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AIC",boot=FALSE,error
     S <- sum(dof*s)/sum(dof)
     INF <- sum( dof^2*(S-s)^2 - 2*dof*S^2 )<=0
 
-    # AIC/BIC constants
-    if(complete && !is.na(IC))
-    {
-      if(IC=="AIC")
-      { dIC <- 2 }
-      else if(IC=="BIC")
-      { dIC <- log(n) }
-      else if(IC=="LOOCV")
-      { dIC <- 0 }
-    }
-
     CI <- t(array(c(0,0,Inf),c(3,3))) # initialize confidence intervals (0,Inf)
 
     # trivial model selection / model fitting
     if(INF)
-    {
-      DOF <- Inf
-    }
+    { DOF <- Inf }
     else # non-trivial model selection for DOF<Inf
     {
       SUB <- 1:n
-      # negative log-likelihood of DOF after profiling S'
+      # negative log-likelihood
       nloglike <- function(par,zero=0)
       {
-        n <- length((1:n)[SUB])
+        # subset for CV
+        s <- s[SUB]
+        dof <- dof[SUB]
+        n <- length(s)
+
         S <- par[1]
         DOF <- 1/par[2]
 
         if(DOF<=0 || S==0 || S==Inf) { return(Inf) }
 
         # beta-prime with chi^2 limit -- special functions in series.R
-        zero <- zero + sum( ( (dof/2-1)*log(dof*s) + log(dof) )[SUB] )
-        -sum( ( -lbetaplog(dof/2,DOF/2,s/S) - dof*(log(2*S)/2) - (dof*s)/(2*S)*log1pxdx((dof*s)/(DOF*S)) + zero/n )[SUB] )
+        zero <- zero + sum( (dof/2-1)*log(dof*s) + log(dof) )
+        -sum( -lbetaplog(dof/2,DOF/2,s/S) - dof*(log(2*S)/2) - (dof*s)/(2*S)*log1pxdx((dof*s)/(DOF*S)) + zero/n )
       }
 
       # log-likelihood at DOF=Inf
@@ -80,14 +71,14 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AIC",boot=FALSE,error
       }
       FIT <- optimizer(par,nloglike,lower=0,upper=Inf)
       par <- FIT$par
-      LLN <- -FIT$value # log-likelihood at DOF MLE
+      LLN <- -FIT$value # log-likelihood at MLE
 
       if(complete && !is.na(IC))
       {
         if(IC=="AIC")
-        { dIC <- dIC - 2*LLN + 2*LL0 }
+        { dIC <- 2 - 2*LLN + 2*LL0 }
         else if(IC=="BIC")
-        { dIC <- dIC - 2*LLN + 2*LL0 }
+        { dIC <- log(n) - 2*LLN + 2*LL0 }
         else if(IC=="LOOCV")
         {
           LLN <- 0
@@ -119,20 +110,27 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AIC",boot=FALSE,error
       }
     } # end model fitting and selection
 
+    # print model selection table
+    if(complete && !is.na(IC))
+    {
+      dIC <- rbind(0,dIC)
+      rownames(dIC) <- c("Dirac-\u03B4","inverse-\u03C7\u00B2")
+      colnames(dIC) <- paste0("\u0394",IC)
+      dIC <- dIC - min(dIC)
+      IND <- sort(c(dIC),index.return=TRUE)$ix
+      dIC <- dIC[IND,,drop=FALSE]
+      print(dIC)
+    }
+
     # model selection cannot support population variation
     if(complete && INF) # Inf-N CIs
     {
-      if(!is.na(IC))
-      { warning("Population variation not supported (\u0394",IC,"=",dIC,").") }
-      else
-      { warning("Population variation not supported.") }
-
       S <- sum(dof*s)/sum(dof)
       dof <- sum(dof) # precision of point estimate
       DOF <- Inf # precision of population
 
       # mean area is the only area
-      CI[1,] <- CI[2,] <- CI[3,] <- chisq.ci(S,DOF=dof,level=level,robust=robust)
+      CI[1,] <- CI[2,] <- CI[3,] <- chisq.ci(S,DOF=dof,level=level)
       CI.DOF <- array(dof,3)
     }
     else if(complete) # finite-N CIs
@@ -295,7 +293,7 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AIC",boot=FALSE,error
       DOF <- 2*AVE^2/VAR # chi^2 DOF for CIs
       BIAS <- AVE/CI[,2] # first-order bias captured by multiplicative bias
       if(debias) { CI <- CI/BIAS } # first-order bias removed by this
-      CI <- sapply(1:3,function(i){chisq.ci(CI[i,2],DOF=DOF[i],level=level,robust=robust)})
+      CI <- sapply(1:3,function(i){chisq.ci(CI[i,2],DOF=DOF[i],level=level)})
       CI <- t(CI)
     }
     else
@@ -363,9 +361,9 @@ meta <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,robust=FALSE,IC="AIC"
   meta.area(x=x,level=level,level.UD=level.UD,level.pop=level.pop,IC=IC,boot=boot,error=error,debias=debias,robust=robust,units=units,plot=plot,...)
 }
 
-# wrapper: meta-analysis of CTMM areas
-# TODO range=FALSE ???
-meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,robust=FALSE,IC="AIC",boot=FALSE,error=0.01,debias=TRUE,units=TRUE,plot=TRUE,...)
+
+############
+import.area <- function(x,level.UD=0.95)
 {
   N <- length(x)
   CLASS <- class(x[[1]])
@@ -401,6 +399,21 @@ meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,robust=FALSE,IC=
   # level.UD coverage (e.g., 95% home ranges rather than straight variance)
   if(CLASS=="ctmm") { AREA <- -2*log(1-level.UD)*pi * AREA }
 
+  R <- list(ID=ID,AREA=AREA,DOF=DOF)
+  return(R)
+}
+
+
+# wrapper: meta-analysis of CTMM areas
+# TODO range=FALSE ???
+meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,robust=FALSE,IC="AIC",boot=FALSE,error=0.01,debias=TRUE,units=TRUE,plot=TRUE,...)
+{
+  N <- length(x)
+  STUFF <- import.area(x,level.UD=level.UD)
+  AREA <- STUFF$AREA
+  DOF <- STUFF$DOF
+  ID <- STUFF$ID
+
   # inverse-chi^2 population distribution
   CI <- meta.chisq(AREA,DOF,level=level,level.pop=level.pop,IC=IC,boot=boot,error=error,debias=debias,robust=robust)
 
@@ -424,7 +437,7 @@ meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,robust=FALSE,IC=
     graphics::axis(2,at=1,labels=ID[N+1],las=2,font=2)
     graphics::abline(v=PLOT[N+1,2],col=grDevices::rgb(0.5,0.5,0.5,0.5))
     graphics::points(PLOT[,2],IND,pch=16)
-    suppressWarnings( graphics::arrows(PLOT[,1],IND,PLOT[,3],IND,length=0.05,angle=90,code=3,...) )
+    suppressWarnings( graphics::arrows(PLOT[,1],IND,PLOT[,3],IND,length=0.05,angle=90,code=3) )
   }
 
   UNITS <- unit(CI[,1:3],"area",SI=!units)
@@ -1024,6 +1037,7 @@ mean.ctmm.features <- function(x,sufficient="log-normal",prior="log-normal",meth
 mean.ctmm <- function(x,...)
 {
   isotropic <- FALSE # for now
+  debias <- TRUE
 
   MU <- mean.ctmm.mu(x,debias=debias,isotropic=isotropic,...)
   CTMM <- mean.ctmm.features(x,debias=debias,isotropic=isotropic)
