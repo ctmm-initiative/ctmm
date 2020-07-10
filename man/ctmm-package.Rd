@@ -26,8 +26,8 @@ Noonan & Fleming et al (2019) <doi:10.1186/s40462-019-0177-1>.
 \tabular{ll}{
 Package: \tab ctmm\cr
 Type: \tab Package\cr
-Version: \tab 0.6.16 \cr
-Date: \tab 2020-05-15 \cr
+Version: \tab 0.5.11 \cr
+Date: \tab 2020-07-10 \cr
 License: \tab GPL-3 \cr
 }
 

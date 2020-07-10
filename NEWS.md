@@ -1,9 +1,17 @@
-ctmm 0.5.11 (2020-06-16)
+ctmm 0.5.11 (2020-07-10)
 ================
 
   * new function meta for meta-analysis
 
   * bugfix in ctmm.fit for IOU model
+  
+  * bugfix in summary.ctmm rowname droped for single parameter CIs
+  
+  * bugfixes in plot.outlie with zero error
+  
+  * manipulate bug workaround in zoom.variogram
+  
+  * bugfix in ctmm.select if stepping OU->OUf->OUF
 
 ctmm 0.5.10 (2020-05-04)
 ================

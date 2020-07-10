@@ -567,7 +567,7 @@ get.error <- function(DATA,CTMM,flag=FALSE,circle=FALSE,DIM=FALSE)
 
       error <- (CTMM$error*DATA[[DOP]])^2/length(axes)
     }
-    else # fitted errors - no HDOP
+    else # fitted errors - no HDOP - assign HDOP=1
     {
       FLAG <- 1
       if(flag) { return(FLAG) }

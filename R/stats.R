@@ -148,7 +148,7 @@ idchisq <- function(p,df)
 
 
 # normal confidence intervals
-norm.ci <- function(MLE,COV,alpha=0.05)
+norm.ci <- function(MLE,COV,level=0.95,alpha=1-level)
 {
   # z-values for low, ML, high estimates
   z <- stats::qnorm(1-alpha/2)*c(-1,0,1)
@@ -161,7 +161,7 @@ norm.ci <- function(MLE,COV,alpha=0.05)
 }
 
 # calculate log-normal confidence intervals from MLE and COV estimates
-lognorm.ci <- function(MLE,COV,alpha=0.05)
+lognorm.ci <- function(MLE,COV,level=0.95,alpha=1-level)
 {
   # log transform of variance
   COV <- COV/MLE^2
@@ -175,6 +175,68 @@ lognorm.ci <- function(MLE,COV,alpha=0.05)
 
   return(CI)
 }
+
+
+# beta distributed CI given mean and variance estimates
+beta.ci <- function(MLE,VAR,level=0.95,alpha=1-level)
+{
+  n <- MLE*(1-MLE)/VAR - 1
+  if(n<=0)
+  { CI <- c(0,MLE,1) }
+  else
+  {
+    a <- n * MLE
+    b <- n * (1-MLE)
+    CI <- stats::qbeta(c(alpha/2,0.5,1-alpha/2),a,b)
+    CI[2] <- MLE # replace median with mean
+  }
+  names(CI) <- NAMES.CI
+  return(CI)
+}
+
+
+# Binomial CDF defined for effective size (n) and outcome fraction (q)
+pfbinom <- function(q,size,prob,lower.tail=TRUE,log.p=FALSE)
+{
+  x <- (1-prob)/prob * (q+1/size)/(1-q)
+  df1 <- 2*size*(1-q)
+  df2 <- 2*size*(q+1/size)
+  stats::pf(x,df1,df2,lower.tail=lower.tail,log.p=log.p)
+}
+
+
+# Binomial quantile function defined for effective size (n) and outcome fraction (q)
+qfbinom <- function(p,size,prob)
+{
+  parscale <- c(p,1-p,prob,1-prob)
+  parscale <- min(parscale[parscale>0])
+
+  # solve p==pfbinom(q)
+  TEST <- pfbinom(1/2,size,prob) # median quantile
+  ## prevent underflow... not sure if this is necessary
+  if(p<=TEST) # below median -- lower-tail probability optimization
+  {
+    lower.tail <- TRUE
+    par <- 1/4
+    lower <- 0
+    upper <- 1/2
+  }
+  else # above median -- upper-tail probability optimization
+  {
+    lower.tail <- FALSE
+    p <- 1-p # upper-tail probability
+    par <- 3/4
+    lower <- 1/2
+    upper <- 1
+  }
+  cost <- function(q) { (p-pfbinom(q,size,prob,lower.tail=lower.tail))^2 }
+  FIT <- optimizer(par,cost,lower=lower,upper=upper,control=list(parscale=parscale))
+  q <- FIT$par
+
+  return(q)
+}
+
+
 
 # robust central tendency & dispersal estimates with high breakdown threshold
 # nstart should probably be increased from default of 1
@@ -305,7 +367,7 @@ tnorm.hdr <- function(mu=0,VAR=1,lower=0,upper=Inf,level=0.95)
 {
   sd <- sqrt(VAR)
   MASS <- stats::pnorm(upper,mean=mu,sd=sd) - stats::pnorm(lower,mean=mu,sd=sd)
-  CDF <- function(a,b) { ( stats::pnorm(b,mean=mu,sd=sd) - stats::pnorm(a,mean=mu,sd=sd) )/MASS }
+  CDF <- function(a,b) { nant( (stats::pnorm(b,mean=mu,sd=sd)-stats::pnorm(a,mean=mu,sd=sd))/MASS ,1) }
 
   CI <- c(lower,mu,upper)
   DIFF <- diff(CI)

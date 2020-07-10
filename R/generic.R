@@ -117,7 +117,7 @@ is.even <- Vectorize(function(x) {x %% 2 == 0})
 is.odd <- Vectorize(function(x) {x %% 2 != 0})
 
 
-# generalized covariance from -likelihood derivatives
+# generalized covariance from negative-log-likelihood derivatives
 cov.loglike <- function(hess,grad=rep(0,sqrt(length(hess))),tol=.Machine$double.eps)
 {
   # in case of bad derivatives, use worst-case numbers
