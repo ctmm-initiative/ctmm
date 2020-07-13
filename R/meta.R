@@ -19,7 +19,15 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AIC",boot=FALSE,error
 
     # trivial model selection / model fitting
     if(INF)
-    { DOF <- Inf }
+    {
+      DOF <- Inf
+      if(IC=="AIC")
+      { dIC <- 2 }
+      else if(IC=="BIC")
+      { dIC <- log(n) }
+      else if(IC=="LOOCV")
+      { dIC <- 0 }
+    }
     else # non-trivial model selection for DOF<Inf
     {
       SUB <- 1:n
