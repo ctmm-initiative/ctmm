@@ -1,4 +1,4 @@
-ctmm 0.5.11 (2020-07-10)
+ctmm 0.5.11 (2020-07-13)
 ================
 
   * new function meta for meta-analysis
