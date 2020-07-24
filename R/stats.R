@@ -43,7 +43,7 @@ CI.lower <- Vectorize(function(k,Alpha){stats::qchisq(Alpha/2,k,lower.tail=TRUE)
 
 
 # calculate chi^2 confidence intervals from MLE and COV estimates
-chisq.ci <- function(MLE,COV=NULL,level=0.95,alpha=1-level,DOF=2*MLE^2/COV,robust=FALSE,HDR=FALSE)
+chisq.ci <- function(MLE,VAR=NULL,level=0.95,alpha=1-level,DOF=2*MLE^2/VAR,robust=FALSE,HDR=FALSE)
 {
   #DEBUG <<- list(MLE=MLE,COV=COV,level=level,alpha=alpha,DOF=DOF,robust=robust,HDR=HDR)
   # try to do something reasonable on failure cases
@@ -58,17 +58,17 @@ chisq.ci <- function(MLE,COV=NULL,level=0.95,alpha=1-level,DOF=2*MLE^2/COV,robus
   { CI <- c(0,0,0) }
   else if(MLE==Inf)
   { CI <- c(Inf,Inf,Inf) }
-  else if(!is.null(COV) && COV<0) # try an exponential distribution?
+  else if(!is.null(VAR) && VAR<0) # try an exponential distribution?
   {
-    warning("VAR[Area] = ",COV," < 0")
+    warning("VAR[Area] = ",VAR," < 0")
     if(!HDR)
     {
       CI <- c(1,1,1)*MLE
-      CI[1] <- stats::qexp(alpha/2,rate=1/min(sqrt(-COV),MLE))
-      CI[3] <- stats::qexp(1-alpha/2,rate=1/max(sqrt(-COV),MLE))
+      CI[1] <- stats::qexp(alpha/2,rate=1/min(sqrt(-VAR),MLE))
+      CI[3] <- stats::qexp(1-alpha/2,rate=1/max(sqrt(-VAR),MLE))
     }
     else
-    { CI <- c(0,0,MLE) * stats::qexp(1-alpha,rate=1/min(sqrt(-COV),MLE)) }
+    { CI <- c(0,0,MLE) * stats::qexp(1-alpha,rate=1/min(sqrt(-VAR),MLE)) }
   }
   else     # regular estimate
   {
@@ -80,8 +80,8 @@ chisq.ci <- function(MLE,COV=NULL,level=0.95,alpha=1-level,DOF=2*MLE^2/COV,robus
     { CI <- MLE * c(CI.lower(DOF,alpha),1,CI.upper(DOF,alpha)) }
 
     # Normal backup for upper.tail
-    if(is.null(COV)) { COV <- 2*MLE^2/DOF }
-    UPPER <- norm.ci(CI[2],COV,alpha=alpha)[3]
+    if(is.null(VAR)) { VAR <- 2*MLE^2/DOF }
+    UPPER <- norm.ci(CI[2],VAR,alpha=alpha)[3]
     # qchisq upper.tail is too small when DOF<<1
     # qchisq bug that no regular use of chi-square/gamma would come across
     if(is.nan(CI[3]) || CI[3]<UPPER) { CI[3] <- UPPER }
@@ -395,3 +395,44 @@ tnorm.hdr <- function(mu=0,VAR=1,lower=0,upper=Inf,level=0.95)
   names(CI) <- NAMES.CI
   return(CI)
 }
+
+
+# inverse Gaussian CIs
+IG.CI <- function(mu,VAR,k=VAR/mu^3,level=0.95,precision=1/2)
+{
+  if(k==Inf)
+  { CI <- c(0,mu,Inf) }
+  else if(k>0)
+  {
+    tol <- .Machine$double.eps^precision
+    p <- (1-level)/2
+    p <- c(p,1-p)
+
+    CI <- rep(NA_real_,3)
+    CI[2] <- mu # mean
+    CI[c(1,3)] <- statmod::qinvgauss(p,mean=mu,shape=1/k,tol=min(tol,1E-14),maxit=.Machine$integer.max)
+  }
+  else
+  { CI <- c(mu,mu,mu) }
+  names(CI) <- NAMES.CI
+  return(CI)
+}
+
+
+# generalized inverse Gaussian CIs
+# GIG.CI <- function(mu,k,rho,level=0.95,precision=1/2)
+# {
+#   tol <- .Machine$double.eps^precision
+#   p <- (1-level)/2
+#   p <- c(p,1-p)
+#
+#   chi <- theta*eta
+#   psi <- theta/eta
+#   lambda <- -rho/2
+#
+#   CI <- rep(NA_real_,3)
+#   CI[2] <- eta*(besselK(theta,1-rho/2,expon.scaled=TRUE)/besselK(theta,-rho/2,expon.scaled=TRUE))
+#   CI[c(1,3)] <- GeneralizedHyperbolic::qgig(p,chi=chi,psi=psi,lambda=lambda,method="integrate",ibfTol=min(tol,.Machine$double.eps^.85),uniTol=min(tol,1E-7))
+#   names(CI) <- NAMES.CI
+#   return(CI)
+# }

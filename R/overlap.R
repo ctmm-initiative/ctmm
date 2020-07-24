@@ -101,7 +101,7 @@ overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,...)
   {
     if(debias) { MLE <- MLE/BIAS }
 
-    CI <- chisq.ci(MLE,COV=VAR,alpha=1-level)
+    CI <- chisq.ci(MLE,VAR=VAR,alpha=1-level)
 
     # transform from (square) distance to overlap measure
     CI <- exp(-rev(CI))
@@ -157,7 +157,7 @@ overlap.UD <- function(object,level=0.95,debias=TRUE,...)
     if(debias){ D <- D/CI$BIAS }
 
     # calculate new distance^2 with KDE point estimate
-    CI <- chisq.ci(D,COV=CI$VAR,alpha=1-level)
+    CI <- chisq.ci(D,VAR=CI$VAR,alpha=1-level)
 
     # transform from (square) distance to overlap measure
     OVER <- exp(-rev(CI))

@@ -1,8 +1,8 @@
-ctmm 0.5.11 (2020-07-13)
+ctmm 0.5.11 (2020-07-23)
 ================
 
   * new function meta for meta-analysis
-
+  
   * bugfix in ctmm.fit for IOU model
   
   * bugfix in summary.ctmm rowname droped for single parameter CIs
@@ -12,6 +12,12 @@ ctmm 0.5.11 (2020-07-13)
   * manipulate bug workaround in zoom.variogram
   
   * bugfix in ctmm.select if stepping OU->OUf->OUF
+  
+  * as.telemetry now coerces tibble objects into data.frames
+  
+  * bugfix in as.telemetry for Move objects with empty idData slot
+  
+  * bugfix in as.telemetry/median when importing single location estimate
 
 ctmm 0.5.10 (2020-05-04)
 ================

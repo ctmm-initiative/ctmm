@@ -114,7 +114,7 @@ median.longlat <- function(data,k=1,...)
   mu <- c(STAT$median)
   COV <- STAT$covmedian
 
-  if(k==1)
+  if(k==1 || nrow(data)==1)
   {
     mu <- cartesian2ellipsoid(mu)
     return(mu)

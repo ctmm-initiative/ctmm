@@ -397,7 +397,7 @@ cluster.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="BIC",boot=FALSE,er
     MLE <- Q(par)
     GRAD <- genD(par,Q,lower=LOWER,upper=UPPER,order=1)$gradient
     VAR <- c( GRAD %*% COV %*% GRAD )
-    chisq.ci(MLE,COV=VAR,level=level)
+    chisq.ci(MLE,VAR=VAR,level=level)
   }
 
   # population-1 average

@@ -217,7 +217,7 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
 
     # root mean square velocity
     # pretty units
-    rms <- sqrt(chisq.ci(ms,COV=var.ms,alpha=alpha))
+    rms <- sqrt(chisq.ci(ms,VAR=var.ms,alpha=alpha))
     unit.list <- unit.par(rms,"speed",SI=!units)
     name <- c(name,unit.list$name)
     scale <- c(scale,unit.list$scale)
@@ -237,7 +237,7 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
     VAR <- (2*error)^2 * VAR
     error <- error^2
     # CIs
-    error <- chisq.ci(error,COV=VAR,alpha=alpha)
+    error <- chisq.ci(error,VAR=VAR,alpha=alpha)
     # back to meters/distance
     error <- sqrt(error)
     unit.list <- unit.par(error,"length",SI=!units)

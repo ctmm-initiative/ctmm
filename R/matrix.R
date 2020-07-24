@@ -274,9 +274,12 @@ PDsolve <- function(M,force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
 }
 
 
-# sqrtm fails on 1x1 matrix
-# it also gives annoying notes if I don't cast it right
-# also, my matrices are PSD
+isqrtm <- function(M,force=FALSE,pseudo=FALSE)
+{
+  # TODO
+}
+
+# only for PSD matrices
 sqrtm <- function(M,force=FALSE,pseudo=FALSE)
 {
   if(class(M)[1]=="covm")
@@ -322,11 +325,7 @@ sqrtm <- function(M,force=FALSE,pseudo=FALSE)
   else
   {
     if(all(diag(M)>=-TOL))
-    {
-      # R <- Matrix::Matrix(M,sparse=FALSE,doDiag=FALSE) # complains still.... ???
-      # R <- as(R,"dpoMatrix")
-      R <- expm::sqrtm(M) # reduces back to class "matrix" ?
-    }
+    { R <- expm::sqrtm(M) }
     else
     { R <- diag(-1,nrow=DIM) }
 
