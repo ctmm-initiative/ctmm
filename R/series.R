@@ -37,3 +37,42 @@ lbetaplog <- Vectorize( function(a,b,x)
 
   return(x)
 })
+
+
+# (sqrt(x+1)-1)/x
+sqrtxp1 <- Vectorize( function(x)
+{
+  if(x>0.5) { return((sqrt(x+1)-1)/x) }
+
+  x <- sqrt(x)
+  cn <- c(1/2, 0, 19/8, 0, 153/32, 0, 85/16, 0, 455/128, 0, 3003/2048, 0, 3003/8192, 0, 429/8192, 0, 495/131072, 0, 55/524288, 0, 1/2097152)
+  cd <- c(1, 0, 5, 0, 171/16, 0, 51/4, 0, 595/64, 0, 273/64, 0, 5005/4096, 0, 429/2048, 0, 1287/65536, 0, 55/65536, 0, 11/1048576)
+  series(x,cn)/series(x,cd)
+})
+
+
+# log K[n/2+r/2](t*sqrt(1+s/t))/K[r/2](t)
+lKK <- function(r,n,t,s)
+{
+  # log( besselK(sqrt(1+s/t)*t,n/2+r/2)/besselK(t,r/2) )
+  # 0/0 limits to 1
+  -s*sqrtxp1(s/t) + nant( BesselK(sqrt(1+s/t)*t,n/2+r/2,expon.scaled=TRUE,log=TRUE) - BesselK(t,r/2,expon.scaled=TRUE,log=TRUE), 0)
+}
+
+
+BesselK <- function(x,nu,expon.scaled=FALSE,log=FALSE)
+{
+  nu <- abs(nu)
+
+  # try base besselK
+  y <- log(besselK(x,nu,expon.scaled=expon.scaled))
+  MAX <- log(.Machine$double.xmax/2)
+  # overflow cases
+  SUB <- y>=MAX & x>0 & nu>1 & nu<Inf
+  if(any(SUB)) # nu too big for base Bessel
+  { y[SUB] <- Bessel::besselK.nuAsym(x[SUB],nu[SUB],k.max=5,expon.scaled=expon.scaled,log=TRUE) }
+
+  if(!log) { y <- exp(y) }
+
+  return(y)
+}

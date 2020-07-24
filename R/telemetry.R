@@ -154,8 +154,8 @@ Move2CSV <- function(object,timeformat="",timezone="UTC",projection=NULL,datum=N
   DATA <- cbind(DATA,object)
 
   # add idData to data
-  # DATA[,names(idData)] <- t(array(idData,c(length(idData),nrow(DATA))))
-  for(i in 1:length(idData)) { DATA[,names(idData)[i]] <- idData[i] }
+  if(length(idData))
+  { for(i in 1:length(idData)) { DATA[,names(idData)[i]] <- idData[i] } }
 
   return(DATA)
 }
@@ -368,6 +368,10 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   NAMES$z <- c("height.above.ellipsoid","height.above.elipsoid","height.above.ellipsoid.m","height.above.elipsoid.m","height.above.msl","height.above.mean.sea.level","height.raw","height","height.m","barometric.height","altimeter","altimeter.m","Argos.altitude","GPS.Altitude","altitude","altitude.m","Alt","barometric.depth","depth","elevation","elevation.m","elev")
   NAMES$v <- c("ground.speed",'speed.over.ground','speed.over.ground.m.s',"speed","GPS.speed")
   NAMES$heading <- c("heading","heading.degree","heading.degrees","GPS.heading","Course","direction","direction.deg")
+
+  # get rid of tibble class # it does weird stuff
+  if(class(object)[1] %in% c("tbl_df","tbl"))
+  { object <- as.data.frame(object) }
 
   # UNIT CONVERSIONS
   COL <- c("speed.km.h")
