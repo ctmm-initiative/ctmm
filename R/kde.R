@@ -675,7 +675,7 @@ kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=NULL,dr=NULL,EXT=NUL
 
 
 ##################################
-# construct my own kde objects
+# construct my own KDE objects
 # was using ks-package but it has some bugs
 # alpha is the error goal in my total probability
 kde <- function(data,H,axes=c("x","y"),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr=NULL,grid=NULL)
@@ -745,7 +745,7 @@ kde <- function(data,H,axes=c("x","y"),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr
       PMF2 <- debias.volume(PMF,bias=vbias)$PMF
       PMF2 <- debias.area(PMF2,bias=abias)$PMF
 
-      # area then volumen correction
+      # area then volume correction
       PMF <- debias.area(PMF,bias=abias)$PMF
       PMF <- debias.volume(PMF,bias=vbias)$PMF
 
@@ -781,8 +781,17 @@ debias.volume <- function(PMF,bias=1)
   # counting volume by dV
   VOL <- 1:length(CDF)
 
+  # extrapolation issue with bias<1
+  # introduce a NULL cell with 0 probability
+  VOL <- c(0,VOL)
+  CDF <- c(0,CDF)
+
   # evaluate the debiased cdf on the original volume grid
   CDF <- stats::approx(x=VOL/bias,y=CDF,xout=VOL,yleft=0,yright=1)$y
+
+  # drop null cell
+  CDF <- CDF[-1]
+
   # fix tiny numerical errors from ?roundoff?
   CDF <- sort(CDF)
 

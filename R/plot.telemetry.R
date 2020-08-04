@@ -102,10 +102,23 @@ new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,units=
     # dimensional type
     assign("x.dim","length",pos=plot.env)
     assign("y.dim","length",pos=plot.env)
+    # unit name
+    assign("x.units",dist$name,pos=plot.env)
+    assign("y.units",dist$name,pos=plot.env)
     # unit conversion
     assign("x.scale",dist$scale,pos=plot.env)
     assign("y.scale",dist$scale,pos=plot.env)
   } # end !add
+  else # get distance information from environment
+  {
+    name <- unique( c( get0('x.units',plot.env), get0('y.units',plot.env) ) )
+    scale <- unique( c( get0('x.scale',plot.env), get0('y.scale',plot.env) ) )
+    if(length(name)==1 && length(scale)==1)
+    {
+      dist$name <- name
+      dist$scale <- scale
+    }
+  }
 
   return(dist)
 }
@@ -184,7 +197,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
   # PLOT KDE CONTOURS... AND DENSITY
   if(!is.null(UD))
   {
-    UD <- lapply(UD,function(ud){ unit.UD(ud,length=dist$scale) })
+    # UD <- lapply(UD,function(ud){ unit.UD(ud,length=dist$scale) }) # now done in plot.UD
     plot.UD(UD,level.UD=level.UD,level=level,DF=DF,col.level=col.level,col.DF=col.DF,col.grid=col.grid,labels=labels,fraction=fraction,add=TRUE,xlim=xlim,ylim=ylim,ext=ext,cex=cex,lwd=lwd.level,...)
   }
 

@@ -41,6 +41,25 @@ overlap <- function(object,level=0.95,debias=TRUE,...)
 }
 
 
+# approximate-exact Wishart DOFs
+DOF.wishart <- function(CTMM)
+{
+  AXES <- length(CTMM$axes)
+  # extract covariance matrix SIGMA and covariance of covariance matrix COV
+  SIGMA <- CTMM$sigma # Wishart matrix / n
+  if(CTMM$isotropic) # chi^2
+  { PAR <- 'major' }
+  else # approximate Wishart DOF (exact if Wishart)
+  { PAR <- c('major','minor') }
+  EST <- SIGMA@par[PAR]
+  DOF <- CTMM[['COV']][PAR,PAR]
+  if(length(DOF)==length(PAR)^2)
+  { DOF <- (2/AXES) * c(EST %*% PDsolve(DOF) %*% EST) } # average multiple DOFs if not Wishart
+  if(length(DOF)==0) { DOF <- 0 }
+  return(DOF)
+}
+
+
 #####################
 overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,...)
 {
@@ -61,16 +80,17 @@ overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,...)
   sigma <- (CTMM1$sigma + CTMM2$sigma)/2
   DIM <- nrow(sigma)
 
-  s0 <- mean(diag(sigma)^2)
-  s1 <- mean(diag(CTMM1$sigma)^2)
-  s2 <- mean(diag(CTMM2$sigma)^2)
+  # trace variances
+  s0 <- mean(diag(sigma))
+  s1 <- mean(diag(CTMM1$sigma))
+  s2 <- mean(diag(CTMM2$sigma))
 
-  n1 <- DOF.area(CTMM1)
-  n2 <- DOF.area(CTMM2)
-
-  # approximate average Wishart DOF
+  # approximate average Wishart DOFs
+  n1 <- DOF.wishart(CTMM1)
+  n2 <- DOF.wishart(CTMM2)
   # using mean variance - additive & rotationally invariant
-  n0 <- 4 * s0 / (s1/n1 + s2/n2)
+  n0 <- 4 * s0^2 / (s1^2/n1 + s2^2/n2)
+  # dim cancels out
 
   # clamp the DOF not to diverge
   n0 <- clamp(n0,DIM+2,Inf)
