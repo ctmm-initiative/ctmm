@@ -89,6 +89,16 @@ set.telemetry <- function(data,value,axes=colnames(value))
   return(data)
 }
 
+######
+set.name <- function(x,NAMES=NULL,drop=TRUE)
+{
+  x <- listify(x)
+  for(i in 1:length(x))
+  { names(x)[i] <- ifelse(is.null(NAMES),attr(x[[i]],"info")$identity,NAMES[i]) }
+  if(length(x)==1 && drop) { x <- x[[1]] }
+  return(x)
+}
+
 #######################
 # Generic import function
 as.telemetry <- function(object,timeformat="",timezone="UTC",projection=NULL,datum=NULL,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...) UseMethod("as.telemetry")
@@ -346,11 +356,11 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
                        'Acquisition.Start.Time','start.timestamp',
                        'Time.GMT','GMT.Time','time',"\u6642\u523B",
                        'Date.GMT','Date','Date.Local',"\u65E5\u4ED8",
-                       't','t_dat')
+                       't','t_dat','use_date')
   NAMES$id <- c("animal.ID","individual.local.identifier","local.identifier","individual.ID","Name","ID","ID.Names","Animal","Full.ID",
                 "tag.local.identifier","tag.ID","band.number","band.num","device.info.serial","Device.ID","collar.id","Logger","Logger.ID",
                 "Deployment","deployment.ID","track.ID")
-  NAMES$long <- c("location.long","Longitude","longitude.WGS84","long","lon","GPS.Longitude","\u7D4C\u5EA6")
+  NAMES$long <- c("location.long","Longitude","longitude.WGS84","long","lon","lng","GPS.Longitude","\u7D4C\u5EA6")
   NAMES$lat <- c("location.lat","Latitude","latitude.WGS84","latt","lat","GPS.Latitude","\u7DEF\u5EA6")
   NAMES$zone <- c("GPS.UTM.zone","UTM.zone","zone")
   NAMES$east <- c("GPS.UTM.Easting","GPS.UTM.East","GPS.UTM.x","UTM.Easting","UTM.East","UTM.E","UTM.x","Easting","East","x")

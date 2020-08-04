@@ -9,12 +9,13 @@
 
 \description{To be described in an upcomming manuscript.}
 
-\usage{ encounter(object,include=NULL,exclude=NULL,...) }
+\usage{ encounter(object,include=NULL,exclude=NULL,debias=FALSE,...) }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{object}{A \code{list} of aligned \code{UD} objects.}
   \item{include}{To be explained.}
   \item{exclude}{To be explained.}
+  \item{debias}{Approximate GRF bias correction (in testing).}
   \item{...}{Additional arguments for future use.}
 }
 

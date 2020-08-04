@@ -17,9 +17,9 @@ meta(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC="AICc",
   \item{level.pop}{Coverage level for the population of individuals.}
   \item{method}{Statistical estimator used---either maximum likelihood estimation (\code{"MLE"}) or `best linear unbiased estimator' (\code{"BLUE"}).}
   \item{IC}{Information criterion to determine whether or not population variation can be estimated. Can be \code{"AICc"}, \code{AIC}, or \code{"BIC"}.}
-  \item{boot}{Perform a parametric bootstrap to remove first-order bias and refine confidence intervals.}
+  \item{boot}{Perform a parametric bootstrap for confidence intervals and first-order bias correction if \code{debias=TRUE}.}
   \item{error}{Relative error tolerance for parametric bootstrap.}
-  \item{debias}{Use bootstrap results to remove first-order bias from point estimates.}
+  \item{debias}{Apply Bessel's inverse-Gaussian correction if \code{method="MLE"}, REML if \code{method="BLUE"}, and an additional first-order correction if \code{boot=TRUE}.}
   \item{units}{Convert result to natural units.}
   \item{plot}{Generate a meta-analysis forest plot.}
   \item{...}{Further arguments passed to \code{plot}.}

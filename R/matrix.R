@@ -1,3 +1,5 @@
+tr <- function(x) { sum(diag(x)) }
+
 # 2D rotation matrix
 rotate <- function(theta)
 {

@@ -28,6 +28,22 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
     return(CI)
   }
 
+  # Bessel's correction
+  BC <- n/(n-1)
+
+  # kappa for debiased standard deviation for CIs
+  k.std <- function(par)
+  {
+    mu <- par[1]
+    k <- par[2] # must already be debiased
+    if(k==0) { return(0) }
+    theta <- n/(k*mu) # mu sampling distribution theta
+    BIAS <- sqrt(2/pi*theta)*besselK(theta,1,expon.scaled=TRUE)
+    BIAS <- BIAS * exp(lgamma((n+1)/2) - lgamma(n/2)) / sqrt(n/2)
+    k <- k / BIAS^2
+    return(k)
+  }
+
   ################
   # MLE fit and CI return
   fit.mle <- function(s,par=NULL)
@@ -76,7 +92,7 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
 
     # n.min <- 2-4 (AIC-AICc)
     NAME[2] <- "inverse-Gaussian"
-    if(complete && n>=2)
+    if(complete && n>=2) # par==NULL
     {
       mu <- mean(s)
       k <- mean(1/s) - 1/mu
@@ -87,6 +103,9 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
       FIT <- optimizer(par,nloglike,lower=c(0,0),upper=c(Inf,Inf))
       PAR[2,1:2] <- FIT$par
       LL[2] <- -FIT$value # log-likelihood at MLE
+      # Bessel's correction in log-likelihood
+      if(debias) { LL[2] <- -nloglike(c(1,BC)*FIT$par) }
+      # but don't debias PAR until after COV calculation
     }
 
     # # unknown shape parameter rho (generalized inverse Gaussian)
@@ -112,7 +131,16 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
     {
       CI <- rep(NA_real_,3)
       if(length(par)==2)
-      { CI <- IG.CI(PAR[2,1],k=PAR[2,2],level=level.pop,precision=precision) }
+      {
+        mu <- PAR[2,1]
+        k <- PAR[2,2]
+        if(debias) # kappa for debiased standard deviation
+        {
+          k <- BC * k
+          # DEBUG <<- list(mu=mu,k=k,k.std=k.std,IG.CI=IG.CI)
+          k <- k.std(PAR[2,])
+        }
+        CI <- IG.CI(mu,k=k,level=level.pop,precision=precision) }
       # else if(length(par)==3)
       # { CI <- GIG.CI(eta,theta,rho,level=level.pop,precision=precision) }
       names(CI) <- NAMES.POP
@@ -129,7 +157,7 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
       nu <- c(0,1,2)[1:length(LL)] # variance parameters
       K <- k + nu # total parameters
       dIC[,"AIC"]  <- 2*K - 2*LL
-      dIC[,"AICc"] <- 2*K*(n-k)/pmax(n-K-nu,0) - 2*LL
+      dIC[,"AICc"] <- 2*K*ifelse(debias,n-k,n)/pmax(n-K-nu,0) - 2*LL
       dIC[,"BIC"]  <- log(n)*K - 2*LL
 
       dIC <- cbind(dIC[,IC])
@@ -190,7 +218,17 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
       STUFF <- genD(par,nloglike,lower=c(0,0),order=2)
       COV <- cov.loglike(STUFF$hessian,STUFF$gradient)
 
-      Q <- function(par) { IG.CI(par[1],k=par[2],level=level.pop,precision=precision) }
+      if(debias) # Bessel's correction to point estimate and COV
+      {
+        par[2] <- BC * par[2]
+        COV[2,] <- BC * COV[2,] # COV[BC*kappa] = BC COV[kappa] BC
+        COV[,2] <- BC * COV[,2]
+        COV[1,] <- sqrt(BC) * COV[1,] # VAR[mu] = VAR[x]/n
+        COV[,1] <- sqrt(BC) * COV[,1]
+        PAR[1:IND] <- par
+      }
+
+      Q <- function(par) { IG.CI(par[1],k=ifelse(debias,k.std(par),par[2]),level=level.pop,precision=precision) }
       GRAD <- genD(par,Q,lower=c(0,0),order=1)$gradient
       VAR <- diag(GRAD %*% COV %*% t(GRAD))
 
@@ -494,6 +532,23 @@ import.area <- function(x,level.UD=0.95)
 meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",df.min=0,IC="AICc",boot=FALSE,error=0.01,debias=TRUE,units=TRUE,plot=TRUE,...)
 {
   N <- length(x)
+
+  # N group comparisons (list of lists that are not summaries)
+  if(class(x)=='list' && class(x[[1]])=='list' && !all(names(x[[1]])==c('DOF','CI')))
+  {
+    # analyze all N groups separately
+    ## plot=FALSE
+
+    ## modify lower level code to return ICs
+    # add up ICs
+
+    # analyze all data together
+
+    # calculate effect size matrix
+
+    # rainbow forest plot
+  }
+
   STUFF <- import.area(x,level.UD=level.UD)
   AREA <- STUFF$AREA
   DOF <- STUFF$DOF

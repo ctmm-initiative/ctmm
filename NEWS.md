@@ -1,7 +1,9 @@
-ctmm 0.5.11 (2020-07-23)
+ctmm 0.5.11 (2020-08-03)
 ================
 
-  * new function meta for meta-analysis
+  * new function meta for meta-analysis of home-range areas
+  
+  * new function encounter for the conditional distribution of encounters (CDE)
   
   * bugfix in ctmm.fit for IOU model
   
@@ -18,6 +20,10 @@ ctmm 0.5.11 (2020-07-23)
   * bugfix in as.telemetry for Move objects with empty idData slot
   
   * bugfix in as.telemetry/median when importing single location estimate
+  
+  * bugfix in plot.telemery with add=TRUE and non-SI units
+  
+  * improvements to Wishart approximation in overlap bias correction
 
 ctmm 0.5.10 (2020-05-04)
 ================

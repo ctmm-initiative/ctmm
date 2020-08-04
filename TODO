@@ -1,4 +1,6 @@
 PRIORITY
+* summary(UD) class !list
+* meta descend into lists and work way up until difference is supported
 * optimize REML correction?
 * 2-point !isotropic fits linear COV; 1-point fits zero-COV
 * cluster: inverse-chi^2 -> inverse-Gaussian
