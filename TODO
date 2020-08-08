@@ -1,4 +1,5 @@
 PRIORITY
+* meta.chisq include inverse-mean for comparison ratios
 * summary(UD) class !list
 * meta descend into lists and work way up until difference is supported
 * optimize REML correction?

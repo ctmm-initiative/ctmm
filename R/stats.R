@@ -436,3 +436,25 @@ IG.CI <- function(mu,VAR,k=VAR/mu^3,level=0.95,precision=1/2)
 #   names(CI) <- NAMES.CI
 #   return(CI)
 # }
+
+
+# F-distribution CIs with exact means and variances for the ratio, numerator, and denominator
+# E1 == E[numerator]
+# VAR1 == VAR[numerator]
+# E2 == E[1/denominator]
+# VAR2 == VAR[1/denominator]
+F.CI <- function(E1,VAR1,E2,VAR2,level=0.95)
+{
+  EST <- E1*E2
+  N1 <- 2*E1^2/VAR1 # chi^2 DOF
+  N2 <- 2*E2^2/VAR2 + 4 # inverse-chi^2 DOF
+  BIAS <- N2/(N2-2) # F-distribution mean bias factor
+
+  alpha <- (1-level)/2
+  CI <- stats::qf(c(alpha,1-alpha),N1,N2)
+  CI <- CI / BIAS # debiased ratio corresponding to EST=1
+  CI <- c(CI[1],1,CI[2]) * EST
+  names(CI) <- NAMES.CI
+
+  return(CI)
+}
