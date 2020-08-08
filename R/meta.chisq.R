@@ -5,6 +5,8 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
 {
   # tol <- .Machine$double.eps^precision
   n <- length(s)
+  # for model ICs
+  dIC <- Inf
 
   # CI that are chi^2 when VAR[M]>>VAR.pop
   ci.chisq.GIG <- function(M,VAR,mu,k=0,rho=1)
@@ -163,10 +165,10 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
       dIC <- cbind(dIC[,IC])
       rownames(dIC) <- NAME
       colnames(dIC) <- paste0("\u0394",IC)
-      dIC <- dIC - min(dIC)
       IND <- sort(c(dIC),index.return=TRUE)$ix
       dIC <- dIC[IND,,drop=FALSE]
-      print(dIC)
+      dIC <<- dIC # store to main function
+      print(dIC - min(dIC))
 
       # some old code that would need to be re-written
       # if(IC=="LOOCV")
@@ -293,10 +295,10 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
       dIC <- rbind(STUFF.Z[[IC]],STUFF.V[[IC]])
       rownames(dIC) <- c("Dirac-\u03B4","inverse-Gaussian")
       colnames(dIC) <- paste0("\u0394",IC)
-      dIC <- dIC - min(dIC)
       IND <- sort(c(dIC),index.return=TRUE)$ix
       dIC <- dIC[IND,,drop=FALSE]
-      print(dIC)
+      dIC <<- dIC # store to main function
+      print(dIC - min(dIC))
     }
     else
     { IND <- 2 }
@@ -441,7 +443,8 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
   #   warning("Population mean not convergent. Consider robust=TRUE.")
   # }
 
-  return(CI)
+  R <- list(CI=CI,dIC=dIC)
+  return(R)
 }
 
 
@@ -529,44 +532,68 @@ import.area <- function(x,level.UD=0.95)
 
 # wrapper: meta-analysis of CTMM areas
 # TODO range=FALSE ???
-meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",df.min=0,IC="AICc",boot=FALSE,error=0.01,debias=TRUE,units=TRUE,plot=TRUE,...)
+meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC="AICc",boot=FALSE,error=0.01,debias=TRUE,units=TRUE,plot=TRUE,...)
 {
   N <- length(x)
 
   # N group comparisons (list of lists that are not summaries)
-  if(class(x)=='list' && class(x[[1]])=='list' && !all(names(x[[1]])==c('DOF','CI')))
+  SUBPOP <- class(x)=='list' && class(x[[1]])=='list' && !all(names(x[[1]])==c('DOF','CI'))
+  if(SUBPOP)
   {
+    ID <- names(x)
+    ID[N+1] <- "Joint population"
+
     # analyze all N groups separately
-    ## plot=FALSE
+    RESULTS <- AREA <- DOF <- ID <- list()
+    for(i in 1:N)
+    {
+      STUFF <- import.area(x[[i]],level.UD=level.UD)
+      AREA[[i]] <- STUFF$AREA
+      DOF[[i]] <- STUFF$DOF
 
-    ## modify lower level code to return ICs
-    # add up ICs
+      print(paste("Sub-population",ID[i]))
+      RESULTS[[i]] <- meta.chisq(AREA[[i]],DOF[[i]],level=level,level.pop=level.pop,IC=IC,boot=boot,error=error,debias=debias,method=method,verbose=TRUE)
+    }
+    print("Joint population")
+    RESULTS[[N+1]] <- meta.chisq(unlist(AREA),unlist(DOF),level=level,level.pop=level.pop,IC=IC,boot=boot,error=error,debias=debias,method=method,verbose=TRUE)
 
-    # analyze all data together
+    print("Joint population versus sub-populations")
+    dIC <- sum( sapply(RESULTS[[1:N]],function(R){R$dIC[1,]}) )
+    dIC[2] <- RESULTS[[N+1]]$dIC[1,]
+    dIC <- cbind(dIC)
+    colnames(dIC) <- c("sub-population","joint population")
+    rownames(dIC) <- paste0("\u0394",IC)
+    IND <- sort(c(dIC),index.return=TRUE)$ix
+    dIC <- dIC[IND,,drop=FALSE]
+    print(dIC - min(dIC))
 
-    # calculate effect size matrix
+    # forest plot object
+    PLOT <- sapply(RESULTS,function(R){R$CI[2,1:3]}) # [3,N+1]
 
-    # rainbow forest plot
+    # effect size matrix return
+    #
+    #
   }
+  else
+  {
+    STUFF <- import.area(x,level.UD=level.UD)
+    AREA <- STUFF$AREA
+    DOF <- STUFF$DOF
+    ID <- STUFF$ID
 
-  STUFF <- import.area(x,level.UD=level.UD)
-  AREA <- STUFF$AREA
-  DOF <- STUFF$DOF
-  ID <- STUFF$ID
+    # inverse-chi^2 population distribution
+    CI <- meta.chisq(AREA,DOF,level=level,level.pop=level.pop,IC=IC,boot=boot,error=error,debias=debias,method=method)$CI
 
-  # inverse-chi^2 population distribution
-  CI <- meta.chisq(AREA,DOF,level=level,level.pop=level.pop,IC=IC,boot=boot,error=error,debias=debias,method=method,df.min=df.min)
+    # basic forest plot
+    PLOT <- sapply(1:(N+1),function(i){chisq.ci(AREA[i],DOF=DOF[i],level=level)}) # [3,N+1]
+
+    ID[N+1] <- "mean"
+    PLOT[,N+1] <- CI[2,1:3] # overwrite chi^2 CI with better
+  }
 
   if(plot)
   {
-    ID[N+1] <- "mean"
-    AREA[N+1] <- CI[2,2]
-    DOF[N+1] <- CI[2,4]
-
-    # basic forest plot
     IND <- (N+1):1
-    PLOT <- sapply(1:(N+1),function(i){chisq.ci(AREA[i],DOF=DOF[i],level=level)})
-    PLOT <- t(PLOT) # [N+1,3]
 
     UNITS <- unit(PLOT,"area",SI=!units)
     PLOT <- PLOT/UNITS$scale
@@ -575,19 +602,28 @@ meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",df.
     plot(range(PLOT),c(1,N+1),col=grDevices::rgb(1,1,1,0),xlab=xlab,ylab=NA,yaxt="n",...)
     graphics::axis(2,at=IND[1:N],labels=ID[1:N],las=2)
     graphics::axis(2,at=1,labels=ID[N+1],las=2,font=2)
-    graphics::abline(v=PLOT[N+1,2],col=grDevices::rgb(0.5,0.5,0.5,0.5))
-    graphics::points(PLOT[,2],IND,pch=16)
-    suppressWarnings( graphics::arrows(PLOT[,1],IND,PLOT[,3],IND,length=0.05,angle=90,code=3) )
+    graphics::abline(v=PLOT[2,N+1],col=grDevices::rgb(0.5,0.5,0.5,0.5))
+    graphics::points(PLOT[2,],IND,pch=16)
+    suppressWarnings( graphics::arrows(PLOT[1,],IND,PLOT[3,],IND,length=0.05,angle=90,code=3) )
   }
 
-  UNITS <- unit(CI[,1:3],"area",SI=!units)
-  CI[,1:3] <- CI[,1:3]/UNITS$scale
-  rownames(CI) <- paste0(rownames(CI)," area (",UNITS$name,")")
+  if(SUBPOP)
+  {
+    EST <- sapply(RESULTS[1:N],function(R){R$CI[2,2]})
+    DOF <- sapply(RESULTS[1:N],function(R){R$CI[2,4]})
+    CI <- outer(EST,EST,'/')
+    rownames(CI) <- ID[1:N]
+    colnames(CI) <- ID[1:N]
+  }
+  else
+  {
+    CI <- CI[,1:3]
+    UNITS <- unit(CI,"area",SI=!units)
+    CI <- CI/UNITS$scale
+    rownames(CI) <- paste0(rownames(CI)," area (",UNITS$name,")")
+  }
 
-  # 2-dimensions
-  # CI[,4] <- CI[,4]/2
-
-  return(CI[3:1,])
+  return(CI)
 }
 
 

@@ -105,11 +105,14 @@ encounter.ctmm <- function(CTMM,include=NULL,exclude=NULL,debias=FALSE,...)
     }
   }
   # clamp DOFs
-  DOF <- clamp(DOF,AXES+2,Inf)
-  dof <- clamp(dof,AXES+2,Inf)
+  # DOF <- clamp(DOF,AXES+2,Inf)
+  # dof <- clamp(dof,AXES+2,Inf)
   # relative biases of inverse-Wishart
-  BIAS <- DOF/(DOF-AXES-1)
-  bias <- dof/(dof-AXES-1)
+  # BIAS <- DOF/(DOF-AXES-1)
+  # bias <- dof/(dof-AXES-1)
+  # Pade approximants with better behavior
+  BIAS <- 1 + (AXES+1)/DOF
+  bias <- 1 + (AXES+1)/dof
 
   fn <- function(CTMM)
   {
