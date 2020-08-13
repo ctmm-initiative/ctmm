@@ -15,7 +15,7 @@
   \item{object}{A \code{list} of aligned \code{UD} objects.}
   \item{include}{To be explained.}
   \item{exclude}{To be explained.}
-  \item{debias}{Approximate GRF bias correction (in testing).}
+  \item{debias}{Approximate GRF bias correction (in development).}
   \item{...}{Additional arguments for future use.}
 }
 

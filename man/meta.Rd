@@ -11,7 +11,7 @@ meta(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC="AICc",
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{x}{A list of \code{ctmm} movement-model objects, \code{UD} objects, or \code{UD} \code{summary} output.}
+  \item{x}{A list of \code{ctmm} movement-model objects, \code{UD} objects, or \code{UD} \code{summary} output, constituting a sampled population, or a list of such lists, each constituting a sampled sub-population.}
   \item{level}{Confidence level for parameter estimates.}
   \item{level.UD}{Coverage level for home-range estimates. E.g., 50\% core home range.}
   \item{level.pop}{Coverage level for the population of individuals.}
@@ -31,7 +31,8 @@ So-far only the meta-analysis of home-range areas is implemented. More details w
 For both estimator \code{methods}, the same underlying model is assumed.
 }
 
-\value{A table with rows corresponding to population coverage levels and columns corresponding to confidence levels of the estimates.}
+\value{If \code{x} constitutes a sampled population, then \code{meta} returns a table with rows corresponding to population coverage levels and columns corresponding to confidence levels of the estimates.
+If \code{x} constitutes a list of sampled sub-populations, then \code{meta} returns confidence intervals on the sub-population estimate ratios.}
 
 %\section{Warnings}{}
 
