@@ -1,9 +1,11 @@
-ctmm 0.5.11 (2020-08-08)
+ctmm 0.5.11 (2020-08-12)
 ================
 
   * new function meta for meta-analysis of home-range areas
   
   * new function encounter for the conditional distribution of encounters (CDE)
+  
+  * new function compass to plot a north-pointing compass
   
   * bugfix in ctmm.fit for IOU model
   

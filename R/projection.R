@@ -132,7 +132,7 @@ setMethod('projection<-', signature(x='telemetry'), `projection<-.telemetry`)
 # unit vector pointing north at projected locations R
 # x = partially projected telemetry data dim(n,2)
 # return dim(n,2)
-northing <- function(x,proj)
+northing <- function(x,proj,angle=FALSE)
 {
   # WGS-84 ellipsoid
   R.EQ <- DATA.EARTH$R.EQ
@@ -140,13 +140,17 @@ northing <- function(x,proj)
   # approximate 1-meter-North latitude displacements
   d.lambda <- 1/sqrt((R.EQ*sin(x$latitude))^2+(R.PL*cos(x$latitude))^2)
   # could use grad() but would be slowwwww....
-  u <- cbind(x$longitude,x$latitude + d.lambda*(360/2/pi)) # arg, degrees!
+  d.lambda <- d.lambda*(360/2/pi) # arg, degrees!
+  u <- cbind(x$longitude,x$latitude + d.lambda)
   u <- project(u,to=proj)
   colnames(u) <- c("x","y")
   # difference vectors pointing North ~1 meters
   u <- u - get.telemetry(x) # [n,2]
   # difference vectors pointing North 1 meters exact
   u <- u / sqrt(rowSums(u^2)) # [n,2]
+
+  if(angle) { u <- atan2(u[,'y'],u[,'x']) * (360/(2*pi)) } # R plotting functions require degrees
+
   return(u)
 }
 
