@@ -101,7 +101,7 @@ encounter.ctmm <- function(CTMM,include=NULL,exclude=NULL,debias=FALSE,...)
   {
     for(j in 1:length(DOF))
     {
-      dof[i,j] <- tr(P[[i]]+P[[j]])^2 / ( tr(P[[i]])^2/DOF[i] + tr(P[[j]])^2/DOF[j] )
+      dof[i,j] <- 3/2 * tr(P[[i]]+P[[j]])^2 / ( tr(P[[i]])^2/DOF[i] + tr(P[[j]])^2/DOF[j] )
     }
   }
   # clamp DOFs
