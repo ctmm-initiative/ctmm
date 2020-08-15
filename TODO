@@ -1,4 +1,6 @@
 PRIORITY
+* R check wants inverse.mean to have the same arguments...
+* 3D plots of 2D UDs
 * optimize REML correction?
 * 2-point !isotropic fits linear COV; 1-point fits zero-COV
 * cluster: inverse-chi^2 -> inverse-Gaussian

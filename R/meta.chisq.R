@@ -29,26 +29,6 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
     DRATIO <<- clamp(DRATIO,0,n) / n # (0,1) : (chi^2,IG)
   }
 
-  # IG population mean inverse area with bias correction for chi^2 and IG sampling distributions
-  inverse.mean <- function(par,w=DRATIO)
-  {
-    mu <- par[1]
-    k <- par[2]
-    w <- c(1-w,w)
-    I <- c(NA_real_,NA_real_)
-
-    # chi^2 sampling distribution
-    DOF <- sum(dof)
-    # inverse-chi^2 relative bias
-    BIAS <- DOF/max(DOF-debias,0)
-    I[1] <- 1/mu / BIAS + k
-
-    # IG sampling distribution
-    I[2] <- 1/mu - debias*k/n + k
-
-    sum(w*I)
-  }
-
   # CI that are chi^2 when VAR[M]>>VAR.pop
   ci.chisq.GIG <- function(M,VAR,w=DRATIO)
   {
@@ -108,7 +88,7 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
 
       if(k<0 || k==Inf || mu<=0 || mu==Inf) { return(Inf) }
 
-      zero <- zero + sum( dof/2*log(dof/2) +(dof/2-1)*log(s) - lgamma(dof/2) )
+      zero <- zero + sum( dof/2*log(dof/2) + (dof/2-1)*log(s) - lgamma(dof/2) )
 
       alpha <- dof*s/mu
       beta <- alpha/theta
@@ -315,32 +295,27 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
   {
     complete <- is.null(par)
     VAR <- 2*s^2/dof
-    STUFF.V <- meta.normal(s,VAR,debias=debias)
-
-    # inverse stuff
-    is <- 1/s * max(dof-debias,0)/dof
-    iVAR <- 2*is^2/max(dof-3*debias,0)
-    STUFF.I <- meta.normal(is,iVAR,debias=debias)
+    BFIT <- meta.normal(s,VAR,debias=debias)
 
     # IG parameters
-    mu <- STUFF.V$mu
-    k <- c(STUFF.V$sigma)/mu^3
+    mu <- BFIT$mu
+    k <- c(BFIT$sigma)/mu^3
     rho <- 1
 
     # return point estimates
     if(!complete)
     {
-      CI <- IG.CI(mu,VAR=c(STUFF.V$sigma),level=level.pop)
-      CI[4] <- STUFF.I$mu # mean-inverse
+      CI <- IG.CI(mu,VAR=c(BFIT$sigma),level=level.pop)
+      CI[4] <- inverse.mean(mu,c(BFIT$sigma)/mu^2)  # 1/mu debiased to first order
       return(CI)
     }
 
     # print model selection table
     if(!is.na(IC))
     {
-      STUFF.Z <- meta.normal(s,VAR,debias=debias,VARS=FALSE) # no population variance
+      BFIT0 <- meta.normal(s,VAR,debias=debias,VARS=FALSE) # no population variance
 
-      dIC <- rbind(STUFF.Z[[IC]],STUFF.V[[IC]])
+      dIC <- rbind(BFIT0[[IC]],BFIT[[IC]])
       rownames(dIC) <- c("Dirac-\u03B4","inverse-Gaussian")
       colnames(dIC) <- paste0("\u0394",IC)
       IND <- sort(c(dIC),index.return=TRUE)$ix
@@ -354,11 +329,11 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
     CI <- t(array(c(0,0,Inf),c(3,4))) # initialize confidence intervals (0,Inf)
 
     IND <- IND[1] # best model
-    if(IND==1) # exact chi^2
+    if(IND==1) # exact chi^2 result
     {
-      mu <- c(STUFF.Z$mu)
+      mu <- c(BFIT$mu)
       k <- 0
-      CI.VAR <- rep(STUFF.Z$COV.mu,3)
+      CI.VAR <- rep(BFIT$COV.mu,3)
       dof <- 2*mu^2/CI.VAR[1] # sampling dof (not population)
       # mean area is the only area
       CI[1,] <- CI[2,] <- CI[3,] <- chisq.ci(mu,DOF=dof,level=level)
@@ -370,7 +345,7 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
     {
       # k == VAR/mean^3
       GRAD <- rbind(c(1,0),c(-3*k/mu,1/mu^3)) # d(mu,k)/d(mean,var)
-      COV <- diag(c(STUFF.V$COV.mu,STUFF.V$COV.sigma),2)
+      COV <- diag(c(BFIT$COV.mu,BFIT$COV.sigma),2)
       COV <- GRAD %*% COV %*% t(GRAD) # (mu,k) COV
 
       # delta method for population quantile uncertainty
@@ -389,8 +364,10 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
       for(i in 1:3) { CI[i,] <- ci.chisq.GIG(CI[i,2],CI.VAR[i]) }
 
       CI[4,] <- 1/CI[2,] # numbers not used
-      CI[4,2] <- STUFF.I$mu
-      CI.VAR[4] <- STUFF.I$COV.mu
+      Vm2 <- c(BFIT$COV.mu)/mu^2 # keep fixed
+      CI[4,2] <- inverse.mean(mu,Vm2) # 1/mu debiased to first order
+      GRAD <- -1/mu^2/(1+debias*Vm2) # gradient evaluated analytically
+      CI.VAR[4] <- GRAD^2 * c(BFIT$COV.mu)
     } # end population variance
 
     rownames(CI) <- c(NAMES.POP,"mean inverse")
@@ -401,9 +378,42 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
   } # end normal fit function
 
   if(method=="mle")
-  { fit <- fit.mle }
+  {
+    # IG inverse population mean area with bias correction for chi^2 and IG sampling distributions
+    inverse.mean <- function(par,w=DRATIO)
+    {
+      mu <- par[1]
+      k <- par[2]
+      w <- c(1-w,w)
+      I <- c(NA_real_,NA_real_)
+
+      # chi^2 sampling distribution
+      DOF <- sum(dof)
+      # inverse-chi^2 relative bias
+      BIAS <- DOF/max(DOF-debias,0)
+      I[1] <- 1/mu / BIAS
+
+      # IG sampling distribution bias
+      I[2] <- 1/mu - debias*k/n
+
+      sum(w*I)
+    }
+
+    fit <- fit.mle
+  }
   else if(method=='blue')
-  { fit <- fit.blue }
+  {
+    # inverse mean with generic first-order bias correction
+    # Vm2 = VAR/mu^2
+    inverse.mean <- function(mu,Vm2)
+    {
+      # The following are the same to first order
+      # 1/mu * max(1-debias*Vm2,0)
+      1/mu / (1+debias*Vm2)
+    }
+
+    fit <- fit.blue
+  }
 
   # MLE
   STUFF <- fit(s)
@@ -472,9 +482,9 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
       Q1 <- apply(ENSEMBLE,1,function(x){stats::quantile(x,probs=alpha/2)})
       Q2 <- apply(ENSEMBLE,1,function(x){stats::quantile(x,probs=1-alpha/2)})
       if(debias) # first-order bias removed by this, while respecting boundary, and keeping CIs proportional
-      { CI <- cbind(Q1,AVE,Q2) * (CI[,2]/AVE)^2 }
+      { CI <- cbind(Q1,AVE,Q2) * (CI[,2]/AVE)^2 } # 1/mu is a little different because we already assigned true mu, but not sure how to leverage that
       else # keep CIs centered on biased estimate
-      { CI <- cbind(Q1,AVE,Q2) }
+      { CI <- cbind(Q1,CI[,2],Q2) }
       close(pb)
 
       # iterate debias
@@ -547,15 +557,17 @@ import.area <- function(x,level.UD=0.95)
 {
   N <- length(x)
   CLASS <- class(x[[1]])
+  ID <- names(x) # may be null
 
   # TODO do range or diffusion, but not both
   # TODO do range or diffusion, but not both
   # TODO do range or diffusion, but not both
 
-  AREA <- DOF <- ID <- array(0,N)
+  AREA <- DOF <- array(0,N)
   for(i in 1:N)
   {
-    ID[i] <- x[[i]]@info$identity
+    if(length(ID) < i) { ID[i] <- attr(x[[i]],"info")$identity }
+
     if(CLASS=="ctmm")
     {
       AREA[i] <- area.covm(x[[i]]$sigma)
@@ -595,7 +607,7 @@ meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC=
   if(SUBPOP)
   {
     ID <- names(x)
-    ID[N+1] <- "* Joint population"
+    ID[N+1] <- "mean"
 
     # analyze all N groups separately
     RESULTS <- AREA <- DOF <- list()
@@ -608,7 +620,7 @@ meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC=
       message(paste("* Sub-population",ID[i]))
       RESULTS[[i]] <- meta.chisq(AREA[[i]],DOF[[i]],level=level,level.pop=level.pop,IC=IC,boot=boot,error=error,debias=debias,method=method,verbose=TRUE)
     }
-    message(ID[N+1])
+    message("* Joint population")
     RESULTS[[N+1]] <- meta.chisq(unlist(AREA),unlist(DOF),level=level,level.pop=level.pop,IC=IC,boot=boot,error=error,debias=debias,method=method,verbose=TRUE)
 
     message("* Joint population versus sub-populations (best models)")
