@@ -16,12 +16,12 @@
 %  \item{CTMM}{A \code{list} of \code{ctmm} fit objects corresponding to \code{object} \code{telemetry} list.}
   \item{level}{The confidence level desired for the output.}
   \item{debias}{Approximate debiasing of the overlap.}
-  \item{...}{Additional arguments relevant for \code{\link{akde}}, such as \code{res} and \code{weights}.}
+  \item{...}{Not currently used.}
 }
 
 %\details{}
 
-\value{A table of confidence intervals on the overlap estimate. A value of \code{1} implies that the two distributions are identical, while a value of \code{0} implies that the two distributions share no area in common. Corresponding \code{ctmm} objects are necessary to provide confidence intervals and debiasing for the point esitmates.}
+\value{A table of confidence intervals on the overlap estimate. A value of \code{1} implies that the two distributions are identical, while a value of \code{0} implies that the two distributions share no area in common.}
 
 %% ~put references to the literature/web site here ~
 \references{
@@ -38,7 +38,7 @@ Uncertainties in the model fits are propagated into the overlap estimate under t
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
-\seealso{ \code{\link{akde}}, \code{\link{ctmm.fit}} }
+\seealso{ \code{\link{akde}}, \code{\link{ctmm.fit}}, \code{\link{distance}} }
 
 \examples{\donttest{
 # Load package and data

@@ -4,13 +4,28 @@ BESSEL_LIMIT <- 2^16
 # estimate and assign speeds to times
 outlie <- function(data,UERE=10,standardize=FALSE,plot=TRUE,...)
 {
-  if(class(data)[1]=="list") { return( lapply(1:length(data), function(i){outlie(data[i],UERE=UERE,standardize=standardize,plot=plot); graphics::title(names(data)[i])} ) ) }
+  # turn of extreme value stuff (too sensitive)
+  mspeed=NULL;
+  n=NULL
 
-  error <- get.error(data,ctmm(error=UERE,axes=c("x","y")),circle=TRUE)
+  if(class(data)[1]=="list")
+  {
+    if(is.null(n))
+    {
+      n <- sapply(data,nrow)
+      n <- sum(n) - length(data)
+    }
+    return( lapply(1:length(data), function(i){OUT <- outlie(data[[i]],UERE=UERE,mspeed=mspeed,n=n,standardize=standardize,plot=plot); graphics::title(names(data)[i]); OUT} ) )
+  }
 
-  Vs <- assign_speeds(data,UERE=error)
+  error <- get.error(data,ctmm(error=UERE,axes=c("x","y")),circle=TRUE) # VAR
+  if(!is.null(mspeed)) { COV <- get.error(data,ctmm(error=UERE,axes=c("x","y")),DIM=2) } # COV
+  else { COV <- NULL }
+
+  Vs <- assign_speeds(data,UERE=error,COV=COV,mspeed=mspeed,n=n)
   v <- Vs$v.t
   VAR.v <- Vs$VAR.t
+  p.EV <- Vs$p.t
 
   mu <- median.telemetry(data)
 
@@ -60,7 +75,8 @@ outlie <- function(data,UERE=10,standardize=FALSE,plot=TRUE,...)
   VAR.v <- nant(VAR.v,0)
   VAR.d <- nant(VAR.d,0)
 
-  R <- data.frame(speed=v,distance=d,VAR.speed=VAR.v,VAR.distance=VAR.d)
+  R <- data.frame(t=data$t,speed=v,distance=d,VAR.speed=VAR.v,VAR.distance=VAR.d)
+  if(length(p.EV)) { R$p.EV <- p.EV }
   R <- new.outlie(R)
   return(R)
 }
@@ -68,33 +84,59 @@ outlie <- function(data,UERE=10,standardize=FALSE,plot=TRUE,...)
 
 #########################
 # plot outlier information with error bars
-plot.outlie <- function(x,level=0.95,units=TRUE,...)
+plot.outlie <- function(x,level=0.95,units=TRUE,axes=c('d','v'),...)
 {
   n <- nrow(x)
+  t <- x$t
   v <- x$speed
   d <- x$distance
 
+  # CIs
   v <- sapply(1:n,function(i){tnorm.hdr(v[i],x$VAR.speed[i],level=level)})
   d <- sapply(1:n,function(i){tnorm.hdr(d[i],x$VAR.distance[i],level=level)})
 
   # unit conversions ... (simpler)
+  UNITS <- unit(t,dimension='time',concise=FALSE,SI=!units)
+  t <- t/UNITS$scale
+  t.lab <- paste0("Time (",UNITS$name,")")
+
   UNITS <- unit(v,dimension='length',concise=TRUE,SI=!units)
   v <- v/UNITS$scale
-  ylab <- paste0("Minimum speed (",UNITS$name,"/s)")
+  v.lab <- paste0("Minimum speed (",UNITS$name,"/s)")
 
   UNITS <- unit(d,dimension='length',concise=TRUE,SI=!units)
   d <- d/UNITS$scale
-  xlab <- paste0("Core deviation (",UNITS$name,")")
+  d.lab <- paste0("Core deviation (",UNITS$name,")")
+
+  mid <- function(x)
+  {
+    if(length(dim(x))) { x <- x[2,] }
+    return(x)
+  }
+
+  x <- get(axes[1])
+  y <- get(axes[2])
+
+  xlab <- get(paste0(axes[1],".lab"))
+  ylab <- get(paste0(axes[2],".lab"))
+
+  # base plot
+  plot(mid(x),mid(y),xlim=range(x),ylim=range(y),pch=19,xlab=xlab,ylab=ylab,...)
 
   # ERROR BAR PLOT
-  # (c) Laryx Decidua
   # hack: we draw arrows but with very special "arrowheads"
-  plot(d[2,],v[2,],xlim=range(d),ylim=range(v),pch=19,xlab=xlab,ylab=ylab,...)
+  # (c) Laryx Decidua
   # very annoying warning when zero length --- cannot be suppressed with suppressWarnings()
-  SUB <- v[1,]<v[3,] # still does not avoid annoying warning
-  suppressWarnings( graphics::arrows(d[2,SUB],v[1,SUB],d[2,SUB],v[3,SUB],length=0.05,angle=90,code=3,...) )
-  SUB <- d[1,]<d[3,] # still does not avoid annoying warning
-  suppressWarnings( graphics::arrows(d[1,SUB],v[2,SUB],d[3,SUB],v[2,SUB],length=0.05,angle=90,code=3,...) )
+  if(length(dim(y)))
+  {
+    SUB <- y[3,]-y[1,] > .Machine$double.eps # still does not avoid annoying warning
+    suppressWarnings( graphics::arrows(mid(x)[SUB],y[1,SUB],mid(x)[SUB],y[3,SUB],length=0.05,angle=90,code=3,...) )
+  }
+  if(length(dim(x)))
+  {
+    SUB <- x[3,]-x[1,] > .Machine$double.eps # still does not avoid annoying warning
+    suppressWarnings( graphics::arrows(x[1,SUB],mid(y)[SUB],x[3,SUB],mid(y)[SUB],length=0.05,angle=90,code=3,...) )
+  }
   # will need to switch from arrows to segment to just avoid annoying warning...
 }
 
@@ -102,39 +144,64 @@ plot.outlie <- function(x,level=0.95,units=TRUE,...)
 # speeds assigned by blame
 # dt[1] is recording interval
 # dt[2] is minimum time between fixes, which can be smaller than dt[1]
-assign_speeds <- function(data,dt=NULL,UERE=0,method="max")
+# UERE is misnamed and is actually the per-time error covariance
+assign_speeds <- function(data,dt=NULL,UERE=0,COV=NULL,mspeed=NULL,n=NULL,method="max")
 {
   method <- match.arg(method,c("max","min"))
+  p <- p.t <- NULL
 
   DT <- diff(data$t)
+  # speed threshold is specified
+  if(!is.null(mspeed))
+  {
+    if(is.null(n)) { n <- nrow(data) - 1 }
+
+    if(class(mspeed)=="numeric")
+    { SVF <- function(tau) { (1/pi*mspeed^2*tau^2) * diag(2) } }
+    else if(class(mspeed)=="ctmm")
+    {
+      sigma <- mspeed$sigma # location covariance
+      mspeed$sigma <- covm(1) # unit variance
+      SVF <- function(tau) { svf.func(mspeed)$svf(tau) * sigma } # unit covariance SVF * covariance
+    }
+    else
+    { stop("Argument 'mspeed' class not recognized.") }
+  }
+  else
+  { SVF <- NULL }
+
   if(is.null(dt)) { dt <- time_res(DT) }
 
   # inner speed estimates
-  v.dt <- speedMLE(data,dt=dt,UERE=UERE,DT=DT)
+  v.dt <- speedMLE(data,dt=dt,UERE=UERE,DT=DT,SVF=SVF,COV=COV,n=n)
   VAR.dt <- v.dt$VAR
+  p.dt <- v.dt$p
   v.dt <- v.dt$X
   if(length(v.dt)==1)
   {
     v <- c(v.dt,v.dt)
+    if(length(p.dt)==1) { p <- c(p.dt,p.dt) }
     VAR <- c(VAR.dt,VAR.dt)
-    return(list(v.t=v,VAR.t=VAR,v.dt=v.dt,VAR.dt=VAR.dt))
+    return(list(v.t=v,VAR.t=VAR,v.dt=v.dt,VAR.dt=VAR.dt,p.t=p))
   }
 
   if(length(UERE)==1)
   {
     # end point contingency estimates
-    v1 <- speedMLE(data[c(1,3),],dt=dt,UERE=UERE)
-    n <- length(data$t)
-    v2 <- speedMLE(data[c(n-2,n),],dt=dt,UERE=UERE)
+    v1 <- speedMLE(data[c(1,3),],dt=dt,UERE=UERE,SVF=SVF,COV=COV[c(1,3),,],n=n)
+    N <- length(data$t)
+    v2 <- speedMLE(data[c(N-2,N),],dt=dt,UERE=UERE,SVF=SVF,COV=COV[c(N-2,N),,],n=n)
   }
   else # pull out correct errors for calculation if fed all errors
   {
-    v1 <- speedMLE(data[c(1,3),],dt=dt,UERE=UERE[c(1,3)])
-    n <- length(data$t)
-    v2 <- speedMLE(data[c(n-2,n),],dt=dt,UERE=UERE[c(n-2,n)])
+    v1 <- speedMLE(data[c(1,3),],dt=dt,UERE=UERE[c(1,3)],SVF=SVF,COV=COV[c(1,3),,],n=n)
+    N <- length(data$t)
+    v2 <- speedMLE(data[c(N-2,N),],dt=dt,UERE=UERE[c(N-2,N)],SVF=SVF,COV=COV[c(N-2,N),,],n=n)
   }
-  VAR1 <- v1$VAR; v1 <- v1$X
-  VAR2 <- v2$VAR; v2 <- v2$X
+  VAR1 <- v1$VAR; p1 <- v1$p; v1 <- v1$X
+  VAR2 <- v2$VAR; p2 <- v2$p; v2 <- v2$X
+
+  # TODO PICK UP HERE
 
   # left and right estimates - n estimates, 1 lag apart
   v1 <- c(v1,v.dt)
@@ -143,32 +210,61 @@ assign_speeds <- function(data,dt=NULL,UERE=0,method="max")
   VAR1 <- c(VAR1,VAR.dt)
   VAR2 <- c(VAR.dt,VAR2)
 
+  p1 <- c(p1,p.dt)
+  p2 <- c(p.dt,p2)
+
   if(method=="max")
   {
     # n-1 estimates, 2 lags apart
-    v1 <- v1[-n]
+    v1 <- v1[-N]
     v2 <- v2[-1]
 
     # which side of lag index looks smaller
     LESS <- v1 < v2
 
-    vs <- sort(v.dt,method='quick',index.return=TRUE,decreasing=TRUE)
+    vs <- sort(v.dt,index.return=TRUE,decreasing=TRUE)
     is <- vs$ix
     vs <- vs$x
 
     v <- numeric(length(LESS))
     VAR <- numeric(length(LESS))
-    # assign blame for smallest speeds, from greatest to least, last/least taking precidence in R
+    # assign blame for smallest speeds, from greatest to least, last/least taking precedence in R
     LESS <- LESS[is]
     v[is+!LESS] <- vs # v.dt[is]
     VAR[is+!LESS] <- VAR.dt[is]
 
-    # assign blame for largest speeds, from least to greatest, last/greatest taking precidence in R
+    # assign blame for largest speeds, from least to greatest, last/greatest taking precedence in R
     LESS <- rev(LESS)
     is <- rev(is)
     vs <- rev(vs)
     v[is+LESS] <- vs # v.dt[is]
     VAR[is+LESS] <- VAR.dt[is]
+
+    rm(is,vs,LESS)
+
+    if(length(p.dt))
+    {
+      # which side of lag index looks more common
+      MORE <- p1 > p2
+
+      p1 <- p1[-N]
+      p2 <- p2[-1]
+
+      ps <- sort(p.dt,index.return=TRUE,decreasing=FALSE)
+      ip <- ps$ix
+      ps <- ps$x
+
+      p <- numeric(length(MORE))
+      # assign blame for largest p's, from least to most, last/most taking precedence in R
+      MORE <- MORE[ip]
+      p[ip+!MORE] <- ps # p.dt[ip]
+
+      # assign blame for smallest p's, from least to most, last/least taking precedence in R
+      MORE <- rev(MORE)
+      ip <- rev(ip)
+      ps <- rev(ps)
+      p[ip+MORE] <- ps # p.dt[ip]
+    }
   }
   else if(method=="min")
   {
@@ -178,16 +274,25 @@ assign_speeds <- function(data,dt=NULL,UERE=0,method="max")
     is <- apply(v,1,which.min)
     v <- vapply(1:nrow(v),function(i){v[i,is[i]]},v[,1])
     VAR <- vapply(1:nrow(VAR),function(i){VAR[i,is[i]]},v)
+
+    if(length(p.dt))
+    {
+      # TODO
+      # TODO
+      # TODO
+
+      p.dt <- NULL
+    }
   }
 
-  return(list(v.t=v,VAR.t=VAR,v.dt=v.dt,VAR.dt=VAR.dt))
+  return(list(v.t=v,VAR.t=VAR,v.dt=v.dt,VAR.dt=VAR.dt,p.t=p))
 }
 
 
 # estimate the speed between the two rows of data with error UERE & temporal resolution dt
 # dt[1] is recording interval
 # dt[2] is minimum time between fixes, which can be smaller than dt[1]
-speedMLE <- function(data,dt=NULL,UERE=0,CTMM=ctmm(error=UERE,axes=c("x","y"),circle=TRUE),DT=diff(data$t))
+speedMLE <- function(data,dt=NULL,UERE=0,CTMM=ctmm(error=UERE,axes=c("x","y"),circle=TRUE),DT=diff(data$t),SVF=NULL,COV=NULL,n=NULL)
 {
   ######################
   # 1/diff(t) estimate
@@ -220,9 +325,26 @@ speedMLE <- function(data,dt=NULL,UERE=0,CTMM=ctmm(error=UERE,axes=c("x","y"),ci
   # distance estimate
 
   # measured distances
-  dr <- sqrt(diff(data$x)^2+diff(data$y)^2)
+  dx <- diff(data$x)
+  dy <- diff(data$y)
+  dr <- sqrt(dx^2+dy^2)
+  dx <- cbind(dx,dy)
+  rm(dy)
 
-  # point esitmate of distance with error>0
+  # step covariances
+  if(!is.null(COV))
+  {
+    for(i in 1:(nrow(data)-1)) { COV[i,,] <- COV[i,,] + COV[i+1,,] + 2*SVF(DT[i]) }
+
+    p <- dr
+    for(i in 1:nrow(dx)) { p[i] <- dx[i,] %*% PDsolve(COV[i,,]) %*% dx[i,] }
+    p <- 1 - (-expm1(-p/2))^n
+  }
+  else
+  { p <- NULL }
+  rm(dx)
+
+  # point estimate of distance with error>0
   if(length(UERE)>1 || UERE)
   {
     if(length(UERE)==1)
@@ -249,6 +371,7 @@ speedMLE <- function(data,dt=NULL,UERE=0,CTMM=ctmm(error=UERE,axes=c("x","y"),ci
   }
 
   RETURN <- data.frame(X=DR*f,VAR=VAR*f^2)
+  if(length(p)) { RETURN$p <- p }
   return(RETURN)
 }
 

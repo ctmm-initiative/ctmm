@@ -60,13 +60,35 @@ DOF.wishart <- function(CTMM)
 }
 
 
+# n/(n-dim-1) for n>=dim+2
+# leading order in 1/n for n<=dim+2
+# matched to first derivative
+soft.clamp <- function(n,DIM)
+{
+  if(n >= DIM+2) { return(n) }
+
+  A <- -2*DIM - 5*DIM^2 - 4*DIM^3 - DIM^4
+  B <- 4 + 16*DIM + 25*DIM^2 + 19*DIM^3 + 7*DIM^4 + DIM^5
+
+  # same to leading order, with matching first derivative
+  BIAS <- 1 + (DIM+1)/n + A/n^2 + B/n^3
+
+  # n that would give the above bias with n/(n-dim-1) formula
+  (DIM+1)*BIAS/(BIAS-1)
+}
+
+
 #####################
-overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,...)
+overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,method="Bhattacharyya",distance=FALSE,...)
 {
   CTMM1 <- object[[1]]
   CTMM2 <- object[[2]]
+  DIM <- length(CTMM1$axes)
 
-  STUFF <- gauss.comp(BhattacharyyaD,object,COV=COV)
+  if(method=="Bhattacharyya") { Dfunc <- BhattacharyyaD }
+  else if(method=="Mahalanobis") { Dfunc <- MahalanobisD }
+  else if(method=="Euclidean") { Dfunc <- EuclideanD }
+  STUFF <- gauss.comp(Dfunc,object,COV=COV)
   MLE <- c(STUFF$MLE)
   VAR <- c(STUFF$COV)
   # this quantity is roughly chi-square
@@ -77,8 +99,8 @@ overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,...)
   mu <- CTMM1$mu[1,] - CTMM2$mu[1,]
   COV.mu <- CTMM1$COV.mu + CTMM2$COV.mu
 
-  sigma <- (CTMM1$sigma + CTMM2$sigma)/2
-  DIM <- nrow(sigma)
+  if(method=="Euclidean") { sigma <- diag(1,DIM) }
+  else { sigma <- (CTMM1$sigma + CTMM2$sigma)/2 }
 
   # trace variances
   s0 <- mean(diag(sigma))
@@ -92,25 +114,31 @@ overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,...)
   n0 <- 4 * s0^2 / (s1^2/n1 + s2^2/n2)
   # dim cancels out
 
-  # clamp the DOF not to diverge
-  n0 <- clamp(n0,DIM+2,Inf)
-  n1 <- clamp(n1,DIM+2,Inf)
-  n2 <- clamp(n2,DIM+2,Inf)
+  # clamp the DOF not to diverge <=DIM+1
+  n0 <- soft.clamp(n0,DIM)
+  n1 <- soft.clamp(n1,DIM)
+  n2 <- soft.clamp(n2,DIM)
 
   # expectation value of log det Wishart
   ElogW <- function(s,n) { log(det(s)) + mpsigamma(n/2,dim=DIM) - DIM*log(n/2) }
 
   # inverse Wishart expectation value pre-factor
   BIAS <- n0/(n0-DIM-1)
+  if(method=="Euclidean") { BIAS <- 0 } # don't include this term
+  # BIAS <- clamped.bias(n0,DIM)
   # mean terms
-  BIAS <- sum(diag((BIAS*outer(mu) + COV.mu) %*% PDsolve(sigma)))/8
-  # AMGM covariance terms
-  BIAS <- BIAS + max(ElogW(sigma,n0)/2 - ElogW(CTMM1$sigma,n1)/4 - ElogW(CTMM2$sigma,n2)/4 , 0)
-  # this is actually the expectation value?
+  BIAS <- sum(diag((BIAS*outer(mu) + COV.mu) %*% PDsolve(sigma)))
+  if(method=="Bhattacharyya")
+  {
+    BIAS <- BIAS/8
+    # AMGM covariance terms
+    BIAS <- BIAS + max( ElogW(sigma,n0)/2 - ElogW(CTMM1$sigma,n1)/4 - ElogW(CTMM2$sigma,n2)/4 , 0)
+    # this is actually the expectation value?
+  }
 
   # relative bias instead of absolute bias
   BIAS <- BIAS/MLE
-  # would subtract off estimte to get absolute bias
+  # would subtract off estimate to get absolute bias
 
   # error corrections
   BIAS <- as.numeric(BIAS)
@@ -122,6 +150,7 @@ overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,...)
     if(debias) { MLE <- MLE/BIAS }
 
     CI <- chisq.ci(MLE,VAR=VAR,alpha=1-level)
+    if(distance) { return(CI) } # return distance
 
     # transform from (square) distance to overlap measure
     CI <- exp(-rev(CI))
@@ -133,20 +162,6 @@ overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,...)
   { return(list(MLE=MLE,VAR=VAR,DOF=DOF,BIAS=BIAS)) }
 }
 
-####################
-# square distance between stationary Gaussian distributions
-BhattacharyyaD <- function(CTMM)
-{
-  CTMM1 <- CTMM[[1]]
-  CTMM2 <- CTMM[[2]]
-
-  sigma <- (CTMM1$sigma + CTMM2$sigma)/2
-  mu <- CTMM1$mu[1,] - CTMM2$mu[1,]
-
-  D <- as.numeric(mu %*% PDsolve(sigma) %*% mu)/8 + log(det(sigma)/sqrt(det(CTMM1$sigma)*det(CTMM2$sigma)))/2
-
-  return(D)
-}
 
 #####################
 #overlap density function
