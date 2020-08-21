@@ -1,15 +1,21 @@
-ctmm 0.5.11 (2020-08-14)
+ctmm 0.5.11 (2020-08-20)
 ================
 
   * new function meta for meta-analysis of home-range areas
   
   * new function encounter for the conditional distribution of encounters (CDE)
   
+  * new function distance to calculate square Bhattacharyya, Mahalanobis, and Euclidean distances
+  
   * new function compass to plot a north-pointing compass
+  
+  * new argument 'axes' in function outlie
   
   * bugfix in ctmm.fit for IOU model
   
   * bugfix in summary.ctmm rowname droped for single parameter CIs
+  
+  * bugfix in outlie with list input
   
   * bugfixes in plot.outlie with zero error
   

@@ -10,7 +10,7 @@
 \usage{
 outlie(data,UERE=10,standardize=FALSE,plot=TRUE,...)
 
-\S3method{plot}{outlie}(x,level=0.95,units=TRUE,...)
+\S3method{plot}{outlie}(x,level=0.95,units=TRUE,axes=c('d','v'),...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -22,6 +22,7 @@ outlie(data,UERE=10,standardize=FALSE,plot=TRUE,...)
   \item{x}{\code{outlie} object to plot.}
   \item{level}{Confidence level for error bars.}
   \item{units}{Convert axes to natural units.}
+  \item{axes}{\eqn{x}-\eqn{y} axes to plot. Can be \code{'t'}, \code{'v'}, \code{'d'}, for time, speed, or distance from center.}
 }
 
 \details{If \code{plot=TRUE} in \code{outlie()}, intervals of high speed are highlighted with blue segments, while distant locations are highlighted with red points.
@@ -37,7 +38,7 @@ The output \code{outlie} object contains the above noted speed and distance esti
 
 \author{C. H. Fleming.}
 
-\note{The speed estimates here are tailored for outlier detection and have poor statistical efficiency. The \code{\link{predict}} and \code{\link{speed}} methods are appropriate for estimating speed (after outliers have been removed and a movement model has been selected). }
+\note{The speed estimates here are tailored for outlier detection and have poor statistical efficiency. The \code{\link{predict}} and \code{\link{speed}} methods are appropriate for estimating speed (after outliers have been removed and a movement model has been selected).}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 

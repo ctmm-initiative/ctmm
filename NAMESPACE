@@ -116,7 +116,7 @@ S3method(summary,UERE)
 S3method(plot,outlie)
 
 #OVERLAP FUNCTIONS
-export(overlap)
+export(overlap,distance)
 #S3method(overlap,list)
 #S3method(overlap,ctmm)
 #S3method(overlap,telemetry)
