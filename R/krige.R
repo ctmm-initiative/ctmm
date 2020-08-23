@@ -231,6 +231,9 @@ fill.data <- function(data,CTMM=ctmm(tau=Inf),verbose=FALSE,t=NULL,dt=NULL,res=1
 
   # is this recorded data or empty gap
   data$record <- TRUE
+  # repeated timestamps to skip in occurrence
+  data$skip <- FALSE
+  data$skip[diff(data$t)==0] <- TRUE
 
   if(is.null(t) && (!length(CTMM$tau) || CTMM$tau[1]==0)) { t <- data$t } # don't add further times
 
@@ -260,9 +263,9 @@ fill.data <- function(data,CTMM=ctmm(tau=Inf),verbose=FALSE,t=NULL,dt=NULL,res=1
     t.grid <- c()  # full (locally) even grid
     dt.grid <- c() # local (numeric) sampling resolution
     t.new <- c()   # new times in this even grid
-    for(i in 1:length(DT))
+    for(i in which(DT>0)) # don't repeat timestamps, even if data does, unless dt changes
     {
-      if(DT[i]<=dt.max)
+      if(DT[i] <= dt.max)
       {
         n.sub <- round(DT[i]/dt)+1
         n.sub <- max(n.sub,2) # fix for crazy small time-steps
@@ -328,6 +331,7 @@ fill.data <- function(data,CTMM=ctmm(tau=Inf),verbose=FALSE,t=NULL,dt=NULL,res=1
   # empty observation row for these times
   blank <- data[1,]
   blank$record <- FALSE # these are not TRUE records
+  blank$skip <- FALSE # don't skip even if timestamp repeats
   blank <- blank[rep(1,length(t.new)),]
   blank$t <- t.new
 
@@ -335,7 +339,7 @@ fill.data <- function(data,CTMM=ctmm(tau=Inf),verbose=FALSE,t=NULL,dt=NULL,res=1
   data <- rbind(data,blank)
 
   # sort times
-  data <- data[sort.list(data$t,na.last=NA,method="quick"),]
+  data <- data[sort.list(data$t,na.last=NA),]
   # this is now our fake data set to feed into the kalman smoother
 
   if(verbose) { data <- list(data=data,t.grid=t.grid,dt.grid=dt.grid,w.grid=w.grid) }
@@ -386,12 +390,20 @@ occurrence <- function(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=
   # smooth mean-zero data # run through smoother to get
   state <- smoother(data,CTMM,smooth=TRUE)
 
+  # skip repeated timestamps in data (full information retained)
+  KEEP <- !data$skip
+  data <- data[KEEP,]
+  state$R <- state$R[KEEP,,drop=FALSE]
+  state$COV <- state$COV[KEEP,,,drop=FALSE]
+  if(length(CTMM$tau)>1) { state$V <- state$V[KEEP,,drop=FALSE] }
+  drift <- drift[KEEP,,drop=FALSE]
+
   # detrend for simulation - retrend later
   state$R <- state$R + drift
 
   # evenly sampled subset: data points (bridge ends) may be counted twice and weighted half
   GRID <- c( which(data$t %in% t.grid) , which(data$t %in% t.grid[which(diff(t.grid)==0)]) )
-  GRID <- sort.int(GRID,method="quick")
+  GRID <- sort.int(GRID)
   # GRID <- data$t %in% t.grid
 
   # t <- state$t[GRID]
