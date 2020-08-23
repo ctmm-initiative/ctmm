@@ -380,7 +380,7 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
   if(method=="mle")
   {
     # IG inverse population mean area with bias correction for chi^2 and IG sampling distributions
-    inverse.mean <- function(par,w=DRATIO)
+    inverse.mean.mle <- function(par,w=DRATIO)
     {
       mu <- par[1]
       k <- par[2]
@@ -399,19 +399,21 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
       sum(w*I)
     }
 
+    inverse.mean <- inverse.mean.mle
     fit <- fit.mle
   }
   else if(method=='blue')
   {
     # inverse mean with generic first-order bias correction
     # Vm2 = VAR/mu^2
-    inverse.mean <- function(mu,Vm2)
+    inverse.mean.blue <- function(mu,Vm2)
     {
       # The following are the same to first order
       # 1/mu * max(1-debias*Vm2,0)
       1/mu / (1+debias*Vm2)
     }
 
+    inverse.mean <- inverse.mean.blue
     fit <- fit.blue
   }
 

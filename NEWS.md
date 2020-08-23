@@ -1,4 +1,4 @@
-ctmm 0.5.11 (2020-08-20)
+ctmm 0.5.11 (2020-08-22)
 ================
 
   * new function meta for meta-analysis of home-range areas
@@ -12,6 +12,8 @@ ctmm 0.5.11 (2020-08-20)
   * new argument 'axes' in function outlie
   
   * bugfix in ctmm.fit for IOU model
+  
+  * bugfix in occurrence with repeated timestamps
   
   * bugfix in summary.ctmm rowname droped for single parameter CIs
   
