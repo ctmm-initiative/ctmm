@@ -59,6 +59,11 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
     return(k)
   }
 
+  # this is MVU for both chi^2 and IG
+  # this is 1st order debiased in between
+  inverse.mean <- function(mu,Vm2) { 1/mu * max(1-debias*Vm2,0) }
+  # Vm2 = VAR[mu]/mu^2
+
   ################
   # MLE fit and CI return
   fit.mle <- function(s,par=NULL)
@@ -101,6 +106,7 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
     {
       NAME[1] <- "Dirac-\u03B4"
       mu <- sum(dof*s)/sum(dof) # exact solution
+      mu <- nant(mu,mean(s)) # if any dof==Inf
       PAR[1,1] <- mu
       LL[1] <- -nloglike(mu)
     }
@@ -142,27 +148,28 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
 
     ###################
     # return point estimates for bootstrap - no model selection nor uncertainty CIs needed
-    if(!complete)
-    {
-      if(length(par)==2)
-      {
-        mu <- PAR[2,1]
-        k <- PAR[2,2]
-        if(debias) # kappa for debiased standard deviation
-        {
-          k <- BC * k # chi^2 debias
-          k <- k.std(PAR[2,]) # chi debias
-        }
-        CI <- IG.CI(mu,k=k,level=level.pop,precision=precision)
-        CI[4] <- inverse.mean(PAR[2,])
-      }
-      # else if(length(par)==3)
-      # { CI <- GIG.CI(eta,theta,rho,level=level.pop,precision=precision) }
-      names(CI) <- c(NAMES.POP,"inverse-mean")
-      return(CI)
-    }
+    # if(!complete)
+    # {
+    #   if(length(par)==2)
+    #   {
+    #     mu <- PAR[2,1]
+    #     k <- PAR[2,2]
+    #     if(debias) # kappa for debiased standard deviation
+    #     {
+    #       k <- BC * k # chi^2 debias
+    #       k <- k.std(PAR[2,]) # chi debias
+    #     }
+    #     CI <- IG.CI(mu,k=k,level=level.pop,precision=precision)
+    #     CI[4] <- inverse.mean(PAR[2,],Vm2)
+    #   }
+    #   # else if(length(par)==3)
+    #   # { CI <- GIG.CI(eta,theta,rho,level=level.pop,precision=precision) }
+    #   names(CI) <- c(NAMES.POP,"inverse-mean")
+    #   return(CI)
+    # }
+    ### general debiasing formulas need COV estimate from Hessian ###
 
-    if(!is.na(IC))
+    if(complete && !is.na(IC))
     {
       ICS <- c("AIC","AICc","BIC")
       dIC <- matrix(0,MODELS,length(ICS))
@@ -260,11 +267,11 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
       for(i in 1:3){ CI[i,] <- ci.chisq.GIG(CI[i,2],VAR=CI.VAR[i]) }
 
       # mean inverse area of IG random variable # IG bias corrected
-      CI[4,] <- 1/CI[2,] # these numbers aren't used
-      Q <- inverse.mean
-      GRAD <- genD(par,Q,lower=c(0,0),order=1)$gradient
-      CI[4,2] <- Q(par)
-      CI.VAR[4] <- c(GRAD %*% COV %*% GRAD)
+      CI[4,] <- 1/CI[2,] # these numbers aren't really used
+      CI[4,2] <- inverse.mean(par[1],Vm2=COV[1,1]/par[1]^2) # debiased inverse
+      # debiased relative variance at extremes
+      CI.VAR[4] <- 1/(par[1]^2/COV[1,1] - 2*(1-DRATIO)) + DRATIO*COV[1,1]/par[1]*COV[2,2]/par[2]
+      CI.VAR[4] <- CI.VAR[4]/par[1]^2
     }
     # else if(IND==3) # GIG distribution
     # {
@@ -285,6 +292,8 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
 
     rownames(CI) <- c(NAMES.POP,"mean-inverse")
     colnames(CI) <- NAMES.CI
+
+    if(!complete) { return(CI[,2]) }
 
     R <- list(CI=CI,CI.VAR=CI.VAR,mu=PAR[1],k=PAR[2],rho=PAR[3])
     return(R)
@@ -378,44 +387,9 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
   } # end normal fit function
 
   if(method=="mle")
-  {
-    # IG inverse population mean area with bias correction for chi^2 and IG sampling distributions
-    inverse.mean.mle <- function(par,w=DRATIO)
-    {
-      mu <- par[1]
-      k <- par[2]
-      w <- c(1-w,w)
-      I <- c(NA_real_,NA_real_)
-
-      # chi^2 sampling distribution
-      DOF <- sum(dof)
-      # inverse-chi^2 relative bias
-      BIAS <- DOF/max(DOF-debias,0)
-      I[1] <- 1/mu / BIAS
-
-      # IG sampling distribution bias
-      I[2] <- 1/mu - debias*k/n
-
-      sum(w*I)
-    }
-
-    inverse.mean <- inverse.mean.mle
-    fit <- fit.mle
-  }
+  { fit <- fit.mle }
   else if(method=='blue')
-  {
-    # inverse mean with generic first-order bias correction
-    # Vm2 = VAR/mu^2
-    inverse.mean.blue <- function(mu,Vm2)
-    {
-      # The following are the same to first order
-      # 1/mu * max(1-debias*Vm2,0)
-      1/mu / (1+debias*Vm2)
-    }
-
-    inverse.mean <- inverse.mean.blue
-    fit <- fit.blue
-  }
+  { fit <- fit.blue }
 
   # MLE
   STUFF <- fit(s)
@@ -545,12 +519,12 @@ inv.special.F <- function(u,precision=1/2,...)
 }
 
 
-meta <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC="AICc",boot=FALSE,error=0.01,debias=TRUE,units=TRUE,plot=TRUE,...)
+meta <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC="AICc",boot=FALSE,error=0.01,debias=TRUE,units=TRUE,plot=TRUE,mean=TRUE,col="black",...)
 {
   method <- tolower(method)
   method <- match.arg(method,c("mle","blue"))
 
-  meta.area(x=x,level=level,level.UD=level.UD,level.pop=level.pop,IC=IC,boot=boot,error=error,debias=debias,method=method,units=units,plot=plot,...)
+  meta.area(x=x,level=level,level.UD=level.UD,level.pop=level.pop,IC=IC,boot=boot,error=error,debias=debias,method=method,units=units,plot=plot,mean=mean,col=col,...)
 }
 
 
@@ -600,7 +574,7 @@ import.area <- function(x,level.UD=0.95)
 
 # wrapper: meta-analysis of CTMM areas
 # TODO range=FALSE ???
-meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC="AICc",boot=FALSE,error=0.01,debias=TRUE,units=TRUE,plot=TRUE,...)
+meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC="AICc",boot=FALSE,error=0.01,debias=TRUE,units=TRUE,plot=TRUE,mean=TRUE,col="black",...)
 {
   N <- length(x)
 
@@ -657,18 +631,30 @@ meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC=
 
   if(plot)
   {
-    IND <- (N+1):1
+    PLOT <- PLOT[,1:(N+mean)] # drop mean if FALSE
+    IND <- (N+mean):1
+
+    M <- length(col)
+    col <- array(col,N+mean)
+    if(M<N+1 && mean) { col[N+1] <- "black" } # default if mean not specified
 
     UNITS <- unit(PLOT,"area",SI=!units)
     PLOT <- PLOT/UNITS$scale
 
     xlab <- paste0(100*level.UD,"% Area (",UNITS$name,")")
-    plot(range(PLOT),c(1,N+1),col=grDevices::rgb(1,1,1,0),xlab=xlab,ylab=NA,yaxt="n",...)
-    graphics::axis(2,at=IND[1:N],labels=ID[1:N],las=2)
-    graphics::axis(2,at=1,labels=ID[N+1],las=2,font=2)
-    graphics::abline(v=PLOT[2,N+1],col=grDevices::rgb(0.5,0.5,0.5,0.5))
-    graphics::points(PLOT[2,],IND,pch=16)
-    suppressWarnings( graphics::arrows(PLOT[1,],IND,PLOT[3,],IND,length=0.05,angle=90,code=3) )
+    # base layer plot
+    plot(range(PLOT),c(1,N+mean),col=grDevices::rgb(1,1,1,0),xlab=xlab,ylab=NA,yaxt="n",...)
+    # colored axes
+    for(i in 1:N) { graphics::axis(2,at=IND[i],labels=ID[i],las=2,col.axis=col[i]) }
+    if(mean)
+    {
+      graphics::axis(2,at=1,labels=ID[N+1],las=2,font=2,col.axis=col[N+1])
+      # mean vertical line
+      graphics::abline(v=PLOT[2,N+1],col=malpha(col[N+1],1/2))
+    }
+    # error bars
+    graphics::points(PLOT[2,],IND,pch=16,col=col)
+    suppressWarnings( graphics::arrows(PLOT[1,],IND,PLOT[3,],IND,length=0.05,angle=90,code=3,col=col) )
   }
 
   if(SUBPOP) # ratios CIs

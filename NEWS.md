@@ -1,4 +1,4 @@
-ctmm 0.5.11 (2020-08-22)
+ctmm 0.5.11 (2020-09-04)
 ================
 
   * new function meta for meta-analysis of home-range areas
@@ -32,6 +32,8 @@ ctmm 0.5.11 (2020-08-22)
   * bugfix in as.telemetry/median when importing single location estimate
   
   * bugfix in plot.telemery with add=TRUE and non-SI units
+  
+  * work around in export functions where sp objects change timezones
   
   * improvements to Wishart approximation in overlap bias correction
 

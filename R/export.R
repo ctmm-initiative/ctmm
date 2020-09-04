@@ -154,8 +154,8 @@ SpatialPointsDataFrame.telemetry <- function(object,...)
 
   # make identity array
   identity <- unlist(sapply(object,function(o){ rep(attr(o,"info")$identity,length(o$t)) }))
-
-  timestamp <- do.call(c,lapply(object,function(o){ o$timestamp }))
+  # sp does something weird to POSIXct columns -> character
+  timestamp <- do.call(c,lapply(object,function(o){ paste(o$timestamp,attr(o,"info")$timezone) }))
 
   DF <- data.frame(identity=identity,timestamp=timestamp,row.names=1:length(identity))
   names(DF) <- c("identity","timestamp") # weird namespace collision with identity()
@@ -172,7 +172,8 @@ SpatialPolygonsDataFrame.telemetry <- function(object,level.UD=0.95,...)
 {
   object <- listify(object)
   identity <- unlist(sapply(object,function(o){ rep(attr(o,"info")$identity,length(o$t)) }))
-  timestamp <- do.call(c,lapply(object,function(o){ o$timestamp }))
+  # sp does something weird to POSIXct columns -> character
+  timestamp <- do.call(c,lapply(object,function(o){ paste(o$timestamp,attr(o,"info")$timezone) }))
 
   proj <- projection(object)
   if(length(proj)!=1) { stop("Inconsistent projections.") }
