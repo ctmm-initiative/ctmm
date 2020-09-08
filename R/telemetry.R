@@ -177,11 +177,12 @@ canonical.name <- function(NAME,UNIQUE=TRUE)
   NAME <- gsub("[.:_ -]","",NAME) # remove separators
   NAME <- gsub("\\(|\\)","",NAME) # remove parentheses
   NAME <- gsub("\\[|\\]", "", NAME) # remove square brackets
-  NAME <- gsub("\\\uFF08|\\\uFF09","",NAME) # THIS DOES NOT WORK
+  NAME <- gsub("\\\uFF08|\\\uFF09","",NAME) # THIS DOES NOT WORK!
   NAME <- tolower(NAME)
   if(UNIQUE) { NAME <- unique(NAME) }
   return(NAME)
 }
+
 
 # pull out a column with different possible names
 # consider alternative spellings of NAMES, but preserve order (preference) of NAMES
@@ -365,7 +366,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   NAMES$zone <- c("GPS.UTM.zone","UTM.zone","zone")
   NAMES$east <- c("GPS.UTM.Easting","GPS.UTM.East","GPS.UTM.x","UTM.Easting","UTM.East","UTM.E","UTM.x","Easting","East","x")
   NAMES$north <- c("GPS.UTM.Northing","GPS.UTM.North","GPS.UTM.y","UTM.Northing","UTM.North","UTM.N","UTM.y","Northing","North","y")
-  NAMES$HDOP <- c("eobs.horizontal.accuracy.estimate","eobs.horizontal.accuracy.estimate.m","horizontal.accuracy.estimate","horizontal.accuracy.estimate.m","error.m",
+  NAMES$HDOP <- c("eobs.horizontal.accuracy.estimate","eobs.horizontal.accuracy.estimate.m","horizontal.accuracy.estimate","horizontal.accuracy.estimate.m","error.m","3D.error.m",
                   "\u8AA4\u5DEE","\u8AA4\u5DEE.m","\u8AA4\u5DEE\uFF08m\uFF09",
                   "GPS.HDOP","HDOP","Horizontal.DOP","GPS.Horizontal.Dilution","Horizontal.Dilution","Hor.Dil","Hor.DOP","HPE")
   NAMES$DOP <- c("GPS.DOP","DOP","GPS.Dilution","Dilution","Dil")

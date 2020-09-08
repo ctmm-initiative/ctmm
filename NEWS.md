@@ -1,4 +1,4 @@
-ctmm 0.5.11 (2020-09-04)
+ctmm 0.5.11 (2020-09-08)
 ================
 
   * new function meta for meta-analysis of home-range areas
@@ -8,6 +8,8 @@ ctmm 0.5.11 (2020-09-04)
   * new function distance to calculate square Bhattacharyya, Mahalanobis, and Euclidean distances
   
   * new function compass to plot a north-pointing compass
+  
+  * new argument 't' in function speed
   
   * new argument 'axes' in function outlie
   
@@ -32,6 +34,8 @@ ctmm 0.5.11 (2020-09-04)
   * bugfix in as.telemetry/median when importing single location estimate
   
   * bugfix in plot.telemery with add=TRUE and non-SI units
+  
+  * bugfix in speed for ctmm objects (no data), where CIs were incorrect
   
   * work around in export functions where sp objects change timezones
   

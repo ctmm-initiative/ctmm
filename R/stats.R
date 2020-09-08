@@ -301,7 +301,7 @@ mtmean <- function(x,lower=-Inf,upper=Inf,func=mean)
 
 
 # degrees-of-freedom of (proportionally) chi distribution with specified moments
-chi.dof <- function(M1,M2,error=1/2)
+chi.dof <- function(M1,M2,precision=1/2)
 {
   # solve for chi^2 DOF consistent with M1 & M2
   R <- M1^2/M2 # == 2*pi/DOF / Beta(DOF/2,1/2)^2 # 0 <= R <= 1
@@ -309,7 +309,7 @@ chi.dof <- function(M1,M2,error=1/2)
   if(R<=0) { return(0) }
 
   DOF <- M1^2/(M2-M1^2)/2 # initial guess - asymptotic limit
-  error <- .Machine$double.eps^error
+  error <- .Machine$double.eps^precision
   ERROR <- Inf
   while(ERROR>=error)
   {
