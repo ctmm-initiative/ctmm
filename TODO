@@ -1,6 +1,5 @@
 PRIORITY
 * manipulate is just not working right anymore...
-* R check wants inverse.mean to have the same arguments...
 * make overlap work on aligned grids (check projection and then take intersection)
 * 3D plots of 2D UDs
 * optimize REML correction?

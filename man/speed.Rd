@@ -14,11 +14,11 @@ Given a \code{ctmm} movement model and \code{telemetry} data, \code{speed} simul
 \usage{
 speed(object,...)
 
-\S3method{speed}{ctmm}(object,data=NULL,level=0.95,robust=FALSE,units=TRUE,prior=TRUE,fast=TRUE,
+\S3method{speed}{ctmm}(object,data=NULL,t=NULL,level=0.95,robust=FALSE,units=TRUE,prior=TRUE,fast=TRUE,
       cor.min=0.5,dt.max=NULL,error=0.01,cores=1,...)
 
-\S3method{speed}{telemetry}(object,CTMM,level=0.95,robust=FALSE,units=TRUE,prior=TRUE,fast=TRUE,cor.min=0.5,
-      dt.max=NULL,error=0.01,cores=1,...)
+\S3method{speed}{telemetry}(object,CTMM,t=NULL,level=0.95,robust=FALSE,units=TRUE,prior=TRUE,fast=TRUE,
+      cor.min=0.5,dt.max=NULL,error=0.01,cores=1,...)
 
 speeds(object,...)
 
@@ -33,7 +33,7 @@ speeds(object,...)
   \item{object}{A \code{ctmm} movement-model or \code{telemetry} object, which requires an additional \code{CTMM} argument.}
   \item{data}{Optional \code{telemetry} object on which the simulations will be conditioned.}
   \item{CTMM}{Movement model object.}
-  \item{t}{Array of times to estimate instantaneous speeds at.}
+  \item{t}{Array of times to estimate instantaneous speeds at, or range of times to estimate mean speed over.}
   \item{cycle}{Average over time \code{t} indices modulo \code{cycle}. E.g., for \code{t} sequenced by hours, \code{cycle=24} gives daily the cycle of speeds. (Not yet supported.)}
   \item{level}{Confidence level to report on the estimated average speed.}
   \item{robust}{Use robust statistics for the ensemble average and its confidence intervals (see Details).}
@@ -49,7 +49,7 @@ speeds(object,...)
 \details{
 The \code{cor.min} or \code{dt.max} arguments are used to constrain the estimate to be derived from simulations near the data, and therefore ensure that the estimate is more reflective of the data than the model.
 
-If data quality is poor and velocity can barely be resolved, then the sampling distribution may occassionally include impersistent motion and the ensemble mean will be infinite. In these cases \code{robust=TRUE} can be used to report the ensemble median rather than the ensemble mean. The time average of \code{speed}, in either case, is still the mean and the resulting quantity is still proportional to distance traveled. Furthermore, note that medians should be compared to medians and means to means, so the \code{robust} option should be the same for all compared individuals.
+If data quality is poor and velocity can barely be resolved, then the sampling distribution may occassionally include impersistent motion and its mean will be infinite. In these cases \code{robust=TRUE} can be used to report the sampling distribution's median rather than its mean. The time average of \code{speed}, in either case, is still the mean average of times and the resulting quantity is still proportional to distance traveled. Furthermore, note that medians should be compared to medians and means to means, so the \code{robust} option should be the same for all compared individuals.
 }
 
 \value{ Returns the estimated mean speed of the sampled trajectory with CIs by default. If \code{level=NULL}, then the ensemble of mean speeds is returned instead. }
