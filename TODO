@@ -1,4 +1,7 @@
 PRIORITY
+* automatic timeformat (non-default argument)
+* errors on 0-1 locations -> initial functions: ctmm.guess, ctmm.fit, variogram, ...
+* outlie: acceleration output for -^- data
 * manipulate is just not working right anymore...
 * make overlap work on aligned grids (check projection and then take intersection)
 * 3D plots of 2D UDs

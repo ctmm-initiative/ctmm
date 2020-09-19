@@ -1,4 +1,4 @@
-ctmm 0.5.11 (2020-09-08)
+ctmm 0.5.11 (2020-09-18)
 ================
 
   * new function meta for meta-analysis of home-range areas
@@ -36,6 +36,8 @@ ctmm 0.5.11 (2020-09-08)
   * bugfix in plot.telemery with add=TRUE and non-SI units
   
   * bugfix in speed for ctmm objects (no data), where CIs were incorrect
+  
+  * bugfix in median with >=50% repeating observations
   
   * work around in export functions where sp objects change timezones
   
