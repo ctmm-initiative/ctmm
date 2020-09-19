@@ -5,7 +5,7 @@ lag.DOF <- function(data,dt=NULL,weights=NULL,lag=NULL,FLOOR=NULL,p=NULL)
   # intelligently select algorithm
   n <- length(t)
 
-  # important infor for later
+  # important information for later
   w2 <- sum(weights^2)
   # otherwise this gets corrupted by gridding/smearing
 

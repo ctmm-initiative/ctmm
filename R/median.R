@@ -137,7 +137,7 @@ median.longlat <- function(data,k=1,...)
     COV <- c(COV) - mu
 
     # positive half
-    SUB <- data[COV>0,,drop=FALSE]
+    SUB <- data[COV>=0,,drop=FALSE]
     if(nrow(SUB)==1) { mu1 <- SUB }
     else
     {
@@ -146,7 +146,7 @@ median.longlat <- function(data,k=1,...)
     }
 
     # negative half
-    SUB <- data[COV<0,,drop=FALSE]
+    SUB <- data[COV<=0,,drop=FALSE]
     if(nrow(SUB)==1) { mu2 <- SUB }
     else
     {
