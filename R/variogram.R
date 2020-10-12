@@ -374,7 +374,11 @@ variogram.fast <- function(data,error=NULL,dt=NULL,res=1,CI="Markov",axes=c("x",
   }
 
   SVF <- data.frame(SVF=SVF,DOF=DOF,lag=lag)
-  if(!ACF) { SVF$MSE <- error }
+  if(!ACF)
+  {
+    if(length(error) < length(lag)) { error <- pad(error,length(lag)) }
+    SVF$MSE <- error
+  }
 
   return(SVF)
 }

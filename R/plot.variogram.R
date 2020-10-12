@@ -411,7 +411,6 @@ zoom.variogram <- function(x, fraction=0.5, ...)
   b <- 4
   min.step <- min(fraction,10*min.lag/max.lag)
   # weird bug in manipulate that requires calling it twice???
-  manipulate::manipulate( { plot.variogram(x, fraction=b^(z-1)) }, z=manipulate::slider(1+log(min.step,b),1,initial=1+log(fraction,b),label="zoom") )
   manipulate::manipulate( { plot.variogram(x, fraction=b^(z-1), ...) }, z=manipulate::slider(1+log(min.step,b),1,initial=1+log(fraction,b),label="zoom") )
 }
 methods::setMethod("zoom",signature(x="variogram"), function(x,fraction=0.5,...) zoom.variogram(x,fraction=fraction,...))

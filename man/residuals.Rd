@@ -1,4 +1,5 @@
 \name{residuals.ctmm}
+\alias{residuals}
 \alias{residuals.ctmm}
 \alias{residuals.telemetry}
 \alias{correlogram}
@@ -13,7 +14,7 @@ A correlogram method is also provided to assess autocorrelation.
 This function is analogous to \code{acf}, but can handle missing data and multiple dimensions.
 Finally, \code{mag} calculates residual magnitudes, which is useful for comparing against potential covariates.
 }
-\usage{
+\usage{%residuals(object,...)
 \S3method{residuals}{ctmm}(object,data,...)
 
 \S3method{residuals}{telemetry}(object,CTMM=NULL,...)

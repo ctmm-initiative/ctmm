@@ -158,6 +158,10 @@ Move2CSV <- function(object,timeformat="",timezone="UTC",projection=NULL,datum=N
 
   # break Move object up into data.frame and idData
   idData <- move::idData(object)
+  NAMES <- names(idData)
+  idData2 <- attr(object,"idData") # backup
+  NAMES2 <- names(idData2)
+
   object <- as.data.frame(object)
 
   # add data.frame columns to data
@@ -165,7 +169,15 @@ Move2CSV <- function(object,timeformat="",timezone="UTC",projection=NULL,datum=N
 
   # add idData to data
   if(length(idData))
-  { for(i in 1:length(idData)) { DATA[,names(idData)[i]] <- idData[i] } }
+  {
+    for(i in 1:length(idData))
+    {
+      NAME <- NAMES[i]
+      if(is.null(NAME)) { NAME <- NAMES2[i] } # idData() method can drop name from attribute
+      if(is.null(NAME)) { NAME <- "Animal.ID" } # just in case
+      DATA[,NAME] <- idData[i]
+    }
+  }
 
   return(DATA)
 }

@@ -8,7 +8,7 @@
 \description{Produces a \code{data.frame} of speed and distance estimates to analyze, as well as a plot highlighting potential speed and distance outliers in \code{telemetry} data.
 }
 \usage{
-outlie(data,UERE=10,standardize=FALSE,plot=TRUE,...)
+outlie(data,UERE=10,standardize=FALSE,plot=TRUE,by='d',...)
 
 \S3method{plot}{outlie}(x,level=0.95,units=TRUE,axes=c('d','v'),...)
 }
@@ -18,11 +18,12 @@ outlie(data,UERE=10,standardize=FALSE,plot=TRUE,...)
   \item{UERE}{Device-dependent telemetry error in meters (RMS UERE). Only necessary for uncalibrated data.}
   \item{standardize}{Standardize speed and distance output by their median absolute deviation (MAD).}
   \item{plot}{Output a plot highlighting high speeds (blue) and distant locations (red).}
+  \item{by}{Color and size side-effect plot points by \code{'v'}, \code{'d'}, \code{'a'}, for distance from center, minimum speed, minimum acceleration.}
   \item{...}{Arguments passed to \code{plot}.}
   \item{x}{\code{outlie} object to plot.}
   \item{level}{Confidence level for error bars.}
   \item{units}{Convert axes to natural units.}
-  \item{axes}{\eqn{x}-\eqn{y} axes to plot. Can be \code{'t'}, \code{'v'}, \code{'d'}, for time, speed, or distance from center.}
+  \item{axes}{\eqn{x}-\eqn{y} axes to plot. Can be any of \code{'t'}, \code{'v'}, \code{'d'}, \code{'a'}, for time, distance from center, minimum speed, minimum acceleration.}
 }
 
 \details{If \code{plot=TRUE} in \code{outlie()}, intervals of high speed are highlighted with blue segments, while distant locations are highlighted with red points.
