@@ -39,7 +39,7 @@ writeShapefile(object,folder,file=NULL,...)
   \item{DF}{Rasterize the probability density function \code{"PDF"}, probability mass function \code{"PMF"}, or cumulative distribution function \code{"CDF"}.}
   \item{object}{ \code{telemetry} or \code{UD} object. }
   %\item{UERE}{Device-dependent telemetry error in meters. Only necessary for uncalibrated data.}
-  \item{level.UD}{ Confidence level of the UD area. I.e., the 50\% core home range would be given by \code{level.UD=0.50}. }
+  \item{level.UD}{ Coverage level of the UD area. I.e., the 50\% core home range would be given by \code{level.UD=0.50}. }
   \item{level}{ Confidence level for the magnitude of the above area. I.e., the 95\% CI of the core home range area. }
   \item{filename}{Character name of file for raster file.}
   \item{format}{Character format, if not inferred from \code{filename} extension (see \code{\link[raster]{writeRaster}}.)}

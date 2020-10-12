@@ -1,5 +1,5 @@
 \name{extent}
-%\alias{extent}
+\alias{extent}
 \alias{extent,telemetry-method}
 \alias{extent,ctmm-method}
 \alias{extent,UD-method}

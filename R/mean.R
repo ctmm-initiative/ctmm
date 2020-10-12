@@ -298,7 +298,7 @@ periodic.summary <- function(CTMM,level,level.UD)
 
   # ROTATIONAL SPEED INDEX
   # CIs are too big to be useful
-  if(length(CTMM$tau)>1)
+  if(length(CTMM$tau)>1 && CTMM$tau[2])
   {
     CTMM <- get.taus(CTMM)
 

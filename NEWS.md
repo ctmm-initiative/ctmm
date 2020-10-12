@@ -1,4 +1,4 @@
-ctmm 0.5.11 (2020-09-18)
+ctmm 0.5.11 (2020-10-12)
 ================
 
   * new function meta for meta-analysis of home-range areas
@@ -23,6 +23,8 @@ ctmm 0.5.11 (2020-09-18)
   
   * bugfixes in plot.outlie with zero error
   
+  * bugfix in variogram with res>1 and CI="Gauss"
+  
   * manipulate bug workaround in zoom.variogram
   
   * bugfix in ctmm.select if stepping OU->OUf->OUF
@@ -39,7 +41,11 @@ ctmm 0.5.11 (2020-09-18)
   
   * bugfix in median with >=50% repeating observations
   
+  * bugfix in summary() for periodic models with tau[velocity]==0
+  
   * work around in export functions where sp objects change timezones
+  
+  * work around in as.telemetry() when Move idData() names are dropped
   
   * improvements to Wishart approximation in overlap bias correction
 

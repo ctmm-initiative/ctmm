@@ -1,5 +1,5 @@
 \name{projection}
-%\alias{projection}
+\alias{projection}
 \alias{projection,telemetry-method}
 \alias{projection<-,telemetry-method}
 \alias{projection,ctmm-method}
@@ -23,7 +23,9 @@
 \S4method{projection}{UD}(x,asText=TRUE)
 
 \S4method{projection}{list}(x,asText=TRUE)
-%\S4method{projection}{NULL}(x,asText=TRUE)
+
+\S4method{projection}{NULL}(x,asText=TRUE)
+
 \S4method{projection}{telemetry}(x) <- value
 
 \S4method{projection}{list}(x) <- value

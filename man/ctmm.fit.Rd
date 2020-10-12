@@ -26,7 +26,7 @@ ctmm.select(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position",trace=FALS
   \item{omega}{Frequency (\eqn{2\pi/period}) of oscillatory range crossings.}
   \item{isotropic}{A Boolean denoting whether or not the animal's covariance is circular or elliptical.}
   \item{range}{A Boolean denoting whether or not the movement model has a finite range.}
-  \item{circle}{The period it takes the animal to stochastically circle its mean location.}
+  \item{circle}{(\eqn{2\pi} divided by) the period it takes the animal to stochastically circle its mean location.}
   \item{error}{A Boolean denoting whether or not to use annotated telemetry error estimates or an estimate of the error's standard deviation if the data are not annotated with error estimates or when \eqn{HDOP=1}.}
   \item{axes}{Spatial dimensions of the movement model.}
   \item{data}{ Timeseries data represented as a \code{telemetry} object. }
