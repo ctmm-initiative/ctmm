@@ -1,8 +1,8 @@
 # global variables for dop/uere/error functions (special axes)
 DOP.LIST <- list(unknown=list(axes=NA,geo=NA,DOP=NA,VAR=NA,COV=NA) ,
-                 horizontal=list(axes=c("x","y"),geo=c("longitude","latitude"),DOP="HDOP",VAR="VAR.xy",COV=c("COV.x.x","COV.x.y","COV.y.y")),
+                 horizontal=list(axes=c("x","y"),geo=c("longitude","latitude"),DOP="HDOP",VAR="VAR.xy",COV=c("COV.x.x","COV.x.y","COV.y.y"),COV.geo=c("COV.major","COV.minor","COV.angle")),
                  vertical=list(axes="z",geo="z",DOP="VDOP",VAR="VAR.z",COV=NA),
-                 speed=list(axes=c("vx","vy"),geo=c("speed","heading"),DOP="SDOP",VAR="VAR.v",COV=c("COV.vx.vx","COV.vx.vy","COV.vy.vy")) )
+                 speed=list(axes=c("vx","vy"),geo=c("speed","heading"),DOP="SDOP",VAR="VAR.v",COV=c("COV.vx.vx","COV.vx.vy","COV.vy.vy"),COV.geo=NA) )
 
 
 # is the data calibrated

@@ -16,7 +16,7 @@ cleave(object,fraction=0.5,name="CLEFT",...)
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{object}{\code{telemetry} object or list of such objects.}
-  \item{fraction}{Initial split index, as fraction of total (will change to time).}
+  \item{fraction}{Initial split, as fraction of total time period.}
   \item{name}{Name of list to store cleft telemetry objects to.}
   \item{...}{Additional arguments passed to \code{plot}.}
 }

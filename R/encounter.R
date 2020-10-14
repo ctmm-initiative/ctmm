@@ -28,21 +28,29 @@ encounter <- function(object,include=NULL,exclude=NULL,debias=FALSE,...)
     if(debias) { UD[[i]]$PMF <- debias.volume(UD[[i]]$PMF,1/BIAS[i])$PMF }
   }
 
-  DIM <- dim(UD[[1]]$PDF)
-  PMF <- matrix(0,DIM[1],DIM[2])
+  GRID <- grid.union(object) # r,dr of grid union
+  DIM <- c(length(GRID$r$x),length(GRID$r$y))
+  PMF <- matrix(0,DIM[1],DIM[2]) # initialize CDE PMF
+
   for(i in 1:(length(UD)-1))
   {
     for(j in (i+1):length(UD))
     {
-      PROD <- UD[[i]]$PMF * UD[[j]]$PMF
-      if(debias) # bias correction (variance)
+      # compute overlapping grid subset
+      SUB <- grid.intersection(list(GRID,UD[[i]],UD[[j]]))
+
+      if(length(SUB[[1]]$x) && length(SUB[[1]]$y))
       {
-        gamma <- sum(PROD) # don't muck with weights
-        PROD <- PROD / gamma
-        PROD <- debias.volume(PROD,bias[i,j])$PMF
-        PROD <- PROD * gamma # don't muck with weights
+        PROD <- UD[[i]]$PMF[SUB[[2]]$x,SUB[[2]]$y] * UD[[j]]$PMF[SUB[[3]]$x,SUB[[3]]$y]
+        if(debias) # bias correction (variance)
+        {
+          gamma <- sum(PROD) # don't muck with weights
+          PROD <- PROD / gamma
+          PROD <- debias.volume(PROD,bias[i,j])$PMF
+          PROD <- PROD * gamma # don't muck with weights
+        }
+        PMF[SUB[[1]]$x,SUB[[1]]$y] <- PMF[SUB[[1]]$x,SUB[[1]]$y] + include[i,j] * PROD
       }
-      PMF <- PMF + include[i,j] * PROD
     }
   }
 
@@ -50,12 +58,10 @@ encounter <- function(object,include=NULL,exclude=NULL,debias=FALSE,...)
   GAMMA <- sum(PMF) # useful for relative encounter rates
   PMF <- PMF / GAMMA
 
-  object <- list()
+  object <- GRID
   object$PDF <- PMF / dV
-  object$CDF <- pmf2cdf( PMF )
+  object$CDF <- pmf2cdf(PMF)
   object$axes <- axes
-  object$r <- UD[[1]]$r
-  object$dr <- UD[[1]]$dr
 
   # resolution (add up like covariance?)
   IN <- 0

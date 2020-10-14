@@ -24,29 +24,92 @@ subset.telemetry <- function(x,...)
 head.telemetry <- function(x, n = 6L, ...) { utils::head(data.frame(x),n=n,...) }
 tail.telemetry <- function(x, n = 6L, ...) { utils::tail(data.frame(x),n=n,...) }
 
+
 # rbind track segments
-# rbind.telemetry <- function(...,deparse.level=1,make.row.names=TRUE,stringsAsFactors=default.stringsAsFactors())
-# {
-#   # sorting checks
-#   x <- list(...)
-#   t1 <- sapply(x,function(y){ y$t[1] })
-#   t2 <- sapply(x,function(y){ last(y$t) })
-#   IND1 <- sort(t1,method="quick",index.return=TRUE)$ix
-#   IND2 <- sort(t2,method="quick",index.return=TRUE)$ix
-#   if(any(IND1!=IND2)) { warning("Segments are overlapping and will be intermixed.") }
-#   # all other sorting is segment-segment sorting, which is valid
-#
-#   # combine data
-#   info <- mean.info(x)
-#   x <- rbind.data.frame(...,stringsAsFactors=FALSE)
-#   x <- new.telemetry(x,info=info)
-#
-#   # sort times
-#   IND <- sort(x$t,method="quick",index.return=TRUE)$ix
-#   x <- x[IND,]
-#
-#   return(x)
-# }
+tbind <- function(...)
+{
+  x <- list(...)
+  if(length(x)==1)
+  {
+    x <- x[[1]]
+    if(class(x)[1]=="telemetry") { return(x) }
+  }
+
+  info <- mean.info(x)
+  UERE <- lapply(x,uere) # combine...
+
+  n <- sapply(x,nrow)
+  n <- c(0,cumsum(n))
+
+  COLS <- lapply(x,names)
+  COLS <- do.call(c,COLS)
+  COLS <- unique(COLS)
+
+  # somehow R does not have built-in functionality to rbind data.frames with extra/missing columns...
+  y <- data.frame(stringsAsFactors=FALSE)
+  for(col in COLS)
+  {
+    for(i in 1:length(x))
+    {
+      r1 <- 1 + n[i]
+      r2 <- n[i+1]
+      if(col %in% names(x[[i]]))
+      { y[r1:r2,col] <- x[[i]][[col]] }
+      else
+      { y[r1:r2,col] <- NA }
+    }
+  }
+  rm(x)
+
+  # handle missing error information
+  for(i in 2:length(DOP.LIST))
+  {
+    # missing DOP <- infinite
+    if(DOP.LIST[[i]]$DOP %in% COLS)
+    {
+      NAS <- is.na(y[[DOP.LIST[[i]]$DOP]])
+      if(any(NAS)) { y[[DOP.LIST[[i]]$DOP]][NAS] <- Inf }
+    }
+
+    # missing variance <- infinite
+    if(DOP.LIST[[i]]$VAR %in% COLS)
+    {
+      NAS <- is.na(y[[DOP.LIST[[i]]$VAR]])
+      if(any(NAS)) { y[[DOP.LIST[[i]]$VAR]][NAS] <- Inf }
+    }
+
+    # missing error ellipse <- error circle
+    if(DOP.LIST[[i]]$COV[1] %in% COLS)
+    {
+      NAS <- is.na(y[[DOP.LIST[[i]]$COV[1]]])
+      if(any(NAS))
+      {
+        y[[DOP.LIST[[i]]$COV[1]]][NAS] <- y[[DOP.LIST[[i]]$VAR]][NAS] # COV.x.x
+        y[[DOP.LIST[[i]]$COV[2]]][NAS] <- 0 # COV.x.y
+        y[[DOP.LIST[[i]]$COV[3]]][NAS] <- y[[DOP.LIST[[i]]$VAR]][NAS] # COV.x.y
+
+        if(DOP.LIST[[i]]$COV.geo[1] %in% COLS)
+        {
+          y[[DOP.LIST[[i]]$COV.geo[1]]][NAS] <- y[[DOP.LIST[[i]]$VAR]][NAS] # COV.major
+          y[[DOP.LIST[[i]]$COV.geo[2]]][NAS] <- y[[DOP.LIST[[i]]$VAR]][NAS] # COV.minor
+          y[[DOP.LIST[[i]]$COV.geo[3]]][NAS] <- 0 # COV.angle
+        }
+      }
+    }
+  }
+
+  # sort times
+  IND <- sort(y$t,index.return=TRUE)$ix
+  y <- y[IND,]
+
+  y <- new.telemetry(y,info=info)
+
+  # merge uere information
+  # TODO
+  # TODO
+
+  return(y)
+}
 
 
 # time-ordered sample of a track

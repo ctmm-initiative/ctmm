@@ -1,4 +1,4 @@
-ctmm 0.5.11 (2020-10-12)
+ctmm 0.5.11 (2020-10-14)
 ================
 
   * new function meta for meta-analysis of home-range areas
@@ -13,6 +13,10 @@ ctmm 0.5.11 (2020-10-12)
   
   * new argument 'axes' in function outlie
   
+  * as.telemetry now accepts most tibble objects
+
+  * akde() on multiple individuals is now more memory efficient
+  
   * bugfix in ctmm.fit for IOU model
   
   * bugfix in occurrence with repeated timestamps
@@ -25,11 +29,7 @@ ctmm 0.5.11 (2020-10-12)
   
   * bugfix in variogram with res>1 and CI="Gauss"
   
-  * manipulate bug workaround in zoom.variogram
-  
   * bugfix in ctmm.select if stepping OU->OUf->OUF
-  
-  * as.telemetry now coerces tibble objects into data.frames
   
   * bugfix in as.telemetry for Move objects with empty idData slot
   
@@ -43,11 +43,15 @@ ctmm 0.5.11 (2020-10-12)
   
   * bugfix in summary() for periodic models with tau[velocity]==0
   
+  * bugfix in occurrence() for PDclamp() error
+  
   * work around in export functions where sp objects change timezones
   
   * work around in as.telemetry() when Move idData() names are dropped
   
   * improvements to Wishart approximation in overlap bias correction
+  
+  * improvements to cleave()
 
 ctmm 0.5.10 (2020-05-04)
 ================

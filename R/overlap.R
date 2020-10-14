@@ -172,10 +172,15 @@ overlap.UD <- function(object,level=0.95,debias=TRUE,...)
   type <- type[type!="range"]
   if(length(type)) { stop(type," overlap is not generally meaningful, biologically.") }
 
+  # check resolution and subset to overlapping grid
+  object <- same.grids(object)
+  # can now be null mass
+
   dr <- object[[1]]$dr
   dA <- prod(dr)
 
-  OVER <- sqrt(object[[1]]$PDF * object[[2]]$PDF)
+  OVER <- object[[1]]$PDF * object[[2]]$PDF
+  if(!is.null(OVER)) { OVER <- sqrt(OVER) }
 
   # overlap point estimate
   OVER <- sum(OVER)*dA
@@ -216,28 +221,24 @@ mean.UD <- function(x,weights=NULL,...)
   info <- mean.info(x)
   dV <- prod(x[[1]]$dr)
   n <- length(x)
-  N <- sum(sapply(x,function(y){ y$DOF.area }))
+  N <- rowSums(sapply(x,function(y){ y$DOF.area }))
 
-  M <- lapply(1:n,function(i){ weights[i] * x[[i]]$PDF })
-  M <- Reduce('+',M)
+  GRID <- grid.union(x) # r,dr of grid union
+  DIM <- c(length(GRID$r$x),length(GRID$r$y))
+  PDF <- matrix(0,DIM[1],DIM[2]) # initialize Joint PDF
 
-  x <- x[[1]]
-  x$PDF <- M
-  attr(x,"info") <- info
-  x$DOF.area <- 0*x$DOF.area + N
+  for(i in 1:n)
+  {
+    SUB <- grid.intersection(list(GRID,x[[i]]))
+    PDF[SUB[[1]]$x,SUB[[1]]$y] <- PDF[SUB[[1]]$x,SUB[[1]]$y] + weights[i] * x[[i]]$PDF[SUB[[2]]$x,SUB[[2]]$y]
+  }
 
-  x$H <- NULL
-  x$h <- NULL
-  x$DOF.H <- NA
-  x$bias <- NULL
-  x$weights <- NULL
-  x$MISE <- NULL
+  x <- GRID
+  x$PDF <- PDF
+  x$DOF.area <- N
+  x$CDF <- pmf2cdf(PDF*dV)
 
-  M <- M*dV # now the average cell PMF
-  x$CDF <- pmf2cdf(M)
-
-  # to be continued....
-  attr(x,"CTMM") <- ctmm()
+  x <- new.UD(x,info=info,CTMM=ctmm())
 
   return(x)
 }
