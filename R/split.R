@@ -2,7 +2,8 @@ cleave <- function(object,fraction=0.5,name="CLEFT",...)
 {
   data <- object
   n <- nrow(data)
-  SUB <- round(n*fraction)
+  SUB <- object$t[1] + fraction*(last(object$t)-first(object$t))
+  SUB <- last( which(SUB > object$t) )
   STORE <- FALSE
 
   manipulate::manipulate(
@@ -21,16 +22,30 @@ cleave <- function(object,fraction=0.5,name="CLEFT",...)
       else # don't store, update plot
       {
         plot(DATA,col=c('red','blue'),...)
-        TITLE1 <- paste0("1:",SUB)
-        TITLE2 <- paste0(SUB+1,":",n)
+        TITLE1 <- c( paste0("1:",SUB) , as.character(last(DATA[[1]]$timestamp)) )
+        TITLE2 <- c( paste0(SUB+1,":",n) , as.character(DATA[[2]]$timestamp[1]) )
 
-        if(SUB==0) { graphics::title(TITLE2,col.main="blue") }
-        else if(SUB==n) { graphics::title(TITLE1,col.main="red") }
+        if(SUB==0)
+        {
+          graphics::title(paste0(TITLE2[1],),col.main="blue",line=1)
+          graphics::title(paste0(TITLE2[2],),col.main="blue")
+        }
+        else if(SUB==n)
+        {
+          graphics::title(TITLE1[1],col.main="red",line=1)
+          graphics::title(TITLE1[2],col.main="red")
+        }
         else
         {
+          t <- c( last(DATA[[1]]$timestamp) , first(DATA[[2]]$timestamp) )
+          t <- t[1] + diff(t)/2
+          t <- as.character(t)
+
           # this was amazingly annoying to figure out
-          eval( bquote(graphics::title(expression(.(TITLE1) * "   " * phantom(.(TITLE2))),col.main="red")) )
-          eval( bquote(graphics::title(expression(phantom(.(TITLE1)) * "   " * .(TITLE2)),col.main="blue")) )
+          eval( bquote(graphics::title(expression(.(TITLE1[1]) * "   " * phantom(.(TITLE2[1]))),col.main="red",line=1)) )
+          eval( bquote(graphics::title(expression(.(TITLE1[2]) * "   " * phantom(.(TITLE2[2]))),col.main="red")) )
+          eval( bquote(graphics::title(expression(phantom(.(TITLE1[1])) * "   " * .(TITLE2[1])),col.main="blue",line=1)) )
+          eval( bquote(graphics::title(expression(phantom(.(TITLE1[2])) * "   " * .(TITLE2[2])),col.main="blue")) )
         }
       }
     },

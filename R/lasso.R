@@ -39,10 +39,10 @@ selector <- function(object,tool,...)
 
   ## replace with generic points() function ##
   # set units of OUT (for plot only)
-  PIN <- lapply(IN,function(O){ unit.telemetry(O,length=SCALE) })
   # highlight selected points
-  plot(PIN,col='red',add=TRUE,...) #!!!
-  rm(PIN)
+  #PIN <- lapply(IN,function(O){ unit.telemetry(O,length=SCALE) })
+  plot(IN,col='red',add=TRUE,...) #!!!
+  #rm(PIN)
 
   # return everything
   return( c(IN,OUT) )

@@ -38,7 +38,7 @@ Uncertainties in the model fits are propagated into the overlap estimate under t
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
-\seealso{ \code{\link{akde}}, \code{\link{ctmm.fit}}, \code{\link{distance}} }
+\seealso{ \code{\link{akde}}, \code{\link{ctmm.fit}}, \code{\link{distance}}, \code{\link{encounter}} }
 
 \examples{\donttest{
 # Load package and data
