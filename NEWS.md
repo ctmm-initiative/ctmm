@@ -1,4 +1,4 @@
-ctmm 0.5.11 (2020-10-14)
+ctmm 0.5.11 (2020-10-16)
 ================
 
   * new function meta for meta-analysis of home-range areas
@@ -48,6 +48,8 @@ ctmm 0.5.11 (2020-10-14)
   * work around in export functions where sp objects change timezones
   
   * work around in as.telemetry() when Move idData() names are dropped
+  
+  * improvements to akde/occurrence grid argument when incomplete
   
   * improvements to Wishart approximation in overlap bias correction
   
