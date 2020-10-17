@@ -401,13 +401,17 @@ akde <- function(data,CTMM,VMM=NULL,debias=TRUE,weights=FALSE,smooth=TRUE,error=
 {
   if(length(projection(data))>1) { stop("Data not in single coordinate system.") }
   validate.grid(data,grid)
-  # force grids to be compatible
-  COMPATIBLE <- length(data)>1 && !is.grid.complete(grid)
 
   DROP <- class(data)[1] != "list"
   data <- listify(data)
   CTMM <- listify(CTMM)
   VMM <- listify(VMM)
+
+  # force grids to be compatible
+  COMPATIBLE <- length(data)>1 && !is.grid.complete(grid)
+
+  axes <- CTMM[[1]]$axes
+  grid <- format.grid(grid,axes=axes)
 
   n <- length(data)
   weights <- array(weights,n)
@@ -464,28 +468,16 @@ akde <- function(data,CTMM,VMM=NULL,debias=TRUE,weights=FALSE,smooth=TRUE,error=
   dim(dr) <- c(COL,n)
   dr <- apply(dr,1,min)
 
-  # # combine everything for grid calculation
-  # H.all <- lapply(1:n,function(i){N=length(data[[i]]$t);K=prepare.H(KDE[[i]]$H,n=N,axes=axes);dim(K)=c(N,COL^2);return(K)})
-  # H.all <- do.call("rbind", H.all)
-  # dim(H.all) <- c(length(H.all)/COL^2,COL,COL)
-  #
-  # # take only the necessary columns
-  # data.all <- lapply(data,function(d) { d[,c("t",axes)] })
-  # data.all <- do.call("rbind", data.all)
-  #
-  # # complete grid specification
-  # EXT <- extent(CTMM,level=1-error) # Gaussian extent (includes uncertainty)
-  # grid <- kde.grid(data.all,H=H.all,axes=axes,alpha=error,res=res,dr=dr,grid=grid,EXT.min=EXT)
+  if(COMPATIBLE) # force grids compatible
+  {
+    grid$align.to.origin <- TRUE
+    if(is.null(grid$dr)) { grid$dr <- dr }
+  }
 
   # loop over individuals
   for(i in 1:n)
   {
     EXT <- extent(CTMM[[i]],level=1-error) # Gaussian extent (includes uncertainty)
-    if(COMPATIBLE) # force grids compatible
-    {
-      grid$align.to.origin <- TRUE
-      grid$dr <- dr
-    }
     GRID <- kde.grid(data[[i]],H=KDE[[i]]$H,axes=axes,alpha=error,res=res,dr=dr,grid=grid,EXT.min=EXT) # individual grid
 
     KDE[[i]] <- c(KDE[[i]],kde(data[[i]],KDE[[i]]$H,axes=axes,bias=DEBIAS[[i]],W=KDE[[i]]$weights,alpha=error,dr=dr,grid=GRID))
