@@ -68,8 +68,6 @@ grid.intersection <- function(UD)
 
   if(!TEST) # some grids are different
   {
-    dr <- UD[[1]]$dr
-
     x.min <- max( sapply(r,function(R){first(R$x)}) )
     x.max <- min( sapply(r,function(R){last(R$x)}) )
 
