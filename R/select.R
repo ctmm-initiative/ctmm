@@ -141,6 +141,12 @@ get.mle <- function(FIT)
 ###############
 # keep removing uncertain parameters until AIC stops improving
 ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position",trace=FALSE,cores=1,...)
+{ ctmm.iterate(data,CTMM,verbose=verbose,level=level,IC=IC,MSPE=MSPE,trace=trace,cores=cores,recurse=FALSE,TRYS=NULL,...) }
+
+## internal function being called recursively by ctmm.select
+# recurse: FALSE is outer-most call, TRUE are inner calls
+# TRYS: models that we have tried
+ctmm.iterate <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position",trace=FALSE,cores=1,recurse=FALSE,TRYS=NULL,...)
 {
   LIST <- list(...)
   if(!is.null(LIST$control$message)) { message <- LIST$control$message }
@@ -161,12 +167,12 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
   # for internal recursion, not for end users
   if(class(CTMM)[1]=="ctmm")
   {
-    TRYS <- NULL
+    # TRYS <- NULL
     MODELS <- list()
   }
   else if(class(CTMM)[1]=="list")
   {
-    TRYS <- attr(CTMM,"attempted") # models that we have tried
+    TRYS <- c(TRYS,attr(CTMM,"attempted")) # models that we have tried
     MODELS <- CTMM[-1]
     CTMM <- CTMM[[1]]
   }
@@ -255,11 +261,14 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
     {
       # fit every model
       if(trace && FALSE) { message("* Fitting models ",paste(names(GUESS),collapse=", "),".") }
-      GUESS <- plapply(GUESS,function(g){M<-c(list(g),MODELS); attr(M,"attempted")<-TRYS.OLD; ctmm.select(data,M,verbose=TRUE,level=0,IC=IC,MSPE=MSPE,trace=trace,...)},cores=cores)
+      # GUESS <- plapply(GUESS,function(g){M<-c(list(g),MODELS); attr(M,"attempted")<-TRYS.OLD; ctmm.select(data,M,verbose=TRUE,level=0,IC=IC,MSPE=MSPE,trace=trace,...)},cores=cores)
+      GUESS <- plapply(GUESS,function(g){M<-c(list(g),MODELS); ctmm.iterate(data,M,verbose=TRUE,level=0,IC=IC,MSPE=MSPE,trace=trace,recurse=TRUE,TRYS=TRYS.OLD,...)},cores=cores)
       GUESS[sapply(GUESS,is.null)] <- NULL # delete collapsed repeats
       if(length(GUESS)) # concatenate list of lists
       {
-        TRYS <- c(TRYS, do.call(c, sapply(GUESS,function(g){attr(g,"attempted")}) ) ) # do.call incase of NULL
+        ATTEMPT <- do.call(c, lapply(GUESS,function(g){attr(g,"attempted")}) ) # do.call-lapply in case of NULL
+        ATTEMPT[sapply(ATTEMPT,is.null)] <- NULL # delete NULL results... ? does this still happen ?
+        TRYS <- c(TRYS,ATTEMPT)
         TRYS <- unique(TRYS)
         GUESS <- do.call(c,GUESS)
       }
@@ -464,15 +473,13 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
   if(verbose)
   {
     if(N>1) { MODELS <- sort.ctmm(MODELS,IC=IC,MSPE=MSPE) }
+    NAMES <- sapply(MODELS,name.ctmm) -> names(MODELS)
 
-    # remove redundant models if outer most run
-    CALL <- deparse(sys.call(-1))[1]
-    CALL <- grepl("ctmm.select",CALL)
-    if(CALL) # necessary when ctmm.select called recusively
+    if(recurse) # store all model attempts in attribute
     { attr(MODELS,'attempted') <- TRYS }
     else # finishing stuff
     {
-      NAMES <- sapply(MODELS,name.ctmm) -> names(MODELS)
+      # remove redundant models if outer most run
       if(N>1)
       {
         IN <- rep(TRUE,N)
@@ -486,6 +493,7 @@ ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position
   else
   { return(CTMM) }
 }
+
 
 ################
 name.ctmm <- function(CTMM,whole=TRUE)

@@ -519,12 +519,12 @@ inv.special.F <- function(u,precision=1/2,...)
 }
 
 
-meta <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC="AICc",boot=FALSE,error=0.01,debias=TRUE,units=TRUE,plot=TRUE,mean=TRUE,col="black",...)
+meta <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC="AICc",boot=FALSE,error=0.01,debias=TRUE,units=TRUE,plot=TRUE,sort=FALSE,mean=TRUE,col="black",...)
 {
   method <- tolower(method)
   method <- match.arg(method,c("mle","blue"))
 
-  meta.area(x=x,level=level,level.UD=level.UD,level.pop=level.pop,IC=IC,boot=boot,error=error,debias=debias,method=method,units=units,plot=plot,mean=mean,col=col,...)
+  meta.area(x=x,level=level,level.UD=level.UD,level.pop=level.pop,IC=IC,boot=boot,error=error,debias=debias,method=method,units=units,plot=plot,sort=sort,mean=mean,col=col,...)
 }
 
 
@@ -574,7 +574,7 @@ import.area <- function(x,level.UD=0.95)
 
 # wrapper: meta-analysis of CTMM areas
 # TODO range=FALSE ???
-meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC="AICc",boot=FALSE,error=0.01,debias=TRUE,units=TRUE,plot=TRUE,mean=TRUE,col="black",...)
+meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC="AICc",boot=FALSE,error=0.01,debias=TRUE,units=TRUE,plot=TRUE,sort=FALSE,mean=TRUE,col="black",...)
 {
   N <- length(x)
 
@@ -644,6 +644,30 @@ meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC=
     xlab <- paste0(100*level.UD,"% Area (",UNITS$name,")")
     # base layer plot
     plot(range(PLOT),c(1,N+mean),col=grDevices::rgb(1,1,1,0),xlab=xlab,ylab=NA,yaxt="n",...)
+
+    # 2nd attempt to fix long labels # still not working, but better than nothing
+    CEX.AXIS <- graphics::par("cex.axis")
+    CEX.NEW <- CEX.AXIS
+    # fix too wide
+    MAX <- max(graphics::strwidth(ID,units="inches"))
+    OFFSET <- 1.5*graphics::strheight("A",units="inches") # 3x default tick length is still not enough? (2x should be about perfect?)
+    CEX.NEW[2] <- (graphics::par("mai")[2]-OFFSET)/(graphics::par("cex")*MAX)
+    # fix too tall
+    CEX.NEW[3] <- graphics::par('pin')[1] / sum(graphics::strheight(ID,units="inches"))
+    # fix too tall & too wide
+    CEX.NEW <- min(CEX.NEW)
+    # zero is not valid
+    CEX.NEW <- max(CEX.NEW,0.01)
+    graphics::par(cex.axis=CEX.NEW)
+    # will reset when done with axis()
+
+    if(sort)
+    {
+      SORT <- sort(PLOT[2,1:N],decreasing=sort,index.return=TRUE)$ix
+      ID[1:N] <- ID[SORT]
+      PLOT[,1:N] <- PLOT[,SORT]
+    }
+
     # colored axes
     for(i in 1:N) { graphics::axis(2,at=IND[i],labels=ID[i],las=2,col.axis=col[i]) }
     if(mean)
@@ -655,6 +679,9 @@ meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC=
     # error bars
     graphics::points(PLOT[2,],IND,pch=16,col=col)
     suppressWarnings( graphics::arrows(PLOT[1,],IND,PLOT[3,],IND,length=0.05,angle=90,code=3,col=col) )
+
+    # reset cex.axis
+    graphics::par(cex.axis=CEX.AXIS)
   }
 
   if(SUBPOP) # ratios CIs

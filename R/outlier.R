@@ -2,10 +2,10 @@
 BESSEL_LIMIT <- 2^16
 
 # estimate and assign speeds to times
-outlie <- function(data,UERE=10,standardize=FALSE,plot=TRUE,by='d',...)
+outlie <- function(data,UERE=10,plot=TRUE,by='d',...)
 {
   if(class(data)[1]=="list")
-  { return( lapply(1:length(data), function(i){OUT <- outlie(data[[i]],UERE=UERE,standardize=standardize,plot=plot); graphics::title(names(data)[i]); OUT} ) ) }
+  { return( lapply(1:length(data), function(i){OUT <- outlie(data[[i]],UERE=UERE,plot=plot,by=by); graphics::title(names(data)[i]); OUT} ) ) }
 
   error <- get.error(data,ctmm(error=UERE,axes=c("x","y")),circle=TRUE) # VAR
 
@@ -15,16 +15,11 @@ outlie <- function(data,UERE=10,standardize=FALSE,plot=TRUE,by='d',...)
   ZERO <- DT==0
   if(any(ZERO)) { DT[ZERO] <- time.res[2] }
 
-  a <- assign_accelerations(data,UERE=error,DT=DT)
-  VAR.a <- a$VAR
-  a <- a$a
-
-  Vs <- assign_speeds(data,UERE=error,DT=DT)
+  Vs <- assign_speeds(data,UERE=error,DT=DT,axes=c('x','y'))
   v <- Vs$v.t
   VAR.v <- Vs$VAR.t
 
   mu <- median.telemetry(data)
-
   d <- get.telemetry(data,axes=c("x","y"))
   mu <- get.telemetry(mu,axes=c("x","y"))
   mu <- c(mu)
@@ -37,6 +32,24 @@ outlie <- function(data,UERE=10,standardize=FALSE,plot=TRUE,by='d',...)
   D <- distanceMLE(d,error)
   VAR.d <- error/(2-(d^2-D^2)/error)
   d <- D
+  rm(D)
+
+  if('z' %in% names(data))
+  {
+    error <- get.error(data,ctmm(error=UERE,axes=c("z")),circle=TRUE) # VAR
+
+    Vz <- assign_speeds(data,UERE=error,DT=DT,axes='z')
+    vz <- Vz$v.t
+    VAR.vz <- Vz$VAR.t
+
+    dz <- get.telemetry(data,axes=c("z"))
+    dz <- dz - stats::median(data$z)
+    dz <- abs(dz)
+    DZ <- distanceMLE(dz,error,axes='z')
+    VAR.dz <- error/(1-(dz^2-DZ^2)/error)
+    dz <- DZ
+    rm(DZ)
+  }
 
   if(plot)
   {
@@ -58,25 +71,22 @@ outlie <- function(data,UERE=10,standardize=FALSE,plot=TRUE,by='d',...)
     graphics::points(data$x,data$y,col=col,cex=cex,pch=20,...)
   }
 
-  if(standardize)
-  {
-    MAD.d <- stats::mad(d)
-    d <- d/MAD.d
-    VAR.d <- VAR.d/MAD.d^2
-
-    MAD.v <- stats::mad(v)
-    v <- v/MAD.v
-    VAR.v <- VAR.v/MAD.v^2
-
-    MAD.a <- stats::mad(a)
-    a <- a/MAD.a
-    VAR.a <- VAR.a/MAD.a^2
-  }
-
   VAR.v <- nant(VAR.v,0)
   VAR.d <- nant(VAR.d,0)
+  if('z' %in% names(data))
+  {
+    VAR.vz <- nant(VAR.vz,0)
+    VAR.dz <- nant(VAR.dz,0)
+  }
 
-  R <- data.frame(t=data$t,distance=d,speed=v,acceleration=a,VAR.speed=VAR.v,VAR.distance=VAR.d,VAR.acceleration=VAR.a)
+  R <- data.frame(t=data$t,distance=d,VAR.distance=VAR.d,speed=v,VAR.speed=VAR.v)
+  if('z' %in% names(data))
+  {
+    R$vertical.distance <- dz
+    R$VAR.vertical.distance <- VAR.dz
+    R$vertical.speed <- vz
+    R$VAR.vertical.speed <- VAR.vz
+  }
   R <- new.outlie(R)
   return(R)
 }
@@ -90,12 +100,10 @@ plot.outlie <- function(x,level=0.95,units=TRUE,axes=c('d','v'),...)
   t <- x$t
   d <- x$distance
   v <- x$speed
-  a <- x$acceleration
 
   # CIs
   d <- sapply(1:n,function(i){tnorm.hdr(d[i],x$VAR.distance[i],level=level)})
   v <- sapply(1:n,function(i){tnorm.hdr(v[i],x$VAR.speed[i],level=level)})
-  a <- sapply(1:n,function(i){tnorm.hdr(a[i],x$VAR.acceleration[i],level=level)})
 
   # unit conversions ... (simpler)
   UNITS <- unit(t,dimension='time',concise=FALSE,SI=!units)
@@ -110,9 +118,22 @@ plot.outlie <- function(x,level=0.95,units=TRUE,axes=c('d','v'),...)
   v <- v/UNITS$scale
   v.lab <- paste0("Minimum speed (",UNITS$name,"/s)")
 
-  UNITS <- unit(a,dimension='length',concise=TRUE,SI=!units)
-  a <- a/UNITS$scale
-  a.lab <- paste0("Minimum acceleration (",UNITS$name,"/s\u00B2)")
+  if("vertical.distance" %in% names(x))
+  {
+    dz <- x$vertical.distance
+    vz <- x$vertical.speed
+
+    dz <- sapply(1:n,function(i){tnorm.hdr(dz[i],x$VAR.vertical.distance[i],level=level)})
+    vz <- sapply(1:n,function(i){tnorm.hdr(vz[i],x$VAR.vertical.speed[i],level=level)})
+
+    UNITS <- unit(dz,dimension='length',concise=TRUE,SI=!units)
+    dz <- dz/UNITS$scale
+    dz.lab <- paste0("Core vertical deviation (",UNITS$name,")")
+
+    UNITS <- unit(vz,dimension='length',concise=TRUE,SI=!units)
+    vz <- vz/UNITS$scale
+    vz.lab <- paste0("Minimum vertical speed (",UNITS$name,"/s)")
+  }
 
   mid <- function(x)
   {
@@ -151,7 +172,7 @@ plot.outlie <- function(x,level=0.95,units=TRUE,axes=c('d','v'),...)
 # dt[1] is recording interval
 # dt[2] is minimum time between fixes, which can be smaller than dt[1]
 # UERE is misnamed and is actually the per-time error covariance
-assign_speeds <- function(data,DT=NULL,UERE=0,method="max")
+assign_speeds <- function(data,DT=NULL,UERE=0,method="max",axes=c('x','y'))
 {
   method <- match.arg(method,c("max","min"))
 
@@ -162,7 +183,7 @@ assign_speeds <- function(data,DT=NULL,UERE=0,method="max")
   }
 
   # inner speed estimates
-  v.dt <- speedMLE(data,UERE=UERE,DT=DT)
+  v.dt <- speedMLE(data,UERE=UERE,DT=DT,axes=axes)
   VAR.dt <- v.dt$VAR
   v.dt <- v.dt$X
   if(length(v.dt)==1)
@@ -237,54 +258,13 @@ assign_speeds <- function(data,DT=NULL,UERE=0,method="max")
 }
 
 
-# accelerations assigned by midpoint time
-assign_accelerations <- function(data,DT=NULL,UERE=0)
-{
-  if(is.null(DT))
-  {
-    DT <- diff(data$t)
-    dt <- time_res(DT)
-  }
-
-  if(nrow(data)==2)
-  {
-    STUFF <- assign_speeds(data,DT=DT,UERE=UERE)
-    a <- STUFF$v.t / DT
-    VAR <- STUFF$VAR.t / DT^2
-    return(list(a=a,VAR=VAR))
-  }
-
-  a <- accelerationMLE(data,DT=DT,UERE=UERE)
-  VAR <- a$VAR
-  a <- a$X
-
-  # end point accelerations (from rest)
-  N <- length(data$t)
-  if(length(UERE)==1)
-  {
-    a1 <- assign_speeds(data[1:2,],DT=DT[1],UERE=UERE)
-    a2 <- assign_speeds(data[(N-1):N,],DT=DT[N-1],UERE=UERE)
-  }
-  else
-  {
-    a1 <- assign_speeds(data[1:2,],DT=DT[1],UERE=UERE[1:2])
-    a2 <- assign_speeds(data[(N-1):N,],DT=DT[N-1],UERE=UERE[(N-1):N])
-  }
-  VAR1 <- a1$VAR.dt / DT[1]^2;   a1 <- a1$v.dt / DT[1]
-  VAR2 <- a2$VAR.dt / DT[N-1]^2; a2 <- a2$v.dt / DT[N-1]
-
-  a <- c(a1,a,a2)
-  VAR <- c(VAR1,VAR,VAR2)
-
-  return(list(a=a,VAR=VAR))
-}
-
-
 # estimate the speed between the two rows of data with error UERE & temporal resolution dt
 # dt[1] is recording interval
 # dt[2] is minimum time between fixes, which can be smaller than dt[1]
-speedMLE <- function(data,DT=NULL,UERE=0,CTMM=ctmm(error=UERE,axes=c("x","y"),circle=TRUE))
+speedMLE <- function(data,DT=NULL,UERE=0,axes=c('x','y'),CTMM=ctmm(error=UERE,axes=axes,circle=TRUE))
 {
+  AXES <- length(axes)
+
   ######################
   # 1/diff(t) estimate
 
@@ -299,10 +279,18 @@ speedMLE <- function(data,DT=NULL,UERE=0,CTMM=ctmm(error=UERE,axes=c("x","y"),ci
   # distance estimate
 
   # measured distances
-  dx <- diff(data$x)
-  dy <- diff(data$y)
-  dr <- sqrt(dx^2+dy^2)
-  rm(dx,dy)
+  if(all(axes==c('x','y')))
+  {
+    dx <- diff(data$x)
+    dy <- diff(data$y)
+    dr <- sqrt(dx^2+dy^2)
+    rm(dx,dy)
+  }
+  else if(axes=='z')
+  {
+    dr <- diff(data$z)
+    dr <- abs(dr)
+  }
 
   # point estimate of distance with error>0
   if(length(UERE)>1 || UERE)
@@ -310,7 +298,7 @@ speedMLE <- function(data,DT=NULL,UERE=0,CTMM=ctmm(error=UERE,axes=c("x","y"),ci
     if(length(UERE)==1)
     {
       # 1-time errors
-      error <- get.error(data,ctmm(error=UERE,axes=c("x","y")),circle=TRUE)
+      error <- get.error(data,ctmm(error=UERE,axes=axes),circle=TRUE)
     }
     else # full error array was passed
     {
@@ -321,8 +309,8 @@ speedMLE <- function(data,DT=NULL,UERE=0,CTMM=ctmm(error=UERE,axes=c("x","y"),ci
     # 2-time errors
     error <- error[-1] + error[-length(error)]
 
-    DR <- distanceMLE(dr,error)
-    VAR <- error/(2-(dr^2-DR^2)/error)
+    DR <- distanceMLE(dr,error,axes=axes)
+    VAR <- error/(AXES-(dr^2-DR^2)/error) # somehow this formula is general
   }
   else
   {
@@ -334,80 +322,36 @@ speedMLE <- function(data,DT=NULL,UERE=0,CTMM=ctmm(error=UERE,axes=c("x","y"),ci
   return(RETURN)
 }
 
-accelerationMLE <- function(data,DT=NULL,UERE=0,CTMM=ctmm(error=UERE,axes=c("x","y"),circle=TRUE))
-{
-  ######################
-  # 1/diff(t) estimate
-
-  if(is.null(DT))
-  {
-    DT <- diff(data$t)
-    dt <- time_res(DT)
-  }
-
-  # calculate velocities
-  # DT is velocity time step
-  f <- 1/DT
-  vx <- diff(data$x) * f
-  vy <- diff(data$y) * f
-  w <- cbind(f[-length(f)],f[-length(f)]+f[-1],f[-1]) # velocity location weights
-
-  # calculate accelerations
-  DT <- (DT[-1] + DT[-length(DT)])/2 # acceleration time step
-  f <- 1/DT
-  ax <- diff(vx) * f; rm(vx)
-  ay <- diff(vy) * f; rm(vy)
-
-  a <- sqrt(ax^2+ay^2)
-  rm(ax,ay)
-
-  # point estimate of distance with error>0
-  if(length(UERE)>1 || UERE)
-  {
-    if(length(UERE)==1)
-    {
-      # 1-time errors
-      error <- get.error(data,ctmm(error=UERE,axes=c("x","y")),circle=TRUE)
-    }
-    else # full error array was passed
-    {
-      UERE -> error
-      rm(UERE)
-    }
-
-    # 3-time errors
-    ERROR <- array(0,length(error)-2)
-    w <- w^2
-    for(i in 1:(length(error)-2)) { ERROR[i] <- w[i,] %*% error[i + 0:2] }
-    rm(error)
-    ERROR <- ERROR * f^2
-
-    A <- distanceMLE(a,ERROR)
-    VAR <- ERROR/(2-(a^2-A^2)/ERROR)
-  }
-  else
-  {
-    A <- a
-    VAR <- numeric(length(a))
-  }
-
-  RETURN <- data.frame(X=A,VAR=VAR)
-  return(RETURN)
-}
 
 ####################
-distanceMLE <- function(dr,error)
+distanceMLE <- function(dr,error,axes=c('x','y'))
 {
   SUB <- dr>0 & error>0
 
-  # coefficient in transcendental Bessel equation
-  # x I0(x) == y I1(x)
-  y <- dr[SUB]^2/error[SUB]
-  x <- BesselSolver(y)
-  # x = dr*dR/error
+  if(any(SUB))
+  {
+    if(all(axes==c('x','y')))
+    {
+      # coefficient in transcendental Bessel equation
+      # x I0(x) == y I1(x)
+      y <- dr[SUB]^2/error[SUB]
+      x <- BesselSolver(y)
+      # x = dr*dR/error
 
-  # fixed for Inf error
-  if(any(SUB)) { dr[SUB] <- ifelse(error[SUB]<Inf,error[SUB]/dr[SUB]*x,0) }
+      # fixed for Inf error
+      dr[SUB] <- ifelse(error[SUB]<Inf,error[SUB]/dr[SUB]*x,0)
+    }
+    else if(axes=='z')
+    {
+      error[SUB] <- sqrt(error[SUB]) # now standard deviation
+
+      # x = y tanh(x y)
+      y <- dr[SUB]/error[SUB]
+      x <- TanhSolver(y)
+
+      dr[SUB] <- ifelse(error[SUB]<Inf,error[SUB]*x,0)
+    }
+  }
 
   return(dr)
 }
@@ -469,6 +413,45 @@ BesselSolver <- function(y)
 
   # this is now the point estimate, including telemetry error
   # SUB <- !SUB1
+
+  return(x)
+}
+
+
+# x == y tanh(x y)
+TanhSolver <- function(y)
+{
+  x <- y
+
+  SUB <- y<1
+  if(any(SUB)) { x[SUB] <- 0 }
+
+  # Taylor expansion from x=0
+  SUB <- 1<y & y<=1.1106677241426588
+  if(any(SUB))
+  {
+    x[SUB] <- sqrt((5*y[SUB]-sqrt(120-95*y[SUB]^2))/y[SUB]^3)/2
+  }
+
+  # Taylor expansion from x=y
+  SUB <- 1.1106677241426588<=y & y<Inf
+  if(any(SUB))
+  {
+    TEMP <- 2*y[SUB]^2
+    x[SUB] <- nant((sinh(TEMP)-TEMP)/(cosh(TEMP)-TEMP+1),1) * y[SUB]
+  }
+
+  # One Newton-Raphson iteration and we are within 0.5% error max
+  SUB <- 1<y & y<Inf
+  if(any(SUB))
+  {
+    TANH <- tanh(x[SUB]*y[SUB])
+    GRAD <- (1-TANH^2) * y[SUB]
+    # x + dx == y (TANH + GRAD*dx) + O(dx^2)
+    # (1 - y*GRAD) dx == y*TANH - x + O(dx^2)
+    dx <- (y[SUB]*TANH-x[SUB])/(1-y[SUB]*GRAD)
+    x[SUB] <- x[SUB] + dx
+  }
 
   return(x)
 }

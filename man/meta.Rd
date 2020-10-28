@@ -6,8 +6,8 @@
 \description{These functions estimate population-level parameters from individual movement models and related estimates, including AKDE home-range areas, while taking into account estimation uncertainty.
 }
 \usage{
-meta(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC="AICc",
-     boot=FALSE,error=0.01,debias=TRUE,units=TRUE,plot=TRUE,mean=TRUE,col="black",...)
+meta(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC="AICc",boot=FALSE,
+     error=0.01,debias=TRUE,units=TRUE,plot=TRUE,sort=FALSE,mean=TRUE,col="black",...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -22,6 +22,7 @@ meta(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC="AICc",
   \item{debias}{Apply Bessel's inverse-Gaussian correction if \code{method="MLE"}, REML if \code{method="BLUE"}, and an additional first-order correction if \code{boot=TRUE}.}
   \item{units}{Convert result to natural units.}
   \item{plot}{Generate a meta-analysis forest plot.}
+  \item{sort}{Sort individuals by their point estimates in forest plot.}
   \item{mean}{Include population mean estimate in forest plot.}
   \item{col}{Color(s) for individual labels and error bars.}
   \item{...}{Further arguments passed to \code{plot}.}

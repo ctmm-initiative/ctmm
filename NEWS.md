@@ -1,4 +1,4 @@
-ctmm 0.5.11 (2020-10-16)
+ctmm 0.5.11 (2020-10-27)
 ================
 
   * new function meta for meta-analysis of home-range areas
@@ -44,6 +44,8 @@ ctmm 0.5.11 (2020-10-16)
   * bugfix in summary() for periodic models with tau[velocity]==0
   
   * bugfix in occurrence() for PDclamp() error
+  
+  * bugfix in ctmm.select() giving incorrect model names when run indirectly
   
   * work around in export functions where sp objects change timezones
   
