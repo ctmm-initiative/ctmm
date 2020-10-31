@@ -10,23 +10,27 @@
 
 
 <!-- jquery -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
+
+<!-- bootstrap-toc -->
+<link rel="stylesheet" href="../bootstrap-toc.css">
+<script src="../bootstrap-toc.js"></script>
 
 <!-- Font Awesome icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/all.min.css" integrity="sha256-nAmazAk6vS34Xqo0BSrTb+abbtFlgsFK7NKSi6o7Y78=" crossorigin="anonymous" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/v4-shims.min.css" integrity="sha256-6qHlizsOWFskGlwVOKuns+D1nB6ssZrHQrNj1wGplHc=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous" />
 
 <!-- clipboard.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script>
 
 <!-- headroom.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/headroom.min.js" integrity="sha256-DJFC1kqIhelURkuza0AvYal5RxMtpzLjFhsnVIeuk+U=" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
@@ -38,7 +42,6 @@
 <meta property="og:title" content="Specify, fit, and select continuous-time movement models — ctmm" />
 <meta property="og:description" content="These functions allow one to propose hypothetical movement models (with initial estimates), fit those models to the data, and select among those models via an information criterion.
 The fitting functions wrap around optim and ctmm.loglike to fit continuous-time movement models to 2D animal tracking data as described in Fleming et al (2014) and Fleming et al (2015), and Fleming et al (2017)." />
-<meta name="twitter:card" content="summary" />
 
 
 
@@ -56,7 +59,7 @@ The fitting functions wrap around optim and ctmm.loglike to fit continuous-time 
 
   </head>
 
-  <body>
+  <body data-spy="scroll" data-target="#toc">
     <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -70,7 +73,7 @@ The fitting functions wrap around optim and ctmm.loglike to fit continuous-time 
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.9</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.11</span>
       </span>
     </div>
 
@@ -134,15 +137,15 @@ The fitting functions wrap around optim and ctmm.loglike to fit continuous-time 
 The fitting functions wrap around <code>optim</code> and <code>ctmm.loglike</code> to fit continuous-time movement models to 2D animal tracking data as described in Fleming et al (2014) and Fleming et al (2015), and Fleming et al (2017).</p>
     </div>
 
-    <pre class="usage"><span class='fu'>ctmm</span>(<span class='kw'>tau</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>omega</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>isotropic</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>range</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>circle</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>error</span><span class='kw'>=</span><span class='fl'>FALSE</span>,
-     <span class='kw'>axes</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"x"</span>,<span class='st'>"y"</span>),<span class='no'>...</span>)
+    <pre class="usage"><span class='fu'>ctmm</span><span class='op'>(</span>tau<span class='op'>=</span><span class='cn'>NULL</span>,omega<span class='op'>=</span><span class='cn'>FALSE</span>,isotropic<span class='op'>=</span><span class='cn'>FALSE</span>,range<span class='op'>=</span><span class='cn'>TRUE</span>,circle<span class='op'>=</span><span class='cn'>FALSE</span>,error<span class='op'>=</span><span class='cn'>FALSE</span>,
+     axes<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"x"</span>,<span class='st'>"y"</span><span class='op'>)</span>,<span class='va'>...</span><span class='op'>)</span>
 
-<span class='fu'>ctmm.loglike</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>REML</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>profile</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>zero</span><span class='kw'>=</span><span class='fl'>0</span>,<span class='kw'>verbose</span><span class='kw'>=</span><span class='fl'>FALSE</span>)
+<span class='fu'>ctmm.loglike</span><span class='op'>(</span><span class='va'>data</span>,<span class='va'>CTMM</span>,REML<span class='op'>=</span><span class='cn'>FALSE</span>,profile<span class='op'>=</span><span class='cn'>TRUE</span>,zero<span class='op'>=</span><span class='fl'>0</span>,verbose<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span>
 
-<span class='fu'>ctmm.fit</span>(<span class='no'>data</span>,<span class='kw'>CTMM</span><span class='kw'>=</span><span class='fu'>ctmm</span>(),<span class='kw'>method</span><span class='kw'>=</span><span class='st'>"pHREML"</span>,<span class='kw'>COV</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>control</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(),<span class='kw'>trace</span><span class='kw'>=</span><span class='fl'>FALSE</span>)
+<span class='fu'>ctmm.fit</span><span class='op'>(</span><span class='va'>data</span>,CTMM<span class='op'>=</span><span class='fu'>ctmm</span><span class='op'>(</span><span class='op'>)</span>,method<span class='op'>=</span><span class='st'>"pHREML"</span>,COV<span class='op'>=</span><span class='cn'>TRUE</span>,control<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='op'>)</span>,trace<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span>
 
-<span class='fu'>ctmm.select</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>verbose</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>IC</span><span class='kw'>=</span><span class='st'>"AICc"</span>,<span class='kw'>MSPE</span><span class='kw'>=</span><span class='st'>"position"</span>,<span class='kw'>trace</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>cores</span><span class='kw'>=</span><span class='fl'>1</span>,
-            <span class='no'>...</span>)</pre>
+<span class='fu'>ctmm.select</span><span class='op'>(</span><span class='va'>data</span>,<span class='va'>CTMM</span>,verbose<span class='op'>=</span><span class='cn'>FALSE</span>,level<span class='op'>=</span><span class='fl'>1</span>,IC<span class='op'>=</span><span class='st'>"AICc"</span>,MSPE<span class='op'>=</span><span class='st'>"position"</span>,trace<span class='op'>=</span><span class='cn'>FALSE</span>,cores<span class='op'>=</span><span class='fl'>1</span>,
+            <span class='va'>...</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -165,7 +168,7 @@ The fitting functions wrap around <code>optim</code> and <code>ctmm.loglike</cod
     </tr>
     <tr>
       <th>circle</th>
-      <td><p>The period it takes the animal to stochastically circle its mean location.</p></td>
+      <td><p>(\(2\pi\) divided by) the period it takes the animal to stochastically circle its mean location.</p></td>
     </tr>
     <tr>
       <th>error</th>
@@ -247,7 +250,7 @@ If <code>length(tau)==1</code>, then an Ornstein-Uhlenbeck (OU) model (Brownian 
 If <code>length(tau)==2</code>, then the OUF model (continuous-velocity motion restricted to a finite home range) is fit to the data, where <code>tau[1]</code> is again the position autocorrelation timescale and <code>tau[2]</code> is the velocity autocorrelation timescale. <code>tau[1]=Inf</code> then yields integrated Ornstein-Uhlenbeck (IOU) motion, which is a spatially unrestricted continuous-velocity process.</p>
 <p>Two new models were introduced in ctmm version 0.5.2 for the case of <code>tau[1]==tau[2]</code>, which can happen with short tracks of data. When <code>tau[1]==tau[2]</code> and <code>omega==0</code>, the model is categorized as OUf---a special case of OUF---and the two <code>tau</code> parameters are treated as identical. On the other hand, when <code>tau[1]==tau[2]</code> and <code>omega&gt;0</code>, an oscillatory model is implemented, which we refer to as OU\(\Omega\).</p>
 <p>The potential fitting methods---maximum likelihood (<code>ML</code>), residual maximum likelihood (<code>REML</code>), perturbative REML (<code>pREML</code>), hybrid REML (<code>HREML</code>), and perturbative hybrid REML (<code>pHREML</code>)---are described in Fleming et al (2019). In general, <code>pHREML</code> is the best method, though when parameter estimates lie near boundaries it can fail, in which case <code>ctmm.fit</code> will fall back to <code>HREML</code>, as reported by the <code>method</code> slot of the resulting fit object.</p>
-<p>The <code>control</code> list can take the following arguments, with defaults shown:</p><dl class='dl-horizontal'>
+<p>The <code>control</code> list can take the following arguments, with defaults shown:</p><dl>
 <dt><code>method="pNewton"</code></dt><dd><p>The partial-Newton method of <code><a href='optimizer.html'>optimizer</a></code> is default. See <code><a href='https://rdrr.io/r/stats/optim.html'>optim</a></code> for alternative methods in multiple dimensions.</p></dd>
 <dt><code>precision=1/2</code></dt><dd><p>Fraction of machine numerical precision to target in the maximized likelihood value. MLEs will necessarily have half this precision. On most computers, <code>precision=1</code> is approximately 16 decimal digits of precision for the likelihood and 8 for the MLEs.</p></dd>
 <dt><code>maxit=.Machine$integer.max</code></dt><dd><p>Maximum number of iterations allowed for optimization.</p></dd>
@@ -263,7 +266,7 @@ Note that simpler models in a nested hierarchy will only be attempted if they ap
     <p>The function <code>ctmm</code> returns a prototype <code>ctmm</code> movement-model object.
 By default, <code>ctmm.loglike</code> returns the log-likelihood of the model <code>CTMM</code>.
 <code>ctmm.fit</code> (and <code>ctmm.loglike</code> with <code>verbose=TRUE</code>) returns the maximum likelihood <code>ctmm</code> movement-model object with all of the components of <code>CTMM</code> plus the components listed below.
-<code>ctmm.select</code> returns the best model by default or the sorted list of attempted models if <code>verbose=TRUE</code>.</p><dl class='dl-horizontal'>
+<code>ctmm.select</code> returns the best model by default or the sorted list of attempted models if <code>verbose=TRUE</code>.</p><dl>
 <dt><code>AICc</code></dt><dd><p>The approximate corrected Akaike information criterion for multivariate distributions with variable numbers of unknown mean and (structured) covariance parameters (Burnham &amp; Anderson, Eq. 7.91). This formula is only exact for IID data.</p></dd>
 <dt><code>loglike</code></dt><dd><p>The log-likelihood.</p></dd>
 <dt><code>sigma</code></dt><dd><p>The maximum likelihood variance/covariance estimate (possibly debiased). For the endlessly diffusing BM and IOU processes, this is instead the diffusion rate estimate.</p></dd>
@@ -295,6 +298,9 @@ Springer, 2nd edition (2003).</p>
 <p>C. H. Fleming, M. J. Noonan, E. P. Medici, J. M. Calabrese,
 ``Overcoming the challenge of small effective sample sizes in home-range estimation'',
 <a href='https://besjournals.onlinelibrary.wiley.com/doi/10.1111/2041-210X.13270'>Methods in Ecology and Evolution 10:10, 1679-1689 (2019)</a>.</p>
+    <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
+
+    <p>C. H. Fleming and G. Péron.</p>
     <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
 
     <p>The default optimization method in <code>ctmm</code> v0.5.7 and above is <code><a href='optimizer.html'>optimizer</a></code>'s <code>"pNewton"</code>. Annecdotally, on these problems, <code><a href='optimizer.html'>optimizer</a></code>'s <code>pNewton</code> method generally outperforms <code><a href='https://rdrr.io/r/stats/optim.html'>optim</a></code>'s <code>"Nelder-Mead"</code>, which generally outperforms <code><a href='https://rdrr.io/r/stats/optim.html'>optim</a></code>'s <code>"BFGS"</code> and <code>"L-BFGS-B"</code> methods. With default arguments, <code>"pNewton"</code> is about half as fast as <code>"Nelder-Mead"</code>, but is resolving about twice as much numerical precision by default.</p>
@@ -309,44 +315,34 @@ This is no longer feasible with current versions of <code>ctmm</code>, as the nu
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='co'># \donttest{</span>
 <span class='co'># Load package and data</span>
-<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>ctmm</span>)
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='no'>buffalo</span>)
-<span class='no'>Cilla</span> <span class='kw'>&lt;-</span> <span class='no'>buffalo</span>$<span class='no'>Cilla</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/ctmm-initiative/ctmm'>ctmm</a></span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>buffalo</span><span class='op'>)</span>
+<span class='va'>Cilla</span> <span class='op'>&lt;-</span> <span class='va'>buffalo</span><span class='op'>$</span><span class='va'>Cilla</span>
 
-<span class='no'>GUESS</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='variogram.fit.html'>ctmm.guess</a></span>(<span class='no'>Cilla</span>,<span class='kw'>interactive</span><span class='kw'>=</span><span class='fl'>FALSE</span>)
-<span class='no'>FIT</span> <span class='kw'>&lt;-</span> <span class='fu'>ctmm.fit</span>(<span class='no'>Cilla</span>,<span class='no'>GUESS</span>)
+<span class='va'>GUESS</span> <span class='op'>&lt;-</span> <span class='fu'><a href='variogram.fit.html'>ctmm.guess</a></span><span class='op'>(</span><span class='va'>Cilla</span>,interactive<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span>
+<span class='va'>FIT</span> <span class='op'>&lt;-</span> <span class='fu'>ctmm.fit</span><span class='op'>(</span><span class='va'>Cilla</span>,<span class='va'>GUESS</span><span class='op'>)</span>
 
 <span class='co'># some human-readable information</span>
-<span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span>(<span class='no'>FIT</span>)</div><div class='output co'>#&gt; $name
+<span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>FIT</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; $name
 #&gt; [1] "OUF anisotropic"
 #&gt; 
 #&gt; $DOF
 #&gt;       mean       area      speed 
-#&gt;   10.73354   18.13597 3445.13306 
+#&gt;   10.73354   18.13596 3445.13306 
 #&gt; 
 #&gt; $CI
 #&gt;                                 low        est      high
-#&gt; area (square kilometers) 239.647395 403.458802 609.24117
+#&gt; area (square kilometers) 239.647367 403.458815 609.24125
 #&gt; τ[position] (days)         4.026011   7.505367  13.99165
 #&gt; τ[velocity] (minutes)     39.570325  42.069009  44.72547
 #&gt; speed (kilometers/day)    13.819957  14.054636  14.28926
-#&gt; </div><div class='input'># }</div></pre>
+#&gt; </div><div class='input'><span class='co'># }</span></div></pre>
   </div>
-  <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
-    <h2>Contents</h2>
-    <ul class="nav nav-pills nav-stacked">
-      <li><a href="#arguments">Arguments</a></li>
-      <li><a href="#details">Details</a></li>
-      <li><a href="#value">Value</a></li>
-      <li><a href="#warnings">Warnings</a></li>
-      <li><a href="#references">References</a></li>
-      <li><a href="#note">Note</a></li>
-      <li><a href="#see-also">See also</a></li>
-      <li><a href="#examples">Examples</a></li>
-    </ul>
-
-    <h2>Author</h2>
-    <p>C. H. Fleming and G. Péron.</p>
+  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
+    <nav id="toc" data-toggle="toc" class="sticky-top">
+      <h2 data-toc-skip>Contents</h2>
+    </nav>
   </div>
 </div>
 
@@ -357,7 +353,7 @@ This is no longer feasible with current versions of <code>ctmm</code>, as the nu
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

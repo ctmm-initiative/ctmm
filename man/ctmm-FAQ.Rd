@@ -25,8 +25,7 @@
 
 {These are the packages I needed in Ubuntu:
 
-\code{sudo apt install fftw3 fftw3-dev libgdal1-dev libproj-dev libgeos-dev libgsl-dev libv8-dev r-base-core}}
-
+\code{sudo apt install fftw3 libfftw3-dev libgdal-dev libgmp-dev libmpfr-dev libproj-dev libgeos-dev libgsl-dev libnode-dev r-base-core}}
 
 \bold{\code{as.telemetry} reports abnormal sampling intervals and speeds}
 

@@ -10,23 +10,27 @@
 
 
 <!-- jquery -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
+
+<!-- bootstrap-toc -->
+<link rel="stylesheet" href="../bootstrap-toc.css">
+<script src="../bootstrap-toc.js"></script>
 
 <!-- Font Awesome icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/all.min.css" integrity="sha256-nAmazAk6vS34Xqo0BSrTb+abbtFlgsFK7NKSi6o7Y78=" crossorigin="anonymous" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/v4-shims.min.css" integrity="sha256-6qHlizsOWFskGlwVOKuns+D1nB6ssZrHQrNj1wGplHc=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous" />
 
 <!-- clipboard.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script>
 
 <!-- headroom.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/headroom.min.js" integrity="sha256-DJFC1kqIhelURkuza0AvYal5RxMtpzLjFhsnVIeuk+U=" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
@@ -37,7 +41,6 @@
 
 <meta property="og:title" content="Calculate the overlap between two stationary distributions — overlap" />
 <meta property="og:description" content="This function calculates a useful measure of similarity between distributions known as the Bhattacharyya coefficient in statistics and simply the fidelity or overlap in quantum and statistical mechanics. It is roughly speaking the ratio of the intersection area to the average individual area, but it is a direct comparison between the density functions and does not require an arbitrary quantile to be specified. When applied to ctmm objects, this function returns the overlap of the two Gaussian distributions. When applied to aligned UD objects with corresponding movement models, this function returns the overlap of their (autocorrelated) kernel density estimates." />
-<meta name="twitter:card" content="summary" />
 
 
 
@@ -55,7 +58,7 @@
 
   </head>
 
-  <body>
+  <body data-spy="scroll" data-target="#toc">
     <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -69,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.9</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.11</span>
       </span>
     </div>
 
@@ -132,7 +135,7 @@
     <p>This function calculates a useful measure of similarity between distributions known as the <em>Bhattacharyya coefficient</em> in statistics and simply the <em>fidelity</em> or <em>overlap</em> in quantum and statistical mechanics. It is roughly speaking the ratio of the intersection area to the average individual area, but it is a direct comparison between the density functions and does not require an arbitrary quantile to be specified. When applied to <code>ctmm</code> objects, this function returns the overlap of the two Gaussian distributions. When applied to aligned <code>UD</code> objects with corresponding movement models, this function returns the overlap of their (autocorrelated) kernel density estimates.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>overlap</span>(<span class='no'>object</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>debias</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>overlap</span><span class='op'>(</span><span class='va'>object</span>,level<span class='op'>=</span><span class='fl'>0.95</span>,debias<span class='op'>=</span><span class='cn'>TRUE</span>,<span class='va'>...</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -151,49 +154,53 @@
     </tr>
     <tr>
       <th>...</th>
-      <td><p>Additional arguments relevant for <code><a href='akde.html'>akde</a></code>, such as <code>res</code> and <code>weights</code>.</p></td>
+      <td><p>Not currently used.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A table of confidence intervals on the overlap estimate. A value of <code>1</code> implies that the two distributions are identical, while a value of <code>0</code> implies that the two distributions share no area in common. Corresponding <code>ctmm</code> objects are necessary to provide confidence intervals and debiasing for the point esitmates.</p>
+    <p>A table of confidence intervals on the overlap estimate. A value of <code>1</code> implies that the two distributions are identical, while a value of <code>0</code> implies that the two distributions share no area in common.</p>
     <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
 
     <p>K. Winner, M. J. Noonan, C. H. Fleming, K. Olson, T. Mueller, D. Sheldon, J. M. Calabrese.
 ``Statistical inference for home range overlap'',
 <a href='https://besjournals.onlinelibrary.wiley.com/doi/10.1111/2041-210X.13027'>Methods in Ecology and Evolution, 9:7, 1679-1691 (2018)</a>.</p>
+    <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
+
+    <p>C. H. Fleming and K. Winner</p>
     <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
 
     <p>In <code>ctmm</code> v0.5.2, direct support for <code>telemetry</code> objects was dropped and the <code>CTMM</code> argument was depreciated for <code>UD</code> objects, simplifying usage.</p>
 <p>Uncertainties in the model fits are propagated into the overlap estimate under the approximation that the Bhattacharyya distance is a chi-square random variable. Debiasing makes further approximations noted in Winner &amp; Noonan et al (2018).</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><code><a href='akde.html'>akde</a></code>, <code><a href='ctmm.fit.html'>ctmm.fit</a></code></p></div>
+    <div class='dont-index'><p><code><a href='akde.html'>akde</a></code>, <code><a href='ctmm.html'>ctmm.fit</a></code>, <code><a href='distance.html'>distance</a></code>, <code><a href='encounter.html'>encounter</a></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='co'># \donttest{</span>
 <span class='co'># Load package and data</span>
-<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>ctmm</span>)
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='no'>buffalo</span>)
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/ctmm-initiative/ctmm'>ctmm</a></span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>buffalo</span><span class='op'>)</span>
 
 <span class='co'># fit models for first two buffalo</span>
-<span class='no'>GUESS</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span>(<span class='no'>buffalo</span>[<span class='fl'>1</span>:<span class='fl'>2</span>], <span class='kw'>function</span>(<span class='no'>b</span>) <span class='fu'><a href='variogram.fit.html'>ctmm.guess</a></span>(<span class='no'>b</span>,<span class='kw'>interactive</span><span class='kw'>=</span><span class='fl'>FALSE</span>) )
-<span class='no'>FITS</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span>(<span class='fl'>1</span>:<span class='fl'>2</span>, <span class='kw'>function</span>(<span class='no'>i</span>) <span class='fu'><a href='ctmm.fit.html'>ctmm.fit</a></span>(<span class='no'>buffalo</span><span class='kw'>[[</span><span class='no'>i</span>]],<span class='no'>GUESS</span><span class='kw'>[[</span><span class='no'>i</span>]]) )
-<span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span>(<span class='no'>FITS</span>) <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span>(<span class='no'>buffalo</span>[<span class='fl'>1</span>:<span class='fl'>2</span>])
+<span class='va'>GUESS</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='va'>buffalo</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>2</span><span class='op'>]</span>, <span class='kw'>function</span><span class='op'>(</span><span class='va'>b</span><span class='op'>)</span> <span class='fu'><a href='variogram.fit.html'>ctmm.guess</a></span><span class='op'>(</span><span class='va'>b</span>,interactive<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>)</span>
+<span class='va'>FITS</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>2</span>, <span class='kw'>function</span><span class='op'>(</span><span class='va'>i</span><span class='op'>)</span> <span class='fu'><a href='ctmm.html'>ctmm.fit</a></span><span class='op'>(</span><span class='va'>buffalo</span><span class='op'>[[</span><span class='va'>i</span><span class='op'>]</span><span class='op'>]</span>,<span class='va'>GUESS</span><span class='op'>[[</span><span class='va'>i</span><span class='op'>]</span><span class='op'>]</span><span class='op'>)</span> <span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>FITS</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>buffalo</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>2</span><span class='op'>]</span><span class='op'>)</span>
 
 <span class='co'># Gaussian overlap between these two buffalo</span>
-<span class='fu'>overlap</span>(<span class='no'>FITS</span>)</div><div class='output co'>#&gt; , , low
+<span class='fu'>overlap</span><span class='op'>(</span><span class='va'>FITS</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; , , low
 #&gt; 
 #&gt;           Cilla      Gabs
-#&gt; Cilla 1.0000000 0.8984645
-#&gt; Gabs  0.8984645 1.0000000
+#&gt; Cilla 1.0000000 0.8984604
+#&gt; Gabs  0.8984604 1.0000000
 #&gt; 
 #&gt; , , est
 #&gt; 
 #&gt;           Cilla      Gabs
-#&gt; Cilla 1.0000000 0.9987817
-#&gt; Gabs  0.9987817 1.0000000
+#&gt; Cilla 1.0000000 0.9987797
+#&gt; Gabs  0.9987797 1.0000000
 #&gt; 
 #&gt; , , high
 #&gt; 
@@ -203,40 +210,32 @@
 #&gt; </div><div class='input'>
 <span class='co'># AKDE overlap between these two buffalo</span>
 <span class='co'># create aligned UDs</span>
-<span class='no'>UDS</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='akde.html'>akde</a></span>(<span class='no'>buffalo</span>[<span class='fl'>1</span>:<span class='fl'>2</span>],<span class='no'>FITS</span>)
+<span class='va'>UDS</span> <span class='op'>&lt;-</span> <span class='fu'><a href='akde.html'>akde</a></span><span class='op'>(</span><span class='va'>buffalo</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>2</span><span class='op'>]</span>,<span class='va'>FITS</span><span class='op'>)</span>
 <span class='co'># evaluate overlap</span>
-<span class='fu'>overlap</span>(<span class='no'>UDS</span>)</div><div class='output co'>#&gt; , , low
+<span class='fu'>overlap</span><span class='op'>(</span><span class='va'>UDS</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; , , low
 #&gt; 
 #&gt;           Cilla      Gabs
-#&gt; Cilla 1.0000000 0.8957962
-#&gt; Gabs  0.8957962 1.0000000
+#&gt; Cilla 1.0000000 0.8957873
+#&gt; Gabs  0.8957873 1.0000000
 #&gt; 
 #&gt; , , est
 #&gt; 
 #&gt;           Cilla      Gabs
-#&gt; Cilla 1.0000000 0.9958155
-#&gt; Gabs  0.9958155 1.0000000
+#&gt; Cilla 1.0000000 0.9958082
+#&gt; Gabs  0.9958082 1.0000000
 #&gt; 
 #&gt; , , high
 #&gt; 
 #&gt;       Cilla Gabs
 #&gt; Cilla     1    1
 #&gt; Gabs      1    1
-#&gt; </div><div class='input'># }</div></pre>
+#&gt; </div><div class='input'><span class='co'># }</span></div></pre>
   </div>
-  <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
-    <h2>Contents</h2>
-    <ul class="nav nav-pills nav-stacked">
-      <li><a href="#arguments">Arguments</a></li>
-      <li><a href="#value">Value</a></li>
-      <li><a href="#references">References</a></li>
-      <li><a href="#note">Note</a></li>
-      <li><a href="#see-also">See also</a></li>
-      <li><a href="#examples">Examples</a></li>
-    </ul>
-
-    <h2>Author</h2>
-    <p>C. H. Fleming and K. Winner</p>
+  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
+    <nav id="toc" data-toggle="toc" class="sticky-top">
+      <h2 data-toc-skip>Contents</h2>
+    </nav>
   </div>
 </div>
 
@@ -247,7 +246,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

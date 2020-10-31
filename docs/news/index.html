@@ -10,23 +10,27 @@
 
 
 <!-- jquery -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
+
+<!-- bootstrap-toc -->
+<link rel="stylesheet" href="../bootstrap-toc.css">
+<script src="../bootstrap-toc.js"></script>
 
 <!-- Font Awesome icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/all.min.css" integrity="sha256-nAmazAk6vS34Xqo0BSrTb+abbtFlgsFK7NKSi6o7Y78=" crossorigin="anonymous" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/v4-shims.min.css" integrity="sha256-6qHlizsOWFskGlwVOKuns+D1nB6ssZrHQrNj1wGplHc=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous" />
 
 <!-- clipboard.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script>
 
 <!-- headroom.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/headroom.min.js" integrity="sha256-DJFC1kqIhelURkuza0AvYal5RxMtpzLjFhsnVIeuk+U=" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
@@ -53,7 +57,7 @@
 
   </head>
 
-  <body>
+  <body data-spy="scroll" data-target="#toc">
     <div class="container template-news">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -67,7 +71,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.9</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.11</span>
       </span>
     </div>
 
@@ -121,18 +125,64 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-      <h1>Changelog <small></small></h1>
+      <h1 data-toc-skip>Changelog <small></small></h1>
       <small>Source: <a href='https://github.com/ctmm-initiative/ctmm/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
     </div>
 
-    <div id="ctmm-0-5-9-2019-03-07" class="section level1">
-<h1 class="page-header">
-<a href="#ctmm-0-5-9-2019-03-07" class="anchor"></a>ctmm 0.5.9 (2019-03-07)<small> Unreleased </small>
+    <div id="ctmm-0511-2020-10-27" class="section level1">
+<h1 class="page-header" data-toc-text="0.5.11">
+<a href="#ctmm-0511-2020-10-27" class="anchor"></a>ctmm 0.5.11 (2020-10-27)<small> Unreleased </small>
+</h1>
+<ul>
+<li><p>new function meta for meta-analysis of home-range areas</p></li>
+<li><p>new function encounter for the conditional distribution of encounters (CDE)</p></li>
+<li><p>new function distance to calculate square Bhattacharyya, Mahalanobis, and Euclidean distances</p></li>
+<li><p>new function compass to plot a north-pointing compass</p></li>
+<li><p>new argument ‘t’ in function speed</p></li>
+<li><p>new argument ‘axes’ in function outlie</p></li>
+<li><p>as.telemetry now accepts most tibble objects</p></li>
+<li><p>akde() on multiple individuals is now more memory efficient</p></li>
+<li><p>bugfix in ctmm.fit for IOU model</p></li>
+<li><p>bugfix in occurrence with repeated timestamps</p></li>
+<li><p>bugfix in summary.ctmm rowname droped for single parameter CIs</p></li>
+<li><p>bugfix in outlie with list input</p></li>
+<li><p>bugfixes in plot.outlie with zero error</p></li>
+<li><p>bugfix in variogram with res&gt;1 and CI=“Gauss”</p></li>
+<li><p>bugfix in ctmm.select if stepping OU-&gt;OUf-&gt;OUF</p></li>
+<li><p>bugfix in as.telemetry for Move objects with empty idData slot</p></li>
+<li><p>bugfix in as.telemetry/median when importing single location estimate</p></li>
+<li><p>bugfix in plot.telemery with add=TRUE and non-SI units</p></li>
+<li><p>bugfix in speed for ctmm objects (no data), where CIs were incorrect</p></li>
+<li><p>bugfix in median with &gt;=50% repeating observations</p></li>
+<li><p>bugfix in summary() for periodic models with tau[velocity]==0</p></li>
+<li><p>bugfix in occurrence() for PDclamp() error</p></li>
+<li><p>bugfix in ctmm.select() giving incorrect model names when run indirectly</p></li>
+<li><p>work around in export functions where sp objects change timezones</p></li>
+<li><p>work around in as.telemetry() when Move idData() names are dropped</p></li>
+<li><p>improvements to akde/occurrence grid argument when incomplete</p></li>
+<li><p>improvements to Wishart approximation in overlap bias correction</p></li>
+<li><p>improvements to cleave()</p></li>
+</ul>
+</div>
+    <div id="ctmm-0510-2020-05-04" class="section level1">
+<h1 class="page-header" data-toc-text="0.5.10">
+<a href="#ctmm-0510-2020-05-04" class="anchor"></a>ctmm 0.5.10 (2020-05-04)<small> 2020-05-07 </small>
+</h1>
+<ul>
+<li><p>as.telemetry location class code improved</p></li>
+<li><p>as.telemetry message for marked outliers</p></li>
+<li><p>jaguar data in sync with ctmmweb</p></li>
+</ul>
+</div>
+    <div id="ctmm-059-2020-03-23" class="section level1">
+<h1 class="page-header" data-toc-text="0.5.9">
+<a href="#ctmm-059-2020-03-23" class="anchor"></a>ctmm 0.5.9 (2020-03-23)<small> 2020-03-23 </small>
 </h1>
 <ul>
 <li><p>new exact variogram CI argument “Gauss”</p></li>
 <li><p>new mean.UD argument weights</p></li>
 <li><p>new datum argument in as.telemetry—input and ouput datums can now differ</p></li>
+<li><p>new data ‘jaguar’</p></li>
 <li><p>bugfix for infinte loop in ctmm.select</p></li>
 <li><p>improvements in ctmm.select, ctmm.loglike for collapsing variance/error estimates</p></li>
 <li><p>rewrite of optimizer’s line search to be more exact &amp; reliable</p></li>
@@ -146,9 +196,9 @@
 <li><p>MoveStack objects are given a common projection if not projected</p></li>
 </ul>
 </div>
-    <div id="ctmm-0-5-8-2019-12-09" class="section level1">
-<h1 class="page-header">
-<a href="#ctmm-0-5-8-2019-12-09" class="anchor"></a>ctmm 0.5.8 (2019-12-09)<small> 2019-12-11 </small>
+    <div id="ctmm-058-2019-12-09" class="section level1">
+<h1 class="page-header" data-toc-text="0.5.8">
+<a href="#ctmm-058-2019-12-09" class="anchor"></a>ctmm 0.5.8 (2019-12-09)<small> 2019-12-11 </small>
 </h1>
 <ul>
 <li><p>improvements to ctmm.select stepwise selection, especially with error and/or circulation</p></li>
@@ -161,9 +211,9 @@
 <li><p>compatibility fix for R version 4</p></li>
 </ul>
 </div>
-    <div id="ctmm-0-5-7-2019-10-06" class="section level1">
-<h1 class="page-header">
-<a href="#ctmm-0-5-7-2019-10-06" class="anchor"></a>ctmm 0.5.7 (2019-10-06)<small> 2019-10-07 </small>
+    <div id="ctmm-057-2019-10-06" class="section level1">
+<h1 class="page-header" data-toc-text="0.5.7">
+<a href="#ctmm-057-2019-10-06" class="anchor"></a>ctmm 0.5.7 (2019-10-06)<small> 2019-10-07 </small>
 </h1>
 <ul>
 <li><p>new function optimizer</p></li>
@@ -195,9 +245,9 @@
 <li><p>as.telemetry no longer complains on reverse-time-ordered files</p></li>
 </ul>
 </div>
-    <div id="ctmm-0-5-6-2019-05-14" class="section level1">
-<h1 class="page-header">
-<a href="#ctmm-0-5-6-2019-05-14" class="anchor"></a>ctmm 0.5.6 (2019-05-14)<small> 2019-05-15 </small>
+    <div id="ctmm-056-2019-05-14" class="section level1">
+<h1 class="page-header" data-toc-text="0.5.6">
+<a href="#ctmm-056-2019-05-14" class="anchor"></a>ctmm 0.5.6 (2019-05-14)<small> 2019-05-15 </small>
 </h1>
 <ul>
 <li><p>new functions lasso, marquee, and cleave</p></li>
@@ -228,9 +278,9 @@
 <li><p>improvements to speed, speeds, ctmm.select for short tracks of data</p></li>
 </ul>
 </div>
-    <div id="ctmm-0-5-5-2019-02-11" class="section level1">
-<h1 class="page-header">
-<a href="#ctmm-0-5-5-2019-02-11" class="anchor"></a>ctmm 0.5.5 (2019-02-11)<small> 2019-02-11 </small>
+    <div id="ctmm-055-2019-02-11" class="section level1">
+<h1 class="page-header" data-toc-text="0.5.5">
+<a href="#ctmm-055-2019-02-11" class="anchor"></a>ctmm 0.5.5 (2019-02-11)<small> 2019-02-11 </small>
 </h1>
 <ul>
 <li><p>bugfix in summary where timescale CIs were always (0,Inf)</p></li>
@@ -239,9 +289,9 @@
 <li><p>R dependency increased to &gt;=3.5 for parallel functions</p></li>
 </ul>
 </div>
-    <div id="ctmm-0-5-4-2019-02-07" class="section level1">
-<h1 class="page-header">
-<a href="#ctmm-0-5-4-2019-02-07" class="anchor"></a>ctmm 0.5.4 (2019-02-07)<small> 2019-02-08 </small>
+    <div id="ctmm-054-2019-02-07" class="section level1">
+<h1 class="page-header" data-toc-text="0.5.4">
+<a href="#ctmm-054-2019-02-07" class="anchor"></a>ctmm 0.5.4 (2019-02-07)<small> 2019-02-08 </small>
 </h1>
 <ul>
 <li><p>bugfix in ctmm.select where OU was not considered over the new OUO/OUf models introduced in v0.5.3</p></li>
@@ -249,9 +299,9 @@
 <li><p>multiplicative option depreciated from ctmm.boot</p></li>
 </ul>
 </div>
-    <div id="ctmm-0-5-3-2019-01-29" class="section level1">
-<h1 class="page-header">
-<a href="#ctmm-0-5-3-2019-01-29" class="anchor"></a>ctmm 0.5.3 (2019-01-29)<small> 2019-01-31 </small>
+    <div id="ctmm-053-2019-01-29" class="section level1">
+<h1 class="page-header" data-toc-text="0.5.3">
+<a href="#ctmm-053-2019-01-29" class="anchor"></a>ctmm 0.5.3 (2019-01-29)<small> 2019-01-31 </small>
 </h1>
 <ul>
 <li><p>oscillatory (and critically damped) OUO/OUf models now supported, starting with omega option of ctmm()</p></li>
@@ -278,9 +328,9 @@
 <li><p>years updated to tropical years and calendar days updated to stellar days</p></li>
 </ul>
 </div>
-    <div id="ctmm-0-5-2-2018-09-10" class="section level1">
-<h1 class="page-header">
-<a href="#ctmm-0-5-2-2018-09-10" class="anchor"></a>ctmm 0.5.2 (2018-09-10)<small> 2018-09-10 </small>
+    <div id="ctmm-052-2018-09-10" class="section level1">
+<h1 class="page-header" data-toc-text="0.5.2">
+<a href="#ctmm-052-2018-09-10" class="anchor"></a>ctmm 0.5.2 (2018-09-10)<small> 2018-09-10 </small>
 </h1>
 <ul>
 <li><p>location classes (multiple UEREs) now supported by uere.fit() and uere()&lt;-</p></li>
@@ -292,9 +342,9 @@
 <li><p>numerical stability increased in ctmm.fit when distance scales are extreme</p></li>
 </ul>
 </div>
-    <div id="ctmm-0-5-1-2018-08-06" class="section level1">
-<h1 class="page-header">
-<a href="#ctmm-0-5-1-2018-08-06" class="anchor"></a>ctmm 0.5.1 (2018-08-06)<small> 2018-08-07 </small>
+    <div id="ctmm-051-2018-08-06" class="section level1">
+<h1 class="page-header" data-toc-text="0.5.1">
+<a href="#ctmm-051-2018-08-06" class="anchor"></a>ctmm 0.5.1 (2018-08-06)<small> 2018-08-07 </small>
 </h1>
 <ul>
 <li><p>Units of measurement down to microns and microseconds now supported</p></li>
@@ -315,9 +365,9 @@
 <li><p>simultaneously fitted UERE’s from ctmm slot “error” can now be assigned to data for plotting</p></li>
 </ul>
 </div>
-    <div id="ctmm-0-5-0-2018-05-15" class="section level1">
-<h1 class="page-header">
-<a href="#ctmm-0-5-0-2018-05-15" class="anchor"></a>ctmm 0.5.0 (2018-05-15)<small> 2018-05-16 </small>
+    <div id="ctmm-050-2018-05-15" class="section level1">
+<h1 class="page-header" data-toc-text="0.5.0">
+<a href="#ctmm-050-2018-05-15" class="anchor"></a>ctmm 0.5.0 (2018-05-15)<small> 2018-05-16 </small>
 </h1>
 <ul>
 <li><p>Extensive re-write of the Kalman filter &amp; smoother, now supporting an arbitrary number of spatial dimensions, necessary for ARGOS error ellipse support. (Previously, all multi-dimensional problems were transformed into multiple one-dimensional problems.) Many new models will be supported going forward, based on the v0.5.0 code.</p></li>
@@ -340,9 +390,9 @@
 <li><p>fixed bug in plot.variogram() from stats::qchisq() with k&lt;&lt;1</p></li>
 </ul>
 </div>
-    <div id="ctmm-0-4-2-2018-02-12" class="section level1">
-<h1 class="page-header">
-<a href="#ctmm-0-4-2-2018-02-12" class="anchor"></a>ctmm 0.4.2 (2018-02-12)<small> Unreleased </small>
+    <div id="ctmm-042-2018-02-12" class="section level1">
+<h1 class="page-header" data-toc-text="0.4.2">
+<a href="#ctmm-042-2018-02-12" class="anchor"></a>ctmm 0.4.2 (2018-02-12)<small> Unreleased </small>
 </h1>
 <ul>
 <li><p>new speed() method</p></li>
@@ -371,17 +421,17 @@
 <li><p>outlier removed from buffalo$Cilla</p></li>
 </ul>
 </div>
-    <div id="ctmm-0-4-1-2017-08-30" class="section level1">
-<h1 class="page-header">
-<a href="#ctmm-0-4-1-2017-08-30" class="anchor"></a>ctmm 0.4.1 (2017-08-30)<small> 2017-08-30 </small>
+    <div id="ctmm-041-2017-08-30" class="section level1">
+<h1 class="page-header" data-toc-text="0.4.1">
+<a href="#ctmm-041-2017-08-30" class="anchor"></a>ctmm 0.4.1 (2017-08-30)<small> 2017-08-30 </small>
 </h1>
 <ul>
 <li>projection method for ctmm objects</li>
 </ul>
 </div>
-    <div id="ctmm-0-4-0-2017-08-29" class="section level1">
-<h1 class="page-header">
-<a href="#ctmm-0-4-0-2017-08-29" class="anchor"></a>ctmm 0.4.0 (2017-08-29)<small> 2017-08-29 </small>
+    <div id="ctmm-040-2017-08-29" class="section level1">
+<h1 class="page-header" data-toc-text="0.4.0">
+<a href="#ctmm-040-2017-08-29" class="anchor"></a>ctmm 0.4.0 (2017-08-29)<small> 2017-08-29 </small>
 </h1>
 <ul>
 <li><p>periodigram vignette</p></li>
@@ -400,9 +450,9 @@
 <li><p>SI speeds &amp; diffusion fixed with units=FALSE</p></li>
 </ul>
 </div>
-    <div id="ctmm-0-3-6-2017-04-23" class="section level1">
-<h1 class="page-header">
-<a href="#ctmm-0-3-6-2017-04-23" class="anchor"></a>ctmm 0.3.6 (2017-04-23)<small> 2017-04-24 </small>
+    <div id="ctmm-036-2017-04-23" class="section level1">
+<h1 class="page-header" data-toc-text="0.3.6">
+<a href="#ctmm-036-2017-04-23" class="anchor"></a>ctmm 0.3.6 (2017-04-23)<small> 2017-04-24 </small>
 </h1>
 <ul>
 <li><p>AICc formulas updated from univariate to multivariate</p></li>
@@ -424,9 +474,9 @@
 <li><p>chi-square CIs (area, semi-variance, etc.) more robust when DOF&lt;1</p></li>
 </ul>
 </div>
-    <div id="ctmm-0-3-5-2017-02-01" class="section level1">
-<h1 class="page-header">
-<a href="#ctmm-0-3-5-2017-02-01" class="anchor"></a>ctmm 0.3.5 (2017-02-01)<small> 2017-02-03 </small>
+    <div id="ctmm-035-2017-02-01" class="section level1">
+<h1 class="page-header" data-toc-text="0.3.5">
+<a href="#ctmm-035-2017-02-01" class="anchor"></a>ctmm 0.3.5 (2017-02-01)<small> 2017-02-03 </small>
 </h1>
 <ul>
 <li><p>added a FAQ page to the documentation help(“ctmm-FAQ”)</p></li>
@@ -439,9 +489,9 @@
 <li><p>Kalman filter &amp; smoother upgraded to Joseph form covariance updates</p></li>
 </ul>
 </div>
-    <div id="ctmm-0-3-4-2016-11-28" class="section level1">
-<h1 class="page-header">
-<a href="#ctmm-0-3-4-2016-11-28" class="anchor"></a>ctmm 0.3.4 (2016-11-28)<small> 2016-11-30 </small>
+    <div id="ctmm-034-2016-11-28" class="section level1">
+<h1 class="page-header" data-toc-text="0.3.4">
+<a href="#ctmm-034-2016-11-28" class="anchor"></a>ctmm 0.3.4 (2016-11-28)<small> 2016-11-30 </small>
 </h1>
 <ul>
 <li><p>weighted AKDE implemented, fast option, covered in vignette</p></li>
@@ -460,9 +510,9 @@
 <li><p>as.telemetry defined for MoveStack objects</p></li>
 </ul>
 </div>
-    <div id="ctmm-0-3-3-2016-09-05" class="section level1">
-<h1 class="page-header">
-<a href="#ctmm-0-3-3-2016-09-05" class="anchor"></a>ctmm 0.3.3 (2016-09-05)<small> 2016-09-06 </small>
+    <div id="ctmm-033-2016-09-05" class="section level1">
+<h1 class="page-header" data-toc-text="0.3.3">
+<a href="#ctmm-033-2016-09-05" class="anchor"></a>ctmm 0.3.3 (2016-09-05)<small> 2016-09-06 </small>
 </h1>
 <ul>
 <li><p>improved import of ‘move’ objects</p></li>
@@ -476,9 +526,9 @@
 <li><p>res.space fixed in occurrence</p></li>
 </ul>
 </div>
-    <div id="ctmm-0-3-2-2016-05-12" class="section level1">
-<h1 class="page-header">
-<a href="#ctmm-0-3-2-2016-05-12" class="anchor"></a>ctmm 0.3.2 (2016-05-12)<small> 2016-05-14 </small>
+    <div id="ctmm-032-2016-05-12" class="section level1">
+<h1 class="page-header" data-toc-text="0.3.2">
+<a href="#ctmm-032-2016-05-12" class="anchor"></a>ctmm 0.3.2 (2016-05-12)<small> 2016-05-14 </small>
 </h1>
 <ul>
 <li><p>new function overlap for stationary Gaussian distributions and KDEs</p></li>
@@ -501,9 +551,9 @@
 <li><p>bad location removed from buffalo “Pepper”</p></li>
 </ul>
 </div>
-    <div id="ctmm-0-3-1-2016-02-23" class="section level1">
-<h1 class="page-header">
-<a href="#ctmm-0-3-1-2016-02-23" class="anchor"></a>ctmm 0.3.1 (2016-02-23)<small> 2016-02-24 </small>
+    <div id="ctmm-031-2016-02-23" class="section level1">
+<h1 class="page-header" data-toc-text="0.3.1">
+<a href="#ctmm-031-2016-02-23" class="anchor"></a>ctmm 0.3.1 (2016-02-23)<small> 2016-02-24 </small>
 </h1>
 <ul>
 <li><p>variogram.fit now stores global variables of any name</p></li>
@@ -519,9 +569,9 @@
 <li><p>occurrence() now works when some timesteps are tiny</p></li>
 </ul>
 </div>
-    <div id="ctmm-0-3-0-2015-11-26" class="section level1">
-<h1 class="page-header">
-<a href="#ctmm-0-3-0-2015-11-26" class="anchor"></a>ctmm 0.3.0 (2015-11-26)<small> 2015-11-28 </small>
+    <div id="ctmm-030-2015-11-26" class="section level1">
+<h1 class="page-header" data-toc-text="0.3.0">
+<a href="#ctmm-030-2015-11-26" class="anchor"></a>ctmm 0.3.0 (2015-11-26)<small> 2015-11-28 </small>
 </h1>
 <ul>
 <li><p>new function “occurrence” to estimate occurrence distributions</p></li>
@@ -536,9 +586,9 @@
 <li><p>ctmm.fit now has a backup for when Brent fails</p></li>
 </ul>
 </div>
-    <div id="ctmm-0-2-9-2015-10-13" class="section level1">
-<h1 class="page-header">
-<a href="#ctmm-0-2-9-2015-10-13" class="anchor"></a>ctmm 0.2.9 (2015-10-13)<small> 2015-10-14 </small>
+    <div id="ctmm-029-2015-10-13" class="section level1">
+<h1 class="page-header" data-toc-text="0.2.9">
+<a href="#ctmm-029-2015-10-13" class="anchor"></a>ctmm 0.2.9 (2015-10-13)<small> 2015-10-14 </small>
 </h1>
 <ul>
 <li><p>fixed a rare condition in ctmm.fit where solve would fail on correlated errors</p></li>
@@ -552,9 +602,9 @@
 <li><p>alpha, alpha.HR, res arguments made consistent across all functions</p></li>
 </ul>
 </div>
-    <div id="ctmm-0-2-8-2015-08-25" class="section level1">
-<h1 class="page-header">
-<a href="#ctmm-0-2-8-2015-08-25" class="anchor"></a>ctmm 0.2.8 (2015-08-25)<small> 2015-08-26 </small>
+    <div id="ctmm-028-2015-08-25" class="section level1">
+<h1 class="page-header" data-toc-text="0.2.8">
+<a href="#ctmm-028-2015-08-25" class="anchor"></a>ctmm 0.2.8 (2015-08-25)<small> 2015-08-26 </small>
 </h1>
 <ul>
 <li><p>efficiency gains in as.telemetry with multiple animals</p></li>
@@ -562,9 +612,9 @@
 <li><p>bugfix in variogram for rare condition when fast=TRUE</p></li>
 </ul>
 </div>
-    <div id="ctmm-0-2-7-2015-07-27" class="section level1">
-<h1 class="page-header">
-<a href="#ctmm-0-2-7-2015-07-27" class="anchor"></a>ctmm 0.2.7 (2015-07-27)<small> 2015-07-31 </small>
+    <div id="ctmm-027-2015-07-27" class="section level1">
+<h1 class="page-header" data-toc-text="0.2.7">
+<a href="#ctmm-027-2015-07-27" class="anchor"></a>ctmm 0.2.7 (2015-07-27)<small> 2015-07-31 </small>
 </h1>
 <ul>
 <li><p>CRAN check compliance achieved.</p></li>
@@ -572,25 +622,25 @@
 <li><p>argument names no longer clash with function names and are more explicit about their object class</p></li>
 </ul>
 </div>
-    <div id="ctmm-0-2-6-2015-07-17" class="section level1">
-<h1 class="page-header">
-<a href="#ctmm-0-2-6-2015-07-17" class="anchor"></a>ctmm 0.2.6 (2015-07-17)<small> Unreleased </small>
+    <div id="ctmm-026-2015-07-17" class="section level1">
+<h1 class="page-header" data-toc-text="0.2.6">
+<a href="#ctmm-026-2015-07-17" class="anchor"></a>ctmm 0.2.6 (2015-07-17)<small> Unreleased </small>
 </h1>
 <ul>
 <li>export bugfixes</li>
 </ul>
 </div>
-    <div id="ctmm-0-2-5-2015-07-14" class="section level1">
-<h1 class="page-header">
-<a href="#ctmm-0-2-5-2015-07-14" class="anchor"></a>ctmm 0.2.5 (2015-07-14)<small> Unreleased </small>
+    <div id="ctmm-025-2015-07-14" class="section level1">
+<h1 class="page-header" data-toc-text="0.2.5">
+<a href="#ctmm-025-2015-07-14" class="anchor"></a>ctmm 0.2.5 (2015-07-14)<small> Unreleased </small>
 </h1>
 <ul>
 <li>IOU bug fixes in ctmm.fit and plot.variogram</li>
 </ul>
 </div>
-    <div id="ctmm-0-2-4-2015-06-28" class="section level1">
-<h1 class="page-header">
-<a href="#ctmm-0-2-4-2015-06-28" class="anchor"></a>ctmm 0.2.4 (2015-06-28)<small> Unreleased </small>
+    <div id="ctmm-024-2015-06-28" class="section level1">
+<h1 class="page-header" data-toc-text="0.2.4">
+<a href="#ctmm-024-2015-06-28" class="anchor"></a>ctmm 0.2.4 (2015-06-28)<small> Unreleased </small>
 </h1>
 <ul>
 <li><p>cleaned up and labeled tau parameter arrays</p></li>
@@ -598,9 +648,9 @@
 <li><p>plot.telemetry now enforces asp=1 even with xlim/ylim arguments</p></li>
 </ul>
 </div>
-    <div id="ctmm-0-2-3-2015-06-19" class="section level1">
-<h1 class="page-header">
-<a href="#ctmm-0-2-3-2015-06-19" class="anchor"></a>ctmm 0.2.3 (2015-06-19)<small> Unreleased </small>
+    <div id="ctmm-023-2015-06-19" class="section level1">
+<h1 class="page-header" data-toc-text="0.2.3">
+<a href="#ctmm-023-2015-06-19" class="anchor"></a>ctmm 0.2.3 (2015-06-19)<small> Unreleased </small>
 </h1>
 <ul>
 <li><p>new function summary.telemetry</p></li>
@@ -610,17 +660,17 @@
 <li><p>minimal support for BM and IOU motion</p></li>
 </ul>
 </div>
-    <div id="ctmm-0-2-2-2015-05-21" class="section level1">
-<h1 class="page-header">
-<a href="#ctmm-0-2-2-2015-05-21" class="anchor"></a>ctmm 0.2.2 (2015-05-21)<small> Unreleased </small>
+    <div id="ctmm-022-2015-05-21" class="section level1">
+<h1 class="page-header" data-toc-text="0.2.2">
+<a href="#ctmm-022-2015-05-21" class="anchor"></a>ctmm 0.2.2 (2015-05-21)<small> Unreleased </small>
 </h1>
 <ul>
 <li>new functions periodogram, plot.periodogram</li>
 </ul>
 </div>
-    <div id="ctmm-0-2-1-2015-05-08" class="section level1">
-<h1 class="page-header">
-<a href="#ctmm-0-2-1-2015-05-08" class="anchor"></a>ctmm 0.2.1 (2015-05-08)<small> Unreleased </small>
+    <div id="ctmm-021-2015-05-08" class="section level1">
+<h1 class="page-header" data-toc-text="0.2.1">
+<a href="#ctmm-021-2015-05-08" class="anchor"></a>ctmm 0.2.1 (2015-05-08)<small> Unreleased </small>
 </h1>
 <ul>
 <li><p>new function SpatialPoints.telemetry returns SpatialPoints object from telemetry data</p></li>
@@ -633,9 +683,9 @@
 <li><p>telemetry, ctmm, and akde objects now have idenification and projection information slotted, with consistent naming throughout</p></li>
 </ul>
 </div>
-    <div id="ctmm-0-2-0-2015-04-27" class="section level1">
-<h1 class="page-header">
-<a href="#ctmm-0-2-0-2015-04-27" class="anchor"></a>ctmm 0.2.0 (2015-04-27)<small> Unreleased </small>
+    <div id="ctmm-020-2015-04-27" class="section level1">
+<h1 class="page-header" data-toc-text="0.2.0">
+<a href="#ctmm-020-2015-04-27" class="anchor"></a>ctmm 0.2.0 (2015-04-27)<small> Unreleased </small>
 </h1>
 <ul>
 <li><p>vignettes “variogram” and “akde”</p></li>
@@ -651,42 +701,10 @@
 </div>
   </div>
 
-  <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
-    <div id="tocnav">
-      <h2>Contents</h2>
-      <ul class="nav nav-pills nav-stacked">
-        <li><a href="#ctmm-0-5-9-2019-03-07">0.5.9</a></li>
-        <li><a href="#ctmm-0-5-8-2019-12-09">0.5.8</a></li>
-        <li><a href="#ctmm-0-5-7-2019-10-06">0.5.7</a></li>
-        <li><a href="#ctmm-0-5-6-2019-05-14">0.5.6</a></li>
-        <li><a href="#ctmm-0-5-5-2019-02-11">0.5.5</a></li>
-        <li><a href="#ctmm-0-5-4-2019-02-07">0.5.4</a></li>
-        <li><a href="#ctmm-0-5-3-2019-01-29">0.5.3</a></li>
-        <li><a href="#ctmm-0-5-2-2018-09-10">0.5.2</a></li>
-        <li><a href="#ctmm-0-5-1-2018-08-06">0.5.1</a></li>
-        <li><a href="#ctmm-0-5-0-2018-05-15">0.5.0</a></li>
-        <li><a href="#ctmm-0-4-2-2018-02-12">0.4.2</a></li>
-        <li><a href="#ctmm-0-4-1-2017-08-30">0.4.1</a></li>
-        <li><a href="#ctmm-0-4-0-2017-08-29">0.4.0</a></li>
-        <li><a href="#ctmm-0-3-6-2017-04-23">0.3.6</a></li>
-        <li><a href="#ctmm-0-3-5-2017-02-01">0.3.5</a></li>
-        <li><a href="#ctmm-0-3-4-2016-11-28">0.3.4</a></li>
-        <li><a href="#ctmm-0-3-3-2016-09-05">0.3.3</a></li>
-        <li><a href="#ctmm-0-3-2-2016-05-12">0.3.2</a></li>
-        <li><a href="#ctmm-0-3-1-2016-02-23">0.3.1</a></li>
-        <li><a href="#ctmm-0-3-0-2015-11-26">0.3.0</a></li>
-        <li><a href="#ctmm-0-2-9-2015-10-13">0.2.9</a></li>
-        <li><a href="#ctmm-0-2-8-2015-08-25">0.2.8</a></li>
-        <li><a href="#ctmm-0-2-7-2015-07-27">0.2.7</a></li>
-        <li><a href="#ctmm-0-2-6-2015-07-17">0.2.6</a></li>
-        <li><a href="#ctmm-0-2-5-2015-07-14">0.2.5</a></li>
-        <li><a href="#ctmm-0-2-4-2015-06-28">0.2.4</a></li>
-        <li><a href="#ctmm-0-2-3-2015-06-19">0.2.3</a></li>
-        <li><a href="#ctmm-0-2-2-2015-05-21">0.2.2</a></li>
-        <li><a href="#ctmm-0-2-1-2015-05-08">0.2.1</a></li>
-        <li><a href="#ctmm-0-2-0-2015-04-27">0.2.0</a></li>
-      </ul>
-    </div>
+  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
+    <nav id="toc" data-toggle="toc" class="sticky-top">
+      <h2 data-toc-skip>Contents</h2>
+    </nav>
   </div>
 
 </div>
@@ -698,7 +716,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

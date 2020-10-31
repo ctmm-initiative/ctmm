@@ -5,7 +5,7 @@ date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteKeyword{error}
-  %\VignetteIndexEntry{Dealing with telemetry error}
+  %\VignetteIndexEntry{Telemetry error}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
   \usepackage[utf8]{inputenc}

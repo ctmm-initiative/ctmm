@@ -10,23 +10,27 @@
 
 
 <!-- jquery -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
+
+<!-- bootstrap-toc -->
+<link rel="stylesheet" href="../bootstrap-toc.css">
+<script src="../bootstrap-toc.js"></script>
 
 <!-- Font Awesome icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/all.min.css" integrity="sha256-nAmazAk6vS34Xqo0BSrTb+abbtFlgsFK7NKSi6o7Y78=" crossorigin="anonymous" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/v4-shims.min.css" integrity="sha256-6qHlizsOWFskGlwVOKuns+D1nB6ssZrHQrNj1wGplHc=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous" />
 
 <!-- clipboard.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script>
 
 <!-- headroom.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/headroom.min.js" integrity="sha256-DJFC1kqIhelURkuza0AvYal5RxMtpzLjFhsnVIeuk+U=" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
@@ -40,7 +44,6 @@
 A correlogram method is also provided to assess autocorrelation.
 This function is analogous to acf, but can handle missing data and multiple dimensions.
 Finally, mag calculates residual magnitudes, which is useful for comparing against potential covariates." />
-<meta name="twitter:card" content="summary" />
 
 
 
@@ -58,7 +61,7 @@ Finally, mag calculates residual magnitudes, which is useful for comparing again
 
   </head>
 
-  <body>
+  <body data-spy="scroll" data-target="#toc">
     <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -72,7 +75,7 @@ Finally, mag calculates residual magnitudes, which is useful for comparing again
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.9</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.11</span>
       </span>
     </div>
 
@@ -138,18 +141,19 @@ This function is analogous to <code>acf</code>, but can handle missing data and 
 Finally, <code>mag</code> calculates residual magnitudes, which is useful for comparing against potential covariates.</p>
     </div>
 
-    <pre class="usage"><span class='co'># S3 method for ctmm</span>
-<span class='fu'><a href='https://rdrr.io/r/stats/residuals.html'>residuals</a></span>(<span class='no'>object</span>,<span class='no'>data</span>,<span class='no'>...</span>)
+    <pre class="usage">&lt;!-- %residuals(object,...) --&gt;
+# S3 method for ctmm
+residuals(object,data,...)
 
-<span class='co'># S3 method for telemetry</span>
-<span class='fu'><a href='https://rdrr.io/r/stats/residuals.html'>residuals</a></span>(<span class='no'>object</span>,<span class='kw'>CTMM</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='no'>...</span>)
+# S3 method for telemetry
+residuals(object,CTMM=NULL,...)
 
-<span class='fu'>correlogram</span>(<span class='no'>data</span>,<span class='kw'>dt</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>fast</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>res</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='kw'>axes</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"x"</span>,<span class='st'>"y"</span>))
+correlogram(data,dt=NULL,fast=TRUE,res=1,axes=c("x","y"))
 
-<span class='fu'>mag</span>(<span class='no'>x</span>,<span class='no'>...</span>)
+mag(x,...)
 
-<span class='co'># S3 method for telemetry</span>
-<span class='fu'>mag</span>(<span class='no'>x</span>,<span class='kw'>axes</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>'x'</span>,<span class='st'>'y'</span>),<span class='no'>...</span>)</pre>
+# S3 method for telemetry
+mag(x,axes=c('x','y'),...)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -204,6 +208,9 @@ Finally, <code>mag</code> calculates residual magnitudes, which is useful for co
     <p>C. H. Fleming, D. Sheldon, E. Gurarie, W. F. Fagan, S. LaPoint, J. M. Calabrese,
 ``Kálmán filters for continuous-time movement models'',
 <a href='http://www.sciencedirect.com/science/article/pii/S1574954117301115'>Ecological Informatics, 40, 8-21 (2017)</a>.</p>
+    <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
+
+    <p>C. H. Fleming</p>
     <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
 
     <p>If the sampling schedule is irregular, permitting gaps, then the correlogram may not look good even if the model is correctly specified. In this case the correlogram of the residuals should be compared to the correlogram of simulated residuals, using "data" simulated from the fit model and with the same sampling schedule.</p>
@@ -214,40 +221,32 @@ Finally, <code>mag</code> calculates residual magnitudes, which is useful for co
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='co'># \donttest{</span>
 <span class='co'># Load package and data</span>
-<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>ctmm</span>)
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='no'>buffalo</span>)
-<span class='no'>Cilla</span> <span class='kw'>&lt;-</span> <span class='no'>buffalo</span>$<span class='no'>Cilla</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/ctmm-initiative/ctmm'>ctmm</a></span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>buffalo</span><span class='op'>)</span>
+<span class='va'>Cilla</span> <span class='op'>&lt;-</span> <span class='va'>buffalo</span><span class='op'>$</span><span class='va'>Cilla</span>
 
 <span class='co'># fit a model</span>
-<span class='no'>GUESS</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='variogram.fit.html'>ctmm.guess</a></span>(<span class='no'>Cilla</span>,<span class='kw'>interactive</span><span class='kw'>=</span><span class='fl'>FALSE</span>)
-<span class='no'>FIT</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='ctmm.fit.html'>ctmm.fit</a></span>(<span class='no'>Cilla</span>,<span class='no'>GUESS</span>)
+<span class='va'>GUESS</span> <span class='op'>&lt;-</span> <span class='fu'><a href='variogram.fit.html'>ctmm.guess</a></span><span class='op'>(</span><span class='va'>Cilla</span>,interactive<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span>
+<span class='va'>FIT</span> <span class='op'>&lt;-</span> <span class='fu'><a href='ctmm.html'>ctmm.fit</a></span><span class='op'>(</span><span class='va'>Cilla</span>,<span class='va'>GUESS</span><span class='op'>)</span>
 
 <span class='co'># calculate residuals</span>
-<span class='no'>RES</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/residuals.html'>residuals</a></span>(<span class='no'>Cilla</span>,<span class='no'>FIT</span>)
+<span class='va'>RES</span> <span class='op'>&lt;-</span> <span class='fu'>residuals</span><span class='op'>(</span><span class='va'>Cilla</span>,<span class='va'>FIT</span><span class='op'>)</span>
 
 <span class='co'># scatter plot of residuals with 50% and 95% quantiles</span>
-<span class='fu'><a href='plot.telemetry.html'>plot</a></span>(<span class='no'>RES</span>,<span class='kw'>col.DF</span><span class='kw'>=</span><span class='fl'>NA</span>,<span class='kw'>level.UD</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>.50</span>,<span class='fl'>.95</span>))</div><div class='img'><img src='residuals-1.png' alt='' width='700' height='433' /></div><div class='input'>
+<span class='fu'><a href='plot.telemetry.html'>plot</a></span><span class='op'>(</span><span class='va'>RES</span>,col.DF<span class='op'>=</span><span class='cn'>NA</span>,level.UD<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>.50</span>,<span class='fl'>.95</span><span class='op'>)</span><span class='op'>)</span>
+</div><div class='img'><img src='residuals-1.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'># calculate correlogram of residuals</span>
 <span class='co'># increase the res argument to account for sampling variability</span>
-<span class='no'>ACF</span> <span class='kw'>&lt;-</span> <span class='fu'>correlogram</span>(<span class='no'>RES</span>,<span class='kw'>res</span><span class='kw'>=</span><span class='fl'>10</span>)
+<span class='va'>ACF</span> <span class='op'>&lt;-</span> <span class='fu'>correlogram</span><span class='op'>(</span><span class='va'>RES</span>,res<span class='op'>=</span><span class='fl'>10</span><span class='op'>)</span>
 
 <span class='co'># plot 4 day's worth of lags</span>
-<span class='fu'><a href='plot.telemetry.html'>plot</a></span>(<span class='no'>ACF</span>[<span class='no'>ACF</span>$<span class='no'>lag</span><span class='kw'>&lt;=</span><span class='fl'>4</span> <span class='kw'>%#%</span> <span class='st'>'day'</span>,],<span class='kw'>fraction</span><span class='kw'>=</span><span class='fl'>1</span>)</div><div class='img'><img src='residuals-2.png' alt='' width='700' height='433' /></div><div class='input'># }</div></pre>
+<span class='fu'><a href='plot.telemetry.html'>plot</a></span><span class='op'>(</span><span class='va'>ACF</span><span class='op'>[</span><span class='va'>ACF</span><span class='op'>$</span><span class='va'>lag</span><span class='op'>&lt;=</span><span class='fl'>4</span> <span class='op'>%#%</span> <span class='st'>'day'</span>,<span class='op'>]</span>,fraction<span class='op'>=</span><span class='fl'>1</span><span class='op'>)</span>
+</div><div class='img'><img src='residuals-2.png' alt='' width='700' height='433' /></div><div class='input'><span class='co'># }</span></div></pre>
   </div>
-  <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
-    <h2>Contents</h2>
-    <ul class="nav nav-pills nav-stacked">
-      <li><a href="#arguments">Arguments</a></li>
-      <li><a href="#details">Details</a></li>
-      <li><a href="#value">Value</a></li>
-      <li><a href="#references">References</a></li>
-      <li><a href="#note">Note</a></li>
-      <li><a href="#see-also">See also</a></li>
-      <li><a href="#examples">Examples</a></li>
-    </ul>
-
-    <h2>Author</h2>
-    <p>C. H. Fleming</p>
+  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
+    <nav id="toc" data-toggle="toc" class="sticky-top">
+      <h2 data-toc-skip>Contents</h2>
+    </nav>
   </div>
 </div>
 
@@ -258,7 +257,7 @@ Finally, <code>mag</code> calculates residual magnitudes, which is useful for co
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

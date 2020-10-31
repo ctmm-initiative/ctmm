@@ -1,4 +1,5 @@
 PRIORITY
+* zoom needs CTMM argument named? No gear comes up then?
 * consistent grids with different resolutions (power of 2 relation; padding; etc.)
 * automatic timeformat (non-default argument)
 * store RMS UERE approxmation (1 or 10 meters) on import

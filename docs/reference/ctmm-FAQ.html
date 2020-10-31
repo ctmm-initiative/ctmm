@@ -10,23 +10,27 @@
 
 
 <!-- jquery -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
+
+<!-- bootstrap-toc -->
+<link rel="stylesheet" href="../bootstrap-toc.css">
+<script src="../bootstrap-toc.js"></script>
 
 <!-- Font Awesome icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/all.min.css" integrity="sha256-nAmazAk6vS34Xqo0BSrTb+abbtFlgsFK7NKSi6o7Y78=" crossorigin="anonymous" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/v4-shims.min.css" integrity="sha256-6qHlizsOWFskGlwVOKuns+D1nB6ssZrHQrNj1wGplHc=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous" />
 
 <!-- clipboard.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script>
 
 <!-- headroom.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/headroom.min.js" integrity="sha256-DJFC1kqIhelURkuza0AvYal5RxMtpzLjFhsnVIeuk+U=" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
@@ -37,7 +41,6 @@
 
 <meta property="og:title" content="ctmm FAQ — ctmm-FAQ" />
 <meta property="og:description" content="Frequently asked questions for the ctmm package." />
-<meta name="twitter:card" content="summary" />
 
 
 
@@ -55,7 +58,7 @@
 
   </head>
 
-  <body>
+  <body data-spy="scroll" data-target="#toc">
     <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -69,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.9</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.11</span>
       </span>
     </div>
 
@@ -149,10 +152,7 @@
 </ol>
 
 <p><b>Help installing packages on Linux</b></p>
-<p>These are the packages I needed in Ubuntu:<code>sudo apt install fftw3 fftw3-dev libgdal1-dev libproj-dev libgeos-dev libgsl-dev libv8-dev r-base-core</code></p>
-<p><b><code>ctmm.select</code> only returns one model with <code>verbose=TRUE</code></b></p>
-<p>The newer version of <code>ctmm.select</code> is much more intelligent, necessitated by the exploding number of new model permutations. Any simpler models were judged to be so unlikely that they were not attempted. You can set <code>level=1</code> to force alternative model fitting, but the additional models should lose badly in model selection (please contact me if I am wrong).</p>
-
+<p>These are the packages I needed in Ubuntu:<code>sudo apt install fftw3 libfftw3-dev libgdal-dev libgmp-dev libmpfr-dev libproj-dev libgeos-dev libgsl-dev libnode-dev r-base-core</code></p>
 <p><b><code>as.telemetry</code> reports abnormal sampling intervals and speeds</b></p>
 <p>Make sure that you have the correct <code>timezone</code> and <code>timeformat</code> arguments specified. Also, see <code><a href='outlie.html'>outlie</a></code>.</p>
 <p><b>rdb database corruption, "could not find function", "cannot coerce class", and other weird errors</b></p>
@@ -165,28 +165,27 @@
 <li><p>Increase the allowed number of nested expressions within <code>R</code> via <code><a href='https://rdrr.io/r/base/options.html'>options(expressions=10000)</a></code> or some other large number.</p></li>
 <li><p>Try a different computer.</p></li>
 </ol></p>
-
 <p><b><code>plot</code> complains about the datatype or has weird errors</b></p>
 <p>Namespace collision sometimes occurs from <code>raster</code> or <code>sp</code> against <code>move</code> and <code>ctmm</code>. Restart <code>R</code> and only load the <code>ctmm</code> package.</p>
 <p><b>North is no longer up after importing data</b></p>
-<p>The default projection in <code>ctmm</code> does not preserve the direction of North, but better preserves distances for elongated distributions. See the <code>projection</code> argument in <code><a href='as.telemetry.html'>as.telemetry</a></code> and the example in <code>projection</code>.</p>
-<p><b><code><a href='variogram.fit.html'>variogram.fit</a></code> has no save button</b></p>
+<p>The default projection in <code>ctmm</code> does not preserve the direction of North, but better preserves distances for elongated distributions. See the <code>projection</code> argument in <code><a href='as.telemetry.html'>as.telemetry</a></code> and the example in <code><a href='projection.html'>projection</a></code>. The <code><a href='projection.html'>compass</a></code> function is also useful for pointing north.</p>
+<p><b><code><a href='variogram.fit.html'>ctmm.guess</a></code> has no save button</b></p>
 <p>Maximize the plot window and/or increase your screen resolution.</p>
+<p><b><code>manipulate</code> panel does not popup in <code><a href='variogram.fit.html'>ctmm.guess</a></code> or <code>zoom</code></b></p>
+<p>Click the gear icon in the upper-left corner of the plot window.</p>
+<p><b>Gear icon missing in <code><a href='variogram.fit.html'>ctmm.guess</a></code> or <code>zoom</code></b></p>
+<p>Recent versions of <code>manipulate</code> and/or RStudio seem to have some issues. Sometimes the gear icon does not render unless you re-run the function 2-5 times.</p>
 <p><b><code><a href='https://rdrr.io/pkg/manipulate/man/isAvailable.html'>manipulate::isAvailable</a></code> is not found</b></p>
 <p>You probably have an outdated copy of the <code>manipulate</code> package installed. Update <code>R</code> to the latest version and then update all of your packages. This seems to happen frequently with the MacOS release of <code>R</code>.</p>
+    <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
 
-<p><b><code>manipulate</code> panel does not popup in <code><a href='variogram.fit.html'>variogram.fit</a></code> or <code>zoom</code></b></p>
-<p>Click the gear icon in the upper-left corner of the plot window.</p>
+    <p>C. H. Fleming</p>
 
   </div>
-  <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
-    <h2>Contents</h2>
-    <ul class="nav nav-pills nav-stacked">
-      <li><a href="#details">Details</a></li>
-    </ul>
-
-    <h2>Author</h2>
-    <p>C. H. Fleming</p>
+  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
+    <nav id="toc" data-toggle="toc" class="sticky-top">
+      <h2 data-toc-skip>Contents</h2>
+    </nav>
   </div>
 </div>
 
@@ -197,7 +196,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

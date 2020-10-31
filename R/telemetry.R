@@ -633,7 +633,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
 
   # ARGOS error categories (older ARGOS data <2011)
   # converted to error ellipses from ...
-  COL <- c("Argos.location.class","Argos.lc")
+  COL <- c("Argos.location.class","Argos.lc","lc")
   COL <- pull.column(object,COL,as.factor)
   if(length(COL) && any(NAS)) # ARGOS location classes present, but no error ellipses
   {
