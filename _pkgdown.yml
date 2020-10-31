@@ -1,3 +1,5 @@
+destination: ~/docs
+
 template:
   params:
     bootswatch: yeti

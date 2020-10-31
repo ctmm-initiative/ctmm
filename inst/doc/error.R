@@ -1,54 +1,54 @@
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 library(ctmm)
 data(turtle)
 names(turtle[[1]]) # data are not yet calibrated, but HDOP and location class is present
 names(turtle) # two calibration datasets and two turtle datasets
 plot(turtle[1:2],col=rainbow(2)) # calibration data only
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 UERE <- uere.fit(turtle[1:2]) # only using calibration data
 summary(UERE)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 uere(turtle) <- UERE
 names(turtle[[3]]) # now the data are calibrated, as VAR is present
 plot(turtle[[3]],error=2) # turtle plot with 95% error discs
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 data(pelican)
 names(pelican)
 names(pelican$argos) # error ellipse information (COV and VAR) already present
 plot(pelican$argos) # pelican Argos plot with 95% error ellipses
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 t.noHDOP  <- lapply(turtle,function(t){ t$HDOP  <- NULL; t })
 t.noclass <- lapply(turtle,function(t){ t$class <- NULL; t })
 t.nothing <- lapply(turtle,function(t){ t$HDOP  <- NULL; t$class <- NULL; t })
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 UERE.noHDOP  <- uere.fit(t.noHDOP[1:2])
 UERE.noclass <- uere.fit(t.noclass[1:2])
 UERE.nothing <- uere.fit(t.nothing[1:2])
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 summary(list(HDOP.class=UERE,class=UERE.noHDOP,HDOP=UERE.noclass,homoskedastic=UERE.nothing))
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 UERES <- lapply(turtle[1:2],uere.fit)
 summary(list(joint=UERE,individual=UERES))
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 outlie(turtle[[3]]) -> OUT
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 plot(OUT)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 BAD <- which.max(OUT$speed)
 turtle[[3]] <- turtle[[3]][-BAD,]
 outlie(turtle[[3]]) -> OUT
 
-## ----  fig.show='hold', echo=FALSE---------------------------------------
+## ----  fig.show='hold', echo=FALSE--------------------------------------------
 # Argos type errors
 curve(1+x,0,5,xlab="Short time lag",ylab="Semi-variance",ylim=c(0,6))
 points(c(0,0),c(0,1))
@@ -59,7 +59,7 @@ curve(3/4+x,1/4,5,xlab="Short time lag",ylab="Semi-variance",ylim=c(0,6),add=TRU
 points(1/4,1)
 title("Detector Array")
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 # automated guestimate for calibrated data
 GUESS <- ctmm.guess(turtle[[3]],CTMM=ctmm(error=TRUE),interactive=FALSE)
 # stepwise fitting # CRAN policy limits us to 2 cores
@@ -67,13 +67,13 @@ FIT <- ctmm.select(turtle[[3]],GUESS,trace=TRUE,cores=2)
 # if you get errors on your platform, then try cores=1
 summary(FIT)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 # delete UERE information
 uere(turtle) <- NULL
 # toss out 2D locations for this example, as we know they have a different/larger RMS UERE
 turtle <- lapply(turtle,function(t){ t[t$class=="3D",] })
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 # automated guestimate for uncalibrated data (with 10 meter RMS UERE guess)
 GUESS <- ctmm.guess(turtle[[3]],CTMM=ctmm(error=10),interactive=FALSE)
 # fit and select models # CRAN policy limits us to 2 cores
@@ -81,7 +81,7 @@ FIT <- ctmm.select(turtle[[3]],GUESS,trace=TRUE,cores=2)
 # if you get errors on your platform, then try cores=1
 summary(FIT)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 # assign 10 meter RMS UERE (2D class still deleted)
 uere(turtle) <- 10
 # automated guestimate for calibrated data

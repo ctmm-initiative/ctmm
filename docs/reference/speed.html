@@ -10,23 +10,27 @@
 
 
 <!-- jquery -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
+
+<!-- bootstrap-toc -->
+<link rel="stylesheet" href="../bootstrap-toc.css">
+<script src="../bootstrap-toc.js"></script>
 
 <!-- Font Awesome icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/all.min.css" integrity="sha256-nAmazAk6vS34Xqo0BSrTb+abbtFlgsFK7NKSi6o7Y78=" crossorigin="anonymous" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/v4-shims.min.css" integrity="sha256-6qHlizsOWFskGlwVOKuns+D1nB6ssZrHQrNj1wGplHc=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous" />
 
 <!-- clipboard.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script>
 
 <!-- headroom.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/headroom.min.js" integrity="sha256-DJFC1kqIhelURkuza0AvYal5RxMtpzLjFhsnVIeuk+U=" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
@@ -37,7 +41,6 @@
 
 <meta property="og:title" content="Estimate the average speed of a tracked animal — speed" />
 <meta property="og:description" content="Given a ctmm movement model and telemetry data, speed simulates multiple realizations of the individual's trajectory to estimate the time-averaged speed, which is proportional to distance traveled, while speeds estimates instantaneous speeds at a specified array of times t. Both tortuosity (non straight-line motion between the data) and telemetry error can be accounted for. Given only a ctmm movement model and no data, speed calculates the mean speed of the Gaussian movement process. All methods are described in Noonan &amp;amp; Fleming et al (2019)." />
-<meta name="twitter:card" content="summary" />
 
 
 
@@ -55,7 +58,7 @@
 
   </head>
 
-  <body>
+  <body data-spy="scroll" data-target="#toc">
     <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -69,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.9</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.11</span>
       </span>
     </div>
 
@@ -132,25 +135,25 @@
     <p>Given a <code>ctmm</code> movement model and <code>telemetry</code> data, <code>speed</code> simulates multiple realizations of the individual's trajectory to estimate the time-averaged speed, which is proportional to distance traveled, while <code>speeds</code> estimates instantaneous speeds at a specified array of times <code>t</code>. Both tortuosity (non straight-line motion between the data) and telemetry error can be accounted for. Given only a <code>ctmm</code> movement model and no data, <code>speed</code> calculates the mean speed of the Gaussian movement process. All methods are described in Noonan &amp; Fleming et al (2019).</p>
     </div>
 
-    <pre class="usage"><span class='fu'>speed</span>(<span class='no'>object</span>,<span class='no'>...</span>)
+    <pre class="usage"><span class='fu'>speed</span><span class='op'>(</span><span class='va'>object</span>,<span class='va'>...</span><span class='op'>)</span>
 
 <span class='co'># S3 method for ctmm</span>
-<span class='fu'>speed</span>(<span class='no'>object</span>,<span class='kw'>data</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>robust</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>units</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>prior</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>fast</span><span class='kw'>=</span><span class='fl'>TRUE</span>,
-      <span class='kw'>cor.min</span><span class='kw'>=</span><span class='fl'>0.5</span>,<span class='kw'>dt.max</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>error</span><span class='kw'>=</span><span class='fl'>0.01</span>,<span class='kw'>cores</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='no'>...</span>)
+<span class='fu'>speed</span><span class='op'>(</span><span class='va'>object</span>,data<span class='op'>=</span><span class='cn'>NULL</span>,t<span class='op'>=</span><span class='cn'>NULL</span>,level<span class='op'>=</span><span class='fl'>0.95</span>,robust<span class='op'>=</span><span class='cn'>FALSE</span>,units<span class='op'>=</span><span class='cn'>TRUE</span>,prior<span class='op'>=</span><span class='cn'>TRUE</span>,fast<span class='op'>=</span><span class='cn'>TRUE</span>,
+      cor.min<span class='op'>=</span><span class='fl'>0.5</span>,dt.max<span class='op'>=</span><span class='cn'>NULL</span>,error<span class='op'>=</span><span class='fl'>0.01</span>,cores<span class='op'>=</span><span class='fl'>1</span>,<span class='va'>...</span><span class='op'>)</span>
 
 <span class='co'># S3 method for telemetry</span>
-<span class='fu'>speed</span>(<span class='no'>object</span>,<span class='no'>CTMM</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>robust</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>units</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>prior</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>fast</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>cor.min</span><span class='kw'>=</span><span class='fl'>0.5</span>,
-      <span class='kw'>dt.max</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>error</span><span class='kw'>=</span><span class='fl'>0.01</span>,<span class='kw'>cores</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='no'>...</span>)
+<span class='fu'>speed</span><span class='op'>(</span><span class='va'>object</span>,<span class='va'>CTMM</span>,t<span class='op'>=</span><span class='cn'>NULL</span>,level<span class='op'>=</span><span class='fl'>0.95</span>,robust<span class='op'>=</span><span class='cn'>FALSE</span>,units<span class='op'>=</span><span class='cn'>TRUE</span>,prior<span class='op'>=</span><span class='cn'>TRUE</span>,fast<span class='op'>=</span><span class='cn'>TRUE</span>,
+      cor.min<span class='op'>=</span><span class='fl'>0.5</span>,dt.max<span class='op'>=</span><span class='cn'>NULL</span>,error<span class='op'>=</span><span class='fl'>0.01</span>,cores<span class='op'>=</span><span class='fl'>1</span>,<span class='va'>...</span><span class='op'>)</span>
 
-<span class='fu'>speeds</span>(<span class='no'>object</span>,<span class='no'>...</span>)
+<span class='fu'>speeds</span><span class='op'>(</span><span class='va'>object</span>,<span class='va'>...</span><span class='op'>)</span>
 
 <span class='co'># S3 method for ctmm</span>
-<span class='fu'>speeds</span>(<span class='no'>object</span>,<span class='kw'>data</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>t</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>cycle</span><span class='kw'>=</span><span class='fl'>Inf</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>robust</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>prior</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>fast</span><span class='kw'>=</span><span class='fl'>TRUE</span>,
-       <span class='kw'>error</span><span class='kw'>=</span><span class='fl'>0.01</span>,<span class='kw'>cores</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='no'>...</span>)
+<span class='fu'>speeds</span><span class='op'>(</span><span class='va'>object</span>,data<span class='op'>=</span><span class='cn'>NULL</span>,t<span class='op'>=</span><span class='cn'>NULL</span>,cycle<span class='op'>=</span><span class='cn'>Inf</span>,level<span class='op'>=</span><span class='fl'>0.95</span>,robust<span class='op'>=</span><span class='cn'>FALSE</span>,prior<span class='op'>=</span><span class='cn'>FALSE</span>,fast<span class='op'>=</span><span class='cn'>TRUE</span>,
+       error<span class='op'>=</span><span class='fl'>0.01</span>,cores<span class='op'>=</span><span class='fl'>1</span>,<span class='va'>...</span><span class='op'>)</span>
 
 <span class='co'># S3 method for telemetry</span>
-<span class='fu'>speeds</span>(<span class='no'>object</span>,<span class='no'>CTMM</span>,<span class='kw'>t</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>cycle</span><span class='kw'>=</span><span class='fl'>Inf</span>,<span class='kw'>level</span><span class='kw'>=</span><span class='fl'>0.95</span>,<span class='kw'>robust</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>prior</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>fast</span><span class='kw'>=</span><span class='fl'>TRUE</span>,
-       <span class='kw'>error</span><span class='kw'>=</span><span class='fl'>0.01</span>,<span class='kw'>cores</span><span class='kw'>=</span><span class='fl'>1</span>,<span class='no'>...</span>)</pre>
+<span class='fu'>speeds</span><span class='op'>(</span><span class='va'>object</span>,<span class='va'>CTMM</span>,t<span class='op'>=</span><span class='cn'>NULL</span>,cycle<span class='op'>=</span><span class='cn'>Inf</span>,level<span class='op'>=</span><span class='fl'>0.95</span>,robust<span class='op'>=</span><span class='cn'>FALSE</span>,prior<span class='op'>=</span><span class='cn'>FALSE</span>,fast<span class='op'>=</span><span class='cn'>TRUE</span>,
+       error<span class='op'>=</span><span class='fl'>0.01</span>,cores<span class='op'>=</span><span class='fl'>1</span>,<span class='va'>...</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -169,7 +172,7 @@
     </tr>
     <tr>
       <th>t</th>
-      <td><p>Array of times to estimate instantaneous speeds at.</p></td>
+      <td><p>Array of times to estimate instantaneous speeds at, or range of times to estimate mean speed over.</p></td>
     </tr>
     <tr>
       <th>cycle</th>
@@ -193,7 +196,7 @@
     </tr>
     <tr>
       <th>fast</th>
-      <td><p>Whether or not to invoke the central-limit theorem when propagating parameter uncertainty (see <code><a href='emulate.ctmm.html'>emulate</a></code>).</p></td>
+      <td><p>Whether or not to invoke the central-limit theorem when propagating parameter uncertainty (see <code><a href='emulate.html'>emulate</a></code>).</p></td>
     </tr>
     <tr>
       <th>cor.min</th>
@@ -213,14 +216,14 @@
     </tr>
     <tr>
       <th>...</th>
-      <td><p>Arguments passed to <code><a href='emulate.ctmm.html'>emulate</a></code>.</p></td>
+      <td><p>Arguments passed to <code><a href='emulate.html'>emulate</a></code>.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>The <code>cor.min</code> or <code>dt.max</code> arguments are used to constrain the estimate to be derived from simulations near the data, and therefore ensure that the estimate is more reflective of the data than the model.</p>
-<p>If data quality is poor and velocity can barely be resolved, then the sampling distribution may occassionally include impersistent motion and the ensemble mean will be infinite. In these cases <code>robust=TRUE</code> can be used to report the ensemble median rather than the ensemble mean. The time average of <code>speed</code>, in either case, is still the mean and the resulting quantity is still proportional to distance traveled. Furthermore, note that medians should be compared to medians and means to means, so the <code>robust</code> option should be the same for all compared individuals.</p>
+<p>If data quality is poor and velocity can barely be resolved, then the sampling distribution may occassionally include impersistent motion and its mean will be infinite. In these cases <code>robust=TRUE</code> can be used to report the sampling distribution's median rather than its mean. The time average of <code>speed</code>, in either case, is still the mean average of times and the resulting quantity is still proportional to distance traveled. Furthermore, note that medians should be compared to medians and means to means, so the <code>robust</code> option should be the same for all compared individuals.</p>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>Returns the estimated mean speed of the sampled trajectory with CIs by default. If <code>level=NULL</code>, then the ensemble of mean speeds is returned instead.</p>
@@ -229,44 +232,39 @@
     <p>M. J. Noonan, C. H. Fleming, T. S. Akre, J. Drescher-Lehman, E. Gurarie, A.-L. Harrison, R. Kays, Justin Calabrese,
 ``Scale-insensitive estimation of speed and distance traveled from animal tracking data'',
 <a href='https://movementecologyjournal.biomedcentral.com/articles/10.1186/s40462-019-0177-1'>Movement Ecology, 7:35 (2019)</a>.</p>
+    <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
+
+    <p>C. H. Fleming.</p>
     <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
 
     <p>The average speeds estimated here are mean speeds. The speeds reported by <code><a href='summary.ctmm.html'>summary.ctmm</a></code> are root-mean-square (RMS) speeds. These quantities are sometimes proportional, but not equivalent.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><code><a href='emulate.ctmm.html'>emulate</a></code>, <code><a href='simulate.ctmm.html'>simulate</a></code></p></div>
+    <div class='dont-index'><p><code><a href='emulate.html'>emulate</a></code>, <code><a href='simulate.ctmm.html'>simulate</a></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='co'># \donttest{</span>
 <span class='co'># Load package and data</span>
-<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>ctmm</span>)
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='no'>buffalo</span>)
-<span class='no'>Gabs</span> <span class='kw'>&lt;-</span> <span class='no'>buffalo</span>$<span class='no'>Gabs</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/ctmm-initiative/ctmm'>ctmm</a></span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>buffalo</span><span class='op'>)</span>
+<span class='va'>Gabs</span> <span class='op'>&lt;-</span> <span class='va'>buffalo</span><span class='op'>$</span><span class='va'>Gabs</span>
 
-<span class='no'>GUESS</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='variogram.fit.html'>ctmm.guess</a></span>(<span class='no'>Gabs</span>,<span class='kw'>interactive</span><span class='kw'>=</span><span class='fl'>FALSE</span>)
-<span class='no'>FIT</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='ctmm.fit.html'>ctmm.fit</a></span>(<span class='no'>Gabs</span>,<span class='no'>GUESS</span>)
+<span class='va'>GUESS</span> <span class='op'>&lt;-</span> <span class='fu'><a href='variogram.fit.html'>ctmm.guess</a></span><span class='op'>(</span><span class='va'>Gabs</span>,interactive<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span>
+<span class='va'>FIT</span> <span class='op'>&lt;-</span> <span class='fu'><a href='ctmm.html'>ctmm.fit</a></span><span class='op'>(</span><span class='va'>Gabs</span>,<span class='va'>GUESS</span><span class='op'>)</span>
 
 <span class='co'># stationary Gaussian estimate</span>
-<span class='fu'>speed</span>(<span class='no'>FIT</span>)</div><div class='output co'>#&gt;                        low      est     high
-#&gt; speed (kilometers/day)   0 12.16713 1192.312</div><div class='input'>
+<span class='fu'>speed</span><span class='op'>(</span><span class='va'>FIT</span><span class='op'>)</span>
+</div><div class='output co'>#&gt;                             low      est     high
+#&gt; speed (kilometers/day) 11.82123 12.16713 12.51548</div><div class='input'>
 <span class='co'># conditional estimate</span>
-<span class='fu'>speed</span>(<span class='no'>FIT</span>,<span class='no'>Gabs</span>)</div><div class='output co'>#&gt;   |                                                                              |                                                                      |   0%  |                                                                              |=======                                                               |  10%  |                                                                              |==========                                                            |  15%  |                                                                              |==============                                                        |  20%  |                                                                              |==================                                                    |  25%  |                                                                              |=====================                                                 |  30%  |                                                                              |========================                                              |  35%  |                                                                              |============================                                          |  40%  |                                                                              |================================                                      |  45%  |                                                                              |===================================                                   |  50%  |                                                                              |======================================                                |  55%  |                                                                              |==========================================                            |  60%  |                                                                              |==============================================                        |  65%  |                                                                              |=================================================                     |  70%  |                                                                              |====================================================                  |  75%  |                                                                              |========================================================              |  80%  |                                                                              |============================================================          |  85%  |                                                                              |===============================================================       |  90%  |                                                                              |==================================================================    |  95%  |                                                                              |======================================================================| 100%</div><div class='output co'>#&gt;                             low      est     high
-#&gt; speed (kilometers/day) 11.06793 11.45197 11.83922</div><div class='input'># }</div></pre>
+<span class='fu'>speed</span><span class='op'>(</span><span class='va'>FIT</span>,<span class='va'>Gabs</span><span class='op'>)</span>
+</div><div class='output co'>#&gt;   |                                                                              |                                                                      |   0%  |                                                                              |=======                                                               |  10%  |                                                                              |==========                                                            |  15%  |                                                                              |==============                                                        |  20%  |                                                                              |==================                                                    |  25%  |                                                                              |=====================                                                 |  30%  |                                                                              |========================                                              |  35%  |                                                                              |============================                                          |  40%  |                                                                              |================================                                      |  45%  |                                                                              |===================================                                   |  50%  |                                                                              |======================================                                |  55%  |                                                                              |==========================================                            |  60%  |                                                                              |==============================================                        |  65%  |                                                                              |=================================================                     |  70%  |                                                                              |====================================================                  |  75%  |                                                                              |========================================================              |  80%  |                                                                              |============================================================          |  85%  |                                                                              |===============================================================       |  90%  |                                                                              |==================================================================    |  95%  |                                                                              |======================================================================| 100%</div><div class='output co'>#&gt;                             low      est     high
+#&gt; speed (kilometers/day) 10.98114 11.31923 11.65982</div><div class='input'><span class='co'># }</span></div></pre>
   </div>
-  <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
-    <h2>Contents</h2>
-    <ul class="nav nav-pills nav-stacked">
-      <li><a href="#arguments">Arguments</a></li>
-      <li><a href="#details">Details</a></li>
-      <li><a href="#value">Value</a></li>
-      <li><a href="#references">References</a></li>
-      <li><a href="#note">Note</a></li>
-      <li><a href="#see-also">See also</a></li>
-      <li><a href="#examples">Examples</a></li>
-    </ul>
-
-    <h2>Author</h2>
-    <p>C. H. Fleming.</p>
+  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
+    <nav id="toc" data-toggle="toc" class="sticky-top">
+      <h2 data-toc-skip>Contents</h2>
+    </nav>
   </div>
 </div>
 
@@ -277,7 +275,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

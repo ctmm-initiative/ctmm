@@ -10,23 +10,27 @@
 
 
 <!-- jquery -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
+
+<!-- bootstrap-toc -->
+<link rel="stylesheet" href="../bootstrap-toc.css">
+<script src="../bootstrap-toc.js"></script>
 
 <!-- Font Awesome icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/all.min.css" integrity="sha256-nAmazAk6vS34Xqo0BSrTb+abbtFlgsFK7NKSi6o7Y78=" crossorigin="anonymous" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/v4-shims.min.css" integrity="sha256-6qHlizsOWFskGlwVOKuns+D1nB6ssZrHQrNj1wGplHc=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous" />
 
 <!-- clipboard.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script>
 
 <!-- headroom.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/headroom.min.js" integrity="sha256-DJFC1kqIhelURkuza0AvYal5RxMtpzLjFhsnVIeuk+U=" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
@@ -36,8 +40,7 @@
 
 
 <meta property="og:title" content="Calculate the conditional location distribution of ecounters — encounter" />
-<meta property="og:description" content="To be described in an upcomming manuscript." />
-<meta name="twitter:card" content="summary" />
+<meta property="og:description" content="Functions to calculate the location distribution of where encounters take place, conditional on said encounters taking place, as described in Noonan et al (2020)." />
 
 
 
@@ -55,7 +58,7 @@
 
   </head>
 
-  <body>
+  <body data-spy="scroll" data-target="#toc">
     <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -69,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.9</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.11</span>
       </span>
     </div>
 
@@ -129,10 +132,10 @@
     </div>
 
     <div class="ref-description">
-    <p>To be described in an upcomming manuscript.</p>
+    <p>Functions to calculate the location distribution of where encounters take place, conditional on said encounters taking place, as described in Noonan et al (2020).</p>
     </div>
 
-    <pre class="usage"><span class='fu'>encounter</span>(<span class='no'>object</span>,<span class='kw'>include</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>exclude</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>encounter</span><span class='op'>(</span><span class='va'>object</span>,include<span class='op'>=</span><span class='cn'>NULL</span>,exclude<span class='op'>=</span><span class='cn'>NULL</span>,debias<span class='op'>=</span><span class='cn'>FALSE</span>,<span class='va'>...</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -143,11 +146,15 @@
     </tr>
     <tr>
       <th>include</th>
-      <td><p>To be explained.</p></td>
+      <td><p>A matrix of interactions to include in the calculation (see Details below).</p></td>
     </tr>
     <tr>
       <th>exclude</th>
-      <td><p>To be explained.</p></td>
+      <td><p>A matrix of interactions to exclude in the calculation (see Details below).</p></td>
+    </tr>
+    <tr>
+      <th>debias</th>
+      <td><p>Approximate GRF bias correction (in development).</p></td>
     </tr>
     <tr>
       <th>...</th>
@@ -155,24 +162,47 @@
     </tr>
     </table>
 
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>The <code>include</code> argument is a matrix that indicates which interactions are considered in the calculation.
+By default, <code>include = 1 - diag(length(object))</code>, which implies that all interactions are considered aside from self-interactions. Alternatively, <code>exclude = 1 - include</code> can be specified, and is by-default <code>exclude = diag(length(object))</code>, which implies that only self-interactions are excluded.</p>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>To be explained.</p>
+    <p>A <code>UD</code> object.</p>
+    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
+
+    <p>M. J. Noonan, R. Martinez-Garcia, G. H. Davis, M. C. Crofoot, R. Kays, B. T. Hirsch, D. Caillaud, E. Payne, A. Sih, D. L. Sinn, O. Spiegel, W. F. Fagan, C. H. Fleming, J. M. Calabrese, ``Estimating encounter location distributions from animal tracking data'', <a href='https://www.biorxiv.org/content/10.1101/2020.08.24.261628v1'>bioRxiv 2020.08.24.261628 (2020)</a>.</p>
+    <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
+
+    <p>C. H. Fleming</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><code><a href='akde.html'>akde</a></code></p></div>
+    <div class='dont-index'><p><code><a href='akde.html'>akde</a></code>, <code><a href='overlap.html'>overlap</a></code></p></div>
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='co'># Load package and data</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/ctmm-initiative/ctmm'>ctmm</a></span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>buffalo</span><span class='op'>)</span>
+
+<span class='co'># fit models for first two buffalo</span>
+<span class='va'>GUESS</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='va'>buffalo</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>2</span><span class='op'>]</span>, <span class='kw'>function</span><span class='op'>(</span><span class='va'>b</span><span class='op'>)</span> <span class='fu'><a href='variogram.fit.html'>ctmm.guess</a></span><span class='op'>(</span><span class='va'>b</span>,interactive<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>)</span>
+<span class='va'>FITS</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>2</span>, <span class='kw'>function</span><span class='op'>(</span><span class='va'>i</span><span class='op'>)</span> <span class='fu'><a href='ctmm.html'>ctmm.fit</a></span><span class='op'>(</span><span class='va'>buffalo</span><span class='op'>[[</span><span class='va'>i</span><span class='op'>]</span><span class='op'>]</span>,<span class='va'>GUESS</span><span class='op'>[[</span><span class='va'>i</span><span class='op'>]</span><span class='op'>]</span><span class='op'>)</span> <span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>FITS</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>buffalo</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>2</span><span class='op'>]</span><span class='op'>)</span>
+
+<span class='co'># create aligned UDs</span>
+<span class='va'>UDS</span> <span class='op'>&lt;-</span> <span class='fu'><a href='akde.html'>akde</a></span><span class='op'>(</span><span class='va'>buffalo</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>2</span><span class='op'>]</span>,<span class='va'>FITS</span><span class='op'>)</span>
+
+<span class='co'># calculate CDE</span>
+<span class='va'>CDE</span> <span class='op'>&lt;-</span> <span class='fu'>encounter</span><span class='op'>(</span><span class='va'>UDS</span><span class='op'>)</span>
+
+<span class='co'># plot data and encounter distribution</span>
+<span class='fu'><a href='plot.telemetry.html'>plot</a></span><span class='op'>(</span><span class='va'>buffalo</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>2</span><span class='op'>]</span>,col<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'red'</span>,<span class='st'>'blue'</span><span class='op'>)</span>,UD<span class='op'>=</span><span class='va'>CDE</span>,col.DF<span class='op'>=</span><span class='st'>'purple'</span>,col.level<span class='op'>=</span><span class='st'>'purple'</span>,col.grid<span class='op'>=</span><span class='cn'>NA</span><span class='op'>)</span>
+</div><div class='img'><img src='encounter-1.png' alt='' width='700' height='433' /></div></pre>
   </div>
-  <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
-    <h2>Contents</h2>
-    <ul class="nav nav-pills nav-stacked">
-      <li><a href="#arguments">Arguments</a></li>
-      <li><a href="#value">Value</a></li>
-      <li><a href="#see-also">See also</a></li>
-    </ul>
-
-    <h2>Author</h2>
-    <p>C. H. Fleming</p>
+  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
+    <nav id="toc" data-toggle="toc" class="sticky-top">
+      <h2 data-toc-skip>Contents</h2>
+    </nav>
   </div>
 </div>
 
@@ -183,7 +213,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

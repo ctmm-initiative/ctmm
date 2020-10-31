@@ -10,23 +10,27 @@
 
 
 <!-- jquery -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
+
+<!-- bootstrap-toc -->
+<link rel="stylesheet" href="../bootstrap-toc.css">
+<script src="../bootstrap-toc.js"></script>
 
 <!-- Font Awesome icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/all.min.css" integrity="sha256-nAmazAk6vS34Xqo0BSrTb+abbtFlgsFK7NKSi6o7Y78=" crossorigin="anonymous" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/v4-shims.min.css" integrity="sha256-6qHlizsOWFskGlwVOKuns+D1nB6ssZrHQrNj1wGplHc=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous" />
 
 <!-- clipboard.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script>
 
 <!-- headroom.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/headroom.min.js" integrity="sha256-DJFC1kqIhelURkuza0AvYal5RxMtpzLjFhsnVIeuk+U=" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
@@ -37,7 +41,6 @@
 
 <meta property="og:title" content="Calculate an autocorrelated kernel density estimate — akde" />
 <meta property="og:description" content="This function calculates autocorrelated kernel density home-range estimates from telemetry data and a corresponding continuous-time movement model." />
-<meta name="twitter:card" content="summary" />
 
 
 
@@ -55,7 +58,7 @@
 
   </head>
 
-  <body>
+  <body data-spy="scroll" data-target="#toc">
     <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -69,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.9</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.11</span>
       </span>
     </div>
 
@@ -132,8 +135,8 @@
     <p>This function calculates autocorrelated kernel density home-range estimates from <code>telemetry</code> data and a corresponding continuous-time movement model.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>akde</span>(<span class='no'>data</span>,<span class='no'>CTMM</span>,<span class='kw'>VMM</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='kw'>debias</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>weights</span><span class='kw'>=</span><span class='fl'>FALSE</span>,<span class='kw'>smooth</span><span class='kw'>=</span><span class='fl'>TRUE</span>,<span class='kw'>error</span><span class='kw'>=</span><span class='fl'>0.001</span>,<span class='kw'>res</span><span class='kw'>=</span><span class='fl'>10</span>,
-     <span class='kw'>grid</span><span class='kw'>=</span><span class='kw'>NULL</span>,<span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>akde</span><span class='op'>(</span><span class='va'>data</span>,<span class='va'>CTMM</span>,VMM<span class='op'>=</span><span class='cn'>NULL</span>,debias<span class='op'>=</span><span class='cn'>TRUE</span>,weights<span class='op'>=</span><span class='cn'>FALSE</span>,smooth<span class='op'>=</span><span class='cn'>TRUE</span>,error<span class='op'>=</span><span class='fl'>0.001</span>,res<span class='op'>=</span><span class='fl'>10</span>,
+     grid<span class='op'>=</span><span class='cn'>NULL</span>,<span class='va'>...</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -182,12 +185,12 @@
 
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>For weighted AKDE, please note additional <code>...</code> arguments passed to <code><a href='bandwidth.html'>bandwidth</a></code>.</p>
-<p>When feeding in lists of <code>telemetry</code> and <code>ctmm</code> objects, all UDs will be calculated on the same grid. These UDs can be averaged with the <code><a href='mean.html'>mean.UD</a></code> command.</p>
-<p>If a <code>UD</code> or <code>raster</code> object is supplied in the <code>grid</code> argument, then the estimate will be calculated on the same grid. Alternatively, a list of grid arguments can be supplied, with any of the following components:</p><dl class='dl-horizontal'>
+    <p>For weighted AKDE, please note additional <code>...</code> arguments passed to <code><a href='bandwidth.html'>bandwidth</a></code>, which can have a large impact on computation time in certain cases.</p>
+<p>When feeding in lists of <code>telemetry</code> and <code>ctmm</code> objects, all UDs will be calculated on the same grid. These UDs can be averaged with the <code><a href='mean.UD.html'>mean.UD</a></code> command.</p>
+<p>If a <code>UD</code> or <code>raster</code> object is supplied in the <code>grid</code> argument, then the estimate will be calculated on the same grid. Alternatively, a list of grid arguments can be supplied, with any of the following components:</p><dl>
 <dt><code>r</code></dt><dd><p>A list with vectors <code>x</code> and <code>y</code> that define the grid-cell midpoints.</p></dd>
 <dt><code>dr</code></dt><dd><p>A vector setting the <code>x</code> and <code>y</code> cell widths in meters. Equivalent to <code>res</code> for <code>raster</code> objects.</p></dd>
-<dt><code>extent</code></dt><dd><p>The \(x\)-\(y\) extent of the grid cells, formatted as from the output of <code>extent</code>.</p></dd>
+<dt><code>extent</code></dt><dd><p>The \(x\)-\(y\) extent of the grid cells, formatted as from the output of <code><a href='extent.html'>extent</a></code>.</p></dd>
 <dt><code>align.to.origin</code></dt><dd><p>Logical value indicating that cell midpoint locations are aligned to be an integer number of <code>dr</code> steps from the projection origin.</p></dd>
 
 </dl>
@@ -207,6 +210,9 @@
 ``Correcting for missing and irregular data in home-range estimation'',
 <a href='https://esajournals.onlinelibrary.wiley.com/doi/abs/10.1002/eap.1704'>Ecological Applications, 28:4, 1003-1010 (2018)</a>.</p>
 <p><!-- %D. Marcotte. (1996). Fast variogram computation with FFT. \emph{Computers and Geosciences} 22(10), 1175-1186. --></p>
+    <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
+
+    <p>C. H. Fleming and K. Winner.</p>
     <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
 
     <p>In the case of coarse grids, the value of <code>PDF</code> in a grid cell corresponds to the average probability density over the entire rectangular cell.</p>
@@ -218,38 +224,29 @@ Starting in v0.3.1, <code>akde</code> calculated an effective sample size <code>
 In v0.3.2, this method was further improved to use <code>DOF.area</code> from the Gaussian reference function approximation.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><code><a href='bandwidth.html'>bandwidth</a></code>, <code><a href='mean.html'>mean.UD</a></code>, <code><a href='export.html'>raster,UD-method</a></code></p></div>
+    <div class='dont-index'><p><code><a href='bandwidth.html'>bandwidth</a></code>, <code><a href='mean.UD.html'>mean.UD</a></code>, <code><a href='export.html'>raster,UD-method</a></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='co'># \donttest{</span>
 <span class='co'># Load package and data</span>
-<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>ctmm</span>)
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='no'>buffalo</span>)
-<span class='no'>Cilla</span> <span class='kw'>&lt;-</span> <span class='no'>buffalo</span>$<span class='no'>Cilla</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/ctmm-initiative/ctmm'>ctmm</a></span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>buffalo</span><span class='op'>)</span>
+<span class='va'>Cilla</span> <span class='op'>&lt;-</span> <span class='va'>buffalo</span><span class='op'>$</span><span class='va'>Cilla</span>
 
-<span class='no'>GUESS</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='variogram.fit.html'>ctmm.guess</a></span>(<span class='no'>Cilla</span>,<span class='kw'>interactive</span><span class='kw'>=</span><span class='fl'>FALSE</span>)
-<span class='no'>FIT</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='ctmm.fit.html'>ctmm.fit</a></span>(<span class='no'>Cilla</span>,<span class='no'>GUESS</span>)
+<span class='va'>GUESS</span> <span class='op'>&lt;-</span> <span class='fu'><a href='variogram.fit.html'>ctmm.guess</a></span><span class='op'>(</span><span class='va'>Cilla</span>,interactive<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span>
+<span class='va'>FIT</span> <span class='op'>&lt;-</span> <span class='fu'><a href='ctmm.html'>ctmm.fit</a></span><span class='op'>(</span><span class='va'>Cilla</span>,<span class='va'>GUESS</span><span class='op'>)</span>
 
 <span class='co'># Compute akde object</span>
-<span class='no'>UD</span> <span class='kw'>&lt;-</span> <span class='fu'>akde</span>(<span class='no'>Cilla</span>,<span class='no'>FIT</span>)
+<span class='va'>UD</span> <span class='op'>&lt;-</span> <span class='fu'>akde</span><span class='op'>(</span><span class='va'>Cilla</span>,<span class='va'>FIT</span><span class='op'>)</span>
 
 <span class='co'># Plot data with AKDE contours</span>
-<span class='fu'><a href='plot.telemetry.html'>plot</a></span>(<span class='no'>Cilla</span>,<span class='kw'>UD</span><span class='kw'>=</span><span class='no'>UD</span>)</div><div class='img'><img src='akde-1.png' alt='' width='700' height='433' /></div><div class='input'># }</div></pre>
+<span class='fu'><a href='plot.telemetry.html'>plot</a></span><span class='op'>(</span><span class='va'>Cilla</span>,UD<span class='op'>=</span><span class='va'>UD</span><span class='op'>)</span>
+</div><div class='img'><img src='akde-1.png' alt='' width='700' height='433' /></div><div class='input'><span class='co'># }</span></div></pre>
   </div>
-  <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
-    <h2>Contents</h2>
-    <ul class="nav nav-pills nav-stacked">
-      <li><a href="#arguments">Arguments</a></li>
-      <li><a href="#details">Details</a></li>
-      <li><a href="#value">Value</a></li>
-      <li><a href="#references">References</a></li>
-      <li><a href="#note">Note</a></li>
-      <li><a href="#see-also">See also</a></li>
-      <li><a href="#examples">Examples</a></li>
-    </ul>
-
-    <h2>Author</h2>
-    <p>C. H. Fleming and K. Winner.</p>
+  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
+    <nav id="toc" data-toggle="toc" class="sticky-top">
+      <h2 data-toc-skip>Contents</h2>
+    </nav>
   </div>
 </div>
 
@@ -260,7 +257,7 @@ In v0.3.2, this method was further improved to use <code>DOF.area</code> from th
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>
