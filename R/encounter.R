@@ -15,7 +15,7 @@ encounter <- function(object,include=NULL,exclude=NULL,debias=FALSE,...)
   # Gaussian approximation
   STUFF <- encounter.ctmm(CTMM,include=include,exclude=exclude,debias=debias)
   CTMM <- STUFF$CTMM
-  BIAS <- STUFF$BIAS # individual biases
+  # BIAS <- STUFF$BIAS # individual biases
   bias <- STUFF$bias # pairwise biases
 
   DOF.area <- rep(DOF.area(CTMM),AXES)
@@ -25,7 +25,7 @@ encounter <- function(object,include=NULL,exclude=NULL,debias=FALSE,...)
   for(i in 1:length(object))
   {
     UD[[i]]$PMF <- UD[[i]]$PDF * prod(UD[[i]]$dr)
-    if(debias) { UD[[i]]$PMF <- debias.volume(UD[[i]]$PMF,1/BIAS[i])$PMF }
+    # if(debias) { UD[[i]]$PMF <- debias.volume(UD[[i]]$PMF,1/BIAS[i])$PMF }
   }
 
   GRID <- grid.union(object) # r,dr of grid union
@@ -95,30 +95,32 @@ encounter.ctmm <- function(CTMM,include=NULL,exclude=NULL,debias=FALSE,...)
   # Gaussian / cumulants
   axes <- CTMM[[1]]$axes
   AXES <- length(axes)
+  iWC <- 1 + AXES # inverse-Wishart constant
   isotropic <- all(sapply(CTMM,function(C){C$isotropic}))
 
   # Wishart DOFs
   DOF <- sapply(CTMM,DOF.wishart)
+  DOF <- AXES * DOF # trace-DOF - asymptotic
+
   # precision matrices
   P <- lapply(CTMM,function(M){PDsolve(M$sigma)})
-  # pairwise DOFs
+
+  # pairwise DOFs (asymptotic)
   dof <- matrix(0,length(DOF),length(DOF))
+  # pairwise bias - asymptotic
+  bias <- matrix(1,length(DOF),length(DOF))
+
   for(i in 1:length(DOF))
   {
     for(j in 1:length(DOF))
     {
-      dof[i,j] <- 3/2 * tr(P[[i]]+P[[j]])^2 / ( tr(P[[i]])^2/DOF[i] + tr(P[[j]])^2/DOF[j] )
+      Pi <- tr(P[[i]])
+      Pj <- tr(P[[j]])
+      Pij <- Pi + Pj
+      dof[i,j] <- Pij^2 / ( Pi^2/DOF[i] + Pj^2/DOF[j] )
+      bias[i,j] <- 1/( 1 + iWC*clamp(Pi/Pij/DOF[i] + Pj/Pij/DOF[j] - 1/dof[i,j],0,1/max(dof[i,j],2)) )
     }
   }
-  # clamp DOFs
-  # DOF <- clamp(DOF,AXES+2,Inf)
-  # dof <- clamp(dof,AXES+2,Inf)
-  # relative biases of inverse-Wishart
-  # BIAS <- DOF/(DOF-AXES-1)
-  # bias <- dof/(dof-AXES-1)
-  # Pade approximants with better behavior
-  BIAS <- 1 + (AXES+1)/DOF
-  bias <- 1 + (AXES+1)/dof
 
   fn <- function(CTMM)
   {
@@ -130,13 +132,13 @@ encounter.ctmm <- function(CTMM,include=NULL,exclude=NULL,debias=FALSE,...)
     {
       for(j in (i+1):length(CTMM))
       {
-        Pi <- PDsolve(CTMM[[i]]$sigma)
-        Pj <- PDsolve(CTMM[[j]]$sigma)
-        if(debias) # bias correction (precision)
-        {
-          Pi <- Pi / BIAS[i]
-          Pj <- Pj / BIAS[j]
-        }
+        Pi <- P[[i]]
+        Pj <- P[[j]]
+        # if(debias) # bias correction (precision)
+        # {
+        #   Pi <- Pi / BIAS[i]
+        #   Pj <- Pj / BIAS[j]
+        # }
         Pij <- Pi + Pj
         sigma <- PDsolve(Pij)
 
@@ -184,5 +186,5 @@ encounter.ctmm <- function(CTMM,include=NULL,exclude=NULL,debias=FALSE,...)
   info <- mean.info(CTMM)
 
   CTMM <- ctmm(mu=mu,sigma=sigma,COV.mu=COV.mu,COV=COV,axes=axes,isotropic=isotropic,info=info)
-  return(list(CTMM=CTMM,BIAS=BIAS,bias=bias))
+  return(list(CTMM=CTMM,bias=bias))
 }
