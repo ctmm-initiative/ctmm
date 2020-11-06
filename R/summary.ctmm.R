@@ -298,6 +298,17 @@ DOF.area <- function(CTMM)
   return(DOF)
 }
 
+
+# DOF of trace variance
+DOF.var <- function(CTMM)
+{
+  MSD <- var.covm(CTMM$sigma,ave=FALSE)
+  COV.RAN <- axes2var(CTMM,MEAN=FALSE)
+
+  2*MSD^2/COV.RAN
+}
+
+
 #########
 DOF.mean <- function(CTMM)
 {
@@ -315,6 +326,7 @@ DOF.mean <- function(CTMM)
 
   return(DOF)
 }
+
 
 #######
 DOF.speed <- function(CTMM) { return( summary(CTMM)$DOF['speed'] ) }
