@@ -137,6 +137,9 @@ encounter.ctmm <- function(CTMM,include=NULL,exclude=NULL,debias=FALSE,...)
     M1 <- array(0,AXES)
     M2 <- matrix(0,AXES,AXES)
 
+    # precision matrices # have to recalculate these for gradients
+    P <- lapply(CTMM,function(M){PDsolve(M$sigma)})
+
     for(i in 1:(length(CTMM)-1))
     {
       for(j in (i+1):length(CTMM))
