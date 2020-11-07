@@ -101,7 +101,7 @@ encounter.ctmm <- function(CTMM,include=NULL,exclude=NULL,debias=FALSE,...)
   MULT <- ifelse(isotropic,AXES,1) # DOF multiplier
   WC <- WC/MULT
 
-  CLAMP <- 0 # DOF minimum
+  CLAMP <- 1 # DOF minimum
 
   # Wishart DOFs - DOF.wishart() is flaky
   DOF <- sapply(CTMM,DOF.area)
