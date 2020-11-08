@@ -25,7 +25,7 @@ encounter <- function(object,include=NULL,exclude=NULL,debias=FALSE,...)
   for(i in 1:length(object))
   {
     UD[[i]]$PMF <- UD[[i]]$PDF * prod(UD[[i]]$dr)
-    if(debias) { UD[[i]]$PMF <- debias.volume(UD[[i]]$PMF,1/BIAS[i])$PMF }
+    if(debias) { UD[[i]]$PMF <- debias.volume(UD[[i]]$PMF,BIAS[i])$PMF }
   }
 
   GRID <- grid.union(object) # r,dr of grid union
