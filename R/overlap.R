@@ -117,6 +117,11 @@ overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,method="Bhattach
   n0 <- 4 * s0^2 / (s1^2/n1 + s2^2/n2)
   # dim cancels out
 
+  # hard clamp before soft clamp
+  n1 <- clamp(n1,1,Inf)
+  n2 <- clamp(n2,1,Inf)
+  n0 <- clamp(n0,2,Inf)
+
   # clamp the DOF not to diverge <=DIM+1
   n0 <- soft.clamp(n0,DIM)
   n1 <- soft.clamp(n1,DIM)
