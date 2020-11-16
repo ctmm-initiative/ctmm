@@ -6,15 +6,15 @@
 \description{These functions estimate population-level parameters from individual movement models and related estimates, including AKDE home-range areas, while taking into account estimation uncertainty.
 }
 \usage{
-meta(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC="AICc",boot=FALSE,
-     error=0.01,debias=TRUE,units=TRUE,plot=TRUE,sort=FALSE,mean=TRUE,col="black",...)
+meta(x,level=0.95,level.UD=0.95,method="MLE",IC="AICc",boot=FALSE,error=0.01,debias=TRUE,
+     units=TRUE,plot=TRUE,sort=FALSE,mean=TRUE,col="black",...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{A list of \code{ctmm} movement-model objects, \code{UD} objects, or \code{UD} \code{summary} output, constituting a sampled population, or a list of such lists, each constituting a sampled sub-population.}
   \item{level}{Confidence level for parameter estimates.}
   \item{level.UD}{Coverage level for home-range estimates. E.g., 50\% core home range.}
-  \item{level.pop}{Coverage level for the population of individuals.}
+%  \item{level.pop}{Coverage level for the population of individuals.}
   \item{method}{Statistical estimator used---either maximum likelihood estimation (\code{"MLE"}) or `best linear unbiased estimator' (\code{"BLUE"}).}
   \item{IC}{Information criterion to determine whether or not population variation can be estimated. Can be \code{"AICc"}, \code{AIC}, or \code{"BIC"}.}
   \item{boot}{Perform a parametric bootstrap for confidence intervals and first-order bias correction if \code{debias=TRUE}.}

@@ -488,7 +488,10 @@ plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",units=TRUE,col.level="bl
 # plot PDF stored as KDE object
 plot.df <- function(kde,DF="CDF",col="blue",...)
 {
-  col <- malpha(col,(0:255)/255)
+  alpha <- grDevices::col2rgb(col,alpha=TRUE)[4,]
+  alpha <- max(alpha)
+  alpha <- min(alpha,254) # overflow bug otherwise
+  col <- malpha(col,(0:alpha)/255)
 
   if(DF=="PDF")
   {
