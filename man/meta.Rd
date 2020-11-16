@@ -50,7 +50,32 @@ If \code{x} constitutes a list of sampled sub-populations, then \code{meta} retu
 
 \seealso{ \code{\link{akde}}, \code{\link{ctmm.fit}}. }
 
-%\examples{\donttest{ }}
+\examples{\donttest{
+# load package and data
+library(ctmm)
+data(buffalo)
+
+# fit movement models
+FITS <- AKDES <- list()
+for(i in 1:length(buffalo))
+{
+  GUESS <- ctmm.guess(buffalo[[i]],interactive=FALSE)
+  # use ctmm.select unless you are certain that the selected model is OUF
+  FITS[[i]] <- ctmm.fit(buffalo[[i]],GUESS,trace=2)
+}
+
+# calculate AKDES on a consistent grid
+AKDES <- akde(buffalo,FITS,trace=1)
+
+# color to be spatially distinct
+COL <- color(AKDES,by='individual')
+
+# plot AKDEs
+plot(AKDES,col.DF=COL,col.level=COL,col.grid=NA,level=NA)
+
+# meta-analysis of buffalo
+meta(AKDES,col=c(COL,'black'),sort=TRUE)
+}}
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
