@@ -1,4 +1,4 @@
-ctmm 0.5.11 (2020-10-27)
+ctmm 0.5.11 (2020-11-16)
 ================
 
   * new function meta for meta-analysis of home-range areas
@@ -47,9 +47,11 @@ ctmm 0.5.11 (2020-10-27)
   
   * bugfix in ctmm.select() giving incorrect model names when run indirectly
   
-  * work around in export functions where sp objects change timezones
+  * workaround in export functions where sp objects change timezones
   
-  * work around in as.telemetry() when Move idData() names are dropped
+  * workaround in as.telemetry() when Move idData() names are dropped
+  
+  * workaround in plot.UD when image() has alpha overflow
   
   * improvements to akde/occurrence grid argument when incomplete
   

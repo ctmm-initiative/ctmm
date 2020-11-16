@@ -1,4 +1,23 @@
-NAMES.POP <- c("pop-low ","pop-mean ","pop-high")
+NAMES.POP <- c("pop-low","mean","pop-high")
+
+summary.meta <- function(object,IC="AICc",...)
+{
+  if(class(object)[1]=="list")
+  { return(summary.meta.list(object,IC=IC,...)) }
+  else
+  { return(summary.meta.single(object,...)) }
+}
+
+summary.meta.list <- function(object,IC="AICc",...)
+{
+
+}
+
+summary.meta.single <- function(object,...)
+{
+
+}
+
 
 # meta-analysis of chi^2 random variables with inverse-Gaussian prior
 meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',boot=FALSE,iterate=FALSE,error=0.01,debias=TRUE,precision=1/2,...)
@@ -222,7 +241,7 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
 
     ##################
     # propagate uncertainty
-    CI <- t(array(c(0,0,Inf),c(3,4))) # initialize confidence intervals (0,Inf)
+    CI <- t(array(c(0,0,Inf),c(3,5))) # initialize confidence intervals (0,Inf)
 
     IND <- IND[1] # best model
     PAR <- PAR[IND,] # best model parameter estimates
@@ -240,6 +259,10 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
       CI[4,] <- 1/CI[2,] # not used
       CI[4,2] <- CI[4,2] * dof/max(dof-debias,0) # inverse-chi^2 mean bias correction
       CI.VAR[4] <- 2*CI[4,2]^2/max(dof-3*debias,0)
+
+      # CoV^2 (RVAR)
+      CI[5,] <- c(0,0,Inf)
+      CI.VAR[4] <- Inf
     }
     else if(IND==2) # inverse-Gaussian model
     {
@@ -272,6 +295,12 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
       # debiased relative variance at extremes
       CI.VAR[4] <- 1/(par[1]^2/COV[1,1] - 2*(1-DRATIO)) + DRATIO*COV[1,1]/par[1]*COV[2,2]/par[2]
       CI.VAR[4] <- CI.VAR[4]/par[1]^2
+
+      # CoV^2 (RVAR)
+      # CI[5,2] <- par[1]*par[2]
+      GRAD <- par[2:1]
+      CI.VAR[5] <- GRAD %*% COV %*% GRAD
+      CI[5,] <- chisq.ci(par[1]*par[2],VAR=CI.VAR[5],level=level)
     }
     # else if(IND==3) # GIG distribution
     # {
@@ -290,7 +319,7 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
     #   CI.DOF <- 2*CI[,2]^2/VAR # DOFs for F-test
     # }
 
-    rownames(CI) <- c(NAMES.POP,"mean-inverse")
+    rownames(CI) <- c(NAMES.POP,"mean-inverse","CoV\u00B2 (RVAR)")
     colnames(CI) <- NAMES.CI
 
     if(!complete) { return(CI[,2]) }
@@ -316,6 +345,7 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
     {
       CI <- IG.CI(mu,VAR=c(BFIT$sigma),level=level.pop)
       CI[4] <- inverse.mean(mu,c(BFIT$sigma)/mu^2)  # 1/mu debiased to first order
+      CI[5] <- mu*k
       return(CI)
     }
 
@@ -335,7 +365,7 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
     else
     { IND <- 2 }
 
-    CI <- t(array(c(0,0,Inf),c(3,4))) # initialize confidence intervals (0,Inf)
+    CI <- t(array(c(0,0,Inf),c(3,5))) # initialize confidence intervals (0,Inf)
 
     IND <- IND[1] # best model
     if(IND==1) # exact chi^2 result
@@ -349,6 +379,10 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
       CI[4,] <- 1/CI[2,] # not used
       CI[4,2] <- CI[4,2] * max(dof-debias,0)/dof
       CI.VAR[4] <- 2*CI[4,2]^2 / max(dof-debias*3,0)
+
+      # CoV^2 (RVAR)
+      CI[5,] <- c(0,0,Inf)
+      CI.VAR[5] <- 0
     }
     else if(IND==2) # population variance (IG relations)
     {
@@ -377,9 +411,15 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
       CI[4,2] <- inverse.mean(mu,Vm2) # 1/mu debiased to first order
       GRAD <- -1/mu^2/(1+debias*Vm2) # gradient evaluated analytically
       CI.VAR[4] <- GRAD^2 * c(BFIT$COV.mu)
+
+      # CoV^2 (RVAR)
+      # CI[5,2] <- par[1]*par[2]
+      GRAD <- par[2:1]
+      CI.VAR[5] <- GRAD %*% COV %*% GRAD
+      CI[5,] <- chisq.ci(par[1]*par[2],VAR=CI.VAR[5],level=level)
     } # end population variance
 
-    rownames(CI) <- c(NAMES.POP,"mean inverse")
+    rownames(CI) <- c(NAMES.POP,"inverse mean","CoV\u00B2 (RVAR)")
     colnames(CI) <- NAMES.CI
 
     R <- list(CI=CI,CI.VAR=CI.VAR,mu=mu,k=k,rho=1)
@@ -410,8 +450,8 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
     ENSEMBLE <- NULL
 
     INF <- c(0,Inf,Inf)
-    INF <- rbind(INF,INF,INF,INF)
-    rownames(INF) <- c(NAMES.POP,"inverse mean")
+    INF <- rbind(INF,INF,INF,INF,INF)
+    rownames(INF) <- c(NAMES.POP,"inverse mean","CoV\u00B2 (RVAR)")
     colnames(INF) <- NAMES.CI
 
     iERROR <- Inf
@@ -480,7 +520,7 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
   #   warning("Population mean not convergent. Consider robust=TRUE.")
   # }
 
-  rownames(CI) <- c(NAMES.POP,"mean inverse")
+  rownames(CI) <- c(NAMES.POP,"inverse mean","CoV\u00B2 (RVAR)")
   colnames(CI) <- NAMES.CI
 
   R <- list(CI=CI,VAR=CI.VAR,dIC=dIC)
@@ -519,12 +559,12 @@ inv.special.F <- function(u,precision=1/2,...)
 }
 
 
-meta <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC="AICc",boot=FALSE,error=0.01,debias=TRUE,units=TRUE,plot=TRUE,sort=FALSE,mean=TRUE,col="black",...)
+meta <- function(x,level=0.95,level.UD=0.95,method="MLE",IC="AICc",boot=FALSE,error=0.01,debias=TRUE,units=TRUE,plot=TRUE,sort=FALSE,mean=TRUE,col="black",...)
 {
   method <- tolower(method)
   method <- match.arg(method,c("mle","blue"))
 
-  meta.area(x=x,level=level,level.UD=level.UD,level.pop=level.pop,IC=IC,boot=boot,error=error,debias=debias,method=method,units=units,plot=plot,sort=sort,mean=mean,col=col,...)
+  meta.area(x=x,level=level,level.UD=level.UD,IC=IC,boot=boot,error=error,debias=debias,method=method,units=units,plot=plot,sort=sort,mean=mean,col=col,...)
 }
 
 
@@ -704,10 +744,12 @@ meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC=
   }
   else # population levels CIs
   {
-    CI <- CI[1:3,]
-    UNITS <- unit(CI,"area",SI=!units)
-    CI <- CI/UNITS$scale
-    rownames(CI) <- paste0(rownames(CI)," area (",UNITS$name,")")
+    CI <- CI[c(2,5),] # mean and CoV^2
+    UNITS <- unit(CI[1,],"area",SI=!units,concise=TRUE)
+    CI[1,] <- CI[1,]/UNITS$scale
+    rownames(CI)[1] <- paste0(rownames(CI)[1]," (",UNITS$name,")")
+    CI[2,] <- sqrt(CI[2,])
+    rownames(CI)[2] <- "CoV (RSTD)"
   }
 
   return(CI)
