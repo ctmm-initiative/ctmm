@@ -15,6 +15,12 @@ extent.list <- function(x,...)
 {
   # list of element ranges
   RANGE <- lapply(x,function(y){extent(y,...)})
+
+  # shared columns
+  COLS <- lapply(RANGE,colnames)
+  COLS <- Reduce(intersect,COLS)
+  RANGE <- lapply(RANGE,function(R){R[,COLS]})
+
   # concatenate ranges
   RANGE <- Reduce(rbind,RANGE)
   # final range x & y
@@ -28,17 +34,16 @@ setMethod('extent', signature(x='list'), extent.list)
 # extent of telemetry data
 extent.telemetry <- function(x,level=1,...)
 {
-  if(is.null(colnames(x)))
+  alpha <- (1-level)/2
+  RANGE <- data.frame(row.names=c('min','max'))
+
+  COLS <- c('x','y','z','t')
+  for(COL in COLS)
   {
-    if(ncol(x)==2) { colnames(x) <- c('x','y') }
-    else { stop('Ambiguous extent: ',x) }
+    if(COL %in% colnames(x))
+    { RANGE[[COL]] <- stats::quantile(x[[COL]],probs=c(alpha,1-alpha),na.rm=TRUE) }
   }
 
-  alpha <- (1-level)/2
-  X <- stats::quantile(x$x,probs=c(alpha,1-alpha),na.rm=TRUE)
-  Y <- stats::quantile(x$y,probs=c(alpha,1-alpha),na.rm=TRUE)
-  RANGE <- data.frame(x=X,y=Y)
-  row.names(RANGE) <- c("min","max")
   return(RANGE)
 }
 setMethod('extent', signature(x='telemetry'), extent.telemetry)

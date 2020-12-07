@@ -1,4 +1,4 @@
-# iterpolate vector by continuous index
+# interpolate vector by continuous index
 # vec is a vector, ind is a continuous index
 vint <- function(vec,ind,return.ind=FALSE)
 {
@@ -28,6 +28,7 @@ vint <- function(vec,ind,return.ind=FALSE)
 
   return(vec)
 }
+
 # same thing as above but with a block-vector
 mint <- function(mat,ind)
 {
@@ -36,6 +37,27 @@ mint <- function(mat,ind)
   return(mat)
 }
 
+# bi-linear interpolation
+bint <- function(X,ind)
+{
+  # subset to 4x4 inclusion square
+  IND <- vint(X[,1],ind[1],return.ind=TRUE)
+  X <- X[IND[1],]
+  IND[2] <- vint(X[1,],ind[2],return.ind=TRUE)
+  X <- X[,IND[2]]
+
+  X <- X[1,] + (X[1,2]-X[1,1])*(ind[1]-IND[1])
+  X <- X[1] + (X[2]-X[1])*(ind[2]-IND[2])
+
+  return(X)
+}
+
+
+# tri-linear interpolation
+tint <- function(X,ind)
+{
+  # TODO
+}
 
 # confidence interval functions
 CI.upper <- Vectorize(function(k,Alpha){stats::qchisq(Alpha/2,k,lower.tail=FALSE)/k})

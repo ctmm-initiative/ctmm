@@ -142,6 +142,7 @@ format.grid <- function(grid,axes=c('x','y'))
 
   if(class(grid)[1]=="RasterLayer") ### grid defined by raster ###
   {
+    # this includes outer margin of pixels (don't use!)
     EXT <- raster::extent(grid)
     EXT <- cbind( c(EXT@xmin,EXT@xmax) , c(EXT@ymin,EXT@ymax) )
     dEXT <- EXT[2,]-EXT[1,]
@@ -149,7 +150,7 @@ format.grid <- function(grid,axes=c('x','y'))
     res <- dim(grid)[2:1]
     dr <- raster::res(grid)
 
-    # grid locations
+    # grid locations (pixel centers)
     r <- list(x=raster::xFromCol(grid),y=rev(raster::yFromRow(grid)))
 
     grid <- list(dr=dr,r=r)
@@ -189,8 +190,18 @@ kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=NULL,dr=NULL,EXT=NUL
   }
   else if(!is.null(grid$dr) && !is.null(grid$extent)) ### grid fully pre-specified... with possible conflicts ###
   {
+    # raster extents include pixel margins
+    MARGIN <- class(grid$extent)[1]=="Extent"
+
     dr <- grid$dr
     EXT <- as.matrix(grid$extent)
+
+    # raster extents include pixel margins
+    if(MARGIN)
+    {
+      EXT[1,] <- EXT[1,] + dr/2
+      EXT[2,] <- EXT[2,] - dr/2
+    }
 
     if(isTRUE(grid$align.to.origin))
     {
@@ -206,13 +217,24 @@ kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=NULL,dr=NULL,EXT=NUL
   }
   else if(!is.null(grid$extent)) ### grid extent specified, but not resolution ###
   {
+    # raster extents include pixel margins
+    MARGIN <- class(grid$extent)[1]=="Extent"
+
     # align.to.origin doesn't make sense without dr specified
     EXT <- as.matrix(grid$extent)
     dEXT <- EXT[2,]-EXT[1,]
 
-    if(is.null(dr)) { dr <- dEXT/res }
-    res <- ceiling(dEXT/dr)
-    dr <- dEXT/res # correct dr if necessary
+    if(is.null(dr)) { dr <- dEXT/(res+MARGIN) }
+    res <- ceiling(dEXT/dr) - MARGIN
+    res <- max(res,1)
+    dr <- dEXT/(res+MARGIN) # correct dr if necessary
+
+    # raster extents include pixel margins
+    if(MARGIN)
+    {
+      EXT[1,] <- EXT[1,] + dr/2
+      EXT[2,] <- EXT[2,] - dr/2
+    }
 
     R <- lapply(1:length(axes),function(i){seq(EXT[1,i],EXT[2,i],length.out=1+res[i])})
   } ### end grid extent specified ###
@@ -253,7 +275,7 @@ kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=NULL,dr=NULL,EXT=NUL
 
     if(is.null(EXT)) { EXT <- rbind( apply(R-dH,2,min) , apply(R+dH,2,max) ) } # (ext,dim) }
     colnames(EXT) <- axes
-    if(!is.null(EXT.min)) { EXT <- as.matrix(extent(list(EXT,EXT.min),level=1)) }
+    if(!is.null(EXT.min)) { EXT <- as.matrix(extent(list(EXT,EXT.min),level=1))[,axes] }
     dEXT <- EXT[2,]-EXT[1,]
 
     # grid center

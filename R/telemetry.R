@@ -349,32 +349,32 @@ missing.class <- function(DATA,TYPE)
 }
 
 
-# merge two location classes with minimal levels
+# merge two location classes [NOT with minimal levels]
 merge.class <- function(class1,class2)
 {
   if(is.null(class2)) { return(class1) }
   if(is.null(class1)) { return(class2) }
 
-  LEVEL2 <- levels(class2)
-  N <- length(LEVEL2)
-  CLASS12 <- list()
-  for(i in 1:N) { CLASS12[[i]] <- unique( class1[ class2==LEVEL2[i] ] ) }
+  # LEVEL2 <- levels(class2)
+  # N <- length(LEVEL2)
+  # CLASS12 <- list()
+  # for(i in 1:N) { CLASS12[[i]] <- unique( class1[ class2==LEVEL2[i] ] ) }
+  #
+  # # do we need additional location classes
+  # OVER <- matrix(0,N,N)
+  # for(i in 1:N) { for(j in 1:N) { OVER[i,j] <- sum( length( intersect(CLASS12[[i]],CLASS12[[j]]) ) ) } }
+  # diag(OVER) <- 0 # don't count self similarity
+  # OVER <- sum(OVER)/2
 
-  # do we need additional location classes
-  OVER <- matrix(0,N,N)
-  for(i in 1:N) { for(j in 1:N) { OVER[i,j] <- sum( length( intersect(CLASS12[[i]],CLASS12[[j]]) ) ) } }
-  diag(OVER) <- 0 # don't count self similarity
-  OVER <- sum(OVER)/2
-
-  if(OVER)
-  {
-    class1 <- as.character(class1)
-    class2 <- as.character(class2)
-    class <- paste(class1,class2)
-    class <- as.factor(class)
-  }
-  else
-  { class <- class1 }
+  # if(OVER)
+  # {
+  class1 <- as.character(class1)
+  class2 <- as.character(class2)
+  class <- paste(class1,class2)
+  class <- as.factor(class)
+  # }
+  # else
+  # { class <- class1 }
 
   return(class)
 }

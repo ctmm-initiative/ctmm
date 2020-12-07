@@ -20,6 +20,7 @@ new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,units=
   dist <- list()
   dist$name <- "meters"
   dist$scale <- 1
+  axes <- c("x","y")
 
   if(!is.null(ext))
   {
@@ -33,15 +34,15 @@ new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,units=
 
     # bounding locations from data
     if(!is.null(data))
-    { ext <- rbind(ext,extent(data)) }
+    { ext <- rbind(ext,extent(data)[,axes]) }
 
     # bounding locations from UDs
     if(!is.null(UD))
-    { ext <- rbind(ext,extent(UD,level=level,level.UD=level.UD)) }
+    { ext <- rbind(ext,extent(UD,level=level,level.UD=level.UD)[,axes]) }
 
     # bounding locations from Gaussian CTMM
     if(!is.null(CTMM) & !any(is.na(level.UD)))
-    { ext <- rbind(ext,extent(CTMM,level=level,level.UD=level.UD)) }
+    { ext <- rbind(ext,extent(CTMM,level=level,level.UD=level.UD)[,axes]) }
 
     # # bounding locations from standard normal quantiles
     # if(RESIDUALS && !any(is.na(level.UD)))

@@ -82,7 +82,9 @@ library(ctmm)
 data(buffalo)
 Cilla <- buffalo$Cilla
 
+# calculate fit guess object
 GUESS <- ctmm.guess(Cilla,interactive=FALSE)
+# in general, you should be running ctmm.select here instead of ctmm.fit
 FIT <- ctmm.fit(Cilla,GUESS)
 
 # Compute akde object
