@@ -47,6 +47,7 @@ data(buffalo)
 
 # fit models for first two buffalo
 GUESS <- lapply(buffalo[1:2], function(b) ctmm.guess(b,interactive=FALSE) )
+# using ctmm.fit here for speed, but you should almost always use ctmm.select
 FITS <- lapply(1:2, function(i) ctmm.fit(buffalo[[i]],GUESS[[i]]) )
 names(FITS) <- names(buffalo[1:2])
 

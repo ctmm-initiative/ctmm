@@ -1,5 +1,3 @@
-NAMES.POP <- c("pop-low","mean","pop-high")
-
 summary.meta <- function(object,IC="AICc",...)
 {
   if(class(object)[1]=="list")
@@ -20,8 +18,13 @@ summary.meta.single <- function(object,...)
 
 
 # meta-analysis of chi^2 random variables with inverse-Gaussian prior
-meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',boot=FALSE,iterate=FALSE,error=0.01,debias=TRUE,precision=1/2,...)
+meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='mle',boot=FALSE,iterate=FALSE,error=0.01,debias=TRUE,precision=1/2,...)
 {
+  # discard null estimates
+  ZERO <- dof<=.Machine$double.eps
+  s <- s[!ZERO]
+  dof <- dof[!ZERO]
+
   # tol <- .Machine$double.eps^precision
   n <- length(s)
   # for model ICs
@@ -60,7 +63,7 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
     CI <- w[1]*CI.1 + w[2]*CI.2
 
     # TODO make the second term some kind of GIG?
-    # TODO GIG stuff
+    CI[3] <- nant(CI[3],Inf)
 
     return(CI)
   }
@@ -165,29 +168,6 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
     #   LL[3] <- -FIT$value # log-likelihood at MLE
     # }
 
-    ###################
-    # return point estimates for bootstrap - no model selection nor uncertainty CIs needed
-    # if(!complete)
-    # {
-    #   if(length(par)==2)
-    #   {
-    #     mu <- PAR[2,1]
-    #     k <- PAR[2,2]
-    #     if(debias) # kappa for debiased standard deviation
-    #     {
-    #       k <- BC * k # chi^2 debias
-    #       k <- k.std(PAR[2,]) # chi debias
-    #     }
-    #     CI <- IG.CI(mu,k=k,level=level.pop,precision=precision)
-    #     CI[4] <- inverse.mean(PAR[2,],Vm2)
-    #   }
-    #   # else if(length(par)==3)
-    #   # { CI <- GIG.CI(eta,theta,rho,level=level.pop,precision=precision) }
-    #   names(CI) <- c(NAMES.POP,"inverse-mean")
-    #   return(CI)
-    # }
-    ### general debiasing formulas need COV estimate from Hessian ###
-
     if(complete && !is.na(IC))
     {
       ICS <- c("AIC","AICc","BIC")
@@ -208,40 +188,13 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
       dIC <- dIC[IND,,drop=FALSE]
       dIC <<- dIC # store to main function
       print(dIC - min(dIC))
-
-      # some old code that would need to be re-written
-      # if(IC=="LOOCV")
-      # {
-      #   LL0 <- 0
-      #   for(i in 1:n)
-      #   {
-      #     # leave-one-out MLE
-      #     SUB <- -i
-      #     S <- sum( (dof*s)[SUB] ) / sum( dof[SUB] )
-      #     # (CV) log-likelihood of left out
-      #     SUB <- i
-      #     LL0 <- LL0 - nloglike(c(S,0))
-      #   }
-      # SUB <- 1:n
-      # LLN <- 0
-      # for(i in 1:n)
-      # {
-      #   # leave-one-out MLE
-      #   SUB <- -i
-      #   par.i <- optimizer(par,nloglike,lower=0,upper=Inf)$par
-      #   # CV log-likelihood of left out
-      #   SUB <- i
-      #   LLN <- LLN - nloglike(par.i)
-      # }
-      # SUB <- 1:n
-      # dIC <- -2*LLN + 2*LL0
     }
     else # unknown DOF (no model selection)
     { IND <- 2  }
 
     ##################
     # propagate uncertainty
-    CI <- t(array(c(0,0,Inf),c(3,5))) # initialize confidence intervals (0,Inf)
+    CI <- t(array(c(0,0,Inf),c(3,4))) # initialize confidence intervals (0,Inf)
 
     IND <- IND[1] # best model
     PAR <- PAR[IND,] # best model parameter estimates
@@ -252,16 +205,20 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
       dof <- sum(dof) # precision of point estimate
 
       # mean area is the only area
-      CI[1,] <- CI[2,] <- CI[3,] <- chisq.ci(PAR[1],DOF=dof,level=level)
-      CI.VAR <- array(2*PAR[1]^2/dof,3)
+      CI[1,] <- chisq.ci(PAR[1],DOF=dof,level=level)
+      CI.VAR <- 2*PAR[1]^2/dof
 
-      # mean inverse area
-      CI[4,] <- 1/CI[2,] # not used
-      CI[4,2] <- CI[4,2] * dof/max(dof-debias,0) # inverse-chi^2 mean bias correction
-      CI.VAR[4] <- 2*CI[4,2]^2/max(dof-3*debias,0)
+      # inverse-mean area
+      CI[2,] <- 1/CI[1,] # not used
+      CI[2,2] <- CI[2,2] * dof/max(dof-debias,0) # inverse-chi^2 mean bias correction
+      CI.VAR[2] <- 2*CI[2,2]^2/max(dof-3*debias,0)
 
       # CoV^2 (RVAR)
-      CI[5,] <- c(0,0,Inf)
+      CI[3,] <- c(0,0,Inf)
+      CI.VAR[3] <- Inf
+
+      # CoV   (RSTD)
+      CI[4,] <- c(0,0,Inf)
       CI.VAR[4] <- Inf
     }
     else if(IND==2) # inverse-Gaussian model
@@ -279,28 +236,35 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
         PAR[1:IND] <- par
       }
 
-      Q <- function(par) { IG.CI(par[1],k=ifelse(debias,k.std(par),par[2]),level=level.pop,precision=precision) }
-      GRAD <- genD(par,Q,lower=c(0,0),order=1)$gradient
-      CI.VAR <- diag(GRAD %*% COV %*% t(GRAD))
+      CI.VAR <- COV[1,1]
 
       # approximate ratio of chi^2 to IG behavior
-      update.DRATIO(par,CI.VAR[2])
+      update.DRATIO(par,CI.VAR[1])
 
-      CI[1:3,2] <- Q(par)
-      for(i in 1:3){ CI[i,] <- ci.chisq.GIG(CI[i,2],VAR=CI.VAR[i]) }
+      CI[1,] <- ci.chisq.GIG(par[1],VAR=CI.VAR[1])
 
       # mean inverse area of IG random variable # IG bias corrected
-      CI[4,] <- 1/CI[2,] # these numbers aren't really used
-      CI[4,2] <- inverse.mean(par[1],Vm2=COV[1,1]/par[1]^2) # debiased inverse
+      CI[2,] <- 1/CI[1,] # these numbers aren't really used
+      CI[2,2] <- inverse.mean(par[1],Vm2=COV[1,1]/par[1]^2) # debiased inverse
       # debiased relative variance at extremes
-      CI.VAR[4] <- 1/(par[1]^2/COV[1,1] - 2*(1-DRATIO)) + DRATIO*COV[1,1]/par[1]*COV[2,2]/par[2]
-      CI.VAR[4] <- CI.VAR[4]/par[1]^2
+      CI.VAR[2] <- 1/(par[1]^2/COV[1,1] - 2*(1-DRATIO)) + DRATIO*COV[1,1]/par[1]*COV[2,2]/par[2]
+      CI.VAR[2] <- CI.VAR[2]/par[1]^2
 
       # CoV^2 (RVAR)
       # CI[5,2] <- par[1]*par[2]
       GRAD <- par[2:1]
-      CI.VAR[5] <- GRAD %*% COV %*% GRAD
-      CI[5,] <- chisq.ci(par[1]*par[2],VAR=CI.VAR[5],level=level)
+      CI.VAR[3] <- GRAD %*% COV %*% GRAD
+      CI[3,] <- chisq.ci(par[1]*par[2],VAR=CI.VAR[3],level=level)
+
+      # CoV (RSTD)
+      CI[4,] <- sqrt(CI[3,])
+      CI.VAR[4] <- CI.VAR[3]/CI[3,2]/4
+      if(debias && 0<CI[3,2]) # sqrt bias
+      {
+        BIAS <- 1 + CI.VAR[3]/CI[3,2]^2/4
+        CI[4,] <- CI[4,] * sqrt(BIAS)
+        CI.VAR[4] <- CI.VAR[4] * BIAS
+      }
     }
     # else if(IND==3) # GIG distribution
     # {
@@ -319,7 +283,7 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
     #   CI.DOF <- 2*CI[,2]^2/VAR # DOFs for F-test
     # }
 
-    rownames(CI) <- c(NAMES.POP,"mean-inverse","CoV\u00B2 (RVAR)")
+    rownames(CI) <- c("mean","inverse-mean","CoV\u00B2 (RVAR)","CoV  (RSTD)")
     colnames(CI) <- NAMES.CI
 
     if(!complete) { return(CI[,2]) }
@@ -343,9 +307,10 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
     # return point estimates
     if(!complete)
     {
-      CI <- IG.CI(mu,VAR=c(BFIT$sigma),level=level.pop)
-      CI[4] <- inverse.mean(mu,c(BFIT$sigma)/mu^2)  # 1/mu debiased to first order
-      CI[5] <- mu*k
+      CI <- mu
+      CI[2] <- inverse.mean(mu,c(BFIT$sigma)/mu^2)  # 1/mu debiased to first order
+      CI[3] <- mu*k
+      CI[4] <- sqrt(CI[3])
       return(CI)
     }
 
@@ -365,24 +330,28 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
     else
     { IND <- 2 }
 
-    CI <- t(array(c(0,0,Inf),c(3,5))) # initialize confidence intervals (0,Inf)
+    CI <- t(array(c(0,0,Inf),c(3,4))) # initialize confidence intervals (0,Inf)
 
     IND <- IND[1] # best model
     if(IND==1) # exact chi^2 result
     {
       mu <- c(BFIT$mu)
       k <- 0
-      CI.VAR <- rep(BFIT$COV.mu,3)
+      CI.VAR <- BFIT$COV.mu
       dof <- 2*mu^2/CI.VAR[1] # sampling dof (not population)
       # mean area is the only area
-      CI[1,] <- CI[2,] <- CI[3,] <- chisq.ci(mu,DOF=dof,level=level)
-      CI[4,] <- 1/CI[2,] # not used
-      CI[4,2] <- CI[4,2] * max(dof-debias,0)/dof
-      CI.VAR[4] <- 2*CI[4,2]^2 / max(dof-debias*3,0)
+      CI[1,] <- chisq.ci(mu,DOF=dof,level=level)
+      CI[2,] <- 1/CI[1,] # not used
+      CI[2,2] <- CI[2,2] * max(dof-debias,0)/dof
+      CI.VAR[2] <- 2*CI[2,2]^2 / max(dof-debias*3,0)
 
       # CoV^2 (RVAR)
-      CI[5,] <- c(0,0,Inf)
-      CI.VAR[5] <- 0
+      CI[3,] <- c(0,0,Inf)
+      CI.VAR[3] <- 0
+
+      # CoV   (RSTD)
+      CI[4,] <- c(0,0,Inf)
+      CI.VAR[4] <- 0
     }
     else if(IND==2) # population variance (IG relations)
     {
@@ -391,35 +360,36 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
       COV <- diag(c(BFIT$COV.mu,BFIT$COV.sigma),2)
       COV <- GRAD %*% COV %*% t(GRAD) # (mu,k) COV
 
+      diag(COV) <- nant(diag(COV),Inf)
+      COV <- nant(COV,0)
+
       # delta method for population quantile uncertainty
       # population point estimates are IG
       par <- c(mu,k)
-      Q <- function(par) { IG.CI(par[1],k=par[2],level=level.pop,precision=precision) }
-      GRAD <- genD(par,Q,lower=c(0,0),order=1)$gradient # [Q,(mu,k)]
-      CI.VAR <- diag(GRAD %*% COV %*% t(GRAD)) # [Q,Q]
+      CI.VAR <- COV[1,1]
 
       # approximate ratio of chi^2 to IG behavior
-      update.DRATIO(par,CI.VAR[2])
+      update.DRATIO(par,CI.VAR[1])
 
-      # point estimates
-      CI[1:3,2] <- Q(par)
-      # population low,point,high CIs
-      for(i in 1:3) { CI[i,] <- ci.chisq.GIG(CI[i,2],CI.VAR[i]) }
+      CI[1,] <- ci.chisq.GIG(par[1],CI.VAR[1])
 
-      CI[4,] <- 1/CI[2,] # numbers not used
+      CI[2,] <- 1/CI[1,] # numbers not used
       Vm2 <- c(BFIT$COV.mu)/mu^2 # keep fixed
-      CI[4,2] <- inverse.mean(mu,Vm2) # 1/mu debiased to first order
+      CI[2,2] <- inverse.mean(mu,Vm2) # 1/mu debiased to first order
       GRAD <- -1/mu^2/(1+debias*Vm2) # gradient evaluated analytically
-      CI.VAR[4] <- GRAD^2 * c(BFIT$COV.mu)
+      CI.VAR[2] <- GRAD^2 * c(BFIT$COV.mu)
 
       # CoV^2 (RVAR)
       # CI[5,2] <- par[1]*par[2]
       GRAD <- par[2:1]
-      CI.VAR[5] <- GRAD %*% COV %*% GRAD
-      CI[5,] <- chisq.ci(par[1]*par[2],VAR=CI.VAR[5],level=level)
+      CI.VAR[3] <- GRAD %*% COV %*% GRAD
+      CI[3,] <- chisq.ci(par[1]*par[2],VAR=CI.VAR[3],level=level)
+      # CoV (RSTD)
+      CI[4,] <- sqrt(CI[3,])
+      CI.VAR[4] <- CI.VAR[3]/CI[3,2]/4
     } # end population variance
 
-    rownames(CI) <- c(NAMES.POP,"inverse mean","CoV\u00B2 (RVAR)")
+    rownames(CI) <- c("mean","inverse-mean","CoV\u00B2 (RVAR)","CoV  (RSTD)")
     colnames(CI) <- NAMES.CI
 
     R <- list(CI=CI,CI.VAR=CI.VAR,mu=mu,k=k,rho=1)
@@ -450,8 +420,8 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
     ENSEMBLE <- NULL
 
     INF <- c(0,Inf,Inf)
-    INF <- rbind(INF,INF,INF,INF,INF)
-    rownames(INF) <- c(NAMES.POP,"inverse mean","CoV\u00B2 (RVAR)")
+    INF <- rbind(INF,INF,INF,INF)
+    rownames(INF) <- c("mean","inverse-mean","CoV\u00B2 (RVAR)","CoV  (RSTD)")
     colnames(INF) <- NAMES.CI
 
     iERROR <- Inf
@@ -505,8 +475,8 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
 
       # iterate debias
       # mu.pred <- AVE[2]
-      # debias eta
-      # debias eta/sqrt(theta)
+      # debias mu
+      # debias k
 
       if(!iterate) { break }
     } # end bootstrap iteration
@@ -520,7 +490,7 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='exact',
   #   warning("Population mean not convergent. Consider robust=TRUE.")
   # }
 
-  rownames(CI) <- c(NAMES.POP,"inverse mean","CoV\u00B2 (RVAR)")
+  rownames(CI) <- c("mean","inverse-mean","CoV\u00B2 (RVAR)","CoV  (RSTD)")
   colnames(CI) <- NAMES.CI
 
   R <- list(CI=CI,VAR=CI.VAR,dIC=dIC)
@@ -537,28 +507,6 @@ shrink.chisq <- function(s,dof,S,DOF,...)
 }
 
 
-# inverse of special function u = f(n) = log(n/2) - digamma(n/2) ~ 1/n
-inv.special.F <- function(u,precision=1/2,...)
-{
-  tol <- .Machine$double.eps^precision
-  ERROR <- Inf
-
-  n <- 1/u/2 # really n/2
-  while(ERROR>tol)
-  {
-    f <- log(n) - digamma(n)
-    if(f==0) { return(Inf) }
-    d <- 1/n - trigamma(n)
-    n <- n + (u-f)/d
-
-    ERROR <- abs(f-u)/u
-  }
-  n <- n*2 # n
-
-  return(n)
-}
-
-
 meta <- function(x,level=0.95,level.UD=0.95,method="MLE",IC="AICc",boot=FALSE,error=0.01,debias=TRUE,units=TRUE,plot=TRUE,sort=FALSE,mean=TRUE,col="black",...)
 {
   method <- tolower(method)
@@ -572,7 +520,6 @@ meta <- function(x,level=0.95,level.UD=0.95,method="MLE",IC="AICc",boot=FALSE,er
 import.area <- function(x,level.UD=0.95)
 {
   N <- length(x)
-  CLASS <- class(x[[1]])
   ID <- names(x) # may be null
 
   # TODO do range or diffusion, but not both
@@ -582,6 +529,7 @@ import.area <- function(x,level.UD=0.95)
   AREA <- DOF <- array(0,N)
   for(i in 1:N)
   {
+    CLASS <- class(x[[i]])
     if(length(ID) < i) { ID[i] <- attr(x[[i]],"info")$identity }
 
     if(CLASS=="ctmm")
@@ -660,13 +608,15 @@ meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC=
     ID <- STUFF$ID
 
     # inverse-chi^2 population distribution
-    CI <- meta.chisq(AREA,DOF,level=level,level.pop=level.pop,IC=IC,boot=boot,error=error,debias=debias,method=method)$CI
+    CI <- meta.chisq(AREA,DOF,level=level,level.pop=level.pop,IC=IC,boot=boot,error=error,debias=debias,method=method)
+    CI.VAR <- CI$VAR
+    CI <- CI$CI
 
     # basic forest plot
     PLOT <- sapply(1:(N+1),function(i){chisq.ci(AREA[i],DOF=DOF[i],level=level)}) # [3,N+1]
 
     ID[N+1] <- "mean"
-    PLOT[,N+1] <- CI[2,1:3] # overwrite chi^2 CI with better
+    PLOT[,N+1] <- CI[1,1:3] # overwrite chi^2 CI with better
   }
 
   if(plot)
@@ -729,10 +679,10 @@ meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC=
     RESULTS <- RESULTS[1:N]
     ID <- ID[1:N]
 
-    NUM <- sapply(RESULTS,function(R){R$CI[2,2]})
-    NVAR <- sapply(RESULTS,function(R){R$VAR[2]})
-    DEN <- sapply(RESULTS,function(R){R$CI[4,2]})
-    DVAR <- sapply(RESULTS,function(R){R$VAR[4]})
+    NUM <- sapply(RESULTS,function(R){R$CI[1,2]})
+    NVAR <- sapply(RESULTS,function(R){R$VAR[1]})
+    DEN <- sapply(RESULTS,function(R){R$CI[2,2]})
+    DVAR <- sapply(RESULTS,function(R){R$VAR[2]})
 
     CI <- array(1,c(N,N,3))
     dimnames(CI) <- list(paste0(ID,"/"),paste0("/",ID),NAMES.CI)
@@ -744,12 +694,14 @@ meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC=
   }
   else # population levels CIs
   {
-    CI <- CI[c(2,5),] # mean and CoV^2
+    CI <- CI[c(1,3,4),] # mean and CoV^2
+
     UNITS <- unit(CI[1,],"area",SI=!units,concise=TRUE)
     CI[1,] <- CI[1,]/UNITS$scale
+
     rownames(CI)[1] <- paste0(rownames(CI)[1]," (",UNITS$name,")")
-    CI[2,] <- sqrt(CI[2,])
-    rownames(CI)[2] <- "CoV (RSTD)"
+    #rownames(CI)[2] <- "CoV\u00B2 (RVAR)"
+    #rownames(CI)[3] <- "CoV  (RSTD)"
   }
 
   return(CI)
