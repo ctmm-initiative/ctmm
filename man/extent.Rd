@@ -17,7 +17,7 @@
 
 \S4method{extent}{ctmm}(x,level=0.95,level.UD=0.95,...)
 
-\S4method{extent}{UD}(x,level=0.95,level.UD=0.95,...)
+\S4method{extent}{UD}(x,level=0.95,level.UD=0.95,complete=FALSE,...)
 
 \S4method{extent}{variogram}(x,level=0.95,threshold=2,...)
 
@@ -32,6 +32,7 @@
   \item{x}{A \code{telemetry}, \code{ctmm}, or \code{UD} object. }
   \item{level}{ For \code{telemetry} objects, this is the fraction of locations bounded, according to two-sided quantiles. For \code{ctmm} and \code{UD} objects, this is confidence level for the magnitude of the utilization area circumscribed by \code{level.UD}. }
   \item{level.UD}{ Coverage level of the UD area. I.e., the 50\% core home range would be given by \code{level.UD=0.50}. }
+  \item{complete}{ Also calculate longitude-latitude extent of \code{UD} objects. }
   \item{threshold}{Limit \code{ylim} to \code{threshold} times the maximum semi-variance, even if the \code{level} confidence intervals exceed this amount.}
   \item{...}{ Optional arguments for future extensions.}
 }

@@ -33,7 +33,7 @@ ctmm.boot(data,CTMM,method=CTMM$method,AICc=FALSE,iterate=FALSE,robust=FALSE,err
 \references{
 C. H. Fleming, M. J. Noonan, E. P. Medici, J. M. Calabrese,
 ``Overcoming the challenge of small effective sample sizes in home-range estimation'',
-\href{https://besjournals.onlinelibrary.wiley.com/doi/10.1111/2041-210X.13270}{Methods in Ecology and Evolution 10:10, 1679-1689 (2019)}.
+\href{https://doi.org/10.1111/2041-210X.13270}{Methods in Ecology and Evolution 10:10, 1679-1689 (2019)}.
 }
 
 \author{ C. H. Fleming. }

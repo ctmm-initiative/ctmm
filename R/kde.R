@@ -560,6 +560,9 @@ kde <- function(data,H,axes=c("x","y"),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr
     i1 <- pmax(i1,1)
     i2 <- pmin(i2,dim(PMF))
 
+    CHECK <- i2>i1
+    if(any(!CHECK)) { stop("Grid incompatible with data.") }
+
     SUB <- lapply(1:length(i1),function(d){ i1[d]:i2[d] })
 
     # I can't figure out how to do this in one line

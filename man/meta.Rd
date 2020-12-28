@@ -15,7 +15,7 @@ meta(x,level=0.95,level.UD=0.95,method="MLE",IC="AICc",boot=FALSE,error=0.01,deb
   \item{level}{Confidence level for parameter estimates.}
   \item{level.UD}{Coverage level for home-range estimates. E.g., 50\% core home range.}
 %  \item{level.pop}{Coverage level for the population of individuals.}
-  \item{method}{Statistical estimator used---either maximum likelihood estimation (\code{"MLE"}) or `best linear unbiased estimator' (\code{"BLUE"}).}
+  \item{method}{Statistical estimator used---either maximum likelihood estimation based (\code{"MLE"}) or approximate `best linear unbiased estimator' (\code{"BLUE"}).}
   \item{IC}{Information criterion to determine whether or not population variation can be estimated. Can be \code{"AICc"}, \code{AIC}, or \code{"BIC"}.}
   \item{boot}{Perform a parametric bootstrap for confidence intervals and first-order bias correction if \code{debias=TRUE}.}
   \item{error}{Relative error tolerance for parametric bootstrap.}
@@ -34,8 +34,8 @@ So-far only the meta-analysis of home-range areas is implemented. More details w
 For both estimator \code{methods}, the same underlying model is assumed.
 }
 
-\value{If \code{x} constitutes a sampled population, then \code{meta} returns a table with rows corresponding to population coverage levels and columns corresponding to confidence levels of the estimates.
-If \code{x} constitutes a list of sampled sub-populations, then \code{meta} returns confidence intervals on the sub-population estimate ratios.}
+\value{If \code{x} constitutes a sampled population, then \code{meta} returns a table with rows corresponding to the population mean and coefficient of variation.
+If \code{x} constitutes a list of sampled sub-populations, then \code{meta} returns confidence intervals on the sub-population mean ratios.}
 
 %\section{Warnings}{}
 

@@ -34,7 +34,9 @@ The output \code{outlie} object contains the above noted speed and distance esti
 
 \value{Returns a \code{data.frame} of distances and speeds. Can also produce a plot as a side effect.}
 
-%\references{}
+\references{
+C. H. Fleming et al, ``A comprehensive framework for handling location error in animal tracking data'', \href{https://doi.org/10.1101/2020.06.12.130195}{bioRxiv 2020.06.12.130195 (2020)}.
+}
 
 \author{C. H. Fleming.}
 
