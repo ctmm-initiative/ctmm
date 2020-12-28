@@ -21,14 +21,14 @@
 
 \details{
 The \code{include} argument is a matrix that indicates which interactions are considered in the calculation.
-By default, \code{include = 1 - diag(length(object))}, which implies that all interactions are considered aside from self-interactions. Alternatively, \code{exclude = 1 - include} can be specified, and is by-default \code{exclude = diag(length(object))}, which implies that only self-interactions are excluded.
+By default, \code{include = 1 - diag(length(object))}, which implies that all interactions are considered aside from self-interactions. Alternatively, \code{exclude = 1 - include} can be specified, and is by-default \code{exclude = diag(length(object))}, which implies that only self-encounters are excluded.
 }
 
 \value{A \code{UD} object.}
 
 %% ~put references to the literature/web site here ~
 \references{
-M. J. Noonan, R. Martinez-Garcia, G. H. Davis, M. C. Crofoot, R. Kays, B. T. Hirsch, D. Caillaud, E. Payne, A. Sih, D. L. Sinn, O. Spiegel, W. F. Fagan, C. H. Fleming, J. M. Calabrese, ``Estimating encounter location distributions from animal tracking data'', \href{https://www.biorxiv.org/content/10.1101/2020.08.24.261628v1}{bioRxiv 2020.08.24.261628 (2020)}.
+M. J. Noonan, R. Martinez-Garcia, G. H. Davis, M. C. Crofoot, R. Kays, B. T. Hirsch, D. Caillaud, E. Payne, A. Sih, D. L. Sinn, O. Spiegel, W. F. Fagan, C. H. Fleming, J. M. Calabrese, ``Estimating encounter location distributions from animal tracking data'', \href{https://doi.org/10.1101/2020.08.24.261628}{bioRxiv 2020.08.24.261628 (2020)}.
 }
 
 \author{C. H. Fleming}
@@ -39,13 +39,14 @@ M. J. Noonan, R. Martinez-Garcia, G. H. Davis, M. C. Crofoot, R. Kays, B. T. Hir
 
 \seealso{ \code{\link{akde}}, \code{\link{overlap}} }
 
-\examples{
+\examples{\donttest{
 # Load package and data
 library(ctmm)
 data(buffalo)
 
 # fit models for first two buffalo
 GUESS <- lapply(buffalo[1:2], function(b) ctmm.guess(b,interactive=FALSE) )
+# in general, you should use ctmm.select here
 FITS <- lapply(1:2, function(i) ctmm.fit(buffalo[[i]],GUESS[[i]]) )
 names(FITS) <- names(buffalo[1:2])
 
@@ -57,4 +58,4 @@ CDE <- encounter(UDS)
 
 # plot data and encounter distribution
 plot(buffalo[1:2],col=c('red','blue'),UD=CDE,col.DF='purple',col.level='purple',col.grid=NA)
-}
+}}

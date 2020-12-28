@@ -1,10 +1,38 @@
 # statistical mode
-modes.numeric <- function(x)
+modes.numeric <- function(x,method="exact")
 {
-  ux <- unique(x)
-  tab <- tabulate(match(x, ux))
-  ux[tab == max(tab)]
-  mean(ux)
+  x <- sort(x)
+  unique.x <- unique(x)
+
+  if(length(unique.x)<length(x))
+  {
+    freq <- tabulate(match(x, unique.x))
+    MAX <- max(freq)
+    IND <- which(freq==MAX)
+
+    # well defined sample mode
+    if(length(IND)==1) { return(x[IND]) }
+    # else minimize log-distance
+  }
+  else
+  { IND <- 1:length(x) }
+
+  # log distance
+  D <- log(abs(outer(x,x,'-')))
+  # no self distance
+  diag(D) <- 0
+  # no ties
+  if(length(IND)<length(x))
+  {
+    D[IND,IND] <- 0
+    D[!IND,!IND] <- Inf
+  }
+  # total distance to other locations
+  TD <- rowSums(D)
+  # mode index
+  IND <- which.min(TD)
+
+  x[IND]
 }
 
 

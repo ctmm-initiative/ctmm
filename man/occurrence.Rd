@@ -35,11 +35,11 @@ If \code{buffer=TRUE}, then the data are also extrapolated according to the mini
 \references{
 C. H. Fleming, W. F. Fagan, T. Mueller, K. A. Olson, P. Leimgruber, J. M. Calabrese,
 ``Estimating where and how animals travel: An optimal framework for path reconstruction from autocorrelated tracking data'',
-\href{http://esajournals.onlinelibrary.wiley.com/doi/abs/10.1890/15-1607.1}{Ecology, 97:3, 576-582 (2016)}.
+\href{https://doi.org/10.1890/15-1607.1}{Ecology, 97:3, 576-582 (2016)}.
 
 C. H. Fleming, D. Sheldon, E. Gurarie, W. F. Fagan, S. LaPoint, J. M. Calabrese,
 ``Kálmán filters for continuous-time movement models'',
-\href{http://www.sciencedirect.com/science/article/pii/S1574954117301115}{Ecological Informatics, 40, 8-21 (2017)}.
+\href{https://doi.org/10.1016/j.ecoinf.2017.04.008}{Ecological Informatics, 40, 8-21 (2017)}.
 }
 
 \author{ C. H. Fleming. }

@@ -34,7 +34,7 @@ The default non-SI units include the mean solar \code{'day'}, mean synodic \code
 
 \author{ C. H. Fleming. }
 
-\note{ Dimensions of weight are not currently supported as they are not used by \code{ctmm}. }
+\note{ Dimensions of mass and weight are not currently supported as they are not used by \code{ctmm}. }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 

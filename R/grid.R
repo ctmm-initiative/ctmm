@@ -4,8 +4,8 @@ is.grid.complete <- function(grid)
   if(is.null(grid) || class(grid)[1]=="Extent") { return(FALSE) }
   if(class(grid)[1] %in% c("UD","RasterLayer")) { return(TRUE) }
   if(class(grid)[1]=="list") # list of options
-  { return(!is.null(grid$r)) }
-  else # assuming extent or dr
+  { return( "r" %in% names(grid) || all(c("extent","dr") %in% names(grid)) ) }
+  else # assuming extent matrix or dr numeric
   { return(FALSE) }
 }
 

@@ -25,7 +25,7 @@ Please cite Morato et al (2018) when publishing with these data.}
 \references{
 R. G. Morato et al,
 ``Jaguar movement database: a GPS-based movement dataset of an apex predator in the Neotropic'',
-\href{https://esajournals.onlinelibrary.wiley.com/doi/full/10.1002/ecy.2379}{Ecology, 99:7, 1691-1691 (2018)}.
+\href{https://doi.org/10.1002/ecy.2379}{Ecology, 99:7, 1691-1691 (2018)}.
 }
 
 \seealso{ \code{\link{as.telemetry}}, \code{\link{plot.telemetry}}, \code{\link{buffalo}}, \code{\link{coati}}, \code{\link{gazelle}}, \code{\link{pelican}}, \code{\link{turtle}}, \code{\link{wolf}}. }

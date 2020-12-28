@@ -17,7 +17,7 @@
 \item{Upgrade \code{R} to the latest version and update all of your packages.}
 \item{The development build can be installed via \code{devtools::install_github("ctmm-initiative/ctmm")}.}
 \item{Stable beta releases between the CRAN release are published \href{http://www2.physics.umd.edu/~hfleming/}{here} on request.}
-\item{The \href{https://groups.google.com/forum/#!forum/ctmm-user}{\code{ctmm} user's group} is a good place to find and ask for help.}
+\item{The \href{https://groups.google.com/g/ctmm-user}{\code{ctmm} user's group} is a good place to find and ask for help.}
 \item{Bug reports and feature requests can be raised at the \href{https://github.com/ctmm-initiative/ctmm}{Github project page}.}
 }
 
@@ -25,7 +25,7 @@
 
 {These are the packages I needed in Ubuntu:
 
-\code{sudo apt install fftw3 libfftw3-dev libgdal-dev libgmp-dev libmpfr-dev libproj-dev libgeos-dev libgsl-dev libnode-dev r-base-core}}
+\code{sudo apt install fftw3 libfftw3-dev libgdal-dev libgeos-dev libgit2-dev libgmp-dev libgsl-dev libmpfr-dev libproj-dev libnode-dev r-base-core}}
 
 \bold{\code{as.telemetry} reports abnormal sampling intervals and speeds}
 
@@ -47,11 +47,15 @@
 
 \bold{\code{plot} complains about the datatype or has weird errors}
 
-{Namespace collision sometimes occurs from \code{raster} or \code{sp} against \code{move} and \code{ctmm}. Restart \code{R} and only load the \code{ctmm} package.}
+{Namespace collision sometimes occurs between \code{raster}, \code{sp}, \code{move}, and \code{ctmm}. Either restart \code{R} and only load the \code{ctmm} package, or run \code{ctmm::plot} instead of \code{plot}.}
 
 \bold{North is no longer up after importing data}
 
 {The default projection in \code{ctmm} does not preserve the direction of North, but better preserves distances for elongated distributions. See the \code{projection} argument in \code{\link{as.telemetry}} and the example in \code{\link[ctmm]{projection}}. The \code{\link{compass}} function is also useful for pointing north.}
+
+\bold{\code{projection} complains about the datatype and fails}
+
+{Namespace collision can occur between \code{raster} and \code{ctmm}. Either restart \code{R} and only load the \code{ctmm} package, or run \code{ctmm::projection} instead of \code{projection}.}
 
 \bold{\code{\link{ctmm.guess}} has no save button}
 

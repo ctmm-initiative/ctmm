@@ -235,6 +235,8 @@ unit.variogram <- function(SVF,time=1,area=1)
   }
   else # convert from si units
   {
+    if(!is.numeric(y)) { return(x %#% 1 %#% y) }
+
     num <- y
     name <- x
     pow <- -1

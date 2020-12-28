@@ -22,7 +22,7 @@ Returns a \code{variogram} object which is a dataframe containing the lag, the s
 \references{
 C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, W. F. Fagan,
 ``From fine-scale foraging to home ranges: A semi-variance approach to identifying movement modes across spatiotemporal scales'',
-\href{http://www.jstor.org/stable/info/10.1086/675504}{The American Naturalist, 183:5, E154-E167 (2014)}.
+\href{https://www.jstor.org/stable/10.1086/675504}{The American Naturalist, 183:5, E154-E167 (2014)}.
 }
 \author{
 J. M. Calabrese and C. H. Fleming

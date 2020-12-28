@@ -1,4 +1,4 @@
-ctmm 0.5.11 (2020-11-16)
+ctmm 0.6.0 (2020-12-08)
 ================
 
   * new function meta for meta-analysis of home-range areas

@@ -62,11 +62,11 @@ If the sampling schedule is irregular, then this can result in faster simulation
 \references{
 C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, W. F. Fagan,
 ``From fine-scale foraging to home ranges: A semi-variance approach to identifying movement modes across spatiotemporal scales'',
-\href{http://www.jstor.org/stable/info/10.1086/675504}{The American Naturalist, 183:5, E154-E167 (2014)}.
+\href{https://doi.org/10.1086/675504}{The American Naturalist, 183:5, E154-E167 (2014)}.
 
 C. H. Fleming, D. Sheldon, E. Gurarie, W. F. Fagan, S. LaPoint, J. M. Calabrese,
 ``Kálmán filters for continuous-time movement models'',
-\href{http://www.sciencedirect.com/science/article/pii/S1574954117301115}{Ecological Informatics, 40, 8-21 (2017)}.
+\href{https://doi.org/10.1016/j.ecoinf.2017.04.008}{Ecological Informatics, 40, 8-21 (2017)}.
 }
 
 

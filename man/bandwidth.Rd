@@ -41,17 +41,17 @@ On the other hand, \strong{if the data contain some very tiny time intervals}, s
 \references{
 T. F. Chan,
 ``An Optimal Circulant Preconditioner for Toeplitz Systems'',
-SIAM Journal on Scientific and Statistical Computing, 9:4, 766-771 (1988).
+\href{https://doi.org/10.1137/0909051}{SIAM Journal on Scientific and Statistical Computing, 9:4, 766-771 (1988)}.
 
-D. Marcotte, ``Fast variogram computation with FFT'', {Computers and Geosciences} 22:10, 1175-1186 (1996).
+D. Marcotte, ``Fast variogram computation with FFT'', \href{https://doi.org/10.1016/S0098-3004(96)00026-X}{Computers and Geosciences 22:10, 1175-1186 (1996)}.
 
 C. H. Fleming, W. F. Fagan, T. Mueller, K. A. Olson, P. Leimgruber, J. M. Calabrese,
 ``Rigorous home-range estimation with movement data: A new autocorrelated kernel-density estimator'',
-\href{https://esajournals.onlinelibrary.wiley.com/doi/abs/10.1890/14-2010.1}{Ecology, 96:5, 1182-1188 (2015)}.
+\href{https://doi.org/10.1890/14-2010.1}{Ecology, 96:5, 1182-1188 (2015)}.
 
 C. H. Fleming, D. Sheldon, W. F. Fagan, P. Leimgruber, T. Mueller, D. Nandintsetseg, M. J. Noonan, K. A. Olson, E. Setyawan, A. Sianipar, J. M. Calabrese,
 ``Correcting for missing and irregular data in home-range estimation'',
-\href{https://esajournals.onlinelibrary.wiley.com/doi/abs/10.1002/eap.1704}{Ecological Applications, 28:4, 1003-1010 (2018)}.
+\href{https://doi.org/10.1002/eap.1704}{Ecological Applications, 28:4, 1003-1010 (2018)}.
 }
 
 \author{ C. H. Fleming. }

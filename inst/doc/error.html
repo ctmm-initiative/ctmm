@@ -12,7 +12,7 @@
 
 <meta name="author" content="Christen H. Fleming" />
 
-<meta name="date" content="2020-10-30" />
+<meta name="date" content="2020-12-08" />
 
 <title>Telemetry error</title>
 
@@ -349,7 +349,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Telemetry error</h1>
 <h4 class="author">Christen H. Fleming</h4>
-<h4 class="date">2020-10-30</h4>
+<h4 class="date">2020-12-08</h4>
 
 
 
@@ -459,12 +459,12 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## 
 ## $DOF
 ##     mean     area    speed 
-## 14.01050 24.15146  0.00000 
+## 14.01050 24.15156  0.00000 
 ## 
 ## $CI
 ##                          low       est      high
-## area (hectares)    13.672700 21.306472 30.606356
-## τ[position] (days)  3.294529  5.636969  9.644904</code></pre>
+## area (hectares)    13.672696 21.306445 30.606297
+## τ[position] (days)  3.294531  5.636969  9.644899</code></pre>
 <p><code>trace=TRUE</code> allows us to see the models considered. <code>verbose=TRUE</code> would save each model.</p>
 </div>
 <div id="simultaneous-fitting-with-uncalibrated-data" class="section level3">
@@ -489,13 +489,13 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## 
 ## $DOF
 ##     mean     area    speed 
-## 12.83002 21.87071  0.00000 
+## 12.83005 21.87090  0.00000 
 ## 
 ## $CI
 ##                          low       est     high
-## area (hectares)    13.020969 20.809288 30.39396
-## τ[position] (days)  3.416681  6.198601 11.24561
-## error (meters)      6.967392  8.784085 10.59714</code></pre>
+## area (hectares)    13.020972 20.809244 30.39385
+## τ[position] (days)  3.416685  6.198585 11.24554
+## error (meters)      6.967388  8.784081 10.59714</code></pre>
 <p>Here, fitting the RMS UERE simultaneously with the movement model produced a consistent result. This will not always be the case.</p>
 </div>
 <div id="fitting-with-uncalibrated-data-under-a-prior" class="section level3">
@@ -517,12 +517,12 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## 
 ## $DOF
 ##     mean     area    speed 
-## 12.06152 20.48964  0.00000 
+## 12.06152 20.48985  0.00000 
 ## 
 ## $CI
-##                          low       est     high
-## area (hectares)    12.638974 20.554406 30.36335
-## τ[position] (days)  3.629412  6.628379 12.10538</code></pre>
+##                         low      est     high
+## area (hectares)    12.63897 20.55434 30.36320
+## τ[position] (days)  3.62942  6.62838 12.10535</code></pre>
 <p>Some sensitivity analysis would be warranted here for the UERE parameter.</p>
 </div>
 </div>
