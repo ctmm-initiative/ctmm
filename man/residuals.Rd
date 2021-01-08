@@ -49,7 +49,7 @@ When calculating correlograms, minimizing bias is more important than producing 
 \references{
 C. H. Fleming, D. Sheldon, E. Gurarie, W. F. Fagan, S. LaPoint, J. M. Calabrese,
 ``Kálmán filters for continuous-time movement models'',
-\href{https://doi.org/10.1016/j.ecoinf.2017.04.008}{Ecological Informatics, 40, 8-21 (2017)}.
+Ecological Informatics, 40, 8-21 (2017) \doi{10.1016/j.ecoinf.2017.04.008}.
 }
 
 \author{ C. H. Fleming}

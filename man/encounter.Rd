@@ -28,7 +28,7 @@ By default, \code{include = 1 - diag(length(object))}, which implies that all in
 
 %% ~put references to the literature/web site here ~
 \references{
-M. J. Noonan, R. Martinez-Garcia, G. H. Davis, M. C. Crofoot, R. Kays, B. T. Hirsch, D. Caillaud, E. Payne, A. Sih, D. L. Sinn, O. Spiegel, W. F. Fagan, C. H. Fleming, J. M. Calabrese, ``Estimating encounter location distributions from animal tracking data'', \href{https://doi.org/10.1101/2020.08.24.261628}{bioRxiv 2020.08.24.261628 (2020)}.
+M. J. Noonan, R. Martinez-Garcia, G. H. Davis, M. C. Crofoot, R. Kays, B. T. Hirsch, D. Caillaud, E. Payne, A. Sih, D. L. Sinn, O. Spiegel, W. F. Fagan, C. H. Fleming, J. M. Calabrese, ``Estimating encounter location distributions from animal tracking data'', bioRxiv 2020.08.24.261628 (2020) \doi{10.1101/2020.08.24.261628}.
 }
 
 \author{C. H. Fleming}

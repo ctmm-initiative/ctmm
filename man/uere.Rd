@@ -41,7 +41,7 @@ Otherwise, when \code{error=TRUE} in \code{\link{ctmm}}, \code{\link{ctmm.fit}} 
 \value{The RMS UERE estimate.}
 
 \references{
-C. H. Fleming et al, ``A comprehensive framework for handling location error in animal tracking data'', \href{https://doi.org/10.1101/2020.06.12.130195}{bioRxiv 2020.06.12.130195 (2020)}.
+C. H. Fleming et al, ``A comprehensive framework for handling location error in animal tracking data'', bioRxiv 2020.06.12.130195 (2020) \doi{10.1101/2020.06.12.130195}.
 }
 
 \author{C. H. Fleming}

@@ -1,4 +1,4 @@
-ctmm 0.6.0 (2020-12-08)
+ctmm 0.6.0 (2020-01-08)
 ================
 
   * new function meta for meta-analysis of home-range areas
@@ -46,6 +46,8 @@ ctmm 0.6.0 (2020-12-08)
   * bugfix in occurrence() for PDclamp() error
   
   * bugfix in ctmm.select() giving incorrect model names when run indirectly
+  
+  * bugfix in occurrence() with IID autocorrelation model
   
   * workaround in export functions where sp objects change timezones
   

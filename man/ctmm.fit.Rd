@@ -104,19 +104,19 @@ Springer, 2nd edition (2003).
 
 C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, W. F. Fagan,
 ``From fine-scale foraging to home ranges: A semi-variance approach to identifying movement modes across spatiotemporal scales'',
-\href{https://doi.org/10.1086/675504}{The American Naturalist, 183:5, E154-E167 (2014)}.
+The American Naturalist, 183:5, E154-E167 (2014) \doi{10.1086/675504}.
 
 C. H. Fleming, Y. Subaşı, J. M. Calabrese,
 ``A maximum-entropy description of animal movement'',
-\href{https://doi.org/10.1103/PhysRevE.91.032107}{Physical Review E, 91, 032107 (2015)}.
+Physical Review E, 91, 032107 (2015) \doi{10.1103/PhysRevE.91.032107}.
 
 C. H. Fleming, D. Sheldon, E. Gurarie, W. F. Fagan, S. LaPoint, J. M. Calabrese,
 ``Kálmán filters for continuous-time movement models'',
-\href{https://doi.org/10.1016/j.ecoinf.2017.04.008}{Ecological Informatics, 40, 8-21 (2017)}.
+Ecological Informatics, 40, 8-21 (2017) \doi{10.1016/j.ecoinf.2017.04.008}.
 
 C. H. Fleming, M. J. Noonan, E. P. Medici, J. M. Calabrese,
 ``Overcoming the challenge of small effective sample sizes in home-range estimation'',
-\href{https://doi.org/10.1111/2041-210X.13270}{Methods in Ecology and Evolution 10:10, 1679-1689 (2019)}.
+Methods in Ecology and Evolution 10:10, 1679-1689 (2019) \doi{10.1111/2041-210X.13270}.
 }
 
 
