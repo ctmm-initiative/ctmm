@@ -22,7 +22,7 @@
 %}
 
 \references{
-C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, and W. F. Fagan. Data from: From fine-scale foraging to home ranges: A semi-variance approach to identifying movement modes across spatiotemporal scales. \href{https://doi.org/10.5061/dryad.45157}{Dryad Digital Repository, DOI:10.5061/dryad.45157 (2014)}.
+C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, and W. F. Fagan. Data from: From fine-scale foraging to home ranges: A semi-variance approach to identifying movement modes across spatiotemporal scales. Dryad Digital Repository (2014) \doi{10.5061/dryad.45157}.
 }
 
 \seealso{ \code{\link{as.telemetry}}, \code{\link{plot.telemetry}}, \code{\link{buffalo}}, \code{\link{coati}}, \code{\link{jaguar}}, \code{\link{pelican}}, \code{\link{turtle}}, \code{\link{wolf}}. }

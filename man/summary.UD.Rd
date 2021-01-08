@@ -30,7 +30,7 @@ This kernel density estimate differs from the Gaussian estimate of \code{\link{s
 \references{
 C. H. Fleming, J. M. Calabrese.
 A new kernel-density estimator for accurate home-range and species-range area estimation.
-\href{https://doi.org/10.1111/2041-210X.12673}{Methods in Ecology and Evolution, 8:5, 571-579 (2016)}.
+Methods in Ecology and Evolution, 8:5, 571-579 (2016) \doi{10.1111/2041-210X.12673}.
 }
 
 \author{ C. H. Fleming. }
