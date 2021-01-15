@@ -480,3 +480,13 @@ F.CI <- function(E1,VAR1,E2,VAR2,level=0.95)
 
   return(CI)
 }
+
+
+# reduced chi^2 log likelihood for s=1
+loglike.chisq <- function(sigma,dof,constant=FALSE)
+{
+  df2 <- dof/2
+  R <- - df2*(log(sigma)+1/sigma)
+  if(constant) { R <- R + df2*log(df2) - lgamma(df2) }
+  return(R)
+}
