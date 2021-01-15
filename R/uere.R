@@ -833,3 +833,12 @@ get.class.mat <- function(data,LEVELS=levels(data$class))
 
   return(C)
 }
+
+
+########
+get.UERE.DOF <- function(x)
+{
+  N <- attr(x,"DOF")
+  if(is.null(N) || is.na(N)) { N <- 0 }
+  return(N)
+}

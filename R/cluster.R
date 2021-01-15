@@ -6,7 +6,7 @@ cluster <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,robust=FALSE,IC="B
 
 # wrapper: meta-analysis of CTMM areas
 # TODO range=FALSE ???
-cluster.area <- function(x,level=0.95,level.UD=0.95,robust=FALSE,IC="BIC",units=TRUE,classify=TRUE,plot=TRUE,...)
+cluster.area <- function(x,level=0.95,level.UD=0.95,IC="BIC",units=TRUE,classify=TRUE,plot=TRUE,...)
 {
   N <- length(x)
   STUFF <- import.area(x,level.UD=level.UD)
@@ -15,7 +15,7 @@ cluster.area <- function(x,level=0.95,level.UD=0.95,robust=FALSE,IC="BIC",units=
   ID <- STUFF$ID
 
   # inverse-chi^2 population distribution
-  STUFF <- cluster.chisq(AREA,DOF,level=level,IC=IC,robust=robust)
+  STUFF <- cluster.chisq(AREA,DOF,level=level,IC=IC)
   CI <- STUFF$CI
   P <- STUFF$P # probability of falling into second class
   names(P) <- ID
@@ -68,35 +68,69 @@ cluster.area <- function(x,level=0.95,level.UD=0.95,robust=FALSE,IC="BIC",units=
 
 
 # cluster-analysis of chi^2 random variables with mixture of 2 inverse-chi^2 priors
-cluster.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="BIC",boot=FALSE,error=0.01,debias=TRUE,robust=TRUE,precision=1/2,...)
+cluster.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="BIC",debias=TRUE,precision=1/2,...)
 {
+  # discard null estimates
+  ZERO <- dof<=.Machine$double.eps
+  s <- s[!ZERO]
+  dof <- dof[!ZERO]
+
   #tol <- .Machine$double.eps^precision
   n <- length(s)
   SORT <- sort(s,index.return=TRUE)$ix
 
   # MLE fit and CI return
-  SUB <- 1:n
+  SUB <- 1:n # relevant subset
+
   # negative log-likelihood
-  nloglike <- function(w1=1,S1,DOF1=Inf,w2=1-w1,S2=S1,DOF2=DOF1,zero=0)
+  # S mean
+  # k = VAR/S^3 inverse-Gaussian parameter
+  nloglike <- function(w1=1,S1,K1=0,w2=1-w1,S2=S1,K2=K1,zero=0)
   {
-    # subset for CV
+    if(K1<0 || K1==Inf || S1<=0 || S1==Inf || K2<0 || K2==Inf || S2<=0 || S2==Inf) { return(Inf) }
+
+    if(w1>0 && (K1<0 || S1==0 || S1==Inf)) { return(Inf) }
+    if(w2>0 && (K2<0 || S2==0 || S2==Inf)) { return(Inf) }
+
+    # subset to relevant set
     s <- s[SUB]
     dof <- dof[SUB]
     n <- length(s)
 
-    if(w1>0 && (DOF1<=0 || S1==0 || S1==Inf)) { return(Inf) }
-    if(w2>0 && (DOF2<=0 || S2==0 || S2==Inf)) { return(Inf) }
+    rho <- 1
 
-    zero <- zero + sum( (dof/2-1)*log(dof*s) + log(dof) ) # common factors
+    # common factors # common to DD and IG population distributions
+    zero <- zero + sum( dof/2*log(dof/2) + (dof/2-1)*log(s) - lgamma(dof/2) )
 
-    loglike1 <- -lbetaplog(dof/2,DOF1/2,s/S1) - dof*(log(2*S1)/2) - (dof*s)/(2*S1)*log1pxdx((dof*s)/(DOF1*S1))
+    if(K1>.Machine$double.eps) # inverse-Gaussian
+    {
+      theta <- 1/(K1*S1)
+      alpha <- dof*s/S1
+      beta <- alpha/theta
+      beta <- 1/2*log1p(beta) # log(sqrt(1+dof*s*k))
+      loglike1 <- -dof/2*log(S1) - (dof+rho)/2*beta + lKK(rho,dof,theta,alpha)
+    }
+    else # Dirac delta
+    { loglike1 <- -dof/2*(log(S1)+s/S1) }
+
+    # no mixture
     if(w1==1)
     {
       loglike1 <- loglike1 + zero/n
       loglike1 <- sum(loglike1)
       return(-loglike1)
     }
-    loglike2 <- -lbetaplog(dof/2,DOF2/2,s/S2) - dof*(log(2*S2)/2) - (dof*s)/(2*S2)*log1pxdx((dof*s)/(DOF2*S2))
+
+    if(K2>.Machine$double.eps) # IG
+    {
+      theta <- 1/(K2*S2)
+      alpha <- dof*s/S2
+      beta <- alpha/theta
+      beta <- 1/2*log1p(beta) # log(sqrt(1+dof*s*k))
+      loglike2 <- -dof/2*log(S2) - (dof+rho)/2*beta + lKK(rho,dof,theta,alpha)
+    }
+    else # DD
+    { loglike2 <- -dof/2*(log(S2)+s/S2) }
 
     logw1 <- log(w1)
     logw2 <- log(w2)
@@ -133,8 +167,8 @@ cluster.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="BIC",boot=FALSE,er
   # lists of stuff organized by models
   L <- list()
   L$dirac <- list()       # 1
-  L$chisq <- list()       # 2
-  L$chisq.chisq <- list() # 6
+  L$gauss <- list()       # 2 # inverse Gaussian
+  L$gauss.gauss <- list() #   # inverse Gaussian mixture with equal CoV
 
   L$dirac$K <- 1 # number of parameters
   L$dirac$COST <- function(par) { nloglike(S1=par) } # negative log-likelihood
@@ -146,22 +180,22 @@ cluster.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="BIC",boot=FALSE,er
     return(R)
   }
 
-  L$chisq$K <- 2
-  L$chisq$COST <- function(par,zero=0) { nloglike(S1=par[1],DOF1=1/par[2],zero=zero) }
-  L$chisq$GUESS <- function()
+  L$gauss$K <- 2
+  L$gauss$COST <- function(par,zero=0) { nloglike(S1=par[1],K1=par[2],zero=zero) }
+  L$gauss$GUESS <- function()
   {
-    S <- 1/mean(1/s[SUB])
-    DOF <- 2/(S^2*stats::var(1/s[SUB]))
-    c(S,1/DOF)
+    mu <- mean(s[SUB])
+    k <- mean(1/s[SUB]) - 1/mu # VAR/mu^3
+    c(mu,k)
   }
-  L$chisq$FIT <- function(par=NULL)
+  L$gauss$FIT <- function(par=NULL)
   {
     # if guess is not specified
     if(is.null(par)) { par <- L$chisq$GUESS() }
     optimizer(par,L$chisq$COST,lower=c(0,0),upper=c(Inf,Inf))
   }
 
-  L$chisq.chisq$K <- 3
+  L$gauss.gauss$K <- 3
 
   ## greedy partition fit ## used for good initial guess for mixture model
   part <- function(JOINT=NULL,LEFT=JOINT,RIGHT=JOINT)
@@ -174,21 +208,22 @@ cluster.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="BIC",boot=FALSE,er
     if(!is.null(JOINT))
     {
       # zero-ing is not exact here because I'm using individual likelihoods lazily --- this result is just used for guess though
+      # par = (S1,S2,CoV2) # COV2 = k*mu
       COST <- function(par,zero=0)
       {
         SUB <<- SORT[1:i]
         FRAC <- length(SUB)/n
-        NLL <- nloglike(S1=par[1],DOF1=1/par[2],zero=zero*FRAC)
+        NLL <-       nloglike(S1=par[1],K1=par[3]/par[1],zero=zero*FRAC)
         SUB <<- SORT[(i+1):n]
         FRAC <- length(SUB)/n
-        NLL <- NLL + nloglike(S1=par[3],DOF1=1/par[2],zero=zero*FRAC)
+        NLL <- NLL + nloglike(S1=par[2],K1=par[3]/par[2],zero=zero*FRAC)
         return(NLL)
       }
     }
 
     # initial fit
     j <- 1 # current list index
-    IND <- NULL # all indices condidered thus far
+    IND <- NULL # all indices considered thus far
     par <- par1 <- par2 <- PAR <- PAR1 <- PAR2 <- NULL # parameters
     while(!length(IND) || (IND[j]==min(IND) && IND[j]>MIN) || (IND[j]==max(IND) && IND[j]<MAX))
     {
@@ -215,14 +250,15 @@ cluster.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="BIC",boot=FALSE,er
       }
       else # this is hard-coded to the joint-N model
       {
-        # guessed parameters (ave 1/DOF)
+        # guessed parameters (ave k=VAR/mu^3)
         if(is.null(par))
         {
           SUB <<- SORT[1:i]
           par1 <- L$chisq$GUESS()
           SUB <<- SORT[(i+1):n]
           par2 <- L$chisq$GUESS()
-          par <- c(par1[1],mean(par1[2],par2[2]),par2[1])
+          CoV2 <- mean( prod(par1), prod(par2) )
+          par <- c(par1[1],par2[1],CoV2)
         }
         FIT <- optimizer(par,COST,lower=c(0,0,0),upper=c(Inf,Inf,Inf))
         PAR <- rbind(PAR,FIT$par)
@@ -235,45 +271,58 @@ cluster.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="BIC",boot=FALSE,er
       # next attempt # bias right/high
       if(IND[j]==max(IND)) { i <- IND[j] + 1 } # move partition higher
       else if(IND[j]==min(IND)) { i <- IND[j] - 1 } # move partition lower
-      else { break } # local minima reached
+      else { break } # local minimum reached
     }
     SUB <<- 1:n
 
     # all parameters (for guess)
     if(is.null(JOINT)) { par <- c(IND[j]/n,par1,par2) }
     else { par <- c(IND[j]/n,par) }
+
     return(par)
-  }
+  } # end part()
 
   ################
   # model selection
   M <- 7 # total number of candidate models
   NAME <- array("",M)
-  COST <- PAR <- PARS <- LOWER <- UPPER <- list()
-  LL <- K <- array(NA_real_,M)
+  COST <- MLE <- PAR <- BC <- PARS <- LOWER <- UPPER <- list()
+  LL <- K <- AICcP <- array(0,M)
   if(TRUE && !is.na(IC))
   {
-    # (1) Dirac delta ## exactly solvable
+    # (1) Dirac-delta ## exactly solvable
     m <- 1 # model index
     NAME[m] <- "Dirac-\u03B4"
     PARS[[m]] <- c("S1")
     COST[[1]] <- L$dirac$COST
     FIT <- L$dirac$FIT()
     LL[m] <- -FIT$value # log-likelihood at MLE
-    PAR[[m]] <- FIT$par
-    K[m] <- 1 # number of parameters
+    MLE[[m]] <- PAR[[m]] <- FIT$par
+    K[m] <- 1  # number of parameters
+    BC[[m]] <- rep(1,K[m]); names(BC[[m]]) <- PARS[[m]]
+    AICcP[m] <- K[m]*ifelse(debias,n-1,n)/pmax(n-K[m]-0,0)
 
-    # (2) inverse chi^2 # unimodal likelihood
+    # (2) inverse-Gaussian # unimodal likelihood
     m <- 2
-    NAME[m] <- "inverse-\u03C7\u00B2(N)"
-    PARS[[m]] <- c("S1","V1") # V==1/DOF
-    COST[[2]] <- L$chisq$COST
-    FIT <- L$chisq$FIT()
+    NAME[m] <- "inverse-Gaussian"
+    PARS[[m]] <- c("S1","K1") # V==1/DOF
+    COST[[m]] <- L$chisq$COST
+    FIT <- L$gauss$FIT()
     LL[m] <- -FIT$value
-    PAR[[m]] <- FIT$par
-    K[m] <- 2
+    MLE[[m]] <- PAR[[m]]<- FIT$par
+    K[m] <- 2  # number parameters
+    BC[[m]] <- rep(1,K[m]); names(BC[[m]]) <- PARS[[m]]
+    AICcP[m] <- K[m]*ifelse(debias,n-1,n)/pmax(n-K[m]-1,0)
 
-    # (3) Dirac delta & Dirac delta
+    if(debias) # debias k=VAR/mu^3 parameter
+    {
+      N <- length(s)
+      BC[[m]]["K1"] <- N/(N-1)
+      PAR[[m]] <- BC[[m]] * PAR[[m]]
+      LL[m] <- -COST[[m]](PAR[[m]])
+    }
+
+    # (3) Dirac-delta & Dirac-delta
     m <- 3
     NAME[m] <- "Dirac-\u03B4 + Dirac-\u03B4"
     PARS[[m]] <- c("P1","S1","S2")
@@ -283,71 +332,113 @@ cluster.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="BIC",boot=FALSE,er
     UPPER[[m]] <- c(1,Inf,Inf)
     FIT <- optimizer(par,COST[[m]],lower=LOWER[[m]],upper=UPPER[[m]])
     LL[m] <- -FIT$value
-    PAR[[m]] <- FIT$par
+    MLE[[m]] <- PAR[[m]] <- FIT$par
     K[m] <- 3
+    BC[[m]] <- rep(1,K[m]); names(BC[[m]]) <- PARS[[m]]
+    AICcP[m] <- K[m]*ifelse(debias,n-2,n)/pmax(n-K[m]-1,0)
 
-    # (4) Dirac delta & inverse chi^2
+    # (4) Dirac-delta & inverse-Gaussian
     m <- 4
-    NAME[m] <- "Dirac-\u03B4 + inverse-\u03C7\u00B2(N)"
-    PARS[[m]] <- c("P1","S1","S2","V2")
-    par <- part(LEFT="dirac",RIGHT="chisq") # guess == partitioned solution
-    COST[[m]] <- function(par,zero=0) { nloglike(w1=par[1],S1=par[2],S2=par[3],DOF2=1/par[4],zero=zero) }
+    NAME[m] <- "Dirac-\u03B4 + inverse-Gaussian"
+    PARS[[m]] <- c("P1","S1","S2","K2")
+    par <- part(LEFT="dirac",RIGHT="gauss") # guess == partitioned solution
+    COST[[m]] <- function(par,zero=0) { nloglike(w1=par[1],S1=par[2],S2=par[3],K2=par[4],zero=zero) }
     LOWER[[m]] <- c(0,0,0,0)
     UPPER[[m]] <- c(1,Inf,Inf,Inf)
     FIT <- optimizer(par,COST[[m]],lower=LOWER[[m]],upper=UPPER[[m]])
     LL[m] <- -FIT$value
-    PAR[[m]] <- FIT$par
+    MLE[[m]] <- PAR[[m]] <- FIT$par
     K[m] <- 4
+    BC[[m]] <- rep(1,K[m]); names(BC[[m]]) <- PARS[[m]]
+    AICcP[m] <- K[m]*ifelse(debias,n-2,n)/pmax(n-K[m]-2,0)
 
-    # (5) inverse chi^2 & Dirac delta
+    if(debias) # debias k=VAR/mu^3 parameter by membership
+    {
+      N <- length(s) * (1-PAR[[m]]["P1"])
+      BC[[m]]["K2"] <- N/(N-1)
+      PAR[[m]] <- BC[[m]] * PAR[[m]]
+      LL[m] <- -COST[[m]](PAR[[m]])
+    }
+
+    # (5) inverse-Gaussian & Dirac-delta
     m <- 5
-    NAME[m] <- "inverse-\u03C7\u00B2(N) + Dirac-\u03B4"
-    PARS[[m]] <- c("P1","S1","V2","S2")
-    par <- part(LEFT="chisq",RIGHT="dirac") # guess == partitioned solution
-    COST[[m]] <- function(par,zero=0) { nloglike(w1=par[1],S1=par[2],DOF1=1/par[3],S2=par[4],DOF2=Inf,zero=zero) }
+    NAME[m] <- "inverse-Gaussian + Dirac-\u03B4"
+    PARS[[m]] <- c("P1","S1","K2","S2")
+    par <- part(LEFT="gauss",RIGHT="dirac") # guess == partitioned solution
+    COST[[m]] <- function(par,zero=0) { nloglike(w1=par[1],S1=par[2],K1=par[3],S2=par[4],K2=0,zero=zero) }
     LOWER[[m]] <- c(0,0,0,0)
     UPPER[[m]] <- c(1,Inf,Inf,Inf)
     FIT <- optimizer(par,COST[[m]],lower=LOWER[[m]],upper=UPPER[[m]])
     LL[m] <- -FIT$value
-    PAR[[m]] <- FIT$par
+    MLE[[m]] <- PAR[[m]] <- FIT$par
     K[m] <- 4
+    BC[[m]] <- rep(1,K[m]); names(BC[[m]]) <- PARS[[m]]
+    AICcP[m] <- K[m]*ifelse(debias,n-2,n)/pmax(n-K[m]-2,0)
 
-    # (6) inver chi^2 & inverse chi^2 (same relative variance)
+    if(debias) # debias k=VAR/mu^3 parameter by membership
+    {
+      N <- length(s) * PAR[[m]]["P1"]
+      BC[[m]]["K1"] <- N/(N-1)
+      PAR[[m]] <- BC[[m]] * PAR[[m]]
+      LL[m] <- -COST[[m]](PAR[[m]])
+    }
+
+    # (6) inverse-Gaussian & inverse-Gaussian (same relative variance)
     m <- 6
-    NAME[m] <- "inverse-\u03C7\u00B2(N) + inverse-\u03C7\u00B2(N)"
-    PARS[[m]] <- c("P1","S1","V","S2")
-    par <- part(JOINT="chisq") # guess == partitioned solution
-    COST[[m]] <- function(par,zero=0) { nloglike(w1=par[1],S1=par[2],DOF1=1/par[3],S2=par[4],DOF2=1/par[3],zero=zero) }
+    NAME[m] <- "inverse-Gaussian(CoV) + inverse-Gaussian(CoV)"
+    PARS[[m]] <- c("P1","S1","S2","RV")
+    par <- part(JOINT="gauss") # guess == partitioned solution
+    COST[[m]] <- function(par,zero=0) { nloglike(w1=par[1],S1=par[2],K1=par[4]/par[2],S2=par[3],K2=par[4]/par[3],zero=zero) }
     LOWER[[m]] <- c(0,0,0,0)
     UPPER[[m]] <- c(1,Inf,Inf,Inf)
     FIT <- optimizer(par,COST[[m]],lower=LOWER[[m]],upper=UPPER[[m]])
     LL[m] <- -FIT$value
-    PAR[[m]] <- FIT$par
+    MLE[[m]] <- PAR[[m]] <- FIT$par
     K[m] <- 4
+    BC[[m]] <- rep(1,K[m]); names(BC[[m]]) <- PARS[[m]]
+    AICcP[m] <- K[m]*ifelse(debias,n-2,n)/pmax(n-K[m]-2,0)
 
-    # (7) inver chi^2 & inverse chi^2
+    if(debias) # debias k=VAR/mu^3-ish parameter... does this make sense?
+    {
+      N <- length(s)
+      BC[[m]]["RV"] <- N/(N-1) # half as big as model with two CoV
+      PAR[[m]] <- BC[[m]] * PAR[[m]]
+      LL[m] <- -COST[[m]](PAR[[m]])
+    }
+
+    # (7) inverse-Gaussian & inverse-Gaussian (independent parameters)
     m <- 7
-    NAME[m] <- "inverse-\u03C7\u00B2(N\u2081) + inverse-\u03C7\u00B2(N\u2082)"
-    PARS[[m]] <- c("P1","S1","V1","S2","V2")
-    par <- part(LEFT="chisq",RIGHT="chisq") # guess == partitioned solution
-    COST[[m]] <- function(par,zero=0) { nloglike(w1=par[1],S1=par[2],DOF1=1/par[3],S2=par[4],DOF2=1/par[5],zero=zero) }
+    NAME[m] <- "inverse-Gaussian(CoV\u2081) + inverse-Gaussian(CoV\u2082)"
+    PARS[[m]] <- c("P1","S1","K1","S2","K2")
+    par <- part(LEFT="gauss",RIGHT="gauss") # guess == partitioned solution
+    COST[[m]] <- function(par,zero=0) { nloglike(w1=par[1],S1=par[2],K1=par[3],S2=par[4],K2=par[5],zero=zero) }
     LOWER[[m]] <- c(0,0,0,0,0)
     UPPER[[m]] <- c(1,Inf,Inf,Inf,Inf)
     FIT <- optimizer(par,COST[[m]],lower=LOWER[[m]],upper=UPPER[[m]])
     LL[m] <- -FIT$value
-    PAR[[m]] <- FIT$par
+    MLE[[m]] <- PAR[[m]] <- FIT$par
     K[m] <- 5
+    BC[[m]] <- rep(1,K[m]); names(BC[[m]]) <- PARS[[m]]
+    AICcP[m] <- K[m]*ifelse(debias,n-2,n)/pmax(n-K[m]-3,0)
+
+    if(debias) # debias k=VAR/mu^3 parameters by membership
+    {
+      N <- length(s) * PAR[[m]]["P1"]
+      BC[[m]]["K1"] <- N/(N-1)
+      N <- length(s) * (1-PAR[[m]]["P1"])
+      BC[[m]]["K2"] <- N/(N-1)
+      PAR[[m]] <- BC[[m]] * PAR[[m]]
+      LL[m] <- -COST[[m]](PAR[[m]])
+    }
   }
 
   ## select best performing model according to IC
   if(IC=="AIC")
   { dIC <- 2*K - 2*LL }
+  else if(IC=="AICc")
+  { dIC <- 2*AICcP - 2*LL }
   else if(IC=="BIC")
   { dIC <- log(n)*K - 2*LL }
-  else if(IC=="LOOCV")
-  {
-    # TODO
-  }
 
   if(!is.na(IC))
   {
@@ -366,21 +457,23 @@ cluster.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="BIC",boot=FALSE,er
   par <- PAR[[MIN]] # selected parameters
   PARS <- PARS[[MIN]]
   names(par) <- PARS
+  BC <- BC[[MIN]]
 
   COST <- COST[[MIN]]
   LOWER <- LOWER[[MIN]]
   UPPER <- UPPER[[MIN]]
 
   SUB <- 1:n
-  COV <- genD(par,COST,lower=LOWER,upper=UPPER)
+  COV <- genD(MLE[[MIN]],COST,lower=LOWER,upper=UPPER)
   COV <- cov.loglike(COV$hessian,COV$gradient)
   dimnames(COV) <- list(PARS,PARS)
 
-  # DOF<=2 warnings
-  V <- c("V1","V2","V")
-  V <- V[V %in% PARS]
-  if(!robust && length(V) && any(1/par[V]<=2))
-  { warning("Population mean not convergent. Consider robust=TRUE.") }
+  if(debias) { COV <- BC * t(BC * COV) }
+
+  # return membership percentages, means, CoVs, mean/mean
+  # !!!
+  # !!!
+  # !!!
 
   pop.ave <- function(S,V)
   {
@@ -389,8 +482,7 @@ cluster.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="BIC",boot=FALSE,er
       q <- par[S]
       if(length(V))
       {
-        if(!robust) { q <- q /max(1-2*par[V],0) } # inverse-chi^2 bias # N/(N-2) == 1/(1-2/N)
-        else { q <- q * 1/stats::qchisq(0.5,1/par[V])/par[V] } # inverse-chi^2(N) median N/Q
+        { q <- q * 1/stats::qchisq(0.5,1/par[V])/par[V] } # inverse-chi^2(N) median N/Q
       }
       return(q)
     }

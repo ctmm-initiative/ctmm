@@ -1,4 +1,9 @@
-ctmm 0.6.0 (2020-01-08)
+ctmm 0.6.1 (2021-01-14)
+================
+
+  * bugfix in optimzer()
+
+ctmm 0.6.0 (2021-01-08)
 ================
 
   * new function meta for meta-analysis of home-range areas

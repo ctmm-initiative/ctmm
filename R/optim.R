@@ -526,7 +526,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
   {
     SCL <- pmax(abs(p0),1)
     # relative step sizes
-    dp <- sqrt(abs(c((ps[,2]-ps[,1])^2 %*% SCL^2))) # formula explained in numderiv.diff()
+    dp <- sqrt(abs(c((ps[,2]-ps[,1])^2 %*% (1/SCL^2)))) # formula explained in numderiv.diff()
     return(dp <= tol)
   }
 
@@ -896,6 +896,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
     M <- sqrt(sum((P1-par)^2)) # M is unsigned!
     M1 <- min(1,M/2) # 1 in case hessian is bad
     M2 <- sqrt(sum((P2-par)^2))
+
     # sample to target or boundary
     if(abs(M)<=M.BOX) # sample P1/2 to P1 to P2
     {
