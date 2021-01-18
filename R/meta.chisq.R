@@ -36,38 +36,6 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='mle',bo
   # % chi^2 versus IG in sampling distribution of mu (very approximate)
   DRATIO <- 0 # (0,1) -> (chi^2,IG)
 
-  # par = (mu,k=1/lambda)
-  # VAR = VAR[mu]
-  update.DRATIO <- function(par,VAR)
-  {
-    mu <- par[1]
-    # population moments
-    theta <- 1/prod(par[1:2]); rho <- 1
-    M.pop <- mu * (besselK(theta,rho/2-1,expon.scaled=TRUE)/besselK(theta,rho/2,expon.scaled=TRUE))
-    VAR.pop <- mu^2 * (besselK(theta,rho/2-2,expon.scaled=TRUE)/besselK(theta,rho/2,expon.scaled=TRUE)) - M.pop^2
-    # chi^2 VAR.pop==0
-    # IG when VAR==VAR.pop/n
-    DRATIO <<- VAR.pop/VAR # (0,n) : (chi^2,IG)
-    DRATIO <<- clamp(DRATIO,0,n) / n # (0,1) : (chi^2,IG)
-  }
-
-  # CI that are chi^2 when VAR[M]>>VAR.pop
-  ci.chisq.GIG <- function(M,VAR,w=DRATIO)
-  {
-    w <- c(1-w,w)
-
-    # approximation that bridges the two with correct mean and variance
-    CI.1 <- chisq.ci(M,VAR=VAR,level=level)
-    CI.2 <- IG.CI(M,VAR=VAR,level=level,precision=precision)
-
-    CI <- w[1]*CI.1 + w[2]*CI.2
-
-    # TODO make the second term some kind of GIG?
-    CI[3] <- nant(CI[3],Inf)
-
-    return(CI)
-  }
-
   # kappa for debiased standard deviation for CIs
   k.std <- function(par)
   {
@@ -239,9 +207,9 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='mle',bo
       CI.VAR <- COV[1,1]
 
       # approximate ratio of chi^2 to IG behavior
-      update.DRATIO(par,CI.VAR[1])
+      DRATIO <<- DD.IG.ratio(par,CI.VAR[1],n=n)
 
-      CI[1,] <- ci.chisq.GIG(par[1],VAR=CI.VAR[1])
+      CI[1,] <- chisq.IG.ci(par[1],VAR=CI.VAR[1],w=DRATIO,level=level,precision=precision)
 
       # mean inverse area of IG random variable # IG bias corrected
       CI[2,] <- 1/CI[1,] # these numbers aren't really used
@@ -369,9 +337,9 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='mle',bo
       CI.VAR <- COV[1,1]
 
       # approximate ratio of chi^2 to IG behavior
-      update.DRATIO(par,CI.VAR[1])
+      DRATIO <<- DD.IG.ratio(par,CI.VAR[1],n=n)
 
-      CI[1,] <- ci.chisq.GIG(par[1],CI.VAR[1])
+      CI[1,] <- chisq.IG.ci(par[1],CI.VAR[1],w=DRATIO,level=level,precision=precision)
 
       CI[2,] <- 1/CI[1,] # numbers not used
       Vm2 <- c(BFIT$COV.mu)/mu^2 # keep fixed
