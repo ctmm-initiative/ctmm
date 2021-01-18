@@ -1,7 +1,11 @@
-ctmm 0.6.1 (2021-01-14)
+ctmm 0.6.1 (2021-01-18)
 ================
 
   * bugfix in optimzer()
+  
+  * bugfix in ctmm.fit() for 1D processes
+  
+  * bugfix in variogram.fit() for 1D processes
 
 ctmm 0.6.0 (2021-01-08)
 ================

@@ -68,7 +68,7 @@ cluster.area <- function(x,level=0.95,level.UD=0.95,IC="BIC",units=TRUE,classify
 
 
 # cluster-analysis of chi^2 random variables with mixture of 2 inverse-chi^2 priors
-cluster.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="BIC",debias=TRUE,precision=1/2,...)
+cluster.chisq <- function(s,dof,level=0.95,IC="BIC",debias=TRUE,precision=1/2,...)
 {
   # discard null estimates
   ZERO <- dof<=.Machine$double.eps
@@ -401,7 +401,7 @@ cluster.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="BIC",debias=TRUE,p
     if(debias) # debias k=VAR/mu^3-ish parameter... does this make sense?
     {
       N <- length(s)
-      BC[[m]]["RV"] <- N/(N-1) # half as big as model with two CoV
+      BC[[m]]["RV"] <- N/(N-1) # numerator and denominator weighted separately # half as big as model with two CoV
       PAR[[m]] <- BC[[m]] * PAR[[m]]
       LL[m] <- -COST[[m]](PAR[[m]])
     }
@@ -470,102 +470,144 @@ cluster.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="BIC",debias=TRUE,p
 
   if(debias) { COV <- BC * t(BC * COV) }
 
-  # return membership percentages, means, CoVs, mean/mean
-  # !!!
-  # !!!
-  # !!!
+  ### RETURN PARAMETERS ###
+  CI <- array(NA_real_,c(7,3))
+  # rownames(CI) <- c("mu1","CoV1","mu2","CoV2","P1","P2","mu2/mu1")
+  rownames(CI) <- c("\u03BC\u2081","CoV\u2081","\u03BC\u2082","CoV\u2082","P\u2081","P\u2082","\u03BC\u2082/\u03BC\u2081")
+  colnames(CI) <- NAMES.CI
+  INF <- c(0,0,Inf)
 
-  pop.ave <- function(S,V)
+  # swap if sub-population means out of order
+  if("S2" %in% PARS && par["S1"]>par["S2"])
   {
-    Q <- function(par)
-    {
-      q <- par[S]
-      if(length(V))
-      {
-        { q <- q * 1/stats::qchisq(0.5,1/par[V])/par[V] } # inverse-chi^2(N) median N/Q
-      }
-      return(q)
-    }
-    MLE <- Q(par)
-    GRAD <- genD(par,Q,lower=LOWER,upper=UPPER,order=1)$gradient
-    VAR <- c( GRAD %*% COV %*% GRAD )
-    chisq.ci(MLE,VAR=VAR,level=level)
+    RARS <- PARS
+    RARS["P1"] <- 1 - PARS["P1"]
+    RARS[PARS=="S1"] <- "S2"
+    RARS[PARS=="S2"] <- "S1"
+    if("K1" %in% PARS) { RARS[PARS=="K1"] <- "K2" }
+    if("K2" %in% PARS) { RARS[PARS=="K2"] <- "K1" }
+    PARS <- RARS
+
+    names(par) <- PARS
+    dimnames(COV) <- list(PARS,PARS)
   }
 
-  # population-1 average
-  V <- c("V1","V")
-  V <- V[V %in% PARS]
-  CI.1 <- pop.ave("S1",V)
+  S1 <- par["S1"]
 
-  if(MIN>2)
+  ### first sub-population ###
+  if(all(c("K1","RV") %nin% PARS)) # Dirac-delta on first sub-population
   {
-    # population-2 average
-    V <- c("V2","V")
-    V <- V[V %in% PARS]
-    CI.2 <- pop.ave("S2",V)
+    CI[1,] <- chisq.ci(par["S1"],VAR=COV["S1","S1"],level=level)
+    CI[2,] <- INF
 
-    ## % of population in lower component
-    MLE <- par["P1"]
-    VAR <- COV["P1","P1"]
-    CI.w <- beta.ci(MLE,VAR,level=level)
+    K1 <- 0
+  }
+  else # inverse-Gaussian on first sub-population
+  {
+    # mu_1
+    DD.IG <- DD.IG.ratio(par[c("S1","K1")],COV["S1","S1"],par["P1"]*n)
+    CI[1,] <- chisq.IG.ci(par["S1"],COV["S1","S1"],DD.IG,level=level,precision=precision)
 
-    # are sub-population means out of order !!!
-
-    ## calculate F-like statistic
-    if(!robust) # ratio of mean areas
+    # CoV^2 (RVAR)
+    if("K1" %in% PARS) # unstructured
     {
-      V <- c("V2","V") # numerator (S2) is inverse-chi^2
-      V <- V[V %in% PARS]
-      Q <- function(par)
-      {
-        q <- par["S2"]/par["S1"]
-        if(length(V)) { q <- q * 1/max(1-2*par[V],0) }
-        return(q)
-      }
-    }
-    else # ratio of median areas
-    {
-      Q <- function(par)
-      {
-        q <- par["S2"]/par["S1"]
-        if("V2" %in% PARS) { q <- q * stats::qchisq(0.5,1/par["V2"])/par["V2"] }
-        if("V1" %in% PARS) { q <- q * stats::qchisq(0.5,1/par["V1"])*par["V1"] }
-        return(q)
-      }
-    }
-    MLE <- Q(par)
-    GRAD <- genD(par,Q,lower=LOWER,upper=UPPER,order=1)$gradient
-    VAR <- c( GRAD %*% COV %*% GRAD )
-    CI.F <- lognorm.ci(MLE,COV=VAR,level=level)
+      # CoV^2 (RVAR) : par[1]*par[2]
+      GRAD <- par[c("K1","S1")]
+      VAR <- GRAD %*% COV[c("S1","K1"),c("S1","K1")] %*% GRAD
+      CI[2,] <- chisq.ci(par["S1"]*par["K1"],VAR=VAR,level=level)
 
-    ## classifications -- membership probabilities
-    w1 <- par["P1"]
-    S1 <- par["S1"]
+      K1 <- par["K1"]
+    }
+    else if("RV" %in% PARS) # constrained relative variance
+    {
+      # CoV^2 (RVAR)
+      VAR <- VAR=COV["V1","V1"]
+      CI[2,] <- chisq.ci(par["V1"],VAR=VAR,level=level)
+
+      K1 <- par["RV"]/par["S1"]
+      K2 <- par["RV"]/par["S2"]
+    }
+
+    # CoV (RSTD)
+    CI[2,] <- sqrt(CI[2,])
+    if(debias && 0<CI[2,2]) # sqrt bias
+    {
+      BIAS <- 1 + VAR/CI[2,2]^2/4
+      CI[2,] <- CI[2,] * sqrt(BIAS)
+    }
+
+    if("RV" %in% PARS) { CI[4,] <- CI[2,] } # copy CoV
+  }
+
+  if("S2" %nin% PARS) # one sub-population only
+  {
+    # copy sub-population
+    CI[3:4,] <- CI[1:2,]
+    CI[5,] <- c(0,1,1)
+    CI[6,] <- c(0,0,1)
+    CI[7,] <- c(0,1,Inf)
+
+    P <- rep(1,length(s))
+  }
+  else if("S2" %in% PARS) # two sub-populations
+  {
     S2 <- par["S2"]
-    DOF1 <- 1/par["V1"]
-    DOF2 <- 1/par["V2"]
-    if(is.na(DOF1)) { DOF1 <- 1/par["V"] }
-    if(is.na(DOF2)) { DOF2 <- 1/par["V"] }
-    if(is.na(DOF1)) { DOF1 <- Inf }
-    if(is.na(DOF2)) { DOF2 <- Inf }
-    P <- array(1,n)
+
+    if(all(c("K2","RV") %nin% PARS)) # Dirac-delta on first sub-population
+    {
+      # mu_2
+      CI[3,] <- chisq.ci(par["S2"],VAR=COV["S2","S2"],level=level)
+      CI[4,] <- INF
+
+      K2 <- 0
+    }
+    else # IG
+    {
+      # mu_2
+      DD.IG <- DD.IG.ratio(par[c("S2","K2")],COV["S2","S2"],(1-par["P1"])*n)
+      CI[3,] <- chisq.IG.ci(par["S2"],COV["S2","S2"],DD.IG,level=level,precision=precision)
+
+      K2 <- par["K2"]
+
+      ## unstructured IG ##
+      # constrained RV already finished and copied over
+
+      # CoV^2 (RVAR) : par[1]*par[2]
+      GRAD <- par[c("K2","S2")]
+      VAR <- GRAD %*% COV[c("S2","K2"),c("S2","K2")] %*% GRAD
+      CI[4,] <- chisq.ci(par["S2"]*par["K2"],VAR=VAR,level=level)
+
+      # CoV (RSTD)
+      CI[4,] <- sqrt(CI[4,])
+      if(debias && 0<CI[4,2]) # sqrt bias
+      {
+        BIAS <- 1 + VAR/CI[4,2]^2/4
+        CI[4,] <- CI[4,] * sqrt(BIAS)
+      }
+    }
+
+    CI[5,] <- beta.ci(par["P1"],VAR=COV["P1","P1"],level=level)
+    CI[6,] <- beta.ci(1-par["P1"],VAR=COV["P1","P1"],level=level)
+    P1 <- par["P1"]
+
+    # this is MVU for both chi^2 and IG
+    # this is 1st order debiased in between
+    BIAS <- max(1-debias*COV["S1","S1"]/S1^2,0)
+    RATIO <- par["S2"]/par["S1"] * BIAS
+    GRAD <- c(1/par["S2"],-par["S1"]/par["S2"]^2)
+    GRAD[1] <- GRAD / BIAS # scale S1 parameter and its variance the same (approximate, but not exact correction)
+    # numerator and denominator are correlated...
+    VAR.RATIO <- c(GRAD %*% COV[c("S1","S2"),c("S1","S2")] %*% GRAD)
+    # not sure of better choice
+    CI[7,] <- IG.ci(RATIO,VAR=VAR.RATIO,level=level,precision=precision)
+
     for(i in 1:n)
     {
       SUB <- i
-      P[i] <- exp( -nloglike(w1=w1,S1=S1,DOF1=DOF1,w2=0,S2=S2,DOF2=DOF2) + nloglike(w1=w1,S1=S1,DOF1=DOF1,w2=1-w1,S2=S2,DOF2=DOF2) )
+      P[i] <- exp( -nloglike(w1=P1,S1=S1,K1=K1,w2=0,S2=S2,K2=K2) + nloglike(w1=P1,S1=S1,K1=K1,w2=1-P1,S2=S2,K2=K2) )
     }
+    SUB <- 1:length(s)
   }
-  else
-  {
-    CI.w <- c(0,0,0)
-    CI.F <- c(1,1,1)
-    CI.2 <- CI.1
-    P <- array(1,n)
-  }
-
-  CI <- rbind(CI.1,CI.2,CI.w,CI.F)
-  rownames(CI) <- c("A\u2081","A\u2082","P\u2081","A\u2082/A\u2081")
-  colnames(CI) <- NAMES.CI
 
   STUFF <- list()
   STUFF$CI <- CI

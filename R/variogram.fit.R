@@ -267,7 +267,7 @@ variogram.fit.backend <- function(variogram,CTMM=ctmm(),fraction=0.5,b=4)
     if(length(CTMM$axes)==2)
     { CTMM$sigma <- scale.covm(CTMM$sigma,(sigma*sigma.unit$scale)/mean(diag(CTMM$sigma))) }
     else
-    { CTMM$sigma <- sigma }
+    { CTMM$sigma <- sigma*sigma.unit$scale }
 
     if(!CTMM$omega)
     { CTMM$tau <- c(tau1*tau1.unit$scale, tau2*tau2.unit$scale) }

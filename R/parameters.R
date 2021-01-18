@@ -222,23 +222,24 @@ get.parameters <- function(CTMM,NAMES,linear.cov=FALSE)
 set.parameters <- function(CTMM,par,linear.cov=FALSE,optimize=FALSE)
 {
   NAMES <- names(par)
+  AXES <- length(CTMM$axes)
 
   sigma <- CTMM$sigma
   if(!linear.cov)
   {
     sigma <- attr(sigma,"par")
-    NAME <- "major"; if(NAME %in% NAMES) { sigma[NAME] <- par[NAME]; if(length(CTMM$axes)>1) { sigma['minor'] <- par[NAME] } } # incase of isotropic
+    NAME <- "major"; if(NAME %in% NAMES) { sigma[NAME] <- par[NAME]; if(AXES>1) { sigma['minor'] <- par[NAME] } } # in case of isotropic
     NAME <- "minor"; if(NAME %in% NAMES) { sigma[NAME] <- par[NAME] }
     NAME <- "angle"; if(NAME %in% NAMES) { sigma[NAME] <- par[NAME] }
   }
-  else
+  else # major,minor,angle is storing xx,yy,xy in linear representation
   {
     sigma <- methods::getDataPart(sigma)
-    NAME <- "major"; if(NAME %in% NAMES) { diag(sigma) <- par[c(NAME,NAME)] }
+    NAME <- "major"; if(NAME %in% NAMES) { if(AXES>1) { diag(sigma) <- par[c(NAME,NAME)] } else { sigma <- par[NAME] } }
     NAME <- "minor"; if(NAME %in% NAMES) { sigma[4] <- par[NAME] }
     NAME <- "angle"; if(NAME %in% NAMES) { sigma[2:3] <- par[c(NAME,NAME)] }
   }
-  CTMM$sigma <- covm(sigma)
+  CTMM$sigma <- covm(sigma,axes=CTMM$axes)
 
   NAME <- "tau position"; if(NAME %in% NAMES) { CTMM$tau[1] <- par[NAME] ; names(CTMM$tau)[1] <- 'position' }
   NAME <- "tau velocity"; if(NAME %in% NAMES) { CTMM$tau[2] <- par[NAME] ; names(CTMM$tau)[2] <- 'velocity' }

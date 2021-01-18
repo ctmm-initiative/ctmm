@@ -103,12 +103,15 @@ unit.telemetry <- function(data,length=1,time=1)
 {
   convert <- function(NAMES,scale) { for(NAME in NAMES) { if(NAME %in% names(data)) { data[[NAME]] <<- data[[NAME]]/scale } } }
 
-  convert(DOP.LIST$horizontal$axes,length)
   convert('t',time)
+  convert(DOP.LIST$horizontal$axes,length)
+  convert(DOP.LIST$vertical$axes,length)
   convert(DOP.LIST$speed$axes,length/time)
 
   convert(DOP.LIST$horizontal$VAR,length^2)
   convert(DOP.LIST$horizontal$COV,length^2)
+
+  convert(DOP.LIST$vertical$VAR,length^2)
 
   convert(DOP.LIST$speed$VAR,(length/time)^2)
   convert(DOP.LIST$speed$COV,(length/time)^2)
