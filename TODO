@@ -1,4 +1,5 @@
 PRIORITY
+* cluster from right
 * extent.telemetry, extent.UD long-lat crossing the IDL
 * optimizer compare par to par/parscale==1 and reset if far away
 * akde on fit with DOF=0 error()

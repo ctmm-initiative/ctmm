@@ -1,5 +1,7 @@
-ctmm 0.6.1 (2021-01-18)
+ctmm 0.6.1 (2021-01-21)
 ================
+
+  * new function cluster
 
   * bugfix in optimzer()
   

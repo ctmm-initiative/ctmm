@@ -1,23 +1,23 @@
-cluster <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,robust=FALSE,IC="BIC",boot=FALSE,error=0.01,debias=TRUE,units=TRUE,plot=TRUE,...)
+cluster <- function(x,level=0.95,level.UD=0.95,debias=TRUE,IC="BIC",units=TRUE,plot=TRUE,sort=FALSE,...)
 {
-  cluster.area(x=x,level=level,level.UD=level.UD,level.pop=level.pop,IC=IC,boot=boot,error=error,debias=debias,robust=robust,units=units,plot=plot,...)
+  cluster.area(x=x,level=level,level.UD=level.UD,IC=IC,debias=debias,units=units,plot=plot,sort=sort,...)
 }
 
 
 # wrapper: meta-analysis of CTMM areas
 # TODO range=FALSE ???
-cluster.area <- function(x,level=0.95,level.UD=0.95,IC="BIC",units=TRUE,classify=TRUE,plot=TRUE,...)
+cluster.area <- function(x,level=0.95,level.UD=0.95,IC="BIC",debias=TRUE,units=TRUE,plot=TRUE,sort=FALSE,...)
 {
   N <- length(x)
+  ID <- names(x)
   STUFF <- import.area(x,level.UD=level.UD)
   AREA <- STUFF$AREA
   DOF <- STUFF$DOF
-  ID <- STUFF$ID
 
   # inverse-chi^2 population distribution
-  STUFF <- cluster.chisq(AREA,DOF,level=level,IC=IC)
-  CI <- STUFF$CI
-  P <- STUFF$P # probability of falling into second class
+  STUFF <- cluster.chisq(AREA,DOF,level=level,IC=IC,debias=debias)
+  CI <- STUFF$CI # c("mu1","CoV1","mu2","CoV2","P1","P2","mu2/mu1")
+  P <- STUFF$P # posterior probability of falling into first class
   names(P) <- ID
 
   AREA <- sapply(1:N,function(i){chisq.ci(AREA[i],DOF=DOF[i],level=level)})
@@ -29,41 +29,67 @@ cluster.area <- function(x,level=0.95,level.UD=0.95,IC="BIC",units=TRUE,classify
   if(plot)
   {
     # first population at bottom
-    ID <- c(ID,ifelse(robust,expression(median[1]),expression(mean[1])))
+    ID <- c(ID,expression(mu[1]))
     AREA <- rbind(AREA,CI[1,])
     COL <- c(COL,grDevices::rgb(0,0,0))
 
     # second population at top
-    ID <- c(ifelse(robust,expression(median[2]),expression(mean[2])),ID)
-    AREA <- rbind(CI[2,],AREA)
+    ID <- c(expression(mu[2]),ID)
+    AREA <- rbind(CI[3,],AREA)
     COL <- c(grDevices::rgb(1,0,0),COL)
+
+    if(sort)
+    {
+      SORT <- sort(AREA[1+1:N,2],decreasing=sort,index.return=TRUE)$ix
+      ID[1+1:N] <- ID[1+SORT]
+      AREA[1+1:N,] <- AREA[1+SORT,]
+      COL[1+1:N] <- COL[1+SORT]
+    }
+
+    # 2nd attempt to fix long labels # still not working, but better than nothing
+    CEX.AXIS <- graphics::par("cex.axis")
+    CEX.NEW <- CEX.AXIS
+    # fix too wide
+    MAX <- max(graphics::strwidth(ID,units="inches"))
+    OFFSET <- 1.5*graphics::strheight("A",units="inches") # 3x default tick length is still not enough? (2x should be about perfect?)
+    CEX.NEW[2] <- (graphics::par("mai")[2]-OFFSET)/(graphics::par("cex")*MAX)
+    # fix too tall
+    CEX.NEW[3] <- graphics::par('pin')[1] / sum(graphics::strheight(ID,units="inches"))
+    # fix too tall & too wide
+    CEX.NEW <- min(CEX.NEW)
+    # zero is not valid
+    CEX.NEW <- max(CEX.NEW,0.01)
+    graphics::par(cex.axis=CEX.NEW)
+    # will reset when done with axis()
 
     # basic forest plot
     IND <- (N+2):1
 
     UNITS <- unit(AREA,"area",SI=!units)
-    PLOT <- AREA/UNITS$scale
+    AREA <- AREA/UNITS$scale
 
     xlab <- paste0(100*level.UD,"% Area (",UNITS$name,")")
-    plot(range(PLOT),c(1,N+2),col=grDevices::rgb(1,1,1,0),xlab=xlab,ylab=NA,yaxt="n",...)
+    # base layer plot
+    plot(range(AREA),c(1,N+2),col=grDevices::rgb(1,1,1,0),xlab=xlab,ylab=NA,yaxt="n",...)
+
     for(i in 2:(N+1)) { graphics::axis(2,at=IND[i],labels=ID[i],las=2,col.axis=COL[i],lwd=0) }
     graphics::axis(2,at=IND[N+2],labels=ID[N+2],las=2,font=2,col.axis=COL[N+2],lwd=0)
     graphics::axis(2,at=IND[1],labels=ID[1],las=2,font=2,col.axis=COL[1],lwd=0)
     graphics::axis(2,at=IND,labels=FALSE)
-    graphics::abline(v=PLOT[N+2,2],col=grDevices::rgb(0.0,0.0,0.0,0.5))
-    graphics::abline(v=PLOT[1,2],col=grDevices::rgb(1,0.0,0.0,0.5))
-    graphics::points(PLOT[,2],IND,pch=16,col=COL)
-    suppressWarnings( graphics::arrows(PLOT[,1],IND,PLOT[,3],IND,length=0.05,angle=90,code=3,col=COL) )
+    graphics::abline(v=AREA[1,2],col=grDevices::rgb(1,0.0,0.0,0.5))
+    graphics::abline(v=AREA[N+2,2],col=grDevices::rgb(0.0,0.0,0.0,0.5))
+    graphics::points(AREA[,2],IND,pch=16,col=COL)
+    suppressWarnings( graphics::arrows(AREA[,1],IND,AREA[,3],IND,length=0.05,angle=90,code=3,col=COL) )
+
+    # reset cex.axis
+    graphics::par(cex.axis=CEX.AXIS)
   }
 
-  UNITS <- unit(CI[1:2,],"area",SI=!units)
-  CI[1:2,] <- CI[1:2,]/UNITS$scale
-  rownames(CI)[1:2] <- paste0(rownames(CI)[1:2]," area (",UNITS$name,")")
+  UNITS <- unit(CI[c(1,3),],"area",SI=!units,concise=TRUE)
+  CI[c(1,3),] <- CI[c(1,3),]/UNITS$scale
+  rownames(CI)[c(1,3)] <- paste0(rownames(CI)[c(1,3)]," (",UNITS$name,")")
 
-  if(classify)
-  { return(list("P"=P,CI=CI)) }
-  else
-  { return(CI) }
+  return(list("P"=P,CI=CI))
 }
 
 
@@ -160,7 +186,7 @@ cluster.chisq <- function(s,dof,level=0.95,IC="BIC",debias=TRUE,precision=1/2,..
     }
 
     # representation insensitive to w.min~0 & loglike.min<<loglike.max
-    loglike <- logw.max + loglike.max + log(1+(w.min/w.max)*exp(loglike.min-loglike.max)) + zero/n
+    loglike <- logw.max + loglike.max + log(1+nant((w.min/w.max)*exp(loglike.min-loglike.max),0)) + zero/n
     -sum(loglike)
   }
 
@@ -191,19 +217,20 @@ cluster.chisq <- function(s,dof,level=0.95,IC="BIC",debias=TRUE,precision=1/2,..
   L$gauss$FIT <- function(par=NULL)
   {
     # if guess is not specified
-    if(is.null(par)) { par <- L$chisq$GUESS() }
-    optimizer(par,L$chisq$COST,lower=c(0,0),upper=c(Inf,Inf))
+    if(is.null(par)) { par <- L$gauss$GUESS() }
+    optimizer(par,L$gauss$COST,lower=c(0,0),upper=c(Inf,Inf))
   }
 
-  L$gauss.gauss$K <- 3
+  L$gauss.gauss$K <- 4
 
   ## greedy partition fit ## used for good initial guess for mixture model
   part <- function(JOINT=NULL,LEFT=JOINT,RIGHT=JOINT)
   {
-    NLL <- NULL # negative log-likelihood
-    i <- ceiling(n/2) -> IND # current partition at i + 1/2
+    NLL <- array(NA,n) # negative log-likelihoods
     MIN <- L[[LEFT]]$K
-    MAX <- n - L[[RIGHT]]$K - 1
+    MAX <- n - L[[RIGHT]]$K
+    i.min <- i <- MAX # current partition at i + 1/2
+    MID <- round((MIN+MAX)/2)
 
     if(!is.null(JOINT))
     {
@@ -221,32 +248,24 @@ cluster.chisq <- function(s,dof,level=0.95,IC="BIC",debias=TRUE,precision=1/2,..
       }
     }
 
-    # initial fit
-    j <- 1 # current list index
-    IND <- NULL # all indices considered thus far
-    par <- par1 <- par2 <- PAR <- PAR1 <- PAR2 <- NULL # parameters
-    while(!length(IND) || (IND[j]==min(IND) && IND[j]>MIN) || (IND[j]==max(IND) && IND[j]<MAX))
+    NLL.MIN <- Inf
+    for(i in c(MID:MAX,MID:MIN)) # work from inside out for better parameter fitting
     {
-      IND <- c(IND,i)
-      j <- length(IND)
+      if(i==MID) { par <- par1 <- par2 <- NULL } # reset initial guess at mid-point # recycle as you go out
 
       if(is.null(JOINT)) # this code handles 4 different cases
       {
         # left fit
         SUB <<- SORT[1:i]
         FIT <- L[[LEFT]]$FIT(par1)
-        PAR1 <- rbind(PAR1,FIT$par)
-        NLL[j] <- FIT$value
+        par1 <- FIT$par
+        NLL[i] <- FIT$value
 
         # right fit
         SUB <<- SORT[(i+1):n]
         FIT <- L[[RIGHT]]$FIT(par2)
-        PAR2 <- rbind(PAR2,FIT$par)
-        NLL[j] <- NLL[j] + FIT$value
-
-        j <- which.min(NLL) # current best index
-        par1 <- PAR1[j,] # current best parameters
-        par2 <- PAR2[j,]
+        par2 <- FIT$par
+        NLL[i] <- NLL[i] + FIT$value
       }
       else # this is hard-coded to the joint-N model
       {
@@ -254,30 +273,35 @@ cluster.chisq <- function(s,dof,level=0.95,IC="BIC",debias=TRUE,precision=1/2,..
         if(is.null(par))
         {
           SUB <<- SORT[1:i]
-          par1 <- L$chisq$GUESS()
+          par1 <- L$gauss$GUESS()
           SUB <<- SORT[(i+1):n]
-          par2 <- L$chisq$GUESS()
+          par2 <- L$gauss$GUESS()
           CoV2 <- mean( prod(par1), prod(par2) )
           par <- c(par1[1],par2[1],CoV2)
         }
         FIT <- optimizer(par,COST,lower=c(0,0,0),upper=c(Inf,Inf,Inf))
-        PAR <- rbind(PAR,FIT$par)
-        NLL[j] <- FIT$value
-
-        j <- which.min(NLL) # current best index
-        par <- PAR[j,] # current best parameters
+        par <- FIT$par
+        NLL[i] <- FIT$value
       }
 
-      # next attempt # bias right/high
-      if(IND[j]==max(IND)) { i <- IND[j] + 1 } # move partition higher
-      else if(IND[j]==min(IND)) { i <- IND[j] - 1 } # move partition lower
-      else { break } # local minimum reached
-    }
+      if(NLL[i] < NLL.MIN) # store best fit
+      {
+        i.min <- i
+        par1.min <- par1
+        par2.min <- par2
+        par.min <- par
+        NLL.MIN <- NLL[i]
+      }
+    } # end for
     SUB <<- 1:n
 
+    # index -> fraction
+    p <- (i.min+0.5)/n
     # all parameters (for guess)
-    if(is.null(JOINT)) { par <- c(IND[j]/n,par1,par2) }
-    else { par <- c(IND[j]/n,par) }
+    if(is.null(JOINT))
+    { par <- c(p,par1.min,par2.min) }
+    else
+    { par <- c(p,par.min) }
 
     return(par)
   } # end part()
@@ -287,37 +311,39 @@ cluster.chisq <- function(s,dof,level=0.95,IC="BIC",debias=TRUE,precision=1/2,..
   M <- 7 # total number of candidate models
   NAME <- array("",M)
   COST <- MLE <- PAR <- BC <- PARS <- LOWER <- UPPER <- list()
-  LL <- K <- AICcP <- array(0,M)
-  if(TRUE && !is.na(IC))
+  LL <- K <- Kc <- array(0,M)
+  if(!is.na(IC))
   {
     # (1) Dirac-delta ## exactly solvable
     m <- 1 # model index
     NAME[m] <- "Dirac-\u03B4"
     PARS[[m]] <- c("S1")
     COST[[1]] <- L$dirac$COST
+    LOWER[[m]] <- c(0)
+    UPPER[[m]] <- c(Inf)
     FIT <- L$dirac$FIT()
     LL[m] <- -FIT$value # log-likelihood at MLE
     MLE[[m]] <- PAR[[m]] <- FIT$par
-    K[m] <- 1  # number of parameters
-    BC[[m]] <- rep(1,K[m]); names(BC[[m]]) <- PARS[[m]]
-    AICcP[m] <- K[m]*ifelse(debias,n-1,n)/pmax(n-K[m]-0,0)
+    names(MLE[[m]]) <- names(PAR[[m]]) <- PARS[[m]]
+    BC[[m]] <- rep(1,length(PARS[[m]])); names(BC[[m]]) <- PARS[[m]]
 
     # (2) inverse-Gaussian # unimodal likelihood
     m <- 2
     NAME[m] <- "inverse-Gaussian"
     PARS[[m]] <- c("S1","K1") # V==1/DOF
-    COST[[m]] <- L$chisq$COST
+    COST[[m]] <- L$gauss$COST
+    LOWER[[m]] <- c(0,0)
+    UPPER[[m]] <- c(Inf,Inf)
     FIT <- L$gauss$FIT()
     LL[m] <- -FIT$value
     MLE[[m]] <- PAR[[m]]<- FIT$par
-    K[m] <- 2  # number parameters
-    BC[[m]] <- rep(1,K[m]); names(BC[[m]]) <- PARS[[m]]
-    AICcP[m] <- K[m]*ifelse(debias,n-1,n)/pmax(n-K[m]-1,0)
+    names(MLE[[m]]) <- names(PAR[[m]]) <- PARS[[m]]
+    BC[[m]] <- rep(1,length(PARS[[m]])); names(BC[[m]]) <- PARS[[m]]
 
     if(debias) # debias k=VAR/mu^3 parameter
     {
       N <- length(s)
-      BC[[m]]["K1"] <- N/(N-1)
+      BC[[m]]["K1"] <- N/max(N-1,0)
       PAR[[m]] <- BC[[m]] * PAR[[m]]
       LL[m] <- -COST[[m]](PAR[[m]])
     }
@@ -333,9 +359,8 @@ cluster.chisq <- function(s,dof,level=0.95,IC="BIC",debias=TRUE,precision=1/2,..
     FIT <- optimizer(par,COST[[m]],lower=LOWER[[m]],upper=UPPER[[m]])
     LL[m] <- -FIT$value
     MLE[[m]] <- PAR[[m]] <- FIT$par
-    K[m] <- 3
-    BC[[m]] <- rep(1,K[m]); names(BC[[m]]) <- PARS[[m]]
-    AICcP[m] <- K[m]*ifelse(debias,n-2,n)/pmax(n-K[m]-1,0)
+    names(MLE[[m]]) <- names(PAR[[m]]) <- PARS[[m]]
+    BC[[m]] <- rep(1,length(PARS[[m]])); names(BC[[m]]) <- PARS[[m]]
 
     # (4) Dirac-delta & inverse-Gaussian
     m <- 4
@@ -348,14 +373,13 @@ cluster.chisq <- function(s,dof,level=0.95,IC="BIC",debias=TRUE,precision=1/2,..
     FIT <- optimizer(par,COST[[m]],lower=LOWER[[m]],upper=UPPER[[m]])
     LL[m] <- -FIT$value
     MLE[[m]] <- PAR[[m]] <- FIT$par
-    K[m] <- 4
-    BC[[m]] <- rep(1,K[m]); names(BC[[m]]) <- PARS[[m]]
-    AICcP[m] <- K[m]*ifelse(debias,n-2,n)/pmax(n-K[m]-2,0)
+    names(MLE[[m]]) <- names(PAR[[m]]) <- PARS[[m]]
+    BC[[m]] <- rep(1,length(PARS[[m]])); names(BC[[m]]) <- PARS[[m]]
 
     if(debias) # debias k=VAR/mu^3 parameter by membership
     {
       N <- length(s) * (1-PAR[[m]]["P1"])
-      BC[[m]]["K2"] <- N/(N-1)
+      BC[[m]]["K2"] <- N/max(N-1,0)
       PAR[[m]] <- BC[[m]] * PAR[[m]]
       LL[m] <- -COST[[m]](PAR[[m]])
     }
@@ -363,7 +387,7 @@ cluster.chisq <- function(s,dof,level=0.95,IC="BIC",debias=TRUE,precision=1/2,..
     # (5) inverse-Gaussian & Dirac-delta
     m <- 5
     NAME[m] <- "inverse-Gaussian + Dirac-\u03B4"
-    PARS[[m]] <- c("P1","S1","K2","S2")
+    PARS[[m]] <- c("P1","S1","K1","S2")
     par <- part(LEFT="gauss",RIGHT="dirac") # guess == partitioned solution
     COST[[m]] <- function(par,zero=0) { nloglike(w1=par[1],S1=par[2],K1=par[3],S2=par[4],K2=0,zero=zero) }
     LOWER[[m]] <- c(0,0,0,0)
@@ -371,14 +395,13 @@ cluster.chisq <- function(s,dof,level=0.95,IC="BIC",debias=TRUE,precision=1/2,..
     FIT <- optimizer(par,COST[[m]],lower=LOWER[[m]],upper=UPPER[[m]])
     LL[m] <- -FIT$value
     MLE[[m]] <- PAR[[m]] <- FIT$par
-    K[m] <- 4
-    BC[[m]] <- rep(1,K[m]); names(BC[[m]]) <- PARS[[m]]
-    AICcP[m] <- K[m]*ifelse(debias,n-2,n)/pmax(n-K[m]-2,0)
+    names(MLE[[m]]) <- names(PAR[[m]]) <- PARS[[m]]
+    BC[[m]] <- rep(1,length(PARS[[m]])); names(BC[[m]]) <- PARS[[m]]
 
     if(debias) # debias k=VAR/mu^3 parameter by membership
     {
       N <- length(s) * PAR[[m]]["P1"]
-      BC[[m]]["K1"] <- N/(N-1)
+      BC[[m]]["K1"] <- N/max(N-1,0)
       PAR[[m]] <- BC[[m]] * PAR[[m]]
       LL[m] <- -COST[[m]](PAR[[m]])
     }
@@ -394,54 +417,61 @@ cluster.chisq <- function(s,dof,level=0.95,IC="BIC",debias=TRUE,precision=1/2,..
     FIT <- optimizer(par,COST[[m]],lower=LOWER[[m]],upper=UPPER[[m]])
     LL[m] <- -FIT$value
     MLE[[m]] <- PAR[[m]] <- FIT$par
-    K[m] <- 4
-    BC[[m]] <- rep(1,K[m]); names(BC[[m]]) <- PARS[[m]]
-    AICcP[m] <- K[m]*ifelse(debias,n-2,n)/pmax(n-K[m]-2,0)
+    names(MLE[[m]]) <- names(PAR[[m]]) <- PARS[[m]]
+    BC[[m]] <- rep(1,length(PARS[[m]])); names(BC[[m]]) <- PARS[[m]]
 
     if(debias) # debias k=VAR/mu^3-ish parameter... does this make sense?
     {
       N <- length(s)
-      BC[[m]]["RV"] <- N/(N-1) # numerator and denominator weighted separately # half as big as model with two CoV
-      PAR[[m]] <- BC[[m]] * PAR[[m]]
-      LL[m] <- -COST[[m]](PAR[[m]])
-    }
-
-    # (7) inverse-Gaussian & inverse-Gaussian (independent parameters)
-    m <- 7
-    NAME[m] <- "inverse-Gaussian(CoV\u2081) + inverse-Gaussian(CoV\u2082)"
-    PARS[[m]] <- c("P1","S1","K1","S2","K2")
-    par <- part(LEFT="gauss",RIGHT="gauss") # guess == partitioned solution
-    COST[[m]] <- function(par,zero=0) { nloglike(w1=par[1],S1=par[2],K1=par[3],S2=par[4],K2=par[5],zero=zero) }
-    LOWER[[m]] <- c(0,0,0,0,0)
-    UPPER[[m]] <- c(1,Inf,Inf,Inf,Inf)
-    FIT <- optimizer(par,COST[[m]],lower=LOWER[[m]],upper=UPPER[[m]])
-    LL[m] <- -FIT$value
-    MLE[[m]] <- PAR[[m]] <- FIT$par
-    K[m] <- 5
-    BC[[m]] <- rep(1,K[m]); names(BC[[m]]) <- PARS[[m]]
-    AICcP[m] <- K[m]*ifelse(debias,n-2,n)/pmax(n-K[m]-3,0)
-
-    if(debias) # debias k=VAR/mu^3 parameters by membership
-    {
-      N <- length(s) * PAR[[m]]["P1"]
-      BC[[m]]["K1"] <- N/(N-1)
-      N <- length(s) * (1-PAR[[m]]["P1"])
-      BC[[m]]["K2"] <- N/(N-1)
+      BC[[m]]["RV"] <- N/max(N-1,0) # numerator and denominator weighted separately # half as big as model with two CoV
       PAR[[m]] <- BC[[m]] * PAR[[m]]
       LL[m] <- -COST[[m]](PAR[[m]])
     }
   }
 
-  ## select best performing model according to IC
-  if(IC=="AIC")
-  { dIC <- 2*K - 2*LL }
-  else if(IC=="AICc")
-  { dIC <- 2*AICcP - 2*LL }
-  else if(IC=="BIC")
-  { dIC <- log(n)*K - 2*LL }
+  # (7) inverse-Gaussian & inverse-Gaussian (independent parameters)
+  m <- 7
+  NAME[m] <- "inverse-Gaussian(CoV\u2081) + inverse-Gaussian(CoV\u2082)"
+  PARS[[m]] <- c("P1","S1","K1","S2","K2")
+  par <- part(LEFT="gauss",RIGHT="gauss") # guess == partitioned solution
+  COST[[m]] <- function(par,zero=0) { nloglike(w1=par[1],S1=par[2],K1=par[3],S2=par[4],K2=par[5],zero=zero) }
+  LOWER[[m]] <- c(0,0,0,0,0)
+  UPPER[[m]] <- c(1,Inf,Inf,Inf,Inf)
+  FIT <- optimizer(par,COST[[m]],lower=LOWER[[m]],upper=UPPER[[m]])
+  LL[m] <- -FIT$value
+  MLE[[m]] <- PAR[[m]] <- FIT$par
+  names(MLE[[m]]) <- names(PAR[[m]]) <- PARS[[m]]
+  BC[[m]] <- rep(1,length(PARS[[m]])); names(BC[[m]]) <- PARS[[m]]
+
+  if(debias) # debias k=VAR/mu^3 parameters by membership
+  {
+    N <- length(s) * PAR[[m]]["P1"]
+    BC[[m]]["K1"] <- N/max(N-1,0)
+    N <- length(s) * (1-PAR[[m]]["P1"])
+    BC[[m]]["K2"] <- N/max(N-1,0)
+    PAR[[m]] <- BC[[m]] * PAR[[m]]
+    LL[m] <- -COST[[m]](PAR[[m]])
+  }
+
+  if(is.na(IC)) { IND <- M } else { IND <- 1:M }
+  for(m in IND)
+  {
+    K[m] <- length(PARS[[m]])  # number of parameters
+    K.mu <- sum(grepl("S[0-9]",PARS[[m]])) # mean parameters
+    K.nu <- K[m] - K.mu
+    Kc[m] <- K[m]*ifelse(debias,n-K.mu,n)/pmax(n-K[m]-K.nu,0)
+  }
 
   if(!is.na(IC))
   {
+    ## select best performing model according to IC
+    if(IC=="AIC")
+    { dIC <- 2*K - 2*LL }
+    else if(IC=="AICc")
+    { dIC <- 2*Kc - 2*LL }
+    else if(IC=="BIC")
+    { dIC <- log(n)*K - 2*LL }
+
     dIC <- cbind(dIC)
     rownames(dIC) <- NAME
     colnames(dIC) <- paste0("\u0394",IC)
@@ -464,8 +494,16 @@ cluster.chisq <- function(s,dof,level=0.95,IC="BIC",debias=TRUE,precision=1/2,..
   UPPER <- UPPER[[MIN]]
 
   SUB <- 1:n
-  COV <- genD(MLE[[MIN]],COST,lower=LOWER,upper=UPPER)
-  COV <- cov.loglike(COV$hessian,COV$gradient)
+  if(MIN==1) # chi^2 case
+  {
+    COV <- 2*par["S1"]^2/sum(dof)
+    COV <- array(COV,c(1,1))
+  }
+  else # numeric cases
+  {
+    COV <- genD(MLE[[MIN]],COST,lower=LOWER,upper=UPPER)
+    COV <- cov.loglike(COV$hessian,COV$gradient)
+  }
   dimnames(COV) <- list(PARS,PARS)
 
   if(debias) { COV <- BC * t(BC * COV) }
@@ -504,16 +542,12 @@ cluster.chisq <- function(s,dof,level=0.95,IC="BIC",debias=TRUE,precision=1/2,..
   }
   else # inverse-Gaussian on first sub-population
   {
-    # mu_1
-    DD.IG <- DD.IG.ratio(par[c("S1","K1")],COV["S1","S1"],par["P1"]*n)
-    CI[1,] <- chisq.IG.ci(par["S1"],COV["S1","S1"],DD.IG,level=level,precision=precision)
-
     # CoV^2 (RVAR)
     if("K1" %in% PARS) # unstructured
     {
       # CoV^2 (RVAR) : par[1]*par[2]
       GRAD <- par[c("K1","S1")]
-      VAR <- GRAD %*% COV[c("S1","K1"),c("S1","K1")] %*% GRAD
+      VAR <- c(GRAD %*% COV[c("S1","K1"),c("S1","K1")] %*% GRAD)
       CI[2,] <- chisq.ci(par["S1"]*par["K1"],VAR=VAR,level=level)
 
       K1 <- par["K1"]
@@ -521,8 +555,8 @@ cluster.chisq <- function(s,dof,level=0.95,IC="BIC",debias=TRUE,precision=1/2,..
     else if("RV" %in% PARS) # constrained relative variance
     {
       # CoV^2 (RVAR)
-      VAR <- VAR=COV["V1","V1"]
-      CI[2,] <- chisq.ci(par["V1"],VAR=VAR,level=level)
+      VAR <- COV["RV","RV"]
+      CI[2,] <- chisq.ci(par["RV"],VAR=VAR,level=level)
 
       K1 <- par["RV"]/par["S1"]
       K2 <- par["RV"]/par["S2"]
@@ -537,7 +571,12 @@ cluster.chisq <- function(s,dof,level=0.95,IC="BIC",debias=TRUE,precision=1/2,..
     }
 
     if("RV" %in% PARS) { CI[4,] <- CI[2,] } # copy CoV
-  }
+
+    # mu_1
+    N <- ifelse("P1" %in% PARS,par["P1"],1) * n
+    DD.IG <- DD.IG.ratio(c(S1,K1),COV["S1","S1"],N)
+    CI[1,] <- chisq.IG.ci(par["S1"],COV["S1","S1"],DD.IG,level=level,precision=precision)
+  } # end inverse-Gaussian on first sub-population
 
   if("S2" %nin% PARS) # one sub-population only
   {
@@ -563,27 +602,28 @@ cluster.chisq <- function(s,dof,level=0.95,IC="BIC",debias=TRUE,precision=1/2,..
     }
     else # IG
     {
-      # mu_2
-      DD.IG <- DD.IG.ratio(par[c("S2","K2")],COV["S2","S2"],(1-par["P1"])*n)
-      CI[3,] <- chisq.IG.ci(par["S2"],COV["S2","S2"],DD.IG,level=level,precision=precision)
+      if("K2" %in% PARS) # unstructured IG
+      {
+        # CoV^2 (RVAR) : par[1]*par[2]
+        GRAD <- par[c("K2","S2")]
+        VAR <- c(GRAD %*% COV[c("S2","K2"),c("S2","K2")] %*% GRAD)
+        CI[4,] <- chisq.ci(par["S2"]*par["K2"],VAR=VAR,level=level)
 
-      K2 <- par["K2"]
+        # CoV (RSTD)
+        CI[4,] <- sqrt(CI[4,])
+        if(debias && 0<CI[4,2]) # sqrt bias
+        {
+          BIAS <- 1 + VAR/CI[4,2]^2/4
+          CI[4,] <- CI[4,] * sqrt(BIAS)
+        }
 
-      ## unstructured IG ##
+        K2 <- par["K2"]
+      }
       # constrained RV already finished and copied over
 
-      # CoV^2 (RVAR) : par[1]*par[2]
-      GRAD <- par[c("K2","S2")]
-      VAR <- GRAD %*% COV[c("S2","K2"),c("S2","K2")] %*% GRAD
-      CI[4,] <- chisq.ci(par["S2"]*par["K2"],VAR=VAR,level=level)
-
-      # CoV (RSTD)
-      CI[4,] <- sqrt(CI[4,])
-      if(debias && 0<CI[4,2]) # sqrt bias
-      {
-        BIAS <- 1 + VAR/CI[4,2]^2/4
-        CI[4,] <- CI[4,] * sqrt(BIAS)
-      }
+      # mu_2
+      DD.IG <- DD.IG.ratio(c(S2,K2),COV["S2","S2"],(1-par["P1"])*n)
+      CI[3,] <- chisq.IG.ci(par["S2"],COV["S2","S2"],DD.IG,level=level,precision=precision)
     }
 
     CI[5,] <- beta.ci(par["P1"],VAR=COV["P1","P1"],level=level)
@@ -594,13 +634,14 @@ cluster.chisq <- function(s,dof,level=0.95,IC="BIC",debias=TRUE,precision=1/2,..
     # this is 1st order debiased in between
     BIAS <- max(1-debias*COV["S1","S1"]/S1^2,0)
     RATIO <- par["S2"]/par["S1"] * BIAS
-    GRAD <- c(1/par["S2"],-par["S1"]/par["S2"]^2)
-    GRAD[1] <- GRAD / BIAS # scale S1 parameter and its variance the same (approximate, but not exact correction)
+    GRAD <- c(-par["S2"]/par["S1"]^2,1/par["S1"])
+    GRAD[1] <- GRAD[1] / BIAS # scale S1 parameter and its variance the same (approximate, but not exact correction)
     # numerator and denominator are correlated...
     VAR.RATIO <- c(GRAD %*% COV[c("S1","S2"),c("S1","S2")] %*% GRAD)
     # not sure of better choice
     CI[7,] <- IG.ci(RATIO,VAR=VAR.RATIO,level=level,precision=precision)
 
+    P <- rep(1,length(s))
     for(i in 1:n)
     {
       SUB <- i
