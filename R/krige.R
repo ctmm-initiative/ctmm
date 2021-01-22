@@ -318,7 +318,7 @@ fill.data <- function(data,CTMM=ctmm(tau=Inf),verbose=FALSE,t=NULL,dt=NULL,res=1
     REPEAT <- which(diff(t.grid)==0)
     w.grid[REPEAT] <- w.grid[REPEAT]/2
     w.grid[REPEAT+1] <- w.grid[REPEAT+1]/2
-  }
+  } # end if is.null(t)
   else # use a pre-specified time grid
   {
     t.new <- t[!(t %in% data$t)]
@@ -451,24 +451,44 @@ occurrence <- function(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=
 
 ##############################################
 # SIMULATE DATA over time array t
-simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1,complete=FALSE,precompute=FALSE,...)
+simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,VMM=NULL,t=NULL,dt=NULL,res=1,complete=FALSE,precompute=FALSE,...)
 {
+  info <- attr(object,"info")
+  if(!is.null(data)) { info$identity <- glue( attr(data,'info')$identity , info$identity ) }
+
   if(class(nsim)[1] %in% c("data.frame","telemetry"))
   {
     data <- nsim
     nsim <- 1
   }
 
+  if(is.null(object) && !is.null(VMM)) # 1D
+  {
+    object <- VMM
+    VMM <- NULL
+  }
+  else if(!is.null(object) && !is.null(VMM)) # 3D
+  {
+    # combine results (lazy code, calculates time grid twice)
+    OUT <- simulate.ctmm(object,nsim=nsim,seed=seed,data=data,t=t,dt=dt,res=res,...)
+    ZOUT <- simulate.ctmm(VMM,nsim=nsim,seed=seed,data=data,t=t,dt=dt,res=res,...)
+    data <- cbind(OUT,ZOUT[,-1]) # drop redundant time column
+    rm(OUT,ZOUT)
+
+    data <- new.telemetry(data,info=info)
+    if(complete) { data <- pseudonymize(data,tz=info$timezone,proj=info$projection,origin=EPOCH) }
+    return(data)
+  }
+  # 1-2D below
+
+  axes <- object$axes
+  AXES <- length(axes)
+
   # no movement model
-  if(is.null(object)) { object <- ctmm(sigma=0,mu=c(0,0),error=TRUE) }
+  if(is.null(object)) { object <- ctmm(sigma=0,mu=rep(0,AXES),error=TRUE) }
   ZERO <- all(diag(object$sigma)==0) # no movement model logical
 
   if(!is.null(seed)){ set.seed(seed) }
-
-  info <- attr(object,"info")
-  if(!is.null(data)) { info$identity <- glue( attr(data,'info')$identity , info$identity ) }
-  axes <- object$axes
-  AXES <- length(axes)
 
   CLASS <- class(data)[1]
   CONDITIONAL <- FALSE
@@ -683,13 +703,17 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,t=NULL,dt=NULL,res=1
   } # Gaussian simulation
 
   data <- new.telemetry(data,info=info)
-  if(complete) { data <- pseudonymize(data,tz=info$timezone,proj=info$projection,origin=EPOCH)  }
+  if(complete)
+  {
+    if(axes=='z') { stop("(x,y) locations must also be simulated for complete=TRUE.") }
+    data <- pseudonymize(data,tz=info$timezone,proj=info$projection,origin=EPOCH)
+  }
   return(data)
 }
 #methods::setMethod("simulate",signature(object="ctmm"), function(object,...) simulate.ctmm(object,...))
 
 
-simulate.telemetry <- function(object,nsim=1,seed=NULL,CTMM=NULL,t=NULL,dt=NULL,res=1,complete=FALSE,precompute=FALSE,...)
+simulate.telemetry <- function(object,nsim=1,seed=NULL,CTMM=NULL,VMM=NULL,t=NULL,dt=NULL,res=1,complete=FALSE,precompute=FALSE,...)
 {
   if(class(nsim)[1]=="ctmm")
   {
@@ -697,17 +721,37 @@ simulate.telemetry <- function(object,nsim=1,seed=NULL,CTMM=NULL,t=NULL,dt=NULL,
     nsim <- 1
   }
 
-  simulate.ctmm(CTMM,nsim=nsim,seed=seed,data=object,t=t,dt=dt,res=res,complete=complete,precompute=precompute,...)
+  simulate.ctmm(CTMM,nsim=nsim,seed=seed,data=object,VMM=VMM,t=t,dt=dt,res=res,complete=complete,precompute=precompute,...)
 }
 
 
 ##########################
-# predict locations at certaint times !!! make times unique
+# predict locations at certain times !!! make times unique
 ##########################
-predict.ctmm <- function(object,data=NULL,t=NULL,dt=NULL,res=1,complete=FALSE,...)
+predict.ctmm <- function(object,data=NULL,VMM=NULL,t=NULL,dt=NULL,res=1,complete=FALSE,...)
 {
   info <- attr(object,"info")
   if(!is.null(data)) { info$identity <- glue( attr(data,'info')$identity , info$identity ) }
+
+  if(is.null(object) && !is.null(VMM)) # 1D
+  {
+    object <- VMM
+    VMM <- NULL
+  }
+  else if(!is.null(object) && !is.null(VMM)) # 3D
+  {
+    # combine results (lazy code, calculates time grid twice)
+    OUT <- predict.ctmm(object,data=data,t=t,dt=dt,res=res,...)
+    ZOUT <- predict.ctmm(VMM,data=data,t=t,dt=dt,res=res,...)
+    data <- cbind(OUT,ZOUT[,-1]) # drop redundant time column
+    rm(OUT,ZOUT)
+
+    data <- new.telemetry(data,info=info)
+    if(complete) { data <- pseudonymize(data,tz=info$timezone,proj=info$projection,origin=EPOCH) }
+    return(data)
+  }
+  # 1-2D below
+
   axes <- object$axes
 
   # Gaussian simulation not conditioned off of any data
@@ -818,9 +862,13 @@ predict.ctmm <- function(object,data=NULL,t=NULL,dt=NULL,res=1,complete=FALSE,..
   }
 
   data <- new.telemetry(data,info=info)
-  if(complete) { data <- pseudonymize(data,tz=info$timezone,proj=info$projection,origin=EPOCH)  }
+  if(complete)
+  {
+    if(axes=='z') { stop("(x,y) locations must also be predicted for complete=TRUE.") }
+    data <- pseudonymize(data,tz=info$timezone,proj=info$projection,origin=EPOCH)
+  }
   return(data)
 }
 
-predict.telemetry <- function(object,CTMM=NULL,t=NULL,dt=NULL,res=1,complete=FALSE,...)
-{ predict.ctmm(CTMM,data=object,t=t,dt=dt,res=res,complete=complete,...) }
+predict.telemetry <- function(object,CTMM=NULL,VMM=NULL,t=NULL,dt=NULL,res=1,complete=FALSE,...)
+{ predict.ctmm(CTMM,data=object,VMM=VMM,t=t,dt=dt,res=res,complete=complete,...) }
