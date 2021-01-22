@@ -1,13 +1,17 @@
-ctmm 0.6.1 (2021-01-21)
+ctmm 0.6.1 (2021-01-22)
 ================
 
   * new function cluster
+  
+  * new simulate, predict argument VMM
 
   * bugfix in optimzer()
   
   * bugfix in ctmm.fit() for 1D processes
   
   * bugfix in variogram.fit() for 1D processes
+  
+  * bugfixes in simulate, predict for 1D processes
 
 ctmm 0.6.0 (2021-01-08)
 ================

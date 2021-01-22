@@ -166,7 +166,11 @@ area.covm <- function(sigma) { return( det.covm(sigma,ave=TRUE) ) }
 scale.covm <- function(sigma,value=1/var.covm(sigma,ave=TRUE))
 {
   sigma <- sigma * value
-  attr(sigma,'par')[c('major','minor')] <- attr(sigma,'par')[c('major','minor')] * value
+
+  PARS <- 'major'
+  if(length(sigma)==4) { PARS[2] <- 'minor' } # 2D
+  attr(sigma,'par')[PARS] <- attr(sigma,'par')[PARS] * value
+
   return(sigma)
 }
 
@@ -179,8 +183,8 @@ squeezable.covm <- function(CTMM)
 
   # ratio of major axis to (geometric) mean axis (meters/meters)
   fact <- (max(vars)/min(vars))^(1/4)
-  # extreme eccentricity --- cannot squeeze data to match variances
-  able <- AXES==2 && !is.nan(fact) && 4*abs(log(fact))<log(1/.Machine$double.eps)
+  # can squeeze data to match variances? or extreme eccentricity
+  able <- !is.nan(fact) && 4*abs(log(fact))<log(1/.Machine$double.eps)
 
   return(list(fact=fact,able=able))
 }

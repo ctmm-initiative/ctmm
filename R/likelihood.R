@@ -36,7 +36,6 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   STUFF <- squeezable.covm(CTMM)
   smgm <- STUFF$fact  # ratio of major axis to geometric mean axis
   ECC.EXT <- !STUFF$able # extreme eccentricity --- cannot squeeze data to match variances
-  if(AXES==1) { ECC.EXT <- FALSE }
 
   # simplify filter for no movement process
   if(all(eigenvalues.covm(sigma)<=0))
