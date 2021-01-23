@@ -12,6 +12,8 @@ ctmm 0.6.1 (2021-01-22)
   * bugfix in variogram.fit() for 1D processes
   
   * bugfixes in simulate, predict for 1D processes
+  
+  * longitude extents can now cross the international date line
 
 ctmm 0.6.0 (2021-01-08)
 ================

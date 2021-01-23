@@ -214,7 +214,10 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, units=TRUE, fraction=0.5, c
 
   # default single comparison model
   # if(is.null(CTMM) && n==1 && !is.null(attr(x[[1]],"info")$CTMM)) { CTMM <- attr(x[[1]],"info")$CTMM }
-  ACF <- !is.null(attr(x[[1]],"info")$ACF)
+  ACF <- attr(x[[1]],"info")$ACF
+  ACF <- !is.null(ACF) && ACF
+  RESIDUAL <- attr(x[[1]],"info")$residual
+  RESIDUAL <- !is.null(RESIDUAL) && RESIDUAL
 
   # don't plot if DOF<1
   x <- lapply(x,function(y){ y[y$DOF>=1,] })
@@ -245,7 +248,20 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, units=TRUE, fraction=0.5, c
   # calculate ylimits from all variograms !!!
   if(is.null(ylim)) { ylim <- extent(x,level=max(level))$y }
 
-  if(!ACF) # SVF plot
+  if(ACF) # ACF plot
+  {
+    ylab <- "Autocorrelation"
+    ylab <- c(ylab,ylab,"ACF")
+  }
+  else # SVF plot
+  {
+    ylab <- "Semi-variance"
+    ylab <- c(ylab,ylab,"SVF")
+  }
+
+  if(RESIDUAL) # unitless
+  { SVF.scale <- 1 }
+  else
   {
     # choose SVF units
     SVF.scale <- unit(ylim,"area",SI=!units)
@@ -255,18 +271,8 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, units=TRUE, fraction=0.5, c
     SVF.name <- c(SVF.name,unit(ylim,"area",concise=TRUE,SI=!units)$name)
     SVF.name[3] <- SVF.name[2]
 
-    ylab <- "Semi-variance"
-    ylab <- c(ylab,ylab,"SVF")
-
     # range of possible ylabs with decreasing size
     ylab <- paste(ylab, " (", SVF.name, ")", sep="")
-
-  }
-  else # ACF plot
-  {
-    SVF.scale <- 1
-    ylab <- "Autocorrelation"
-    ylab <- c(ylab,ylab,"ACF")
   }
 
   # choose lag units
