@@ -35,13 +35,19 @@ setMethod('extent', signature(x='list'), extent.list)
 extent.telemetry <- function(x,level=1,...)
 {
   alpha <- (1-level)/2
+  probs <- c(alpha,1-alpha)
   RANGE <- data.frame(row.names=c('min','max'))
 
   COLS <- c('x','y','z','t','longitude','latitude')
   for(COL in COLS)
   {
     if(COL %in% colnames(x))
-    { RANGE[[COL]] <- stats::quantile(x[[COL]],probs=c(alpha,1-alpha),na.rm=TRUE) }
+    {
+      if(COL=="longitude") # use circular statistics
+      { RANGE[[COL]] <- quantile.longitude(x[[COL]],probs=probs,na.rm=TRUE) }
+      else
+      { RANGE[[COL]] <- stats::quantile(x[[COL]],probs=probs,na.rm=TRUE) }
+    }
   }
 
   return(RANGE)
@@ -130,7 +136,7 @@ extent.UD <- function(x,level=0.95,level.UD=0.95,complete=FALSE,...)
     row.names(RANGE) <- c("min","max")
 
     R <- project(R,from=PROJ)
-    RANGE$longitude <- range(R[,1])
+    RANGE$longitude <- quantile.longitude(R[,1],probs=c(0,1)) # circular extent
     RANGE$latitude <- range(R[,2])
   }
   else # faster code

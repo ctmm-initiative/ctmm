@@ -249,6 +249,7 @@ Move2CSV <- function(object,timeformat="",timezone="UTC",projection=NULL,datum=N
 # make names canonical
 canonical.name <- function(NAME,UNIQUE=TRUE)
 {
+  NAME <- gsub("[\uef\ubb\ubf]","",NAME) # remove UTF-8 Byte Order Mark (BOM)
   NAME <- gsub("[.:_ -]","",NAME) # remove separators
   NAME <- gsub("\\(|\\)","",NAME) # remove parentheses
   NAME <- gsub("\\[|\\]", "", NAME) # remove square brackets
