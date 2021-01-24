@@ -38,7 +38,7 @@ extent.telemetry <- function(x,level=1,...)
   probs <- c(alpha,1-alpha)
   RANGE <- data.frame(row.names=c('min','max'))
 
-  COLS <- c('x','y','z','t','longitude','latitude')
+  COLS <- c('x','y','z','t','longitude','latitude','timestamp')
   for(COL in COLS)
   {
     if(COL %in% colnames(x))
