@@ -227,6 +227,8 @@ mean.UD <- function(x,weights=NULL,...)
   weights <- weights/sum(weights)
 
   info <- mean.info(x)
+  type <- unique(sapply(x,function(y){attr(y,"type")}))
+  if(length(type)>1) { stop("Distribution types ",type," differ.") }
   dV <- prod(x[[1]]$dr)
   n <- length(x)
   N <- rowSums(sapply(x,function(y){ y$DOF.area }))
@@ -246,7 +248,7 @@ mean.UD <- function(x,weights=NULL,...)
   x$DOF.area <- N
   x$CDF <- pmf2cdf(PDF*dV)
 
-  x <- new.UD(x,info=info,CTMM=ctmm())
+  x <- new.UD(x,info=info,type=type,CTMM=ctmm())
 
   return(x)
 }

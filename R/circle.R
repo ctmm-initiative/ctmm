@@ -8,6 +8,9 @@ quantile.longitude <- function(x,probs=c(0,1),na.rm=FALSE,...)
 {
   if(na.rm) { x <- x[!is.na(x)] }
   n <- length(x)
+
+  if(n==0) { return( rep(NA,length(probs)) ) }
+
   angle <- sort(x)
   angle <- c(angle,angle[1]) # wrap around
   delta <- diff(angle) %% 360 # gap widths

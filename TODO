@@ -1,4 +1,5 @@
 PRIORITY
+* plot(telemetry,ctmm) fails for plain vector ctmm$mu
 * optimizer compare par to par/parscale==1 and reset if far away
 * akde on fit with DOF=0 error()
 * overlap VAR
