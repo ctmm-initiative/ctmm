@@ -1,7 +1,9 @@
-ctmm 0.6.1 (2021-01-23)
+ctmm 0.6.1 (2021-02-11)
 ================
 
   * new function cluster
+  
+  * new function video
   
   * new simulate, predict argument VMM
 

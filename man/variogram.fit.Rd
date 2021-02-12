@@ -23,10 +23,11 @@ variogram.fit(variogram,CTMM=ctmm(),name="GUESS",fraction=0.5,interactive=TRUE,.
 }
 
 
-\details{
-By default, \code{sigma} is the asymptote of the variogram and \code{tau} is an array of autocorrelation timescales. The position timescale is roughly the time lag it takes of the variogram to reach 63\% of its asymptote. The velocity autocorrelation timescale visually corresponds to width of the concave bowl shape at the beginning of the variogram. If \code{CTMM=ctmm(range=FALSE)}, \code{sigma} is the asymptotic slope of the variogram and only the velocity timescale is finite.
+\details{By default, \code{sigma} is the asymptote of the variogram and \code{tau} is an array of autocorrelation timescales. The position timescale is roughly the time lag it takes of the variogram to reach 63\% of its asymptote. The velocity autocorrelation timescale visually corresponds to width of the concave bowl shape at the beginning of the variogram. If \code{CTMM=ctmm(range=FALSE)}, \code{sigma} is the asymptotic slope of the variogram and only the velocity timescale is finite.
 
 By default, parameter values are estimated from the shape of the variogram. If this fails, the \code{CTMM} option can provide alternative initial guesstimates.
+
+\code{variogram.fit} is called by \code{ctmm.guess}, and there is usually no reason to call \code{variogram.fit} directly.
 }
 
 %\value{}

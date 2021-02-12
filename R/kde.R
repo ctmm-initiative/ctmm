@@ -1020,6 +1020,7 @@ summary.UD <- function(object,level=0.95,level.UD=0.95,units=TRUE,...)
   SUM <- list()
 
   SUM$DOF <- c(object$DOF.area[1],object$DOF.H)
+  if(length(SUM$DOF)==1) { SUM$DOF[2] <- NA }
   names(SUM$DOF) <- c("area","bandwidth")
 
   SUM$CI <- area

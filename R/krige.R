@@ -453,6 +453,8 @@ occurrence <- function(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=
 # SIMULATE DATA over time array t
 simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,VMM=NULL,t=NULL,dt=NULL,res=1,complete=FALSE,precompute=FALSE,...)
 {
+  T.SPECIFIED <- !is.null(t)
+
   info <- attr(object,"info")
   if(!is.null(data)) { info$identity <- glue( attr(data,'info')$identity , info$identity ) }
 
@@ -535,24 +537,12 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,VMM=NULL,t=NULL,dt=N
     data <- cbind(t=data$t,data$R,data$V)
     data <- data.frame(data)
 
-    # # the user probably only wants times t if t is specified
-    # other stuff seems to be coded for uniform sampling...
-    # if(!is.null(t))
-    # {
-    #   DEBUG <<- list(data=data,t=t)
-    #   WHICH <- logical(length(data$t))
-    #   i <- 1 ; j <- 1
-    #   while(j < length(data$t))
-    #   {
-    #     if(t[i]==data$t[j])
-    #     {
-    #       WHICH[j] <- TRUE
-    #       i <- i + 1
-    #     }
-    #     j <- j + 1
-    #   }
-    #   data <- data[WHICH,]
-    # }
+    # the user probably only wants times t if t is specified
+    if(T.SPECIFIED)
+    {
+      WHICH <- data$t %in% t # I'm assuming R is coded to do a respectable sort match
+      data <- data[WHICH,]
+    }
 
   } # conditional simulation
   else # Gaussian simulation not conditioned off of any data
@@ -579,7 +569,7 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,VMM=NULL,t=NULL,dt=N
       else # have model
       {
         tau <- object$tau
-        if(is.null(tau)) { tau = 0 }
+        if(length(tau)==0) { tau = 0 }
         K <- length(tau)
 
         mu <- object$mu
