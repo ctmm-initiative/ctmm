@@ -250,6 +250,14 @@ PDsolve <- function(M,force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
   # rescale
   W <- abs(diag(M))
   W <- sqrt(W)
+  ZERO <- W<=tol
+  if(any(ZERO)) # do not divide by zero or near zero
+  {
+    if(any(!ZERO))
+    { W[ZERO] <- min(W[!ZERO]) } # do some rescaling... assuming axes are similar
+    else
+    { W[ZERO] <- 1 } # do no rescaling
+  }
   W <- W %o% W
 
   # now a correlation matrix that is easier to invert

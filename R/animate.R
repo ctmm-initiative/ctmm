@@ -1,7 +1,7 @@
 # animate telemetry objects
 # time label arguments (title?)
 # time label units arguments
-video <- function(x,ext=extent(x),fps=60,dt=NULL,ghost=0,file="ctmm.mp4",res=720,col="red",pch=1,cex=NULL,lwd=1,par.list=list(),...)
+video <- function(x,ext=extent(x),fps=60,dt=NULL,ghost=0,timestamp=FALSE,file="ctmm.mp4",res=720,col="red",pch=1,cex=NULL,lwd=1,par.list=list(),...)
 {
   x <- listify(x)
   n <- length(x)
@@ -56,6 +56,7 @@ video <- function(x,ext=extent(x),fps=60,dt=NULL,ghost=0,file="ctmm.mp4",res=720
     for(j in 1:nmax)
     {
       t <- TIMES[j]
+      TIMESTAMP <- rep(NA,n)
       y <- list() # to copy over
       COL <- ALPHA <- PCH <- LWD <- CEX <- list()
       # update current indices
@@ -89,6 +90,7 @@ video <- function(x,ext=extent(x),fps=60,dt=NULL,ghost=0,file="ctmm.mp4",res=720
               ALPHA[[i]] <- exp(-(x[[i]]$t[last(I)]-x[[i]]$t[I])/dt)
             }
           }
+          if(timestamp) { TIMESTAMP[i] <- x[[i]]$timestamp[last(I)] }
         }
         else
         { I <- NULL }
@@ -104,6 +106,11 @@ video <- function(x,ext=extent(x),fps=60,dt=NULL,ghost=0,file="ctmm.mp4",res=720
       } # end y populate
 
       plot(y,ext=ext,col=COL,pch=PCH,lwd=LWD,cex=CEX,...)
+      if(timestamp)
+      {
+        TIMESTAMP <- stats::median(TIMESTAMP,na.rm=TRUE)
+        graphics::title(TIMESTAMP)
+      }
       utils::setTxtProgressBar(pb,j/nmax)
     } # end time loop
     close(pb)

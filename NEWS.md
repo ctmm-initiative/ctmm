@@ -1,4 +1,4 @@
-ctmm 0.6.1 (2021-02-11)
+ctmm 0.6.1 (2021-02-15)
 ================
 
   * new function cluster
@@ -15,8 +15,10 @@ ctmm 0.6.1 (2021-02-11)
   
   * bugfixes in simulate, predict for 1D processes
   
-  * longitude extents can now cross the international date line
+  * bugfix in ctmm.fit with zero variance models
 
+  * longitude extents can now cross the international date line
+  
 ctmm 0.6.0 (2021-01-08)
 ================
 
