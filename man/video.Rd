@@ -7,8 +7,8 @@
 Produces an MP4 video file by animating telemetry objects.
 }
 \usage{
-video(x,ext=extent(x),fps=60,dt=NULL,ghost=0,file="ctmm.mp4",res=720,error=TRUE,col="red",
-      pch=1,type="p",cex=NULL,lwd=1,par.list=list(),...)
+video(x,ext=extent(x),fps=60,dt=NULL,ghost=0,timestamp=FALSE,file="ctmm.mp4",res=720,
+      col="red",pch=1,cex=NULL,lwd=1,par.list=list(),...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -17,12 +17,11 @@ video(x,ext=extent(x),fps=60,dt=NULL,ghost=0,file="ctmm.mp4",res=720,error=TRUE,
   \item{fps}{Frames per viewed second.}
   \item{dt}{Tracked time per frame (not per viewed second). By default, the median timestep will be used.}
   \item{ghost}{Timescale over which image retention (ghosting) decays.}
+  \item{timestamp}{Display timestamps on title.}
   \item{file}{File name for MP4 file to save in working directory.}
   \item{res}{Pixel resolution for square videos or pixel \code{c(width,height)} for rectangular videos.}
-  \item{error}{Plot error circles/ellipses if present in the data. \code{error=2} will fill in the circles and \code{error=3} will plot densities instead. \code{error=FALSE} will disable this feature.}
   \item{col}{Color option for telemetry data. Can be an array or list of arrays.}
   \item{pch}{Plotting symbol. Can be an array or list of arrays.}
-  \item{type}{How plot points are connected. Can be an array.}
   \item{cex}{Relative size of plotting symbols. Only used when errors are missing.}
   \item{lwd}{Line widths of \code{telemetry} points.}
   \item{par.list}{List of additional arguments passed to \code{\link{par}} within \code{animate} that do not work outside of \code{animate}, like \code{mar}.}
