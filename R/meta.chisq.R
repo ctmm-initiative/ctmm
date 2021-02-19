@@ -550,10 +550,10 @@ meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC=
       DOF[[i]] <- STUFF$DOF
 
       message(paste("* Sub-population",ID[i]))
-      RESULTS[[i]] <- meta.chisq(AREA[[i]],DOF[[i]],level=level,level.pop=level.pop,IC=IC,boot=boot,error=error,debias=debias,method=method,verbose=TRUE)
+      RESULTS[[i]] <- meta.chisq(AREA[[i]],DOF[[i]],level=level,level.pop=level.pop,IC=IC,boot=boot,error=error,debias=debias,method=method,verbose=TRUE,units=FALSE)
     }
     message("* Joint population")
-    RESULTS[[N+1]] <- meta.chisq(unlist(AREA),unlist(DOF),level=level,level.pop=level.pop,IC=IC,boot=boot,error=error,debias=debias,method=method,verbose=TRUE)
+    RESULTS[[N+1]] <- meta.chisq(unlist(AREA),unlist(DOF),level=level,level.pop=level.pop,IC=IC,boot=boot,error=error,debias=debias,method=method,verbose=TRUE,units=FALSE)
 
     message("* Joint population versus sub-populations (best models)")
     dIC <- sum( sapply(RESULTS[1:N],function(R){R$dIC[1,]}) )
@@ -566,7 +566,7 @@ meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC=
     print(dIC - min(dIC))
 
     # forest plot object
-    PLOT <- sapply(RESULTS,function(R){R$CI[2,1:3]}) # [3,N+1]
+    PLOT <- sapply(RESULTS,function(R){R$CI[1,1:3]}) # [3,N+1]
   }
   else
   {
