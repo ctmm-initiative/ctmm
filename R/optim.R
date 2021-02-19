@@ -477,8 +477,8 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
     if(PMAP) { par <- pmap(par,theta,inverse=TRUE) }
 
     # this objective function has the ability to approximately zero its objective value
-    if(ZERO) { FN <- try(fn(par*parscale,zero=zero*fnscale,...)) }
-    else { FN <- try(fn(par*parscale,...)) }
+    if(ZERO) { FN <- try(fn(par*parscale,zero=zero*fnscale,...),silent=!DEBUG) }
+    else { FN <- try(fn(par*parscale,...),silent=!DEBUG) }
     # ordinary objective function
 
     if(class(FN)[1]=="numeric" && !is.nan(FN)) { FN <- FN/fnscale }
@@ -490,8 +490,8 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
       {
         debug(ctmm.loglike)
         # try again with debugging
-        if(ZERO) { FN <- try(fn(par*parscale,zero=zero*fnscale,...)) }
-        else { FN <- try(fn(par*parscale,...)) }
+        if(ZERO) { FN <- try(fn(par*parscale,zero=zero*fnscale,...),silent=!DEBUG) }
+        else { FN <- try(fn(par*parscale,...),silent=!DEBUG) }
         undebug(ctmm.loglike)
       }
       FN <- Inf
