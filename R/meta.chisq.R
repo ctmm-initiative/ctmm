@@ -624,6 +624,7 @@ meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC=
       SORT <- sort(PLOT[2,1:N],decreasing=sort,index.return=TRUE)$ix
       ID[1:N] <- ID[SORT]
       PLOT[,1:N] <- PLOT[,SORT]
+      if(length(col)>1) { col[1:N] <- col[SORT] }
     }
 
     # colored axes

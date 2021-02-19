@@ -67,8 +67,8 @@ COL <- color(AKDES,by='individual')
 # plot AKDEs
 plot(AKDES,col.DF=COL,col.level=COL,col.grid=NA,level=NA)
 
-# meta-analysis of buffalo
-meta(AKDES,col=c(COL,'black'),sort=TRUE)
+# cluster-analysis of buffalo
+cluster(AKDES,sort=TRUE)
 }}
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the

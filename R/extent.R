@@ -16,10 +16,23 @@ extent.list <- function(x,...)
   # list of element ranges
   RANGE <- lapply(x,function(y){extent(y,...)})
 
-  # shared columns
+  # # shared columns only
+  # COLS <- lapply(RANGE,colnames)
+  # COLS <- Reduce(intersect,COLS)
+  # RANGE <- lapply(RANGE,function(R){R[,COLS]})
+
+  # all columns
   COLS <- lapply(RANGE,colnames)
-  COLS <- Reduce(intersect,COLS)
-  RANGE <- lapply(RANGE,function(R){R[,COLS]})
+  COLS <- unlist(COLS)
+  COLS <- unique(COLS)
+  for(i in 1:length(x))
+  {
+    # fill missing columns with NAs
+    NIN <- COLS %nin% colnames(RANGE[[i]])
+    if(any(NIN)) { RANGE[[i]][,COLS[NIN]] <- NA }
+    # sort columns
+    RANGE[[i]] <- RANGE[[i]][,COLS]
+  }
 
   # concatenate ranges
   RANGE <- Reduce(rbind,RANGE)

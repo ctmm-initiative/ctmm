@@ -1,4 +1,4 @@
-ctmm 0.6.1 (2021-02-15)
+ctmm 0.6.1 (2021-02-18)
 ================
 
   * new function cluster
@@ -16,8 +16,12 @@ ctmm 0.6.1 (2021-02-15)
   * bugfixes in simulate, predict for 1D processes
   
   * bugfix in ctmm.fit with zero variance models
+  
+  * bugfix in meta() colors when sort=TRUE
 
   * longitude extents can now cross the international date line
+  
+  * extents now include missing columns
   
 ctmm 0.6.0 (2021-01-08)
 ================

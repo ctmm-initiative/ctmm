@@ -18,7 +18,7 @@ video(x,ext=extent(x),fps=60,dt=NULL,ghost=0,timestamp=FALSE,file="ctmm.mp4",res
   \item{dt}{Tracked time per frame (not per viewed second). By default, the median timestep will be used.}
   \item{ghost}{Timescale over which image retention (ghosting) decays.}
   \item{timestamp}{Display timestamps on title.}
-  \item{file}{File name for MP4 file to save in working directory.}
+  \item{file}{File name for MP4 file to save. The full path can also be specified. Otherwise the working directory will be used.}
   \item{res}{Pixel resolution for square videos or pixel \code{c(width,height)} for rectangular videos.}
   \item{col}{Color option for telemetry data. Can be an array or list of arrays.}
   \item{pch}{Plotting symbol. Can be an array or list of arrays.}
@@ -47,6 +47,11 @@ video(x,ext=extent(x),fps=60,dt=NULL,ghost=0,timestamp=FALSE,file="ctmm.mp4",res
 library(ctmm)
 data(coati)
 
+# temporary file to store videos for CRAN compliance
+FILE <- tempfile("ctmm",fileext="mp4")
+# you will likely want to save your video elsewhere
+# the working directory is the default location
+
 # create guess object
 GUESS <- ctmm.guess(coati[[2]],interactive=FALSE)
 # in general, use ctmm.select instead of ctmm.fit
@@ -62,16 +67,16 @@ ghost <- FIT$tau[2]
 PRED <- predict(coati[[2]],FIT,t=t)
 
 # most likely path
-video(PRED,error=FALSE,pch=16,ghost=ghost)
+video(PRED,error=FALSE,pch=16,ghost=ghost,file=FILE)
 
 # prediction (distribution)
-video(PRED,error=3)
+video(PRED,error=3,file=FILE)
 
 # conditional simulations
 SIMS <- lapply(1:6,function(i){simulate(coati[[2]],FIT,t=t)})
 
 # random paths
-video(SIMS,pch=16,ghost=ghost)
+video(SIMS,pch=16,ghost=ghost,file=FILE)
 }}
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the
