@@ -1,5 +1,6 @@
 \name{export}
 \alias{export}
+\alias{as.sf}
 \alias{raster,UD-method}
 \alias{SpatialPoints.telemetry}
 \alias{SpatialPointsDataFrame.telemetry}
@@ -12,10 +13,10 @@
 \encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Export ctmm data formats}
-\description{Functions to export \code{ctmm} data formats into common \code{sp}, \code{raster}, and ESRI formats.}
+\description{Functions to export \code{ctmm} data formats into common \code{sp}, \code{sf}, \code{raster}, and ESRI formats.}
 
 \usage{
-\S4method{raster}{UD}(x,DF="CDF",...)
+as.sf(x,error=FALSE,...)
 
 SpatialPoints.telemetry(object,...)
 
@@ -25,46 +26,55 @@ SpatialPolygonsDataFrame.telemetry(object,level.UD=0.95,...)
 
 SpatialPolygonsDataFrame.UD(object,level.UD=0.95,level=0.95,...)
 
-\S4method{writeRaster}{UD,character}(x,filename,format,DF="CDF",...)
+\S4method{raster}{UD}(x,DF="CDF",...)
 
 writeShapefile(object,folder,file=NULL,...)
 
 \S3method{writeShapefile}{telemetry}(object,folder,file=NULL,error=TRUE,level.UD=0.95,...)
 
 \S3method{writeShapefile}{UD}(object,folder,file=NULL,level.UD=0.95,level=0.95,...)
+
+\S4method{writeRaster}{UD,character}(x,filename,format,DF="CDF",...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{x}{ \code{UD} object. }
-  \item{DF}{Rasterize the probability density function \code{"PDF"}, probability mass function \code{"PMF"}, or cumulative distribution function \code{"CDF"}.}
+  \item{x}{ \code{telemetry} or \code{UD} object. }
+  \item{error}{Export \code{telemetry} location error circles/ellipses as polygons if \code{TRUE}.}
   \item{object}{ \code{telemetry} or \code{UD} object. }
-  %\item{UERE}{Device-dependent telemetry error in meters. Only necessary for uncalibrated data.}
   \item{level.UD}{ Coverage level of the UD area. I.e., the 50\% core home range would be given by \code{level.UD=0.50}. }
   \item{level}{ Confidence level for the magnitude of the above area. I.e., the 95\% CI of the core home range area. }
-  \item{filename}{Character name of file for raster file.}
-  \item{format}{Character format, if not inferred from \code{filename} extension (see \code{\link[raster]{writeRaster}}.)}
+  \item{DF}{Rasterize the probability density function \code{"PDF"}, probability mass function \code{"PMF"}, or cumulative distribution function \code{"CDF"}.}
   \item{folder}{Character name of folder for shapefile.}
   \item{file}{Character name of files for shapefile.}
-  \item{error}{Export error circles/ellipses as polygons if \code{TRUE}.}
+  \item{filename}{Character name of file for raster file.}
+  \item{format}{Character format, if not inferred from \code{filename} extension (see \code{\link[raster]{writeRaster}}).}
   \item{...}{ Optional arguments passed to \code{\link[raster]{writeRaster}}, \code{\link[rgdal]{writeOGR}}, etc..}
 }
 
-\details{\code{writeRaster} writes a raster file to disk, with pixel values corresponding to the density function.
+\details{\code{as.sf} exports \code{ctmm} objects to the \code{sf} format. Arguments to \code{ctmm} \code{Spatial}* export functions can also be used, such as \code{level.UD} and \code{level}.
 
-\code{writeShapefile} writes a shapefile to disk, with UD polygons corresponding to the low-CI, point-estimate, and high-CI home-range area estimates.}
+\code{Spatial}* functions export \code{ctmm} objects to \code{sp} formats.
 
-\value{\code{raster} returns a \code{raster} of the point-estimate distribution function \code{DF}, given a \code{UD} object.
+\code{raster} exports \code{UD} object point-estimates distribution functions (\code{DF}) to \code{raster} objects.
 \code{DF="PDF"} gives the average probability density per cell,
 \code{DF="PMF"} gives the total probability per cell,
 and \code{DF="CDF"} gives the cumulative probability.
 
-\code{SpatialPoints.telemetry} returns a single \code{spatialPoints} object for the \code{x}-\code{y} locations, with individual identity information lost.
+\code{writeShapefile} writes a shapefile to disk, with UD polygons corresponding to the low-CI, point-estimate, and high-CI home-range area estimates.
 
-\code{SpatialPointsDataFrame.telemetry} returns a \code{SpatialPointsDataFrame} with the individual identities recorded in the data frame.
+\code{writeRaster} writes a raster file to disk, with pixel values corresponding to the distribution function \code{DF}.}
+
+\value{\code{as.sf} returns an \code{sf} object for the input points or polygons, with individual identity and other information retained.
+
+\code{SpatialPoints.telemetry} returns a single \code{spatialPoints} object for the \code{x}-\code{y} locations, without individual identity and other information retained.
+
+\code{SpatialPointsDataFrame.telemetry} returns a \code{SpatialPointsDataFrame} with the individual identities and other data recorded in the data frame retained.
 
 \code{SpatialPolygonsDataFrame.telemetry} returns a \code{SpatialPolygonsDataFrame} that encodes the location estimate's error circles/ellipses.
 
 \code{SpatialPolygonsDataFrame.UD} returns a \code{SpatialPolygonsDataFrame} of the low-CI, point-estimate, and high-CI home-range area estimates, in the appropriate order for plotting.
+
+\code{raster} returns a \code{raster} of the point-estimate distribution function \code{DF}, given a \code{UD} object.
 }
 
 %\references{}
