@@ -223,3 +223,22 @@ writeShapefile.telemetry <- function(object,folder,file=NULL,error=TRUE,level.UD
 
   # no return value
 }
+
+
+# Export: ctmm -> sp -> sf
+as.sf <- function(x,error=FALSE,...)
+{
+  CLASS <- class(x)[1]
+
+  if(CLASS=="UD")
+  { x <- SpatialPolygonsDataFrame.UD(x,...) }
+  else if(CLASS=="telemetry")
+  {
+    if(error)
+    { x <- SpatialPolygonsDataFrame.telemetry(x,...) }
+    else
+    { x <- SpatialPointsDataFrame.telemetry(x,...) }
+  }
+
+  sf::st_as_sf(x)
+}
