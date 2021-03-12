@@ -6,9 +6,9 @@ drift.init <- function(data,CTMM)
   z <- get.telemetry(data,CTMM$axes)
 
   # weights from errors
-  if(CTMM$error)
+  if(any(CTMM$error>0))
   {
-    error <- get.error(data,CTMM,circle=TRUE)
+    error <- get.error(data,CTMM,circle=TRUE,calibrate=TRUE)
     w <- clamp(1/error,0,1) # zero-error GPS approximation versus km-error ARGOS
   }
   else
@@ -37,7 +37,8 @@ drift.init <- function(data,CTMM)
   z <- z/(V1-V2/V1)
   CTMM$sigma <- z
 
-  if(n==2) { CTMM$sigma <- diag(mean(diag(CTMM$sigma)),nrow=AXES) }
+  if(n==1) { CTMM$sigma <- diag(mean(CTMM$mu[1,]^2),nrow=AXES) } # porque no?
+  else if(n==2) { CTMM$sigma <- diag(mean(diag(CTMM$sigma)),nrow=AXES) }
 
   CTMM$sigma <- covm(CTMM$sigma,isotropic=CTMM$isotropic,axes=CTMM$axes)
 

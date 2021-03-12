@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.11</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.1</span>
       </span>
     </div>
 
@@ -109,7 +109,7 @@
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/ctmm-initiative/ctmm">
-    <span class="fa fa-github fa-2x"></span>
+    <span class="fas fa-github fa-2x"></span>
      
   </a>
 </li>
@@ -135,7 +135,7 @@
     <p>Produces a <code>data.frame</code> of speed and distance estimates to analyze, as well as a plot highlighting potential speed and distance outliers in <code>telemetry</code> data.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>outlie</span><span class='op'>(</span><span class='va'>data</span>,UERE<span class='op'>=</span><span class='fl'>10</span>,plot<span class='op'>=</span><span class='cn'>TRUE</span>,by<span class='op'>=</span><span class='st'>'d'</span>,<span class='va'>...</span><span class='op'>)</span>
+    <pre class="usage"><span class='fu'>outlie</span><span class='op'>(</span><span class='va'>data</span>,plot<span class='op'>=</span><span class='cn'>TRUE</span>,by<span class='op'>=</span><span class='st'>'d'</span>,<span class='va'>...</span><span class='op'>)</span>
 
 <span class='co'># S3 method for outlie</span>
 <span class='fu'><a href='plot.telemetry.html'>plot</a></span><span class='op'>(</span><span class='va'>x</span>,level<span class='op'>=</span><span class='fl'>0.95</span>,units<span class='op'>=</span><span class='cn'>TRUE</span>,axes<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'d'</span>,<span class='st'>'v'</span><span class='op'>)</span>,<span class='va'>...</span><span class='op'>)</span></pre>
@@ -146,10 +146,6 @@
     <tr>
       <th>data</th>
       <td><p><code>telemetry</code> object.</p></td>
-    </tr>
-    <tr>
-      <th>UERE</th>
-      <td><p>Device-dependent telemetry error in meters (RMS UERE). Only necessary for uncalibrated data.</p></td>
     </tr>
     <tr>
       <th>plot</th>
@@ -189,12 +185,17 @@
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>Returns a <code>data.frame</code> of distances and speeds. Can also produce a plot as a side effect.</p>
+    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
+
+    <p>C. H. Fleming et al, ``A comprehensive framework for handling location error in animal tracking data'', bioRxiv 2020.06.12.130195 (2020) doi: <a href='https://doi.org/10.1101/2020.06.12.130195'>10.1101/2020.06.12.130195</a>
+.</p>
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
 
     <p>C. H. Fleming.</p>
     <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
 
     <p>The speed estimates here are tailored for outlier detection and have poor statistical efficiency. The <code><a href='simulate.ctmm.html'>predict</a></code> and <code><a href='speed.html'>speed</a></code> methods are appropriate for estimating speed (after outliers have been removed and a movement model has been selected).</p>
+<p>In <code>ctmm</code> v0.6.1 the <code>UERE</code> argument was deprecated. For uncalibrated data, the initial esitmates used by <code>outlie</code> are now generated on import and stated by <code><a href='https://rdrr.io/r/base/summary.html'>summary(uere(data))</a></code>. These values not be reasonable for arbitrary datasets.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code><a href='as.telemetry.html'>as.telemetry</a></code>.</p></div>

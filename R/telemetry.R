@@ -36,7 +36,104 @@ tbind <- function(...)
   }
 
   info <- mean.info(x)
-  UERE <- lapply(x,uere) # combine...
+
+  UERE <- uere(x) # initial UERE information
+  if(class(UERE)[1]=="list") # non-unique calibration information
+  {
+    # fix missing class information
+    for(i in 1:length(UERE))
+    {
+      if("class" %nin% names(x[[i]]))
+      {
+        CLASS <- names(x)[i] # name class after device
+        x[[i]]$class <- as.factor(CLASS)
+        rownames(UERE[[i]]$UERE) <- CLASS
+        rownames(UERE[[i]]$DOF) <- CLASS
+      }
+    }
+
+    # fix missing type information
+    TYPES <- lapply(UERE,function(U){colnames(U$UERE)})
+    TYPES <- do.call(c,TYPES)
+    TYPES <- unique(TYPES)
+    for(i in 1:length(UERE))
+    {
+      for(TYPE in TYPES)
+      {
+        if(TYPE %nin% colnames(UERE[[i]]$UERE))
+        {
+          NAS <- UERE[[i]]$UERE[,1,drop=FALSE]
+          NAS[] <- Inf # no precisionf or missing data type
+          colnames(NAS) <- TYPE
+          UERE[[i]]$UERE <- cbind(UERE[[i]]$UERE,NAS)
+          UERE[[i]]$DOF <- cbind(UERE[[i]]$DOF,NAS)
+
+          NAS <- c(NAS)
+          names(NAS) <- TYPE
+          UERE[[i]]$AICc <- c(UERE[[i]]$AICc,NAS)
+          UERE[[i]]$Zsq <- c(UERE[[i]]$Zsq,NAS)
+          UERE[[i]]$VAR.Zsq <- c(UERE[[i]]$VAR.Zsq,NAS)
+          NAS[] <- 0
+          UERE[[i]]$N <- c(UERE[[i]]$N,NAS)
+        }
+      } # end TYPE loop
+
+      # enforce consistent type sorting for rbind()
+      UERE[[i]]$UERE <- UERE[[i]]$UERE[,TYPES,drop=FALSE] # R drops rownames here too?
+      UERE[[i]]$DOF <- UERE[[i]]$DOF[,TYPES,drop=FALSE]
+      UERE[[i]]$AICc <- UERE[[i]]$AICc[TYPES,drop=FALSE]
+      UERE[[i]]$Zsq <- UERE[[i]]$Zsq[TYPES,drop=FALSE]
+      UERE[[i]]$VAR.Zsq <- UERE[[i]]$VAR.Zsq[TYPES,drop=FALSE]
+      UERE[[i]]$N <- UERE[[i]]$N[TYPES,drop=FALSE]
+    } # end individual loop
+
+    # combine UEREs
+    if(class(UERE)[1]=="list")
+    {
+      MUERE <- UERE[[1]]
+      for(i in 2:length(UERE))
+      {
+        MUERE$UERE <- rbind(MUERE$UERE,UERE[[i]]$UERE)
+        MUERE$DOF <- rbind(MUERE$DOF,UERE[[i]]$DOF)
+        MUERE$AICc <- MUERE$AICc + UERE[[i]]$AICc
+        MUERE$Zsq <- nant(MUERE$N*MUERE$Zsq,Inf) + nant(UERE[[i]]$N*UERE[[i]]$Zsq,Inf)
+        MUERE$VAR.Zsq <- nant(MUERE$N*MUERE$VAR.Zsq,Inf) + nant(UERE[[i]]$N*UERE[[i]]$VAR.Zsq,Inf)
+        MUERE$N <- MUERE$N + UERE[[i]]$N
+        MUERE$Zsq <- nant(MUERE$Zsq / MUERE$N,Inf)
+        MUERE$VAR.Zsq <- nant(MUERE$VAR.Zsq / MUERE$N,Inf)
+      }
+      UERE <- MUERE
+      rm(MUERE)
+
+      # combine identical classes
+      CLASSES <- rownames(UERE)
+      CLASSES <- unique(CLASSES)
+      for(CLASS in CLASSES)
+      {
+        IN <- CLASS %in% CLASSES
+        if(length(IN)>1)
+        {
+          UERE$UERE[IN[1],] <- colMeans(UERE$UERE[IN,])
+          UERE$UERE <- UERE$UERE[-IN[-1],]
+
+          UERE$DOF[IN[1],] <- colMeans(UERE$DOF[IN,])
+          UERE$DOF <- UERE$DOF[-IN[-1],]
+
+          UERE$AICc[IN[1]] <- mean(UERE$AICc[IN])
+          UERE$AICc <- UERE$AICc[-IN[-1]]
+
+          UERE$Zsq[IN[1]] <- mean(UERE$Zsq[IN])
+          UERE$Zsq <- UERE$Zsq[-IN[-1]]
+
+          UERE$VAR.Zsq[IN[1]] <- mean(UERE$VAR.Zsq[IN])
+          UERE$VAR.Zsq <- UERE$VAR.Zsq[-IN[-1]]
+
+          UERE$N[IN[1]] <- mean(UERE$N[IN])
+          UERE$N <- UERE$N[-IN[-1]]
+        }
+      } # end class merger
+    } # end UERE merger
+  } # end UERE list
 
   n <- sapply(x,nrow)
   n <- c(0,cumsum(n))
@@ -54,21 +151,41 @@ tbind <- function(...)
       r1 <- 1 + n[i]
       r2 <- n[i+1]
       if(col %in% names(x[[i]]))
-      { y[r1:r2,col] <- x[[i]][[col]] }
+      {
+        if(col=="class") # factor
+        { y[r1:r2,col] <- as.character(x[[i]][[col]]) }
+        else
+        { y[r1:r2,col] <- x[[i]][[col]] }
+      }
       else
       { y[r1:r2,col] <- NA }
     }
   }
   rm(x)
 
+  # make sure class and UERE are in the same order
+  if("class" %in% names(y))
+  {
+    CLASS <- unique(y$class)
+    CLASS <- sort(CLASS) # sort levels
+    y$class <- factor(y$class,levels=CLASS)
+
+    UERE$UERE <- UERE$UERE[CLASS,,drop=FALSE]
+    UERE$DOF <- UERE$DOF[CLASS,,drop=FALSE]
+    UERE$AICc <- UERE$AICc[CLASS]
+    UERE$Zsq <- UERE$Zsq[CLASS]
+    UERE$VAR.Zsq <- UERE$VAR.Zsq[CLASS]
+    UERE$N <- UERE$N[CLASS]
+  }
+
   # handle missing error information
   for(i in 2:length(DOP.LIST))
   {
-    # missing DOP <- infinite
+    # missing DOP <- 1
     if(DOP.LIST[[i]]$DOP %in% COLS)
     {
       NAS <- is.na(y[[DOP.LIST[[i]]$DOP]])
-      if(any(NAS)) { y[[DOP.LIST[[i]]$DOP]][NAS] <- Inf }
+      if(any(NAS)) { y[[DOP.LIST[[i]]$DOP]][NAS] <- 1 }
     }
 
     # missing variance <- infinite
@@ -102,11 +219,7 @@ tbind <- function(...)
   IND <- sort(y$t,index.return=TRUE)$ix
   y <- y[IND,]
 
-  y <- new.telemetry(y,info=info)
-
-  # merge uere information
-  # TODO
-  # TODO
+  y <- new.telemetry(y,info=info,UERE=UERE)
 
   return(y)
 }
@@ -409,6 +522,12 @@ as.telemetry.character <- function(object,timeformat="",timezone="UTC",projectio
 # as.POSIXct doesn't accept this argument if empty/NA/NULL ???
 asPOSIXct <- function(x,timeformat="",timezone="UTC",...)
 {
+  if(timeformat=="auto")
+  {
+    x <- parsedate::parse_date(x,approx=FALSE,default_tz=timezone)
+    return(x)
+  }
+
   # try fastPOSIXct
   if(class(x)[1]=="character" && timeformat=="" && timezone %in% c("UTC","GMT"))
   {
@@ -442,9 +561,9 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   NAMES$zone <- c("GPS.UTM.zone","UTM.zone","zone")
   NAMES$east <- c("GPS.UTM.Easting","GPS.UTM.East","GPS.UTM.x","UTM.Easting","UTM.East","UTM.E","UTM.x","Easting","East","x")
   NAMES$north <- c("GPS.UTM.Northing","GPS.UTM.North","GPS.UTM.y","UTM.Northing","UTM.North","UTM.N","UTM.y","Northing","North","y")
-  NAMES$HDOP <- c("eobs.horizontal.accuracy.estimate","eobs.horizontal.accuracy.estimate.m","horizontal.accuracy.estimate","horizontal.accuracy.estimate.m","error.m","3D.error.m",
-                  "\u8AA4\u5DEE","\u8AA4\u5DEE.m","\u8AA4\u5DEE\uFF08m\uFF09",
-                  "GPS.HDOP","HDOP","Horizontal.DOP","GPS.Horizontal.Dilution","Horizontal.Dilution","Hor.Dil","Hor.DOP","HPE")
+  NAMES$error <- c("eobs.horizontal.accuracy.estimate","eobs.horizontal.accuracy.estimate.m","horizontal.accuracy.estimate","horizontal.accuracy.estimate.m","error.m","3D.error.m","HEPE","EPE","EHPE",
+                   "\u8AA4\u5DEE","\u8AA4\u5DEE.m","\u8AA4\u5DEE\uFF08m\uFF09")
+  NAMES$HDOP <- c("GPS.HDOP","HDOP","Horizontal.DOP","GPS.Horizontal.Dilution","Horizontal.Dilution","Hor.Dil","Hor.DOP","HPE")
   NAMES$DOP <- c("GPS.DOP","DOP","GPS.Dilution","Dilution","Dil")
   NAMES$PDOP <- c("GPS.PDOP","PDOP","Position.DOP","GPS.Position.Dilution","Position.Dilution","Pos.Dil","Pos.DOP")
   NAMES$GDOP <- c("GPS.GDOP","GDOP","Geometric.DOP","GPS.Geometric.Dilution","Geometric.Dilution","Geo.Dil","Geo.DOP")
@@ -586,7 +705,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   DATA$t <- as.numeric(DATA$timestamp)
 
   #################################
-  # ESTABLISH BASE LOCATION CLASSES BEFOR MISSINGNESS CLASSES
+  # ESTABLISH BASE LOCATION CLASSES BEFORE MISSINGNESS CLASSES
   ###########################
   # generic location classes
   # includes Telonics Gen4 location classes (use with HDOP information)
@@ -604,6 +723,9 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   }
   #COL <- pull.column(object,NAMES$FIX,FUNC=as.factor)
   #if(length(COL)) { DATA$class <- merge.class(COL,DATA$class) }
+
+  ERROR <- rep(10,length(DATA$t)) # default 10 meters GPS error
+  CAL <- rep(0,length(DATA$t)) # default calibration degrees-of-freedom (none) for above estimate
 
   ##################################
   # ARGOS error ellipse/circle (newer ARGOS data >2011)
@@ -625,6 +747,8 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
 
     ARGOS <- TRUE
     NAS <- is.na(COL) # missing error ellipse rows
+    ERROR[!NAS] <- TRUE # Argos KF calibrated
+    CAL[!NAS] <- Inf
   }
   else
   {
@@ -643,6 +767,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     # error eigen variances
     ARGOS.minor <- c('3'=157,'2'=259,'1'=494, '0'=2271,'A'=762, 'B'=4596,'Z'=Inf)^2
     ARGOS.major <- c('3'=295,'2'=485,'1'=1021,'0'=3308,'A'=1244,'B'=7214,'Z'=Inf)^2
+    ARGOS.DOF <- c('3'=25,'2'=51,'1'=55, '0'=60,'A'=103, 'B'=132,'Z'=0)
     # numbers from Vincent et al (2002)
 
     # error radii (average variance)
@@ -667,10 +792,14 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     DATA <- DATA[SUB,]
 
     ARGOS <- TRUE
+
+    COL <- NAS & !is.na(DATA$COV.major) # !KF and LC
+    ERROR[COL] <- TRUE # Argos LC calibrated
+    CAL[COL] <- Inf
   }
 
   # get dop values, but don't overwrite ARGOS GDOP if also present in ARGOS/GPS data
-  try.dop <- function(DOPS,MESS=NULL,FN=identity)
+  try.dop <- function(DOPS,MESS=NULL,FN=identity,UERE=10)
   {
     if(ARGOS || !("HDOP" %in% names(DATA)))
     {
@@ -686,19 +815,22 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
         {
           if(length(MESS)) { message(MESS) }
           DATA$HDOP[NAS] <<- FN(COL[NAS])
+          ERROR[NAS] <<- UERE # assign error scale
+          CAL[NAS] <<- 0 # assign degrees of freedom for above estimate
         }
 
-        # don't make ARGOS expcetion again (2 DOP types)
+        # don't make ARGOS exception again (2 DOP types)
         ARGOS <<- FALSE
       }
     }
   }
   # try to get dop values from best to worst
+  try.dop(NAMES$error,UERE=1)
   try.dop(NAMES$HDOP)
   try.dop(NAMES$DOP,"HDOP values not found. Using ambiguous DOP.")
   try.dop(NAMES$PDOP,"HDOP values not found. Using PDOP.")
   try.dop(NAMES$GDOP,"HDOP values not found. Using GDOP.")
-  try.dop(NAMES$nsat,"HDOP values not found. Approximating via # satellites.",function(x){(12-2)/(x-2)})
+  try.dop(NAMES$nsat,"HDOP values not found. Approximating via # satellites.",FN=function(x){(12-2)/(x-2)})
 
   # GPS-ARGOS hybrid data clean-up
   COL <- "sensor.type"
@@ -890,29 +1022,60 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
 
     # drop missing levels and set UERE according to calibration
     telist[[i]] <- droplevels(telist[[i]])
+
     # NA UERE object given data.frame columns
     UERE <- uere.null(telist[[i]])
-    # which UERE values were specified
-    for(TYPE in colnames(UERE))
+    DOF <- UERE$DOF
+    UERE <- UERE$UERE
+
+    # # which UERE values were specified
+    # for(TYPE in colnames(UERE))
+    # {
+    #   # is data calibrated
+    #   VAR <- DOP.LIST[[TYPE]]$VAR
+    #   if(VAR %in% names(telist[[i]]))
+    #   {
+    #     VAR <- (telist[[i]][[VAR]] < Inf) # is calibrated
+    #
+    #     for(CLASS in levels(telist[[i]]$class))
+    #     { if(all(VAR[telist[[i]]$class==CLASS])) { UERE[CLASS,TYPE] <- 1 } }
+    #
+    #     if(!nlevels(telist[[i]]$class) && all(VAR)) { UERE["all",TYPE] <- 1 }
+    #   }
+    # }
+
+    # assign UERE and DOF estimates
+    CLASSES <- levels(telist[[i]]$class)
+    if(length(CLASSES))
     {
-      # is data calibrated
-      VAR <- DOP.LIST[[TYPE]]$VAR
-      if(VAR %in% names(telist[[i]]))
+      CLASSES <- sort(CLASSES) # sort levels alphabetically (canonical)
+      telist[[i]]$class <- factor(telist[[i]]$class,levels=CLASSES)
+
+      for(CLASS in CLASSES)
       {
-        VAR <- (telist[[i]][[VAR]] < Inf) # is calibrated
-
-        for(CLASS in levels(telist[[i]]$class))
-        { if(all(VAR[telist[[i]]$class==CLASS])) { UERE[CLASS,TYPE] <- 1 } }
-
-        if(!nlevels(telist[[i]]$class) && all(VAR)) { UERE["all",TYPE] <- 1 }
+        COL <- telist[[i]]$class==CLASS
+        UERE[CLASS,] <- median(ERROR[COL]) # these numbers should all be the same
+        DOF[CLASS,'horizontal'] <- median(CAL[COL]) # these numbers should all be the same
       }
+
+      # consistent ordering
+      UERE <- UERE[CLASSES,,drop=FALSE]
+      DOF <- DOF[CLASSES,,drop=FALSE]
+    }
+    else
+    {
+      UERE["all",] <- median(ERROR) # these numbers should all be the same
+      DOF["all",'horizontal'] <- median(CAL) # these numbers should all be the same
     }
 
     # combine data.frame with ancillary info
     info <- list(identity=id[i], timezone=timezone, projection=projection)
-    AIC <- NA*UERE[1,]
-    names(AIC) <- colnames(UERE) # R drops dimnames...
-    UERE <- new.UERE(UERE,DOF=NA*UERE,AICc=AIC,Zsq=AIC,VAR.Zsq=AIC,N=AIC)
+    INF <- pmax(UERE[1,],Inf)
+    names(INF) <- colnames(UERE) # R drops dimnames...
+    N <- DOF[1,]
+    names(N) <- colnames(UERE) # R drops dimnames...
+    UERE <- list(UERE=UERE,DOF=DOF,AICc=INF,Zsq=INF,VAR.Zsq=INF,N=N)
+    UERE <- new.UERE(UERE)
     telist[[i]] <- new.telemetry( telist[[i]] , info=info, UERE=UERE )
   }
   rm(DATA)

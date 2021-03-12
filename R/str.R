@@ -1,7 +1,7 @@
-str.ctmm <- function(object,...)
+str.custom <- function(object,...)
 {
   info <- object@info
-  STR <- "Formal class 'ctmm' [package \"ctmm\"]"
+  STR <- paste0("Formal class '",class(object)[1],"' [package \"ctmm\"]")
 
   # print $ slots
   NAMES <- names(object)
@@ -18,6 +18,9 @@ str.ctmm <- function(object,...)
   cat(STR,sep="\n")
 }
 
+str.ctmm <- function(object,...) { str.custom(object,...) }
+
+str.UERE <- function(object,...) { str.custom(object,...) }
 
 # don't export this, the margins don't shift properly
 str.covm <- function(object,...)

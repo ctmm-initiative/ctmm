@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.11</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.1</span>
       </span>
     </div>
 
@@ -109,7 +109,7 @@
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/ctmm-initiative/ctmm">
-    <span class="fa fa-github fa-2x"></span>
+    <span class="fas fa-github fa-2x"></span>
      
   </a>
 </li>
@@ -176,6 +176,7 @@
 
     <p>By default, <code>sigma</code> is the asymptote of the variogram and <code>tau</code> is an array of autocorrelation timescales. The position timescale is roughly the time lag it takes of the variogram to reach 63% of its asymptote. The velocity autocorrelation timescale visually corresponds to width of the concave bowl shape at the beginning of the variogram. If <code>CTMM=ctmm(range=FALSE)</code>, <code>sigma</code> is the asymptotic slope of the variogram and only the velocity timescale is finite.</p>
 <p>By default, parameter values are estimated from the shape of the variogram. If this fails, the <code>CTMM</code> option can provide alternative initial guesstimates.</p>
+<p><code>variogram.fit</code> is called by <code>ctmm.guess</code>, and there is usually no reason to call <code>variogram.fit</code> directly.</p>
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
 
     <p>C. H. Fleming.</p>
@@ -218,7 +219,8 @@
 #&gt; 
 #&gt; 
 #&gt; [[4]]
-#&gt; [1] FALSE
+#&gt;   all 
+#&gt; FALSE 
 #&gt; 
 #&gt; [[5]]
 #&gt; [1] FALSE

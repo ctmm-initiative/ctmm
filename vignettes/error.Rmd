@@ -51,7 +51,7 @@ plot(pelican$argos) # pelican Argos plot with 95% error ellipses
 
 ## Error model selection
 
-Not all GPS devices provide reliable DOP values and sometimes it is not obvious what error information will prove to be the most predictive. Generally speaking, `as.telemetry` will attempt to import the "best" column from among those that estimate error, DOP value, number of satellites and fix type, inlcuding timed-out fixes (see the `timeout` argument in `help(as.telemetry)`). Researchers may want to import their data with different error information, run `uere.fit` for each error model, and then select among the candidate models. Here we do this by comparing the turtle calibration data with and without HDOP values.
+Not all GPS devices provide reliable DOP values and sometimes it is not obvious what error information will prove to be the most predictive. Generally speaking, `as.telemetry` will attempt to import the "best" column from among those that estimate error, DOP value, number of satellites and fix type, including timed-out fixes (see the `timeout` argument in `help(as.telemetry)`). Researchers may want to import their data with different error information, run `uere.fit` for each error model, and then select among the candidate models. Here we do this by comparing the turtle calibration data with and without HDOP values.
 
 First, we consider whether or not the HDOP and location class information are informative.
 ```{r}
@@ -92,14 +92,14 @@ outlie(turtle[[3]]) -> OUT
 High-speed segments are colored in blue, while distant locations are colored in red. More emphasis is placed on the more extreme locations in the `outlie` plot. Visually we can see at least one outlier in the wood turtle data. The output of `outlie` also contains the error-informed speed and distance estimates (in SI units) used to generate the plot.
 
 ```{r}
-plot(OUT)
+plot(OUT,units=FALSE)
 ```
 
 A sustained speed of 0.1 m/s is not biologically implausible for a wood turtle, but this location is highly suspicious, both in terms of speed and lack of proximity. After removing the outlier, we can check the data again.
 
 ```{r}
-BAD <- which.max(OUT$speed)
-turtle[[3]] <- turtle[[3]][-BAD,]
+BAD <- OUT$speed>0.08 # not appropriate for other species!
+turtle[[3]] <- turtle[[3]][!BAD,]
 outlie(turtle[[3]]) -> OUT
 ```
 
@@ -144,6 +144,7 @@ summary(FIT)
 ```
 
 `trace=TRUE` allows us to see the models considered. `verbose=TRUE` would save each model.
+Since we started with a finite amount of calibration data, the location-error parameter estimates were updated by the tracking data, and we can compare the results here with the previous estimates in `summary(UERE)`.
 
 ### Simultaneous fitting with uncalibrated data
 
@@ -152,8 +153,6 @@ Fitting with unknown errors is a method of last resort. We have to provide an in
 ```{r}
 # delete UERE information
 uere(turtle) <- NULL
-# toss out 2D locations for this example, as we know they have a different/larger RMS UERE
-turtle <- lapply(turtle,function(t){ t[t$class=="3D",] })
 ```
 
 The only difference is that you have to provide an initial guess for the RMS UERE. Otherwise, the steps are the same.
@@ -167,16 +166,27 @@ FIT <- ctmm.select(turtle[[3]],GUESS,trace=TRUE,cores=2)
 summary(FIT)
 ```
 
-Here, fitting the RMS UERE simultaneously with the movement model produced a consistent result.
+Here, fitting the RMS UERE simultaneously with the movement model produced a largely consistent result.
 This will not always be the case.
 
 ### Fitting with uncalibrated data under a prior
 
-An alternative method of last resort is to simply assign a plausible RMS UERE value to the data. Again, 10-meter error is usually a good guess for GPS data (other than e-obs).
+An alternative method of last resort is to simply assign a range of credible RMS UERE values to the data. Again, 10-meter error is usually a good guess for 3D GPS data. For e-obs, and other devices that report error in meters, a number on the order of 1 is usually more relevant.
 
 ```{r}
-# assign 10 meter RMS UERE (2D class still deleted)
-uere(turtle) <- 10
+# assign 20-meter 2D RMS UERE and 10-meter 3D RMS UERE
+uere(turtle) <- c(20,10)
+# the default uncertainty is none for numerical assignments
+UERE <- uere(turtle)
+summary(UERE)
+# this is becasue the degrees-of-freedom are set to Inf
+UERE$DOF
+# here I set the DOF to a smaller value
+UERE$DOF[] <- 2
+# which now gives plausible credible intervals
+summary(UERE)
+# assign the prior to the data
+uere(turtle) <- UERE
 # automated guestimate for calibrated data
 GUESS <- ctmm.guess(turtle[[3]],CTMM=ctmm(error=TRUE),interactive=FALSE)
 # stepwise fitting # CRAN policy limits us to 2 cores
@@ -185,4 +195,4 @@ FIT <- ctmm.select(turtle[[3]],GUESS,trace=TRUE,cores=2)
 summary(FIT)
 ```
 
-Some sensitivity analysis would be warranted here for the UERE parameter.
+This method is still being developed and so this material is subject to change.

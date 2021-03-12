@@ -22,7 +22,7 @@ subset.variogram <- function(x,...)
 
 #########################
 # variogram funcion wrapper
-variogram <- function(data,dt=NULL,fast=TRUE,res=1,CI="Markov",axes=c("x","y"),precision=1/8)
+variogram <- function(data,dt=NULL,fast=TRUE,res=1,CI="Markov",error=FALSE,axes=c("x","y"),precision=1/8)
 {
   CI <- match.arg(CI,c("IID","Markov","Gauss"))
   #if(CI=="Gauss" && fast) { stop("Gaussian CIs not supported by fast method.") }
@@ -36,7 +36,7 @@ variogram <- function(data,dt=NULL,fast=TRUE,res=1,CI="Markov",axes=c("x","y"),p
     res[-1] <- pmax(res[-1],dt[-1]/dt[-length(dt)])
 
     # calculate a variogram at each dt
-    SVF <- lapply(1:length(dt), function(i) { variogram.dt(data,dt=dt[i],fast=fast,res=res[i],CI=CI,axes=axes,precision=precision) } )
+    SVF <- lapply(1:length(dt), function(i) { variogram.dt(data,dt=dt[i],fast=fast,res=res[i],CI=CI,error=error,axes=axes,precision=precision) } )
 
     # subset each variogram to relevant range of lags
     dt <- c(-dt[1],dt,Inf)
@@ -50,7 +50,7 @@ variogram <- function(data,dt=NULL,fast=TRUE,res=1,CI="Markov",axes=c("x","y"),p
     SVF <- do.call(rbind,SVF)
   }
   else
-  { SVF <- variogram.dt(data,dt=dt,res=res,fast=fast,CI=CI,axes=axes,precision=precision) }
+  { SVF <- variogram.dt(data,dt=dt,res=res,fast=fast,CI=CI,error=error,axes=axes,precision=precision) }
 
   # delete missing lags
   SVF <- SVF[SVF$DOF>0,]
@@ -59,14 +59,14 @@ variogram <- function(data,dt=NULL,fast=TRUE,res=1,CI="Markov",axes=c("x","y"),p
   info$axes <- axes
   # info$error <- error
 
-  SVF <- new.variogram(SVF,info=info)
+  SVF <- new.variogram(SVF,info=info,UERE=attr(data,"UERE"))
   return(SVF)
 }
 
 
 ################################
 # wrapper for fast and slow variogram codes, for a specified dt
-variogram.dt <- function(data,dt=NULL,fast=NULL,res=1,CI="Markov",axes=c("x","y"),precision=1/2)
+variogram.dt <- function(data,dt=NULL,fast=NULL,res=1,CI="Markov",error=FALSE,axes=c("x","y"),precision=1/2)
 {
   # intelligently select algorithm
   if(is.null(fast))
@@ -75,12 +75,23 @@ variogram.dt <- function(data,dt=NULL,fast=NULL,res=1,CI="Markov",axes=c("x","y"
     else { fast <- TRUE }
   }
 
-  z <- get.telemetry(data,axes=axes)
-  # telemetry error when UERE=1
-  error <- get.error(data,ctmm(axes=axes,error=TRUE),circle=TRUE)
-  FLAG <- attr(error,'flag')
+  if(error) # force calibration - like plot.telemetry
+  {
+    TYPE <- DOP.match(axes)
+    UERE <- attr(data,"UERE")$UERE[,TYPE]
+    names(UERE) <- rownames(attr(data,"UERE")$UERE)
+    error <- get.error(data,ctmm(axes=axes,error=UERE),circle=TRUE,calibrate=TRUE)
+
+    # discard terrible estimates
+    GOOD <- (error<Inf)
+    error <- error[GOOD]
+    data <- data[GOOD,]
+  }
+  else
+  { error <- rep(0,nrow(data)) }
 
   # merge repeated timestamps
+  z <- get.telemetry(data,axes=axes)
   REPEAT <- diff(data$t)==0 # repeating times
   REPEAT <- c(FALSE,REPEAT) # count first as unique
   UNIQUE <- !REPEAT
@@ -89,6 +100,7 @@ variogram.dt <- function(data,dt=NULL,fast=NULL,res=1,CI="Markov",axes=c("x","y"
   ERROR <- error[UNIQUE] # copy over unique times (and junk)
   i <- 1
   INDEX <- cumsum(UNIQUE) # indices of unique times
+  # this code can properly handle some zero variances
   while(i < nrow(data))
   {
     if(REPEAT[i+1])
@@ -97,10 +109,17 @@ variogram.dt <- function(data,dt=NULL,fast=NULL,res=1,CI="Markov",axes=c("x","y"
       while(REPEAT[i+di+1]) { di <- di + 1 }
 
       w <- 1/error[i + 0:di] # precisions
+      ERROR[INDEX[i]] <- 1/sum(1/w) # aggregate variance - can be zero
+
+      if(any(w==Inf)) # renormalize
+      {
+        w <- w/Inf
+        w <- nant(w,1)
+      }
+
       W <- sum(w) # total precision
       w <- w/W # precision weights
       Z[INDEX[i],] <- w %*% z[i + 0:di,] # precision weighted average
-      ERROR[INDEX[i]] <- 1/W # aggregate variance
     }
 
     i <- i + 1
@@ -112,17 +131,14 @@ variogram.dt <- function(data,dt=NULL,fast=NULL,res=1,CI="Markov",axes=c("x","y"
   if(fast)
   { SVF <- variogram.fast(data=data,error=error,dt=dt,res=res,CI=CI,axes=axes) }
   else
-  { SVF <- variogram.slow(data=data,error=error,dt=dt,CI=CI,axes=axes,precision=precision,calibrated=is.calibrated(data)) }
+  { SVF <- variogram.slow(data=data,error=error,dt=dt,CI=CI,axes=axes,precision=precision) }
 
   # skip missing data
   SVF <- SVF[which(SVF$DOF>0),]
   SVF <- stats::na.omit(SVF)
 
   SVF$SVF[1] <- 0 # what about dupes?
-  SVF$MSE[1] <- 0 # what about dupes?
-
-  # clarify that this is not calibrated error
-  if(FLAG<=2) { SVF <- rename(SVF,"MSE","MSDOP") }
+  # SVF$MSE[1] <- 0 # what about dupes?
 
   return(SVF)
 }
@@ -239,30 +255,24 @@ gridder <- function(t,z=NULL,dt=NULL,W=NULL,lag=NULL,p=NULL,FLOOR=NULL,finish=TR
 ############################
 # FFT VARIOGRAM
 # SLP sum of lagged product
-variogram.fast <- function(data,error=NULL,dt=NULL,res=1,CI="Markov",axes=c("x","y"),ACF=FALSE)
+variogram.fast <- function(data,error=NULL,dt=NULL,res=1,CI="Markov",axes=c("x","y"),ACF=FALSE,precision=1/2)
 {
   t <- data$t
   z <- get.telemetry(data,axes)
   COL <- ncol(z)
 
-  # discard terrible estimates
-  if(!is.null(error))
-  {
-    GOOD <- (error<Inf)
-    t <- t[GOOD]
-    z <- z[GOOD,]
-    error <- error[GOOD]
-  }
+  EOV <- any(error>0) && !ACF
 
   # smear the data over an evenly spaced time grid (possibly at finer resolution)
-  if(!ACF) { z <- cbind(error,z) }
+  if(EOV) { z <- cbind(error,z) }
   GRID <- gridder(t,z,dt=dt,res=res)
   dt <- GRID$dt
   lag <- GRID$lag
   df <- GRID$w
   # continuous weights eff up the FFT numerics so discretize weights
   w <- sign(GRID$w) # indicator function
-  if(!ACF) { error <- GRID$z[,1] ; GRID$z <- GRID$z[,-1] }
+  DIM <- 1 #:ncol(error)
+  if(EOV) { error <- GRID$z[,DIM] ; GRID$z <- GRID$z[,-DIM] }
   z <- GRID$z
   zz <- z^2
 
@@ -273,7 +283,7 @@ variogram.fast <- function(data,error=NULL,dt=NULL,res=1,CI="Markov",axes=c("x",
   df <- FFT(pad(df,N))
   w <- Conj(FFT(pad(w,N)))
   z <- FFT(rpad(z,N))
-  if(!ACF) { error <- FFT(pad(error,N)) }
+  if(EOV) { error <- FFT(pad(error,N)) }
   zz <- FFT(rpad(zz,N))
 
   # indicator pair number (integer - stable FFT*)
@@ -282,13 +292,13 @@ variogram.fast <- function(data,error=NULL,dt=NULL,res=1,CI="Markov",axes=c("x",
   if(!ACF)
   {
     SVF <- Re(IFFT(Re(w*rowSums(zz))-rowSums(abs(z)^2))[1:n])
-    error <- Re(IFFT(Re(w*error))[1:n])
+    if(EOV) { error <- Re(IFFT(Re(w*error))[1:n]) }
   }
   else
   { SVF <- Re(IFFT(rowSums(abs(z)^2))[1:n]) }
 
   # normalize SVF
-  if(!ACF) { error <- error/DOF } # already averaged over dimensions
+  if(EOV) { error <- error/DOF } # already averaged over dimensions
   DOF <- COL*DOF
   SVF <- SVF/DOF
 
@@ -297,7 +307,7 @@ variogram.fast <- function(data,error=NULL,dt=NULL,res=1,CI="Markov",axes=c("x",
   if(any(ZERO))
   {
     SVF[ZERO] <- 0
-    if(!ACF) { error[ZERO] <- 0 }
+    if(EOV) { error[ZERO] <- 0 }
   }
   rm(ZERO)
 
@@ -313,7 +323,7 @@ variogram.fast <- function(data,error=NULL,dt=NULL,res=1,CI="Markov",axes=c("x",
     n <- dt/diff(lag[1:2])
     m <- ceiling(length(lag)/n)
     SVF <- pad(SVF,n*(m+1))
-    if(!ACF) { error <- pad(error,n*(m+1)) }
+    if(EOV) { error <- pad(error,n*(m+1)) }
     DOF <- pad(DOF,n*(m+1))
 
     # window weights
@@ -333,18 +343,17 @@ variogram.fast <- function(data,error=NULL,dt=NULL,res=1,CI="Markov",axes=c("x",
 
     lag <- (0:m)*dt # aggregated lags > 0
     SVF <- c(SVF[1], sapply(1:m,function(j){ SUB <- j*n + SUB ; sum(W*DOF[SUB]*SVF[SUB]) }) )
-    if(!ACF) { error <- c(error[1], sapply(1:m,function(j){ SUB <- j*n + SUB ; sum(W*DOF[SUB]*error[SUB]) }) ) }
+    if(EOV) { error <- c(error[1], sapply(1:m,function(j){ SUB <- j*n + SUB ; sum(W*DOF[SUB]*error[SUB]) }) ) }
     DOF <- c(DOF[1], sapply(1:m,function(j){ SUB <- j*n + SUB ; sum(W*DOF[SUB]) }) )
 
     SVF[-1] <- SVF[-1]/DOF[-1]
-    if(!ACF)
-    { error[-1] <- error[-1]/DOF[-1] }
+    if(EOV) { error[-1] <- error[-1]/DOF[-1] }
 
     ZERO <- DOF<=0
     if(any(ZERO))
     {
       SVF[ZERO] <- 0
-      if(!ACF) { error[ZERO] <- 0 }
+      if(EOV) { error[ZERO] <- 0 }
     }
   }
 
@@ -356,7 +365,7 @@ variogram.fast <- function(data,error=NULL,dt=NULL,res=1,CI="Markov",axes=c("x",
     lag <- STUFF$lag
 
     n <- length(DOF)
-    if(n>length(SVF)) { error <- pad(error,n) } # just in case
+    # if(n>length(SVF)) { error <- pad(error,n) } # just in case
   }
   else if(CI=="Markov") # only count non-overlapping lags... not perfect
   {
@@ -373,12 +382,21 @@ variogram.fast <- function(data,error=NULL,dt=NULL,res=1,CI="Markov",axes=c("x",
     DOF[-1] <- DOF[-1]*(1/sum(DOF[-1])*COL*(length(t)^2-length(t))/2)
   }
 
-  SVF <- data.frame(SVF=SVF,DOF=DOF,lag=lag)
-  if(!ACF)
+  if(EOV) # subtract error estimate after CI calculation
   {
-    if(length(error) < length(lag)) { error <- pad(error,length(lag)) }
-    SVF$MSE <- error
+    GOOD <- c(TRUE,SVF[-1]>error[-1])
+    SVF <- SVF[GOOD] - error[GOOD]
+    DOF <- DOF[GOOD]
+    lag <- lag[GOOD]
   }
+
+  SVF <- data.frame(SVF=SVF,DOF=DOF,lag=lag)
+  # if(!ACF)
+  # {
+  #   if(length(error) < length(lag)) { error <- rpad(error,length(lag)) }
+  #   colnames(error) <- rownames(attr(data,"UERE")$UERE)
+  #   SVF <- cbind(SVF,error)
+  # }
 
   return(SVF)
 }
@@ -386,12 +404,14 @@ variogram.fast <- function(data,error=NULL,dt=NULL,res=1,CI="Markov",axes=c("x",
 
 ##################################
 # LAG-WEIGHTED VARIOGRAM
-variogram.slow <- function(data,error=NULL,dt=NULL,res=1,CI="Markov",axes=c("x","y"),ACF=FALSE,precision=1/2,calibrated=FALSE)
+variogram.slow <- function(data,error=NULL,dt=NULL,res=1,CI="Markov",axes=c("x","y"),ACF=FALSE,precision=1/2)
 {
   t <- data$t
   z <- get.telemetry(data,axes)
   COL <- ncol(z)
   n <- length(t)
+
+  EOV <- any(error>0) && !ACF
 
   # initial variance guess (for error accounting)
   MVAR <- mean( apply(z,2,stats::var) )
@@ -413,12 +433,24 @@ variogram.slow <- function(data,error=NULL,dt=NULL,res=1,CI="Markov",axes=c("x",
   # matrix of semi-variances (not normalized)
   if(!ACF)
   {
-    VAR <- lapply(1:COL, function(i) { outer(z[,i],z[,i],'-')^2 })
-    EVAR <- outer(error,error,'+')/2
+    VAR <- z/sqrt(2*COL) # semi-variance per dimension
+    VAR <- lapply(1:COL, function(i) { outer(VAR[,i],VAR[,i],'-')^2 }) # [t,t,axes]
+
+    if(EOV)
+    {
+      EVAR <- error/sqrt(2)
+      EVAR <- outer(EVAR,EVAR,'+') # [t,t]
+    }
+    else
+    { EVAR <- array(0,dim(VAR[[1]])) }
   }
   else
-  { VAR <- lapply(1:COL, function(i) { outer(z[,i],z[,i],'*') }) }
-  VAR <- Reduce("+",VAR) / ifelse(!ACF,2*COL,COL) # semi-variance or variance
+  {
+    VAR <- z/sqrt(COL) # variance per dimension
+    VAR <- lapply(1:COL, function(i) { outer(VAR[,i],VAR[,i],'*') })
+  }
+  VAR <- Reduce("+",VAR) # [t,t]
+
   # matrix of weights
   W.T <- W.T %o% W.T
   rm(error)
@@ -444,17 +476,13 @@ variogram.slow <- function(data,error=NULL,dt=NULL,res=1,CI="Markov",axes=c("x",
   lag <- seq(0,ceiling((t[n]-t[1])/dt)+1)*dt
   SVF <- rep(MVAR,length(lag)) # IID initial guess for error accounting
   SVF[1] <- 0 # IID initial guess for error accounting
-  if(!ACF & !calibrated) { ERR <- numeric(length(lag)) }
+  # if(!ACF & !calibrated) { ERR <- array(0,c(length(lag),ncol(error))) }
   SVF -> SVF.OLD
 
   # accumulate semi-variance
   accumulate <- function(K,W,svf,err=0,werr=1)
   {
-    if(!ACF)
-    {
-      if(!calibrated) { ERR[K] <<- ERR[K] + W*err }
-      else if(K>1) { werr <- 1/(1+err/SVF.OLD[K]) }
-    }
+    if(EOV && K>1) { werr <- 1/(1+err/SVF.OLD[K]) }
 
     Werr <- W*werr
     Werr2 <- Werr*werr # W*werr^2
@@ -488,9 +516,10 @@ variogram.slow <- function(data,error=NULL,dt=NULL,res=1,CI="Markov",axes=c("x",
 
     # normalize SVF before we compare to old and/or correct DOF
     SVF <- nant(SVF/DOF,0)
-    if(!ACF && !calibrated) #error <- error/DOF
-    { ERR <- ERR/DOF } # error already averaged over dimension
-    else if(!ACF && calibrated)
+    # if(!ACF && !calibrated) #error <- error/DOF
+    # { ERR <- ERR/DOF } # error already averaged over dimension
+    # else
+    if(EOV)
     {
       ERROR <- abs(SVF-SVF.OLD)/pmax(SVF,min(1,MVAR))
       #plot(ERROR)
@@ -503,7 +532,7 @@ variogram.slow <- function(data,error=NULL,dt=NULL,res=1,CI="Markov",axes=c("x",
     else
     { ERROR <- 0 }
 
-    if(ACF || !calibrated) { break }
+    if(ACF || !EOV) { break }
   }
   rm(I1,I2,W1,W2,VAR,SVF.OLD)
   if(!ACF) { rm(EVAR) }
@@ -516,7 +545,7 @@ variogram.slow <- function(data,error=NULL,dt=NULL,res=1,CI="Markov",axes=c("x",
     lag <- STUFF$lag
 
     n <- length(DOF)
-    if(n>length(SVF)) { ERR <- pad(ERR,n) } # just in case
+    # if(n>length(SVF)) { ERR <- rpad(ERR,n) } # just in case
   }
   else if(CI=="Markov") # only count non-overlapping lags... not perfect
   {
@@ -545,17 +574,19 @@ variogram.slow <- function(data,error=NULL,dt=NULL,res=1,CI="Markov",axes=c("x",
   # delete missing lags
   SVF <- data.frame(lag=lag,SVF=SVF,DOF=DOF)
   if(CI %in% c('IID','Markov')) { SVF$DOF2 <- DOF2 }
-  if(!ACF)
-  {
-    if(calibrated) { SVF$MSE <- 0 }
-    else { SVF$MSE <- ERR[1:length(lag)] ; rm(ERR) }
-  }
+  # if(!ACF && !calibrated)
+  # {
+  #   colnames(ERR) <- rownames(attr(data,"UERE")$UERE)
+  #   SVF <- cbind(SVF,ERR[1:length(lag),])
+  #   rm(ERR)
+  # }
   if(CI=="Markov") { SVF$dof <- dof ; rm(dof) }
   SVF <- SVF[DOF>0,]
   rm(DOF,DOF2,lag)
 
   # effective DOF from weights, non-overlapping lags, take the most conservative of the 3 estimates
   if(CI %in% c('IID','Markov')) { SVF$DOF <- pmin(SVF$DOF,SVF$DOF^2/SVF$DOF2) ; SVF$DOF2 <- NULL }
+
   if(CI=="Markov") { SVF$DOF <- pmin(SVF$DOF,SVF$dof) ; SVF$dof <- NULL }
 
   if(CI=="IID") # fix initial and total DOF
@@ -634,10 +665,10 @@ mean.variogram <- function(x,...)
   n <- length(lag)
   SVF <- numeric(n)
   DOF <- numeric(n)
-  MSE <- numeric(n)
+  # MSE <- numeric(n)
 
-  # error type to pull out -- assumes all are the same
-  if("MSE" %in% names(x[[1]])) { ERR <- "MSE" } else { ERR <- "MSDOP" }
+  # # error type to pull out -- assumes all are the same
+  # if("MSE" %in% names(x[[1]])) { ERR <- "MSE" } else { ERR <- "MSDOP" }
 
   # accumulate semivariance
   for(id in 1:IDS)
@@ -649,24 +680,24 @@ mean.variogram <- function(x,...)
       # number weighted accumulation
       DOF[j] <- DOF[j] + x[[id]]$DOF[i]
       SVF[j] <- SVF[j] + x[[id]]$DOF[i]*x[[id]]$SVF[i]
-      if(ERR %in% names(x[[id]])) { MSE[j] <- MSE[j] + x[[id]]$DOF[i]*x[[id]][[ERR]][i] } # not ideal fix
+      # if(ERR %in% names(x[[id]])) { MSE[j] <- MSE[j] + x[[id]]$DOF[i]*x[[id]][[ERR]][i] } # not ideal fix
     }
   }
 
   # delete missing lags
   variogram <- data.frame(lag=lag,SVF=SVF,DOF=DOF)
-  if(ERR %in% names(x[[1]])) { variogram$MSE <- MSE }
+  # if(ERR %in% names(x[[1]])) { variogram$MSE <- MSE }
   variogram <- variogram[DOF>0,]
 
   # normalize SVF
   variogram$SVF <- variogram$SVF / variogram$DOF
-  if(ERR %in% names(x[[1]])) { variogram$MSE <- variogram$MSE / variogram$DOF }
+  # if(ERR %in% names(x[[1]])) { variogram$MSE <- variogram$MSE / variogram$DOF }
 
   # drop unused levels
   variogram <- droplevels(variogram)
 
-  # correct name if not calibrated
-  if(ERR %in% names(x[[1]])) { rename(variogram,"MSE",ERR) }
+  # # correct name if not calibrated
+  # if(ERR %in% names(x[[1]])) { rename(variogram,"MSE",ERR) }
 
   variogram <- new.variogram(variogram,info=mean.info(x))
   return(variogram)

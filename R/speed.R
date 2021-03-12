@@ -18,7 +18,7 @@ speed.ctmm <- function(object,data=NULL,t=NULL,level=0.95,robust=FALSE,units=TRU
 
   if(prior && fast)
   {
-    TEST <- try(any(eigen(object$COV,only.values=TRUE)$values<=.Machine$double.eps))
+    TEST <- try(any(eigen(object$COV,only.values=TRUE)$values<=.Machine$double.eps),silent=TRUE)
     TEST <- class(TEST)[1]!="logical" || TEST
     if(TEST)
     {
@@ -37,8 +37,9 @@ speed.ctmm <- function(object,data=NULL,t=NULL,level=0.95,robust=FALSE,units=TRU
     { CI <- summary(object,level=level,units=FALSE)$CI['speed (meters/second)',] * sqrt(pi/2/2) }
     else # elliptical velocity distribution
     {
-      UERE <- ifelse(object$error && "error" %nin% dimnames(object)[[1]],3,1) # propagate error uncertainty
-      STUFF <- id.parameters(object,profile=FALSE,linear=FALSE,UERE=UERE)
+      # propagate error uncertainty
+      UERE.FIT <- object$error>0 & ( paste("error",names(object$error)) %in% dimnames(object)[[1]] )
+      STUFF <- id.parameters(object,profile=FALSE,linear=FALSE,UERE.FIT=UERE.FIT)
       NAMES <- STUFF$NAMES
       parscale <- STUFF$parscale
       lower <- STUFF$lower
@@ -137,7 +138,7 @@ speed.ctmm <- function(object,data=NULL,t=NULL,level=0.95,robust=FALSE,units=TRU
         {
           AVE <- S1/N
           VAR <- abs(S2 - N*AVE^2)/(N-1)
-          ERROR <- sqrt(VAR/N) / AVE
+          ERROR <- nant( sqrt(VAR/N) / AVE ,Inf)
         }
         else
         {
@@ -146,10 +147,7 @@ speed.ctmm <- function(object,data=NULL,t=NULL,level=0.95,robust=FALSE,units=TRU
           # standard error on the median
           Q1 <- vint(SPEEDS,(N+1-sqrt(N))/2)
           Q2 <- vint(SPEEDS,(N+1+sqrt(N))/2)
-          ERROR <- max(AVE-Q1,Q2-AVE) / AVE
-
-          # correct for Inf AVE
-          if(is.nan(ERROR)) { ERROR <- Inf }
+          ERROR <- nant( max(AVE-Q1,Q2-AVE) / AVE ,Inf)
 
           if(N>1/error^2)
           {
@@ -221,7 +219,7 @@ speed.rand <- function(CTMM,data=NULL,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NU
     # first check if non-stationary mean is irrelevant
     drift <- get(CTMM$mean)
     MSV <- sum(diag(CTMM$sigma))/ ifelse(CTMM$range,prod(CTMM$tau),CTMM$tau[2])
-    if(drift@speed(CTMM)$EST/MSV<error^2)
+    if(nant(drift@speed(CTMM)$EST/MSV,0)<error^2)
     {
       # now check if there are many steps per sampled interval
       FRAC <- CTMM$tau[2]/DT
@@ -235,6 +233,8 @@ speed.rand <- function(CTMM,data=NULL,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NU
         if(all(FRAC<error)) { return(SPD) }
       }
     }
+    if(MSV==0) # need better case handling for tiny sigma estimate?
+    { return(0) }
 
     if(is.null(dt.max)) { dt.max <- -log(cor.min)*CTMM$tau[2] }
     data <- simulate(CTMM,data=data,dt=dt,precompute=precompute,dt.max=dt.max,DT=DT)

@@ -41,11 +41,11 @@ summary(list(joint=UERE,individual=UERES))
 outlie(turtle[[3]]) -> OUT
 
 ## -----------------------------------------------------------------------------
-plot(OUT)
+plot(OUT,units=FALSE)
 
 ## -----------------------------------------------------------------------------
-BAD <- which.max(OUT$speed)
-turtle[[3]] <- turtle[[3]][-BAD,]
+BAD <- OUT$speed>0.08 # not appropriate for other species!
+turtle[[3]] <- turtle[[3]][!BAD,]
 outlie(turtle[[3]]) -> OUT
 
 ## ----  fig.show='hold', echo=FALSE--------------------------------------------
@@ -70,8 +70,6 @@ summary(FIT)
 ## -----------------------------------------------------------------------------
 # delete UERE information
 uere(turtle) <- NULL
-# toss out 2D locations for this example, as we know they have a different/larger RMS UERE
-turtle <- lapply(turtle,function(t){ t[t$class=="3D",] })
 
 ## -----------------------------------------------------------------------------
 # automated guestimate for uncalibrated data (with 10 meter RMS UERE guess)
@@ -82,8 +80,19 @@ FIT <- ctmm.select(turtle[[3]],GUESS,trace=TRUE,cores=2)
 summary(FIT)
 
 ## -----------------------------------------------------------------------------
-# assign 10 meter RMS UERE (2D class still deleted)
-uere(turtle) <- 10
+# assign 20-meter 2D RMS UERE and 10-meter 3D RMS UERE
+uere(turtle) <- c(20,10)
+# the default uncertainty is none for numerical assignments
+UERE <- uere(turtle)
+summary(UERE)
+# this is becasue the degrees-of-freedom are set to Inf
+UERE$DOF
+# here I set the DOF to a smaller value
+UERE$DOF[] <- 2
+# which now gives plausible credible intervals
+summary(UERE)
+# assign the prior to the data
+uere(turtle) <- UERE
 # automated guestimate for calibrated data
 GUESS <- ctmm.guess(turtle[[3]],CTMM=ctmm(error=TRUE),interactive=FALSE)
 # stepwise fitting # CRAN policy limits us to 2 cores

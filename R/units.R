@@ -67,7 +67,7 @@ unit <- function(data,dimension,thresh=1,concise=FALSE,SI=FALSE)
   }
 
   data <- data[!is.na(data)]
-  max.data <- max(abs(data))
+  if(length(data)) { max.data <- max(abs(data)) } else { max.data <- 1 }
 
   if(concise) { name.list <- abrv.list }
 
@@ -116,7 +116,8 @@ unit.telemetry <- function(data,length=1,time=1)
   convert(DOP.LIST$speed$VAR,(length/time)^2)
   convert(DOP.LIST$speed$COV,(length/time)^2)
 
-  # HDOP is unitless
+  # calibration constants
+  attr(data,"UERE")$UERE <- attr(data,"UERE")$UERE/length # don't logicals get divided this way?
 
   return(data)
 }
@@ -137,7 +138,8 @@ unit.ctmm <- function(CTMM,length=1,time=1)
     CTMM <- drift@scale(CTMM,time)
   }
 
-  if(class(CTMM$error)[1]=='numeric') { CTMM$error <- CTMM$error/length } # don't divide logicals
+  # if(class(CTMM$error)[1]=='numeric')
+  { CTMM$error <- CTMM$error/length } # don't divide logicals
 
   if("sigma" %in% names(CTMM))
   {
@@ -186,10 +188,11 @@ unit.ctmm <- function(CTMM,length=1,time=1)
       }
     }
 
-    if("error" %in% NAMES)
+    ERROR <- NAMES[grepl("error",NAMES)] # error estimate covariance
+    if(length(ERROR))
     {
-      CTMM$COV["error",] <- CTMM$COV["error",]/length
-      CTMM$COV[,"error"] <- CTMM$COV[,"error"]/length
+      CTMM$COV[ERROR,] <- CTMM$COV[ERROR,]/length
+      CTMM$COV[,ERROR] <- CTMM$COV[,ERROR]/length
     }
 
     if("circle" %in% NAMES)

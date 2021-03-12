@@ -4,8 +4,9 @@ NAMES.CI <- c("low","est","high")
 # this is stuff that needs to be run first (and in the right order) for S4 crap to work
 
 methods::setOldClass("UERE")
-new.UERE <- methods::setClass("UERE",contains="matrix",representation=methods::representation(DOF="matrix",AICc="numeric",Zsq="numeric",VAR.Zsq="numeric",N="numeric"),
-                              prototype=methods::prototype(matrix(),DOF=matrix(),AICc=numeric(),Zsq=numeric(),VAR.Zsq=numeric(),N=numeric()))
+new.UERE <- methods::setClass("UERE",contains="list",representation=methods::representation(info="list"),
+                              prototype=methods::prototype(list(UERE=cbind(0),DOF=cbind(0),AICc=Inf,Zsq=Inf,VAR.Zsq=Inf,N=0),info=list()))
+#DOF="matrix",AICc="numeric",Zsq="numeric",VAR.Zsq="numeric",N="numeric"
 
 methods::setOldClass("telemetry")
 new.telemetry <- methods::setClass("telemetry",contains="data.frame",representation=methods::representation(info="list",UERE="UERE"),
@@ -17,11 +18,11 @@ new.ctmm <- methods::setClass("ctmm",contains="list",representation=methods::rep
 
 methods::setOldClass("UD")
 new.UD <- methods::setClass("UD",contains="list",representation=methods::representation(info="list",type="character",CTMM="ctmm"),
-                            prototype=methods::prototype(list(),info=list(),type=character(),CTMM=new.ctmm()))
+                            prototype=methods::prototype(list(),info=list(),type=character(),CTMM=new.ctmm()) )
 
 methods::setOldClass("variogram")
-new.variogram <- methods::setClass("variogram",representation=methods::representation("data.frame",info="list"),
-                                   prototype=methods::prototype(data.frame(),info=list()))
+new.variogram <- methods::setClass("variogram",representation=methods::representation("data.frame",info="list",UERE="UERE"),
+                                   prototype=methods::prototype(data.frame(),info=list(),UERE=new.UERE()) )
 
 methods::setOldClass("outlie")
 new.outlie <- methods::setClass("outlie",representation=methods::representation("data.frame"),prototype=methods::prototype(data.frame()))

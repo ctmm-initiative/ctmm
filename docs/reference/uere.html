@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.11</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.1</span>
       </span>
     </div>
 
@@ -109,7 +109,7 @@
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/ctmm-initiative/ctmm">
-    <span class="fa fa-github fa-2x"></span>
+    <span class="fas fa-github fa-2x"></span>
      
   </a>
 </li>
@@ -179,13 +179,14 @@
 <code>uere.fit()</code> allows users to estimate the RMS UERE from calibration data, where the device was left fixed over a period of time.
 The calibration RMS UERE can then be applied to tracking data with the <code>uere()&lt;-</code> assignment method.
 Otherwise, when <code>error=TRUE</code> in <code><a href='ctmm.html'>ctmm</a></code>, <code><a href='ctmm.html'>ctmm.fit</a></code> will estimate the RMS UERE simultaneously with the movement model, which is less reliable than using calibration data.</p>
-<p><code><a href='https://rdrr.io/r/base/summary.html'>summary()</a></code> applied to single <code>UERE</code> object will return RMS UERE parameter estimates and confidence intervals, while <code><a href='https://rdrr.io/r/base/summary.html'>summary()</a></code> applied to a list of <code>UERE</code> objects will return a model-selection table, with AICc and reduced Z squared (goodness of fit) values.</p>
+<p><code><a href='https://rdrr.io/r/base/summary.html'>summary()</a></code> applied to single <code>UERE</code> object will return RMS UERE parameter estimates and confidence intervals in meters, while <code><a href='https://rdrr.io/r/base/summary.html'>summary()</a></code> applied to a list of <code>UERE</code> objects will return a model-selection table, with AICc and reduced Z squared (goodness of fit) values.</p>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>The RMS UERE estimate.</p>
     <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
 
-    <p>C. H. Fleming et al, ``A comprehensive framework for handling location error in animal tracking data'', <a href='https://www.biorxiv.org/content/10.1101/2020.06.12.130195v1'>bioRxiv 2020.06.12.130195 (2020)</a>.</p>
+    <p>C. H. Fleming et al, ``A comprehensive framework for handling location error in animal tracking data'', bioRxiv 2020.06.12.130195 (2020) doi: <a href='https://doi.org/10.1101/2020.06.12.130195'>10.1101/2020.06.12.130195</a>
+.</p>
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
 
     <p>C. H. Fleming</p>
@@ -220,8 +221,8 @@ Otherwise, when <code>error=TRUE</code> in <code><a href='ctmm.html'>ctmm</a></c
 <span class='co'># calculate residuals of calibration data</span>
 <span class='va'>RES</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='va'>turtle</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>2</span><span class='op'>]</span>,<span class='va'>residuals</span><span class='op'>)</span>
 
-<span class='co'># scatter plot of residuals with 50% and 95% quantiles</span>
-<span class='fu'><a href='plot.telemetry.html'>plot</a></span><span class='op'>(</span><span class='va'>RES</span>,col.DF<span class='op'>=</span><span class='cn'>NA</span>,level.UD<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0.50</span>,<span class='fl'>0.95</span><span class='op'>)</span><span class='op'>)</span>
+<span class='co'># scatter plot of residuals with 50%, 95%, and 99.9% coverage areas</span>
+<span class='fu'><a href='plot.telemetry.html'>plot</a></span><span class='op'>(</span><span class='va'>RES</span>,col.DF<span class='op'>=</span><span class='cn'>NA</span>,level.UD<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0.50</span>,<span class='fl'>0.95</span>,<span class='fl'>0.999</span><span class='op'>)</span><span class='op'>)</span>
 </div><div class='img'><img src='uere-1.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'># check calibration data for autocorrelation using fast=FALSE because samples are small</span>
 <span class='va'>ACFS</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='va'>RES</span>,<span class='kw'>function</span><span class='op'>(</span><span class='va'>R</span><span class='op'>)</span><span class='op'>{</span><span class='fu'><a href='residuals.ctmm.html'>correlogram</a></span><span class='op'>(</span><span class='va'>R</span>,fast<span class='op'>=</span><span class='cn'>FALSE</span>,dt<span class='op'>=</span><span class='fl'>10</span> <span class='op'>%#%</span> <span class='st'>'min'</span><span class='op'>)</span><span class='op'>}</span><span class='op'>)</span>

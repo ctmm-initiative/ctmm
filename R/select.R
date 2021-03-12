@@ -67,11 +67,19 @@ simplify.ctmm <- function(M,par)
   if(any(c('tau position','tau') %in% par)) { M$tau <- NULL }
   if('omega' %in% par) { M$omega <- FALSE }
   if('circle' %in% par) { M$circle <- FALSE }
-  if('error' %in% par) { M$error <- FALSE }
+  TEST <- grepl('error',par)
+  if(any(TEST))
+  {
+    PAR <- par[TEST]
+    PAR <- substr(PAR,nchar("error ?"),nchar(PAR))
+    M$error[PAR] <- FALSE # why would you ever do this?
+  }
 
   # re-identify features
-  if(M$error && ('error' %in% M$features)) { UERE <- TRUE } else { UERE <- 3 } # calibrated or not?
-  M$features <- id.parameters(M,profile=FALSE,linear=FALSE,UERE=UERE)$NAMES
+  UERE.FIT <- paste("error",names(M$error)) %in% M$features
+  names(UERE.FIT) <- names(M$error)
+
+  M$features <- id.parameters(M,profile=FALSE,linear=FALSE,UERE.FIT=UERE.FIT)$NAMES
 
   # don't think we need this
   if("MLE" %in% names(M)) { M$MLE <- simplify.ctmm(M$MLE,par) }
@@ -112,8 +120,9 @@ complexify.ctmm <- function(M,par,TARGET)
   if("omega" %in% par) { M$omega <- TARGET$omega }
 
   # re-identify features
-  if(M$error && ('error' %in% M$features)) { UERE <- TRUE } else { UERE <- 3 } # calibrated or not?
-  M$features <- id.parameters(M,profile=FALSE,linear=FALSE,UERE=UERE)$NAMES
+  UERE.FIT <- M$error>0 & (paste('error',names(M$error)) %in% M$features)
+  # if(M$error && ('error' %in% M$features)) { UERE <- TRUE } else { UERE <- 3 } # calibrated or not?
+  M$features <- id.parameters(M,profile=FALSE,linear=FALSE,UERE.FIT=UERE.FIT)$NAMES
 
   # don't think we need this
   if("MLE" %in% names(M)) { M$MLE <- complexify.ctmm(M$MLE,par,TARGET) }
@@ -179,7 +188,10 @@ ctmm.iterate <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="positio
   CAND <- length(MODELS) # number of extra candidate models included for features
   if(CAND) { names(MODELS) <- sapply(MODELS,name.ctmm) }
 
-  UERE <- get.error(data,CTMM,flag=TRUE) # error flag only
+  TYPE <- DOP.match(CTMM$axes)
+  UERE.DOF <- attr(data,"UERE")$DOF[,TYPE]
+  names(UERE.DOF) <- rownames(attr(data,"UERE")$DOF)
+  UERE.FIT <- CTMM$error & !is.na(UERE.DOF) & UERE.DOF<Inf # will we be fitting any error parameters?
 
   # best non-zero variance estimates -- avoid zero collapse in intermediate model propagating to best model
   axes <- CTMM$axes
@@ -192,7 +204,8 @@ ctmm.iterate <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="positio
     {
       for(i in 1:length(M))
       {
-        if(M[[i]]$error<=.Machine$double.eps) { M[[i]]$error <- ERROR }
+        TEST <- M[[i]]$error <= .Machine$double.eps
+        if(any(TEST)) { M[[i]]$error[TEST] <- ERROR[TEST] }
         M.VAR <- M[[i]]$sigma@par
         for(j in 1:AXES) { if(M.VAR[j]<=.Machine$double.eps) { M.VAR[j] <- VAR[j] } }
         M[[i]]$sigma <- covm(M.VAR,axes=axes,isotropic=M[[i]]$isotropic)
@@ -202,7 +215,8 @@ ctmm.iterate <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="positio
   }
   update.fix <- function(CTMM)
   {
-    if(CTMM$error>.Machine$double.eps) { ERROR <<- CTMM$error }
+    TEST <- CTMM$error > .Machine$double.eps
+    if(any(TEST)) { ERROR[TEST] <<- CTMM$error[TEST] }
     for(i in 1:AXES) { if(CTMM$sigma@par[i]>.Machine$double.eps) { VAR[i] <<- CTMM$sigma@par[i] } }
   }
 
@@ -311,10 +325,10 @@ ctmm.iterate <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="positio
   ########################
   # PHASE 0: pair down to essential features for 'compatibility'
   # all of the features we need to fit numerically
-  FEATURES <- id.parameters(CTMM,UERE=UERE)$NAMES
+  FEATURES <- id.parameters(CTMM,UERE.FIT=UERE.FIT)$NAMES
   # consider only features unnecessary "compatibility"
   FEATURES <- FEATURES[!(FEATURES=="major")]
-  FEATURES <- FEATURES[!(FEATURES=="error")]
+  FEATURES <- FEATURES[!grepl("error",FEATURES)]
   FEATURES <- FEATURES[!grepl("tau",FEATURES)]
   FEATURES <- FEATURES[!(FEATURES=="omega")]
   # if((CV || is.na(IC)) && CTMM$range && length(CTMM$tau)) { FEATURES <- c(FEATURES,"range") }
@@ -449,7 +463,7 @@ ctmm.iterate <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="positio
     }
 
     # is the animal even moving?
-    if(!CTMM$sigma@par['major'] && "error"%in%VARS)
+    if(!CTMM$sigma@par['major'] && any(grepl("error",VARS)))
     { GUESS <- c(GUESS,list(simplify.ctmm(MLE,"major"))) }
 
     # consider if we can relax range residence (non-likelihood comparison only)
@@ -486,10 +500,14 @@ ctmm.iterate <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="positio
         for(i in 2:N) { if(NAMES[i] %in% NAMES[1:(i-1)]) { IN[i] <- FALSE } }
         MODELS <- MODELS[IN]
       }
+
+      # store model selection criterion
+      attr(MODELS,"IC") <- IC
+      attr(MODELS,"MSPE") <- MSPE
     }
 
     return(MODELS)
-  }
+  } # end verbose
   else
   { return(CTMM) }
 }
@@ -532,7 +550,7 @@ name.ctmm <- function(CTMM,whole=TRUE)
   { NAME <- c(NAME,"circulation") }
 
   # error
-  if(CTMM$error || "error" %in% FEATURES)
+  if(any(CTMM$error>0) || any(grepl("error",FEATURES)))
   { NAME <- c(NAME,"error") }
 
   # mean
@@ -635,8 +653,16 @@ min.ctmm <- function(x,IC="AICc",MSPE="position",...)
 
 
 ########
-summary.ctmm.list <- function(object, IC="AICc", MSPE="position", units=TRUE, ...)
+summary.ctmm.list <- function(object, IC=NULL, MSPE=NULL, units=TRUE, ...)
 {
+  # use what ctmm.select used
+  if(is.null(IC)) { IC <- attr(object,"IC") }
+  if(is.null(MSPE)) { MSPE <- attr(object,"MSPE") }
+
+  # defaults for manual lists
+  if(is.null(IC)) { IC <- "AICc" }
+  if(is.null(MSPE)) { MSPE <- "position" }
+
   CV <- c("LOOCV","HSCV")
   IC <- match.arg(IC,c("AICc","AIC","BIC",CV,NA))
   MSPE <- match.arg(MSPE,c("position","velocity",NA))
@@ -670,8 +696,10 @@ summary.ctmm.list <- function(object, IC="AICc", MSPE="position", units=TRUE, ..
     MIN <- which.min(MSPES)
     MSPES <- sqrt(MSPES)
     if(MSPES[1]<Inf) { MSPES <- MSPES - MSPES[MIN] }
-    MIN <- min(c(abs(MSPES[MSPES!=0]),Inf))
-    UNIT <- unit(MIN,if(MSPE=="position"){"length"}else{"speed"},concise=TRUE,SI=!units)
+    # MIN <- min(c(MSPES[MSPES>0],Inf))
+    AVE <- stats::median(MSPES[MSPES>0])
+    if(MSPE=="position") { UNIT <- "length" } else { UNIT <- "speed" }
+    UNIT <- unit(AVE,UNIT,concise=TRUE,SI=!units)
     MSPES <- MSPES/UNIT$scale
     CNAME <- paste0(CNAME," (",UNIT$name,")")
     MSPES <- cbind(MSPES)

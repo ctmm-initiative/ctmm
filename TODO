@@ -1,4 +1,8 @@
 PRIORITY
+* check, recompile vignettes (check carefully), recompile blog reference documentation (check carefully)
+* track updating for elliptical errors (additive errors or overall update?)
+* uere()<- ctmm posterior re-calibration dangerous?
+* ctmm.select(...,IC="BCV",block=1 %#% 'day')
 * plot(telemetry,ctmm) fails for plain vector ctmm$mu
 * optimizer compare par to par/parscale==1 and reset if far away
 * akde on fit with DOF=0 error()
@@ -7,7 +11,6 @@ PRIORITY
 * zoom needs CTMM argument named? No gear comes up then?
 * consistent grids with different resolutions (power of 2 relation; padding; etc.)
 * automatic timeformat (non-default argument)
-* store RMS UERE approxmation (1 or 10 meters) on import
 * errors on 0-1 locations -> initial functions: ctmm.guess, ctmm.fit, variogram, ...
 * 3D plots of 2D UDs
 * optimize REML correction?

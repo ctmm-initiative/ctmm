@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.11</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.1</span>
       </span>
     </div>
 
@@ -109,7 +109,7 @@
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/ctmm-initiative/ctmm">
-    <span class="fa fa-github fa-2x"></span>
+    <span class="fas fa-github fa-2x"></span>
      
   </a>
 </li>
@@ -165,7 +165,8 @@
 
     <p>K. Winner, M. J. Noonan, C. H. Fleming, K. Olson, T. Mueller, D. Sheldon, J. M. Calabrese.
 ``Statistical inference for home range overlap'',
-<a href='https://besjournals.onlinelibrary.wiley.com/doi/10.1111/2041-210X.13027'>Methods in Ecology and Evolution, 9:7, 1679-1691 (2018)</a>.</p>
+Methods in Ecology and Evolution, 9:7, 1679-1691 (2018) doi: <a href='https://doi.org/10.1111/2041-210X.13027'>10.1111/2041-210X.13027</a>
+.</p>
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
 
     <p>C. H. Fleming and K. Winner</p>
@@ -185,6 +186,7 @@
 
 <span class='co'># fit models for first two buffalo</span>
 <span class='va'>GUESS</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='va'>buffalo</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>2</span><span class='op'>]</span>, <span class='kw'>function</span><span class='op'>(</span><span class='va'>b</span><span class='op'>)</span> <span class='fu'><a href='variogram.fit.html'>ctmm.guess</a></span><span class='op'>(</span><span class='va'>b</span>,interactive<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>)</span>
+<span class='co'># using ctmm.fit here for speed, but you should almost always use ctmm.select</span>
 <span class='va'>FITS</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>2</span>, <span class='kw'>function</span><span class='op'>(</span><span class='va'>i</span><span class='op'>)</span> <span class='fu'><a href='ctmm.html'>ctmm.fit</a></span><span class='op'>(</span><span class='va'>buffalo</span><span class='op'>[[</span><span class='va'>i</span><span class='op'>]</span><span class='op'>]</span>,<span class='va'>GUESS</span><span class='op'>[[</span><span class='va'>i</span><span class='op'>]</span><span class='op'>]</span><span class='op'>)</span> <span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>FITS</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>buffalo</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>2</span><span class='op'>]</span><span class='op'>)</span>
 
@@ -193,14 +195,14 @@
 </div><div class='output co'>#&gt; , , low
 #&gt; 
 #&gt;           Cilla      Gabs
-#&gt; Cilla 1.0000000 0.8984604
-#&gt; Gabs  0.8984604 1.0000000
+#&gt; Cilla 1.0000000 0.8984631
+#&gt; Gabs  0.8984631 1.0000000
 #&gt; 
 #&gt; , , est
 #&gt; 
 #&gt;           Cilla      Gabs
-#&gt; Cilla 1.0000000 0.9987797
-#&gt; Gabs  0.9987797 1.0000000
+#&gt; Cilla 1.0000000 0.9987807
+#&gt; Gabs  0.9987807 1.0000000
 #&gt; 
 #&gt; , , high
 #&gt; 
@@ -216,14 +218,14 @@
 </div><div class='output co'>#&gt; , , low
 #&gt; 
 #&gt;           Cilla      Gabs
-#&gt; Cilla 1.0000000 0.8957873
-#&gt; Gabs  0.8957873 1.0000000
+#&gt; Cilla 1.0000000 0.8957921
+#&gt; Gabs  0.8957921 1.0000000
 #&gt; 
 #&gt; , , est
 #&gt; 
 #&gt;           Cilla      Gabs
-#&gt; Cilla 1.0000000 0.9958082
-#&gt; Gabs  0.9958082 1.0000000
+#&gt; Cilla 1.0000000 0.9958115
+#&gt; Gabs  0.9958115 1.0000000
 #&gt; 
 #&gt; , , high
 #&gt; 

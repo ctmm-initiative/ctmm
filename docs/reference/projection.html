@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.11</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.1</span>
       </span>
     </div>
 
@@ -109,7 +109,7 @@
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/ctmm-initiative/ctmm">
-    <span class="fa fa-github fa-2x"></span>
+    <span class="fas fa-github fa-2x"></span>
      
   </a>
 </li>
@@ -215,13 +215,13 @@ compass(loc=NULL,cex=3,...) &lt;!-- % fix this --&gt;</pre>
 <span class='co'># Apply a 1-point projection that preserves North==up</span>
 <span class='fu'>projection</span><span class='op'>(</span><span class='va'>buffalo</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='fu'>median</span><span class='op'>(</span><span class='va'>buffalo</span><span class='op'>)</span>
 <span class='fu'><a href='plot.telemetry.html'>plot</a></span><span class='op'>(</span><span class='va'>buffalo</span><span class='op'>)</span>
-</div><div class='input'><span class='fu'>compass</span><span class='op'>(</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>DOP values missing. Assuming DOP=1.</span></div><div class='output co'>#&gt; <span class='message'>DOP values missing. Assuming DOP=1.</span></div><div class='output co'>#&gt; <span class='message'>DOP values missing. Assuming DOP=1.</span></div><div class='output co'>#&gt; <span class='message'>DOP values missing. Assuming DOP=1.</span></div><div class='output co'>#&gt; <span class='message'>DOP values missing. Assuming DOP=1.</span></div><div class='output co'>#&gt; <span class='message'>DOP values missing. Assuming DOP=1.</span></div><div class='input'><span class='fu'>compass</span><span class='op'>(</span><span class='op'>)</span>
 </div><div class='img'><img src='projection-1.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'># Apply a 2-point projection safer for elongated disributions</span>
 <span class='fu'>projection</span><span class='op'>(</span><span class='va'>buffalo</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='fu'>median</span><span class='op'>(</span><span class='va'>buffalo</span>,k<span class='op'>=</span><span class='fl'>2</span><span class='op'>)</span>
 <span class='co'># This is the default projection for ctmm</span>
 <span class='fu'><a href='plot.telemetry.html'>plot</a></span><span class='op'>(</span><span class='va'>buffalo</span><span class='op'>)</span>
-</div><div class='input'><span class='fu'>compass</span><span class='op'>(</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>DOP values missing. Assuming DOP=1.</span></div><div class='output co'>#&gt; <span class='message'>DOP values missing. Assuming DOP=1.</span></div><div class='output co'>#&gt; <span class='message'>DOP values missing. Assuming DOP=1.</span></div><div class='output co'>#&gt; <span class='message'>DOP values missing. Assuming DOP=1.</span></div><div class='output co'>#&gt; <span class='message'>DOP values missing. Assuming DOP=1.</span></div><div class='output co'>#&gt; <span class='message'>DOP values missing. Assuming DOP=1.</span></div><div class='input'><span class='fu'>compass</span><span class='op'>(</span><span class='op'>)</span>
 </div><div class='img'><img src='projection-2.png' alt='' width='700' height='433' /></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

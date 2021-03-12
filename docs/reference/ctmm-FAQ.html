@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.11</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.1</span>
       </span>
     </div>
 
@@ -109,7 +109,7 @@
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/ctmm-initiative/ctmm">
-    <span class="fa fa-github fa-2x"></span>
+    <span class="fas fa-github fa-2x"></span>
      
   </a>
 </li>
@@ -147,12 +147,12 @@
 <li><p>Upgrade <code>R</code> to the latest version and update all of your packages.</p></li>
 <li><p>The development build can be installed via <code><a href='https://devtools.r-lib.org//reference/remote-reexports.html'>devtools::install_github("ctmm-initiative/ctmm")</a></code>.</p></li>
 <li><p>Stable beta releases between the CRAN release are published <a href='http://www2.physics.umd.edu/~hfleming/'>here</a> on request.</p></li>
-<li><p>The <a href='https://groups.google.com/forum/#!forum/ctmm-user'><code>ctmm</code> user's group</a> is a good place to find and ask for help.</p></li>
+<li><p>The <a href='https://groups.google.com/g/ctmm-user'><code>ctmm</code> user's group</a> is a good place to find and ask for help.</p></li>
 <li><p>Bug reports and feature requests can be raised at the <a href='https://github.com/ctmm-initiative/ctmm'>Github project page</a>.</p></li>
 </ol>
 
 <p><b>Help installing packages on Linux</b></p>
-<p>These are the packages I needed in Ubuntu:<code>sudo apt install fftw3 libfftw3-dev libgdal-dev libgmp-dev libmpfr-dev libproj-dev libgeos-dev libgsl-dev libnode-dev r-base-core</code></p>
+<p>These are the packages I needed in Ubuntu:<code>sudo apt install fftw3 libfftw3-dev libgdal-dev libgeos-dev libgit2-dev libgmp-dev libgsl-dev libmpfr-dev libproj-dev libnode-dev libudunits2-dev r-base-core</code></p>
 <p><b><code>as.telemetry</code> reports abnormal sampling intervals and speeds</b></p>
 <p>Make sure that you have the correct <code>timezone</code> and <code>timeformat</code> arguments specified. Also, see <code><a href='outlie.html'>outlie</a></code>.</p>
 <p><b>rdb database corruption, "could not find function", "cannot coerce class", and other weird errors</b></p>
@@ -166,9 +166,11 @@
 <li><p>Try a different computer.</p></li>
 </ol></p>
 <p><b><code>plot</code> complains about the datatype or has weird errors</b></p>
-<p>Namespace collision sometimes occurs from <code>raster</code> or <code>sp</code> against <code>move</code> and <code>ctmm</code>. Restart <code>R</code> and only load the <code>ctmm</code> package.</p>
+<p>Namespace collision sometimes occurs between <code>raster</code>, <code>sp</code>, <code>move</code>, and <code>ctmm</code>. Either restart <code>R</code> and only load the <code>ctmm</code> package, or run <code><a href='plot.telemetry.html'>ctmm::plot</a></code> instead of <code>plot</code>.</p>
 <p><b>North is no longer up after importing data</b></p>
 <p>The default projection in <code>ctmm</code> does not preserve the direction of North, but better preserves distances for elongated distributions. See the <code>projection</code> argument in <code><a href='as.telemetry.html'>as.telemetry</a></code> and the example in <code><a href='projection.html'>projection</a></code>. The <code><a href='projection.html'>compass</a></code> function is also useful for pointing north.</p>
+<p><b><code>projection</code> complains about the datatype and fails</b></p>
+<p>Namespace collision can occur between <code>raster</code> and <code>ctmm</code>. Either restart <code>R</code> and only load the <code>ctmm</code> package, or run <code><a href='projection.html'>ctmm::projection</a></code> instead of <code>projection</code>.</p>
 <p><b><code><a href='variogram.fit.html'>ctmm.guess</a></code> has no save button</b></p>
 <p>Maximize the plot window and/or increase your screen resolution.</p>
 <p><b><code>manipulate</code> panel does not popup in <code><a href='variogram.fit.html'>ctmm.guess</a></code> or <code>zoom</code></b></p>

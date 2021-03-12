@@ -8,10 +8,11 @@
 \alias{head.telemetry}
 \alias{tail}
 \alias{tail.telemetry}
+\alias{tbind}
 \encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{Import, coerce, and summarize MoveBank data}
-\description{Functions to import MoveBank csv files, \code{data.frame}, and \code{Move} objects, coerce them into \code{telemetry} objects, and summarize them.}
+\title{Import, coerce, summarize, and combine MoveBank data}
+\description{Functions to import MoveBank csv files, \code{data.frame}, and \code{Move} objects, coerce them into \code{telemetry} objects, summarize them, and combine data from multiple tracking devices.}
 
 \usage{
 as.telemetry(object,timeformat="",timezone="UTC",projection=NULL,datum=NULL,timeout=Inf,
@@ -35,6 +36,8 @@ head(x,...)
 tail(x,...)
 
 \S3method{tail}{telemetry}(x,n=6L,...)
+
+tbind(...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -49,7 +52,7 @@ tail(x,...)
   \item{mark.rm}{Delete Movebank manually marked outliers. Also see \code{\link{outlie}}.}
   \item{keep}{Retain additonal columns after coercion. \code{keep=TRUE} retains all columns, while individual columns to retain can be specified by name.}
   \item{drop}{Only return a \code{telemetry} object for one individual if \code{TRUE}. Always return a \code{list} of telemetry objects if \code{FALSE}.}
-  \item{...}{Optional arguments to be fed to \code{\link{fread}} or \code{\link{read.csv}}, in the case of compressed files.}
+  \item{...}{\code{telemetry} objects or a list of such objects, for \code{tbind()}. Optional arguments to be fed to \code{\link{fread}} or \code{\link{read.csv}}, in the case of compressed files, for \code{as.telemetry()}.}
   \item{x}{\code{telemetry} object.}
   \item{n}{Number of rows to return, if positive, or number of rows to omit, if negative.}
 }
@@ -58,10 +61,10 @@ tail(x,...)
 If no projection argument is specified, a two-point equidistant projection is calculated that should be good for most range resident and migratory species.
 Global migrations that are not along one geodesic (locally straight line) will probably suffer distortion.
 
-\code{as.telemetry} assumes \href{https://www.movebank.org/node/2381}{Movebank naming conventions}.
+\code{as.telemetry()} assumes \href{https://www.movebank.org/node/2381}{Movebank naming conventions}.
 Sufficient MoveBank columns include \code{individual.local.identifier} (or \code{tag.local.identifier}), \code{timestamp}, \code{location.long} and \code{location.lat}, while the optional Movebank columns include (E-OBS) \code{eobs.horizontal.accuracy.estimate}, (Telonics) \code{GPS.Horizontal.Error}, \code{GPS.HDOP}, (Argos) \code{Argos.orientation}, \code{Argos.semi.minor} and \code{Argos.semi.major} or \code{Argos.location.class}, etc..
 To have all columns detected and not overwrite eachother's information, \bold{it is best to have only one tracking device model per file imported}.
-Multiple deployments on a single individual can be merged afterwards.
+Multiple deployments on a single individual can be merged afterwards, using \code{tbind()}.
 
 %The \code{GPS.HDOP} value requires the device's UERE value to be translated into telemetry errors. The UERE represents the RMS error given ideal (\eqn{HDOP=1}) satellite conditions. Therefore, if your device is purported to have an accuracy of 10 meters, then the UERE is likely around 10 meters. Consult your device manual and manufacturer for a specific value or see \code{\link{uere}} for UERE calibration.
 }

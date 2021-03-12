@@ -71,8 +71,8 @@ uere(turtle) <- UERE
 # calculate residuals of calibration data
 RES <- lapply(turtle[1:2],residuals)
 
-# scatter plot of residuals with 50\% and 95\% quantiles
-plot(RES,col.DF=NA,level.UD=c(0.50,0.95))
+# scatter plot of residuals with 50\%, 95\%, and 99.9\% coverage areas
+plot(RES,col.DF=NA,level.UD=c(0.50,0.95,0.999))
 
 # check calibration data for autocorrelation using fast=FALSE because samples are small
 ACFS <- lapply(RES,function(R){correlogram(R,fast=FALSE,dt=10 \%#\% 'min')})

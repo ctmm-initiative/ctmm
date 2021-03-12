@@ -2,15 +2,27 @@
 telemetry.mins <- function(data,axes=c('x','y'))
 {
   dt <- diff(data$t)
-  dt <- stats::median(dt[dt>0]) # median time difference
+  dt <- dt[dt>0]
 
-  df <- 2*pi/(last(data$t)-data$t[1]) # smallest frequency
+  if(length(dt))
+  {
+    dt <- stats::median(dt) # median time difference
+    df <- 2*pi/(last(data$t)-data$t[1]) # smallest frequency
+  }
+  else
+  {
+    dt <- df <- 1 # no time differences in data
+  }
 
   dz <- get.telemetry(data,axes)
   dz <- apply(dz,2,diff)
   dim(dz) <- c(nrow(data)-1,length(axes)) # R drops length-1 dimensions
   dz <- rowSums( dz^2 )
-  dz <- sqrt(min(dz[dz>0])) # smallest nonzero distance
+  dz <- dz[dz>0]
+  if(length(dz))
+  { dz <- sqrt(min(dz)) } # smallest nonzero distance
+  else
+  { dz <- 1 } # no distances in data
 
   return(list(dt=dt,df=df,dz=dz))
 }
@@ -20,7 +32,6 @@ telemetry.mins <- function(data,axes=c('x','y'))
 # FIT MODEL WITH LIKELIHOOD FUNCTION (convenience wrapper to optim)
 ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),trace=FALSE)
 {
-  #if(!is.null(control$DEBUG) && control$DEBUG) { DEBUG.FIT <<- list(data=data,CTMM=CTMM,method=method,COV=COV,control=control,trace=trace,SEED=.Random.seed) }
   if(!is.null(control$message)) { message <- control$message }
 
   method <- match.arg(method,c("ML","pREML","pHREML","HREML","REML"))
@@ -51,9 +62,11 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
   # add mu.center back to the mean value after kalman filter / mean profiling
   # pre-standardizing the data should also help
   SCALE <- sqrt(mean(get.telemetry(data,axes)^2))
+  if(SCALE==0) { SCALE <- 1 }
   # standardize time by median diff time
   DT <- diff(data$t)
-  TSCALE <- stats::median(DT[DT>0])
+  DT <- DT[DT>0]
+  if(length(DT)) { TSCALE <- stats::median(DT) } else { TSCALE <- 1 }
   data <- unit.telemetry(data,length=SCALE,time=TSCALE)
   CTMM <- unit.ctmm(CTMM,length=SCALE,time=TSCALE)
 
@@ -68,6 +81,10 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
   unscale.ctmm <- function(CTMM)
   {
     CTMM <- unit.ctmm(CTMM,length=1/SCALE,time=1/TSCALE)
+
+    # fix numeric error (from scaling) when it should be logical
+    if(any(!UERE.FIT)) { CTMM$error[!UERE.FIT] <- as.logical(CTMM$error[!UERE.FIT]) }
+
     # log-likelihood adjustment
     CTMM$loglike <- CTMM$loglike - length(axes)*n*log(SCALE)
     # translate back to origin from center
@@ -100,8 +117,14 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
   CTMM$DOF.mu <- NULL
 
   # evaluate mean function and error matrices for this data once upfront
-  CTMM <- ctmm.prepare(data,CTMM,tau=FALSE) # don't muck with taus
-  UERE <- attr(CTMM$error.mat,"flag") # do we fit the error? Need to know for optimization
+  CTMM <- ctmm.prepare(data,CTMM,tau=FALSE,calibrate=FALSE) # don't muck with taus, don't calibrate
+  TYPE <- DOP.match(axes)
+  UERE.DOF <- attr(data,"UERE")$DOF[,TYPE]
+  names(UERE.DOF) <- rownames(attr(data,"UERE")$DOF)
+  UERE.FIT <- CTMM$error & !is.na(UERE.DOF) & UERE.DOF<Inf # will we be fitting any error parameters?
+  UERE.PAR <- names(UERE.FIT)[UERE.FIT>0] # names of fitted UERE parameters
+  # fix numeric error (from scaling) when it should be logical
+  if(any(!UERE.FIT)) { CTMM$error[!UERE.FIT] <- as.logical(CTMM$error[!UERE.FIT]) }
 
   ### id and characterize parameters for profiling ###
   pars <- NAMES <- parscale <- lower <- upper <- period <- NULL
@@ -109,7 +132,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
   linear.cov <- FALSE # represent sigma linearly (for perturbation) versus * (for optimization)
   setup.parameters <- function(CTMM,profile=TRUE,linear=FALSE)
   {
-    STUFF <- id.parameters(CTMM,profile=profile,linear=linear,linear.cov=linear.cov,UERE=UERE,dt=dt,df=df,dz=dz,STRUCT=ORIGINAL)
+    STUFF <- id.parameters(CTMM,profile=profile,linear=linear,linear.cov=linear.cov,UERE.FIT=UERE.FIT,dt=dt,df=df,dz=dz,STRUCT=ORIGINAL)
     NAMES <<- STUFF$NAMES
     parscale <<- STUFF$parscale
     lower <<- STUFF$lower
@@ -120,7 +143,8 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
     pars <<- get.parameters(CTMM,NAMES,linear.cov=linear.cov)
   }
   setup.parameters(CTMM,profile=TRUE)
-  if("error" %nin% NAMES) { CTMM$error <- as.logical(CTMM$error) } # fix numeric error when it should be logical
+  # fix numeric error (from mucking) when it should be logical
+  if(any(!UERE.FIT)) { CTMM$error[!UERE.FIT] <- as.logical(CTMM$error[!UERE.FIT]) }
 
   # degrees of freedom, including the mean, variance/covariance, tau, and error model
   k.mean <- ncol(CTMM$mean.vec)
@@ -153,19 +177,23 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
       if("minor" %in% NAMES && "major" %nin% NAMES) # major axis is being profiled
       {
         major <- CTMM$sigma@par['major']
-        ERROR <- "error" %in% NAMES
-        TEST <- (p['minor']>major)
-        if(ERROR) { TEST <- TEST && p['minor']>p['error']^2 }
-        if(TEST) # swap major-minor
+        # ERROR <- "error" %in% NAMES
+        if(p['minor']>major) # swap major-minor
         {
           # rotate to true minor axis
           p["angle"] <- p["angle"] + pi/2
 
-          # existing variance ratios to maintain
+          # maintain variance ratios
           RATIO <- major/p['minor'] # <1
 
           p['minor'] <- RATIO * major # old major is the new minor (proportionally)
-          if(ERROR) { p['error'] <- sqrt(RATIO) * p['error'] }
+
+          # now that I profile mean VAR, I don't think I need this?
+          # if(any(UERE.FIT))
+          # {
+          #   PAR <- paste("error",UERE.PAR)
+          #   p[PAR] <- sqrt(RATIO) * p[PAR]
+          # }
         }
       } # end major-minor swap
 
@@ -194,8 +222,20 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
     return(COV)
   }
 
+  # is the model under constrained?
+  # UNDER <- AXES*k.mean + length(id.parameters(CTMM,profile=FALSE,UERE.FIT=UERE.FIT,STRUCT=ORIGINAL)$NAMES) > AXES*nrow(data)
+
   ### NOW OPTIMIZE ###
   profile <- TRUE
+  # if(UNDER) # under constrained model
+  # {
+  #   CTMM$loglike <- -Inf
+  #   CTMM$AIC <- Inf
+  #   CTMM$AICc <- Inf
+  #   CTMM$BIC <- Inf
+  #   CTMM$MSPE <- c(Inf,Inf)
+  #   names(CTMM$MSPE) <- c("position","velocity")
+  # }
   if(length(NAMES)==0) # EXACT
   {
     if(method %in% c("pHREML","HREML")) { REML <- TRUE } # IID limit pHREML/HREML -> REML
@@ -275,12 +315,20 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
 
       J <- diag(length(pars))
       dimnames(J) <- list(NAMES,NAMES)
-      # invoke Jacobian (major,minor,angle) -> linear parameterization !!!
+      # invoke Jacobian (major,minor,angle) -> linear parameterization
       if(!CTMM$isotropic)
       {
         # Jacobian matrix d sigma / d par
         SUB <- names(CTMM$sigma@par)
         J[SUB,SUB] <- J.sigma.par(CTMM$sigma@par)
+      }
+      if(any(UERE.FIT)) # RMS UERE -> MS UERE (linear parameterization)
+      {
+        UERE.EPAR <- paste("error",UERE.PAR)
+        if(length(UERE.PAR)==1)
+        { J[UERE.EPAR,UERE.EPAR] <- 2*CTMM$error[UERE.PAR] }
+        else # diag() is annoying
+        { diag(J[UERE.EPAR,UERE.EPAR]) <- 2*CTMM$error[UERE.PAR] }
       }
 
       # apply linear parameter correction
@@ -506,7 +554,9 @@ ctmm.guess <- function(data,CTMM=ctmm(),variogram=NULL,name="GUESS",interactive=
   else { CTMM$axes <- attr(variogram,"info")$axes }
 
   n <- length(data$t)
-  if(n==2) { CTMM$isotropic = TRUE }
+  if(n<=2) { CTMM$isotropic = TRUE }
+
+  CTMM <- ctmm.prepare(data,CTMM,precompute=FALSE,tau=FALSE)
 
   # mean specific guesswork/preparation
   drift <- get(CTMM$mean)

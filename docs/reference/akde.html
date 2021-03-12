@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.11</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.1</span>
       </span>
     </div>
 
@@ -109,7 +109,7 @@
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/ctmm-initiative/ctmm">
-    <span class="fa fa-github fa-2x"></span>
+    <span class="fas fa-github fa-2x"></span>
      
   </a>
 </li>
@@ -202,13 +202,16 @@
 
     <p>C. H. Fleming, W. F. Fagan, T. Mueller, K. A. Olson, P. Leimgruber, J. M. Calabrese,
 ``Rigorous home-range estimation with movement data: A new autocorrelated kernel-density estimator'',
-<a href='https://esajournals.onlinelibrary.wiley.com/doi/abs/10.1890/14-2010.1'>Ecology, 96:5, 1182-1188 (2015)</a>.</p>
+Ecology, 96:5, 1182-1188 (2015) doi: <a href='https://doi.org/10.1890/14-2010.1'>10.1890/14-2010.1</a>
+.</p>
 <p>C. H. Fleming, J. M. Calabrese,
 ``A new kernel-density estimator for accurate home-range and species-range area estimation'',
-<a href='http://onlinelibrary.wiley.com/wol1/doi/10.1111/2041-210X.12673/abstract'>Methods in Ecology and Evolution, 8:5, 571-579 (2017)</a>.</p>
+Methods in Ecology and Evolution, 8:5, 571-579 (2017) doi: <a href='https://doi.org/10.1111/2041-210X.12673'>10.1111/2041-210X.12673</a>
+.</p>
 <p>C. H. Fleming, D. Sheldon, W. F. Fagan, P. Leimgruber, T. Mueller, D. Nandintsetseg, M. J. Noonan, K. A. Olson, E. Setyawan, A. Sianipar, J. M. Calabrese,
 ``Correcting for missing and irregular data in home-range estimation'',
-<a href='https://esajournals.onlinelibrary.wiley.com/doi/abs/10.1002/eap.1704'>Ecological Applications, 28:4, 1003-1010 (2018)</a>.</p>
+Ecological Applications, 28:4, 1003-1010 (2018) doi: <a href='https://doi.org/10.1002/eap.1704'>10.1002/eap.1704</a>
+.</p>
 <p><!-- %D. Marcotte. (1996). Fast variogram computation with FFT. \emph{Computers and Geosciences} 22(10), 1175-1186. --></p>
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
 
@@ -233,7 +236,9 @@ In v0.3.2, this method was further improved to use <code>DOF.area</code> from th
 <span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>buffalo</span><span class='op'>)</span>
 <span class='va'>Cilla</span> <span class='op'>&lt;-</span> <span class='va'>buffalo</span><span class='op'>$</span><span class='va'>Cilla</span>
 
+<span class='co'># calculate fit guess object</span>
 <span class='va'>GUESS</span> <span class='op'>&lt;-</span> <span class='fu'><a href='variogram.fit.html'>ctmm.guess</a></span><span class='op'>(</span><span class='va'>Cilla</span>,interactive<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span>
+<span class='co'># in general, you should be running ctmm.select here instead of ctmm.fit</span>
 <span class='va'>FIT</span> <span class='op'>&lt;-</span> <span class='fu'><a href='ctmm.html'>ctmm.fit</a></span><span class='op'>(</span><span class='va'>Cilla</span>,<span class='va'>GUESS</span><span class='op'>)</span>
 
 <span class='co'># Compute akde object</span>
@@ -241,7 +246,7 @@ In v0.3.2, this method was further improved to use <code>DOF.area</code> from th
 
 <span class='co'># Plot data with AKDE contours</span>
 <span class='fu'><a href='plot.telemetry.html'>plot</a></span><span class='op'>(</span><span class='va'>Cilla</span>,UD<span class='op'>=</span><span class='va'>UD</span><span class='op'>)</span>
-</div><div class='img'><img src='akde-1.png' alt='' width='700' height='433' /></div><div class='input'><span class='co'># }</span></div></pre>
+</div><div class='output co'>#&gt; <span class='message'>DOP values missing. Assuming DOP=1.</span></div><div class='img'><img src='akde-1.png' alt='' width='700' height='433' /></div><div class='input'><span class='co'># }</span></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

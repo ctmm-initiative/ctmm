@@ -8,14 +8,13 @@
 \description{Produces a \code{data.frame} of speed and distance estimates to analyze, as well as a plot highlighting potential speed and distance outliers in \code{telemetry} data.
 }
 \usage{
-outlie(data,UERE=10,plot=TRUE,by='d',...)
+outlie(data,plot=TRUE,by='d',...)
 
 \S3method{plot}{outlie}(x,level=0.95,units=TRUE,axes=c('d','v'),...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{data}{\code{telemetry} object.}
-  \item{UERE}{Device-dependent telemetry error in meters (RMS UERE). Only necessary for uncalibrated data.}
   \item{plot}{Output a plot highlighting high speeds (blue) and distant locations (red).}
   \item{by}{Color and size side-effect plot points by \code{'d'}, \code{'v'}, \code{'dz'}, \code{'vz'}, for distance from center, minimum speed, vertical distance from center, and minimum vertical speed.}
   \item{...}{Arguments passed to \code{plot}.}
@@ -40,7 +39,9 @@ C. H. Fleming et al, ``A comprehensive framework for handling location error in 
 
 \author{C. H. Fleming.}
 
-\note{The speed estimates here are tailored for outlier detection and have poor statistical efficiency. The \code{\link{predict}} and \code{\link{speed}} methods are appropriate for estimating speed (after outliers have been removed and a movement model has been selected).}
+\note{The speed estimates here are tailored for outlier detection and have poor statistical efficiency. The \code{\link{predict}} and \code{\link{speed}} methods are appropriate for estimating speed (after outliers have been removed and a movement model has been selected).
+
+In \code{ctmm} v0.6.1 the \code{UERE} argument was deprecated. For uncalibrated data, the initial esitmates used by \code{outlie} are now generated on import and stated by \code{summary(uere(data))}. These values not be reasonable for arbitrary datasets.}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 

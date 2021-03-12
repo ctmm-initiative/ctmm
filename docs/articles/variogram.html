@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.11</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.1</span>
       </span>
     </div>
 
@@ -109,7 +109,7 @@
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/ctmm-initiative/ctmm">
-    <span class="fa fa-github fa-2x"></span>
+    <span class="fas fa-github fa-2x"></span>
      
   </a>
 </li>
@@ -123,8 +123,6 @@
 
       </header>
 
-<link href="variogram_files/anchor-sections-1.0/anchor-sections.css" rel="stylesheet" />
-<script src="variogram_files/anchor-sections-1.0/anchor-sections.js"></script>
 
 <div class="row">
   <div class="col-md-9 contents">
@@ -132,7 +130,7 @@
       <h1 data-toc-skip>Variograms and Model Selection</h1>
                         <h4 class="author">Christen H. Fleming and Justin M. Calabrese</h4>
             
-            <h4 class="date">2020-10-30</h4>
+            <h4 class="date">2021-03-11</h4>
       
       <small class="dont-index">Source: <a href='https://github.com/ctmm-initiative/ctmm/blob/master/vignettes/variogram.Rmd'><code>vignettes/variogram.Rmd</code></a></small>
       <div class="hidden name"><code>variogram.Rmd</code></div>
@@ -157,23 +155,30 @@
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1"><span class="kw">library</span>(ctmm)</a>
 <a class="sourceLine" id="cb4-2" title="2"><span class="kw">data</span>(<span class="st">&quot;buffalo&quot;</span>)</a>
 <a class="sourceLine" id="cb4-3" title="3">Cilla &lt;-<span class="st"> </span>buffalo<span class="op">$</span>Cilla</a>
-<a class="sourceLine" id="cb4-4" title="4"><span class="kw">plot</span>(Cilla)</a>
-<a class="sourceLine" id="cb4-5" title="5"><span class="kw">title</span>(<span class="st">&quot;1 Buffalo&quot;</span>)</a>
-<a class="sourceLine" id="cb4-6" title="6"><span class="kw">plot</span>(buffalo,<span class="dt">col=</span><span class="kw">rainbow</span>(<span class="kw">length</span>(buffalo)))</a>
-<a class="sourceLine" id="cb4-7" title="7"><span class="kw">title</span>(<span class="st">&quot;5 Buffalo&quot;</span>)</a></code></pre></div>
+<a class="sourceLine" id="cb4-4" title="4"><span class="kw">plot</span>(Cilla)</a></code></pre></div>
+<pre><code>## DOP values missing. Assuming DOP=1.</code></pre>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1"><span class="kw">title</span>(<span class="st">&quot;1 Buffalo&quot;</span>)</a>
+<a class="sourceLine" id="cb6-2" title="2"><span class="kw">plot</span>(buffalo,<span class="dt">col=</span><span class="kw">rainbow</span>(<span class="kw">length</span>(buffalo)))</a></code></pre></div>
+<pre><code>## DOP values missing. Assuming DOP=1.
+## DOP values missing. Assuming DOP=1.
+## DOP values missing. Assuming DOP=1.
+## DOP values missing. Assuming DOP=1.
+## DOP values missing. Assuming DOP=1.
+## DOP values missing. Assuming DOP=1.</code></pre>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" title="1"><span class="kw">title</span>(<span class="st">&quot;5 Buffalo&quot;</span>)</a></code></pre></div>
 <p><img src="variogram_files/figure-html/unnamed-chunk-1-1.png" width="700" /><img src="variogram_files/figure-html/unnamed-chunk-1-2.png" width="700" /></p>
 <p>Looking at the raw movement tracks is a good way to pick out any obvious migratory behaviors. In the future, we will have migration models to select, but for now all of our models are range resident and so only those portions of the data should be selected. These buffalo all look fairly range resident, and so we can move on to variograms.</p>
 </div>
 <div id="variograms" class="section level1">
 <h1>Variograms</h1>
 <p>Variograms are an unbiased way to visualize autocorrelation structure when migration, range shifting, drift, or other translations of the mean location are not happening. When drift occurs in the data, then the variogram represents a mixture of both the drift and the autocorrelation structure, each of which contains distinct movement behaviors. In the future, we will have models that can allow for drift, but the current models assume range residence, which we can check with the variogram.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1">SVF &lt;-<span class="st"> </span><span class="kw">variogram</span>(Cilla)</a>
-<a class="sourceLine" id="cb5-2" title="2">level &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.5</span>,<span class="fl">0.95</span>) <span class="co"># 50% and 95% CIs</span></a>
-<a class="sourceLine" id="cb5-3" title="3">xlim &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">12</span> <span class="op">%#%</span><span class="st"> &quot;hour&quot;</span>) <span class="co"># 0-12 hour window</span></a>
-<a class="sourceLine" id="cb5-4" title="4"><span class="kw">plot</span>(SVF,<span class="dt">xlim=</span>xlim,<span class="dt">level=</span>level)</a>
-<a class="sourceLine" id="cb5-5" title="5"><span class="kw">title</span>(<span class="st">&quot;zoomed in&quot;</span>)</a>
-<a class="sourceLine" id="cb5-6" title="6"><span class="kw">plot</span>(SVF,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level)</a>
-<a class="sourceLine" id="cb5-7" title="7"><span class="kw">title</span>(<span class="st">&quot;zoomed out&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1">SVF &lt;-<span class="st"> </span><span class="kw">variogram</span>(Cilla)</a>
+<a class="sourceLine" id="cb9-2" title="2">level &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.5</span>,<span class="fl">0.95</span>) <span class="co"># 50% and 95% CIs</span></a>
+<a class="sourceLine" id="cb9-3" title="3">xlim &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">12</span> <span class="op">%#%</span><span class="st"> &quot;hour&quot;</span>) <span class="co"># 0-12 hour window</span></a>
+<a class="sourceLine" id="cb9-4" title="4"><span class="kw">plot</span>(SVF,<span class="dt">xlim=</span>xlim,<span class="dt">level=</span>level)</a>
+<a class="sourceLine" id="cb9-5" title="5"><span class="kw">title</span>(<span class="st">&quot;zoomed in&quot;</span>)</a>
+<a class="sourceLine" id="cb9-6" title="6"><span class="kw">plot</span>(SVF,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level)</a>
+<a class="sourceLine" id="cb9-7" title="7"><span class="kw">title</span>(<span class="st">&quot;zoomed out&quot;</span>)</a></code></pre></div>
 <p><img src="variogram_files/figure-html/unnamed-chunk-2-1.png" width="700" /><img src="variogram_files/figure-html/unnamed-chunk-2-2.png" width="700" /></p>
 <p>The first plot is zoomed in to the short lag behavior, while the second plot is zoomed out. You can do this on the fly with <code>zoom(Cilla)</code> in R-studio. The variogram represents the average square distance traveled (vertical axis) within some time lag (horizontal axis).</p>
 <p>For the long range behavior we can see that the variogram flattens (asymptotes) at approximately 20 days. This is, roughly, how coarse you need to make the timeseries so that methods assuming independence (no autocorrelation) can be valid. This includes, conventional kernel density estimation (KDE), minimum convex polygon (MCP), conventional species distribution modeling (SDM), and a host of other analyses.</p>
@@ -182,26 +187,26 @@
 <div id="variogram-fitting-the-hard-way" class="section level2">
 <h2>Variogram Fitting the Hard Way</h2>
 <p>For pedagogical reasons we first “fit” models to the variogram by hand, while later we will use a much easier method. we can manually guesstimate some continuous-time models for the aforementioned behavior with the commands</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1">m.iid &lt;-<span class="st"> </span><span class="kw">ctmm</span>(<span class="dt">sigma=</span><span class="dv">23</span> <span class="op">%#%</span><span class="st"> &quot;km^2&quot;</span>)</a>
-<a class="sourceLine" id="cb6-2" title="2">m.ou &lt;-<span class="st"> </span><span class="kw">ctmm</span>(<span class="dt">sigma=</span><span class="dv">23</span> <span class="op">%#%</span><span class="st"> &quot;km^2&quot;</span>,<span class="dt">tau=</span><span class="dv">6</span> <span class="op">%#%</span><span class="st"> &quot;day&quot;</span>)</a>
-<a class="sourceLine" id="cb6-3" title="3"><span class="kw">plot</span>(SVF,<span class="dt">CTMM=</span>m.iid,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">&quot;red&quot;</span>)</a>
-<a class="sourceLine" id="cb6-4" title="4"><span class="kw">title</span>(<span class="st">&quot;Independent and identically distributed data&quot;</span>)</a>
-<a class="sourceLine" id="cb6-5" title="5"><span class="kw">plot</span>(SVF,<span class="dt">CTMM=</span>m.ou,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">&quot;purple&quot;</span>)</a>
-<a class="sourceLine" id="cb6-6" title="6"><span class="kw">title</span>(<span class="st">&quot;Ornstein-Uhlenbeck movement&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" title="1">m.iid &lt;-<span class="st"> </span><span class="kw">ctmm</span>(<span class="dt">sigma=</span><span class="dv">23</span> <span class="op">%#%</span><span class="st"> &quot;km^2&quot;</span>)</a>
+<a class="sourceLine" id="cb10-2" title="2">m.ou &lt;-<span class="st"> </span><span class="kw">ctmm</span>(<span class="dt">sigma=</span><span class="dv">23</span> <span class="op">%#%</span><span class="st"> &quot;km^2&quot;</span>,<span class="dt">tau=</span><span class="dv">6</span> <span class="op">%#%</span><span class="st"> &quot;day&quot;</span>)</a>
+<a class="sourceLine" id="cb10-3" title="3"><span class="kw">plot</span>(SVF,<span class="dt">CTMM=</span>m.iid,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">&quot;red&quot;</span>)</a>
+<a class="sourceLine" id="cb10-4" title="4"><span class="kw">title</span>(<span class="st">&quot;Independent and identically distributed data&quot;</span>)</a>
+<a class="sourceLine" id="cb10-5" title="5"><span class="kw">plot</span>(SVF,<span class="dt">CTMM=</span>m.ou,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">&quot;purple&quot;</span>)</a>
+<a class="sourceLine" id="cb10-6" title="6"><span class="kw">title</span>(<span class="st">&quot;Ornstein-Uhlenbeck movement&quot;</span>)</a></code></pre></div>
 <p><img src="variogram_files/figure-html/unnamed-chunk-3-1.png" width="700" /><img src="variogram_files/figure-html/unnamed-chunk-3-2.png" width="700" /></p>
 <p>where for both the models <code>m.iid</code> and <code>m.ou</code>, <code>sigma</code> (σ) is the asymptotic variance. In the Ornstein-Uhlenbeck (OU) model <code>m.ou</code>, <code>tau</code> (τ) is a single timescale that governs the autocorrelation in position and dictates the animal’s home-range crossing time. The independent and identically distributed (IID) null model <code>m.iid</code> has no autocorrelation. Notice that all units are in meters and seconds, as output by the utility function <code>%#%</code> (see <code>help("%#%")</code>.</p>
 <p>The IID model <code>m.iid</code> is obviously incorrect and in the zoomed in plot we can also see that the OU model <code>m.ou</code> is incorrectly linear at short lags, whereas the empirical variogram actually curves up for an hour or two before it becomes linear. Let us introduce a model that incorporates this behavior.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1">m.ouf &lt;-<span class="st"> </span><span class="kw">ctmm</span>(<span class="dt">sigma=</span><span class="dv">23</span> <span class="op">%#%</span><span class="st"> &quot;km^2&quot;</span>,<span class="dt">tau=</span><span class="kw">c</span>(<span class="dv">6</span> <span class="op">%#%</span><span class="st"> &quot;day&quot;</span>,<span class="dv">1</span> <span class="op">%#%</span><span class="st"> &quot;hour&quot;</span>))</a>
-<a class="sourceLine" id="cb7-2" title="2"><span class="kw">plot</span>(SVF,<span class="dt">CTMM=</span>m.ou,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">&quot;purple&quot;</span>,<span class="dt">xlim=</span>xlim)</a>
-<a class="sourceLine" id="cb7-3" title="3"><span class="kw">title</span>(<span class="st">&quot;Ornstein-Uhlenbeck movement&quot;</span>)</a>
-<a class="sourceLine" id="cb7-4" title="4"><span class="kw">plot</span>(SVF,<span class="dt">CTMM=</span>m.ouf,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">&quot;blue&quot;</span>,<span class="dt">xlim=</span>xlim)</a>
-<a class="sourceLine" id="cb7-5" title="5"><span class="kw">title</span>(<span class="st">&quot;Ornstein-Uhlenbeck-F movement&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" title="1">m.ouf &lt;-<span class="st"> </span><span class="kw">ctmm</span>(<span class="dt">sigma=</span><span class="dv">23</span> <span class="op">%#%</span><span class="st"> &quot;km^2&quot;</span>,<span class="dt">tau=</span><span class="kw">c</span>(<span class="dv">6</span> <span class="op">%#%</span><span class="st"> &quot;day&quot;</span>,<span class="dv">1</span> <span class="op">%#%</span><span class="st"> &quot;hour&quot;</span>))</a>
+<a class="sourceLine" id="cb11-2" title="2"><span class="kw">plot</span>(SVF,<span class="dt">CTMM=</span>m.ou,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">&quot;purple&quot;</span>,<span class="dt">xlim=</span>xlim)</a>
+<a class="sourceLine" id="cb11-3" title="3"><span class="kw">title</span>(<span class="st">&quot;Ornstein-Uhlenbeck movement&quot;</span>)</a>
+<a class="sourceLine" id="cb11-4" title="4"><span class="kw">plot</span>(SVF,<span class="dt">CTMM=</span>m.ouf,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">&quot;blue&quot;</span>,<span class="dt">xlim=</span>xlim)</a>
+<a class="sourceLine" id="cb11-5" title="5"><span class="kw">title</span>(<span class="st">&quot;Ornstein-Uhlenbeck-F movement&quot;</span>)</a></code></pre></div>
 <p><img src="variogram_files/figure-html/unnamed-chunk-4-1.png" width="700" /><img src="variogram_files/figure-html/unnamed-chunk-4-2.png" width="700" /></p>
 <p>The confidence intervals at short lags are also very narrow, though both of these models look the same at coarser scales and so the discrepancy is only revealed by high resolution data.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" title="1"><span class="kw">plot</span>(SVF,<span class="dt">CTMM=</span>m.ou,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">&quot;purple&quot;</span>)</a>
-<a class="sourceLine" id="cb8-2" title="2"><span class="kw">title</span>(<span class="st">&quot;Ornstein-Uhlenbeck movement&quot;</span>)</a>
-<a class="sourceLine" id="cb8-3" title="3"><span class="kw">plot</span>(SVF,<span class="dt">CTMM=</span>m.ouf,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">&quot;blue&quot;</span>)</a>
-<a class="sourceLine" id="cb8-4" title="4"><span class="kw">title</span>(<span class="st">&quot;Ornstein-Uhlenbeck-F movement&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" title="1"><span class="kw">plot</span>(SVF,<span class="dt">CTMM=</span>m.ou,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">&quot;purple&quot;</span>)</a>
+<a class="sourceLine" id="cb12-2" title="2"><span class="kw">title</span>(<span class="st">&quot;Ornstein-Uhlenbeck movement&quot;</span>)</a>
+<a class="sourceLine" id="cb12-3" title="3"><span class="kw">plot</span>(SVF,<span class="dt">CTMM=</span>m.ouf,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">&quot;blue&quot;</span>)</a>
+<a class="sourceLine" id="cb12-4" title="4"><span class="kw">title</span>(<span class="st">&quot;Ornstein-Uhlenbeck-F movement&quot;</span>)</a></code></pre></div>
 <p><img src="variogram_files/figure-html/unnamed-chunk-5-1.png" width="700" /><img src="variogram_files/figure-html/unnamed-chunk-5-2.png" width="700" /></p>
 <p>The Ornstein-Uhlenbeck-F (OUF) model <code>m.ouf</code> introduces an additional autocorrelation timescale for the animal’s velocity, so that it more closely matches the initial behavior of the variogram. The initial curve upwards tells us that there is continuity in the animal’s velocity at this timescale. Conventional Markovian animal movement models do not capture this, which leads to the same kind of bias and underestimation of confidence intervals as when ignoring autocorrelation entirely.</p>
 <p>The linear regime of the variogram (regular diffusion) is just as important as the asymptotic regime. In the linear regime it is reasonable to assume a Markovian model as with step selection functions (SSF) and Brownian bridges (BB). Therefore, the variogram has informed us as to how much we need to coarsen our data for it to be appropriate in many common analyses that neglect various aspects of movement.</p>
@@ -212,40 +217,40 @@
 <div id="variogram-error-is-autocorrelated" class="section level3">
 <h3>Variogram Error is Autocorrelated</h3>
 <p>It is important to note that variogram errors—the difference between the empirical variogram and the true semi-variance function—are themselves autocorrelated. Therefore, if the empirical variogram is higher (or lower) than the truth at one lag, then it will also tend to be higher (or lower) than the truth at the next lag. Smooth wiggling of the point estimate that falls within the confidence bands is not necessarily meaningful. To demonstrate this, let us simulate some data from the OUF model <code>m.ouf</code> and look at its empirical variogram.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1"><span class="co"># simulate fake buffalo with the same sampling schedule</span></a>
-<a class="sourceLine" id="cb9-2" title="2">willa &lt;-<span class="st"> </span><span class="kw">simulate</span>(m.ouf,<span class="dt">t=</span>Cilla<span class="op">$</span>t)</a>
-<a class="sourceLine" id="cb9-3" title="3"><span class="kw">plot</span>(willa)</a>
-<a class="sourceLine" id="cb9-4" title="4"><span class="kw">title</span>(<span class="st">&quot;simulation&quot;</span>)</a>
-<a class="sourceLine" id="cb9-5" title="5"><span class="co"># now calculate and plot its variogram</span></a>
-<a class="sourceLine" id="cb9-6" title="6">SVF2 &lt;-<span class="st"> </span><span class="kw">variogram</span>(willa)</a>
-<a class="sourceLine" id="cb9-7" title="7"><span class="kw">plot</span>(SVF2,<span class="dt">CTMM=</span>m.ouf,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">&quot;blue&quot;</span>)</a>
-<a class="sourceLine" id="cb9-8" title="8"><span class="kw">title</span>(<span class="st">&quot;simulation&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" title="1"><span class="co"># simulate fake buffalo with the same sampling schedule</span></a>
+<a class="sourceLine" id="cb13-2" title="2">willa &lt;-<span class="st"> </span><span class="kw">simulate</span>(m.ouf,<span class="dt">t=</span>Cilla<span class="op">$</span>t)</a>
+<a class="sourceLine" id="cb13-3" title="3"><span class="kw">plot</span>(willa)</a>
+<a class="sourceLine" id="cb13-4" title="4"><span class="kw">title</span>(<span class="st">&quot;simulation&quot;</span>)</a>
+<a class="sourceLine" id="cb13-5" title="5"><span class="co"># now calculate and plot its variogram</span></a>
+<a class="sourceLine" id="cb13-6" title="6">SVF2 &lt;-<span class="st"> </span><span class="kw">variogram</span>(willa)</a>
+<a class="sourceLine" id="cb13-7" title="7"><span class="kw">plot</span>(SVF2,<span class="dt">CTMM=</span>m.ouf,<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span>level,<span class="dt">col.CTMM=</span><span class="st">&quot;blue&quot;</span>)</a>
+<a class="sourceLine" id="cb13-8" title="8"><span class="kw">title</span>(<span class="st">&quot;simulation&quot;</span>)</a></code></pre></div>
 <p><img src="variogram_files/figure-html/unnamed-chunk-6-1.png" width="700" /><img src="variogram_files/figure-html/unnamed-chunk-6-2.png" width="700" /></p>
 <p>In this case, the blue curve is the true model, while the (black) empirical variogram is our estimate calculated from the data. The undulations in the empirical variogram are caused by autocorrelation between its errors and are not features of the underlying model.</p>
 </div>
 <div id="irregular-sampling-schedules" class="section level3">
 <h3>Irregular Sampling Schedules</h3>
 <p>Random gaps in the data are acceptable and fully accounted for in both variogram estimation and model fitting. However, if under any condition the sampling rate changes during data collection, then you will have to account for that in the variogram with the <code>dt</code> argument. In the following example, the collar was programmed to cycle between 1, 5, 25 hour sampling intervals</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" title="1"><span class="kw">data</span>(<span class="st">&quot;gazelle&quot;</span>)</a>
-<a class="sourceLine" id="cb10-2" title="2">SVF3 &lt;-<span class="st"> </span><span class="kw">variogram</span>(gazelle[[<span class="dv">18</span>]])</a>
-<a class="sourceLine" id="cb10-3" title="3"><span class="kw">plot</span>(SVF3,<span class="dt">fraction=</span><span class="fl">0.85</span>,<span class="dt">level=</span>level)</a>
-<a class="sourceLine" id="cb10-4" title="4"><span class="kw">title</span>(<span class="st">&quot;Default method&quot;</span>)</a>
-<a class="sourceLine" id="cb10-5" title="5"><span class="co"># 1, 5, 25 hour sampling intervals</span></a>
-<a class="sourceLine" id="cb10-6" title="6">dt &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">5</span>,<span class="dv">25</span>) <span class="op">%#%</span><span class="st"> &quot;hour&quot;</span></a>
-<a class="sourceLine" id="cb10-7" title="7">SVF3 &lt;-<span class="st"> </span><span class="kw">variogram</span>(gazelle[[<span class="dv">18</span>]],<span class="dt">dt=</span>dt)</a>
-<a class="sourceLine" id="cb10-8" title="8"><span class="kw">plot</span>(SVF3,<span class="dt">fraction=</span><span class="fl">0.85</span>,<span class="dt">level=</span>level)</a>
-<a class="sourceLine" id="cb10-9" title="9"><span class="kw">title</span>(<span class="st">&quot;Multi method&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" title="1"><span class="kw">data</span>(<span class="st">&quot;gazelle&quot;</span>)</a>
+<a class="sourceLine" id="cb14-2" title="2">SVF3 &lt;-<span class="st"> </span><span class="kw">variogram</span>(gazelle[[<span class="dv">18</span>]])</a>
+<a class="sourceLine" id="cb14-3" title="3"><span class="kw">plot</span>(SVF3,<span class="dt">fraction=</span><span class="fl">0.85</span>,<span class="dt">level=</span>level)</a>
+<a class="sourceLine" id="cb14-4" title="4"><span class="kw">title</span>(<span class="st">&quot;Default method&quot;</span>)</a>
+<a class="sourceLine" id="cb14-5" title="5"><span class="co"># 1, 5, 25 hour sampling intervals</span></a>
+<a class="sourceLine" id="cb14-6" title="6">dt &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">5</span>,<span class="dv">25</span>) <span class="op">%#%</span><span class="st"> &quot;hour&quot;</span></a>
+<a class="sourceLine" id="cb14-7" title="7">SVF3 &lt;-<span class="st"> </span><span class="kw">variogram</span>(gazelle[[<span class="dv">18</span>]],<span class="dt">dt=</span>dt)</a>
+<a class="sourceLine" id="cb14-8" title="8"><span class="kw">plot</span>(SVF3,<span class="dt">fraction=</span><span class="fl">0.85</span>,<span class="dt">level=</span>level)</a>
+<a class="sourceLine" id="cb14-9" title="9"><span class="kw">title</span>(<span class="st">&quot;Multi method&quot;</span>)</a></code></pre></div>
 <p><img src="variogram_files/figure-html/unnamed-chunk-7-1.png" width="700" /><img src="variogram_files/figure-html/unnamed-chunk-7-2.png" width="700" /></p>
 <p>With small amounts of highly irregular data, you may also want to try <code>fast=FALSE</code>.</p>
 </div>
 <div id="pooling-variograms" class="section level3">
 <h3>Pooling Variograms</h3>
 <p>If multiple individuals exhibit similar movement behaviors, then we can pool their individual variograms to create a more precise population variogram. You should be careful though, if the individual movement behaviors and sampling schedules are not identical, then there will be discontinuities at lags where one timeseries runs out of data.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" title="1"><span class="co"># buffalo 4 is bad</span></a>
-<a class="sourceLine" id="cb11-2" title="2">SVF4 &lt;-<span class="st"> </span><span class="kw">lapply</span>(buffalo[<span class="op">-</span><span class="dv">4</span>],variogram)</a>
-<a class="sourceLine" id="cb11-3" title="3">SVF4 &lt;-<span class="st"> </span><span class="kw">mean</span>(SVF4)</a>
-<a class="sourceLine" id="cb11-4" title="4"><span class="kw">plot</span>(SVF4,<span class="dt">fraction=</span><span class="fl">0.35</span>,<span class="dt">level=</span>level)</a>
-<a class="sourceLine" id="cb11-5" title="5"><span class="kw">title</span>(<span class="st">&quot;Population variogram&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" title="1"><span class="co"># buffalo 4 is bad</span></a>
+<a class="sourceLine" id="cb15-2" title="2">SVF4 &lt;-<span class="st"> </span><span class="kw">lapply</span>(buffalo[<span class="op">-</span><span class="dv">4</span>],variogram)</a>
+<a class="sourceLine" id="cb15-3" title="3">SVF4 &lt;-<span class="st"> </span><span class="kw">mean</span>(SVF4)</a>
+<a class="sourceLine" id="cb15-4" title="4"><span class="kw">plot</span>(SVF4,<span class="dt">fraction=</span><span class="fl">0.35</span>,<span class="dt">level=</span>level)</a>
+<a class="sourceLine" id="cb15-5" title="5"><span class="kw">title</span>(<span class="st">&quot;Population variogram&quot;</span>)</a></code></pre></div>
 <p><img src="variogram_files/figure-html/unnamed-chunk-8-1.png" width="700" /></p>
 </div>
 <div id="non-stationarity-in-stationary-variograms" class="section level3">
@@ -260,8 +265,8 @@
 <div id="maximum-likelihood-fitting-the-hard-way" class="section level2">
 <h2>Maximum Likelihood Fitting the Hard Way</h2>
 <p>Here we take our guestimates from variogram fitting the hard way and perform model selection manually. Later we will finish everything off the easy way. First let us fit each of our proposed models <code>m.iid</code>, <code>m.ou</code>, <code>m.ouf</code>, store the corresponding best-fit result in <code>M.IID</code>, <code>M.OU</code>, <code>M.OUF</code>, and then compare some of their outputs.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" title="1">M.IID &lt;-<span class="st"> </span><span class="kw">ctmm.fit</span>(Cilla,m.iid)</a>
-<a class="sourceLine" id="cb12-2" title="2"><span class="kw">summary</span>(M.IID)</a></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" title="1">M.IID &lt;-<span class="st"> </span><span class="kw">ctmm.fit</span>(Cilla,m.iid)</a>
+<a class="sourceLine" id="cb16-2" title="2"><span class="kw">summary</span>(M.IID)</a></code></pre></div>
 <pre><code>## $name
 ## [1] &quot;IID anisotropic&quot;
 ## 
@@ -272,8 +277,8 @@
 ## $CI
 ##                               low      est     high
 ## area (square kilometers) 356.9182 369.0051 381.2905</code></pre>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" title="1">M.OU &lt;-<span class="st"> </span><span class="kw">ctmm.fit</span>(Cilla,m.ou)</a>
-<a class="sourceLine" id="cb14-2" title="2"><span class="kw">summary</span>(M.OU)</a></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" title="1">M.OU &lt;-<span class="st"> </span><span class="kw">ctmm.fit</span>(Cilla,m.ou)</a>
+<a class="sourceLine" id="cb18-2" title="2"><span class="kw">summary</span>(M.OU)</a></code></pre></div>
 <pre><code>## $name
 ## [1] &quot;OU anisotropic&quot;
 ## 
@@ -285,26 +290,26 @@
 ##                                 low       est      high
 ## area (square kilometers) 181.703274 414.86723 742.63012
 ## τ[position] (days)         5.232246  16.55615  52.38783</code></pre>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" title="1">M.OUF &lt;-<span class="st"> </span><span class="kw">ctmm.fit</span>(Cilla,m.ouf)</a>
-<a class="sourceLine" id="cb16-2" title="2"><span class="kw">summary</span>(M.OUF)</a></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb20-1" title="1">M.OUF &lt;-<span class="st"> </span><span class="kw">ctmm.fit</span>(Cilla,m.ouf)</a>
+<a class="sourceLine" id="cb20-2" title="2"><span class="kw">summary</span>(M.OUF)</a></code></pre></div>
 <pre><code>## $name
 ## [1] &quot;OUF anisotropic&quot;
 ## 
 ## $DOF
 ##       mean       area      speed 
-##   10.73354   18.13597 3445.13306 
+##   10.73354   18.13599 3445.13306 
 ## 
 ## $CI
 ##                                 low        est      high
-## area (square kilometers) 239.647393 403.458790 609.24115
-## τ[position] (days)         4.026011   7.505366  13.99165
+## area (square kilometers) 239.647385 403.458673 609.24087
+## τ[position] (days)         4.026012   7.505364  13.99164
 ## τ[velocity] (minutes)     39.570325  42.069009  44.72547
 ## speed (kilometers/day)    13.819957  14.054636  14.28926</code></pre>
 <p>Notice how tiny the (Gaussian) area uncertainty is in IID model <code>M.IID</code>. Let us look into some details of the models.</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" title="1">FITS &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">IID=</span>M.IID,<span class="dt">OU=</span>M.OU,<span class="dt">OUF=</span>M.OUF)</a>
-<a class="sourceLine" id="cb18-2" title="2"><span class="kw">summary</span>(FITS)</a></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb22-1" title="1">FITS &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">IID=</span>M.IID,<span class="dt">OU=</span>M.OU,<span class="dt">OUF=</span>M.OUF)</a>
+<a class="sourceLine" id="cb22-2" title="2"><span class="kw">summary</span>(FITS)</a></code></pre></div>
 <pre><code>##         ΔAICc ΔRMSPE (m)   DOF[area]
-## OUF     0.000   352.8532   18.135971
+## OUF     0.000   352.8521   18.135987
 ## OU   1565.291   779.5547    8.231787
 ## IID 38112.149     0.0000 3522.145533</code></pre>
 <p><code>AICc</code> is the (linearly) corrected Akaike information criteria. AIC balances likelihood against model complexity in a way that is good if we want to make optimal predictions. A lower AIC is better. Getting the AIC to go down by 5 is great, while getting the AIC to go down by 10 is awesome. Our AIC is going down by thousands.</p>
@@ -313,13 +318,13 @@
 <div id="maximum-likelihood-fitting-the-easy-way" class="section level2">
 <h2>Maximum Likelihood Fitting the Easy Way</h2>
 <p>If you have a complex, hypothetical model in mind, say the OUF <code>m.ouf</code> as you would get from variogram fitting the easy way, then you can perform model selection more conveniently with the <code>ctmm.select</code> function. <code>ctmm.select</code> considers the initial guess (hypothesis) and then iterates this model to select the best model based upon an information criteria.</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb20-1" title="1"><span class="co"># CRAN policy limits us to 2 cores</span></a>
-<a class="sourceLine" id="cb20-2" title="2">FITZ &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(Cilla,m.ouf,<span class="dt">verbose=</span><span class="ot">TRUE</span>,<span class="dt">cores=</span><span class="dv">2</span>)</a>
-<a class="sourceLine" id="cb20-3" title="3"><span class="kw">summary</span>(FITZ)</a></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb24-1" title="1"><span class="co"># CRAN policy limits us to 2 cores</span></a>
+<a class="sourceLine" id="cb24-2" title="2">FITZ &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(Cilla,m.ouf,<span class="dt">verbose=</span><span class="ot">TRUE</span>,<span class="dt">cores=</span><span class="dv">2</span>)</a>
+<a class="sourceLine" id="cb24-3" title="3"><span class="kw">summary</span>(FITZ)</a></code></pre></div>
 <pre><code>##                     ΔAICc ΔRMSPE (km)  DOF[area]
-## OUF anisotropic    0.0000    1.776671  18.135980
-## OUF isotropic     67.7508    1.912066  17.912942
-## OU anisotropic  1565.2907    2.203373   8.231786
+## OUF anisotropic    0.0000    1.776672  18.135968
+## OUF isotropic     67.7508    1.912066  17.912945
+## OU anisotropic  1565.2907    2.203373   8.231788
 ## OUf anisotropic 1863.8799    0.000000 345.919727</code></pre>
 <!--Note that `level=1` is set here for demonstration purposes only, to attempt every nearest model no matter how unlikely it may seem.-->
 <p>The isotropic and anisotropic (<code>isotropic=FALSE</code>) flags correspond to circular and elliptical covariances respectively—an option we did not consider above. <!-- The Ornstein-Uhlenbeck-F (OUF) model is continuous in position and velocity (`M.OUF`),
@@ -329,10 +334,10 @@ and the independent and identically distributed (IID) model has no autocorrelati
 <div id="variograms-as-a-disgnostic-for-maximum-likelihood" class="section level2">
 <h2>Variograms as a Disgnostic for Maximum Likelihood</h2>
 <p>Now its time to make sure that our selected model is explaining the most significant features of the animal’s movement. Let us plot the variogram again with our fit models</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb22-1" title="1"><span class="kw">plot</span>(SVF,<span class="dt">CTMM=</span>FITS,<span class="dt">col.CTMM=</span><span class="kw">c</span>(<span class="st">&quot;red&quot;</span>,<span class="st">&quot;purple&quot;</span>,<span class="st">&quot;blue&quot;</span>),<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span><span class="fl">0.5</span>)</a>
-<a class="sourceLine" id="cb22-2" title="2"><span class="kw">title</span>(<span class="st">&quot;zoomed out&quot;</span>)</a>
-<a class="sourceLine" id="cb22-3" title="3"><span class="kw">plot</span>(SVF,<span class="dt">CTMM=</span>FITS,<span class="dt">col.CTMM=</span><span class="kw">c</span>(<span class="st">&quot;red&quot;</span>,<span class="st">&quot;purple&quot;</span>,<span class="st">&quot;blue&quot;</span>),<span class="dt">xlim=</span>xlim,<span class="dt">level=</span><span class="fl">0.5</span>)</a>
-<a class="sourceLine" id="cb22-4" title="4"><span class="kw">title</span>(<span class="st">&quot;zoomed in&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb26-1" title="1"><span class="kw">plot</span>(SVF,<span class="dt">CTMM=</span>FITS,<span class="dt">col.CTMM=</span><span class="kw">c</span>(<span class="st">&quot;red&quot;</span>,<span class="st">&quot;purple&quot;</span>,<span class="st">&quot;blue&quot;</span>),<span class="dt">fraction=</span><span class="fl">0.65</span>,<span class="dt">level=</span><span class="fl">0.5</span>)</a>
+<a class="sourceLine" id="cb26-2" title="2"><span class="kw">title</span>(<span class="st">&quot;zoomed out&quot;</span>)</a>
+<a class="sourceLine" id="cb26-3" title="3"><span class="kw">plot</span>(SVF,<span class="dt">CTMM=</span>FITS,<span class="dt">col.CTMM=</span><span class="kw">c</span>(<span class="st">&quot;red&quot;</span>,<span class="st">&quot;purple&quot;</span>,<span class="st">&quot;blue&quot;</span>),<span class="dt">xlim=</span>xlim,<span class="dt">level=</span><span class="fl">0.5</span>)</a>
+<a class="sourceLine" id="cb26-4" title="4"><span class="kw">title</span>(<span class="st">&quot;zoomed in&quot;</span>)</a></code></pre></div>
 <p><img src="variogram_files/figure-html/unnamed-chunk-14-1.png" width="700" /><img src="variogram_files/figure-html/unnamed-chunk-14-2.png" width="700" /></p>
 <p>Notice that the purple OU model <code>M.OU</code> is significantly biased downward and is underestimating diffusion. This is because the continuous-velocity behavior at short time lags, which <code>M.OU</code> does not account for, is throwing off the estimate. The IID model <code>M.IID</code> is ignoring autocorrelation completely, while the OU model <code>M.OU</code> is ignoring autocorrelation in the buffalo’s velocity.</p>
 <p>While the OUF <code>M.OUF</code> is the selected model among all candidates, <code>M.OUF</code> looks slightly biased upwards in comparison to the variogram fit <code>m.ouf</code>. Some of this is due to sampling variability, which be (partially) remedied in the <code>variogram</code> method by increasing the <code>res</code> argument. Differences here can also arise from not accounting for telemetry error, which is unfortunately not annotated in this data.</p>

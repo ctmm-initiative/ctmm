@@ -7,6 +7,10 @@ clean.parameters <- function(par,linear.cov=FALSE)
 
   for(P in POSITIVE.PARAMETERS) { if(P %in% NAMES) { par[P] <- clamp(par[P],0,Inf) } }
 
+  # arbitrary error parameters > 0
+  P <- NAMES[ grepl("error",NAMES) ]
+  par[P] <- clamp(par[P],0,Inf)
+
   # covariance parameters
   if("minor" %in% NAMES)
   {
@@ -44,9 +48,9 @@ clean.parameters <- function(par,linear.cov=FALSE)
 # identify autocovariance parameters in ctmm object
 # if profile==TRUE, some parameters can be solved exactly and so aren't identified
 # if linear==TRUE, only return linear non-problematic parameters
-# if linear.cov==TRUE, use linear covariance paramters for pREML
+# if linear.cov==TRUE, use linear covariance parameters for pREML
 # STRUCT determines the model structure incase some estimated parameters in CTMM are zero
-id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE=FALSE,dt=0,df=0,dz=0,STRUCT=CTMM)
+id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE.FIT=NA,dt=0,df=0,dz=0,STRUCT=CTMM)
 {
   # identify and name autocovariance parameters
   NAMES <- NULL
@@ -54,11 +58,13 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE=F
   if(STRUCT$sigma@par['major'] || length(STRUCT$tau))
   {
     sigma <- attr(CTMM$sigma,"par")
-    if(!profile || (STRUCT$error && UERE>=3)) # must fit all 1-3 covariance parameters
+    if(!profile || any(STRUCT$error & !UERE.FIT)) # must fit all 1-3 covariance parameters - not profiling or fixed errors
     { if(STRUCT$isotropic) { NAMES <- c(NAMES,"major") } else { NAMES <- c(NAMES,names(sigma)) } }
-    else if(STRUCT$error || STRUCT$circle) # must fit shape, but scale/area/var can be profiled for free
+    else if(any(UERE.FIT) || STRUCT$circle) # must fit shape, but overall scale/var can be profiled for free - circulation or relative errors
     { if(!STRUCT$isotropic) { NAMES <- c(NAMES,names(sigma[2:3])) } }
   }
+
+  if(any(UERE.FIT)) { NAMES <- c(NAMES, paste("error",names(UERE.FIT)[UERE.FIT>0]) ) }
 
   if(!linear) # nonlinear autocorrelation parameters
   {
@@ -78,7 +84,7 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE=F
     if(STRUCT$circle) { NAMES <- c(NAMES,"circle") }
   }
 
-  if((STRUCT$error) && UERE<3) { NAMES <- c(NAMES,"error") }
+  ## ORDER MATTERS BETWEEN THESE TWO CODE BLOCKS!
 
   # setup parameter information
   parscale <- NULL
@@ -110,6 +116,15 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE=F
       upper <- c(upper,Inf,Inf)
       period <- c(period,FALSE,pi)
     }
+
+    # RMS UERE - error parameters
+    if(any(UERE.FIT))
+    {
+      parscale <- c(parscale, pmax(CTMM$error[UERE.FIT>0],dz) ) # minimum of dz error parscale
+      lower <- c(lower, rep(0,sum(UERE.FIT>0)) )
+      upper <- c(upper, rep(Inf,sum(UERE.FIT>0)) )
+      period <- c(period, rep(FALSE,sum(UERE.FIT>0)) )
+    }
   }
   else # linear sigma: xx, yy, xy
   {
@@ -127,6 +142,15 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE=F
       lower <- c(lower,0,-Inf)
       upper <- c(upper,Inf,Inf)
       period <- c(period,FALSE,FALSE)
+    }
+
+    # MS UERE - error parameters
+    if(any(UERE.FIT))
+    {
+      parscale <- c(parscale, pmax(CTMM$error[UERE.FIT>0],dz)^2 ) # minimum of dz error parscale
+      lower <- c(lower, rep(0,sum(UERE.FIT>0)) )
+      upper <- c(upper, rep(Inf,sum(UERE.FIT>0)) )
+      period <- c(period, rep(FALSE,sum(UERE.FIT>0)) )
     }
   } # end linear sigma
 
@@ -155,17 +179,6 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE=F
       upper <- c(upper,Inf)
       period <- c(period,FALSE)
     }
-  }
-
-  if(STRUCT$error && UERE<3)
-  {
-    # relative length scale
-    # SCALE <- ifelse(profile,sqrt(CTMM$sigma@par['major']),1)
-
-    parscale <- c(parscale,max(dz,CTMM$error)) # minimum of dz error parscale
-    lower <- c(lower,0)
-    upper <- c(upper,Inf)
-    period <- c(period,FALSE)
   }
 
   if(length(parscale))
@@ -197,12 +210,18 @@ get.parameters <- function(CTMM,NAMES,linear.cov=FALSE)
     getter("major",sigma[1])
     getter("minor",sigma[2])
     getter("angle",sigma[3])
+
+    PARS <- NAMES[ grepl("error",NAMES) ]
+    for(P in PARS) { par[P] <- CTMM$error[ substr(P,nchar("error ?"),nchar(P)) ] }
   }
   else
   {
     getter("major",sigma[1]) # sigma[x,x]
     getter("minor",sigma[4]) # sigma[y,y]
     getter("angle",sigma[2]) # sigma[x,y]
+
+    PARS <- NAMES[ grepl("error",NAMES) ]
+    for(P in PARS) { par[P] <- CTMM$error[ substr(P,nchar("error ?"),nchar(P)) ]^2 }
   }
 
   tau <- CTMM$tau
@@ -212,7 +231,6 @@ get.parameters <- function(CTMM,NAMES,linear.cov=FALSE)
   getter("omega")
 
   getter("circle")
-  getter("error")
 
   return(par)
 }
@@ -231,6 +249,9 @@ set.parameters <- function(CTMM,par,linear.cov=FALSE,optimize=FALSE)
     NAME <- "major"; if(NAME %in% NAMES) { sigma[NAME] <- par[NAME]; if(AXES>1) { sigma['minor'] <- par[NAME] } } # in case of isotropic
     NAME <- "minor"; if(NAME %in% NAMES) { sigma[NAME] <- par[NAME] }
     NAME <- "angle"; if(NAME %in% NAMES) { sigma[NAME] <- par[NAME] }
+
+    PARS <- NAMES[ grepl("error",NAMES) ]
+    for(P in PARS) { CTMM$error[ substr(P,nchar("error ?"),nchar(P)) ] <- par[P] }
   }
   else # major,minor,angle is storing xx,yy,xy in linear representation
   {
@@ -238,6 +259,9 @@ set.parameters <- function(CTMM,par,linear.cov=FALSE,optimize=FALSE)
     NAME <- "major"; if(NAME %in% NAMES) { if(AXES>1) { diag(sigma) <- par[c(NAME,NAME)] } else { sigma <- par[NAME] } }
     NAME <- "minor"; if(NAME %in% NAMES) { sigma[4] <- par[NAME] }
     NAME <- "angle"; if(NAME %in% NAMES) { sigma[2:3] <- par[c(NAME,NAME)] }
+
+    PARS <- NAMES[ grepl("error",NAMES) ]
+    for(P in PARS) { CTMM$error[ substr(P,nchar("error ?"),nchar(P)) ] <- sqrt(par[P]) }
   }
   CTMM$sigma <- covm(sigma,axes=CTMM$axes)
 
@@ -247,7 +271,6 @@ set.parameters <- function(CTMM,par,linear.cov=FALSE,optimize=FALSE)
   NAME <- "omega"; if(NAME %in% NAMES) { CTMM$omega <- par[NAME] }
 
   NAME <- "circle"; if(NAME %in% NAMES) { CTMM[[NAME]] <- par[NAME] }
-  NAME <- "error"; if(NAME %in% NAMES) { CTMM[[NAME]] <- par[NAME] }
 
   return(CTMM)
 }
@@ -275,7 +298,13 @@ copy.parameters <- function(x,value,par=value$features,destructive=TRUE)
   if("tau" %in% Pv) { x$tau <- value$tau }
   if("omega" %in% Pv) { x$omega <- value$omega }
   if("circle" %in% Pv) { x$circle <- value$circle }
-  if("error" %in% Pv) { x$error <- value$error }
+
+  PARS <- Pv[ grepl("error",Pv) ]
+  for(P in PARS)
+  {
+    P <- substr(P,nchar("error ?"),nchar(P))
+    x$error[P] <- value$error[P]
+  }
 
   # don't think I need this
   if("MLE" %in% names(x))

@@ -2,12 +2,17 @@
 BESSEL_LIMIT <- 2^16
 
 # estimate and assign speeds to times
-outlie <- function(data,UERE=10,plot=TRUE,by='d',...)
+outlie <- function(data,plot=TRUE,by='d',...)
 {
   if(class(data)[1]=="list")
-  { return( lapply(1:length(data), function(i){OUT <- outlie(data[[i]],UERE=UERE,plot=plot,by=by); graphics::title(names(data)[i]); OUT} ) ) }
+  { return( lapply(1:length(data), function(i){OUT <- outlie(data[[i]],plot=plot,by=by); graphics::title(names(data)[i]); OUT} ) ) }
 
-  error <- get.error(data,ctmm(error=UERE,axes=c("x","y")),circle=TRUE) # VAR
+  UERE <- uere(data)
+  if(DOP.LIST$horizontal$VAR %nin% names(data)) { uere(data) <- UERE } # adds VAR guesstimate columns if missing (DOF==0)
+  error <- UERE$UERE[,'horizontal']
+  names(error) <- rownames(UERE$UERE) # R drops dimnames
+  error <- ctmm(error=error,axes=c('x','y'))
+  error <- get.error(data,error,calibrate=TRUE)
 
   # time resolution
   DT <- diff(data$t)
@@ -36,7 +41,10 @@ outlie <- function(data,UERE=10,plot=TRUE,by='d',...)
 
   if('z' %in% names(data))
   {
-    error <- get.error(data,ctmm(error=UERE,axes=c("z")),circle=TRUE) # VAR
+    error <- UERE$UERE[,'vertical']
+    names(error) <- rownames(UERE$UERE) # R drops dimnames
+    error <- ctmm(error=error,axes=c('z'))
+    error <- get.error(data,error,calibrate=TRUE) # VAR
 
     Vz <- assign_speeds(data,UERE=error,DT=DT,axes='z')
     vz <- Vz$v.t

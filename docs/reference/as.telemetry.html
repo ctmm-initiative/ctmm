@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Import, coerce, and summarize MoveBank data — as.telemetry • ctmm</title>
+<title>Import, coerce, summarize, and combine MoveBank data — as.telemetry • ctmm</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="Import, coerce, and summarize MoveBank data — as.telemetry" />
-<meta property="og:description" content="Functions to import MoveBank csv files, data.frame, and Move objects, coerce them into telemetry objects, and summarize them." />
+<meta property="og:title" content="Import, coerce, summarize, and combine MoveBank data — as.telemetry" />
+<meta property="og:description" content="Functions to import MoveBank csv files, data.frame, and Move objects, coerce them into telemetry objects, summarize them, and combine data from multiple tracking devices." />
 
 
 
@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.11</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.1</span>
       </span>
     </div>
 
@@ -109,7 +109,7 @@
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/ctmm-initiative/ctmm">
-    <span class="fa fa-github fa-2x"></span>
+    <span class="fas fa-github fa-2x"></span>
      
   </a>
 </li>
@@ -126,13 +126,13 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Import, coerce, and summarize MoveBank data</h1>
+    <h1>Import, coerce, summarize, and combine MoveBank data</h1>
     
     <div class="hidden name"><code>as.telemetry.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Functions to import MoveBank csv files, <code>data.frame</code>, and <code>Move</code> objects, coerce them into <code>telemetry</code> objects, and summarize them.</p>
+    <p>Functions to import MoveBank csv files, <code>data.frame</code>, and <code>Move</code> objects, coerce them into <code>telemetry</code> objects, summarize them, and combine data from multiple tracking devices.</p>
     </div>
 
     <pre class="usage"><span class='fu'>as.telemetry</span><span class='op'>(</span><span class='va'>object</span>,timeformat<span class='op'>=</span><span class='st'>""</span>,timezone<span class='op'>=</span><span class='st'>"UTC"</span>,projection<span class='op'>=</span><span class='cn'>NULL</span>,datum<span class='op'>=</span><span class='cn'>NULL</span>,timeout<span class='op'>=</span><span class='cn'>Inf</span>,
@@ -161,7 +161,9 @@
 <span class='fu'>tail</span><span class='op'>(</span><span class='va'>x</span>,<span class='va'>...</span><span class='op'>)</span>
 
 <span class='co'># S3 method for telemetry</span>
-<span class='fu'>tail</span><span class='op'>(</span><span class='va'>x</span>,n<span class='op'>=</span><span class='fl'>6L</span>,<span class='va'>...</span><span class='op'>)</span></pre>
+<span class='fu'>tail</span><span class='op'>(</span><span class='va'>x</span>,n<span class='op'>=</span><span class='fl'>6L</span>,<span class='va'>...</span><span class='op'>)</span>
+
+<span class='fu'>tbind</span><span class='op'>(</span><span class='va'>...</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -208,7 +210,7 @@
     </tr>
     <tr>
       <th>...</th>
-      <td><p>Optional arguments to be fed to <code>fread</code> or <code><a href='https://rdrr.io/r/utils/read.table.html'>read.csv</a></code>, in the case of compressed files.</p></td>
+      <td><p><code>telemetry</code> objects or a list of such objects, for <code>tbind()</code>. Optional arguments to be fed to <code>fread</code> or <code><a href='https://rdrr.io/r/utils/read.table.html'>read.csv</a></code>, in the case of compressed files, for <code>as.telemetry()</code>.</p></td>
     </tr>
     <tr>
       <th>x</th>
@@ -224,10 +226,10 @@
 
     <p>If no projection argument is specified, a two-point equidistant projection is calculated that should be good for most range resident and migratory species.
 Global migrations that are not along one geodesic (locally straight line) will probably suffer distortion.</p>
-<p><code>as.telemetry</code> assumes <a href='https://www.movebank.org/node/2381'>Movebank naming conventions</a>.
+<p><code>as.telemetry()</code> assumes <a href='https://www.movebank.org/node/2381'>Movebank naming conventions</a>.
 Sufficient MoveBank columns include <code>individual.local.identifier</code> (or <code>tag.local.identifier</code>), <code>timestamp</code>, <code>location.long</code> and <code>location.lat</code>, while the optional Movebank columns include (E-OBS) <code>eobs.horizontal.accuracy.estimate</code>, (Telonics) <code>GPS.Horizontal.Error</code>, <code>GPS.HDOP</code>, (Argos) <code>Argos.orientation</code>, <code>Argos.semi.minor</code> and <code>Argos.semi.major</code> or <code>Argos.location.class</code>, etc..
 To have all columns detected and not overwrite eachother's information, <b>it is best to have only one tracking device model per file imported</b>.
-Multiple deployments on a single individual can be merged afterwards.</p>
+Multiple deployments on a single individual can be merged afterwards, using <code>tbind()</code>.</p>
 <p><!-- %The \code{GPS.HDOP} value requires the device's UERE value to be translated into telemetry errors. The UERE represents the RMS error given ideal (\eqn{HDOP=1}) satellite conditions. Therefore, if your device is purported to have an accuracy of 10 meters, then the UERE is likely around 10 meters. Consult your device manual and manufacturer for a specific value or see \code{\link{uere}} for UERE calibration. --></p>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 

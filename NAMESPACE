@@ -49,7 +49,7 @@ export("%#%",mag,optimizer)
 #S3method(`projection<-`,telemetry)
 
 #TELEMETRY FUNCTIONS
-export(as.telemetry,SpatialPoints.telemetry,SpatialPointsDataFrame.telemetry,SpatialPolygonsDataFrame.telemetry)
+export(as.telemetry,SpatialPoints.telemetry,SpatialPointsDataFrame.telemetry,SpatialPolygonsDataFrame.telemetry,tbind)
 S3method(as.telemetry,character)
 S3method(as.telemetry,data.frame)
 S3method(as.telemetry,Move)
@@ -111,6 +111,7 @@ S3method(speeds,telemetry)
 
 #UERE FUNCTIONS
 export(uere,"uere<-",uere.fit,outlie)
+S3method(str,UERE)
 S3method(summary,UERE)
 S3method(plot,outlie)
 
