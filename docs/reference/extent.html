@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.11</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.1</span>
       </span>
     </div>
 
@@ -109,7 +109,7 @@
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/ctmm-initiative/ctmm">
-    <span class="fa fa-github fa-2x"></span>
+    <span class="fas fa-github fa-2x"></span>
      
   </a>
 </li>
@@ -143,7 +143,7 @@ extent(x,level=1,...)
 extent(x,level=0.95,level.UD=0.95,...)
 
 # S4 method for UD
-extent(x,level=0.95,level.UD=0.95,...)
+extent(x,level=0.95,level.UD=0.95,complete=FALSE,...)
 
 # S4 method for variogram
 extent(x,level=0.95,threshold=2,...)
@@ -171,6 +171,10 @@ extent(x,level=1,...)</pre>
     <tr>
       <th>level.UD</th>
       <td><p>Coverage level of the UD area. I.e., the 50% core home range would be given by <code>level.UD=0.50</code>.</p></td>
+    </tr>
+    <tr>
+      <th>complete</th>
+      <td><p>Also calculate longitude-latitude extent of <code>UD</code> objects.</p></td>
     </tr>
     <tr>
       <th>threshold</th>

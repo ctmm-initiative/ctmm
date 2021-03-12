@@ -47,6 +47,8 @@ setMethod('extent', signature(x='list'), extent.list)
 # extent of telemetry data
 extent.telemetry <- function(x,level=1,...)
 {
+  level <- max(level)
+
   alpha <- (1-level)/2
   probs <- c(alpha,1-alpha)
   RANGE <- data.frame(row.names=c('min','max'))
@@ -72,6 +74,8 @@ setMethod('extent', signature(x='data.frame'), extent.telemetry)
 # extent of matrix/extent
 extent.matrix <- function(x,level=1,...)
 {
+  level <- max(level)
+
   NAMES <- colnames(x)
   x <- data.frame(x)
   colnames(x) <- NAMES # preserve NULL
@@ -83,6 +87,9 @@ setMethod('extent', signature(x='matrix'), extent.matrix)
 # range of Gaussian contours
 extent.ctmm <- function(x,level=0.95,level.UD=0.95,...)
 {
+  level <- max(level)
+  level.UD <- max(level.UD)
+
   if(is.null(x$mu)) { stop("This model has no mean location. Try ctmm.guess.") }
 
   alpha <- 1 - level
@@ -117,6 +124,9 @@ setMethod('extent', signature(x='ctmm'), extent.ctmm)
 # range of UD contours
 extent.UD <- function(x,level=0.95,level.UD=0.95,complete=FALSE,...)
 {
+  level <- max(level)
+  level.UD <- max(level.UD)
+
   PROJ <- attr(x,"info")$projection
 
   if(level.UD==1 || (!is.na(level) && level==1 && !is.null(x$DOF.area)))
@@ -185,6 +195,8 @@ setMethod('extent', signature(x='UD'), extent.UD)
 # extent of a variogram object
 extent.variogram <- function(x,level=0.95,threshold=2,...)
 {
+  level <- max(level)
+
   alpha <- 1-level
   max.lag <- last(x$lag)
   ACF <- !is.null(attr(x,"info")$ACF)

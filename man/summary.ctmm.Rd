@@ -5,7 +5,7 @@
 \title{Summarize a continuous-time movement model}
 \description{ This function returns a list of biologically interesting parameters in human readable format, as derived from a continuous-time movement model.}
 \usage{
-\S3method{summary}{ctmm}(object,level=0.95,level.UD=0.95,units=TRUE,IC="AICc",MSPE="position",...)
+\S3method{summary}{ctmm}(object,level=0.95,level.UD=0.95,units=TRUE,IC=NULL,MSPE=NULL,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -13,7 +13,7 @@
   \item{level}{ Confidence level for parameter estimates. }
   \item{level.UD}{ Coverage level for the Gaussian home-range area. }
   \item{units}{Convert result to natural units.}
-  \item{IC}{Information criteria for sorting lists of \code{ctmm} objects. Can be \code{"AICc"}, \code{"AIC"}, \code{"BIC"}, \code{"LOOCV"}, or none (\code{NA}). AICc is approximate.}
+  \item{IC}{Information criteria for sorting lists of \code{ctmm} objects. Can be \code{"AICc"}, \code{"AIC"}, \code{"BIC"}, \code{"LOOCV"}, \code{"HSCV"}, or none (\code{NA}). AICc is approximate.}
   \item{MSPE}{Sort models with the same autocovariance structure by the mean square predictive error of \code{"position"}, \code{"velocity"}, or not (\code{NA}).}
   \item{...}{Unused options.}
 }
@@ -30,7 +30,7 @@ This point estimate itself is subject to uncertainty, and is given confidence in
 This Gaussian estimate differs from the kernel density estimate of \code{\link{summary.UD}}. The Gaussian estimate has more statistical efficiency, but is less related to space use for non-Gaussian processes.}
 \item{\code{speed}}{The Gaussian root-mean-square (RMS) velocity, which is a convenient measure of average speed but not the conventional measure of average speed (see \code{\link{speed}}).}
 }
-If summary is called on a list of \code{ctmm} objects output from \code{\link{ctmm.select}}, then a table is returned with the model names and IC differences for comparison across autocovariance structures. Given non-stationary models and \code{MSPE>0}, the mean square prediction error (MSPE) is also returned for comparison across trend structures (with autocovariance structure fixed). For the model names, "IID" denotes the uncorrelated bi-variate Gaussian model, "OU" denotes the continuous-position Ornstein-Uhlenbeck model, and "OUF" denotes the continuous-velocity Ornstein-Uhlenbeck-F model.
+If summary is called on a list of \code{ctmm} objects output from \code{\link{ctmm.select}}, then a table is returned with the model names and IC differences for comparison across autocovariance structures. The mean square prediction error (MSPE) is also returned for comparison across trend structures (with autocovariance structure fixed). For the model names, "IID" denotes the uncorrelated bi-variate Gaussian model, "OU" denotes the continuous-position Ornstein-Uhlenbeck model, "OUF" denotes the continuous-velocity Ornstein-Uhlenbeck-F model, "OUf" denotes the OUF model where the two autocorrelation timescales cannot be statistically distinguished.
 }
 
 %\references{}

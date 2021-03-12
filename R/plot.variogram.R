@@ -86,23 +86,27 @@ svf.func <- function(CTMM,moment=FALSE)
   }
   NAMES <- c("variance",NAMES)
 
-  # add error term
-  if(CTMM$error)
-  {
-    err.svf <- function(t,error=0) { ifelse(t>0,CTMM$error^2*error,0) }
-    if("error" %in% dimnames(CTMM$COV)[[1]]) # fit or fixed error?
-    {
-      NAMES <- c(NAMES,"error")
-      GRAD <- function(t,error=0) { c(grad(t) , ifelse(t>0,2*CTMM$error*error,0) ) }
-    }
-    else
-    { GRAD <- grad }
-  }
-  else
-  {
-    err.svf <- function(t,error=0) { 0 }
-    GRAD <- grad
-  }
+  # # add error terms?
+  # if(any(CTMM$error))
+  # {
+  #   err.svf <- function(t,error=0) { ifelse(t>0,c(error %*% CTMM$error^2),0) }
+  #   PARS <- dimnames(CTMM$COV)[[1]]
+  #   PARS <- PARS[grepl("error",PARS)]
+  #   if(length(PARS)) # fit or fixed error?
+  #   {
+  #     NAMES <- c(NAMES,PARS)
+  #     PARS <- substr(PARS,nchar("error ?"),nchar(PARS))
+  #     PARS <- which(names(CTMM$error) %in% PARS)
+  #     GRAD <- function(t,error=0) { c(grad(t) , ifelse(rep(t>0,length(PARS)),2*c(error[PARS] * CTMM$error[PARS]),0) ) }
+  #   }
+  #   else
+  #   { GRAD <- grad }
+  # }
+  # else
+  # {
+  #   err.svf <- function(t,error=0) { 0 }
+  #   GRAD <- grad
+  # }
 
   if(moment)
   { drift <- get(CTMM$mean) }
@@ -110,10 +114,11 @@ svf.func <- function(CTMM,moment=FALSE)
   { drift <- stationary }
   MEAN <- drift@svf(CTMM)
 
-  SVF <- function(t,error=0) { svf(t) + err.svf(t,error=error) + MEAN$EST(t) }
+#  SVF <- function(t,error=0) { svf(t) + err.svf(t,error=error) + MEAN$EST(t) }
+  SVF <- function(t) { svf(t) + MEAN$EST(t) }
 
   # no error provided
-  if(is.null(COV)) { COV <- diag(0,nrow=length(GRAD(0))) }
+  if(is.null(COV)) { COV <- diag(0,nrow=length(grad(0))) }
 
   # empty covariance matrix
   BLANK <- array(0,length(NAMES)*c(1,1))
@@ -127,21 +132,23 @@ svf.func <- function(CTMM,moment=FALSE)
   BLANK -> COV
 
   # variance of SVF
-  VAR <- function(t,error=0)
+  VAR <- function(t)
   {
-    g <- GRAD(t,error=error)
+    # g <- GRAD(t,error=error)
+    g <- grad(t)
     return( c(g %*% COV %*% g) + MEAN$VAR(t) )
   }
 
   # chi-square effective degrees of freedom
-  DOF <- function(t,error=0) { return( 2*SVF(t,error=error)^2/VAR(t,error=error) ) }
+  # DOF <- function(t,error=0) { return( 2*SVF(t,error=error)^2/VAR(t,error=error) ) }
+  DOF <- function(t) { return( 2*SVF(t)^2/VAR(t) ) }
 
   return(list(svf=SVF,VAR=VAR,DOF=DOF,ACF=ACF))
 }
 
 
 ##########
-plot.svf <- function(lag,CTMM,error=NULL,alpha=0.05,col="red",type="l",...)
+plot.svf <- function(lag,CTMM,alpha=0.05,col="red",type="l",...)
 {
   # changed from max lag to all lags
   # changed from error=0 or number/logical to error=NULL or array
@@ -150,39 +157,42 @@ plot.svf <- function(lag,CTMM,error=NULL,alpha=0.05,col="red",type="l",...)
   PX <- ceiling(sqrt(sum(grDevices::dev.size("px")^2)))
 
   # are we including errors?
-  ERROR <- !is.null(error) && CTMM$error
-  e0 <- 0
+  # ERROR <- !is.null(error) && CTMM$error
+  # e0 <- 0
   # can we plot a smooth curve?
-  if(!ERROR)
+  # if(!ERROR)
   {
     lag <- seq(0,last(lag),length.out=PX)
-    error <- 0 -> e0
+    # error <- 0 -> e0
   }
-  else if(all(diff(error[-1])==0))
-  { error <- error[2] -> e0 } # can still plot curve because all errors it the same
+  # else if(all(diff(error[-1])==0))
+  # { error <- error[2] -> e0 } # can still plot curve because all errors it the same
 
   SVF <- svf.func(CTMM,moment=TRUE)
   svf <- SVF$svf
   DOF <- SVF$DOF
 
   # point estimate plot
-  SVF <- Vectorize(function(t,error=e0) { svf(t,error=error) })
+  # SVF <- Vectorize(function(t,error=e0) { svf(t,error=error) })
+  SVF <- Vectorize(function(t) { svf(t) })
 
   lag[1] <- lag[2]/1000 # almost go to origin, but not quite to avoid nugget
 
-  if(length(error)==1) # can plot curve
+  # if(length(error)==1) # can plot curve
   { graphics::curve(SVF,from=0,to=last(lag),n=PX,add=TRUE,col=col,...) }
-  else
-  { graphics::points(lag,SVF(lag,error),col=col,type=type,...) }
+  # else
+  # { graphics::points(lag,SVF(lag,error),col=col,type=type,...) }
 
   # confidence intervals if COV provided
   if(any(diag(CTMM$COV)>0))
   {
-    SVF <- Vectorize(function(t,error=e0){ svf(t,error=error) })(lag,error)
+    # SVF <- Vectorize(function(t,error=e0){ svf(t,error=error) })(lag,error)
+    SVF <- Vectorize(function(t){ svf(t) })(lag)
 
     for(j in 1:length(alpha))
     {
-      dof <- Vectorize(function(t,error=e0) { DOF(t,error=error) })(lag,error)
+      # dof <- Vectorize(function(t,error=e0) { DOF(t,error=error) })(lag,error)
+      dof <- Vectorize(function(t) { DOF(t) })(lag)
       svf.lower <- Vectorize(function(df){ CI.lower(df,alpha[j]) })(dof)
       svf.upper <- Vectorize(function(df){ CI.upper(df,alpha[j]) })(dof)
 
@@ -327,13 +337,13 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, units=TRUE, fraction=0.5, c
   for(i in 1:n)
   {
     SVF <- x[[i]]$SVF
-    if(!ACF)
-    {
-      if("MSE" %in% names(x[[i]])) # calibrated errors
-      { MSE <- x[[i]]$MSE }
-      else # uncalibrated errors - needs fitted error in model
-      { MSE <- x[[i]]$MSDOP }
-    }
+    # if(!ACF)
+    # {
+    #   if("MSE" %in% names(x[[i]])) # calibrated errors
+    #   { MSE <- x[[i]]$MSE }
+    #   else # uncalibrated errors - needs fitted error in model
+    #   { MSE <- x[[i]]$MSDOP }
+    # }
     lag <- x[[i]]$lag
     DOF <- x[[i]]$DOF
 
@@ -376,10 +386,12 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, units=TRUE, fraction=0.5, c
     }
 
     # PLOT CORRESPONDING MODEL
-    if(i<=m) { plot.svf(lag,CTMM[[i]],error=MSE,alpha=alpha,type=type,col=col.CTMM[[i]]) }
+    # if(i<=m) { plot.svf(lag,CTMM[[i]],error=MSE,alpha=alpha,type=type,col=col.CTMM[[i]]) }
+    if(i<=m) { plot.svf(lag,CTMM[[i]],alpha=alpha,type=type,col=col.CTMM[[i]]) }
   }
   # PLOT LEFTOVER MODELS USING THE LAST DATA
-  if(n<m) { for(i in n:m) { plot.svf(lag,CTMM[[i]],error=MSE,alpha=alpha,type=type,col=col.CTMM[[i]]) } }
+  # if(n<m) { for(i in n:m) { plot.svf(lag,CTMM[[i]],error=MSE,alpha=alpha,type=type,col=col.CTMM[[i]]) } }
+  if(n<m) { for(i in n:m) { plot.svf(lag,CTMM[[i]],alpha=alpha,type=type,col=col.CTMM[[i]]) } }
 
   # no projection for variograms
   assign("projection",NULL,pos=plot.env)

@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.11</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.1</span>
       </span>
     </div>
 
@@ -109,7 +109,7 @@
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/ctmm-initiative/ctmm">
-    <span class="fa fa-github fa-2x"></span>
+    <span class="fas fa-github fa-2x"></span>
      
   </a>
 </li>
@@ -136,7 +136,7 @@
     </div>
 
     <pre class="usage"><span class='co'># S3 method for ctmm</span>
-<span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>object</span>,level<span class='op'>=</span><span class='fl'>0.95</span>,level.UD<span class='op'>=</span><span class='fl'>0.95</span>,units<span class='op'>=</span><span class='cn'>TRUE</span>,IC<span class='op'>=</span><span class='st'>"AICc"</span>,MSPE<span class='op'>=</span><span class='st'>"position"</span>,<span class='va'>...</span><span class='op'>)</span></pre>
+<span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>object</span>,level<span class='op'>=</span><span class='fl'>0.95</span>,level.UD<span class='op'>=</span><span class='fl'>0.95</span>,units<span class='op'>=</span><span class='cn'>TRUE</span>,IC<span class='op'>=</span><span class='cn'>NULL</span>,MSPE<span class='op'>=</span><span class='cn'>NULL</span>,<span class='va'>...</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -159,7 +159,7 @@
     </tr>
     <tr>
       <th>IC</th>
-      <td><p>Information criteria for sorting lists of <code>ctmm</code> objects. Can be <code>"AICc"</code>, <code>"AIC"</code>, <code>"BIC"</code>, <code>"LOOCV"</code>, or none (<code>NA</code>). AICc is approximate.</p></td>
+      <td><p>Information criteria for sorting lists of <code>ctmm</code> objects. Can be <code>"AICc"</code>, <code>"AIC"</code>, <code>"BIC"</code>, <code>"LOOCV"</code>, <code>"HSCV"</code>, or none (<code>NA</code>). AICc is approximate.</p></td>
     </tr>
     <tr>
       <th>MSPE</th>
@@ -179,7 +179,7 @@
 This point estimate itself is subject to uncertainty, and is given confidence intervals derived from <code>level</code>.This Gaussian estimate differs from the kernel density estimate of <code><a href='summary.UD.html'>summary.UD</a></code>. The Gaussian estimate has more statistical efficiency, but is less related to space use for non-Gaussian processes.</p></dd>
 <dt><code>speed</code></dt><dd><p>The Gaussian root-mean-square (RMS) velocity, which is a convenient measure of average speed but not the conventional measure of average speed (see <code><a href='speed.html'>speed</a></code>).</p></dd>
 
-</dl><p>If summary is called on a list of <code>ctmm</code> objects output from <code><a href='ctmm.html'>ctmm.select</a></code>, then a table is returned with the model names and IC differences for comparison across autocovariance structures. Given non-stationary models and <code>MSPE&gt;0</code>, the mean square prediction error (MSPE) is also returned for comparison across trend structures (with autocovariance structure fixed). For the model names, "IID" denotes the uncorrelated bi-variate Gaussian model, "OU" denotes the continuous-position Ornstein-Uhlenbeck model, and "OUF" denotes the continuous-velocity Ornstein-Uhlenbeck-F model.</p>
+</dl><p>If summary is called on a list of <code>ctmm</code> objects output from <code><a href='ctmm.html'>ctmm.select</a></code>, then a table is returned with the model names and IC differences for comparison across autocovariance structures. The mean square prediction error (MSPE) is also returned for comparison across trend structures (with autocovariance structure fixed). For the model names, "IID" denotes the uncorrelated bi-variate Gaussian model, "OU" denotes the continuous-position Ornstein-Uhlenbeck model, "OUF" denotes the continuous-velocity Ornstein-Uhlenbeck-F model, "OUf" denotes the OUF model where the two autocorrelation timescales cannot be statistically distinguished.</p>
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
 
     <p>C. H. Fleming.</p>
@@ -213,14 +213,14 @@ This point estimate itself is subject to uncertainty, and is given confidence in
 #&gt; 
 #&gt; $DOF
 #&gt;       mean       area      speed 
-#&gt;   10.73353   18.13595 3445.13306 
+#&gt;   10.73354   18.13598 3445.13306 
 #&gt; 
 #&gt; $CI
-#&gt;                                low        est      high
-#&gt; area (square kilometers) 239.64737 403.458906 609.24147
-#&gt; τ[position] (days)         4.02601   7.505369  13.99166
-#&gt; τ[velocity] (minutes)     39.57032  42.069009  44.72547
-#&gt; speed (kilometers/day)    13.81996  14.054636  14.28926
+#&gt;                                 low        est      high
+#&gt; area (square kilometers) 239.647412 403.458770 609.24107
+#&gt; τ[position] (days)         4.026012   7.505366  13.99164
+#&gt; τ[velocity] (minutes)     39.570325  42.069009  44.72547
+#&gt; speed (kilometers/day)    13.819957  14.054636  14.28926
 #&gt; </div><div class='input'><span class='co'># }</span></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

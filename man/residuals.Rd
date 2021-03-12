@@ -73,8 +73,8 @@ FIT <- ctmm.fit(Cilla,GUESS)
 # calculate residuals
 RES <- residuals(Cilla,FIT)
 
-# scatter plot of residuals with 50\% and 95\% quantiles
-plot(RES,col.DF=NA,level.UD=c(.50,.95))
+# scatter plot of residuals with 50\%, 95\%, and 99.9\% quantiles
+plot(RES,col.DF=NA,level.UD=c(.50,.95,0.999))
 
 # calculate correlogram of residuals
 # increase the res argument to account for sampling variability

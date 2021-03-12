@@ -75,7 +75,6 @@ ctmm <- function(tau=NULL,omega=FALSE,isotropic=FALSE,range=TRUE,circle=FALSE,er
 
   return(result)
 }
-#print.ctmm <- function(x,...) { print.listof(x,...) }
 
 
 ctmm.ctmm <- function(CTMM)
@@ -190,13 +189,14 @@ pars.tauv <- function(tau,tauc=tau)
 
 
 ###########################
-ctmm.prepare <- function(data,CTMM,precompute=TRUE,tau=TRUE,DIM=length(CTMM$axes))
+ctmm.prepare <- function(data,CTMM,precompute=TRUE,tau=TRUE,DIM=length(CTMM$axes),calibrate=FALSE,...)
 {
+  axes <- CTMM$axes
+
   # prepare timescale related info
   if(tau)
   {
     K <- length(CTMM$tau)  # dimension of hidden state per spatial dimension
-    axes <- CTMM$axes
     # range <- TRUE
 
     if(K>0)
@@ -208,6 +208,16 @@ ctmm.prepare <- function(data,CTMM,precompute=TRUE,tau=TRUE,DIM=length(CTMM$axes
 
     CTMM$K <- K
   }
+
+  # error parameters
+  TYPE <- DOP.match(axes)
+  UERE <- attr(data,"UERE")$UERE[,TYPE]
+  names(UERE) <- rownames(attr(data,"UERE")$UERE)
+  if(identical(CTMM$error,TRUE)) # lazy set fix
+  { CTMM$error <- UERE }
+  else # could be 10 meters for multiple classes
+  { CTMM$error <- array(CTMM$error,length(UERE)) }
+  names(CTMM$error) <- names(UERE)
 
   # evaluate mean function for this data set if no vector is provided
   if(precompute && (is.null(CTMM$mean.vec) || is.null(CTMM$error.mat) || is.null(CTMM$class.mat)))
@@ -233,15 +243,16 @@ ctmm.prepare <- function(data,CTMM,precompute=TRUE,tau=TRUE,DIM=length(CTMM$axes
       CTMM$REML.loglike <- AXES/2*log(det(UU[-1,-1])) # extra term for REML likelihood
     }
 
-    # construct error matrix, if UERE is unknown construct error matrix @ UERE=1
-    ERROR <- CTMM
-    ERROR$error <- as.logical(ERROR$error)
-    CTMM$error.mat <- get.error(data,ERROR,DIM=DIM) # store error matrix (modulo UERE if fit)
+    # construct error matrix, if UERE is unknown construct error matrix @ RMS UERE=1 for relative variances
+    # ERROR <- CTMM
+    # ERROR$error <- as.logical(ERROR$error)
+    CTMM$error.mat <- get.error(data,CTMM,DIM=DIM,calibrate=calibrate,...) # store error matrix (modulo UERE if fit)
     # this is more of an error structure matrix (modulo variance)
   } # end precomputed matrices
 
   return(CTMM)
 }
+
 # undo the above
 ctmm.repair <- function(CTMM,K=length(CTMM$tau))
 {

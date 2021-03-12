@@ -51,7 +51,7 @@ residuals.telemetry <- function(object,CTMM=NULL,...) { residuals.ctmm(CTMM,obje
 correlogram <- function(data,dt=NULL,fast=TRUE,res=1,axes=c("x","y"))
 {
   if(fast) { ACF <- variogram.fast(data,dt=dt,res=res,CI="IID",axes=axes,ACF=TRUE) }
-  else { ACF <- variogram.slow(data,dt=dt,CI="IID",axes=axes,ACF=TRUE,calibrated=FALSE) }
+  else { ACF <- variogram.slow(data,dt=dt,CI="IID",axes=axes,ACF=TRUE) }
 
   # normalize ACF to 1 at lag 0
   ACF$SVF <- ACF$SVF / ACF$SVF[1]

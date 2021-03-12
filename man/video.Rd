@@ -48,7 +48,7 @@ library(ctmm)
 data(coati)
 
 # temporary file to store videos for CRAN compliance
-FILE <- tempfile("ctmm",fileext="mp4")
+FILE <- tempfile("ctmm",fileext=".mp4")
 # you will likely want to save your video elsewhere
 # the working directory is the default location
 

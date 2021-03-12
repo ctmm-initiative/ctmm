@@ -73,7 +73,7 @@ including the, Bhattacharyya distance, Mahalanobis distance, and Euclidean dista
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.11</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.1</span>
       </span>
     </div>
 
@@ -110,7 +110,7 @@ including the, Bhattacharyya distance, Mahalanobis distance, and Euclidean dista
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/ctmm-initiative/ctmm">
-    <span class="fa fa-github fa-2x"></span>
+    <span class="fas fa-github fa-2x"></span>
      
   </a>
 </li>
@@ -177,6 +177,38 @@ including the, Bhattacharyya distance, Mahalanobis distance, and Euclidean dista
 
     <div class='dont-index'><p><code><a href='ctmm.html'>ctmm.fit</a></code>, <code><a href='overlap.html'>overlap</a></code></p></div>
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='co'># \donttest{</span>
+<span class='co'># Load package and data</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/ctmm-initiative/ctmm'>ctmm</a></span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>buffalo</span><span class='op'>)</span>
+
+<span class='co'># fit models for first two buffalo</span>
+<span class='va'>GUESS</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='va'>buffalo</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>2</span><span class='op'>]</span>, <span class='kw'>function</span><span class='op'>(</span><span class='va'>b</span><span class='op'>)</span> <span class='fu'><a href='variogram.fit.html'>ctmm.guess</a></span><span class='op'>(</span><span class='va'>b</span>,interactive<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>)</span>
+<span class='co'># using ctmm.fit here for speed, but you should almost always use ctmm.select</span>
+<span class='va'>FITS</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>2</span>, <span class='kw'>function</span><span class='op'>(</span><span class='va'>i</span><span class='op'>)</span> <span class='fu'><a href='ctmm.html'>ctmm.fit</a></span><span class='op'>(</span><span class='va'>buffalo</span><span class='op'>[[</span><span class='va'>i</span><span class='op'>]</span><span class='op'>]</span>,<span class='va'>GUESS</span><span class='op'>[[</span><span class='va'>i</span><span class='op'>]</span><span class='op'>]</span><span class='op'>)</span> <span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>FITS</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>buffalo</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>2</span><span class='op'>]</span><span class='op'>)</span>
+
+<span class='co'># Mahalanobis distance between these two buffalo</span>
+<span class='fu'>distance</span><span class='op'>(</span><span class='va'>FITS</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; , , low
+#&gt; 
+#&gt;       Cilla Gabs
+#&gt; Cilla     0    0
+#&gt; Gabs      0    0
+#&gt; 
+#&gt; , , est
+#&gt; 
+#&gt;             Cilla        Gabs
+#&gt; Cilla 0.000000000 0.004452131
+#&gt; Gabs  0.004452131 0.000000000
+#&gt; 
+#&gt; , , high
+#&gt; 
+#&gt;           Cilla      Gabs
+#&gt; Cilla 0.0000000 0.6575506
+#&gt; Gabs  0.6575506 0.0000000
+#&gt; </div><div class='input'><span class='co'># }</span></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

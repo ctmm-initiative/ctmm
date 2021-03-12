@@ -5,27 +5,27 @@ DOP.LIST <- list(unknown=list(axes=NA,geo=NA,DOP=NA,VAR=NA,COV=NA) ,
                  speed=list(axes=c("vx","vy"),geo=c("speed","heading"),DOP="SDOP",VAR="VAR.v",COV=c("COV.vx.vx","COV.vx.vy","COV.vy.vy"),COV.geo=NA) )
 
 
-# is the data calibrated
+# are the data calibrated
 is.calibrated <- function(data,type="horizontal")
 {
   if(class(data)[1]=="list") { return( mean( sapply(data,is.calibrated) ) ) }
 
-  UERE <- attr(data,"UERE")
+  DOF <- attr(data,"UERE")$DOF # RMS UERE matrix
 
   # classes in data
   CLASS <- levels(data$class)
   if(!length(CLASS))
   {
     CLASS <- "all"
-    if(is.null(dimnames(UERE))) { dimnames(UERE) <- list(CLASS,type) }
+    if(is.null(dimnames(DOF))) { dimnames(DOF) <- list(CLASS,type) }
   }
 
   # UERE of classes in data only
-  UERE <- UERE[CLASS,type]
-  UERE <- !is.na(UERE)
-  UERE <- mean(UERE) # fraction calibrated
+  DOF <- DOF[CLASS,type]
+  DOF <- !is.na(DOF) & DOF>0
+  DOF <- mean(DOF) # fraction calibrated
 
-  return(UERE)
+  return(DOF)
 }
 
 # match DOP type for DOP.LIST by axes argument
@@ -58,11 +58,12 @@ get.dop.types <- function(data)
 }
 
 
-# return the UERE from set data
+# return the RMS UERE object from set data
 uere <- function(data)
 {
   if(class(data)[1]=="list" && length(data)==1)
   { data <- data[[1]] }
+
   if(class(data)[1]=="telemetry")
   {
     UERE <- attr(data,"UERE")
@@ -114,7 +115,8 @@ uere.fit <- function(data,precision=1/2)
   DOF <- matrix( simplify2array(DOF) , length(CLASS) , length(TYPES) )
   dimnames(DOF) <- list(CLASS,TYPES)
 
-  UERE <- new.UERE(UERE,DOF=DOF,AICc=AICc,Zsq=Zsq,VAR.Zsq=VAR.Zsq,N=N)
+  UERE <- list(UERE=UERE,DOF=DOF,AICc=AICc,Zsq=Zsq,VAR.Zsq=VAR.Zsq,N=N)
+  UERE <- new.UERE(UERE)
 
   return(UERE)
 }
@@ -318,6 +320,8 @@ uere.type <- function(data,trace=FALSE,type='horizontal',precision=1/2,...)
   d2 <- length(axes) * clamp(d2,0,Inf) # finish and fix for tiny samples in a class
   M2 <- function(d2)
   {
+    if(d2==0) { return(Inf) }
+
     d1 <- d1/2
     d2 <- d2/2
 
@@ -354,16 +358,16 @@ summary.UERE <- function(object,level=0.95,...)
 {
   if(class(object)[1]=="list") { return(summary.UERE.list(object,level=level,...)) }
 
-  TYPE <- colnames(object)
+  TYPE <- colnames(object$UERE)
   N <- sapply(TYPE,function(type){length(DOP.LIST[[type]]$axes)}) # (type)
-  DOF <- attr(object,"DOF") # (class,type)
+  DOF <- object$DOF # (class,type)
   DOF <- t(t(DOF)*N)
 
-  UERE <- sapply(1:length(object),function(i){chisq.ci(object[i]^2,DOF=DOF[i],level=level)}) #(3CI,class*type)
+  UERE <- sapply(1:length(object$UERE),function(i){chisq.ci(object$UERE[i]^2,DOF=DOF[i],level=level)}) #(3CI,class*type)
   UERE <- sqrt(UERE)
-  dim(UERE) <- c(3,dim(object)) # (3CI,class,type)
+  dim(UERE) <- c(3,dim(object$UERE)) # (3CI,class,type)
   dimnames(UERE)[[1]] <- NAMES.CI
-  dimnames(UERE)[2:3] <- dimnames(object)
+  dimnames(UERE)[2:3] <- dimnames(object$UERE)
   UERE <- aperm(UERE,c(2,1,3)) # (class,3CI,type)
   return(UERE)
 }
@@ -383,14 +387,14 @@ summary.UERE.list <- function(object,level=0.95,drop=TRUE,CI=FALSE,...)
   {
     if(class(object[[i]])[1]=="UERE") # these should be all the same
     {
-      TYPES <- c(TYPES,names(attr(object[[i]],"AICc")))
+      TYPES <- c(TYPES,names(object[[i]]$AICc))
       TYPES <- unique(TYPES)
     }
     else if(class(object[[i]])[1]=="list") # these can differ within list
     {
       for(j in 1:length(object[[i]]))
       {
-        TYPES <- c(TYPES,names(attr(object[[i]][[j]],"AICc")))
+        TYPES <- c(TYPES,names(object[[i]][[j]]$AICc))
         TYPES <- unique(TYPES)
       }
     }
@@ -410,30 +414,30 @@ summary.UERE.list <- function(object,level=0.95,drop=TRUE,CI=FALSE,...)
       for(j in 1:length(object[[i]]))
       {
         U <- object[[i]][[j]]
-        IN <- TYPES %in% names(attr(U,"AICc"))
+        IN <- TYPES %in% names(U$AICc)
         if(length(IN))
         {
-          AICc[IN] <- AICc[IN] + attr(U,"AICc")[IN]
-          N[IN] <- N[IN] + attr(U,"N")[IN]
-          Zsq[IN] <- Zsq[IN] + attr(U,"N")[IN] * attr(U,"Zsq")[IN]
-          VAR.Zsq[IN] <- VAR.Zsq[IN] + attr(U,"N")[IN] * (attr(U,"VAR.Zsq")[IN] + attr(U,"Zsq")[IN]^2)
+          AICc[IN] <- AICc[IN] + U$AICc[IN]
+          N[IN] <- N[IN] + U$N[IN]
+          Zsq[IN] <- Zsq[IN] + U$N[IN] * U$Zsq[IN]
+          VAR.Zsq[IN] <- VAR.Zsq[IN] + U$N[IN] * (U$VAR.Zsq[IN] + U$Zsq[IN]^2)
         }
       }
 
       Zsq <- Zsq/N
       VAR.Zsq <- VAR.Zsq/N - Zsq^2
 
-      attr(object[[i]],"AICc") <- AICc
-      attr(object[[i]],"N") <- N
-      attr(object[[i]],"Zsq") <- Zsq
-      attr(object[[i]],"VAR.Zsq") <- VAR.Zsq
+      object[[i]]$AICc <- AICc
+      object[[i]]$N <- N
+      object[[i]]$Zsq <- Zsq
+      object[[i]]$VAR.Zsq <- VAR.Zsq
     }
   }
 
-  AIC <- sapply(object,function(U) { attr(U,"AICc") } )
-  N <- sapply(object,function(U) { attr(U,"N") } )
-  Zsq <- sapply(object,function(U) { attr(U,"Zsq") } )
-  VAR.Zsq <- sapply(object,function(U) { attr(U,"VAR.Zsq") } )
+  AIC <- sapply(object,function(U) { U$AICc } )
+  N <- sapply(object,function(U) { U$N } )
+  Zsq <- sapply(object,function(U) { U$Zsq } )
+  VAR.Zsq <- sapply(object,function(U) { U$VAR.Zsq } )
 
   DIM <- dim(AIC)
   if(!length(DIM))
@@ -488,53 +492,100 @@ residuals.calibration <- function(data,TYPES=get.dop.types(data),...)
   {
     axes <- DOP.LIST[[TYPE]]$axes
 
-    # get.error object for pulling UERE-1 variances
-    CTMM <- list(axes=axes,error=1)
-
     # calculate mean and residuals
     for(i in 1:length(data))
     {
-      # DOP <- c(DOP,data[[i]][[DOP.LIST[[TYPE]]$DOP]])
-      # UERE-1 error variances
-      w <- get.error(data[[i]],CTMM)
-      if(attr(w,"flag")==0) { stop("Failed to import DOP column from Movebank file.") }
-      # now these are the weights
-      w <- 1/w
+      n <- nrow(data[[i]])
+
+      if(is.calibrated(data[[i]])<1) { uere(data[[i]]) <- uere(data[[i]]) } # force calibration for plotting
+      UERE <- uere(data[[i]])
+      ERROR <- UERE$UERE[,'horizontal']
+      names(ERROR) <- rownames(UERE$UERE) # R drops dimnames
+      ERROR <- ctmm(error=ERROR,axes=axes)
+      ERROR <- get.error(data[[i]],ERROR,calibrate=TRUE)
+      ELLIPSE <- attr(ERROR,"ellipse")
+
       # locations
       z <- get.telemetry(data[[i]],axes)
-      # stationary mean
-      mu <- c(w %*% z)/sum(w)
-      # detrend the mean for error/residuals
-      z <- t(t(z) - mu)
-      # x <- rbind(x,dz)
-      # UERE-1 standardize residuals
-      z <- sqrt(w) * z
+
+      if(!ELLIPSE)
+      {
+        # now these are the weights
+        w <- 1/ERROR
+        W <- sum(w)
+
+        # stationary mean
+        mu <- c(w %*% z)/W
+
+        # detrend the mean for error/residuals
+        z <- t(t(z) - mu)
+        # x <- rbind(x,dz)
+
+        # UERE-1 standardize residuals
+        z <- sqrt(w) * z
+      }
+      else
+      {
+        w <- vapply(1:n,function(j){PDsolve(ERROR[j,,])},diag(2)) # [x,x,t]
+        dim(w) <- c(2,2,n)
+        w <- aperm(w,c(3,1,2)) # [t,x,x]
+        W <- apply(w,2:3,sum) # [x,y]
+
+        # stationary mean
+        mu <- vapply(1:n,function(j){w[j,,] %*% z[j,]},1:2) # [x,t]
+        mu <- apply(mu,1,sum)
+        mu <- c(PDsolve(W) %*% mu)
+
+        # detrend the mean for error/residuals
+        z <- t(t(z) - mu)
+
+        # standardize/studentize
+        w <- vapply(1:n,function(j){sqrtm(ERROR[j,,])},diag(2)) # [x,x,t]
+        dim(w) <- c(2,2,n)
+        w <- aperm(w,c(3,1,2)) # [t,x,x]
+
+        z <- vapply(1:n,function(j){w[j,,] %*% z[j,]},1:2) # [x,t]
+        z <- t(z) # [t,x]
+      }
+
       # store back in the object
       data[[i]][,axes] <- z
-    }
-  }
+
+      uere(data) <- NULL
+    } # end data loop
+  } # end type loop
 
   return(data)
 }
 
 
-## prepare error array, also return a flag #
-# 0 : no error
-# 1 : constant error parameter fit
-# 2 : proportional error parameter fit to DOP value
-# 3 : full error calibration, no fit (circle)
-# 4 : " " (ellipse)
+## prepare error array, also return a ellipse necessity #
 # circle : force variance   scalar output
 # DIM : force covariance matrix output with dim [DIM,DIM]
-get.error <- function(DATA,CTMM,flag=FALSE,circle=FALSE,DIM=FALSE)
+get.error <- function(data,CTMM,circle=FALSE,DIM=FALSE,calibrate=TRUE)
 {
-  n <- nrow(DATA)
+  n <- nrow(data)
   axes <- CTMM$axes
-  COLS <- names(DATA)
+  COLS <- names(data)
+  ELLIPSE <- FALSE
+  error <- rep(0,n)
 
-  if(CTMM$error)
+  if(any(CTMM$error>0))
   {
     TYPE <- DOP.match(axes)
+    UERE.DOF <- attr(data,"UERE")$DOF[,TYPE]
+    names(UERE.DOF) <- rownames(attr(data,"UERE")$DOF)
+    UERE.FIT <- CTMM$error & !is.na(UERE.DOF) & UERE.DOF<Inf # will we be fitting any error parameters?
+    UERE.FIX <- CTMM$error & (is.na(UERE.DOF) | UERE.DOF==Inf)
+    UERE.PAR <- names(UERE.FIT)[UERE.FIT>0] # names of fitted UERE parameters
+
+    # make sure that non-fitted parameters are logicals
+    if(any(!UERE.FIT)) { CTMM$error[!UERE.FIT] <- as.logical(CTMM$error[!UERE.FIT]) }
+
+    CLASS <- get.class.mat(data)
+    FIT <- as.logical(c(CLASS %*% UERE.FIT)) # times where errors will be fitted (possibly with prior)
+    # FIX <- as.logical(c(CLASS %*% UERE.FIX)) # times where errors are fixed
+
     # DOP.LIST is global variable from uere.R
     TYPE <- DOP.LIST[[TYPE]]
     AXES <- TYPE$axes
@@ -542,51 +593,61 @@ get.error <- function(DATA,CTMM,flag=FALSE,circle=FALSE,DIM=FALSE)
     VAR <- TYPE$VAR
     DOP <- TYPE$DOP
 
-    if(all(COV %in% COLS)) # calibrated error ellipses - ARGOS
-    {
-      FLAG <- 4
-      if(flag) { return(FLAG) }
+    ELLIPSE <- all(COV %in% COLS)
+    CIRCLE <- VAR %in% COLS
 
-      error <- get.telemetry(DATA,COV[c(1,2,2,3)]) # pull matrix elements
-      dim(error) <- c(nrow(error),2,2) # array of matrices
+    # location classes with fixed (known) parameters
+    if(ELLIPSE) # at least some (fixed) error ellipses - ARGOS / VHF - this should also include other fixed errors (promoted to ellipses)
+    {
+      ellipse <- get.telemetry(data,COV[c(1,2,2,3)]) # pull matrix elements
+      dim(ellipse) <- c(nrow(ellipse),2,2) # array of matrices
 
       # reduce to VAR
-      if(circle) { error <- (error[,1,1]+error[,2,2])/2 }
+      if(circle)
+      {
+        error <- (ellipse[,1,1]+ellipse[,2,2])/2
+        ELLIPSE <- FALSE
+      }
     }
-    else if(VAR %in% COLS) # calibrated error circles - VAR=(UERE*HDOP)^2/2
+    else if(CIRCLE) # some fixed error circles (no ellipses)
     {
-      FLAG <- 3
-      if(flag) { return(FLAG) }
-
-      error <- DATA[[VAR]]
+      error <- data[[VAR]] # FITs will overwrite where appropriate
     }
-    else if(DOP %in% COLS) # fitted errors - HDOP
-    {
-      FLAG <- 2
-      if(flag) { return(FLAG) }
 
-      error <- (CTMM$error*DATA[[DOP]])^2/length(axes)
+    # location classes with fitted error parameters
+    if(any(UERE.FIT))
+    {
+      if(calibrate) # apply RMS UERE to DOP values
+      { CLASS <- c( CLASS %*% CTMM$error ) }
+      else # just calculate relative variance
+      { CLASS <- c( CLASS %*% as.logical(CTMM$error) ) }
+
+      if(DOP %in% COLS) # apply DOP values
+      { CLASS <- CLASS * data[[DOP]] }
+
+      CLASS <- CLASS^2/length(axes) # VAR=(RMS[UERE]*HDOP)^2/2 in 2D
+      error[FIT] <- CLASS[FIT]
+      # FIX was already taken care of in if(ELLIPSE) & if(CIRCLE)
     }
-    else # fitted errors - no HDOP - assign HDOP=1
-    {
-      FLAG <- 1
-      if(flag) { return(FLAG) }
 
-      error <- rep(CTMM$error^2/length(axes),n)
+    # promote circular errors to elliptical errors
+    if(ELLIPSE)
+    {
+      # copy over error circles
+      if(any(UERE.FIT))
+      {
+        ellipse[FIT,1,1] <- ellipse[FIT,2,2] <- error[FIT]
+        ellipse[FIT,1,2] <- ellipse[FIT,2,1] <- 0
+      }
+
+      error <- ellipse
     }
   } # END errors
-  else # no error
-  {
-    FLAG <- 0
-    if(flag) { return(FLAG) }
-
-    error <- rep(0,n)
-  }
 
   # upgrade variance scalar to covariance matrix
-  if(FLAG<4 && DIM) { error <- outer(error,diag(DIM)) } # [n,d,d] }
+  if(!ELLIPSE && DIM>1 && !circle) { error <- outer(error,diag(DIM)) } # [n,d,d] }
 
-  attr(error,"flag") <- FLAG
+  attr(error,"ellipse") <- ELLIPSE
   return(error)
 }
 
@@ -653,6 +714,13 @@ try.assign.uere <- function(data,UERE,TYPE="horizontal")
       data[[COV[2]]][SAFE] <- 0
       data[[COV[3]]][SAFE] <- data[[VAR]][SAFE]
     }
+
+    if(TYPE=="horizontal" && all(LIST$COV.geo %in% names(data)))
+    {
+      data$COV.major[SAFE] <- data[[VAR]][SAFE]
+      data$COV.minor[SAFE] <- data[[VAR]][SAFE]
+      data$COV.angle[SAFE] <- 0
+    }
   }
 
   return(data)
@@ -669,14 +737,19 @@ uere.null <- function(data)
 
   TYPES <- get.dop.types(data)
 
-  UERE <- matrix(NA_real_,length(CLASS),length(TYPES))
-  rownames(UERE) <- CLASS
-  colnames(UERE) <- TYPES
+  M <- matrix(1,length(CLASS),length(TYPES))
+  rownames(M) <- CLASS
+  colnames(M) <- TYPES
 
-  UERE <- new.UERE(UERE,DOF=UERE,AICc=UERE[1,],Zsq=UERE[1,],VAR.Zsq=UERE[1,],N=UERE[1,])
+  V <- M[1,]
+  names(V) <- colnames(V)
+
+  UERE <- list(UERE=1*M,DOF=0*M,AICc=Inf*V,Zsq=Inf*V,VAR.Zsq=Inf*V,N=0*V)
+  UERE <- new.UERE(UERE)
 
   return(UERE)
 }
+
 
 # store the UERE
 # axes determined by name(value) consistent with DOP.LIST global variable above
@@ -699,12 +772,17 @@ uere.null <- function(data)
 
     uere(data) <- NULL
     UERE <- uere(data)
-    UERE[,] <- value
+    UERE$UERE[,] <- value
+    UERE$DOF[] <- Inf
+    UERE$AICc[] <- Inf
+    UERE$Zsq[] <- Inf
+    UERE$VAR.Zsq[] <- Inf
+    UERE$N[] <- Inf
     uere(data) <- UERE
     return(data)
   }
 
-  DOF <- attr(UERE,"DOF")
+  DOF <- UERE$DOF
 
   # promote to list and revert back if DROP
   DROP <- FALSE
@@ -717,62 +795,64 @@ uere.null <- function(data)
   for(i in 1:length(data))
   {
     # make sure of UERE slot compatibility
-    data[[i]] <- droplevels(data[[i]])
+    # data[[i]] <- droplevels(data[[i]])
+    # why was I doing this?
 
     # all class/type from data columns
     UERE.NULL <- uere.null(data[[i]])
-    CLASS <- rownames(UERE.NULL)
-    TYPES <- colnames(UERE.NULL)
+    CLASS <- rownames(UERE.NULL$UERE)
+    TYPES <- colnames(UERE.NULL$UERE)
 
-    if(length(UERE))
+    if(length(UERE$UERE))
     {
       # all class/type in @UERE slot
-      CLASS <- c(CLASS,rownames(attr(data[[i]],"UERE")))
-      TYPES <- c(TYPES,colnames(attr(data[[i]],"UERE")))
+      CLASS <- c(CLASS,rownames(attr(data[[i]],"UERE")$UERE))
+      TYPES <- c(TYPES,colnames(attr(data[[i]],"UERE")$UERE))
 
       # all class/type in UERE-value
-      CLASS <- c(CLASS,rownames(UERE))
-      TYPES <- c(TYPES,colnames(UERE))
+      CLASS <- c(CLASS,rownames(UERE$UERE))
+      TYPES <- c(TYPES,colnames(UERE$UERE))
 
       CLASS <- unique(CLASS)
       TYPES <- unique(TYPES)
     }
 
     # setup null UERE
-    UERE.NULL <- matrix(NA_real_,length(CLASS),length(TYPES))
+    UERE.NULL <- matrix(1,length(CLASS),length(TYPES))
     rownames(UERE.NULL) <- CLASS
     colnames(UERE.NULL) <- TYPES
-    DOF.NULL <- UERE.NULL
-    AICc.NULL <- UERE.NULL[1,]
-    names(AICc.NULL) <- TYPES # R drops dimnames...
+    DOF.NULL <- 0*UERE.NULL
+    V <- UERE.NULL[1,]
+    names(V) <- TYPES # R drops dimnames...
+    AICc.NULL <- Inf*V
     Zsq.NULL <- AICc.NULL
     VAR.Zsq.NULL <- AICc.NULL
-    N.NULL <- AICc.NULL
+    N.NULL <- 0*V
 
     # copy over @UERE slot
-    if(length(attr(data[[i]],"UERE")) && length(UERE))
+    if(length(attr(data[[i]],"UERE")) && length(UERE$UERE))
     {
-      CLASS <- rownames(attr(data[[i]],"UERE"))
-      TYPES <- colnames(attr(data[[i]],"UERE"))
-      UERE.NULL[CLASS,TYPES] <- attr(data[[i]],"UERE")
-      DOF.NULL[CLASS,TYPES] <- attr(attr(data[[i]],"UERE"),"DOF")
-      AICc.NULL[TYPES] <- attr(attr(data[[i]],"UERE"),"AICc")
-      Zsq.NULL[TYPES] <- attr(attr(data[[i]],"UERE"),"Zsq")
-      VAR.Zsq.NULL[TYPES] <- attr(attr(data[[i]],"UERE"),"VAR.Zsq")
-      N.NULL[TYPES] <- attr(attr(data[[i]],"UERE"),"N")
+      CLASS <- rownames(attr(data[[i]],"UERE")$UERE)
+      TYPES <- colnames(attr(data[[i]],"UERE")$UERE)
+      UERE.NULL[CLASS,TYPES] <- attr(data[[i]],"UERE")$UERE
+      DOF.NULL[CLASS,TYPES] <- attr(data[[i]],"UERE")$DOF
+      AICc.NULL[TYPES] <- attr(data[[i]],"UERE")$AICc
+      Zsq.NULL[TYPES] <- attr(data[[i]],"UERE")$Zsq
+      VAR.Zsq.NULL[TYPES] <- attr(data[[i]],"UERE")$VAR.Zsq
+      N.NULL[TYPES] <- attr(data[[i]],"UERE")$N
     }
 
     # copy over UERE-value (overwriting conflicts)
     if(length(UERE))
     {
-      CLASS <- rownames(UERE)
-      TYPES <- colnames(UERE)
-      UERE.NULL[CLASS,TYPES] <- methods::getDataPart(UERE)
-      DOF.NULL[CLASS,TYPES] <- attr(UERE,"DOF")
-      AICc.NULL[TYPES] <- attr(UERE,"AICc")
-      Zsq.NULL[TYPES] <- attr(UERE,"Zsq")
-      VAR.Zsq.NULL[TYPES] <- attr(UERE,"VAR.Zsq")
-      N.NULL[TYPES] <- attr(UERE,"N")
+      CLASS <- rownames(UERE$UERE)
+      TYPES <- colnames(UERE$UERE)
+      UERE.NULL[CLASS,TYPES] <- UERE$UERE
+      DOF.NULL[CLASS,TYPES] <- UERE$DOF
+      AICc.NULL[TYPES] <- UERE$AICc
+      Zsq.NULL[TYPES] <- UERE$Zsq
+      VAR.Zsq.NULL[TYPES] <- UERE$VAR.Zsq
+      N.NULL[TYPES] <- UERE$N
     }
 
     # calibrate data
@@ -782,11 +862,14 @@ uere.null <- function(data)
       # R does not preserve dimension names ???
       UERE.ROW <- UERE.NULL[,TYPE]
       names(UERE.ROW) <- rownames(UERE.NULL)
-      data[[i]] <- try.assign.uere(data[[i]],UERE.ROW,TYPE=TYPE)
+      # don't calibrate data if NULL assignment
+      if(!is.null(value)) { data[[i]] <- try.assign.uere(data[[i]],UERE.ROW,TYPE=TYPE) }
+      else { data[[i]] <- try.assign.uere(data[[i]],NA*UERE.ROW,TYPE=TYPE) }
     }
 
     # store UERE that was applied
-    UERE.NULL <- new.UERE(UERE.NULL,DOF=DOF.NULL,AICc=AICc.NULL,Zsq=Zsq.NULL,VAR.Zsq=VAR.Zsq.NULL,N=N.NULL)
+    UERE.NULL <- list(UERE=UERE.NULL,DOF=DOF.NULL,AICc=AICc.NULL,Zsq=Zsq.NULL,VAR.Zsq=VAR.Zsq.NULL,N=N.NULL)
+    UERE.NULL <- new.UERE(UERE.NULL)
     attr(data[[i]],"UERE") <- UERE.NULL
   }
 
@@ -819,7 +902,7 @@ get.class <- function(data,LEVELS=levels(data$class))
 
 
 #####
-# class indicator matrix
+# class indicator matrix - [time,class]
 get.class.mat <- function(data,LEVELS=levels(data$class))
 {
   if("class" %in% names(data))
@@ -838,7 +921,7 @@ get.class.mat <- function(data,LEVELS=levels(data$class))
 ########
 get.UERE.DOF <- function(x)
 {
-  N <- attr(x,"DOF")
+  N <- x$DOF
   if(is.null(N) || is.na(N)) { N <- 0 }
   return(N)
 }

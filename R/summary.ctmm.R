@@ -48,7 +48,10 @@ confint.ctmm <- function(model,alpha=0.05,UNICODE=FALSE)
   {
     NAME <- c(NAME,"circle")
     VAR <- COV["circle","circle"]
-    CI <- stats::qnorm(c(alpha/2,0.5,1-alpha/2),mean=circle,sd=sqrt(VAR))
+    if(VAR<Inf)
+    { CI <- stats::qnorm(c(alpha/2,0.5,1-alpha/2),mean=circle,sd=sqrt(VAR)) }
+    else
+    { CI <- c(-Inf,circle,Inf) }
 
     # does frequency CI cross zero?
     if(CI[1]*CI[3]<0)
@@ -101,7 +104,7 @@ ci.tau <- function(tau,COV,alpha=0.05,min=0,max=Inf)
 
 
 ###
-summary.ctmm <- function(object,level=0.95,level.UD=0.95,units=TRUE,IC="AICc",MSPE="position",...)
+summary.ctmm <- function(object,level=0.95,level.UD=0.95,units=TRUE,IC=NULL,MSPE=NULL,...)
 {
   CLASS <- class(object)[1]
   if(CLASS=="ctmm")
@@ -159,7 +162,8 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
   { COV <- object$COV }
   else # fill in with infinite covariance
   {
-    P <- id.parameters(object,profile=FALSE)$NAMES
+    UERE.FIT <- object$error>0
+    P <- id.parameters(object,profile=FALSE,UERE.FIT=UERE.FIT)$NAMES
     COV <- diag(Inf,nrow=length(P))
     dimnames(COV) <- list(P,P)
     object$COV <- COV
@@ -229,10 +233,12 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
   { DOF.speed <- 0 }
 
   # did we estimate errors?
-  if("error" %in% rownames(object$COV))
+  PARS <- rownames(object$COV)
+  PARS <- PARS[grepl("error",PARS)]
+  for(P in PARS)
   {
-    error <- object$error
-    VAR <- object$COV["error","error"]
+    error <- object$error[substr(P,nchar("error #"),nchar(P))]
+    VAR <- object$COV[P,P]
     # convert to chi^2
     VAR <- (2*error)^2 * VAR
     error <- error^2
@@ -245,7 +251,7 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
     scale <- c(scale,unit.list$scale)
 
     par <- rbind(par,error)
-    rownames(par)[nrow(par)] <- "error"
+    rownames(par)[nrow(par)] <- P
   }
 
   # Fix unit choice

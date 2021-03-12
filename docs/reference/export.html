@@ -40,7 +40,7 @@
 
 
 <meta property="og:title" content="Export ctmm data formats — export" />
-<meta property="og:description" content="Functions to export ctmm data formats into common sp, raster, and ESRI formats." />
+<meta property="og:description" content="Functions to export ctmm data formats into common sp, sf, raster, and ESRI formats." />
 
 
 
@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.11</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.1</span>
       </span>
     </div>
 
@@ -109,7 +109,7 @@
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/ctmm-initiative/ctmm">
-    <span class="fa fa-github fa-2x"></span>
+    <span class="fas fa-github fa-2x"></span>
      
   </a>
 </li>
@@ -132,11 +132,10 @@
     </div>
 
     <div class="ref-description">
-    <p>Functions to export <code>ctmm</code> data formats into common <code>sp</code>, <code>raster</code>, and ESRI formats.</p>
+    <p>Functions to export <code>ctmm</code> data formats into common <code>sp</code>, <code>sf</code>, <code>raster</code>, and ESRI formats.</p>
     </div>
 
-    <pre class="usage"><span class='co'># S4 method for UD</span>
-<span class='fu'>raster</span><span class='op'>(</span><span class='va'>x</span>,DF<span class='op'>=</span><span class='st'>"CDF"</span>,<span class='va'>...</span><span class='op'>)</span>
+    <pre class="usage"><span class='fu'>as.sf</span><span class='op'>(</span><span class='va'>x</span>,error<span class='op'>=</span><span class='cn'>FALSE</span>,<span class='va'>...</span><span class='op'>)</span>
 
 <span class='fu'>SpatialPoints.telemetry</span><span class='op'>(</span><span class='va'>object</span>,<span class='va'>...</span><span class='op'>)</span>
 
@@ -146,8 +145,8 @@
 
 <span class='fu'>SpatialPolygonsDataFrame.UD</span><span class='op'>(</span><span class='va'>object</span>,level.UD<span class='op'>=</span><span class='fl'>0.95</span>,level<span class='op'>=</span><span class='fl'>0.95</span>,<span class='va'>...</span><span class='op'>)</span>
 
-<span class='co'># S4 method for UD,character</span>
-<span class='fu'>writeRaster</span><span class='op'>(</span><span class='va'>x</span>,<span class='va'>filename</span>,<span class='va'>format</span>,DF<span class='op'>=</span><span class='st'>"CDF"</span>,<span class='va'>...</span><span class='op'>)</span>
+<span class='co'># S4 method for UD</span>
+<span class='fu'>raster</span><span class='op'>(</span><span class='va'>x</span>,DF<span class='op'>=</span><span class='st'>"CDF"</span>,<span class='va'>...</span><span class='op'>)</span>
 
 <span class='fu'>writeShapefile</span><span class='op'>(</span><span class='va'>object</span>,<span class='va'>folder</span>,file<span class='op'>=</span><span class='cn'>NULL</span>,<span class='va'>...</span><span class='op'>)</span>
 
@@ -155,18 +154,21 @@
 <span class='fu'>writeShapefile</span><span class='op'>(</span><span class='va'>object</span>,<span class='va'>folder</span>,file<span class='op'>=</span><span class='cn'>NULL</span>,error<span class='op'>=</span><span class='cn'>TRUE</span>,level.UD<span class='op'>=</span><span class='fl'>0.95</span>,<span class='va'>...</span><span class='op'>)</span>
 
 <span class='co'># S3 method for UD</span>
-<span class='fu'>writeShapefile</span><span class='op'>(</span><span class='va'>object</span>,<span class='va'>folder</span>,file<span class='op'>=</span><span class='cn'>NULL</span>,level.UD<span class='op'>=</span><span class='fl'>0.95</span>,level<span class='op'>=</span><span class='fl'>0.95</span>,<span class='va'>...</span><span class='op'>)</span></pre>
+<span class='fu'>writeShapefile</span><span class='op'>(</span><span class='va'>object</span>,<span class='va'>folder</span>,file<span class='op'>=</span><span class='cn'>NULL</span>,level.UD<span class='op'>=</span><span class='fl'>0.95</span>,level<span class='op'>=</span><span class='fl'>0.95</span>,<span class='va'>...</span><span class='op'>)</span>
+
+<span class='co'># S4 method for UD,character</span>
+<span class='fu'>writeRaster</span><span class='op'>(</span><span class='va'>x</span>,<span class='va'>filename</span>,<span class='va'>format</span>,DF<span class='op'>=</span><span class='st'>"CDF"</span>,<span class='va'>...</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>x</th>
-      <td><p><code>UD</code> object.</p></td>
+      <td><p><code>telemetry</code> or <code>UD</code> object.</p></td>
     </tr>
     <tr>
-      <th>DF</th>
-      <td><p>Rasterize the probability density function <code>"PDF"</code>, probability mass function <code>"PMF"</code>, or cumulative distribution function <code>"CDF"</code>.</p></td>
+      <th>error</th>
+      <td><p>Export <code>telemetry</code> location error circles/ellipses as polygons if <code>TRUE</code>.</p></td>
     </tr>
     <tr>
       <th>object</th>
@@ -181,12 +183,8 @@
       <td><p>Confidence level for the magnitude of the above area. I.e., the 95% CI of the core home range area.</p></td>
     </tr>
     <tr>
-      <th>filename</th>
-      <td><p>Character name of file for raster file.</p></td>
-    </tr>
-    <tr>
-      <th>format</th>
-      <td><p>Character format, if not inferred from <code>filename</code> extension (see <code><a href='https://rdrr.io/pkg/raster/man/writeRaster.html'>writeRaster</a></code>.)</p></td>
+      <th>DF</th>
+      <td><p>Rasterize the probability density function <code>"PDF"</code>, probability mass function <code>"PMF"</code>, or cumulative distribution function <code>"CDF"</code>.</p></td>
     </tr>
     <tr>
       <th>folder</th>
@@ -197,8 +195,12 @@
       <td><p>Character name of files for shapefile.</p></td>
     </tr>
     <tr>
-      <th>error</th>
-      <td><p>Export error circles/ellipses as polygons if <code>TRUE</code>.</p></td>
+      <th>filename</th>
+      <td><p>Character name of file for raster file.</p></td>
+    </tr>
+    <tr>
+      <th>format</th>
+      <td><p>Character format, if not inferred from <code>filename</code> extension (see <code><a href='https://rdrr.io/pkg/raster/man/writeRaster.html'>writeRaster</a></code>).</p></td>
     </tr>
     <tr>
       <th>...</th>
@@ -208,18 +210,22 @@
 
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p><code>writeRaster</code> writes a raster file to disk, with pixel values corresponding to the density function.</p>
-<p><code>writeShapefile</code> writes a shapefile to disk, with UD polygons corresponding to the low-CI, point-estimate, and high-CI home-range area estimates.</p>
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
-
-    <p><code>raster</code> returns a <code>raster</code> of the point-estimate distribution function <code>DF</code>, given a <code>UD</code> object.
+    <p><code>as.sf</code> exports <code>ctmm</code> objects to the <code>sf</code> format. Arguments to <code>ctmm</code> <code>Spatial</code>* export functions can also be used, such as <code>level.UD</code> and <code>level</code>.</p>
+<p><code>Spatial</code>* functions export <code>ctmm</code> objects to <code>sp</code> formats.</p>
+<p><code>raster</code> exports <code>UD</code> object point-estimates distribution functions (<code>DF</code>) to <code>raster</code> objects.
 <code>DF="PDF"</code> gives the average probability density per cell,
 <code>DF="PMF"</code> gives the total probability per cell,
 and <code>DF="CDF"</code> gives the cumulative probability.</p>
-<p><code>SpatialPoints.telemetry</code> returns a single <code>spatialPoints</code> object for the <code>x</code>-<code>y</code> locations, with individual identity information lost.</p>
-<p><code>SpatialPointsDataFrame.telemetry</code> returns a <code>SpatialPointsDataFrame</code> with the individual identities recorded in the data frame.</p>
+<p><code>writeShapefile</code> writes a shapefile to disk, with UD polygons corresponding to the low-CI, point-estimate, and high-CI home-range area estimates.</p>
+<p><code>writeRaster</code> writes a raster file to disk, with pixel values corresponding to the distribution function <code>DF</code>.</p>
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p><code>as.sf</code> returns an <code>sf</code> object for the input points or polygons, with individual identity and other information retained.</p>
+<p><code>SpatialPoints.telemetry</code> returns a single <code>spatialPoints</code> object for the <code>x</code>-<code>y</code> locations, without individual identity and other information retained.</p>
+<p><code>SpatialPointsDataFrame.telemetry</code> returns a <code>SpatialPointsDataFrame</code> with the individual identities and other data recorded in the data frame retained.</p>
 <p><code>SpatialPolygonsDataFrame.telemetry</code> returns a <code>SpatialPolygonsDataFrame</code> that encodes the location estimate's error circles/ellipses.</p>
 <p><code>SpatialPolygonsDataFrame.UD</code> returns a <code>SpatialPolygonsDataFrame</code> of the low-CI, point-estimate, and high-CI home-range area estimates, in the appropriate order for plotting.</p>
+<p><code>raster</code> returns a <code>raster</code> of the point-estimate distribution function <code>DF</code>, given a <code>UD</code> object.</p>
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
 
     <p>C. H. Fleming and K. Safi.</p>

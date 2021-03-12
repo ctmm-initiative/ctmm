@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.11</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.1</span>
       </span>
     </div>
 
@@ -109,7 +109,7 @@
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/ctmm-initiative/ctmm">
-    <span class="fa fa-github fa-2x"></span>
+    <span class="fas fa-github fa-2x"></span>
      
   </a>
 </li>
@@ -138,19 +138,19 @@
     <pre class="usage"><span class='fu'>predict</span><span class='op'>(</span><span class='va'>object</span>,<span class='va'>...</span><span class='op'>)</span>
 
 <span class='co'># S3 method for ctmm</span>
-<span class='fu'>predict</span><span class='op'>(</span><span class='va'>object</span>,data<span class='op'>=</span><span class='cn'>NULL</span>,t<span class='op'>=</span><span class='cn'>NULL</span>,dt<span class='op'>=</span><span class='cn'>NULL</span>,res<span class='op'>=</span><span class='fl'>1</span>,complete<span class='op'>=</span><span class='cn'>FALSE</span>,<span class='va'>...</span><span class='op'>)</span>
+<span class='fu'>predict</span><span class='op'>(</span><span class='va'>object</span>,data<span class='op'>=</span><span class='cn'>NULL</span>,VMM<span class='op'>=</span><span class='cn'>NULL</span>,t<span class='op'>=</span><span class='cn'>NULL</span>,dt<span class='op'>=</span><span class='cn'>NULL</span>,res<span class='op'>=</span><span class='fl'>1</span>,complete<span class='op'>=</span><span class='cn'>FALSE</span>,<span class='va'>...</span><span class='op'>)</span>
 
 <span class='co'># S3 method for telemetry</span>
-<span class='fu'>predict</span><span class='op'>(</span><span class='va'>object</span>,CTMM<span class='op'>=</span><span class='cn'>NULL</span>,t<span class='op'>=</span><span class='cn'>NULL</span>,dt<span class='op'>=</span><span class='cn'>NULL</span>,res<span class='op'>=</span><span class='fl'>1</span>,complete<span class='op'>=</span><span class='cn'>FALSE</span>,<span class='va'>...</span><span class='op'>)</span>
+<span class='fu'>predict</span><span class='op'>(</span><span class='va'>object</span>,CTMM<span class='op'>=</span><span class='cn'>NULL</span>,VMM<span class='op'>=</span><span class='cn'>NULL</span>,t<span class='op'>=</span><span class='cn'>NULL</span>,dt<span class='op'>=</span><span class='cn'>NULL</span>,res<span class='op'>=</span><span class='fl'>1</span>,complete<span class='op'>=</span><span class='cn'>FALSE</span>,<span class='va'>...</span><span class='op'>)</span>
 
 <span class='fu'>simulate</span><span class='op'>(</span><span class='va'>object</span>,nsim<span class='op'>=</span><span class='fl'>1</span>,seed<span class='op'>=</span><span class='cn'>NULL</span>,<span class='va'>...</span><span class='op'>)</span>
 
 <span class='co'># S3 method for ctmm</span>
-<span class='fu'>simulate</span><span class='op'>(</span><span class='va'>object</span>,nsim<span class='op'>=</span><span class='fl'>1</span>,seed<span class='op'>=</span><span class='cn'>NULL</span>,data<span class='op'>=</span><span class='cn'>NULL</span>,t<span class='op'>=</span><span class='cn'>NULL</span>,dt<span class='op'>=</span><span class='cn'>NULL</span>,res<span class='op'>=</span><span class='fl'>1</span>,complete<span class='op'>=</span><span class='cn'>FALSE</span>,
+<span class='fu'>simulate</span><span class='op'>(</span><span class='va'>object</span>,nsim<span class='op'>=</span><span class='fl'>1</span>,seed<span class='op'>=</span><span class='cn'>NULL</span>,data<span class='op'>=</span><span class='cn'>NULL</span>,VMM<span class='op'>=</span><span class='cn'>NULL</span>,t<span class='op'>=</span><span class='cn'>NULL</span>,dt<span class='op'>=</span><span class='cn'>NULL</span>,res<span class='op'>=</span><span class='fl'>1</span>,complete<span class='op'>=</span><span class='cn'>FALSE</span>,
          precompute<span class='op'>=</span><span class='cn'>FALSE</span>,<span class='va'>...</span><span class='op'>)</span>
 
 <span class='co'># S3 method for telemetry</span>
-<span class='fu'>simulate</span><span class='op'>(</span><span class='va'>object</span>,nsim<span class='op'>=</span><span class='fl'>1</span>,seed<span class='op'>=</span><span class='cn'>NULL</span>,CTMM<span class='op'>=</span><span class='cn'>NULL</span>,t<span class='op'>=</span><span class='cn'>NULL</span>,dt<span class='op'>=</span><span class='cn'>NULL</span>,res<span class='op'>=</span><span class='fl'>1</span>,complete<span class='op'>=</span><span class='cn'>FALSE</span>,
+<span class='fu'>simulate</span><span class='op'>(</span><span class='va'>object</span>,nsim<span class='op'>=</span><span class='fl'>1</span>,seed<span class='op'>=</span><span class='cn'>NULL</span>,CTMM<span class='op'>=</span><span class='cn'>NULL</span>,VMM<span class='op'>=</span><span class='cn'>NULL</span>,t<span class='op'>=</span><span class='cn'>NULL</span>,dt<span class='op'>=</span><span class='cn'>NULL</span>,res<span class='op'>=</span><span class='fl'>1</span>,complete<span class='op'>=</span><span class='cn'>FALSE</span>,
          precompute<span class='op'>=</span><span class='cn'>FALSE</span>,<span class='va'>...</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -163,6 +163,14 @@
     <tr>
       <th>data</th>
       <td><p>Optional <code>telemetry</code> object on which the prediction or simulation will be conditioned.</p></td>
+    </tr>
+    <tr>
+      <th>CTMM</th>
+      <td><p>A <code>ctmm</code> movement model in the same format as the output of <code><a href='ctmm.html'>ctmm.fit</a></code> or <code><a href='variogram.fit.html'>variogram.fit</a></code>.</p></td>
+    </tr>
+    <tr>
+      <th>VMM</th>
+      <td><p>An optional vertical <code>ctmm</code> movement model for 3D predictions and simulations.</p></td>
     </tr>
     <tr>
       <th>t</th>
@@ -179,10 +187,6 @@
     <tr>
       <th>complete</th>
       <td><p>Additionally calculate timestamps and geographic coordinates.</p></td>
-    </tr>
-    <tr>
-      <th>CTMM</th>
-      <td><p>A <code>ctmm</code> movement-model in the same format as the output of <code><a href='ctmm.html'>ctmm.fit</a></code> or <code><a href='variogram.fit.html'>variogram.fit</a></code>.</p></td>
     </tr>
     <tr>
       <th>nsim</th>
@@ -223,10 +227,12 @@ If the sampling schedule is irregular, then this can result in faster simulation
 
     <p>C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, W. F. Fagan,
 ``From fine-scale foraging to home ranges: A semi-variance approach to identifying movement modes across spatiotemporal scales'',
-<a href='http://www.jstor.org/stable/info/10.1086/675504'>The American Naturalist, 183:5, E154-E167 (2014)</a>.</p>
+The American Naturalist, 183:5, E154-E167 (2014) doi: <a href='https://doi.org/10.1086/675504'>10.1086/675504</a>
+.</p>
 <p>C. H. Fleming, D. Sheldon, E. Gurarie, W. F. Fagan, S. LaPoint, J. M. Calabrese,
 ``Kálmán filters for continuous-time movement models'',
-<a href='http://www.sciencedirect.com/science/article/pii/S1574954117301115'>Ecological Informatics, 40, 8-21 (2017)</a>.</p>
+Ecological Informatics, 40, 8-21 (2017) doi: <a href='https://doi.org/10.1016/j.ecoinf.2017.04.008'>10.1016/j.ecoinf.2017.04.008</a>
+.</p>
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
 
     <p>C. H. Fleming.</p>

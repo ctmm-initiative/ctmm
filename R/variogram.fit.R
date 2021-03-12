@@ -3,57 +3,65 @@
 ####################################
 variogram.guess <- function(variogram,CTMM=ctmm())
 {
+  # make sure formatting is correct
+  CTMM$axes <- attr(variogram,"info")$axes
+  CTMM <- ctmm.prepare(variogram,CTMM,precompute=FALSE,tau=FALSE)
+
   # guess at some missing parameters
   n <- length(variogram$lag)
 
-  # variance estimate
-  sigma <- mean(variogram$SVF[2:n])
+  if(n>1) # more than lag-0
+  {
+    # variance estimate
+    sigma <- mean(variogram$SVF[2:n])
 
-  # peak curvature estimate
-  # should occur at short lags
-  v2 <- 2*max((variogram$SVF/variogram$lag^2)[2:n])
+    # peak curvature estimate
+    # should occur at short lags
+    v2 <- 2*max((variogram$SVF/variogram$lag^2)[2:n])
 
-  # free frequency
-  Omega2 <- v2/sigma
-  Omega <- sqrt(Omega2)
+    # free frequency
+    Omega2 <- v2/sigma
+    Omega <- sqrt(Omega2)
 
-  # peak diffusion rate estimate
-  # should occur at intermediate lags
-  # diffusion parameters
-  D <- (variogram$SVF/variogram$lag)[2:n]
-  # index of max diffusion
-  tauD <- which.max(D)
-  # max diffusion
-  D <- D[tauD]
-  # time lag of max diffusion
-  tauD <- variogram$lag[tauD]
+    # peak diffusion rate estimate
+    # should occur at intermediate lags
+    # diffusion parameters
+    D <- (variogram$SVF/variogram$lag)[2:n]
+    # index of max diffusion
+    tauD <- which.max(D)
+    # max diffusion
+    D <- D[tauD]
+    # time lag of max diffusion
+    tauD <- variogram$lag[tauD]
 
-  # average f-rate
-  f <- -log(D/(sigma*Omega))/tauD
+    # average f-rate
+    f <- -log(D/(sigma*Omega))/tauD
 
-  tau <- c(sigma/D,D/v2)
-  names(tau) <- c("position","velocity")
+    tau <- c(sigma/D,D/v2)
+    names(tau) <- c("position","velocity")
 
-  if(length(CTMM$tau)==0)
-  { CTMM$tau <- tau }
-  else if(length(CTMM$tau)==1)
-  { CTMM$tau[2] <- min(CTMM$tau[1],tau[2]) }
+    if(length(CTMM$tau)==0)
+    { CTMM$tau <- tau }
+    else if(length(CTMM$tau)==1)
+    { CTMM$tau[2] <- min(CTMM$tau[1],tau[2]) }
 
-  if(!CTMM$range) { sigma <- D ; CTMM$tau[1] <- Inf }
+    if(!CTMM$range) { sigma <- D ; CTMM$tau[1] <- Inf }
 
-  # preserve orientation and eccentricity if available/necessary
-  if(is.null(CTMM$sigma))
-  { CTMM$sigma <- sigma }
-  # else
-  # {
-  #   CTMM$sigma <- CTMM$sigma@par
-  #   CTMM$sigma[1] <- sigma / cosh(CTMM$sigma[2]/2)
-  # }
+    # preserve orientation and eccentricity if available/necessary
+    if(is.null(CTMM$sigma))
+    { CTMM$sigma <- sigma }
+    # else
+    # {
+    #   CTMM$sigma <- CTMM$sigma@par
+    #   CTMM$sigma[1] <- sigma / cosh(CTMM$sigma[2]/2)
+    # }
+  }
 
   # don't overwrite or lose ctmm parameters not considered here
   model <- as.list(CTMM) # getDataPart deletes names()
   model$info <- attr(variogram,"info")
   model <- do.call("ctmm",model)
+
   return(model)
 }
 
@@ -87,7 +95,7 @@ variogram.fit <- function(variogram,CTMM=ctmm(),name="GUESS",fraction=0.5,intera
   manlist <- lapply(1:nrow(DF),function(r){ manipulate::slider(min=DF$min[r],max=DF$max[r],initial=DF$initial[r],label=DF$label[r],step=DF$step[r]) })
   names(manlist) <- rownames(DF)
 
-  # put eror checkbox option here
+  # put error checkbox option here
   CHECK <- DF$min==0 & DF$max==1 & DF$step==1
   if(any(CHECK))
   {
@@ -135,11 +143,15 @@ variogram.fit.backend <- function(variogram,CTMM=ctmm(),fraction=0.5,b=4)
   tau2 <- NULL
   omega.period <- NULL
   circle.period <- NULL
-  rm(z,sigma,tau1,tau2,omega.period,circle.period)
+  error <- NULL
+  rm(z,sigma,tau1,tau2,omega.period,circle.period,error)
 
   RES <- 1000
 
-  error <- CTMM$error
+  # base error parameters
+  TYPE <- DOP.match(CTMM$axes)
+  UERE <- attr(variogram,"UERE")$UERE[,TYPE]
+  names(UERE) <- rownames(attr(variogram,"UERE")$UERE)
 
   m <- 2 # slider length relative to point guestimate
   n <- length(variogram$lag)
@@ -223,14 +235,15 @@ variogram.fit.backend <- function(variogram,CTMM=ctmm(),fraction=0.5,b=4)
     NAMES <- c(NAMES,"circle.period")
   }
 
-  # error
-  if("MSDOP" %in% names(variogram)) # uncalibrated error
-  {
-    e2 <- max(100,2*error)
-    DF <- rbind(DF,data.frame(min=0,max=e2,initial=as.numeric(error),label="error (m)",step=e2/RES/2,stringsAsFactors=FALSE))
-  }
-  else if("MSE" %in% names(variogram)) # calibrated error
-  { DF <- rbind(DF,data.frame(min=0,max=1,initial=sign(error),label="error (logical)",step=1,stringsAsFactors=FALSE)) }
+  ## Depreciated error slider
+  # e2 <- max(100,2*error[i])
+  # label <- paste("error",names(UERE.DOF)[i],"(m)")
+  # DF <- rbind(DF,data.frame(min=0,max=e2,initial=as.numeric(error[i]),label=label,step=e2/RES/2,stringsAsFactors=FALSE))
+
+  # ERROR
+  error <- any(CTMM$error>0)
+  label <- paste("error (logical)")
+  DF <- rbind(DF,data.frame(min=0,max=1,initial=sign(error),label=label,step=1,stringsAsFactors=FALSE))
   NAMES <- c(NAMES,"error")
 
   rownames(DF) <- NAMES
@@ -278,7 +291,8 @@ variogram.fit.backend <- function(variogram,CTMM=ctmm(),fraction=0.5,b=4)
     }
 
     if(circle) { CTMM$circle <- 2*pi/(circle.period * circle.unit$scale) }
-    CTMM$error <- error
+
+    CTMM$error <- error * UERE
 
     CTMM <- as.list(CTMM)
     CTMM$info <- attr(variogram,"info")

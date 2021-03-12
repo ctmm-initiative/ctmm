@@ -135,8 +135,8 @@ summary(FITS[[SUB]]) # harmonic 3 0 # selected by IC
 summary(FITS[[1]])   # harmonic 2 0 # selected by IC/MSPE
 ```
 
-* `rotation/deviation %` corresponds to $100 \eta_P$ from the Péron et al (2017). It is interpreted as the proportion of the variance in the animal`s location that is caused by the periodicity in the mean.
-* `rotation/speed %` corresponds to  $100 \eta_V$ from the Péron et al (2017). It is interpreted as the proportion of the variance in the animal`s velocity that is caused by the periodicity in the mean.
+* `rotation/deviation %` corresponds to $\eta_P \times 100\%$ from the Péron et al (2017). It is interpreted as the proportion of the variance in the animal`s location that is caused by the periodicity in the mean.
+* `rotation/speed %` corresponds to  $\eta_V  \times 100\%$ from the Péron et al (2017). It is interpreted as the proportion of the variance in the animal`s velocity that is caused by the periodicity in the mean.
 * `circulation period`  is the period of the stochastic circulations. On average, the animal re-pass through the same neighborhoods every estimated number of months (or days, or hours, depending on the automated unit specification).
 
 Note that, aside from the rotational indices, these two models are largely consistent, and the 3 harmonic model has an extrordinarily uncertain speed estimate.

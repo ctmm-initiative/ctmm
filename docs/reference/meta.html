@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.11</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.1</span>
       </span>
     </div>
 
@@ -109,7 +109,7 @@
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/ctmm-initiative/ctmm">
-    <span class="fa fa-github fa-2x"></span>
+    <span class="fas fa-github fa-2x"></span>
      
   </a>
 </li>
@@ -135,8 +135,8 @@
     <p>These functions estimate population-level parameters from individual movement models and related estimates, including AKDE home-range areas, while taking into account estimation uncertainty.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>meta</span><span class='op'>(</span><span class='va'>x</span>,level<span class='op'>=</span><span class='fl'>0.95</span>,level.UD<span class='op'>=</span><span class='fl'>0.95</span>,level.pop<span class='op'>=</span><span class='fl'>0.95</span>,method<span class='op'>=</span><span class='st'>"MLE"</span>,IC<span class='op'>=</span><span class='st'>"AICc"</span>,boot<span class='op'>=</span><span class='cn'>FALSE</span>,
-     error<span class='op'>=</span><span class='fl'>0.01</span>,debias<span class='op'>=</span><span class='cn'>TRUE</span>,units<span class='op'>=</span><span class='cn'>TRUE</span>,plot<span class='op'>=</span><span class='cn'>TRUE</span>,sort<span class='op'>=</span><span class='cn'>FALSE</span>,mean<span class='op'>=</span><span class='cn'>TRUE</span>,col<span class='op'>=</span><span class='st'>"black"</span>,<span class='va'>...</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>meta</span><span class='op'>(</span><span class='va'>x</span>,level<span class='op'>=</span><span class='fl'>0.95</span>,level.UD<span class='op'>=</span><span class='fl'>0.95</span>,method<span class='op'>=</span><span class='st'>"MLE"</span>,IC<span class='op'>=</span><span class='st'>"AICc"</span>,boot<span class='op'>=</span><span class='cn'>FALSE</span>,error<span class='op'>=</span><span class='fl'>0.01</span>,debias<span class='op'>=</span><span class='cn'>TRUE</span>,
+     units<span class='op'>=</span><span class='cn'>TRUE</span>,plot<span class='op'>=</span><span class='cn'>TRUE</span>,sort<span class='op'>=</span><span class='cn'>FALSE</span>,mean<span class='op'>=</span><span class='cn'>TRUE</span>,col<span class='op'>=</span><span class='st'>"black"</span>,<span class='va'>...</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -154,12 +154,8 @@
       <td><p>Coverage level for home-range estimates. E.g., 50% core home range.</p></td>
     </tr>
     <tr>
-      <th>level.pop</th>
-      <td><p>Coverage level for the population of individuals.</p></td>
-    </tr>
-    <tr>
       <th>method</th>
-      <td><p>Statistical estimator used---either maximum likelihood estimation (<code>"MLE"</code>) or `best linear unbiased estimator' (<code>"BLUE"</code>).</p></td>
+      <td><p>Statistical estimator used---either maximum likelihood estimation based (<code>"MLE"</code>) or approximate `best linear unbiased estimator' (<code>"BLUE"</code>).</p></td>
     </tr>
     <tr>
       <th>IC</th>
@@ -175,7 +171,7 @@
     </tr>
     <tr>
       <th>debias</th>
-      <td><p>Apply Bessel's inverse-Gaussian correction if <code>method="MLE"</code>, REML if <code>method="BLUE"</code>, and an additional first-order correction if <code>boot=TRUE</code>.</p></td>
+      <td><p>Apply Bessel's inverse-Gaussian correction and various other bias corrections if <code>method="MLE"</code>, REML if <code>method="BLUE"</code>, and an additional first-order correction if <code>boot=TRUE</code>.</p></td>
     </tr>
     <tr>
       <th>units</th>
@@ -209,8 +205,8 @@
 <p>For both estimator <code>methods</code>, the same underlying model is assumed.</p>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>If <code>x</code> constitutes a sampled population, then <code>meta</code> returns a table with rows corresponding to population coverage levels and columns corresponding to confidence levels of the estimates.
-If <code>x</code> constitutes a list of sampled sub-populations, then <code>meta</code> returns confidence intervals on the sub-population estimate ratios.</p>
+    <p>If <code>x</code> constitutes a sampled population, then <code>meta</code> returns a table with rows corresponding to the population mean and coefficient of variation.
+If <code>x</code> constitutes a list of sampled sub-populations, then <code>meta</code> returns confidence intervals on the sub-population mean ratios.</p>
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
 
     <p>C. H. Fleming.</p>
@@ -219,8 +215,40 @@ If <code>x</code> constitutes a list of sampled sub-populations, then <code>meta
     <p>The AICc formula is approximated via the Gaussian relation.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><code><a href='akde.html'>akde</a></code>, <code><a href='ctmm.html'>ctmm.fit</a></code>.</p></div>
+    <div class='dont-index'><p><code><a href='akde.html'>akde</a></code>, <code><a href='cluster.html'>cluster</a></code>, <code><a href='ctmm.html'>ctmm.fit</a></code>.</p></div>
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='co'># \donttest{</span>
+<span class='co'># load package and data</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/ctmm-initiative/ctmm'>ctmm</a></span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>buffalo</span><span class='op'>)</span>
+
+<span class='co'># fit movement models</span>
+<span class='va'>FITS</span> <span class='op'>&lt;-</span> <span class='va'>AKDES</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='op'>)</span>
+<span class='kw'>for</span><span class='op'>(</span><span class='va'>i</span> <span class='kw'>in</span> <span class='fl'>1</span><span class='op'>:</span><span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span><span class='op'>(</span><span class='va'>buffalo</span><span class='op'>)</span><span class='op'>)</span>
+<span class='op'>{</span>
+  <span class='va'>GUESS</span> <span class='op'>&lt;-</span> <span class='fu'><a href='variogram.fit.html'>ctmm.guess</a></span><span class='op'>(</span><span class='va'>buffalo</span><span class='op'>[[</span><span class='va'>i</span><span class='op'>]</span><span class='op'>]</span>,interactive<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span>
+  <span class='co'># use ctmm.select unless you are certain that the selected model is OUF</span>
+  <span class='va'>FITS</span><span class='op'>[[</span><span class='va'>i</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>&lt;-</span> <span class='fu'><a href='ctmm.html'>ctmm.fit</a></span><span class='op'>(</span><span class='va'>buffalo</span><span class='op'>[[</span><span class='va'>i</span><span class='op'>]</span><span class='op'>]</span>,<span class='va'>GUESS</span>,trace<span class='op'>=</span><span class='fl'>2</span><span class='op'>)</span>
+<span class='op'>}</span>
+</div><div class='output co'>#&gt; <span class='message'>Maximizing likelihood.</span></div><div class='output co'>#&gt; <span class='message'>Calculating Hessian.</span></div><div class='output co'>#&gt; <span class='message'>Calculating REML gradient.</span></div><div class='output co'>#&gt; <span class='message'>Calculating REML Hessian.</span></div><div class='output co'>#&gt; <span class='message'>Maximizing likelihood.</span></div><div class='output co'>#&gt; <span class='message'>Calculating Hessian.</span></div><div class='output co'>#&gt; <span class='message'>Calculating REML gradient.</span></div><div class='output co'>#&gt; <span class='message'>Calculating REML Hessian.</span></div><div class='output co'>#&gt; <span class='message'>Maximizing likelihood.</span></div><div class='output co'>#&gt; <span class='message'>Calculating Hessian.</span></div><div class='output co'>#&gt; <span class='message'>Calculating REML gradient.</span></div><div class='output co'>#&gt; <span class='message'>Calculating REML Hessian.</span></div><div class='output co'>#&gt; <span class='message'>Maximizing likelihood.</span></div><div class='output co'>#&gt; <span class='message'>Calculating Hessian.</span></div><div class='output co'>#&gt; <span class='message'>Calculating REML gradient.</span></div><div class='output co'>#&gt; <span class='message'>Calculating REML Hessian.</span></div><div class='output co'>#&gt; <span class='message'>Maximizing likelihood.</span></div><div class='output co'>#&gt; <span class='message'>Calculating Hessian.</span></div><div class='output co'>#&gt; <span class='message'>Calculating REML gradient.</span></div><div class='output co'>#&gt; <span class='message'>Calculating REML Hessian.</span></div><div class='output co'>#&gt; <span class='message'>Maximizing likelihood.</span></div><div class='output co'>#&gt; <span class='message'>Calculating Hessian.</span></div><div class='output co'>#&gt; <span class='message'>Calculating REML gradient.</span></div><div class='output co'>#&gt; <span class='message'>Calculating REML Hessian.</span></div><div class='input'>
+<span class='co'># calculate AKDES on a consistent grid</span>
+<span class='va'>AKDES</span> <span class='op'>&lt;-</span> <span class='fu'><a href='akde.html'>akde</a></span><span class='op'>(</span><span class='va'>buffalo</span>,<span class='va'>FITS</span>,trace<span class='op'>=</span><span class='fl'>1</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>Default grid size of 3 minutes chosen for bandwidth(...,fast=TRUE).</span></div><div class='output co'>#&gt; <span class='message'>Bandwidth optimization complete.</span></div><div class='output co'>#&gt; <span class='message'>Default grid size of 2 minutes chosen for bandwidth(...,fast=TRUE).</span></div><div class='output co'>#&gt; <span class='message'>Bandwidth optimization complete.</span></div><div class='output co'>#&gt; <span class='message'>Default grid size of 2 minutes chosen for bandwidth(...,fast=TRUE).</span></div><div class='output co'>#&gt; <span class='message'>Bandwidth optimization complete.</span></div><div class='output co'>#&gt; <span class='message'>Default grid size of 3 minutes chosen for bandwidth(...,fast=TRUE).</span></div><div class='output co'>#&gt; <span class='message'>Bandwidth optimization complete.</span></div><div class='output co'>#&gt; <span class='message'>Default grid size of 2 minutes chosen for bandwidth(...,fast=TRUE).</span></div><div class='output co'>#&gt; <span class='message'>Bandwidth optimization complete.</span></div><div class='output co'>#&gt; <span class='message'>Default grid size of 5 minutes chosen for bandwidth(...,fast=TRUE).</span></div><div class='output co'>#&gt; <span class='message'>Bandwidth optimization complete.</span></div><div class='input'>
+<span class='co'># color to be spatially distinct</span>
+<span class='va'>COL</span> <span class='op'>&lt;-</span> <span class='fu'><a href='color.html'>color</a></span><span class='op'>(</span><span class='va'>AKDES</span>,by<span class='op'>=</span><span class='st'>'individual'</span><span class='op'>)</span>
+
+<span class='co'># plot AKDEs</span>
+<span class='fu'><a href='plot.telemetry.html'>plot</a></span><span class='op'>(</span><span class='va'>AKDES</span>,col.DF<span class='op'>=</span><span class='va'>COL</span>,col.level<span class='op'>=</span><span class='va'>COL</span>,col.grid<span class='op'>=</span><span class='cn'>NA</span>,level<span class='op'>=</span><span class='cn'>NA</span><span class='op'>)</span>
+</div><div class='img'><img src='meta-1.png' alt='' width='700' height='433' /></div><div class='input'>
+<span class='co'># meta-analysis of buffalo</span>
+<span class='fu'>meta</span><span class='op'>(</span><span class='va'>AKDES</span>,col<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>COL</span>,<span class='st'>'black'</span><span class='op'>)</span>,sort<span class='op'>=</span><span class='cn'>TRUE</span><span class='op'>)</span>
+</div><div class='output co'>#&gt;                     ΔAICc
+#&gt; Dirac-δ          0.000000
+#&gt; inverse-Gaussian 3.832936</div><div class='img'><img src='meta-2.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt;                  low      est    high
+#&gt; mean (km²)  357.5927 451.6346 556.489
+#&gt; CoV² (RVAR)   0.0000   0.0000     Inf
+#&gt; CoV  (RSTD)   0.0000   0.0000     Inf</div><div class='input'><span class='co'># }</span></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
