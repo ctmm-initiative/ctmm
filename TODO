@@ -1,5 +1,4 @@
 PRIORITY
-* check, recompile vignettes (check carefully), recompile blog reference documentation (check carefully)
 * track updating for elliptical errors (additive errors or overall update?)
 * uere()<- ctmm posterior re-calibration dangerous?
 * ctmm.select(...,IC="BCV",block=1 %#% 'day')

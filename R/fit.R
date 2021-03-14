@@ -126,6 +126,16 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
   # fix numeric error (from scaling) when it should be logical
   if(any(!UERE.FIT)) { CTMM$error[!UERE.FIT] <- as.logical(CTMM$error[!UERE.FIT]) }
 
+  # don't try to fit error class parameters absent from data
+  if(any(CTMM$error>0) && "class" %in% names(data))
+  {
+    LEVELS <- levels(data$class)
+    UERE.DOF <- UERE.DOF[LEVELS]
+    UERE.FIT <- UERE.FIT[LEVELS]
+    UERE.PAR <- UERE.PAR[UERE.PAR %in% LEVELS]
+    CTMM$error <- CTMM$error[LEVELS]
+  }
+
   ### id and characterize parameters for profiling ###
   pars <- NAMES <- parscale <- lower <- upper <- period <- NULL
   ORIGINAL <- CTMM # original structure of model before fitting
@@ -587,6 +597,8 @@ ctmm.guess <- function(data,CTMM=ctmm(),variogram=NULL,name="GUESS",interactive=
 
     CTMM$circle <- circle
   }
+
+  #
 
   variogram.fit(variogram,CTMM=CTMM,name=name,interactive=interactive)
 }
