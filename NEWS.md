@@ -1,4 +1,4 @@
-ctmm 0.6.1 (2021-03-10)
+ctmm 0.6.1 (2021-03-13)
 ================
 
   * ctmm.fit() can now fit multiple UERE parameters and update uncertain calibration parameter estimates

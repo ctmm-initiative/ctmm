@@ -575,12 +575,29 @@ get.error <- function(data,CTMM,circle=FALSE,DIM=FALSE,calibrate=TRUE)
     TYPE <- DOP.match(axes)
     UERE.DOF <- attr(data,"UERE")$DOF[,TYPE]
     names(UERE.DOF) <- rownames(attr(data,"UERE")$DOF)
-    UERE.FIT <- CTMM$error & !is.na(UERE.DOF) & UERE.DOF<Inf # will we be fitting any error parameters?
-    UERE.FIX <- CTMM$error & (is.na(UERE.DOF) | UERE.DOF==Inf)
+
+    # expand to what classes are in the UERE object
+    ERROR <- rep(FALSE,length(UERE.DOF))
+    names(ERROR) <- names(UERE.DOF)
+    ERROR[names(CTMM$error)] <- CTMM$error
+
+    UERE.FIT <- ERROR & !is.na(UERE.DOF) & UERE.DOF<Inf # will we be fitting any error parameters?
+    UERE.FIX <- ERROR & (is.na(UERE.DOF) | UERE.DOF==Inf)
     UERE.PAR <- names(UERE.FIT)[UERE.FIT>0] # names of fitted UERE parameters
 
     # make sure that non-fitted parameters are logicals
-    if(any(!UERE.FIT)) { CTMM$error[!UERE.FIT] <- as.logical(CTMM$error[!UERE.FIT]) }
+    if(any(!UERE.FIT)) { ERROR[!UERE.FIT] <- as.logical(ERROR[!UERE.FIT]) }
+
+    # reduce to what classes are actually in the data - also fixes bad sorting
+    if("class" %in% names(data))
+    {
+      LEVELS <- levels(data$class)
+      ERROR <- ERROR[LEVELS]
+      UERE.DOF <- UERE.DOF[LEVELS]
+      UERE.FIT <- UERE.FIT[LEVELS]
+      UERE.FIX <- UERE.FIX[LEVELS]
+      UERE.PAR <- UERE.PAR[UERE.PAR %in% LEVELS]
+    }
 
     CLASS <- get.class.mat(data)
     FIT <- as.logical(c(CLASS %*% UERE.FIT)) # times where errors will be fitted (possibly with prior)
@@ -618,9 +635,9 @@ get.error <- function(data,CTMM,circle=FALSE,DIM=FALSE,calibrate=TRUE)
     if(any(UERE.FIT))
     {
       if(calibrate) # apply RMS UERE to DOP values
-      { CLASS <- c( CLASS %*% CTMM$error ) }
+      { CLASS <- c( CLASS %*% ERROR ) }
       else # just calculate relative variance
-      { CLASS <- c( CLASS %*% as.logical(CTMM$error) ) }
+      { CLASS <- c( CLASS %*% as.logical(ERROR) ) }
 
       if(DOP %in% COLS) # apply DOP values
       { CLASS <- CLASS * data[[DOP]] }
