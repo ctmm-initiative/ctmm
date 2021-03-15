@@ -101,8 +101,19 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   UERE.RMS <- attr(data,"UERE")$UERE[,TYPE]
   UERE.DOF <- attr(data,"UERE")$DOF[,TYPE]
   names(UERE.DOF) <- names(UERE.RMS) <- rownames(attr(data,"UERE")$DOF) # R drops dimnames
-  UERE.FIT <- CTMM$error & !is.na(UERE.DOF) & UERE.DOF<Inf # will we be fitting error parameters?
-  UERE.FIX <- CTMM$error & (is.na(UERE.DOF) | UERE.DOF==Inf) # are there fixed error parameters
+
+  # only a subset of levels are in the data
+  if(!is.null(names(CTMM$error)) && "class" %in% names(data))
+  {
+    LEVELS <- levels(data$class)
+    UERE.RMS <- UERE.RMS[LEVELS]
+    UERE.DOF <- UERE.DOF[LEVELS]
+  }
+
+  if(is.null(CTMM$errors)) { CTMM$errors <- any(CTMM$error>0) }
+
+  UERE.FIT <- (CTMM$error | CTMM$errors) & !is.na(UERE.DOF) & UERE.DOF<Inf # will we be fitting error parameters?
+  UERE.FIX <- (CTMM$error | CTMM$errors) & (is.na(UERE.DOF) | UERE.DOF==Inf) # are there fixed error parameters
 
   ### what kind of profiling is possible
   if((!any(CTMM$error>0) && !(circle && !isotropic)) || (!any(UERE.FIX) && isotropic)) # can profile full covariance matrix all at once
