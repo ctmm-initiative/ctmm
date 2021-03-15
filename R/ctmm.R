@@ -11,6 +11,7 @@ ctmm <- function(tau=NULL,omega=FALSE,isotropic=FALSE,range=TRUE,circle=FALSE,er
   if(is.null(info)) { info=list() }
 
   List$error <- error
+  if(any(error>0)) { List$errors <- TRUE } # Boolean
   List$circle <- circle
   List$axes <- axes
 
@@ -213,11 +214,15 @@ ctmm.prepare <- function(data,CTMM,precompute=TRUE,tau=TRUE,DIM=length(CTMM$axes
   TYPE <- DOP.match(axes)
   UERE <- attr(data,"UERE")$UERE[,TYPE]
   names(UERE) <- rownames(attr(data,"UERE")$UERE)
-  if(identical(CTMM$error,TRUE)) # lazy set fix
-  { CTMM$error <- UERE }
-  else # could be 10 meters for multiple classes
-  { CTMM$error <- array(CTMM$error,length(UERE)) }
-  names(CTMM$error) <- names(UERE)
+  if(is.null(names(CTMM$error))) # fix manually specified error parameters
+  {
+    if(identical(CTMM$error,TRUE)) # lazy set fix
+    { CTMM$error <- UERE }
+    else # could be 10 meters for multiple classes
+    { CTMM$error <- array(CTMM$error,length(UERE)) }
+    names(CTMM$error) <- names(UERE)
+  } # otherwise leave this alone, as could be a proper subset of data$class levels
+  if(any(CTMM$error>0)) { CTMM$errors <- TRUE }
 
   # evaluate mean function for this data set if no vector is provided
   if(precompute && (is.null(CTMM$mean.vec) || is.null(CTMM$error.mat) || is.null(CTMM$class.mat)))

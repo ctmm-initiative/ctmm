@@ -135,6 +135,8 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
     UERE.PAR <- UERE.PAR[UERE.PAR %in% LEVELS]
     CTMM$error <- CTMM$error[LEVELS]
   }
+  # make sure to include calibration in loglikelihood even if error==FALSE
+  CTMM$errors <- any(CTMM$error>0)
 
   ### id and characterize parameters for profiling ###
   pars <- NAMES <- parscale <- lower <- upper <- period <- NULL
