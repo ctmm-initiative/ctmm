@@ -3,13 +3,13 @@
 ################################
 # Return hidden state estimates or simulations
 ################################
-smoother <- function(DATA,CTMM,precompute=FALSE,sample=FALSE,residual=FALSE,...)
+smoother <- function(data,CTMM,precompute=FALSE,sample=FALSE,residual=FALSE,...)
 {
-  if(is.null(CTMM$error.mat)) { CTMM <- ctmm.prepare(DATA,CTMM) }
-  if(is.null(DATA$record)) { DATA$record <- TRUE } # real recorded data or blank/empty timestamps from fill-data
+  if(is.null(CTMM$error.mat)) { CTMM <- ctmm.prepare(data,CTMM) }
+  if(is.null(data$record)) { data$record <- TRUE } # real recorded data or blank/empty timestamps from fill-data
   AXES <- length(CTMM$axes)
 
-  t <- DATA$t
+  t <- data$t
 
   dt <- c(Inf,diff(t))
   n <- length(t)
@@ -37,17 +37,24 @@ smoother <- function(DATA,CTMM,precompute=FALSE,sample=FALSE,residual=FALSE,...)
     class <- CTMM$class.mat
     ELLIPSE <- attr(error,"ellipse") # do we need error ellipses?
     TYPE <- DOP.match(CTMM$axes)
-    UERE.DOF <- attr(DATA,"UERE")$DOF[,TYPE]
-    names(UERE.DOF) <- rownames(attr(DATA,"UERE")$DOF)
-    UERE.FIT <- CTMM$error & !is.na(UERE.DOF) & UERE.DOF<Inf # will we be fitting any error parameters?
+    UERE.DOF <- attr(data,"UERE")$DOF[,TYPE]
+    names(UERE.DOF) <- rownames(attr(data,"UERE")$DOF)
+    UERE.FIT <- CTMM$error>0 & !is.na(UERE.DOF) & UERE.DOF<Inf # will we be fitting any error parameters?
+
+    # don't try to fit error class parameters absent from data
+    if(any(CTMM$error>0) && "class" %in% names(data))
+    {
+      LEVELS <- levels(data$class)
+      UERE.DOF <- UERE.DOF[LEVELS]
+      UERE.FIT <- UERE.FIT[LEVELS]
+      # CTMM$error <- CTMM$error[LEVELS]
+    }
 
     # are we fitting the error, then the above is not yet normalized.
     if(any(UERE.FIT)) # calibrate errors
     {
-      class <- c( class %*% rbind(CTMM$error^2) )
-      error <- vapply(1:n,function(i){class[i]*error[i,,]},array(0,dim(error)[-1]))
-      dim(error) <- c(AXES,AXES,n)
-      error <- aperm(error,c(3,1,2))
+      class <- c( class %*% CTMM$error^2 )
+      error[] <- class * error
     }
     rm(class)
 
@@ -55,7 +62,7 @@ smoother <- function(DATA,CTMM,precompute=FALSE,sample=FALSE,residual=FALSE,...)
     else if(!isotropic & any(CTMM$error>0)) { DIM <- 1/2 } # requires 2x1D smoothers
     else { DIM <- 1 } # can use 1x1D smoother
 
-    z <- get.telemetry(DATA,CTMM$axes)
+    z <- get.telemetry(data,CTMM$axes)
     # u <- CTMM$mean.vec
     # mu <- CTMM$mu
 
@@ -93,7 +100,7 @@ smoother <- function(DATA,CTMM,precompute=FALSE,sample=FALSE,residual=FALSE,...)
     # fix variances of empty timestamps - set from fill.data
     if(!residual)
     {
-      empty <- which(!DATA$record)
+      empty <- which(!data$record)
       if(length(empty)) { error[empty,,] <- aperm( array(diag(Inf,dim(error)[2]),c(dim(error)[2:3],length(empty))) ,c(3,1,2)) } # R is weird
       rm(empty)
     }
