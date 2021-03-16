@@ -238,8 +238,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   if(any(UERE.FIT)) # calibrate errors
   {
     class <- c( class %*% CTMM$error^2 )
-    error <- class * error
-    dim(error) <- c(n,AXES,AXES)
+    error[] <- class * error
   }
   rm(class)
 
