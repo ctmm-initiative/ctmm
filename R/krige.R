@@ -58,7 +58,7 @@ smoother <- function(data,CTMM,precompute=FALSE,sample=FALSE,residual=FALSE,...)
     }
     rm(class)
 
-    if(ELLIPSE || (!isotropic && circle && any(CTMM$error>0)) || ECC.EXT) { DIM <- 2 } # requires 2D smoother
+    if(ELLIPSE || (!isotropic && circle && any(CTMM$error>0)) || (ECC.EXT && AXES>1)) { DIM <- 2 } # requires 2D smoother
     else if(!isotropic & any(CTMM$error>0)) { DIM <- 1/2 } # requires 2x1D smoothers
     else { DIM <- 1 } # can use 1x1D smoother
 
