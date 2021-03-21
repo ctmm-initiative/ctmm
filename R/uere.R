@@ -662,7 +662,7 @@ get.error <- function(data,CTMM,circle=FALSE,DIM=FALSE,calibrate=TRUE)
   } # END errors
 
   # upgrade variance scalar to covariance matrix
-  if(!ELLIPSE && DIM>1 && !circle) { error <- outer(error,diag(DIM)) } # [n,d,d] }
+  if(!ELLIPSE && !circle && DIM) { error <- outer(error,diag(DIM)) } # [n,d,d] }
 
   attr(error,"ellipse") <- ELLIPSE
   return(error)

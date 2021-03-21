@@ -126,7 +126,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   ### 2D or 1D Kalman filters necessary?
   if(!circle && !isotropic && any(CTMM$error>0) && !ELLIPSE && !ECC.EXT) # can run 2x1D Kalman filters
   { DIM <- 1/2 }
-  else if(ELLIPSE || (circle && !isotropic && any(CTMM$error>0)) || ECC.EXT) # full 2D filter necessary
+  else if(ELLIPSE || (circle && !isotropic && any(CTMM$error>0)) || (ECC.EXT && AXES>1)) # full 2D filter necessary
   { DIM <- 2 }
   else # can run 1x1D Kalman filter
   { DIM <- 1 }
