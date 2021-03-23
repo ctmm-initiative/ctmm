@@ -1,12 +1,3 @@
-# variance to profile
-profiled.var <- function(CTMM,sigma=CTMM$sigma,UERE.RMS=CTMM$error,DT=1)
-{
-  AXES <- length(CTMM$axes)
-  PRO.VAR <- mean(eigenvalues.covm(sigma))*DT # really profiling the variance with mean?
-  if(any(UERE.RMS>0)) { PRO.VAR <- PRO.VAR + mean(UERE.RMS^2)/AXES } # comparable error variance (@DOP==1)
-  return(PRO.VAR)
-}
-
 ####################################
 # log likelihood function
 ####################################
@@ -73,7 +64,14 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   if(range) # timescale constant for profiling
   { DT <- 1 }
   else # IOU & BM
-  { DT <- stats::median(dt[dt>0]) }
+  {
+    DT <- dt[dt>0]
+
+    if(length(DT))
+    { DT <- stats::median(DT) }
+    else
+    { DT <- 1 }
+  }
 
   # data z and mean vector u
   z <- get.telemetry(data,CTMM$axes)
@@ -205,7 +203,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     UNIT <- 1
 
     # largest variance (to profile) --- used to be max, now really mean
-    PRO.VAR <- profiled.var(CTMM,M.sigma,CTMM$error,DT)
+    PRO.VAR <- profiled.var(CTMM,M.sigma,CTMM$error,DT=DT,AVE=TRUE)
 
     # unit-max-variance KF sigma # 1/DT for IOU/BM
     K.sigma <- scale.covm(M.sigma,1/PRO.VAR)

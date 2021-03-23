@@ -69,6 +69,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
   if(length(DT)) { TSCALE <- stats::median(DT) } else { TSCALE <- 1 }
   data <- unit.telemetry(data,length=SCALE,time=TSCALE)
   CTMM <- unit.ctmm(CTMM,length=SCALE,time=TSCALE)
+  # TSCALE is effectively 1 now, consistent for profiling in ctmm.fit()
 
   # used for minimum scale of parameter inspection
   n <- length(data$t)
@@ -121,7 +122,8 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
   TYPE <- DOP.match(axes)
   UERE.DOF <- attr(data,"UERE")$DOF[,TYPE]
   names(UERE.DOF) <- rownames(attr(data,"UERE")$DOF)
-  UERE.FIT <- CTMM$error & !is.na(UERE.DOF) & UERE.DOF<Inf # will we be fitting any error parameters?
+  UERE.FIT <- CTMM$error>0 & !is.na(UERE.DOF) & UERE.DOF<Inf # will we be fitting any error parameters?
+  UERE.FIX <- CTMM$error>0 & (is.na(UERE.DOF) | UERE.DOF==Inf) # are there any fixed error parameters?
   UERE.PAR <- names(UERE.FIT)[UERE.FIT>0] # names of fitted UERE parameters
   # fix numeric error (from scaling) when it should be logical
   if(any(!UERE.FIT)) { CTMM$error[!UERE.FIT] <- as.logical(CTMM$error[!UERE.FIT]) }
@@ -132,17 +134,21 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
     LEVELS <- levels(data$class)
     UERE.DOF <- UERE.DOF[LEVELS]
     UERE.FIT <- UERE.FIT[LEVELS]
+    UERE.FIX <- UERE.FIX[LEVELS]
     UERE.PAR <- UERE.PAR[UERE.PAR %in% LEVELS]
     CTMM$error <- CTMM$error[LEVELS]
   }
-  # make sure to include calibration in loglikelihood even if error==FALSE
+  # make sure to include calibration in log-likelihood even if error==FALSE
   CTMM$errors <- any(CTMM$error>0)
+
+  # can we profile any variances?
+  profile <- !any(UERE.FIX)
 
   ### id and characterize parameters for profiling ###
   pars <- NAMES <- parscale <- lower <- upper <- period <- NULL
   ORIGINAL <- CTMM # original structure of model before fitting
   linear.cov <- FALSE # represent sigma linearly (for perturbation) versus * (for optimization)
-  setup.parameters <- function(CTMM,profile=TRUE,linear=FALSE)
+  setup.parameters <- function(CTMM,profile=profile,linear=FALSE)
   {
     STUFF <- id.parameters(CTMM,profile=profile,linear=linear,linear.cov=linear.cov,UERE.FIT=UERE.FIT,dt=dt,df=df,dz=dz,STRUCT=ORIGINAL)
     NAMES <<- STUFF$NAMES
@@ -152,9 +158,9 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
     period <<- STUFF$period
     # reflect <<- STUFF$reflect
     # initial guess for optimization
-    pars <<- get.parameters(CTMM,NAMES,linear.cov=linear.cov)
+    pars <<- get.parameters(CTMM,NAMES,profile=profile,linear.cov=linear.cov)
   }
-  setup.parameters(CTMM,profile=TRUE)
+  setup.parameters(CTMM,profile=profile)
   # fix numeric error (from mucking) when it should be logical
   if(any(!UERE.FIT)) { CTMM$error[!UERE.FIT] <- as.logical(CTMM$error[!UERE.FIT]) }
 
@@ -172,73 +178,53 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
   fn <- function(p,zero=0)
   {
     names(p) <- NAMES
-    p <- clean.parameters(p,linear.cov=linear.cov)
-    CTMM <- set.parameters(CTMM,p,linear.cov=linear.cov)
+    p <- clean.parameters(p,profile=profile,linear.cov=linear.cov)
+    CTMM <- set.parameters(CTMM,p,profile=profile,linear.cov=linear.cov)
 
     # negative log likelihood
     return(-ctmm.loglike(data,CTMM,REML=REML,zero=-zero,profile=profile))
   }
 
   # shift parameters back near origin to prevent overflow in optimizer
-  reset <- function(p)
-  {
-    names(p) <- NAMES
-    if(!linear.cov)
-    {
-      # swap minor and major axes if minor is getting too big
-      if("minor" %in% NAMES && "major" %nin% NAMES) # major axis is being profiled
-      {
-        major <- CTMM$sigma@par['major']
-        # ERROR <- "error" %in% NAMES
-        if(p['minor']>major) # swap major-minor
-        {
-          # rotate to true minor axis
-          p["angle"] <- p["angle"] + pi/2
+  reset <- function(p) { clean.parameters(p,profile=profile,linear.cov=FALSE) }
 
-          # maintain variance ratios
-          RATIO <- major/p['minor'] # <1
-
-          p['minor'] <- RATIO * major # old major is the new minor (proportionally)
-
-          # now that I profile mean VAR, I don't think I need this?
-          # if(any(UERE.FIT))
-          # {
-          #   PAR <- paste("error",UERE.PAR)
-          #   p[PAR] <- sqrt(RATIO) * p[PAR]
-          # }
-        }
-      } # end major-minor swap
-
-      # swap tau velocity and tau position if they become reversed (to keep parscale sane)
-      if("tau position" %in% NAMES && "tau velocity" %in% NAMES)
-      { p[c("tau velocity","tau position")] <- sort( p[c("tau velocity","tau position")] ) }
-
-      # shift back to (-pi/2,pi/2)
-      if("angle" %in% NAMES) { p["angle"] <- (((p["angle"]/pi+1/2) %% 1) - 1/2)*pi }
-    } # end !linear.cov
-
-    return(p)
-  } # end reset
-
-  # construct covoariance matrix guess
-  covariance <- function()
-  {
-    COV <- diag(parscale^2,nrow=length(parscale))
-    dimnames(COV) <- list(NAMES,NAMES)
-    COPY <- rownames(COV.init) %in% NAMES
-    if(any(COPY))
-    {
-      COPY <- rownames(COV.init)[COPY]
-      COV[COPY,COPY] <- COV.init[COPY,COPY]
-    }
-    return(COV)
-  }
+  # construct covariance matrix guess - must account for differences between storage and optimization representations
+  # covariance <- function()
+  # {
+  #   NAMES.init <- rownames(COV.init)
+  #
+  #   COV <- diag(parscale^2,nrow=length(parscale))
+  #   dimnames(COV) <- list(NAMES,NAMES)
+  #   COPY <- NAMES.init %in% NAMES
+  #   if(any(COPY))
+  #   {
+  #     COPY <- NAMES.init[COPY]
+  #     COV[COPY,COPY] <- COV.init[COPY,COPY]
+  #   }
+  #
+  #   # relative variance transformation
+  #   if(profile)
+  #   {
+  #     SP <- c('major','minor') # major should never be here
+  #     SP <- SP[SP %in% COPY]
+  #
+  #     EP <- paste('error',names(UERE.FIT)[UERE.FIT])
+  #     EP <- EP[EP %in% COPY]
+  #
+  #     MAX <- profiled.var(CTMM,UERE.RMS=CTMM$error[UERE.FIT],AVE=FALSE)
+  #     PARS <- c(SP,EP)
+  #     COV[PARS,] <- COV[PARS,]/MAX
+  #     COV[,PARS] <- COV[,PARS]/MAX
+  #   }
+  #
+  #   return(COV)
+  # }
 
   # is the model under constrained?
   # UNDER <- AXES*k.mean + length(id.parameters(CTMM,profile=FALSE,UERE.FIT=UERE.FIT,STRUCT=ORIGINAL)$NAMES) > AXES*nrow(data)
 
   ### NOW OPTIMIZE ###
-  profile <- TRUE
+  # profile <- !any(UERE.FIX)
   # if(UNDER) # under constrained model
   # {
   #   CTMM$loglike <- -Inf
@@ -274,29 +260,29 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
   else ### all further cases require optimization ###
   {
     if(trace) { message("Maximizing likelihood.") }
-    control$covariance <- covariance()
+    # control$covariance <- covariance() - parameter storage and optimization representations can differ
     control$parscale <- parscale
     control$zero <- TRUE
     RESULT <- optimizer(par=pars,fn=fn,method=op.method,lower=lower,upper=upper,period=period,reset=reset,control=control)
-    pars <- clean.parameters(RESULT$par)
+    pars <- clean.parameters(RESULT$par,profile=profile)
     # copy over hessian from fit to COV.init ?
 
     # write best estimates over initial guess
-    store.pars <- function(pars,profile=TRUE,finish=TRUE)
+    store.pars <- function(pars,profile=profile,finish=TRUE)
     {
       names(pars) <- NAMES
-      pars <- clean.parameters(pars,linear.cov=linear.cov)
+      pars <- clean.parameters(pars,profile=profile,linear.cov=linear.cov)
 
-      CTMM <- set.parameters(CTMM,pars,linear.cov=linear.cov)
+      CTMM <- set.parameters(CTMM,pars,profile=profile,linear.cov=linear.cov)
 
       # this is a wasted evaluation !!! store verbose glob in environment?
-      if(finish) { CTMM <- ctmm.loglike(data,CTMM,REML=REML,verbose=TRUE,profile=profile) }
+      if(finish) { CTMM <- ctmm.loglike(data,CTMM,REML=REML,verbose=TRUE,profile=TRUE) }
 
       return(CTMM)
     }
-    CTMM <- store.pars(pars,finish=TRUE)
+    CTMM <- store.pars(pars,profile=profile,finish=TRUE)
 
-    profile <- FALSE # no longer solving covariance analytically
+    profile <- FALSE # no longer solving covariance analytically, no matter what
     setup.parameters(CTMM,profile=FALSE)
     ### COV CALCULATION #############
     if(COV || method %in% c("pREML","pHREML"))
@@ -390,15 +376,15 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
     if(method %in% c('pHREML','HREML'))
     {
       REML <- TRUE
-      profile <- TRUE
+      profile <- !any(UERE.FIX)
 
       # profile REML linear parameters numerically if necessary (error || circle)
-      setup.parameters(CTMM,profile=TRUE,linear=TRUE)
+      setup.parameters(CTMM,profile=profile,linear=TRUE)
       if(length(NAMES))
       {
         REML <- TRUE
         if(trace) { message("Profiling REML likelihood.") }
-        control$covariance <- covariance()
+        # control$covariance <- covariance() parameter storage and optimization representations can differ
         control$parscale <- parscale
         control$zero <- TRUE
         RESULT <- optimizer(par=pars,fn=fn,method=op.method,lower=lower,upper=upper,period=period,reset=reset,control=control)
@@ -406,7 +392,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
       }
 
       # includes free profile
-      TEST <- store.pars(pars,profile=TRUE,finish=TRUE)
+      TEST <- store.pars(pars,profile=profile,finish=TRUE)
       if(class(TEST)[1]=="ctmm")
       { CTMM <- TEST }
       else # parameters crashed likelihood function---this is extremely rare
