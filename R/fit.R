@@ -83,13 +83,16 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
   {
     CTMM <- unit.ctmm(CTMM,length=1/SCALE,time=1/TSCALE)
 
-    # fix numeric error (from scaling) when it should be logical
-    if(any(!UERE.FIT)) { CTMM$error[!UERE.FIT] <- as.logical(CTMM$error[!UERE.FIT]) }
+    # translate back to origin from center
+    CTMM$mu <- drift@shift(CTMM$mu,SHIFT)
 
     # log-likelihood adjustment
     CTMM$loglike <- CTMM$loglike - length(axes)*n*log(SCALE)
-    # translate back to origin from center
-    CTMM$mu <- drift@shift(CTMM$mu,SHIFT)
+
+    if(any(UERE.FIT)) { CTMM$loglike <- CTMM$loglike - length(axes)*sum(UERE.DOF[UERE.FIT])*log(SCALE) }
+
+    # fix numeric error (from scaling) when it should be logical
+    if(any(!UERE.FIT)) { CTMM$error[!UERE.FIT] <- as.logical(CTMM$error[!UERE.FIT]) }
 
     return(CTMM)
   }
@@ -324,9 +327,9 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
       {
         UERE.EPAR <- paste("error",UERE.PAR)
         if(length(UERE.PAR)==1)
-        { J[UERE.EPAR,UERE.EPAR] <- 2*CTMM$error[UERE.PAR] }
+        { J[UERE.EPAR,UERE.EPAR] <- 2*CTMM$error[UERE.FIT] }
         else # diag() is annoying
-        { diag(J[UERE.EPAR,UERE.EPAR]) <- 2*CTMM$error[UERE.PAR] }
+        { diag(J[UERE.EPAR,UERE.EPAR]) <- 2*CTMM$error[UERE.FIT] }
       }
 
       # apply linear parameter correction
