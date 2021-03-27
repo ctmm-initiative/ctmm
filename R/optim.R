@@ -890,12 +890,17 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
 
     hessian.LINE <- c(DIR.STEP %*% hessian %*% DIR.STEP)
     gradient.LINE <- c(DIR.STEP %*% gradient)
+
     # generate a linear sequence of points from par to the other side of par.target
     P2 <- line.boxer(1.5*par.diff,p0=par,lower=lower,upper=upper,period=period)
     P1 <- line.boxer(1.0*par.diff,p0=par,lower=lower,upper=upper,period=period)
+
     M <- sqrt(sum((P1-par)^2)) # M is unsigned!
     M1 <- min(1,M/2) # 1 in case hessian is bad
     M2 <- sqrt(sum((P2-par)^2))
+
+    M <- sort(c(M1,M,M2)) # just in case
+    M1 <- M[1]; M2 <- M[3]; M <- M[2]
 
     # sample to target or boundary
     if(abs(M)<=M.BOX) # sample P1/2 to P1 to P2
@@ -907,13 +912,15 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
       n <- n-1 # remaining points
 
       # under-estimates -- proportional-ish to M-M1
-      n1 <- (M-M1)/(M2-M1)*(n+2) - 1
+      n1 <- nant((M-M1)/(M2-M1),1)*(n+2) - 1
       n1 <- clamp(n1,0+(M-M1>=STEP[STAGE]),n-(M2-M>=STEP[STAGE]))
       n1 <- round(n1)
       # over-estimates -- proportional-ish to M2-M
       n2 <- n-n1
 
-      SEQ <- c( seq(M1,M,length.out=n1+1), seq(M,M2,length.out=n2+1)[-1] )
+      n1 <- max(0,n1+1)
+      n2 <- max(0,n2+1)
+      SEQ <- c( seq(M1,M,length.out=n1), seq(M,M2,length.out=n2)[-1] )
     }
     else # sample only P2/2 to P2 to fit search within boundary
     {
@@ -1071,12 +1078,14 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
             n <- n-1
             SEQ <- M
 
-            n1 <- (M-M1)/(M2-M1)*(n+2) - 1
+            n1 <- nant((M-M1)/(M2-M1),1)*(n+2) - 1
             n1 <- clamp(n1,0,n)
             n1 <- round(n1)
             n2 <- n-n1
 
-            SEQ <- c( seq(M1,M,length.out=n1+1)[-(n1+1)] , seq(M,M2,length.out=n2+1) )
+            n1 <- max(0,n1+1)
+            n2 <- max(0,n2+1)
+            SEQ <- c( seq(M1,M,length.out=n1)[-n1] , seq(M,M2,length.out=n2) )
           }
           else
           {
@@ -1108,7 +1117,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
 
           if(n)
           {
-            n1 <- (M1)/(M2)*(n+2) - 1
+            n1 <- nant(M1/M2,1)*(n+2) - 1
             n1 <- clamp(n1,0,n)
             n1 <- round(n1)
             n2 <- n-n1
@@ -1175,7 +1184,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
           M1 <- sqrt(sum((par-par.all[,MIN-1])^2))
           M2 <- sqrt(sum((par-par.all[,MIN+1])^2))
 
-          n1 <- M1/(M1+M2)*(n+2) - 1
+          n1 <- nant(M1/(M1+M2),1/2)*(n+2) - 1
           n1 <- clamp(n1,1,n-1)
           n1 <- round(n1)
           n2 <- n-n1

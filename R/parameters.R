@@ -77,10 +77,10 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE.F
     # RMS UERE - error parameters
     if(any(UERE.FIT))
     {
-      parscale <- c(parscale, pmax(CTMM$error[UERE.FIT>0],dz) ) # minimum of dz error parscale
-      lower <- c(lower, rep(0,sum(UERE.FIT>0)) )
-      upper <- c(upper, rep(Inf,sum(UERE.FIT>0)) )
-      period <- c(period, rep(FALSE,sum(UERE.FIT>0)) )
+      parscale <- c(parscale, pmax(CTMM$error[UERE.FIT],dz) ) # minimum of dz error parscale
+      lower <- c(lower, rep(0,sum(UERE.FIT)) )
+      upper <- c(upper, rep(Inf,sum(UERE.FIT)) )
+      period <- c(period, rep(FALSE,sum(UERE.FIT)) )
     }
   }
   else # linear sigma: xx, yy, xy
@@ -104,10 +104,10 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE.F
     # MS UERE - error parameters
     if(any(UERE.FIT))
     {
-      parscale <- c(parscale, pmax(CTMM$error[UERE.FIT>0],dz)^2 ) # minimum of dz error parscale
-      lower <- c(lower, rep(0,sum(UERE.FIT>0)) )
-      upper <- c(upper, rep(Inf,sum(UERE.FIT>0)) )
-      period <- c(period, rep(FALSE,sum(UERE.FIT>0)) )
+      parscale <- c(parscale, pmax(CTMM$error[UERE.FIT],dz)^2 ) # minimum of dz error parscale
+      lower <- c(lower, rep(0,sum(UERE.FIT)) )
+      upper <- c(upper, rep(Inf,sum(UERE.FIT)) )
+      period <- c(period, rep(FALSE,sum(UERE.FIT)) )
     }
   } # end linear sigma
 
@@ -159,11 +159,11 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE.F
     }
 
     # error fraction could be much smaller
-    if(any(UERE.FIT>0))
+    if(any(UERE.FIT))
     {
-      PARS <- paste("error",names(UERE.FIT)[UERE.FIT>0])
+      PARS <- paste("error",names(UERE.FIT)[UERE.FIT])
 
-      parscale[PARS] <- min(1, pmax(CTMM$error[UERE.FIT>0],dz) / sqrt(AXES*MAX) )
+      parscale[PARS] <- min(1, pmax(CTMM$error[UERE.FIT],dz) / sqrt(MAX) )
       upper[PARS] <- 1
     }
   } # end profile
