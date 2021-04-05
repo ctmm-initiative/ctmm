@@ -1,4 +1,4 @@
-ctmm 0.6.1 (2021-03-22)
+ctmm 0.6.1 (2021-04-04)
 ================
 
   * ctmm.fit() can now fit multiple UERE parameters and update uncertain calibration parameter estimates
@@ -14,6 +14,8 @@ ctmm 0.6.1 (2021-03-22)
   * new argument VMM in simulate(), predict()
   
   * new argument timeformat="auto" in as.telemetry() 
+  
+  * new argument verbose in meta()
   
   * bugfix in ctmm.loglike() for circle!=0 and REML
 

@@ -6,7 +6,6 @@ PRIORITY
 * optimizer compare par to par/parscale==1 for scale parameters and reset Hessian if far away
 * akde on fit with DOF=0 error()
 * overlap VAR
-* meta list output
 * zoom needs CTMM argument named? No gear comes up then?
 * consistent grids with different resolutions (power of 2 relation; padding; etc.)
 * automatic timeformat (non-default argument)

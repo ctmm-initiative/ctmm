@@ -7,7 +7,7 @@
 
 \title{Calculate the conditional location distribution of ecounters}
 
-\description{Functions to calculate the location distribution of where encounters take place, conditional on said encounters taking place, as described in Noonan et al (2020).}
+\description{Functions to calculate the location distribution of where encounters take place, conditional on said encounters taking place, as described in Noonan et al (2021).}
 
 \usage{ encounter(object,include=NULL,exclude=NULL,debias=FALSE,...) }
 %- maybe also 'usage' for other objects documented here.
@@ -28,7 +28,7 @@ By default, \code{include = 1 - diag(length(object))}, which implies that all in
 
 %% ~put references to the literature/web site here ~
 \references{
-M. J. Noonan, R. Martinez-Garcia, G. H. Davis, M. C. Crofoot, R. Kays, B. T. Hirsch, D. Caillaud, E. Payne, A. Sih, D. L. Sinn, O. Spiegel, W. F. Fagan, C. H. Fleming, J. M. Calabrese, ``Estimating encounter location distributions from animal tracking data'', bioRxiv 2020.08.24.261628 (2020) \doi{10.1101/2020.08.24.261628}.
+M. J. Noonan, R. Martinez-Garcia, G. H. Davis, M. C. Crofoot, R. Kays, B. T. Hirsch, D. Caillaud, E. Payne, A. Sih, D. L. Sinn, O. Spiegel, W. F. Fagan, C. H. Fleming, J. M. Calabrese, ``Estimating encounter location distributions from animal tracking data'', Methods in Ecology and Evolution (2021) \doi{10.1111/2041-210X.13597}.
 }
 
 \author{C. H. Fleming}

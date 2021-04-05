@@ -78,8 +78,8 @@ The half-sample cross validation IC, \code{IC="HSCV"}, is (-2 times) the sum of 
 \value{
 The function \code{ctmm} returns a prototype \code{ctmm} movement-model object.
 By default, \code{ctmm.loglike} returns the log-likelihood of the model \code{CTMM}.
-\code{ctmm.fit} (and \code{ctmm.loglike} with \code{verbose=TRUE}) returns the maximum likelihood \code{ctmm} movement-model object with all of the components of \code{CTMM} plus the components listed below.
-\code{ctmm.select} returns the best model by default or the sorted list of attempted models if \code{verbose=TRUE}.
+\code{ctmm.fit} (and \code{ctmm.loglike} with \code{verbose=TRUE}) returns the estimated \code{ctmm} movement-model object with all of the components of \code{CTMM} plus the components listed below.
+\code{ctmm.select} returns the best model by default, or the sorted list of attempted models if \code{verbose=TRUE}, with the best model being first in the list.
 \describe{
 \item{\code{AICc}}{The approximate corrected Akaike information criterion for multivariate distributions with variable numbers of unknown mean and (structured) covariance parameters (Burnham & Anderson, Eq. 7.91). This formula is only exact for IID data.}
 \item{\code{loglike}}{The log-likelihood.}
