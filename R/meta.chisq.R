@@ -146,7 +146,7 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='mle',bo
       nu <- c(0,1,2)[1:length(LL)] # variance parameters
       K <- k + nu # total parameters
       dIC[,"AIC"]  <- 2*K - 2*LL
-      dIC[,"AICc"] <- 2*K*ifelse(debias,n-k,n)/pmax(n-K-nu,0) - 2*LL
+      dIC[,"AICc"] <- 2*K*nant(ifelse(debias,n-k,n)/pmax(n-K-nu,0),1) - 2*LL
       dIC[,"BIC"]  <- log(n)*K - 2*LL
 
       dIC <- cbind(dIC[,IC])
@@ -475,12 +475,12 @@ shrink.chisq <- function(s,dof,S,DOF,...)
 }
 
 
-meta <- function(x,level=0.95,level.UD=0.95,method="MLE",IC="AICc",boot=FALSE,error=0.01,debias=TRUE,units=TRUE,plot=TRUE,sort=FALSE,mean=TRUE,col="black",...)
+meta <- function(x,level=0.95,level.UD=0.95,method="MLE",IC="AICc",boot=FALSE,error=0.01,debias=TRUE,verbose=FALSE,units=TRUE,plot=TRUE,sort=FALSE,mean=TRUE,col="black",...)
 {
   method <- tolower(method)
   method <- match.arg(method,c("mle","blue"))
 
-  meta.area(x=x,level=level,level.UD=level.UD,IC=IC,boot=boot,error=error,debias=debias,method=method,units=units,plot=plot,sort=sort,mean=mean,col=col,...)
+  meta.area(x=x,level=level,level.UD=level.UD,IC=IC,boot=boot,error=error,debias=debias,method=method,verbose=verbose,units=units,plot=plot,sort=sort,mean=mean,col=col,...)
 }
 
 
@@ -530,7 +530,7 @@ import.area <- function(x,level.UD=0.95)
 
 # wrapper: meta-analysis of CTMM areas
 # TODO range=FALSE ???
-meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC="AICc",boot=FALSE,error=0.01,debias=TRUE,units=TRUE,plot=TRUE,sort=FALSE,mean=TRUE,col="black",...)
+meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC="AICc",boot=FALSE,error=0.01,debias=TRUE,verbose=FALSE,units=TRUE,plot=TRUE,sort=FALSE,mean=TRUE,col="black",...)
 {
   N <- length(x)
 
@@ -554,6 +554,7 @@ meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC=
     }
     message("* Joint population")
     RESULTS[[N+1]] <- meta.chisq(unlist(AREA),unlist(DOF),level=level,level.pop=level.pop,IC=IC,boot=boot,error=error,debias=debias,method=method,verbose=TRUE,units=FALSE)
+    names(RESULTS) <- ID
 
     message("* Joint population versus sub-populations (best models)")
     dIC <- sum( sapply(RESULTS[1:N],function(R){R$dIC[1,]}) )
@@ -659,6 +660,24 @@ meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC=
     {
       for(j in (1:N)[-i]) # diagonal == 1/1
       { CI[i,j,] <- F.CI(NUM[i],NVAR[i],DEN[j],DVAR[j],level=level) }
+    }
+
+    if(verbose)
+    {
+      UNITS <- sapply(RESULTS,function(R){R$CI[1,]})
+      UNITS <- unit(UNITS,"area",SI=!units,concise=TRUE)
+
+      for(i in 1:N)
+      {
+        RESULTS[[i]] <- RESULTS[[i]]$CI[c(1,3,4),]
+        RESULTS[[i]][1,] <- RESULTS[[i]][1,]/UNITS$scale
+        rownames(RESULTS[[i]])[1] <- paste0(rownames(RESULTS[[i]])[1]," (",UNITS$name,")")
+      }
+
+      RESULTS[[N+1]] <- CI
+      names(RESULTS)[N+1] <- "mean ratio"
+
+      CI <- RESULTS
     }
   }
   else # population levels CIs

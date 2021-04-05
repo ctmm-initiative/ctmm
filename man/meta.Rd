@@ -7,7 +7,7 @@
 }
 \usage{
 meta(x,level=0.95,level.UD=0.95,method="MLE",IC="AICc",boot=FALSE,error=0.01,debias=TRUE,
-     units=TRUE,plot=TRUE,sort=FALSE,mean=TRUE,col="black",...)
+     verbose=FALSE,units=TRUE,plot=TRUE,sort=FALSE,mean=TRUE,col="black",...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -20,6 +20,7 @@ meta(x,level=0.95,level.UD=0.95,method="MLE",IC="AICc",boot=FALSE,error=0.01,deb
   \item{boot}{Perform a parametric bootstrap for confidence intervals and first-order bias correction if \code{debias=TRUE}.}
   \item{error}{Relative error tolerance for parametric bootstrap.}
   \item{debias}{Apply Bessel's inverse-Gaussian correction and various other bias corrections if \code{method="MLE"}, REML if \code{method="BLUE"}, and an additional first-order correction if \code{boot=TRUE}.}
+  \item{verbose}{Return a list of both cross-population and sub-population analyses if \code{TRUE} and \code{x} is a list of sub-population lists.}
   \item{units}{Convert result to natural units.}
   \item{plot}{Generate a meta-analysis forest plot.}
   \item{sort}{Sort individuals by their point estimates in forest plot.}
