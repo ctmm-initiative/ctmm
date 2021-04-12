@@ -1,4 +1,4 @@
-ctmm 0.6.1 (2021-04-04)
+ctmm 0.6.1 (2021-04-11)
 ================
 
   * ctmm.fit() can now fit multiple UERE parameters and update uncertain calibration parameter estimates
@@ -19,7 +19,7 @@ ctmm 0.6.1 (2021-04-04)
   
   * bugfix in ctmm.loglike() for circle!=0 and REML
 
-  * bugfix in optimzer()
+  * bugfixes in optimzer()
   
   * bugfix in ctmm.fit() for 1D processes
   

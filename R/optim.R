@@ -563,6 +563,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
   # distance to next boundary
   m.box <- function(M=1)
   {
+    # STUFF <<- list(M=M,lower=lower,upper=upper,par=par,DIR.STEP=DIR.STEP)
     MB <- c(((upper-par)/(M*DIR.STEP))[M*DIR.STEP>0],((lower-par)/(M*DIR.STEP))[M*DIR.STEP<0])
     MB <- nant(MB,0)
     if(!length(MB)) { MB <- 0 }
@@ -757,7 +758,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
       # search direction
       DIR.STEP <- par-par.old
       M <- sqrt(sum(DIR.STEP^2))
-      DIR.STEP <- nant(DIR.STEP/M,0)
+      DIR.STEP <- nant(DIR.STEP/M,sign(DIR.STEP))
 
       # hessian along line between centers where derivatives were calculated
       gradient.LINE <- gradient-gradient.old # canonical coordinates
@@ -871,7 +872,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
     # predicted search step size
     M <- sqrt(sum(par.diff^2))
     # new search direction
-    DIR.STEP <- par.diff / M
+    DIR.STEP <- nant(par.diff/M,sign(par.diff))
 
     # distance to boundary
     M.BOX <- m.box()

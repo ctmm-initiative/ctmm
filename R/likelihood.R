@@ -65,7 +65,8 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   { DT <- 1 }
   else # IOU & BM
   {
-    DT <- dt[dt>0]
+    DT <- dt[-1] # not Inf, please
+    DT <- DT[DT>0]
 
     if(length(DT))
     { DT <- stats::median(DT) }
@@ -419,8 +420,9 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     { CTMM$error[UERE.FIT] <- CTMM$error[UERE.FIT] * sqrt(PRO.VAR) }
 
     # include calibration likelihood/prior
-    x <- (UERE.RMS/CTMM$error)[UERE.FIT]^2
-    loglike <- loglike - AXES/2*sum(UERE.DOF[UERE.FIT]*(-log(x) + x - 1))
+    SUB <- UERE.DOF>0 & UERE.FIT
+    x <- (UERE.RMS/CTMM$error)[SUB]^2
+    loglike <- loglike - AXES/2*sum(UERE.DOF[SUB]*(-log(x) + x - 1))
     # consider original calibration as log-likelihood as zero point
   }
 
