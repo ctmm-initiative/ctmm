@@ -798,6 +798,49 @@ uere.null <- function(data)
     uere(data) <- UERE
     return(data)
   }
+  else if(class(UERE)[1]=="ctmm")
+  {
+    # in case of different location classes
+    if(class(data)[1]=="list")
+    {
+      data <- lapply(data,function(d){"uere<-"(d,value)})
+      return(data)
+    }
+
+    # only calibrate axis of value
+    axes <- value$axes
+    AXES <- length(axes)
+    TYPE <- DOP.match(axes)
+    ERROR <- value$error
+    CLASS <- names(ERROR)
+    ECLASS <- paste("error",CLASS)
+
+    if(all(ECLASS %in% rownames(value$COV)))
+    {
+      # sqrt(chi^2) relation
+      N <- 2/AXES * ERROR^2 / (2^2*diag(value$COV[ECLASS,ECLASS,drop=FALSE]))
+      names(N) <- CLASS
+    }
+    else
+    {
+      N <- UERE
+      N[] <- Inf
+    }
+
+    UERE <- uere(data)
+    CLASS <- CLASS[CLASS %in% rownames(UERE$UERE)]
+    ERROR <- ERROR[CLASS]
+    N <- N[CLASS]
+
+    UERE$UERE[CLASS,TYPE] <- ERROR
+    UERE$DOF[CLASS,TYPE] <- N
+    UERE$AICc[TYPE] <- Inf
+    UERE$Zsq[TYPE] <- Inf
+    UERE$VAR.Zsq[TYPE] <- Inf
+    UERE$N[TYPE] <- sum(N)
+    uere(data) <- UERE
+    return(data)
+  }
 
   DOF <- UERE$DOF
 
