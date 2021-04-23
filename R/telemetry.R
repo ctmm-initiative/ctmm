@@ -1135,9 +1135,14 @@ telemetry.clean <- function(data,id)
   # v <- sqrt(diff(data$x)^2+diff(data$y)^2)/dt
   # v <- max(v)
   # message("Maximum speed of ",format(v,digits=3)," m/s observed in ",id)
-  dt <- min(dt)
-  units <- unit(dt,dimension='time')
-  message("Minimum sampling interval of ",format(dt/units$scale,digits=3)," ",units$name," in ",id)
+  dt <- min(dt,Inf)
+  if(dt<Inf)
+  {
+    units <- unit(dt,dimension='time')
+    message("Minimum sampling interval of ",format(dt/units$scale,digits=3)," ",units$name," in ",id)
+  }
+  else
+  { message("Minimum sampling interval of NA in ",id) }
 
   return(data)
 }

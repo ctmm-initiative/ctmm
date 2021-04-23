@@ -1,6 +1,6 @@
 PRIORITY
+* make QPQ.solve() work without environment (for other packages)
 * track updating for elliptical errors (additive errors or overall update?)
-* uere()<- ctmm posterior re-calibration dangerous?
 * ctmm.select(...,IC="BCV",block=1 %#% 'day')
 * plot(telemetry,ctmm) fails for plain vector ctmm$mu
 * optimizer compare par to par/parscale==1 for scale parameters and reset Hessian if far away

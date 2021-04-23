@@ -1,4 +1,4 @@
-ctmm 0.6.1 (2021-04-11)
+ctmm 0.6.1 (2021-04-20)
 ================
 
   * ctmm.fit() can now fit multiple UERE parameters and update uncertain calibration parameter estimates
@@ -17,6 +17,8 @@ ctmm 0.6.1 (2021-04-11)
   
   * new argument verbose in meta()
   
+  * uere()<- can now assign posterior/updated error estimates from ctmm model objects
+  
   * bugfix in ctmm.loglike() for circle!=0 and REML
 
   * bugfixes in optimzer()
@@ -32,6 +34,8 @@ ctmm 0.6.1 (2021-04-11)
   * bugfix in meta() colors when sort=TRUE
   
   * bugfixes in ctmm.guess(), ctmm.fit(), speed() for tiny amounts of data
+  
+  * bugfixes in occurrence(), Kalman smoother for IOU process
   
   * ctmm.select() now stores IC and MSPE information for summary()
 

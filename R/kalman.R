@@ -286,7 +286,7 @@ kalman <- function(z,u,dt,CTMM,error=NULL,DIM=1,smooth=FALSE,sample=FALSE,residu
       sRes[i,,] <- (nant(t(P) %*% sForP,0) + error[i,,]) # (OBS*DIM,OBS*DIM)
       # nant's here might be stop-gap solutions
 
-      # forcast residuals
+      # forecast residuals
       zRes[i,,] <- zRes[i,,] - (t(P) %*% zFor[i,,]) # (OBS*DIM,VEC) # zRes is initially just z
 
       Gain <- sForP %*% PDsolve(sRes[i,,]) # (K*DIM,OBS*DIM) # updated to invert Inf uncertainty to 0
@@ -305,20 +305,27 @@ kalman <- function(z,u,dt,CTMM,error=NULL,DIM=1,smooth=FALSE,sample=FALSE,residu
       # DIAG <- diag(cbind(error[i,,])) # diag() throws an error if you try to secure nrow/ncol
       # if(DIAG<Inf && DIAG>0) { sCon[i,,] <- sCon[i,,] + (Gain %*% error[i,,] %*% t(Gain)) } # don't attempt 0*Inf*0
 
-      # update forcast estimates for next iteration
+      # update forecast estimates for next iteration
       if(i<n)
       {
-        # update forcast estimates now
+        # update forecast estimates now
         zFor[i+1,,] <- Green[i+1,,] %*% zCon[i,,] # (K*DIM,VEC)
         # work around for when initial location estimates are NULL
+        # avoid NaNs from 0*Inf that should be 0
         TCON <- sCon[i,,]
         dim(TCON) <- c(K*DIM,K*DIM)
-        INF <- TCON==Inf
+        INF <- diag(TCON)==Inf
         ANY <- any(INF)
-        if(ANY) { TCON[INF] <- 0 } # prevent lots of NaNs that should be zero
+        if(ANY) { diag(TCON)[INF] <- 1i } # will set back to Inf
         TCON <- Green[i+1,,] %*% TCON %*% t(Green[i+1,,]) + Sigma[i+1,,] # (K*DIM,K*DIM)
-        # restore Inf variances after avoiding NaNs -- delete finie correlations with infinite variance (impossible?)
-        if(ANY) { TCON <- inft(TCON) }
+        # restore Inf variances after avoiding NaNs -- delete finite correlations with infinite variance (impossible?)
+        if(ANY)
+        {
+          INF <- Im(diag(TCON)) > 0
+          TCON <- Re(TCON)
+          TCON[INF,] <- TCON[,INF] <- 0
+          diag(TCON)[INF] <- Inf
+        }
         sFor[i+1,,] <- TCON
       }
     }
