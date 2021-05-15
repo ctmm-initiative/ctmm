@@ -1,4 +1,4 @@
-# interpolate vector by continuous index
+# interpolate vector by continuous index (vectorized by index)
 # vec is a vector, ind is a continuous index
 vint <- function(vec,ind,return.ind=FALSE)
 {
@@ -8,48 +8,51 @@ vint <- function(vec,ind,return.ind=FALSE)
   hi <- ceiling(ind)
 
   # extrapolate
-  lo <- max(1,lo)
-  hi <- max(2,hi)
+  lo <- pmax(1,lo)
+  hi <- pmax(2,hi)
   # extrapolate
-  lo <- min(n-1,lo)
-  hi <- min(n,hi)
+  lo <- pmin(n-1,lo)
+  hi <- pmin(n,hi)
 
-  if(return.ind) { return(c(lo,hi)) }
+  if(return.ind) { return(rbind(lo,hi)) }
 
-  IND <- abs(vec[c(lo,hi)])
-  if(any(IND==Inf))
-  {
-    IND <- which.max(IND)
-    return(vec[c(lo,hi)[IND]])
-  }
+  # IND <- abs(vec[c(lo,hi)])
+  # if(any(IND==Inf))
+  # {
+  #   IND <- which.max(IND)
+  #   return(vec[c(lo,hi)[IND]])
+  # }
 
   # linear interpolation
   vec <- vec[lo] + (vec[hi]-vec[lo])*(ind-lo)
 
+  # fix NaNs (should be +/- Inf)
+  INF <- abs(lo)==Inf
+  if(any(INF)) { vec[INF] <- lo[INF] }
+  INF <- abs(hi)==Inf
+  if(any(INF)) { vec[INF] <- hi[INF] }
+
   return(vec)
 }
 
-# same thing as above but with a block-vector
+# same thing as above but with a block-vector mat
 mint <- function(mat,ind)
 {
   IND <- vint(mat[1,],ind,return.ind=TRUE)
-  mat <- mat[,IND[1]] + (mat[,IND[2]]-mat[,IND[1]])*(ind-IND[1])
+  mat <- mat[,IND[1,]] + (mat[,IND[2,]]-mat[,IND[1,]])*(ind-IND[1,])
   return(mat)
 }
 
 # bi-linear interpolation
 bint <- function(X,ind)
 {
-  # subset to 4x4 inclusion square
-  IND <- vint(X[,1],ind[1],return.ind=TRUE)
-  X <- X[IND[1],]
-  IND[2] <- vint(X[1,],ind[2],return.ind=TRUE)
-  X <- X[,IND[2]]
+  ind <- cbind(ind) # vectorize
 
-  X <- X[1,] + (X[1,2]-X[1,1])*(ind[1]-IND[1])
-  X <- X[1] + (X[2]-X[1])*(ind[2]-IND[2])
-
-  return(X)
+  # interpolate first index
+  IND <- vint(X[,1],ind[1,],return.ind=TRUE)
+  X <- X[IND[1,],] + (X[IND[2,],]-X[IND[1,],])*(ind[1,]-IND[1,])
+  # first index collapsed
+  vint(X,ind[2,])
 }
 
 

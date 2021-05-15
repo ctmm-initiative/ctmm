@@ -30,12 +30,15 @@ unit <- function(data,dimension,thresh=1,concise=FALSE,SI=FALSE)
   }
   else if(dimension=="time")
   {
-    name.list <- c("microseconds","miliseconds","seconds","minutes","hours","days","months","years")
-    abrv.list <- c("\u03BCs","ms","sec","min","hr","day","mon","yr")
+    name.list <- c("microseconds","miliseconds","seconds","minutes","hours","days","months","years","millennia","mega-anna","aeons")
+    abrv.list <- c("\u03BCs","ms","sec","min","hr","day","mon","yr","ka","Ma","AE")
     scale.list <- c(1E-6,1/1000,1,60*c(1,60)) # through minutes
     scale.list[6] <- UNITS[[OP]]$DAY
     scale.list[7] <- UNITS[[OP]]$MONTH
     scale.list[8] <- UNITS[[OP]]$YEAR
+    scale.list[9] <- 1000 * UNITS[[OP]]$YEAR
+    scale.list[10] <- 1000^2 * UNITS[[OP]]$YEAR
+    scale.list[11] <- 1000^3 * UNITS[[OP]]$YEAR
   }
   else if(dimension %in% c("speed",'velocity'))
   {
@@ -248,7 +251,7 @@ unit.variogram <- function(SVF,time=1,area=1)
     pow <- -1
   }
 
-  name <- tolower(name)
+  name <- canonical.name(name)
 
   # DIV <- grepl("/",name)
   # if(DIV)
@@ -264,9 +267,11 @@ unit.variogram <- function(SVF,time=1,area=1)
   add <- function(a,s)
   {
     n <- length(alias)
-    alias[[n+1]] <<- a
+    alias[[n+1]] <<- canonical.name(a)
     scale[n+1] <<- s
   }
+
+  # this database should be generated on load instead of on function call
 
   # TIME
   add(c("\u03BCs","\u03BCs.","microsecond","microseconds"),1E-6)
@@ -278,6 +283,9 @@ unit.variogram <- function(SVF,time=1,area=1)
   add(c("wk","wk.","week","weeks"),7*UNITS[[OP]]$DAY) # week
   add(c("mon","mon.","month","months"),UNITS[[OP]]$MONTH) # month
   add(c("yr","yr.","year","years"),UNITS[[OP]]$YEAR) # year
+  add(c("ka","ky","millennium","millenniums","millennia","kiloannum","kiloannums","kiloyear","kiloyears"),1000*UNITS[[OP]]$YEAR)
+  add(c("ma","my","megaannum","megaannums","megaanna","megayear","megayears","millionennium","millionenniums","millionennia"),1000^2*UNITS[[OP]]$YEAR)
+  add(c("ae","ga","gy","gyr","aeon","aeons","eon","eons","gigayear","gigayears","gigaannum","gigaannums","giggaanna"),1000^3*UNITS[[OP]]$YEAR)
 
   # Distance conversions
   add(c("\u03BCm","\u03BCm.","micron","microns","micrometer","micrometers"),1E-6)

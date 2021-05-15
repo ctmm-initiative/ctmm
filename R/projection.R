@@ -33,6 +33,8 @@ setMethod('projection', signature(x='UD'), projection.telemetry)
 
 project <- function(x,from=DATUM,to=DATUM)
 {
+  if(to==from) { return(x) }
+
   x <- sp::SpatialPoints(x,proj4string=sp::CRS(from))
   x <- sp::spTransform(x,sp::CRS(to))
   x <- sp::coordinates(x)

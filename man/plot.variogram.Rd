@@ -33,7 +33,7 @@ Additional \code{plot} function parameters.
 
 %\details{ }
 
-\value{Returns a plot of semi-variance vs. time lag, with the empirical variogram in blue and the \code{ctmm} semi-variance function in red if specified. \code{zoom} includes a log-scale zoom slider to manipulate \code{fraction}.}
+\value{Returns a plot of semi-variance vs. time lag, with the empirical variogram in black and the \code{ctmm} semi-variance function in red if specified. \code{zoom} includes a log-scale zoom slider to manipulate \code{fraction}.}
 
 \references{
 C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, W. F. Fagan.
