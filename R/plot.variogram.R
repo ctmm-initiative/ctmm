@@ -229,6 +229,10 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, units=TRUE, fraction=0.5, c
   RESIDUAL <- attr(x[[1]],"info")$residual
   RESIDUAL <- !is.null(RESIDUAL) && RESIDUAL
 
+  axes <- attr(x[[1]],"info")$axes
+  TYPE <- DOP.match(axes)
+  UNITS <- DOP.LIST[[TYPE]]$units # NA if unknown
+
   # don't plot if DOF<1
   x <- lapply(x,function(y){ y[y$DOF>=1,] })
 
@@ -269,9 +273,9 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, units=TRUE, fraction=0.5, c
     ylab <- c(ylab,ylab,"SVF")
   }
 
-  if(RESIDUAL) # unitless
+  if(RESIDUAL || is.na(UNITS)) # unitless
   { SVF.scale <- 1 }
-  else
+  else if(UNITS=="distance") # units of original data (axes)
   {
     # choose SVF units
     SVF.scale <- unit(ylim,"area",SI=!units)
@@ -279,6 +283,18 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, units=TRUE, fraction=0.5, c
     SVF.scale <- SVF.scale$scale
 
     SVF.name <- c(SVF.name,unit(ylim,"area",concise=TRUE,SI=!units)$name)
+    SVF.name[3] <- SVF.name[2]
+
+    # range of possible ylabs with decreasing size
+    ylab <- paste(ylab, " (", SVF.name, ")", sep="")
+  }
+  else # some other units
+  {
+    SVF.scale <- unit(sqrt(ylim),UNITS,SI=!units)
+    SVF.name <- paste0("square ",SVF.scale$name) # e.g., square kilograms
+    SVF.scale <- SVF.scale$scale^2
+
+    SVF.name <- c(SVF.name,paste0(unit(ylim,"area",concise=TRUE,SI=!units)$name,"\u00B2"))
     SVF.name[3] <- SVF.name[2]
 
     # range of possible ylabs with decreasing size
