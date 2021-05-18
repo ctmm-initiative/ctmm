@@ -1,3 +1,4 @@
+# some default and non-default units
 UNITS <- list()
 UNITS$mean <- list()
 UNITS$mean$DAY <- 86400.002 # mean solar day
@@ -7,6 +8,103 @@ UNITS$calendar <- list()
 UNITS$calendar$DAY <- 86400
 UNITS$calendar$YEAR <- 365 * UNITS$calendar$DAY
 UNITS$calendar$MONTH <- 30 * UNITS$calendar$DAY
+
+# create units dictionary
+generate.units <- function()
+{
+  alias <- list()
+  scale <- c()
+
+  add <- function(a,s)
+  {
+    n <- length(alias)
+    alias[[n+1]] <<- canonical.name(a)
+    scale[n+1] <<- s
+  }
+
+  OP <- getOption("time.units")
+
+  # TIME
+  add(c("\u03BCs","microsecond","microseconds"),1E-6)
+  add(c("ms","milisecond","miliseconds"),1/1000)
+  add(c("s","sec","sec.","second","seconds"),1)
+  add(c("min","minute","minutes"),60)
+  add(c("h","hr","hour","hours"),60^2)
+  add(c("day","days"),UNITS[[OP]]$DAY) #day
+  add(c("wk","week","weeks"),7*UNITS[[OP]]$DAY) # week
+  add(c("mon","month","months"),UNITS[[OP]]$MONTH) # month
+  add(c("yr","year","years"),UNITS[[OP]]$YEAR) # year
+  add(c("ka","ky","millennium","millenniums","millennia","kiloannum","kiloannums","kiloyear","kiloyears"),1000*UNITS[[OP]]$YEAR)
+  add(c("ma","my","megaannum","megaannums","megaanna","megayear","megayears","millionennium","millionenniums","millionennia"),1000^2*UNITS[[OP]]$YEAR)
+  add(c("ae","ga","gy","gyr","aeon","aeons","eon","eons","gigayear","gigayears","gigaannum","gigaannums","giggaanna"),1000^3*UNITS[[OP]]$YEAR)
+
+  # Distance conversions
+  add(c("\u03BCm","micron","microns","micrometer","micrometers"),1E-6)
+  add(c("mm","milimeter","milimeters"),1/1000)
+  add(c("cm","centimeter","centimeters"),1/100)
+  add(c("m","meter","meters"),1)
+  add(c("km","kilometer","kilometers"),1000)
+  add(c("in","inch","inches"),0.3048/12)
+  add(c("ft","foot","feet"),0.3048)
+  add(c("yd","yard","yards"),0.3048*3)
+  add(c("mi","mile","miles"),0.3048*5280)
+
+  # Area conversions
+  add(c("\u03BCm\u00B2","micron\u00B2","microns\u00B2","micrometer\u00B2","micrometers\u00B2","\u03BCm^2","\u03BCm.^2","micron^2","microns^2","micrometer^2","micrometers^2","square micron","square microns","square micrometer","square micrometers","micron squared","microns squared","micrometer squared","micrometers squared"),1E-12)
+  add(c("mm\u00B2","milimeter\u00B2","milimeters\u00B2","mm^2","mm.^2","milimeter^2","milimeters^2","square milimeter","square milimeters","milimeter squared","milimeters squared"),1/1000^2)
+  add(c("cm\u00B2","centimeter\u00B2","centimeters\u00B2","cm^2","cm.^2","centimeter^2","centimeters^2","square centimeter","square centimeters","centimeter squared","centimeters squared"),1/100^2)
+  add(c("m\u00B2","meter\u00B2","meters\u00B2","m^2","m.^2","meter^2","meters^2","square meter","square meters","meter squared","meters squared"),1)
+  add(c("ha","hectare","hectares","hm\u00B2","hectometer\u00B2","hectometre\u00B2","hectometers\u00B2","hectometres\u00B2","hm^2","hectometer^2","hectometre^2","hectometers^2","hectometres^2","square hm","square hectometer","square hectometre","square hectometers","square hectometres"),100^2)
+  add(c("km\u00B2","kilometer\u00B2","kilometers\u00B2","km^2","km.^2","kilometer^2","kilometers^2","square kilometer","square kilometers","kilometer squared","kilometers squared"),1000^2)
+  add(c("in\u00B2","inch\u00B2","inches\u00B2","in^2","in.^2","inch^2","inches^2"),(0.3048/12)^2)
+  add(c("ft\u00B2","foot\u00B2","feet\u00B2","ft^2","ft.^2","foot^2","feet^2","square foot","square feet","foot squared","feet squared"),0.3048^2)
+  add(c("yd\u00B2","yard\u00B2","yards\u00B2","yd^2","yd.^2","yard^2","yards^2","square yard","square yards","yard squared","yards squared"),(0.3048*3)^2)
+  add(c("mi\u00B2","mile\u00B2","miles\u00B2","mi^2","mi.^2","mile^2","miles^2","square mile","square miles","mile squared","miles squared"),(0.3048*5280)^2)
+
+  # speed
+  add(c("mps","m/s","m/sec","meter/sec","meter/second","meters/second"),1)
+  add(c("kmph","kph","km/h","km/h","km/hr","kilometer/hour","kilometers/hour"),0.277777777777777777777)
+  add(c("mph","mi/h","mi/hr","mile/h","mile/hr","mile/hour","miles/hour"),0.44704)
+  add(c("fps","ft/s","ft/sec","feet/second"),0.3048)
+  add(c('kt','kn','knot','knots'),1.852 * 0.277777777777777777777)
+  add(c("km/s","kmps","km/sec"),1000)
+  add(c("cm/s","cmps","cm/sec"),1/100)
+  add(c("mm/s","mmps","mm/sec"),1/1000)
+  add(c("\u03BCm/s","\u03BCmps","\u03BCm/sec"),1E-6)
+
+  # frequency
+  add(c("Hz","hertz"),1)
+  add(c("kHz","kilohertz"),1000)
+  add(c("MHz","megahertz"),1000^2)
+  add(c("GHz","gigahertz"),1000^3)
+  add(c("THz","terahertz"),1000^4)
+  add(c("per min","1/min","min^-1","min\u207B\u00B9","per minute","1/minute","minute^-1","minute\u207B\u00B9"),1/60)
+  add(c("per hr","1/hr","hr^-1","hr\u207B\u00B9","per hour","1/hour","hour^-1","hour\u207B\u00B9"),1/60^2)
+  add(c("per day","1/day","day^-1","day\u207B\u00B9"),1/UNITS[[OP]]$DAY)
+  add(c("per mon","1/mon","mon^-1","mon\u207B\u00B9","per month","1/month","month^-1","month\u207B\u00B9"),1/UNITS[[OP]]$MONTH)
+  add(c("per yr","1/yr","yr^-1","yr\u207B\u00B9","per year","1/year","year^-1","year\u207B\u00B9"),1/UNITS[[OP]]$YEAR)
+  add(c("per ky","1/ky","ky^-1","ky\u207B\u00B9","per ka","1/ka","ka^-1","ka\u207B\u00B9","per millennium","1/millennium","millennium^-1","millennium\u207B\u00B9","per kiloannum","1/kiloannum","kiloannum^-1","kiloannum\u207B\u00B9","per kiloyear","1/kiloyear","kiloyear^-1","kiloyear\u207B\u00B9"),1/UNITS[[OP]]$YEAR/1000)
+  add(c("per my","1/my","my^-1","my\u207B\u00B9","per ma","1/ma","ma^-1","ma\u207B\u00B9","per megaannum","1/megaannum","megaannum^-1","megaannum\u207B\u00B9","per megayear","1/megayear","megayear^-1","megayear\u207B\u00B9","per millionennium","1/millionennium","millionennium^-1","millionennium\u207B\u00B9"),1/UNITS[[OP]]$YEAR/1000^2)
+  add(c("per ae","1/ae","ae^-1","ae\u207B\u00B9","per ga","1/ga","ga^-1","ga\u207B\u00B9","per gy","1/gy","gy^-1","gy\u207B\u00B9","per gyr","1/gyr","gyr^-1","gyr\u207B\u00B9","per aeon","1/aeon","aeon^-1","aeon\u207B\u00B9","per eon","1/eon","eon^-1","eon\u207B\u00B9","per gigayear","1/gigayear","gigayear^-1","gigayear\u207B\u00B9","per gigaannum","1/gigaannum","gigaannum^-1","gigaannum\u207B\u00B9"),1/UNITS[[OP]]$YEAR/1000^3)
+
+  # mass
+  add(c("g","gm","gram","grams"),1/1000) # kg is SI
+  add(c("kg","kilogram","kilograms"),1) # kg is SI
+  add(c("Mg","t","tonne","tonnes","mt","m ton","m tons","metric ton","metric tons"),1000)
+  add(c("mg","milligram","milligrams"),1/1000)
+  add(c("\u03BCg","microgram","micrograms"),1/1000^2)
+  add(c("ng","nanogram","nanograms"),1/1000^3)
+  add(c("lb","lbs","pound","pounds"),0.45359237)
+  add(c("oz","ounce","ounces"),0.45359237/16)
+  add(c("slug","slugs"),14.59390)
+  add(c("st","stone","stones"),0.45359237*14)
+  add(c("ton","tons"),0.45359237*2000) # NA ton (not UK)
+
+  return(list(alias=alias,scale=scale))
+}
+UNIT <- list() # generated onLoad
+#UNIT <- generate.units()
+
 
 # CHOOSE BEST UNITS FOR A LIST OF DATA
 # thresh is threshold for switching to coarser unit
@@ -68,6 +166,18 @@ unit <- function(data,dimension,thresh=1,concise=FALSE,SI=FALSE)
       scale.list <- 1
     }
   }
+  else if(dimension=="frequency")
+  {
+    name.list <- c("per aeon","per mega-anna","per millennia","per year","per month","per day","per hour","per minute","hertz","kilohertz","megahertz","gigahertz","terahertz")
+    abrv.list <- c("AE\u207B\u00B9","Ma\u207B\u00B9","ka\u207B\u00B9","yr\u207B\u00B9","mon\u207B\u00B9","day\u207B\u00B9","hr\u207B\u00B9","min\u207B\u00B9","Hz","kHz","MHz","GHz","THz")
+    scale.list <- c(1/UNITS[[OP]]$YEAR/1000^3,1/UNITS[[OP]]$YEAR/1000^2,1/UNITS[[OP]]$YEAR/1000,1/UNITS[[OP]]$YEAR,1/UNITS[[OP]]$MONTH,1/UNITS[[OP]]$DAY,1/60^2,1/60,1,1000,1000^3,1000^6,1000^9,1000^12)
+  }
+  else if(dimension=="mass")
+  {
+    name.list <- c("nanograms","micrograms","milligrams","grams","kilograms","tonnes")
+    abrv.list <- c("ng","\u03BCg","mg","gm","kg","Mg")
+    scale.list <- c(1/1000^4,1/1000^3,1/1000^2,1/1000,1,1000)
+  }
 
   data <- data[!is.na(data)]
   if(length(data)) { max.data <- max(abs(data)) } else { max.data <- 1 }
@@ -88,6 +198,7 @@ unit <- function(data,dimension,thresh=1,concise=FALSE,SI=FALSE)
 
   return(list(scale=scale,name=name))
 }
+
 
 ### determine parsimonious units for parameter CIs
 # preference point estimate, but fall back on high-CI if point estimate is zero
@@ -253,74 +364,8 @@ unit.variogram <- function(SVF,time=1,area=1)
 
   name <- canonical.name(name)
 
-  # DIV <- grepl("/",name)
-  # if(DIV)
-  # {
-  #   #
-  # }
-
-  OP <- getOption("time.units")
-
-  alias <- list()
-  scale <- c()
-
-  add <- function(a,s)
-  {
-    n <- length(alias)
-    alias[[n+1]] <<- canonical.name(a)
-    scale[n+1] <<- s
-  }
-
-  # this database should be generated on load instead of on function call
-
-  # TIME
-  add(c("\u03BCs","\u03BCs.","microsecond","microseconds"),1E-6)
-  add(c("ms","ms.","milisecond","miliseconds"),1/1000)
-  add(c("s","s.","sec","sec.","second","seconds"),1)
-  add(c("min","min.","minute","minutes"),60)
-  add(c("h","h.","hr","hr.","hour","hours"),60^2)
-  add(c("day","days"),UNITS[[OP]]$DAY) #day
-  add(c("wk","wk.","week","weeks"),7*UNITS[[OP]]$DAY) # week
-  add(c("mon","mon.","month","months"),UNITS[[OP]]$MONTH) # month
-  add(c("yr","yr.","year","years"),UNITS[[OP]]$YEAR) # year
-  add(c("ka","ky","millennium","millenniums","millennia","kiloannum","kiloannums","kiloyear","kiloyears"),1000*UNITS[[OP]]$YEAR)
-  add(c("ma","my","megaannum","megaannums","megaanna","megayear","megayears","millionennium","millionenniums","millionennia"),1000^2*UNITS[[OP]]$YEAR)
-  add(c("ae","ga","gy","gyr","aeon","aeons","eon","eons","gigayear","gigayears","gigaannum","gigaannums","giggaanna"),1000^3*UNITS[[OP]]$YEAR)
-
-  # Distance conversions
-  add(c("\u03BCm","\u03BCm.","micron","microns","micrometer","micrometers"),1E-6)
-  add(c("mm","mm.","milimeter","milimeters"),1/1000)
-  add(c("cm","cm.","centimeter","centimeters"),1/100)
-  add(c("m","m.","meter","meters"),1)
-  add(c("km","km.","kilometer","kilometers"),1000)
-  add(c("in","in.","inch","inches"),0.3048/12)
-  add(c("ft","ft.","foot","feet"),0.3048)
-  add(c("yd","yd.","yard","yards"),0.3048*3)
-  add(c("mi","mi.","mile","miles"),0.3048*5280)
-
-  # Area conversions
-  add(c("\u03BCm\u00B2","\u03BCm.\u00B2","micron\u00B2","microns\u00B2","micrometer\u00B2","micrometers\u00B2","\u03BCm^2","\u03BCm.^2","micron^2","microns^2","micrometer^2","micrometers^2","square micron","square microns","square micrometer","square micrometers","micron squared","microns squared","micrometer squared","micrometers squared"),1E-12)
-  add(c("mm\u00B2","mm.\u00B2","milimeter\u00B2","milimeters\u00B2","mm^2","mm.^2","milimeter^2","milimeters^2","square milimeter","square milimeters","milimeter squared","milimeters squared"),1/1000^2)
-  add(c("cm\u00B2","cm.\u00B2","centimeter\u00B2","centimeters\u00B2","cm^2","cm.^2","centimeter^2","centimeters^2","square centimeter","square centimeters","centimeter squared","centimeters squared"),1/100^2)
-  add(c("m\u00B2","m.\u00B2","meter\u00B2","meters\u00B2","m^2","m.^2","meter^2","meters^2","square meter","square meters","meter squared","meters squared"),1)
-  add(c("ha","hectare","hectares","hm\u00B2","hectometer\u00B2","hectometre\u00B2","hectometers\u00B2","hectometres\u00B2","hm^2","hectometer^2","hectometre^2","hectometers^2","hectometres^2","square hm","square hectometer","square hectometre","square hectometers","square hectometres"),100^2)
-  add(c("km\u00B2","km.\u00B2","kilometer\u00B2","kilometers\u00B2","km^2","km.^2","kilometer^2","kilometers^2","square kilometer","square kilometers","kilometer squared","kilometers squared"),1000^2)
-  add(c("in\u00B2","in.\u00B2","inch\u00B2","inches\u00B2","in^2","in.^2","inch^2","inches^2"),(0.3048/12)^2)
-  add(c("ft\u00B2","ft.\u00B2","foot\u00B2","feet\u00B2","ft^2","ft.^2","foot^2","feet^2","square foot","square feet","foot squared","feet squared"),0.3048^2)
-  add(c("yd\u00B2","yd.\u00B2","yard\u00B2","yards\u00B2","yd^2","yd.^2","yard^2","yards^2","square yard","square yards","yard squared","yards squared"),(0.3048*3)^2)
-  add(c("mi\u00B2","mi.\u00B2","mile\u00B2","miles\u00B2","mi^2","mi.^2","mile^2","miles^2","square mile","square miles","mile squared","miles squared"),(0.3048*5280)^2)
-
-  # speed
-  add(c("mps","m/s","m/sec","meter/sec","meter/second","meters/second"),1)
-  add(c("kmph","kph","km/h","km/h","km/hr","kilometer/hour","kilometers/hour"),0.277777777777777777777)
-  add(c("mph","mi/h","mi/hr","mile/h","mile/hr","mile/hour","miles/hour"),0.44704)
-  add(c("fps","ft/s","ft/sec","feet/second"),0.3048)
-  add(c('kt','kn','knot','knots'),1.852 * 0.277777777777777777777)
-  add(c("km/s","kmps","km/sec"),1000)
-  add(c("cm/s","cmps","cm/sec"),1/100)
-  add(c("mm/s","mmps","mm/sec"),1/1000)
-  add(c("\u03BCm/s","\u03BCmps","\u03BCm/sec"),1E-6)
-
+  alias <- UNIT$alias
+  scale <- UNIT$scale
   for(i in 1:length(alias))
   {
     if(name %in% alias[[i]]) { return(num*scale[i]^pow) }
