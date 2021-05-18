@@ -288,13 +288,28 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, units=TRUE, fraction=0.5, c
     # range of possible ylabs with decreasing size
     ylab <- paste(ylab, " (", SVF.name, ")", sep="")
   }
-  else # some other units
+  else if(UNITS=="frequency")
+  {
+    SVF.scale <- unit(sqrt(ylim),UNITS,SI=!units)
+    SVF.name <- paste0(SVF.scale$name," squared") # e.g., per year squared
+    SVF.scale <- SVF.scale$scale^2
+
+    CONCISE <- unit(ylim,UNITS,concise=TRUE,SI=!units)$name
+    substr(CONCISE,nchar(CONCISE),nchar(CONCISE)) <- "\u00B2"
+
+    SVF.name <- c(SVF.name,CONCISE)
+    SVF.name[3] <- SVF.name[2]
+
+    # range of possible ylabs with decreasing size
+    ylab <- paste(ylab, " (", SVF.name, ")", sep="")
+  }
+  else # some generic unit
   {
     SVF.scale <- unit(sqrt(ylim),UNITS,SI=!units)
     SVF.name <- paste0("square ",SVF.scale$name) # e.g., square kilograms
     SVF.scale <- SVF.scale$scale^2
 
-    SVF.name <- c(SVF.name,paste0(unit(ylim,"area",concise=TRUE,SI=!units)$name,"\u00B2"))
+    SVF.name <- c(SVF.name,paste0(unit(ylim,UNITS,concise=TRUE,SI=!units)$name,"\u00B2"))
     SVF.name[3] <- SVF.name[2]
 
     # range of possible ylabs with decreasing size

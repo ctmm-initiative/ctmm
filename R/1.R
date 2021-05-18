@@ -103,6 +103,7 @@ is.installed <- function(pkg) is.element(pkg, utils::installed.packages()[,1])
 {
   # new global options
   if(is.null(getOption("time.units"))) { options(time.units='mean') }
+  utils::assignInMyNamespace("UNIT", generate.units())
 
   # choose FFTW if installed
   if(is.installed("fftw")) { utils::assignInMyNamespace("FFT", FFTW) }
