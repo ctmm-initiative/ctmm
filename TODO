@@ -1,4 +1,5 @@
 PRIORITY
+* messed up time units for ctpm
 * make QPQ.solve() work without environment (for other packages)
 * track updating for elliptical errors (additive errors or overall update?)
 * ctmm.select(...,IC="BCV",block=1 %#% 'day')
