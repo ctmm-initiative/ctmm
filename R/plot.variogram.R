@@ -226,8 +226,12 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, units=TRUE, fraction=0.5, c
   # if(is.null(CTMM) && n==1 && !is.null(attr(x[[1]],"info")$CTMM)) { CTMM <- attr(x[[1]],"info")$CTMM }
   ACF <- attr(x[[1]],"info")$ACF
   ACF <- !is.null(ACF) && ACF
+
   RESIDUAL <- attr(x[[1]],"info")$residual
   RESIDUAL <- !is.null(RESIDUAL) && RESIDUAL
+
+  ULAG <- attr(x[[1]],"info")$lags # NULL or 'time' by default
+  if(is.null(ULAG)) { ULAG <- "time" }
 
   axes <- attr(x[[1]],"info")$axes
   TYPE <- DOP.match(axes)
@@ -317,17 +321,25 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, units=TRUE, fraction=0.5, c
   }
 
   # choose lag units
-  lag.scale <- unit(xlim,"time",2,SI=!units)
-  lag.name <- lag.scale$name
-  lag.scale <- lag.scale$scale
+  if(ULAG=="time")
+  {
+    lag.scale <- unit(xlim,"time",2,SI=!units)
+    lag.name <- lag.scale$name
+    lag.scale <- lag.scale$scale
 
-  lag.name <- c(lag.name,unit(xlim,"time",thresh=2,concise=TRUE,SI=!units)$name)
-  lag.name[3] <- lag.name[2]
+    lag.name <- c(lag.name,unit(xlim,"time",thresh=2,concise=TRUE,SI=!units)$name)
+    lag.name[3] <- lag.name[2]
 
-  xlab <- "Time-lag"
-  xlab <- c(xlab,xlab,"Lag")
+    xlab <- "Time-lag"
+    xlab <- c(xlab,xlab,"Lag")
 
-  xlab <- paste(xlab, " (", lag.name, ")", sep="")
+    xlab <- paste(xlab, " (", lag.name, ")", sep="")
+  }
+  else # unitless lags
+  {
+    lag.scale <- 1
+    xlab <- "Lags"
+  }
 
   # choose appropriately sized axis labels for base plot
   lab <- rbind(xlab,ylab)
