@@ -1,5 +1,8 @@
 PRIORITY
-* messed up time units for ctpm
+* explain minimum sampling interval message in as.telemetry help file
+* empirical Fisher information approximation for initializing the Hessian?
+* ctmm.boot example gazelle[[3]]
+* color -> weight telemetry data by time, by individual?
 * make QPQ.solve() work without environment (for other packages)
 * track updating for elliptical errors (additive errors or overall update?)
 * ctmm.select(...,IC="BCV",block=1 %#% 'day')
