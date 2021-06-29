@@ -1,13 +1,22 @@
 # smallest resolutions in data (for soft bounding parameter guesstimates)
 telemetry.mins <- function(data,axes=c('x','y'))
 {
-  dt <- diff(data$t)
+  if(class(data)[1]=="phylometry")
+  { dt <- c(attr(data,"lag")) }
+  else
+  { dt <- diff(data$t) }
+
   dt <- dt[dt>0]
 
   if(length(dt))
   {
+    # smallest frequency
+    if(class(data)[1]=="phylometry")
+    { df <- 2*pi/max(dt) }
+    else
+    { df <- 2*pi/(last(data$t)-data$t[1]) }
+
     dt <- stats::median(dt) # median time difference
-    df <- 2*pi/(last(data$t)-data$t[1]) # smallest frequency
   }
   else
   {
@@ -28,10 +37,20 @@ telemetry.mins <- function(data,axes=c('x','y'))
 }
 
 
+# return relevant log-likelihood function - avoids extra function calling
+get.loglike <- function(data)
+{
+  CLASS <- class(data)[1]
+  if(CLASS=="phylometry") { return(ctpm.loglike) }
+  else { return(ctmm.loglike) }
+}
+
 ###########################################################
 # FIT MODEL WITH LIKELIHOOD FUNCTION (convenience wrapper to optim)
 ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),trace=FALSE)
 {
+  loglike.fn <- get.loglike(data)
+
   if(!is.null(control$message)) { message <- control$message }
 
   method <- match.arg(method,c("ML","pREML","pHREML","HREML","REML"))
@@ -55,6 +74,8 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
     }
   }
 
+  # TODO CTPM LAG STUFFs
+
   # standardize data for numerical stability
   # pre-centering the data reduces later numerical error across models (tested)
   SHIFT <- colMeans(get.telemetry(data,axes))
@@ -64,15 +85,18 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
   SCALE <- sqrt(mean(get.telemetry(data,axes)^2))
   if(SCALE==0) { SCALE <- 1 }
   # standardize time by median diff time
-  DT <- diff(data$t)
+  if(class(data)[1]=="phylometry")
+  { DT <- c(attr(data,"lag")) }
+  else
+  { DT <- diff(data$t) }
   DT <- DT[DT>0]
   if(length(DT)) { TSCALE <- stats::median(DT) } else { TSCALE <- 1 }
-  data <- unit.telemetry(data,length=SCALE,time=TSCALE)
+  data <- unit.telemetry(data,length=SCALE,time=TSCALE,axes=axes)
   CTMM <- unit.ctmm(CTMM,length=SCALE,time=TSCALE)
   # TSCALE is effectively 1 now, consistent for profiling in ctmm.fit()
 
   # used for minimum scale of parameter inspection
-  n <- length(data$t)
+  n <- nrow(data)
   MINS <- telemetry.mins(data,axes)
   dt <- MINS$dt
   df <- MINS$df
@@ -185,7 +209,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
     CTMM <- set.parameters(CTMM,p,profile=profile,linear.cov=linear.cov)
 
     # negative log likelihood
-    return(-ctmm.loglike(data,CTMM,REML=REML,zero=-zero,profile=profile))
+    return(-loglike.fn(data,CTMM,REML=REML,zero=-zero,profile=profile))
   }
 
   # shift parameters back near origin to prevent overflow in optimizer
@@ -242,7 +266,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
     if(method %in% c("pHREML","HREML")) { REML <- TRUE } # IID limit pHREML/HREML -> REML
 
     # Bi-variate Gaussian with zero error
-    CTMM <- ctmm.loglike(data,CTMM=CTMM,REML=REML,verbose=TRUE)
+    CTMM <- loglike.fn(data,CTMM=CTMM,REML=REML,verbose=TRUE)
 
     # pREML perturbation adjustment
     if(method=="pREML")
@@ -279,7 +303,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
       CTMM <- set.parameters(CTMM,pars,profile=profile,linear.cov=linear.cov)
 
       # this is a wasted evaluation !!! store verbose glob in environment?
-      if(finish) { CTMM <- ctmm.loglike(data,CTMM,REML=REML,verbose=TRUE,profile=TRUE) }
+      if(finish) { CTMM <- loglike.fn(data,CTMM,REML=REML,verbose=TRUE,profile=TRUE) }
 
       return(CTMM)
     }
@@ -422,7 +446,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
   } # end optimized estimates
 
   # model likelihood (not REML for AIC)
-  if(method!='ML') { CTMM$loglike <- ctmm.loglike(data,CTMM=CTMM,REML=FALSE,profile=FALSE) }
+  if(method!='ML') { CTMM$loglike <- loglike.fn(data,CTMM=CTMM,REML=FALSE,profile=FALSE) }
   CTMM$method <- method
 
   # covariance parameters only

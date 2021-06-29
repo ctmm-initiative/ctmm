@@ -13,7 +13,7 @@ svf.func <- function(CTMM,moment=FALSE)
   circle <- CTMM$circle
 
   # no error considered if missing
-  COV <- CTMM$COV
+  COV <- CTMM[["COV"]]
   if(!is.null(COV)) { COV <- axes2var(CTMM,MEAN=TRUE) }
 
   range <- CTMM$range

@@ -213,8 +213,18 @@ unit.par <- function(par,...)
 
 
 ## rescale the units of telemetry object
-unit.telemetry <- function(data,length=1,time=1)
+unit.telemetry <- function(data,length=1,time=1,axes=c('x','y'))
 {
+  if(class(data)[1]=="phylometry")
+  {
+    lag <- attr(data,"lag")/time
+    data[,axes] <- data[,axes]/length
+    attr(data,"lag") <- lag
+    # class(data) <- "phylometry"
+    return(data)
+  }
+  # TELEMETRY CLASS BELOW
+
   convert <- function(NAMES,scale) { for(NAME in NAMES) { if(NAME %in% names(data)) { data[[NAME]] <<- data[[NAME]]/scale } } }
 
   convert('t',time)
