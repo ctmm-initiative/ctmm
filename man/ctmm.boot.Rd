@@ -44,18 +44,24 @@ Methods in Ecology and Evolution 10:10, 1679-1689 (2019) \doi{10.1111/2041-210X.
 
 \seealso{ \code{\link{ctmm.fit}}. }
 
-%\examples{\donttest{
-%# Load package and data
-%library(ctmm)
-%data(buffalo)
-%Cilla <- buffalo$Cilla
-%
-%GUESS <- ctmm.guess(Cilla,interactive=FALSE)
-%FIT <- ctmm.fit(Cilla,GUESS)
-%
-%# some human-readable information
-%summary(FIT)
-%}}
+\examples{\donttest{
+# Load package and data
+library(ctmm)
+data(gazelle)
+DATA <- gazelle[[3]]
+
+GUESS <- ctmm.guess(DATA,interactive=FALSE)
+FIT <- ctmm.select(DATA,GUESS)
+
+# some human-readable information
+summary(FIT)
+
+# in general, you will want to set iterate=TRUE
+BOOT <- ctmm.boot(DATA,FIT,iterate=FALSE)
+
+# compare to the previous estimate
+summary(BOOT)
+}}
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

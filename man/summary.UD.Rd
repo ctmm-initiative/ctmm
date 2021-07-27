@@ -18,8 +18,7 @@
 
 %\details{}
 
-\value{
-A \code{matrix} with low, maximum likelihood, and high estimates for the following parameters:
+\value{A list is returned with the effective sample sizes of various parameter estimates (\code{DOF}) and a parameter estimate table \code{CI}, with low, point, and high estimates for the following possible parameters:
 \describe{
 \item{\code{area}}{The home-range area with fraction of inclusion \code{level.UD}. E.g., the 50\% core home range is estimated with \code{level.UD=0.50}, and 95\% confidence intervals are placed on that area estimate with \code{level=0.95}.
 

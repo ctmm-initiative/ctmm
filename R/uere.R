@@ -39,7 +39,7 @@ DOP.match <- function(axes)
   NAMES <- names(DOP.LIST)
   for(i in 1:length(DOP.LIST)) { if(all(axes==DOP.LIST[[i]]$axes)) { return(NAMES[i]) } }
   # match was not found
-  warning("axes=",paste(axes,collapse=",")," not of known DOP type.")
+  # warning("axes=",paste(axes,collapse=",")," not of known DOP type.")
   return("unknown")
 }
 

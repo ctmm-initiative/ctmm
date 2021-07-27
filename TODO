@@ -1,7 +1,8 @@
 PRIORITY
-* explain minimum sampling interval message in as.telemetry help file
+* Phylo: implement IID by hand
+* Phylo: pre-condition OUF with OU
+* Phylo: link function support
 * empirical Fisher information approximation for initializing the Hessian?
-* ctmm.boot example gazelle[[3]]
 * color -> weight telemetry data by time, by individual?
 * make QPQ.solve() work without environment (for other packages)
 * track updating for elliptical errors (additive errors or overall update?)

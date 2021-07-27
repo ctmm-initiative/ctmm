@@ -21,7 +21,7 @@
 %\details{}
 
 \value{
-If summary is called with a single \code{ctmm} object output from \code{\link{ctmm.fit}}, then a list is returned with the effective sample sizes of various parameter estimates (\code{DOF}) and a parameter estimate table \code{CI}, with low, maximum likelihood, and high estimates for the following possible parameters:
+If summary is called with a single \code{ctmm} object output from \code{\link{ctmm.fit}}, then a list is returned with the effective sample sizes of various parameter estimates (\code{DOF}) and a parameter estimate table \code{CI}, with low, point, and high estimates for the following possible parameters:
 \describe{
 \item{\code{tau}}{The autocorrelation timescales. \code{tau position} is also the home-range crossing timescale.}
 \item{\code{area}}{The Gaussian home-range area, where the point estimate has a significance level of \code{level.UD}. I.e., the core home range is where the animal is located 50\% of the time with \code{level.UD=0.50}.

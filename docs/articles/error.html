@@ -68,7 +68,7 @@
 <ul class="nav navbar-nav navbar-right">
 <li>
   <a href="https://github.com/ctmm-initiative/ctmm">
-    <span class="fas fa-github fa-2x"></span>
+    <span class="fa fa-github fa-2x"></span>
      
   </a>
 </li>
@@ -88,7 +88,7 @@
       <h1 data-toc-skip>Telemetry error</h1>
                         <h4 class="author">Christen H. Fleming</h4>
             
-            <h4 class="date">2021-03-11</h4>
+            <h4 class="date">2021-07-27</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/ctmm-initiative/ctmm/blob/master/vignettes/error.Rmd"><code>vignettes/error.Rmd</code></a></small>
       <div class="hidden name"><code>error.Rmd</code></div>
@@ -124,8 +124,12 @@
 <p>For GPS data, the RMS UERE will typically be 10-15 meters. Here we have two location classes, “2D” and “3D”, which for this device have substantially different RMS UERE values. The UERE parameters can then be assigned to a dataset with the <code>uere()&lt;-</code> command.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/uere.html">uere</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">UERE</span>
-<span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">)</span> <span class="co"># now the data are calibrated, as VAR is present</span></code></pre></div>
-<pre><code>## [1] "t"      "HDOP"   "class"  "x"      "y"      "VAR.xy"</code></pre>
+<span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="fu"><a href="../reference/uere.html">uere</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="co"># this should be the same as summary(UERE)</span></code></pre></div>
+<pre><code>## , , horizontal
+## 
+##          low       est      high
+## 2D 22.786528 29.598802 36.397467
+## 3D  6.477391  6.946024  7.414237</code></pre>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/plot.telemetry.html">plot</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span>,error<span class="op">=</span><span class="fl">2</span><span class="op">)</span> <span class="co"># turtle plot with 95% error discs</span></code></pre></div>
 <p><img src="error_files/figure-html/unnamed-chunk-3-1.png" width="700"></p>
@@ -228,14 +232,14 @@
 ## 
 ## $DOF
 ##     mean     area    speed 
-## 13.90251 23.94135  0.00000 
+## 13.90248 23.94129  0.00000 
 ## 
 ## $CI
 ##                          low       est      high
-## area (hectares)    13.619551 21.269566 30.597357
-## τ[position] (days)  3.308121  5.684244  9.767063
-## error 2D (meters)  18.539384 21.885509 25.225729
-## error 3D (meters)   6.590230  7.063692  7.536731</code></pre>
+## area (hectares)    13.619545 21.269568 30.597374
+## τ[position] (days)  3.308121  5.684258  9.767110
+## error 2D (meters)  18.539478 21.885657 25.225931
+## error 3D (meters)   6.590232  7.063694  7.536733</code></pre>
 <p><code>trace=TRUE</code> allows us to see the models considered. <code>verbose=TRUE</code> would save each model. Since we started with a finite amount of calibration data, the location-error parameter estimates were updated by the tracking data, and we can compare the results here with the previous estimates in <code><a href="https://rdrr.io/r/base/summary.html">summary(UERE)</a></code>.</p>
 </div>
 <div id="simultaneous-fitting-with-uncalibrated-data" class="section level3">
@@ -262,14 +266,14 @@
 ## 
 ## $DOF
 ##     mean     area    speed 
-## 12.85422 21.90109  0.00000 
+## 12.85422 21.90117  0.00000 
 ## 
 ## $CI
 ##                          low       est     high
-## area (hectares)    13.034816 20.823840 30.40798
-## τ[position] (days)  3.417190  6.186523 11.20016
-## error 2D (meters)   7.750746 10.815920 13.87593
-## error 3D (meters)   6.940373  8.749011 10.55403</code></pre>
+## area (hectares)    13.034809 20.823809 30.40792
+## τ[position] (days)  3.417195  6.186524 11.20015
+## error 2D (meters)   7.750749 10.815925 13.87594
+## error 3D (meters)   6.940394  8.749032 10.55405</code></pre>
 <p>Here, fitting the RMS UERE simultaneously with the movement model produced a largely consistent result. This will not always be the case.</p>
 </div>
 <div id="fitting-with-uncalibrated-data-under-a-prior" class="section level3">
@@ -321,14 +325,14 @@
 ## 
 ## $DOF
 ##     mean     area    speed 
-## 12.70941 21.64682  0.00000 
+## 12.70939 21.64675  0.00000 
 ## 
 ## $CI
 ##                          low       est     high
-## area (hectares)    12.966262 20.778014 30.40190
-## τ[position] (days)  3.450896  6.262942 11.36645
-## error 2D (meters)   9.462744 12.388681 15.30881
-## error 3D (meters)   7.186903  8.889042 10.58783</code></pre>
+## area (hectares)    12.966265 20.778038 30.40196
+## τ[position] (days)  3.450901  6.262954 11.36648
+## error 2D (meters)   9.462779 12.388743 15.30890
+## error 3D (meters)   7.186910  8.889048 10.58784</code></pre>
 <p>This method is still being developed and so this material is subject to change.</p>
 </div>
 </div>

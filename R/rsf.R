@@ -61,7 +61,7 @@ rsf.fit <- function(data,UD,R,beta=NULL,synoptic=TRUE,isotropic=FALSE,error=0.00
   { beta <- beta * SCALE }
 
   colnames(RDAT)[1:NRES] <- colnames(RSIM)[1:NRES] <- names(R)
-  colnames(RDAT)[NRES + 1:2] + colnames(RSIM)[NRES + 1:2] <- c('x','y') # linear terms (mu/sigma)
+  colnames(RDAT)[NRES + 1:2] <- colnames(RSIM)[NRES + 1:2] <- c('x','y') # linear terms (mu/sigma)
   if(isotropic)
   { colnames(RDAT)[NRES+3] <- colnames(RSIM)[NRES+3] <- 'rr' } # circular terms
   else
