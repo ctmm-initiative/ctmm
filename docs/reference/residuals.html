@@ -112,7 +112,7 @@ Finally, mag calculates residual magnitudes, which is useful for comparing again
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/ctmm-initiative/ctmm">
-    <span class="fas fa-github fa-2x"></span>
+    <span class="fa fa-github fa-2x"></span>
      
   </a>
 </li>
@@ -233,8 +233,8 @@ Ecological Informatics, 40, 8-21 (2017) doi: <a href='https://doi.org/10.1016/j.
 <span class='co'># calculate residuals</span>
 <span class='va'>RES</span> <span class='op'>&lt;-</span> <span class='fu'>residuals</span><span class='op'>(</span><span class='va'>Cilla</span>,<span class='va'>FIT</span><span class='op'>)</span>
 
-<span class='co'># scatter plot of residuals with 50% and 95% quantiles</span>
-<span class='fu'><a href='plot.telemetry.html'>plot</a></span><span class='op'>(</span><span class='va'>RES</span>,col.DF<span class='op'>=</span><span class='cn'>NA</span>,level.UD<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>.50</span>,<span class='fl'>.95</span><span class='op'>)</span><span class='op'>)</span>
+<span class='co'># scatter plot of residuals with 50%, 95%, and 99.9% quantiles</span>
+<span class='fu'><a href='plot.telemetry.html'>plot</a></span><span class='op'>(</span><span class='va'>RES</span>,col.DF<span class='op'>=</span><span class='cn'>NA</span>,level.UD<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>.50</span>,<span class='fl'>.95</span>,<span class='fl'>0.999</span><span class='op'>)</span><span class='op'>)</span>
 </div><div class='img'><img src='residuals-1.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'># calculate correlogram of residuals</span>
 <span class='co'># increase the res argument to account for sampling variability</span>

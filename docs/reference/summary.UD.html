@@ -109,7 +109,7 @@
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/ctmm-initiative/ctmm">
-    <span class="fas fa-github fa-2x"></span>
+    <span class="fa fa-github fa-2x"></span>
      
   </a>
 </li>
@@ -165,7 +165,7 @@
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A <code>matrix</code> with low, maximum likelihood, and high estimates for the following parameters:</p><dl>
+    <p>A list is returned with the effective sample sizes of various parameter estimates (<code>DOF</code>) and a parameter estimate table <code>CI</code>, with low, point, and high estimates for the following possible parameters:</p><dl>
 <dt><code>area</code></dt><dd><p>The home-range area with fraction of inclusion <code>level.UD</code>. E.g., the 50% core home range is estimated with <code>level.UD=0.50</code>, and 95% confidence intervals are placed on that area estimate with <code>level=0.95</code>.This kernel density estimate differs from the Gaussian estimate of <code><a href='summary.ctmm.html'>summary.ctmm</a></code>. The Gaussian estimate has more statistical efficiency, but is less related to space use for non-Gaussian processes.</p></dd>
 
 </dl>
@@ -206,11 +206,11 @@ Starting in v0.3.2, this method was improved to use <code>DOF.area</code> in the
 <span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>UD</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; $DOF
 #&gt;      area bandwidth 
-#&gt;  18.13596  29.23443 
+#&gt;  18.13598  29.23444 
 #&gt; 
 #&gt; $CI
-#&gt;                               low      est     high
-#&gt; area (square kilometers) 223.4285 376.1536 568.0092
+#&gt;                               low      est    high
+#&gt; area (square kilometers) 223.4286 376.1535 568.009
 #&gt; </div><div class='input'><span class='co'># }</span></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

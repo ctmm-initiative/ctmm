@@ -62,14 +62,17 @@ If no projection argument is specified, a two-point equidistant projection is ca
 Global migrations that are not along one geodesic (locally straight line) will probably suffer distortion.
 
 \code{as.telemetry()} assumes \href{https://www.movebank.org/node/2381}{Movebank naming conventions}.
-Sufficient MoveBank columns include \code{individual.local.identifier} (or \code{tag.local.identifier}), \code{timestamp}, \code{location.long} and \code{location.lat}, while the optional Movebank columns include (E-OBS) \code{eobs.horizontal.accuracy.estimate}, (Telonics) \code{GPS.Horizontal.Error}, \code{GPS.HDOP}, (Argos) \code{Argos.orientation}, \code{Argos.semi.minor} and \code{Argos.semi.major} or \code{Argos.location.class}, etc..
+Sufficient MoveBank columns include \code{individual.local.identifier} (or \code{tag.local.identifier}), \code{timestamp}, \code{location.long} and \code{location.lat}, while the optional Movebank columns include (e-obs) \code{eobs.horizontal.accuracy.estimate}, (Telonics) \code{GPS.Horizontal.Error}, \code{GPS.HDOP}, (Argos) \code{Argos.orientation}, \code{Argos.semi.minor} and \code{Argos.semi.major} or \code{Argos.location.class}, etc..
 To have all columns detected and not overwrite eachother's information, \bold{it is best to have only one tracking device model per file imported}.
 Multiple deployments on a single individual can be merged afterwards, using \code{tbind()}.
 
 %The \code{GPS.HDOP} value requires the device's UERE value to be translated into telemetry errors. The UERE represents the RMS error given ideal (\eqn{HDOP=1}) satellite conditions. Therefore, if your device is purported to have an accuracy of 10 meters, then the UERE is likely around 10 meters. Consult your device manual and manufacturer for a specific value or see \code{\link{uere}} for UERE calibration.
 }
 
-\value{\code{as.telemetry} returns a single \code{telemetry} object or list of \code{telemetry} objects if multiple animals are identified.}
+\value{\code{as.telemetry} returns a single \code{telemetry} object or list of \code{telemetry} objects if multiple animals are identified.
+
+\code{as.telemetry} will always report the smallest sampling interval, as a message, and the number repeating timestamps, as a warning. Tiny sampling intervals (and repeating timestamps) can sometimes result from misformated timestamps or an incorrect \code{timeformat} argument. However, even if geniune, they can necessitate data cleaning (\link{outlie}) or location-error modeling (\code{vignette('error')}).
+}
 
 %\references{}
 

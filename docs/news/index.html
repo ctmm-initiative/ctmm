@@ -108,7 +108,7 @@
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/ctmm-initiative/ctmm">
-    <span class="fas fa-github fa-2x"></span>
+    <span class="fa fa-github fa-2x"></span>
      
   </a>
 </li>
@@ -129,9 +129,9 @@
       <small>Source: <a href='https://github.com/ctmm-initiative/ctmm/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
     </div>
 
-    <div id="ctmm-061-2021-03-10" class="section level1">
+    <div id="ctmm-061-2021-07-26" class="section level1">
 <h1 class="page-header" data-toc-text="0.6.1">
-<a href="#ctmm-061-2021-03-10" class="anchor"></a>ctmm 0.6.1 (2021-03-10)<small> Unreleased </small>
+<a href="#ctmm-061-2021-07-26" class="anchor"></a>ctmm 0.6.1 (2021-07-26)<small> Unreleased </small>
 </h1>
 <ul>
 <li><p>ctmm.fit() can now fit multiple UERE parameters and update uncertain calibration parameter estimates</p></li>
@@ -141,14 +141,17 @@
 <li><p>new function tbind()</p></li>
 <li><p>new argument VMM in simulate(), predict()</p></li>
 <li><p>new argument timeformat=“auto” in as.telemetry()</p></li>
+<li><p>new argument verbose in meta()</p></li>
+<li><p>uere()&lt;- can now assign posterior/updated error estimates from ctmm model objects</p></li>
 <li><p>bugfix in ctmm.loglike() for circle!=0 and REML</p></li>
-<li><p>bugfix in optimzer()</p></li>
+<li><p>bugfixes in optimzer()</p></li>
 <li><p>bugfix in ctmm.fit() for 1D processes</p></li>
 <li><p>bugfix in variogram.fit() for 1D processes</p></li>
 <li><p>bugfixes in simulate(), predict for 1D processes</p></li>
 <li><p>bugfix in ctmm.fit() with zero variance models</p></li>
 <li><p>bugfix in meta() colors when sort=TRUE</p></li>
 <li><p>bugfixes in ctmm.guess(), ctmm.fit(), speed() for tiny amounts of data</p></li>
+<li><p>bugfixes in occurrence(), Kalman smoother for IOU process</p></li>
 <li><p>ctmm.select() now stores IC and MSPE information for summary()</p></li>
 <li><p>extent objects now include missing columns</p></li>
 <li><p>extent object longitudes can now cross the international date line</p></li>

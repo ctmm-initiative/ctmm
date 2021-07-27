@@ -11,7 +11,7 @@ summary(UERE)
 
 ## -----------------------------------------------------------------------------
 uere(turtle) <- UERE
-names(turtle[[3]]) # now the data are calibrated, as VAR is present
+summary(uere(turtle[[3]])) # this should be the same as summary(UERE)
 plot(turtle[[3]],error=2) # turtle plot with 95% error discs
 
 ## -----------------------------------------------------------------------------

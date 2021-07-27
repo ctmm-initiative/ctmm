@@ -109,7 +109,7 @@
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/ctmm-initiative/ctmm">
-    <span class="fas fa-github fa-2x"></span>
+    <span class="fa fa-github fa-2x"></span>
      
   </a>
 </li>
@@ -136,7 +136,7 @@
     </div>
 
     <pre class="usage"><span class='fu'>meta</span><span class='op'>(</span><span class='va'>x</span>,level<span class='op'>=</span><span class='fl'>0.95</span>,level.UD<span class='op'>=</span><span class='fl'>0.95</span>,method<span class='op'>=</span><span class='st'>"MLE"</span>,IC<span class='op'>=</span><span class='st'>"AICc"</span>,boot<span class='op'>=</span><span class='cn'>FALSE</span>,error<span class='op'>=</span><span class='fl'>0.01</span>,debias<span class='op'>=</span><span class='cn'>TRUE</span>,
-     units<span class='op'>=</span><span class='cn'>TRUE</span>,plot<span class='op'>=</span><span class='cn'>TRUE</span>,sort<span class='op'>=</span><span class='cn'>FALSE</span>,mean<span class='op'>=</span><span class='cn'>TRUE</span>,col<span class='op'>=</span><span class='st'>"black"</span>,<span class='va'>...</span><span class='op'>)</span></pre>
+     verbose<span class='op'>=</span><span class='cn'>FALSE</span>,units<span class='op'>=</span><span class='cn'>TRUE</span>,plot<span class='op'>=</span><span class='cn'>TRUE</span>,sort<span class='op'>=</span><span class='cn'>FALSE</span>,mean<span class='op'>=</span><span class='cn'>TRUE</span>,col<span class='op'>=</span><span class='st'>"black"</span>,<span class='va'>...</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -172,6 +172,10 @@
     <tr>
       <th>debias</th>
       <td><p>Apply Bessel's inverse-Gaussian correction and various other bias corrections if <code>method="MLE"</code>, REML if <code>method="BLUE"</code>, and an additional first-order correction if <code>boot=TRUE</code>.</p></td>
+    </tr>
+    <tr>
+      <th>verbose</th>
+      <td><p>Return a list of both cross-population and sub-population analyses if <code>TRUE</code> and <code>x</code> is a list of sub-population lists.</p></td>
     </tr>
     <tr>
       <th>units</th>
@@ -245,10 +249,10 @@ If <code>x</code> constitutes a list of sampled sub-populations, then <code>meta
 <span class='fu'>meta</span><span class='op'>(</span><span class='va'>AKDES</span>,col<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>COL</span>,<span class='st'>'black'</span><span class='op'>)</span>,sort<span class='op'>=</span><span class='cn'>TRUE</span><span class='op'>)</span>
 </div><div class='output co'>#&gt;                     ΔAICc
 #&gt; Dirac-δ          0.000000
-#&gt; inverse-Gaussian 3.832936</div><div class='img'><img src='meta-2.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt;                  low      est    high
-#&gt; mean (km²)  357.5927 451.6346 556.489
-#&gt; CoV² (RVAR)   0.0000   0.0000     Inf
-#&gt; CoV  (RSTD)   0.0000   0.0000     Inf</div><div class='input'><span class='co'># }</span></div></pre>
+#&gt; inverse-Gaussian 3.832925</div><div class='img'><img src='meta-2.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt;                  low      est     high
+#&gt; mean (km²)  357.5927 451.6346 556.4889
+#&gt; CoV² (RVAR)   0.0000   0.0000      Inf
+#&gt; CoV  (RSTD)   0.0000   0.0000      Inf</div><div class='input'><span class='co'># }</span></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

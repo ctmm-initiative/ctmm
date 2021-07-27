@@ -110,7 +110,7 @@ The fitting functions wrap around optim and ctmm.loglike to fit continuous-time 
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/ctmm-initiative/ctmm">
-    <span class="fas fa-github fa-2x"></span>
+    <span class="fa fa-github fa-2x"></span>
      
   </a>
 </li>
@@ -265,8 +265,8 @@ Note that simpler models in a nested hierarchy will only be attempted if they ap
 
     <p>The function <code>ctmm</code> returns a prototype <code>ctmm</code> movement-model object.
 By default, <code>ctmm.loglike</code> returns the log-likelihood of the model <code>CTMM</code>.
-<code>ctmm.fit</code> (and <code>ctmm.loglike</code> with <code>verbose=TRUE</code>) returns the maximum likelihood <code>ctmm</code> movement-model object with all of the components of <code>CTMM</code> plus the components listed below.
-<code>ctmm.select</code> returns the best model by default or the sorted list of attempted models if <code>verbose=TRUE</code>.</p><dl>
+<code>ctmm.fit</code> (and <code>ctmm.loglike</code> with <code>verbose=TRUE</code>) returns the estimated <code>ctmm</code> movement-model object with all of the components of <code>CTMM</code> plus the components listed below.
+<code>ctmm.select</code> returns the best model by default, or the sorted list of attempted models if <code>verbose=TRUE</code>, with the best model being first in the list.</p><dl>
 <dt><code>AICc</code></dt><dd><p>The approximate corrected Akaike information criterion for multivariate distributions with variable numbers of unknown mean and (structured) covariance parameters (Burnham &amp; Anderson, Eq. 7.91). This formula is only exact for IID data.</p></dd>
 <dt><code>loglike</code></dt><dd><p>The log-likelihood.</p></dd>
 <dt><code>sigma</code></dt><dd><p>The maximum likelihood variance/covariance estimate (possibly debiased). For the endlessly diffusing BM and IOU processes, this is instead the diffusion rate estimate.</p></dd>
@@ -333,12 +333,12 @@ This is no longer feasible with current versions of <code>ctmm</code>, as the nu
 #&gt; 
 #&gt; $DOF
 #&gt;       mean       area      speed 
-#&gt;   10.73354   18.13599 3445.13306 
+#&gt;   10.73354   18.13596 3445.13306 
 #&gt; 
 #&gt; $CI
 #&gt;                                 low        est      high
-#&gt; area (square kilometers) 239.647392 403.458693 609.24091
-#&gt; τ[position] (days)         4.026012   7.505365  13.99164
+#&gt; area (square kilometers) 239.647382 403.458821 609.24124
+#&gt; τ[position] (days)         4.026011   7.505367  13.99165
 #&gt; τ[velocity] (minutes)     39.570325  42.069009  44.72547
 #&gt; speed (kilometers/day)    13.819957  14.054636  14.28926
 #&gt; </div><div class='input'><span class='co'># }</span></div></pre>
