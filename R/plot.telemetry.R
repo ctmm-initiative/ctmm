@@ -128,7 +128,10 @@ plot.env <- new.env()
 #######################################
 # PLOT TELEMETRY DATA
 #######################################
-plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF",error=TRUE,velocity=FALSE,units=TRUE,col="red",col.level="black",col.DF="blue",col.grid="white",transparency.error=0.25,pch=1,type='p',labels=NULL,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,ext=NULL,cex=NULL,lwd=1,lwd.level=1,...)
+plot.telemetry <- function(x,cex=NULL,col="red",lwd=1,pch=1,type='p',error=TRUE,transparency.error=0.25,velocity=FALSE,
+                           CTMM=NULL,UD=NULL,DF="CDF",col.DF="blue",col.grid="white",labels=NULL,level=0.95,level.UD=0.95,col.level="black",lwd.level=1,
+                           SP=NULL,border.SP=TRUE,col.SP=NA,
+                           fraction=1,xlim=NULL,ylim=NULL,ext=NULL,units=TRUE,add=FALSE,...)
 {
   alpha <- 1-level
   alpha.UD <- 1-level.UD
@@ -159,6 +162,26 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,DF="CDF"
   cmpkm <- 2.54*mean(graphics::par("fin")*diff(graphics::par("plt"))[-2]/diff(graphics::par("usr"))[-2])
   # plot px per unit of distance plotted (m or km)
   pxpkm <- mean(grDevices::dev.size("px")*diff(graphics::par("plt"))[-2]/diff(graphics::par("usr"))[-2])
+
+  #########################3
+  # PLOT SHAPEFILES
+  if(!is.null(SP))
+  {
+    PROJ <- ctmm::projection(x)
+
+    x.scale <- get0('x.scale',plot.env)
+    if(x.scale==1000 && grepl("+units=m",PROJ)) # km scale (not meters)
+    {
+      PROJ <- strsplit(PROJ,"units=m")[[1]]
+      PROJ <- paste0(PROJ[1],"units=km",PROJ[2])
+    }
+
+    if(class(SP)[1]=="SpatialPolygonsDataFrame")
+    {
+      SP <- sp::spTransform(SP,CRSobj=PROJ)
+      sp::plot(SP,col=col.SP,border=border.SP,add=TRUE)
+    }
+  }
 
   #########################
   # PLOT GAUSSIAN CONTOURS AND DENSITY
