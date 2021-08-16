@@ -35,6 +35,7 @@ vint <- function(vec,ind,return.ind=FALSE)
   return(vec)
 }
 
+
 # same thing as above but with a block-vector mat
 mint <- function(mat,ind)
 {
@@ -43,16 +44,29 @@ mint <- function(mat,ind)
   return(mat)
 }
 
+
 # bi-linear interpolation
-bint <- function(X,ind)
+bint <- function(M,ind)
 {
   ind <- cbind(ind) # vectorize
 
-  # interpolate first index
-  IND <- vint(X[,1],ind[1,],return.ind=TRUE)
-  X <- X[IND[1,],] + (X[IND[2,],]-X[IND[1,],])*(ind[1,]-IND[1,])
-  # first index collapsed
-  vint(X,ind[2,])
+  # index each dimension
+  INDx <- vint(M[,1],ind[1,],return.ind=TRUE)
+  INDy <- vint(M[1,],ind[2,],return.ind=TRUE)
+
+  BINT <- function(i)
+  {
+    dX <- c(INDx[2,i]-ind[1,i],ind[1,i]-INDx[1,i]) / (INDx[2,i]-INDx[1,i])
+    dX <- nant(dX,1)
+
+    dY <- c(INDy[2,i]-ind[2,i],ind[2,i]-INDy[1,i]) / (INDy[2,i]-INDy[1,i])
+    dY <- nant(dY,1)
+
+    c( dX %*% M[INDx[,i],INDy[,i]] %*% dY )
+  }
+
+  M <- vapply(1:ncol(ind),BINT,0)
+  M
 }
 
 

@@ -1,7 +1,7 @@
-ctmm 0.6.2 (2021-08-10)
+ctmm 0.6.2 (2021-08-16)
 ================
 
-  * new argument SP in plot.telemetry() for plotting shapefile base layers
+  * new argument SP in plot.telemetry and plot.UD() for plotting shapefile base layers
 
 ctmm 0.6.1 (2021-07-26)
 ================
