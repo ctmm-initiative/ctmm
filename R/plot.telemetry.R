@@ -165,23 +165,7 @@ plot.telemetry <- function(x,cex=NULL,col="red",lwd=1,pch=1,type='p',error=TRUE,
 
   #########################3
   # PLOT SHAPEFILES
-  if(!is.null(SP))
-  {
-    PROJ <- ctmm::projection(x)
-
-    x.scale <- get0('x.scale',plot.env)
-    if(x.scale==1000 && grepl("+units=m",PROJ)) # km scale (not meters)
-    {
-      PROJ <- strsplit(PROJ,"units=m")[[1]]
-      PROJ <- paste0(PROJ[1],"units=km",PROJ[2])
-    }
-
-    if(class(SP)[1]=="SpatialPolygonsDataFrame")
-    {
-      SP <- sp::spTransform(SP,CRSobj=PROJ)
-      sp::plot(SP,col=col.SP,border=border.SP,add=TRUE)
-    }
-  }
+  if(!is.null(SP)) { plot.SP(SP=SP,border.SP=border.SP,col.SP=col.SP,PROJ=ctmm::projection(x),...) }
 
   #########################
   # PLOT GAUSSIAN CONTOURS AND DENSITY
@@ -225,7 +209,7 @@ plot.telemetry <- function(x,cex=NULL,col="red",lwd=1,pch=1,type='p',error=TRUE,
   if(!is.null(UD))
   {
     # UD <- lapply(UD,function(ud){ unit.UD(ud,length=dist$scale) }) # now done in plot.UD
-    plot.UD(UD,level.UD=level.UD,level=level,DF=DF,col.level=col.level,col.DF=col.DF,col.grid=col.grid,labels=labels,fraction=fraction,add=TRUE,xlim=xlim,ylim=ylim,ext=ext,cex=cex,lwd=lwd.level,...)
+    plot.UD(UD,level.UD=level.UD,level=level,DF=DF,col.level=col.level,col.DF=col.DF,col.grid=col.grid,labels=labels,fraction=fraction,add=TRUE,xlim=xlim,ylim=ylim,ext=ext,cex=cex,lwd.level=lwd.level,...)
   }
 
   #########################
@@ -416,12 +400,35 @@ pull <- function(pchar,i)
 }
 
 
+# plot shapefiles
+plot.SP <- function(SP=NULL,border.SP=TRUE,col.SP=NA,PROJ=NULL,...)
+{
+  x.scale <- get0('x.scale',plot.env)
+  if(x.scale==1000 && grepl("+units=m",PROJ)) # km scale (not meters)
+  {
+    PROJ <- strsplit(PROJ,"units=m")[[1]]
+    PROJ <- paste0(PROJ[1],"units=km",PROJ[2])
+  }
+
+  if(class(SP)[1]=="SpatialPolygonsDataFrame")
+  {
+    SP <- sp::spTransform(SP,CRSobj=PROJ)
+    sp::plot(SP,col=col.SP,border=border.SP,add=TRUE)
+  }
+}
+
+
 ##############
-plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",units=TRUE,col.level="black",col.DF="blue",col.grid="white",labels=NULL,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,ext=NULL,cex=NULL,lwd=1,...)
+plot.UD <- function(x,DF="CDF",col.DF="blue",col.grid="white",labels=NULL,level=0.95,level.UD=0.95,col.level="black",lwd.level=1,
+                    SP=NULL,border.SP=TRUE,col.SP=NA,
+                    fraction=1,xlim=NULL,ylim=NULL,ext=NULL,units=TRUE,add=FALSE,...)
 {
   x <- listify(x)
 
-  dist <- new.plot(UD=x,units=units,fraction=fraction,add=add,xlim=xlim,ylim=ylim,ext=ext,level.UD=level.UD,level=level,cex=cex,...)
+  dist <- new.plot(UD=x,units=units,fraction=fraction,xlim=xlim,ylim=ylim,ext=ext,level.UD=level.UD,level=level,add=add,...)
+
+  # PLOT SHAPEFILES
+  if(!is.null(SP)) { plot.SP(SP=SP,border.SP=border.SP,col.SP=col.SP,PROJ=ctmm::projection(x),...) }
 
   # contours colour
   if(length(col.level)==length(level.UD) && length(col.level) != length(x))
@@ -507,7 +514,7 @@ plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",units=TRUE,col.level="bl
     }
 
     # not sure why this is necessary
-    graphics::box(lwd=lwd,...)
+    graphics::box(lwd=lwd.level,...)
   }
 
   # CONTOURS
@@ -516,12 +523,12 @@ plot.UD <- function(x,level.UD=0.95,level=0.95,DF="CDF",units=TRUE,col.level="bl
     if(!any(is.na(col.level[i,,])) && !any(is.na(level.UD)))
     {
       # make sure that correct style is used for low,ML,high even in absence of lows and highs
-      plot.kde(x[[i]],level=level.UD,labels=labels[i,,2],col=malpha(col.level[i,,2],1),lwd=lwd,...)
+      plot.kde(x[[i]],level=level.UD,labels=labels[i,,2],col=malpha(col.level[i,,2],1),lwd=lwd.level,...)
 
       if(!is.na(level) && !is.null(x[[i]]$DOF.area))
       {
         P <- sapply(level.UD, function(l) { CI.UD(x[[i]],l,level,P=TRUE)[-2] } )
-        plot.kde(x[[i]],level=P,labels=c(t(labels[i,,c(1,3)])),col=malpha(c(t(col.level[i,,c(1,3)])),0.5),lwd=lwd/2,...)
+        plot.kde(x[[i]],level=P,labels=c(t(labels[i,,c(1,3)])),col=malpha(c(t(col.level[i,,c(1,3)])),0.5),lwd=lwd.level/2,...)
       }
     }
   }

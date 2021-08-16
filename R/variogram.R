@@ -111,7 +111,7 @@ variogram.dt <- function(data,dt=NULL,fast=NULL,res=1,CI="Markov",error=FALSE,ax
       e <- error[i + 0:di] # variances
       w <- 1/e # precisions
       ERROR[INDEX[i]] <- clamp(1/sum(1/w),0,min(e)) # aggregate variance - can be zero
-      # clam necessary for 0-error limit
+      # clamp necessary for 0-error limit
 
       if(any(w==Inf)) # renormalize
       {

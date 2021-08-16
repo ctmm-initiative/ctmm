@@ -47,13 +47,22 @@ compass(loc=NULL,cex=3,...) % fix this
 
 \details{\code{projection(x)} returns the projection information from ctmm object \code{x}, while \code{projection(x) <- value} applies the projection \code{value} to object \code{x}.
 \code{median(x)} returns the ellipsoidal geometric median of a telemetry object.
-\code{compass(x,y)} plots a north-pointing compass needle at the coordinates \eqn{(x,y)}.}
+\code{compass(c(x,y))} plots a north-pointing compass needle at the coordinates \eqn{(x,y)}.}
 
 %\references{}
 
 \author{C. H. Fleming}
 
-%\note{}
+\note{Plotting UTF-8 chracters in a PDF, like the compass needle "➢", requires specifying a compatible font family. For example:
+
+\code{library(ctmm)} \cr
+\code{data(buffalo)} \cr
+\code{cairo_pdf(file="buffalo.pdf",family="DejaVu Sans")} \cr
+\code{plot(buffalo[[1]])} \cr
+\code{compass()} \cr
+\code{dev.off()}
+}
+
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 

@@ -721,7 +721,7 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,VMM=NULL,t=NULL,dt=N
   data <- new.telemetry(data,info=info)
   if(complete)
   {
-    if(axes=='z') { stop("(x,y) locations must also be simulated for complete=TRUE.") }
+    if(all(axes=='z')) { stop("(x,y) locations must also be simulated for complete=TRUE.") }
     data <- pseudonymize(data,tz=info$timezone,proj=info$projection,origin=EPOCH)
   }
 
@@ -892,7 +892,7 @@ predict.ctmm <- function(object,data=NULL,VMM=NULL,t=NULL,dt=NULL,res=1,complete
   data <- new.telemetry(data,info=info)
   if(complete)
   {
-    if(axes=='z') { stop("(x,y) locations must also be predicted for complete=TRUE.") }
+    if(all(axes=='z')) { stop("(x,y) locations must also be predicted for complete=TRUE.") }
     data <- pseudonymize(data,tz=info$timezone,proj=info$projection,origin=EPOCH)
   }
 
