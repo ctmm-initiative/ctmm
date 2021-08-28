@@ -5,13 +5,25 @@ match.arg <- function(arg,choices,...)
   else { return(base::match.arg(arg,choices,...)) }
 }
 
+
 # does this thing exist and, if so, is it true
 true <- function(x) { !is.null(x) & !is.na(x) & x }
+
 
 # not in #
 "%nin%" <- function(x, table) { match(x, table, nomatch = 0) == 0 }
 
+
+# positive only sequence for for() loops so that for(i in 1:0) does nothing
+"%:%" <- function(x,y)
+{
+  if(x<=y) { x <- x:y } else { x <- NULL }
+  return(x)
+}
+
+
 composite <- function(n) { 2^ceiling(log(n,2)) }
+
 
 # sinc functions
 sinc <- Vectorize( function(x,SIN=sin(x))
@@ -267,7 +279,11 @@ rpad <- function(mat,size,padding=0,side="right")
 #remove rows and columns by name
 rm.name <- function(object,name)
 {
-  object[!rownames(object) %in% name,!colnames(object) %in% name]
+  if(length(dim(object))==2)
+  { object <- object[! rownames(object) %in% name,! colnames(object) %in% name,drop=FALSE] }
+  else
+  { object <- object[! names(object) %in% name] }
+  return(object)
 }
 
 

@@ -32,6 +32,14 @@ simplify.ctmm <- function(M,par)
 {
   if("minor" %in% par)
   {
+    if("COV" %in% names(M))
+    {
+      M$COV <- axes2var(M)
+      NAMES <- colnames(M$COV)
+      VAR <- which(NAMES=="variance")
+      colnames(M$COV)[VAR] <- rownames(M$COV)[VAR] <- "major"
+    }
+
     M$isotropic <- TRUE
     M$sigma <- covm(M$sigma,isotropic=TRUE,axes=M$axes)
     par <- c(par,'angle')
