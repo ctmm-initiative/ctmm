@@ -1,5 +1,7 @@
-ctmm 0.6.2 (2021-08-16)
+ctmm 0.6.2 (2021-08-27)
 ================
+
+  * new function rsf.fit() to fit integrated resource selection functions with autocorrelation-adjusted weighted likelihood
 
   * new argument SP in plot.telemetry and plot.UD() for plotting shapefile base layers
 

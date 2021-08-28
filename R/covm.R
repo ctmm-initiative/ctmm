@@ -280,12 +280,15 @@ mpow.covm <- function(sigma,pow)
 # assumes that variance/covariance parameters come first in COV
 axes2var <- function(CTMM,MEAN=TRUE)
 {
+  PAR <- c('major','minor','angle')
   COV <- CTMM$COV
-  NAMES <- rownames(COV)
+
+  OLD <- rownames(COV)
+  OTHER <- OLD[OLD %nin% PAR]
 
   if(CTMM$isotropic)
   {
-    NAMES <- c("variance",NAMES[-1])
+    NEW <- c("variance",OTHER)
 
     if(!MEAN)
     {
@@ -295,22 +298,21 @@ axes2var <- function(CTMM,MEAN=TRUE)
   }
   else
   {
-    NAMES <- c("variance",NAMES[-(1:3)])
+    NEW <- c("variance",OTHER)
+    grad <- matrix(0,length(NEW),length(OLD))
+    rownames(grad) <- NEW
+    colnames(grad) <- OLD
+    if(length(OTHER)==1)
+    { grad[OTHER,OTHER] <- 1 } # annoying that below isn't general
+    else if(length(OTHER)>1)
+    { diag(grad[OTHER,OTHER]) <- 1 }
 
     # convert major,minor/major uncertainty into mean-variance uncertainty
-    grad <- c(1,1,0)  # gradient of total x-y variance
+    grad['variance','major'] <- grad['variance','minor'] <- 1
     if(MEAN) { grad <- grad/2 } # average x-y variance
 
-    P <- nrow(COV)
-    if(P>3)
-    {
-      grad <- rbind( grad , array(0,c(P-3,3)) )
-      grad <- cbind( grad , rbind( rep(0,P-3) , diag(1,P-3) ) )
-    }
-    else
-    { grad <- rbind(grad) }
-
     COV <- grad %*% COV %*% t(grad)
+
     # backup for infinite covariances
     for(i in 1:nrow(COV))
     {
@@ -321,7 +323,7 @@ axes2var <- function(CTMM,MEAN=TRUE)
       }
     }
   }
-  dimnames(COV) <- list(NAMES,NAMES)
+  dimnames(COV) <- list(NEW,NEW)
 
   return(COV)
 }

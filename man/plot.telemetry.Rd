@@ -13,8 +13,8 @@ Produces simple plots of \code{telemetry} objects, possibly overlayed with a Gau
 \usage{
 plot(x,y,...)
 
-\S3method{plot}{telemetry}(x,cex=NULL,col="red",lwd=1,pch=1,type='p',error=TRUE,transparency.error=0.25,
-     velocity=FALSE,CTMM=NULL,UD=NULL,DF="CDF",col.DF="blue",col.grid="white",
+\S3method{plot}{telemetry}(x,CTMM=NULL,UD=NULL,cex=NULL,col="red",lwd=1,pch=1,type='p',error=TRUE,
+     transparency.error=0.25,velocity=FALSE,DF="CDF",col.DF="blue",col.grid="white",
      labels=NULL,level=0.95,level.UD=0.95,col.level="black",lwd.level=1,SP=NULL,
      border.SP=TRUE,col.SP=NA,fraction=1,xlim=NULL,ylim=NULL,ext=NULL,units=TRUE,
      add=FALSE,...)

@@ -128,8 +128,9 @@ plot.env <- new.env()
 #######################################
 # PLOT TELEMETRY DATA
 #######################################
-plot.telemetry <- function(x,cex=NULL,col="red",lwd=1,pch=1,type='p',error=TRUE,transparency.error=0.25,velocity=FALSE,
-                           CTMM=NULL,UD=NULL,DF="CDF",col.DF="blue",col.grid="white",labels=NULL,level=0.95,level.UD=0.95,col.level="black",lwd.level=1,
+plot.telemetry <- function(x,CTMM=NULL,UD=NULL,
+                           cex=NULL,col="red",lwd=1,pch=1,type='p',error=TRUE,transparency.error=0.25,velocity=FALSE,
+                           DF="CDF",col.DF="blue",col.grid="white",labels=NULL,level=0.95,level.UD=0.95,col.level="black",lwd.level=1,
                            SP=NULL,border.SP=TRUE,col.SP=NA,
                            fraction=1,xlim=NULL,ylim=NULL,ext=NULL,units=TRUE,add=FALSE,...)
 {

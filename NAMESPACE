@@ -135,3 +135,6 @@ export(lasso,marquee,cleave)
 
 # ENCOUNTER FUNCTIONS
 export(encounter)
+
+# RSF functions
+export(rsf.fit)

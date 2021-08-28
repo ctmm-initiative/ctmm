@@ -1,4 +1,5 @@
 PRIORITY
+* RSF: summary RSF beta
 * Phylo: implement IID by hand
 * Phylo: pre-condition OUF with OU
 * Phylo: link function support
