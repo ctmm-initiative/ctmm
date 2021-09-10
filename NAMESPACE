@@ -98,6 +98,8 @@ S3method(writeShapefile,list)
 S3method(writeShapefile,telemetry)
 S3method(writeShapefile,UD)
 
+#S3method(plot,RS)
+
 #KRIGE FUNCTIONS
 export(occurrence)
 S3method(predict,ctmm)
@@ -138,3 +140,6 @@ export(encounter)
 
 # RSF functions
 export(rsf.fit)
+
+# revisitation
+export(revisitation)

@@ -141,10 +141,10 @@ This is no longer feasible with current versions of \code{ctmm}, as the number o
 # Load package and data
 library(ctmm)
 data(buffalo)
-Cilla <- buffalo$Cilla
+DATA <- buffalo$Cilla
 
-GUESS <- ctmm.guess(Cilla,interactive=FALSE)
-FIT <- ctmm.fit(Cilla,GUESS)
+GUESS <- ctmm.guess(DATA,interactive=FALSE)
+FIT <- ctmm.fit(DATA,GUESS)
 
 # some human-readable information
 summary(FIT)

@@ -56,11 +56,11 @@ library(ctmm)
 data(buffalo)
 
 # Extract movement data for a single animal
-Cilla <- buffalo$Cilla
+DATA <- buffalo$Cilla
 
 # fit model
-GUESS <- ctmm.guess(Cilla,interactive=FALSE)
-FIT <- ctmm.fit(Cilla,GUESS)
+GUESS <- ctmm.guess(DATA,interactive=FALSE)
+FIT <- ctmm.fit(DATA,GUESS)
 
 # Tell us something interpretable
 summary(FIT)

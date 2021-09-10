@@ -72,16 +72,16 @@ M. J. Noonan, C. H. Fleming, T. S. Akre, J. Drescher-Lehman, E. Gurarie, A.-L. H
 # Load package and data
 library(ctmm)
 data(buffalo)
-Gabs <- buffalo$Gabs
+DATA <- buffalo$Gabs
 
-GUESS <- ctmm.guess(Gabs,interactive=FALSE)
-FIT <- ctmm.fit(Gabs,GUESS)
+GUESS <- ctmm.guess(DATA,interactive=FALSE)
+FIT <- ctmm.fit(DATA,GUESS)
 
 # stationary Gaussian estimate
 speed(FIT)
 
 # conditional estimate
-speed(FIT,Gabs)
+speed(FIT,DATA)
 }}
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the

@@ -62,6 +62,7 @@ encounter <- function(object,include=NULL,exclude=NULL,debias=FALSE,...)
   object$PDF <- PMF / dV
   object$CDF <- pmf2cdf(PMF)
   object$axes <- axes
+  object$weight <- GAMMA # store overall weight for future averaging
 
   # resolution (add up like covariance?)
   IN <- 0
@@ -81,7 +82,7 @@ encounter <- function(object,include=NULL,exclude=NULL,debias=FALSE,...)
   object$DOF.area <- DOF.area
 
   info <- mean.info(UD)
-  object <- new.UD(object,info=info,type='encounter',CTMM=CTMM)
+  object <- new.UD(object,info=info,type='range',variable="encounter",CTMM=CTMM)
 
   return(object)
 }

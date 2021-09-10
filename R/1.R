@@ -16,9 +16,13 @@ methods::setOldClass("ctmm")
 new.ctmm <- methods::setClass("ctmm",contains="list",representation=methods::representation(info="list"),
                               prototype=methods::prototype(list(),info=list()))
 
+#methods::setOldClass("RS")
+#new.RS <- methods::setClass("RS",contains="list",representation=methods::representation(info="list",type="character",variable="character",CTMM="ctmm"),
+#                            prototype=methods::prototype(list(),info=list(),type=character(),variable=character(),CTMM=new.ctmm()) )
+
 methods::setOldClass("UD")
-new.UD <- methods::setClass("UD",contains="list",representation=methods::representation(info="list",type="character",CTMM="ctmm"),
-                            prototype=methods::prototype(list(),info=list(),type=character(),CTMM=new.ctmm()) )
+new.UD <- methods::setClass("UD",contains="list",representation=methods::representation(info="list",type="character",variable="character",CTMM="ctmm"),
+                            prototype=methods::prototype(list(),info=list(),type=character(),variable=character(),CTMM=new.ctmm()) )
 
 methods::setOldClass("variogram")
 new.variogram <- methods::setClass("variogram",representation=methods::representation("data.frame",info="list",UERE="UERE"),

@@ -48,10 +48,10 @@ library(ctmm)
 data(buffalo)
 
 #Extract movement data for a single animal
-Cilla <- buffalo$Cilla
+DATA <- buffalo$Cilla
 
 # generate a visual fit of the variogram (requires RStudio or a guess object is returned)
-ctmm.guess(Cilla)
+ctmm.guess(DATA)
 }
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the

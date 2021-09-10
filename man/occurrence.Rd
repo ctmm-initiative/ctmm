@@ -7,20 +7,22 @@
 This function calculates an occurrence distribution from \code{telemetry} data and a continuous-time movement model.
 }
 \usage{
-occurrence(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=0.05,dt.max=NULL,
-           buffer=TRUE)
+occurrence(data,CTMM,H=0,variable="utilization",res.time=10,res.space=10,grid=NULL,
+           cor.min=0.05,dt.max=NULL,buffer=TRUE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{data}{ 2D timeseries telemetry data represented as a \code{telemetry} object. }
   \item{CTMM}{A \code{ctmm} movement model from the output of \code{ctmm.fit}.}
   \item{H}{Optional additional bandwidth matrix for future use.}
+  \item{variable}{Either \code{"utilization"} or \code{"revisitation"}.}
   \item{res.time}{Number of temporal grid points per median timestep.}
   \item{res.space}{Number of grid points along each axis, relative to the average diffusion (per median timestep) from a stationary point.}
   \item{grid}{Optional grid specification via \code{raster}, \code{UD}, or list of arguments (See \code{\link{akde}} for details).}
   \item{cor.min}{Velocity correlation threshold for skipping gaps.}
   \item{dt.max}{Maximum absolute gap size (in seconds) for Kriging interpolation. If left \code{NULL}, the median of \code{diff(data$t)} will be used.}
   \item{buffer}{Buffer the observation period, according to the minimum gap specified by \code{cor.min} and \code{dt.max}, to include more probable locations if possible.}
+  \item{...}{Not used.}
 }
 
 \details{
