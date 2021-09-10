@@ -375,8 +375,16 @@ fill.data <- function(data,CTMM=ctmm(tau=Inf),verbose=FALSE,t=NULL,dt=NULL,res=1
 # cor.min is roughly the correlation required between locations to bridge them
 # dt.max is (alternatively) the maximum gap allowed between locations to bridge them
 #################################
-occurrence <- function(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=0.05,dt.max=NULL,buffer=TRUE)
+occurrence <- function(data,CTMM,H=0,variable="utilization",res.time=10,res.space=10,grid=NULL,cor.min=0.05,dt.max=NULL,buffer=TRUE,...)
 {
+  if(length(CTMM$tau)<2)
+  {
+    if(variable=='revisitation')
+    { stop("Revisitation estimation requires a continuous-velocity model.") }
+    else if(variable=='speed')
+    { stop("Speed estimation requires a continuous-velocity model.") }
+  }
+
   validate.grid(data,grid)
 
   axes <- CTMM$axes
@@ -440,6 +448,16 @@ occurrence <- function(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=
   # fake data
   data <- data.frame(x=R[,1],y=R[,2])
 
+  if(variable %in% c("revisitation","speed"))
+  {
+    data$vx <- state$V[GRID,'vx']
+    data$vy <- state$V[GRID,'vy']
+    data$COV.vx.vx <- state$VCOV[GRID,'vx','vx']
+    data$COV.vx.vy <- state$VCOV[GRID,'vx','vy']
+    data$COV.vy.vy <- state$VCOV[GRID,'vy','vy']
+    w.grid <- w.grid * speeds.fast(data,append=TRUE)$speed
+  }
+
   # some covariances are slightly negative due to roundoff error
   # so here I clamp the negative singular values to zero
   COV <- vapply(1:n,function(i){ PDclamp(COV[i,,]) },COV[1,,]) # (d,d,n)
@@ -464,7 +482,7 @@ occurrence <- function(data,CTMM,H=0,res.time=10,res.space=10,grid=NULL,cor.min=
   # using the same data format as AKDE, but with only the ML estimate (alpha=1)
   KDE <- kde(data,H=H,W=w.grid,dr=dr/res.space,grid=grid)
   KDE$H <- diag(0,2)
-  KDE <- new.UD(KDE,info=info,type='occurrence',CTMM=CTMM0)
+  KDE <- new.UD(KDE,info=info,type='occurrence',variable=variable,CTMM=CTMM0)
   return(KDE)
 }
 

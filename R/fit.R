@@ -493,6 +493,7 @@ ic.ctmm <- function(CTMM,n)
     k.mean <- k.mean - 1
     n <- n - 1
   }
+  if(!length(k.mean)) { k.mean <- 0 } # failed fit (bad data or bad parameters)
   k <- nu + q*k.mean
 
   CTMM$AIC <- 2*k - 2*CTMM$loglike

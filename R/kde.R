@@ -397,8 +397,11 @@ homerange <- function(data,CTMM,method="AKDE",...)
 # AKDE single or list
 # (C) C.H. Fleming (2016-2019)
 # (C) Kevin Winner & C.H. Fleming (2016)
-akde <- function(data,CTMM,VMM=NULL,debias=TRUE,weights=FALSE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
+akde <- function(data,CTMM,VMM=NULL,variable="utilization",debias=TRUE,weights=FALSE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
 {
+  if(variable!="utilization")
+  { error("variable=",variable," not yet supported by akde(). See npr() or revisitation().") }
+
   if(length(projection(data))>1) { stop("Data not in single coordinate system.") }
   validate.grid(data,grid)
 
@@ -482,7 +485,7 @@ akde <- function(data,CTMM,VMM=NULL,debias=TRUE,weights=FALSE,smooth=TRUE,error=
 
     KDE[[i]] <- c(KDE[[i]],kde(data[[i]],KDE[[i]]$H,axes=axes,bias=DEBIAS[[i]],W=KDE[[i]]$weights,alpha=error,dr=dr,grid=GRID))
 
-    KDE[[i]] <- new.UD(KDE[[i]],info=attr(data[[i]],"info"),type='range',CTMM=ctmm())
+    KDE[[i]] <- new.UD(KDE[[i]],info=attr(data[[i]],"info"),type='range',variable="utilization",CTMM=ctmm())
     # in case bandwidth is pre-calculated...
     if(class(CTMM0[[i]])[1]=="ctmm") { attr(KDE[[i]],"CTMM") <- CTMM0[[i]] }
   }
@@ -523,8 +526,16 @@ prepare.H <- function(H,n,axes=c('x','y'))
 # construct my own KDE objects
 # was using ks-package but it has some bugs
 # alpha is the error goal in my total probability
-kde <- function(data,H,axes=c("x","y"),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr=NULL,grid=NULL)
+kde <- function(data,H,axes=c("x","y"),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr=NULL,grid=NULL,variable=NA)
 {
+  if(!is.na(variable))
+  {
+    if(variable %in% c("revisitation"))
+    { VARIABLE <- "speed" }
+    else # data column better have the name given
+    { VARIABLE <- variable }
+  }
+
   r <- get.telemetry(data,axes)
   n <- nrow(r)
 
@@ -542,6 +553,7 @@ kde <- function(data,H,axes=c("x","y"),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr
   # generalize this for future grid option use
   dH <- grid$dH
   dr <- grid$dr
+  dV <- prod(dr)
 
   R0 <- sapply(R,first)
   # corner origin to minimize arithmetic later
@@ -550,6 +562,9 @@ kde <- function(data,H,axes=c("x","y"),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr
 
   # probability mass function
   PMF <- array(0,sapply(R,length))
+  # Nadaraya-Watson numerator (for regressions)
+  if(!is.na(variable)) { NUM <- PMF }
+
   for(i in 1:n)
   {
     # sub-grid lower/upper bound indices
@@ -569,10 +584,18 @@ kde <- function(data,H,axes=c("x","y"),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr
     if(length(SUB)==1) # 1D
     { PMF[SUB[[1]]] <- PMF[SUB[[1]]] + W[i]*pnorm1(R[[1]][SUB[[1]]]-r[i,1],H[i,,],dr,alpha) }
     else if(length(SUB)==2) # 2D
-    { PMF[SUB[[1]],SUB[[2]]] <- PMF[SUB[[1]],SUB[[2]]] + W[i]*pnorm2(R[[1]][SUB[[1]]]-r[i,1],R[[2]][SUB[[2]]]-r[i,2],H[i,,],dr,alpha) }
+    {
+      dPMF <- W[i]*pnorm2(R[[1]][SUB[[1]]]-r[i,1],R[[2]][SUB[[2]]]-r[i,2],H[i,,],dr,alpha)
+      PMF[SUB[[1]],SUB[[2]]] <- PMF[SUB[[1]],SUB[[2]]] + dPMF
+      if(!is.na(variable))
+      { NUM[SUB[[1]],SUB[[2]]] <- NUM[SUB[[1]],SUB[[2]]] + data[[VARIABLE]][i]*dPMF }
+    }
     else if(length(SUB)==3) # 3D
     { PMF[SUB[[1]],SUB[[2]],SUB[[3]]] <- PMF[SUB[[1]],SUB[[2]],SUB[[3]]] + W[i]*pnorm3(R[[1]][SUB[[1]]]-r[i,1],R[[2]][SUB[[2]]]-r[i,2],R[[3]][SUB[[3]]]-r[i,3],H[i,,],dr,alpha) }
   }
+
+  if(!is.na(variable)) # revisitation is treated separately
+  { return(NUM/PMF) } # E[variable|data]
 
   if(sum(bias)) # debias area/volume
   {
@@ -608,7 +631,6 @@ kde <- function(data,H,axes=c("x","y"),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr
   else # finish off PDF
   { CDF <- pmf2cdf(PMF) }
 
-  dV <- prod(dr)
   result <- list(PDF=PMF/dV,CDF=CDF,axes=axes,r=R,dr=dr)
   return(result)
 }
@@ -1001,7 +1023,7 @@ CI.UD <- function(object,level.UD=0.95,level=0.95,P=FALSE)
 summary.UD <- function(object,level=0.95,level.UD=0.95,units=TRUE,...)
 {
   type <- attr(object,'type')
-  if(type!='range') { stop(type," area is not generally meaningful, biologically.") }
+  if(type %nin% c('range','revisitation')) { stop(type," area is not generally meaningful, biologically.") }
 
   area <- CI.UD(object,level.UD,level)
   if(length(area)==1) { stop("Object is not a range distribution.") }

@@ -9,14 +9,15 @@
 This function calculates autocorrelated kernel density home-range estimates from \code{telemetry} data and a corresponding continuous-time movement model.
 }
 \usage{
-akde(data,CTMM,VMM=NULL,debias=TRUE,weights=FALSE,smooth=TRUE,error=0.001,res=10,
-     grid=NULL,...)
+akde(data,CTMM,VMM=NULL,variable="utilization",debias=TRUE,weights=FALSE,smooth=TRUE,
+     error=0.001,res=10,grid=NULL,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{data}{ 2D timeseries telemetry data represented as a \code{telemetry} object or list of objects. }
   \item{CTMM}{A \code{ctmm} movement model from the output of \code{ctmm.fit} or list of objects.}
   \item{VMM}{An optional vertical \code{ctmm} object for 3D home-range calculation.}
+  \item{variable}{Not yet supported.}
   \item{debias}{Debias the distribution for area estimation (AKDEc).}
   \item{smooth}{"Smooth" out errors from the data.}
   \item{weights}{Optimally weight the data to account for temporal sampling bias (See \code{\link{bandwidth}} for details).}
@@ -74,24 +75,24 @@ In v0.3.2, this method was further improved to use \code{DOF.area} from the Gaus
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
-\seealso{ \code{\link{bandwidth}}, \code{\link{mean.UD}}, \code{\link{raster,UD-method}} }
+\seealso{ \code{\link{bandwidth}}, \code{\link{mean.UD}}, \code{\link{raster,UD-method}}, \code{\link{revisitation}} }
 
 \examples{\donttest{
 # Load package and data
 library(ctmm)
 data(buffalo)
-Cilla <- buffalo$Cilla
+DATA <- buffalo$Cilla
 
 # calculate fit guess object
-GUESS <- ctmm.guess(Cilla,interactive=FALSE)
+GUESS <- ctmm.guess(DATA,interactive=FALSE)
 # in general, you should be running ctmm.select here instead of ctmm.fit
-FIT <- ctmm.fit(Cilla,GUESS)
+FIT <- ctmm.fit(DATA,GUESS)
 
 # Compute akde object
-UD <- akde(Cilla,FIT)
+UD <- akde(DATA,FIT)
 
-# Plot data with AKDE contours
-plot(Cilla,UD=UD)
+# Plot data with AKDE
+plot(DATA,UD=UD)
 }}
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the

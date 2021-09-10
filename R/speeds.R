@@ -196,12 +196,19 @@ speeds.slow <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,prior=FALS
 
 
 ####
-speeds.fast <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,...)
+speeds.fast <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,append=FALSE,...)
 {
-  n <- length(t)
+  if(append)
+  { n <- nrow(data) }
+  else
+  { n <- length(t) }
 
-  DOF <- summary(CTMM)$DOF['speed']
-  if(!DOF)
+  if(!is.null(CTMM))
+  { DOF <- summary(CTMM)$DOF['speed'] }
+  else
+  { DOF <- FALSE }
+
+  if(!DOF && !append)
   {
     M1 <- rep(Inf,n) # upgrade to outlie estimates?
     M2 <- rep(Inf,n)
@@ -220,6 +227,12 @@ speeds.fast <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,...)
 
     # good approximation to mean speed (delta method fails when velocity estimate is small)
     M1 <- vapply(1:n,function(i){abs.bivar(v[i,],VAR[i,,])},numeric(1)) # n
+
+    if(append)
+    {
+      data$speed <- M1
+      return(data)
+    }
 
     # variance of square speed # exact?
     # VAR <- 4 * vapply(1:n,function(i){v[i,] %*% VAR[i,,] %*% v[i,]},numeric(1)) # (n)

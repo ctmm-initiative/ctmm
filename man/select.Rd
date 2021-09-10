@@ -45,13 +45,13 @@ if(interactive())
   data(wolf)
 
   # Extract wolf Luna
-  Luna <- wolf$Luna
+  DATA <- wolf$Luna
 
   # Select resident data
-  Luna.sub <- lasso(Luna)
+  SUB <- lasso(DATA)
 
   # You can now work with the resident and dispersive data separately
-  names(Luna.sub)
+  names(SUB)
 }
 }
 

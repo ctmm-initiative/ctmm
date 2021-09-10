@@ -29,7 +29,8 @@ projection.ctmm <- projection.telemetry
 setMethod('projection', signature(x='ctmm'), projection.telemetry)
 projection.UD <- projection.telemetry
 setMethod('projection', signature(x='UD'), projection.telemetry)
-
+#projection.RS <- projection.telemetry
+#setMethod('projection', signature(x='RS'), projection.telemetry)
 
 project <- function(x,from=DATUM,to=DATUM)
 {

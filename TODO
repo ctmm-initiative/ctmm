@@ -1,5 +1,12 @@
 PRIORITY
-* RSF: summary RSF beta
+* weighting times in ocurrence distributions by?
+* NPR occurrence
+* NPR range debias numerator and denominator?
+* plot.telemetry raster backgrounds
+* RSF: RSF-informed kernels
+* RSF: model selection re-using available sample and beta
+* RSF: model selction: trace=(x^2+y^2), x^2-y^2, x*y
+* RSF: lower bound for parameter corrections: -1<trace
 * Phylo: implement IID by hand
 * Phylo: pre-condition OUF with OU
 * Phylo: link function support

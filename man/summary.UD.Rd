@@ -49,14 +49,14 @@ library(ctmm)
 data(buffalo)
 
 # Extract movement data for a single animal
-Cilla <- buffalo$Cilla
+DATA <- buffalo$Cilla
 
 # Fit a movement model
-GUESS <- ctmm.guess(Cilla,interactive=FALSE)
-FIT <- ctmm.fit(Cilla,GUESS)
+GUESS <- ctmm.guess(DATA,interactive=FALSE)
+FIT <- ctmm.fit(DATA,GUESS)
 
 # Estimate and summarize the AKDE
-UD <- akde(Cilla,FIT)
+UD <- akde(DATA,FIT)
 summary(UD)
 }}
 

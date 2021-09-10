@@ -1,7 +1,9 @@
-ctmm 0.6.2 (2021-08-27)
+ctmm 0.6.2 (2021-09-09)
 ================
 
   * new function rsf.fit() to fit integrated resource selection functions with autocorrelation-adjusted weighted likelihood
+  
+  * new function revisitation() to calculate the distribution of revisitations.
 
   * new argument SP in plot.telemetry and plot.UD() for plotting shapefile base layers
 

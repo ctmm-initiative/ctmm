@@ -12,7 +12,7 @@ methods::setMethod("zoom",signature(x="telemetry"), function(x,fraction=1,...) z
 methods::setMethod("zoom",signature(x="UD"), function(x,fraction=1,...) zoom.telemetry(x,fraction=fraction,...))
 
 ##############
-new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,units=TRUE,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,ext=NULL,...)
+new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,R=NULL,level.UD=0.95,level=0.95,units=TRUE,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,ext=NULL,...)
 {
   RESIDUALS <- !is.null(data) && !is.null(attr(data[[1]],"info")$residual)
 
@@ -37,7 +37,19 @@ new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,level.UD=0.95,level=0.95,units=
 
     # bounding locations from UDs
     if(!is.null(UD))
-    { ext <- rbind(ext,extent(UD,level=level,level.UD=level.UD)[,axes]) }
+    {
+      if(class(UD[[1]])[1]=='RS') # backup extent for RS objects
+      {
+        ext <- data.frame(x=1:2,y=1:2)
+        rownames(ext) <- c('min','max')
+        ext['min','x'] <- min(sapply(UD,function(U){U$r$x[1]}))
+        ext['max','x'] <- min(sapply(UD,function(U){last(U$r$x)}))
+        ext['min','y'] <- min(sapply(UD,function(U){U$r$y[1]}))
+        ext['max','y'] <- min(sapply(UD,function(U){last(U$r$y)}))
+      }
+      else
+      { ext <- rbind(ext,extent(UD,level=level,level.UD=level.UD)[,axes]) }
+    }
 
     # bounding locations from Gaussian CTMM
     if(!is.null(CTMM) & !any(is.na(level.UD)))
@@ -128,21 +140,25 @@ plot.env <- new.env()
 #######################################
 # PLOT TELEMETRY DATA
 #######################################
-plot.telemetry <- function(x,CTMM=NULL,UD=NULL,
+plot.telemetry <- function(x,CTMM=NULL,UD=NULL,#R=NULL,
                            cex=NULL,col="red",lwd=1,pch=1,type='p',error=TRUE,transparency.error=0.25,velocity=FALSE,
                            DF="CDF",col.DF="blue",col.grid="white",labels=NULL,level=0.95,level.UD=0.95,col.level="black",lwd.level=1,
                            SP=NULL,border.SP=TRUE,col.SP=NA,
                            fraction=1,xlim=NULL,ylim=NULL,ext=NULL,units=TRUE,add=FALSE,...)
 {
+  R <- NULL
+
   alpha <- 1-level
   alpha.UD <- 1-level.UD
 
-  # listify everything for generality
+  # list-ify everything for generality
   x <- listify(x)
   CTMM <- listify(CTMM)
   UD <- listify(UD)
+  R <- listify(R)
   # fix argument order
-  if(class(CTMM[[1]])=="UD") { TEMP <- CTMM; CTMM <- UD; UD <- TEMP; rm(TEMP) }
+  if(class(CTMM[[1]])=="UD") { UD <- CTMM; CTMM <- NULL }
+  if(class(CTMM[[1]])=="RS") { R <- CTMM; CTMM <- NULL }
 
   # median time step of data
   dt <- lapply(x,function(X){diff(X$t)})
@@ -157,7 +173,10 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,
     CTMM <- list(ctmm(sigma=1,mu=c(0,0)))
   }
 
-  dist <- new.plot(data=x,CTMM=CTMM,UD=UD,level.UD=level.UD,level=level,units=units,fraction=fraction,add=add,xlim=xlim,ylim=ylim,ext=ext,...)
+  dist <- new.plot(data=x,CTMM=CTMM,UD=UD,R=R,level.UD=level.UD,level=level,units=units,fraction=fraction,add=add,xlim=xlim,ylim=ylim,ext=ext,...)
+
+  # extents calculated without RS
+  if(!is.null(R)) { UD <- R; rm(R); DF <- "RS" }
 
   # plot cm per unit of distance plotted (m or km)
   cmpkm <- 2.54*mean(graphics::par("fin")*diff(graphics::par("plt"))[-2]/diff(graphics::par("usr"))[-2])
@@ -426,6 +445,8 @@ plot.UD <- function(x,DF="CDF",col.DF="blue",col.grid="white",labels=NULL,level=
 {
   x <- listify(x)
 
+  if(class(x[[1]])[1]=="RS") { DF <- 'RS' }
+
   dist <- new.plot(UD=x,units=units,fraction=fraction,xlim=xlim,ylim=ylim,ext=ext,level.UD=level.UD,level=level,add=add,...)
 
   # PLOT SHAPEFILES
@@ -460,6 +481,8 @@ plot.UD <- function(x,DF="CDF",col.DF="blue",col.grid="white",labels=NULL,level=
     # ML DENSITY PLOTS
     plot.df(x[[i]],DF=DF,col=col.DF[[i]],...)
   }
+
+  if(DF=="RS") { return(invisible(NULL)) }
 
   # plot grid
   for(i in 1:length(x))
@@ -535,6 +558,7 @@ plot.UD <- function(x,DF="CDF",col.DF="blue",col.grid="white",labels=NULL,level=
   }
 
 }
+plot.RS <- plot.UD
 
 ##################################
 # plot PDF stored as KDE object
@@ -545,14 +569,14 @@ plot.df <- function(kde,DF="CDF",col="blue",...)
   alpha <- min(alpha,254) # overflow bug otherwise
   col <- malpha(col,(0:alpha)/255)
 
-  if(DF=="PDF")
+  if(DF %in% c("PDF","RS"))
   {
-    zlim <- c(0,max(kde$PDF))
+    zlim <- c(0,max(kde[[DF]]))
   }
   else if(DF=="CDF")
   {
     zlim <- c(0,1)
-    kde$CDF <- 1 - kde$CDF
+    kde[[DF]] <- 1 - kde[[DF]]
   }
 
   graphics::image(kde$r,z=kde[[DF]],useRaster=TRUE,zlim=zlim,col=col,add=TRUE,...)
