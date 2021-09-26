@@ -400,7 +400,7 @@ homerange <- function(data,CTMM,method="AKDE",...)
 akde <- function(data,CTMM,VMM=NULL,variable="utilization",debias=TRUE,weights=FALSE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
 {
   if(variable!="utilization")
-  { error("variable=",variable," not yet supported by akde(). See npr() or revisitation().") }
+  { stop("variable=",variable," not yet supported by akde(). See npr() or revisitation().") }
 
   if(length(projection(data))>1) { stop("Data not in single coordinate system.") }
   validate.grid(data,grid)

@@ -1,4 +1,5 @@
 PRIORITY
+* adaptive precision in rsf.fit()
 * weighting times in ocurrence distributions by?
 * NPR occurrence
 * NPR range debias numerator and denominator?

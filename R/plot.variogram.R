@@ -460,6 +460,17 @@ zoom.variogram <- function(x, fraction=0.5, ...)
   # R CHECK CRAN BUG WORKAROUND
   z <- NULL
 
+  # pass second argument non-fraction
+  if(class(fraction)[1]!="numeric")
+  {
+    arg2 <- fraction
+    fraction <- 0.5
+  }
+  else
+  {
+    arg2 <- NULL
+  }
+
   # number of variograms
   x <- listify(x)
   n <- length(x)
@@ -473,8 +484,14 @@ zoom.variogram <- function(x, fraction=0.5, ...)
 
   b <- 4
   min.step <- min(fraction,10*min.lag/max.lag)
-  # weird bug in manipulate that requires calling it twice???
-  manipulate::manipulate( { plot.variogram(x, fraction=b^(z-1), ...) }, z=manipulate::slider(1+log(min.step,b),1,initial=1+log(fraction,b),label="zoom") )
+
+  s1 <- 1 + log(min.step,b)
+  initial <- 1 + log(fraction,b)
+
+  if(is.null(arg2))
+  { manipulate::manipulate( { plot.variogram(x,fraction=b^(z-1),...) }, z=manipulate::slider(s1,1,initial=initial,label="zoom") ) }
+  else
+  { manipulate::manipulate( { plot.variogram(x,arg2,fraction=b^(z-1),...) }, z=manipulate::slider(s1,1,initial=initial,label="zoom") ) }
 }
 methods::setMethod("zoom",signature(x="variogram"), function(x,fraction=0.5,...) zoom.variogram(x,fraction=fraction,...))
 
