@@ -210,9 +210,14 @@ rsf.fit <- function(data,UD,R=list(),beta=NULL,integrated=TRUE,isotropic=TRUE,de
     # update SIM count
     N <- nrow(RSIM)
 
-    # parscales will default to 1 if beta are 0
+
     if(trace) { message("Maximizing likelihood @ N=",N) }
-    RESULT <- optimizer(beta,nloglike,...)
+    # adaptive precision
+    precision <- max(error^2,min(STDloglike^2/2,1))/2
+    precision <- log(precision)/log(.Machine$double.eps)
+    # parscales will default to 1 if beta are 0
+    control <- list(precision=precision)
+    RESULT <- optimizer(beta,nloglike,control=control,...)
     beta <- RESULT$par
     loglike <- -RESULT$value
 
@@ -301,7 +306,10 @@ rsf.fit <- function(data,UD,R=list(),beta=NULL,integrated=TRUE,isotropic=TRUE,de
   # debias code (variance only)
   if(debias)
   {
-    DEBIAS <- sqrt(det.covm(CTMM$sigma)/det.covm(CTMM$MLE$sigma))
+    if(!is.null(CTMM$MLE))
+    { DEBIAS <- sqrt(det.covm(CTMM$sigma)/det.covm(CTMM$MLE$sigma)) }
+    else
+    { DEBIAS <- W/(W-1) }
 
     DSCALE <- rep(1,length(NAMES))
     names(DSCALE) <- NAMES

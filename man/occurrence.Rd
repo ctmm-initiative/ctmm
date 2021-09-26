@@ -15,7 +15,7 @@ occurrence(data,CTMM,H=0,variable="utilization",res.time=10,res.space=10,grid=NU
   \item{data}{ 2D timeseries telemetry data represented as a \code{telemetry} object. }
   \item{CTMM}{A \code{ctmm} movement model from the output of \code{ctmm.fit}.}
   \item{H}{Optional additional bandwidth matrix for future use.}
-  \item{variable}{Either \code{"utilization"} or \code{"revisitation"}.}
+  \item{variable}{Either \code{"utilization"} or \code{"revisitation"}. Only utilization is accurately estimated.}
   \item{res.time}{Number of temporal grid points per median timestep.}
   \item{res.space}{Number of grid points along each axis, relative to the average diffusion (per median timestep) from a stationary point.}
   \item{grid}{Optional grid specification via \code{raster}, \code{UD}, or list of arguments (See \code{\link{akde}} for details).}

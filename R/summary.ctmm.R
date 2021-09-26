@@ -263,7 +263,6 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
     VAR <- diag(object$COV)[P]
     RSF <- norm.ci(RSF,VAR,level=level)
 
-    unit.list <- unit.par(error,"length",SI=!units)
     name <- c(paste0("1/",substr(P,nchar("RSF #"),nchar(P))),name)
     scale <- c(1,scale)
 
