@@ -31,7 +31,7 @@ When plotting the \code{outlie} object itself, `core deviation' denotes distance
 The output \code{outlie} object contains the above noted speed and distance estimates in a \code{data.frame}, with rows corresponding to those of the input \code{telemetry} object.
 }
 
-\value{Returns a \code{data.frame} of distances and speeds. Can also produce a plot as a side effect.}
+\value{Returns an \code{outlie} object, which is a data.frame of distance and speed information. Can also produce a plot as a side effect.}
 
 \references{
 C. H. Fleming et al, ``A comprehensive framework for handling location error in animal tracking data'', bioRxiv 2020.06.12.130195 (2020) \doi{10.1101/2020.06.12.130195}.

@@ -1,7 +1,7 @@
-ctmm 0.6.2 (2021-09-26)
+ctmm 0.6.2 (2021-09-29)
 ================
 
-  * new function rsf.fit() to fit integrated resource selection functions with autocorrelation-adjusted weighted likelihood
+  * new function rsf.fit() to fit integrated resource selection functions (RSFs) with autocorrelation-adjusted weighted likelihood
   
   * new function revisitation() to calculate the distribution of revisitations.
 

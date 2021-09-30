@@ -1,5 +1,7 @@
-rsf.fit <- function(data,UD,R=list(),beta=NULL,integrated=TRUE,isotropic=TRUE,debias=TRUE,smooth=TRUE,error=0.01,trace=FALSE,...)
+rsf.fit <- function(data,UD,R=list(),beta=NULL,integrated=TRUE,isotropic=TRUE,debias=TRUE,smooth=TRUE,error=0.01,trace=TRUE,...)
 {
+  # error <- error^2 # convert from error[beta] to error[loglike]
+
   CTMM <- UD@CTMM
   axes <- CTMM$axes
 
@@ -139,8 +141,10 @@ rsf.fit <- function(data,UD,R=list(),beta=NULL,integrated=TRUE,isotropic=TRUE,de
 
   N <- ceiling(W)^2 # starting value, will increase iteratively
   N.OLD <- 0
-  STDloglike <- Inf # iterate until we meet our error tolerance
-  while(STDloglike > error)
+  loglike <- -Inf
+  ERROR.BIG <- TRUE
+  STDloglike <- Inf
+  while(ERROR.BIG)
   {
     # double the random sample
     SIM <- simulate(IID,t=1:N,complete=TRUE)
@@ -211,24 +215,40 @@ rsf.fit <- function(data,UD,R=list(),beta=NULL,integrated=TRUE,isotropic=TRUE,de
     N <- nrow(RSIM)
 
 
-    if(trace) { message("Maximizing likelihood @ N=",N) }
-    # adaptive precision
-    precision <- max(error^2,min(STDloglike^2/2,1))/2
-    precision <- log(precision)/log(.Machine$double.eps)
+    if(trace) { message("Maximizing likelihood @ n=",N) }
+    # adaptive precision - error target is for parameters or sqrt(STDloglike)
+    precision <- clamp(STDloglike,0,1)/sqrt(2) # expected STD[loglike] this round
+    precision <- max(precision,error) # no point in exceeding threshold error
+    precision <- precision^2 # improve over Monte-Carlo error
+    precision <- log(precision)/log(.Machine$double.eps) # relative to machine error
+    precision <- clamp(precision,1/8,1/2)
     # parscales will default to 1 if beta are 0
     control <- list(precision=precision)
     RESULT <- optimizer(beta,nloglike,control=control,...)
+    beta.OLD <- beta
     beta <- RESULT$par
+    loglike.OLD <- loglike
     loglike <- -RESULT$value
+    COV <- RESULT$covariance
 
     EXP <- exp( c(RSIM %*% beta) )
     Elambda <- mean(EXP)
     Vlambda <- stats::var(EXP)
     STDloglike <- sqrt( W^2/N * Vlambda/Elambda^2 )
-    if(trace) { message("SD[log(\u2113)]=",STDloglike) }
+    STDbeta <- (beta-beta.OLD)/sqrt(diag(COV))
+    if(trace)
+    {
+      message(" SD[log(\u2113)] = ",STDloglike)
+      message(" dlog(\u2113) = ",loglike-loglike.OLD)
+      message(" d\u03B2/SD[\u03B2] = ",paste(STDbeta,collapse=' '))
+    }
 
     # numbers for next iteration
     N.OLD <- N
+
+    # estimated errors for this round
+    ERROR.BIG <- c(STDloglike,abs(loglike-loglike.OLD)/2,abs(STDbeta)/sqrt(2)) > error
+    ERROR.BIG <- any(ERROR.BIG)
   }
 
   # compute hessian

@@ -29,7 +29,7 @@ plot(x,y,...)
 \arguments{
   \item{x}{\code{telemetry} or \code{UD} object.}
   \item{y}{Unused option.}
-  \item{cex}{Relative size of plotting symbols. Only used when errors are missing.}
+  \item{cex}{Relative size of plotting symbols. Only used when \code{error=FALSE}, because \code{error=TRUE} uses the location-error radius instead of \code{cex}.}
   \item{col}{Color option for telemetry data. Can be an array or list of arrays.}
   \item{lwd}{Line widths of \code{telemetry} points.}
   \item{pch}{Plotting symbol. Can be an array or list of arrays.}

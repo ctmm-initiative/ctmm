@@ -19,9 +19,12 @@ npr <- function(data,UD,variable="revisitation",error=0.001,...)
   if(length(CTMM$tau)<2)
   {
     if(variable=='revisitation')
-    { error("Revisitation estimation requires a continuous-velocity model.") }
+    {
+      warning("Revisitation estimation requires a continuous-velocity model.")
+      return(UD)
+    }
     else if(variable=='speed')
-    { error("Speed estimation requires a continuous-velocity model.") }
+    { stop("Speed estimation requires a continuous-velocity model.") }
   }
 
   if(type=="occurrence")
