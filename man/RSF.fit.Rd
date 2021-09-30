@@ -8,7 +8,7 @@ This function is in development and is subject to change.
 }
 \usage{
 rsf.fit(data,UD,R=list(),beta=NULL,integrated=TRUE,isotropic=TRUE,debias=TRUE,smooth=TRUE,
-        error=0.01,trace=FALSE,...)
+        error=0.01,trace=TRUE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -20,8 +20,8 @@ rsf.fit(data,UD,R=list(),beta=NULL,integrated=TRUE,isotropic=TRUE,debias=TRUE,sm
   \item{isotropic}{Force spatial constraint parameters to be symmetric (Only \code{isotropic=TRUE} is currently supported and this argument will ultimately become depreciated).}
   \item{debias}{Apply a post-hoc bias correction to the spatial constraint parameters.}
   \item{smooth}{Apply location-error smoothing to the tracking data before regression.}
-  \item{error}{Numerical error target for the maximized log likelihood. Resulting numerical errors in the parameter estimates will be of a similar relative size. E.g., \eqn{O(1\%)} at \code{error=0.01}.}
-  \item{trace}{Report progress on convergence.}
+  \item{error}{Relative numerical error threshold for the parameter estimates and log-likelihood.}
+  \item{trace}{Report progress on convergence (see Details).}
   \item{...}{Arguments passed to \code{optimizer}.}
 }
 
@@ -31,6 +31,8 @@ For autocorrelated tracking data, the relative weights of the log-likelihood use
 Integrated resource selection functions simultaneously estimate the spatially constraining parameters with the resource selection parameters, rather than first estimating the spatially constraining parameters (usually via MCP) and then holding those parameters fixed---as known values---when estimating the resource selection parameters. The ``integrated'' analysis reduces estimation bias, exposes correlations in the resource and spatial estimate uncertainties, and propagates the spatial estimate uncertainties into the final outputs.
 
 Instead of specifying a number of ``available'' points to sample and having an unknown amount of numerical error to contend with, \code{rsf.fit} specifies an estimation target \code{error} and the number of ``available'' points is increased until this target is met. Moreover, the output log-likelihood is that of the continuous Poisson point process, which does not depend on the number of ``available'' points that were sampled, though the numerical variance estimate is recorded in the \code{VAR.loglike} slot of the fit object.
+
+When \code{trace=TRUE}, a number of convergence estimates are reported, including the standard deviation of the numerical error of the log-likelihood, SD[\eqn{\log(\ell)}], the most recent log-likelihood update, d\eqn{\log(\ell)}, and the most recent (relative) parameter estimate updates d\eqn{\hat{\beta}/}SD[\eqn{\hat{\beta}}].
 }
 
 %\value{}
