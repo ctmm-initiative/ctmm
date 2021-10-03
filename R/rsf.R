@@ -247,7 +247,7 @@ rsf.fit <- function(data,UD,R=list(),beta=NULL,integrated=TRUE,isotropic=TRUE,de
     N.OLD <- N
 
     # estimated errors for this round
-    ERROR.BIG <- c(STDloglike,abs(loglike-loglike.OLD)/2,abs(STDbeta)/sqrt(2)) > error
+    ERROR.BIG <- c(STDloglike,abs(c(loglike-loglike.OLD,STDbeta))/sqrt(2)) > error
     ERROR.BIG <- any(ERROR.BIG)
   }
 
