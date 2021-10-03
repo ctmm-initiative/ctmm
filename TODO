@@ -1,4 +1,5 @@
 PRIORITY
+* export npr for speed for bill
 * parameter table creation code
 * weighting times in ocurrence distributions by?
 * NPR occurrence
