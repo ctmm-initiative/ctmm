@@ -56,6 +56,9 @@ correlogram <- function(data,dt=NULL,fast=TRUE,res=1,axes=c("x","y"))
   # normalize ACF to 1 at lag 0
   ACF$SVF <- ACF$SVF / ACF$SVF[1]
 
+  # drop numerical error
+  ACF <- ACF[ACF$DOF>.Machine$double.eps,]
+
   ACF <- new.variogram(ACF,info=attr(data,"info"))
   attr(ACF,"info")$ACF <- TRUE
   # attr(ACF,"info")$CTMM <- NULL

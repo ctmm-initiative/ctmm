@@ -526,7 +526,7 @@ prepare.H <- function(H,n,axes=c('x','y'))
 # construct my own KDE objects
 # was using ks-package but it has some bugs
 # alpha is the error goal in my total probability
-kde <- function(data,H,axes=c("x","y"),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr=NULL,grid=NULL,variable=NA)
+kde <- function(data,H,axes=c("x","y"),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr=NULL,grid=NULL,variable=NA,normalize=TRUE)
 {
   if(!is.na(variable))
   {
@@ -541,7 +541,7 @@ kde <- function(data,H,axes=c("x","y"),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr
 
   # normalize weights
   if(is.null(W)) { W <- rep(1,length(data$x)) }
-  W <- W/sum(W)
+  if(normalize) { W <- W/sum(W) }
 
   # format bandwidth matrix
   H <- prepare.H(H,n,axes=axes)
@@ -1050,3 +1050,18 @@ summary.UD <- function(object,level=0.95,level.UD=0.95,units=TRUE,...)
   return(SUM)
 }
 #methods::setMethod("summary",signature(object="UD"), function(object,...) summary.UD(object,...))
+
+
+extract <- function(r,UD,DF="CDF",...)
+{
+  if(length(dim(r)))
+  { r <- t(r) }
+  else
+  { r <- cbind(r) }
+
+  # continuous index
+  r[1,] <- (r[1,]-UD$r$x[1])/UD$dr['x'] + 1
+  r[2,] <- (r[2,]-UD$r$y[1])/UD$dr['y'] + 1
+
+  bint(UD[[DF]],r)
+}

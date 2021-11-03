@@ -18,12 +18,16 @@
 \usage{
 as.sf(x,error=FALSE,...)
 
+## method for class 'telemetry'
 SpatialPoints.telemetry(object,...)
 
+## method for class 'telemetry'
 SpatialPointsDataFrame.telemetry(object,...)
 
+## method for class 'telemetry'
 SpatialPolygonsDataFrame.telemetry(object,level.UD=0.95,...)
 
+## method for class 'UD'
 SpatialPolygonsDataFrame.UD(object,level.UD=0.95,level=0.95,...)
 
 \S4method{raster}{UD}(x,DF="CDF",...)

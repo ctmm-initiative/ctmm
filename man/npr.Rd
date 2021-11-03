@@ -1,19 +1,20 @@
-\name{revisitation}
-\alias{revisitation}
+\name{npr}
+\alias{npr}
 \encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{Calculate an revisitation distribution estimate}
+\title{Calculate a non-parametric regression surface}
 \description{
-This function estimates the distribution of revisitations from \code{telemetry} data and a continuous-time movement model.
-}
+This function estimates the mean value of an annotated covariate as a function of location, using non-parametric regression.}
 \usage{
-revisitation(data,UD,debias=TRUE,error=0.001,...)
+npr(data,UD,variable="speed",normalize=FALSE,debias=TRUE,error=0.001,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{data}{ 2D timeseries telemetry data represented as a \code{telemetry} object or list of objects. }
   \item{UD}{A \code{UD} object from the output of \code{\link{akde}}.}
-  \item{debias}{Correct for oversmoothing.}
+  \item{variable}{Variable for mean estimation. Can be a column of \code{data}.}
+  \item{normalize}{Consider \code{variable} as providing a weighted probability distribution.}
+  \item{debias}{Correct for oversmoothing if \code{normalize=TRUE}.}
   \item{error}{Target probability error.}
   \item{...}{Arguments passed to \code{\link{akde}}.}
 }

@@ -118,10 +118,12 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     UERE.DOF <- UERE.DOF[LEVELS]
   }
 
-  if(is.null(CTMM$errors)) { CTMM$errors <- any(CTMM$error>0) }
-
-  UERE.FIT <- (CTMM$error | CTMM$errors) & !is.na(UERE.DOF) & UERE.DOF<Inf # will we be fitting error parameters?
-  UERE.FIX <- (CTMM$error | CTMM$errors) & (is.na(UERE.DOF) | UERE.DOF==Inf) # are there fixed error parameters
+  ## I don't recall what this was for, you can't profile from zero variance
+  # if(is.null(CTMM$errors)) { CTMM$errors <- any(CTMM$error>0) }
+  # UERE.FIT <- (CTMM$error | CTMM$errors) & !is.na(UERE.DOF) & UERE.DOF<Inf # will we be fitting error parameters?
+  # UERE.FIX <- (CTMM$error | CTMM$errors) & (is.na(UERE.DOF) | UERE.DOF==Inf) # are there fixed error parameters
+  UERE.FIT <- (CTMM$error) & !is.na(UERE.DOF) & UERE.DOF<Inf # will we be fitting error parameters?
+  UERE.FIX <- (CTMM$error) & (is.na(UERE.DOF) | UERE.DOF==Inf) # are there fixed error parameters
 
   ### what kind of profiling is possible
   if((!any(CTMM$error>0) && !(circle && !isotropic)) || (!any(UERE.FIX) && isotropic)) # can profile full covariance matrix all at once
