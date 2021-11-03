@@ -1,11 +1,15 @@
-ctmm 0.6.2 (2021-09-29)
+ctmm 0.6.2 (2021-11-03)
 ================
 
   * new function rsf.fit() to fit integrated resource selection functions (RSFs) with autocorrelation-adjusted weighted likelihood
   
   * new function revisitation() to calculate the distribution of revisitations.
+  
+  * new function npr() to calculate non-parametric spatial regressions
 
   * new argument SP in plot.telemetry and plot.UD() for plotting shapefile base layers
+  
+  * bugfix in ctmm.loglike() when fitting multiple error classes, where zome are zero
 
 ctmm 0.6.1 (2021-07-26)
 ================
