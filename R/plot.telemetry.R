@@ -482,7 +482,7 @@ plot.UD <- function(x,DF="CDF",col.DF="blue",col.grid="white",labels=NULL,level=
     plot.df(x[[i]],DF=DF,col=col.DF[[i]],...)
   }
 
-  if(DF=="RS") { return(invisible(NULL)) }
+  if(DF %nin% c("PDF","CDF")) { return(invisible(NULL)) } # NPR
 
   # plot grid
   for(i in 1:length(x))
@@ -569,7 +569,7 @@ plot.df <- function(kde,DF="CDF",col="blue",...)
   alpha <- min(alpha,254) # overflow bug otherwise
   col <- malpha(col,(0:alpha)/255)
 
-  if(DF %in% c("PDF","RS"))
+  if(DF %in% "PDF")
   {
     zlim <- c(0,max(kde[[DF]]))
   }
@@ -577,6 +577,10 @@ plot.df <- function(kde,DF="CDF",col="blue",...)
   {
     zlim <- c(0,1)
     kde[[DF]] <- 1 - kde[[DF]]
+  }
+  else # NPR
+  {
+    zlim <- range(kde[[DF]],na.rm=TRUE)
   }
 
   graphics::image(kde$r,z=kde[[DF]],useRaster=TRUE,zlim=zlim,col=col,add=TRUE,...)

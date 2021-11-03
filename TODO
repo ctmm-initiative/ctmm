@@ -1,5 +1,11 @@
 PRIORITY
-* export npr for speed for bill
+* export npr for speed for Bill
+* plot of overlap, area, mean distance versus time (relative to reference)
+* update the turtle vignette example to talk about location classes
+* rsf.fit time-dependent covariate * raster interaction term - formula
+* RSF synoptic=FALSE option for models that are automatically spatially constrained
+* meta - plot distribution when data are sorted in plot
+* error - IID Gaussian mean weights
 * parameter table creation code
 * weighting times in ocurrence distributions by?
 * NPR occurrence

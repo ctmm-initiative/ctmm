@@ -1,10 +1,10 @@
-revisitation <- function(data,UD,error=0.001,...)
-{ npr(data,UD,variable="revisitation",error=error,...) }
+revisitation <- function(data,UD,debias=TRUE,error=0.001,...)
+{ npr(data,UD,variable="revisitation",normalize=TRUE,debias=debias,error=error,...) }
 
 
 # TODO Occurrence NPRs ##
 # TODO NPR debias
-npr <- function(data,UD,variable="revisitation",error=0.001,...)
+npr <- function(data,UD,variable="speed",normalize=FALSE,debias=TRUE,error=0.001,...)
 {
   # arbitrary variables allowed
   # variable <- match.arg(variable,c('revisitation','speed'))
@@ -30,37 +30,56 @@ npr <- function(data,UD,variable="revisitation",error=0.001,...)
   if(type=="occurrence")
   { return(occurrence(data,CTMM,variable=variable,error=error,grid=UD,...)) }
 
+  VAR <- data[[variable]]
   data <- predict(CTMM,data=data,t=data$t)
+
   if(variable %in% c("revisitation","speed")) # append a debiased speed column
   { data <- speeds.fast(data,append=TRUE) }
+  else
+  {
+    data[[variable]] <- VAR
+    rm(VAR)
+
+    if(normalize && any(data[[variable]]<0))
+    { stop("Negative variables and cannot provide a weighted distribution.") }
+  }
+
   CTMM$error <- FALSE # smoothed error model (approximate)
 
   GRID <- kde.grid(data,H=UD$H,axes=axes,alpha=error,grid=UD)
 
   weights <- UD$weights
   UD <- as.list(UD)
-  UD$PDF <- UD$CDF <- UD$MISE <- NULL
 
-  if(variable=="revisitation")
+  if(debias)
+  { bias <- UD$bias } # consider recalculating for normalize=TRUE
+  else
+  { bias <- FALSE }
+
+  if(normalize) # generate a new disribution
   {
-    weights <- weights * data$speed
+    if(variable=="revisitation")
+    { weights <- weights * data$speed }
+    else
+    { weights <- weights * data[[variable]] }
+    # total weight for means
     weight <- sum(weights)
 
+    UD$PDF <- UD$CDF <- UD$MISE <- NULL
     UD$axes <- UD$r <- UD$dr <- NULL
 
-    UD <- c(UD,kde(data=data,H=UD$H,W=weights,alpha=error,grid=GRID,bias=UD$bias))
+    UD <- c(UD,kde(data=data,H=UD$H,W=weights,alpha=error,grid=GRID,bias=bias))
+
     UD$weight <- weight # needed for averaging over individuals
     UD <- new.UD(UD,info=info,type='range',variable=variable,CTMM=CTMM)
   }
-  else
+  else # append to current distribution
   {
-    stop()
+    UD[[variable]] <- kde(data=data,H=UD$H,W=weights,alpha=error,grid=GRID,variable=variable,normalize=FALSE)
 
-    UD$RS <- kde(data=data,H=UD$H,W=weights,alpha=error,grid=GRID,variable=variable)
-
-    NAMES <- names(UD) # why is this being erased?
+    #NAMES <- names(UD) # why is this being erased?
     #UD <- new.RS(UD,info=attr(data,"info"),type='range',variable=variable,CTMM=CTMM)
-    names(UD) <- NAMES # why is this necessary?
+    #names(UD) <- NAMES # why is this necessary?
   }
 
   return(UD)
