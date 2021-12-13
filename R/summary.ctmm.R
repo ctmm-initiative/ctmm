@@ -278,6 +278,9 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
 
   if(!range) { par <- par[-1,,drop=FALSE] } # delete off "area" (really diffusion)... stop R drop :(
 
+  # anything interesting from the timelink function
+  par <- rbind(timelink.summary(object,level=level),par)
+
   # anything else interesting from the mean function
   par <- rbind(drift@summary(object,level,level.UD),par)
 

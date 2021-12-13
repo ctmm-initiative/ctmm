@@ -178,8 +178,8 @@ rsf.fit <- function(data,UD,R=list(),beta=NULL,integrated=TRUE,isotropic=TRUE,de
         RSIM <- RSIM[-(N.OLD+BAD),]
       }
 
-      SUB <- N.OLD+1:nrow(SIM)
-      RSIM[SUB,i] <- bint(R[[i]],t(xy))
+      SUB <- N.OLD+1%:%nrow(SIM)
+      if(length(SUB)) { RSIM[SUB,i] <- bint(R[[i]],t(xy)) }
     } # end for(i in 1:length(R))
 
     OUT <- OUT/(OUT+nrow(SIM))

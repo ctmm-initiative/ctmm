@@ -65,6 +65,9 @@ ctmm <- function(tau=NULL,omega=FALSE,isotropic=FALSE,range=TRUE,circle=FALSE,er
     colnames(List$mu) <- axes
   }
 
+  # default time-link
+  if(is.null(List$timelink)) { List$timelink <- "identity" }
+
   # FIX THIS
   #if(!is.null(List$COV.mu)) { dimnames(List$COV.mu) <- list(axes,axes) }
 

@@ -446,4 +446,3 @@ ext.mat <- function(...,MAX=TRUE)
   MATS <- Reduce("+",MATS)
   return(MATS)
 }
-

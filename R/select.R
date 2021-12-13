@@ -64,6 +64,9 @@ simplify.ctmm <- function(M,par)
     M$range <- FALSE
   }
 
+  # # reduce time-link parameters
+  # if("timelink" %in% par) { M <- timelink.simplify(M) }
+
   # autocorrelation timescales can't be distinguished
   if("diff.tau" %in% par)
   {
@@ -123,6 +126,9 @@ complexify.ctmm <- function(M,par,TARGET)
     M$sigma <- scale.covm(M$sigma,TARGET$tau[1])
     M$range <- TRUE
   }
+
+  # # increase time-link parameters
+  # if("timelink" %in% par) { M <- timelink.complexify(M) }
 
   if("tau velocity" %in% par) { M$tau[2] <- TARGET$tau[2] }
   if("omega" %in% par) { M$omega <- TARGET$omega }
@@ -334,12 +340,19 @@ ctmm.iterate <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="positio
   # PHASE 0: pair down to essential features for 'compatibility'
   # all of the features we need to fit numerically
   FEATURES <- id.parameters(CTMM,UERE.FIT=UERE.FIT)$NAMES
-  # consider only features unnecessary "compatibility"
+  # consider only features unnecessary for Stein "compatibility"
   FEATURES <- FEATURES[!(FEATURES=="major")]
   FEATURES <- FEATURES[!grepl("error",FEATURES)]
   FEATURES <- FEATURES[!grepl("tau",FEATURES)]
   FEATURES <- FEATURES[!(FEATURES=="omega")]
   # if((CV || is.na(IC)) && CTMM$range && length(CTMM$tau)) { FEATURES <- c(FEATURES,"range") }
+
+  # # clean up non-parametrics
+  # if(!is.null(CTMM$timelink) && CTMM$timelink!="identity")
+  # {
+  #   FEATURES <- FEATURES[!grepl("timelink",FEATURES)]
+  #   FEATURES <- c(FEATURES,"timelink")
+  # }
 
   TARGET <- CTMM
   # start with the most basic "compatible" model, if not included in candidates
@@ -480,8 +493,13 @@ ctmm.iterate <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="positio
     else if(!CTMM$range && (is.na(IC) || CV) && TARGET$tau[1]<Inf)
     { GUESS <- c(GUESS,list(complexify.ctmm(MLE,"range",TARGET))) }
 
-    # consider if the mean could be more detailed
-    REFINE <- drift@refine(MLE)
+    # consider if time link could be more or less detailed
+    if(!is.null(TARGET$timelink) && TARGET$timelink!="identity")
+    { GUESS <- c(GUESS,list(timelink.complexify(MLE),timelink.simplify(MLE))) }
+
+    # What was special about these cases?
+    # consider if the mean could be more detailed or less detailed
+    REFINE <- c(drift.complexify(MLE),drift.simplify(MLE))
 
     # consider a bunch of new models and update best model without duplication
     iterate(GUESS,REFINE,phase=2)
@@ -548,10 +566,13 @@ name.ctmm <- function(CTMM,whole=TRUE)
   }
 
   # isotropy
-  if(CTMM$isotropic)
-  { NAME <- c(NAME,"isotropic") }
-  else
-  { NAME <- c(NAME,"anisotropic") }
+  if(length(CTMM$axes)>1)
+  {
+    if(CTMM$isotropic)
+    { NAME <- c(NAME,"isotropic") }
+    else
+    { NAME <- c(NAME,"anisotropic") }
+  }
 
   # circulation
   if(CTMM$circle || "circle" %in% FEATURES)
@@ -560,6 +581,17 @@ name.ctmm <- function(CTMM,whole=TRUE)
   # error
   if(any(CTMM$error>0) || any(grepl("error",FEATURES)))
   { NAME <- c(NAME,"error") }
+
+  # timelink
+  if(!is.null(CTMM$timelink) && CTMM$timelink!="identity" && length(CTMM$timelink.par))
+  {
+    fn <- get(paste0(CTMM$timelink,".timelink.name"))
+    NAME <- c(NAME,fn(CTMM))
+  }
+
+  # data link
+  link <- get.link(CTMM)
+  if(link$name!="identity") { NAME <- c(NAME,paste0(link$name,"-link")) }
 
   # mean
   drift <- get(CTMM$mean)

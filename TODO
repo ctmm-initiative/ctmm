@@ -1,5 +1,18 @@
 PRIORITY
-* export npr for speed for Bill
+* ctmm.guess informative error on non-telemetry object
+* rsf.fit simulate, predict
+* timelink par upper-lower function
+* only rareify models after compatible features are selected
+* circadian plot, animate with sundial
+* periodic sundial rates, periodic predict, speeds, AKDE weights
+* timelink simulate and predict
+* export list of objects
+* BHHH approximation for first step of optimizer to initialize Hessian
+* rsf.fit record the normalization constant for future evaluation
+* plot.variogram fraction=1 for phylogenetic variograms
+* profile upper speed CI?
+* rsf.fit categorical variables
+* rsf.fit record availiable points sampled and numerical error estimate
 * plot of overlap, area, mean distance versus time (relative to reference)
 * update the turtle vignette example to talk about location classes
 * rsf.fit time-dependent covariate * raster interaction term - formula

@@ -40,6 +40,12 @@ annotate <- function(object,by="all",cores=1,...)
     object$tropic <- (object$t-data[,1])/(data[,2]-data[,1])
   }
 
+  if(by %in% c('switch','sundial'))
+  {
+    STUFF <- get.sundial(object)
+    for(col in names(STUFF)) { object[[col]] <- STUFF[[col]] }
+  }
+
   return(object)
 }
 

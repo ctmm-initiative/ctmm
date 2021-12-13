@@ -49,6 +49,8 @@ get.loglike <- function(data)
 # FIT MODEL WITH LIKELIHOOD FUNCTION (convenience wrapper to optim)
 ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),trace=FALSE)
 {
+  # DEBUG <<- CTMM
+
   loglike.fn <- get.loglike(data)
 
   if(!is.null(control$message)) { message <- control$message }
@@ -74,12 +76,17 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
     }
   }
 
-  # TODO CTPM LAG STUFFs
-
-  # standardize data for numerical stability
+  ### standardize data for numerical stability ###
+  DATA <- data[,axes,drop=FALSE]
+  # but apply link first
+  link <- get.link(CTMM)
+  log.like.link <- sum(log(abs(link$grad(DATA))))
+  DATA <- link$fn(DATA)
+  CTMM$link <- "identity" # does not need to be applied again in loglike function
   # pre-centering the data reduces later numerical error across models (tested)
-  SHIFT <- colMeans(get.telemetry(data,axes))
-  data[,axes] <- t( t(data[,axes,drop=FALSE]) - SHIFT )
+  SHIFT <- colMeans(DATA)
+  data[,axes] <- t( t(DATA) - SHIFT )
+  rm(DATA)
   # add mu.center back to the mean value after kalman filter / mean profiling
   # pre-standardizing the data should also help
   SCALE <- sqrt(mean(get.telemetry(data,axes)^2))
@@ -205,7 +212,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
   fn <- function(p,zero=0)
   {
     names(p) <- NAMES
-    p <- clean.parameters(p,profile=profile,linear.cov=linear.cov)
+    p <- clean.parameters(p,profile=profile,linear.cov=linear.cov,timelink=CTMM$timelink)
     CTMM <- set.parameters(CTMM,p,profile=profile,linear.cov=linear.cov)
 
     # negative log likelihood
@@ -213,7 +220,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
   }
 
   # shift parameters back near origin to prevent overflow in optimizer
-  reset <- function(p) { clean.parameters(p,profile=profile,linear.cov=FALSE) }
+  reset <- function(p) { clean.parameters(p,profile=profile,linear.cov=FALSE,timelink=CTMM$timelink) }
 
   # construct covariance matrix guess - must account for differences between storage and optimization representations
   # covariance <- function()
@@ -287,18 +294,31 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
   else ### all further cases require optimization ###
   {
     if(trace) { message("Maximizing likelihood.") }
+    # fix for bad starting conditions
+    if(class(data)[1]=="phylometry" && length(CTMM$tau)>1)
+    {
+      TEST <- fn(pars)
+      while(TEST>=Inf)
+      {
+        if(CTMM$tau[1]==CTMM$tau[2])
+        { pars['tau'] <- pars['tau']/2 }
+        else
+        { pars['tau velocity'] <- pars['tau velocity']/2 }
+        TEST <- fn(pars)
+      }
+    }
     # control$covariance <- covariance() - parameter storage and optimization representations can differ
     control$parscale <- parscale
     control$zero <- TRUE
     RESULT <- optimizer(par=pars,fn=fn,method=op.method,lower=lower,upper=upper,period=period,reset=reset,control=control)
-    pars <- clean.parameters(RESULT$par,profile=profile)
+    pars <- clean.parameters(RESULT$par,profile=profile,timelink=CTMM$timelink)
     # copy over hessian from fit to COV.init ?
 
     # write best estimates over initial guess
     store.pars <- function(pars,profile=profile,finish=TRUE)
     {
       names(pars) <- NAMES
-      pars <- clean.parameters(pars,profile=profile,linear.cov=linear.cov)
+      pars <- clean.parameters(pars,profile=profile,linear.cov=linear.cov,timelink=CTMM$timelink)
 
       CTMM <- set.parameters(CTMM,pars,profile=profile,linear.cov=linear.cov)
 
@@ -379,7 +399,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
         profile <- FALSE
         # this can still fail if parameters are crazy
         TEST <- store.pars(pars,profile=FALSE,finish=TRUE)
-        if(class(TEST)[1]=="ctmm")
+        if(class(TEST)[1]=="ctmm" && !is.na(TEST$loglike) && TEST$loglike>-Inf)
         {
           CTMM <- TEST
           linear.cov <- FALSE
@@ -415,7 +435,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
         control$parscale <- parscale
         control$zero <- TRUE
         RESULT <- optimizer(par=pars,fn=fn,method=op.method,lower=lower,upper=upper,period=period,reset=reset,control=control)
-        pars <- clean.parameters(RESULT$par)
+        pars <- clean.parameters(RESULT$par,timelink=CTMM$timelink)
       }
 
       # includes free profile
@@ -457,6 +477,8 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
   CTMM$features <- NAMES # store all auto-covariance features
 
   # calculate AIC,AICc,BIC,MSPE,...
+  CTMM$link <- link$name
+  CTMM$loglike <- CTMM$loglike + log.like.link
   CTMM <- ic.ctmm(CTMM,n)
 
   # would be temporary ML COV for pREML/pHREML
@@ -464,6 +486,8 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
 
   if(method %in% c('pREML','pHREML','HREML') && !is.null(MLE))
   {
+    MLE$link <- link$name
+    MLE$loglike <- MLE$loglike + log.like.link
     # calculate checksum
     MLE$checksum <- digest::digest(CTMM,algo="md5")
     CTMM$MLE <- MLE
@@ -575,6 +599,7 @@ ic.ctmm <- function(CTMM,n)
 ###################
 ctmm.guess <- function(data,CTMM=ctmm(),variogram=NULL,name="GUESS",interactive=TRUE)
 {
+  if(class(data)=="list") { stop("ctmm.guess needs to be run individually.") }
   # use intended axes
   if(is.null(variogram)) { variogram = variogram(data,axes=CTMM$axes) }
   else { CTMM$axes <- attr(variogram,"info")$axes }
