@@ -1,3 +1,22 @@
+get.link <- function(CTMM)
+{
+  link <- CTMM$link
+
+  if(is.null(link)) { link <- "identity" }
+
+  link <- list(name=link,fn=get(link))
+
+  if(link$name=="identity")
+  { link$grad <- function(x){rep(1,length(x))} }
+  else if(link$name=="log")
+  { link$grad <- function(x){1/x} }
+  else # numDeriv
+  {} # TODO
+
+  return(link)
+}
+
+
 ####################################
 # log likelihood function
 ####################################
@@ -11,6 +30,9 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   }
   else
   { FAIL <- -Inf }
+
+  # employ link function on time
+  if(length(CTMM$timelink.par)) { data$t <- linktime(data,CTMM) }
 
   n <- length(data$t)
   AXES <- length(CTMM$axes)

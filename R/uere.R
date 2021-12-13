@@ -989,3 +989,27 @@ get.UERE.DOF <- function(x)
   if(is.null(N) || is.na(N)) { N <- 0 }
   return(N)
 }
+
+
+############
+# get/set dimnames of UERE objects
+classnames <- function(object)
+{ rownames(object$UERE) }
+
+"classnames<-" <- function(object,value)
+{
+  rownames(object$UERE) <- value
+  rownames(object$DOF) <- value
+  return(object)
+}
+
+"typenames<-" <- function(object,value)
+{
+  colnames(object$UERE) <- value
+  colnames(object$DOF) <- value
+  names(object$AICc) <- value
+  names(object$Zsq) <- value
+  names(object$VAR.Zsq) <- value
+  names(object$N) <- value
+  return(object)
+}

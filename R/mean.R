@@ -85,6 +85,23 @@ new.drift <- methods::setClass("drift",
               representation("function",energy="function",init="function",is.stationary="function",name="function",refine="function",scale="function",shift="function",speed="function",summary="function",svf="function",velocity="function"),
               prototype=prototype.drift)
 
+########################################
+# !!! TODO !!! REDO EVERYTHING LIKE THIS
+
+drift.complexify <- function(CTMM)
+{
+  if(CTMM$mean=="stationary") { return(list()) }
+  fn <- get(paste0(CTMM$mean,".drift.complexify"))
+  fn(CTMM)
+}
+
+drift.simplify <- function(CTMM)
+{
+  if(CTMM$mean=="stationary") { return(list()) }
+  fn <- get(paste0(CTMM$mean,".drift.simplify"))
+  fn(CTMM)
+}
+
 #################################
 # stationary mean/drift function
 #################################
@@ -327,7 +344,7 @@ periodic.summary <- function(CTMM,level,level.UD)
 }
 
 # increase number of harmonics in model
-periodic.refine <- function(CTMM)
+periodic.drift.complexify <- function(CTMM)
 {
   period <- CTMM$period
   harmonic <- CTMM$harmonic
@@ -343,6 +360,26 @@ periodic.refine <- function(CTMM)
   {
     GUESS[[length(GUESS)+1]] <- CTMM
     GUESS[[length(GUESS)]]$harmonic[i] <- harmonic[i] + 1
+  }
+
+  return(GUESS)
+}
+
+# reduce number of harmonics in model
+periodic.drift.simplify <- function(CTMM)
+{
+  period <- CTMM$period
+  harmonic <- CTMM$harmonic
+
+  GUESS <- list()
+
+  for(i in 1:length(period))
+  {
+    if(harmonic[i]>0)
+    {
+      GUESS[[length(GUESS)+1]] <- CTMM
+      GUESS[[length(GUESS)]]$harmonic[i] <- harmonic[i] - 1
+    }
   }
 
   return(GUESS)
@@ -406,7 +443,7 @@ periodic.stuff <- function(CTMM)
 }
 
 # combine this all together for convenience
-periodic <- new.drift(periodic.drift,is.stationary=periodic.is.stationary,energy=periodic.energy,init=periodic.init,name=periodic.name,refine=periodic.refine,scale=periodic.scale,speed=periodic.speed,summary=periodic.summary,svf=periodic.svf,velocity=periodic.velocity)
+periodic <- new.drift(periodic.drift,is.stationary=periodic.is.stationary,energy=periodic.energy,init=periodic.init,name=periodic.name,refine=periodic.drift.complexify,scale=periodic.scale,speed=periodic.speed,summary=periodic.summary,svf=periodic.svf,velocity=periodic.velocity)
 
 #################################
 # continuous uniform spline mean functions

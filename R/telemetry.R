@@ -35,20 +35,48 @@ tbind <- function(...)
     if(class(x)[1]=="telemetry") { return(x) }
   }
 
+  PROJS <- length(projection(x))
   info <- mean.info(x)
+
+  # unique names - just in case
+  if(is.null(names(x)))
+  { names(x) <- sapply(1:length(x),function(i){paste(attr(x[[i]],'info')$identity,i)}) }
 
   UERE <- uere(x) # initial UERE information
   if(class(UERE)[1]=="list") # non-unique calibration information
   {
-    # fix missing class information
-    for(i in 1:length(UERE))
+    # which calibrations are equivalent
+    # EQUAL <- outer(UERE,identical) # annoyingly, this does not work
+    EQUAL <- array(TRUE,c(length(x),length(x)))
+    for(i in 1:length(x))
     {
-      if("class" %nin% names(x[[i]]))
+      for(j in 1%:%(i-1))
+      { EQUAL[i,j] <- EQUAL[j,i] <- identical(UERE[[i]],UERE[[j]]) }
+    }
+
+    # are any in-equivalent datasets sharing the same class names?
+    RENAME <- rep(FALSE,length(x))
+    for(i in 1:length(x))
+    {
+      for(j in 1%:%(i-1))
       {
-        CLASS <- names(x)[i] # name class after device
-        x[[i]]$class <- as.factor(CLASS)
-        rownames(UERE[[i]]$UERE) <- CLASS
-        rownames(UERE[[i]]$DOF) <- CLASS
+        if(!EQUAL[i,j] && any(classnames(UERE[[i]]) %in% classnames(UERE[[j]])))
+        { RENAME[i] <- RENAME[j] <- TRUE }
+      }
+    }
+
+    # some devices have the same class names, but different calibration information
+    if(any(RENAME))
+    {
+      warning("Inconsistent location classes renamed.")
+      for(i in 1:length(x))
+      {
+        LEVELS <- classnames(UERE[[i]]) %in% levels(x[[i]]$class)
+        CLASS <- paste(names(x)[i],classnames(UERE[[i]]))
+        classnames(UERE[[i]]) <- CLASS
+
+        if('class' %nin% names(x[[i]])) { x[[i]]$class <- as.factor(CLASS) }
+        else { levels(x[[i]]$class) <- CLASS[LEVELS] }
       }
     }
 
@@ -93,45 +121,20 @@ tbind <- function(...)
       MUERE <- UERE[[1]]
       for(i in 2:length(UERE))
       {
-        MUERE$UERE <- rbind(MUERE$UERE,UERE[[i]]$UERE)
-        MUERE$DOF <- rbind(MUERE$DOF,UERE[[i]]$DOF)
-        MUERE$AICc <- MUERE$AICc + UERE[[i]]$AICc
-        MUERE$Zsq <- nant(MUERE$N*MUERE$Zsq,Inf) + nant(UERE[[i]]$N*UERE[[i]]$Zsq,Inf)
-        MUERE$VAR.Zsq <- nant(MUERE$N*MUERE$VAR.Zsq,Inf) + nant(UERE[[i]]$N*UERE[[i]]$VAR.Zsq,Inf)
-        MUERE$N <- MUERE$N + UERE[[i]]$N
-        MUERE$Zsq <- nant(MUERE$Zsq / MUERE$N,Inf)
-        MUERE$VAR.Zsq <- nant(MUERE$VAR.Zsq / MUERE$N,Inf)
+        if(!any(EQUAL[i,1%:%(i-1)])) # not equal to any previous UERE already included
+        {
+          MUERE$UERE <- rbind(MUERE$UERE,UERE[[i]]$UERE)
+          MUERE$DOF <- rbind(MUERE$DOF,UERE[[i]]$DOF)
+          MUERE$AICc <- MUERE$AICc + UERE[[i]]$AICc
+          MUERE$Zsq <- nant(MUERE$N*MUERE$Zsq,Inf) + nant(UERE[[i]]$N*UERE[[i]]$Zsq,Inf)
+          MUERE$VAR.Zsq <- nant(MUERE$N*MUERE$VAR.Zsq,Inf) + nant(UERE[[i]]$N*UERE[[i]]$VAR.Zsq,Inf)
+          MUERE$N <- MUERE$N + UERE[[i]]$N
+          MUERE$Zsq <- nant(MUERE$Zsq / MUERE$N,Inf)
+          MUERE$VAR.Zsq <- nant(MUERE$VAR.Zsq / MUERE$N,Inf)
+        }
       }
       UERE <- MUERE
       rm(MUERE)
-
-      # combine identical classes
-      CLASSES <- rownames(UERE)
-      CLASSES <- unique(CLASSES)
-      for(CLASS in CLASSES)
-      {
-        IN <- CLASS %in% CLASSES
-        if(length(IN)>1)
-        {
-          UERE$UERE[IN[1],] <- colMeans(UERE$UERE[IN,])
-          UERE$UERE <- UERE$UERE[-IN[-1],]
-
-          UERE$DOF[IN[1],] <- colMeans(UERE$DOF[IN,])
-          UERE$DOF <- UERE$DOF[-IN[-1],]
-
-          UERE$AICc[IN[1]] <- mean(UERE$AICc[IN])
-          UERE$AICc <- UERE$AICc[-IN[-1]]
-
-          UERE$Zsq[IN[1]] <- mean(UERE$Zsq[IN])
-          UERE$Zsq <- UERE$Zsq[-IN[-1]]
-
-          UERE$VAR.Zsq[IN[1]] <- mean(UERE$VAR.Zsq[IN])
-          UERE$VAR.Zsq <- UERE$VAR.Zsq[-IN[-1]]
-
-          UERE$N[IN[1]] <- mean(UERE$N[IN])
-          UERE$N <- UERE$N[-IN[-1]]
-        }
-      } # end class merger
     } # end UERE merger
   } # end UERE list
 
@@ -172,10 +175,6 @@ tbind <- function(...)
 
     UERE$UERE <- UERE$UERE[CLASS,,drop=FALSE]
     UERE$DOF <- UERE$DOF[CLASS,,drop=FALSE]
-    UERE$AICc <- UERE$AICc[CLASS]
-    UERE$Zsq <- UERE$Zsq[CLASS]
-    UERE$VAR.Zsq <- UERE$VAR.Zsq[CLASS]
-    UERE$N <- UERE$N[CLASS]
   }
 
   # handle missing error information
@@ -220,6 +219,13 @@ tbind <- function(...)
   y <- y[IND,]
 
   y <- new.telemetry(y,info=info,UERE=UERE)
+
+  # inconsistent projections
+  if(PROJS>1)
+  {
+    warning("Re-projecting due to inconsistent projections.")
+    projection(y) <- median(y,k=2)
+  }
 
   return(y)
 }

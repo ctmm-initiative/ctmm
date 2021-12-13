@@ -228,6 +228,10 @@ unit.telemetry <- function(data,length=1,time=1,axes=c('x','y'))
   convert <- function(NAMES,scale) { for(NAME in NAMES) { if(NAME %in% names(data)) { data[[NAME]] <<- data[[NAME]]/scale } } }
 
   convert('t',time)
+  convert('light.time',time)
+  convert('dark.time',time)
+  convert('sundial.rate',1/time)
+
   convert(DOP.LIST$horizontal$axes,length)
   convert(DOP.LIST$vertical$axes,length)
   convert(DOP.LIST$speed$axes,length/time)
@@ -261,6 +265,9 @@ unit.ctmm <- function(CTMM,length=1,time=1)
     drift <- get(CTMM$mean)
     CTMM <- drift@scale(CTMM,time)
   }
+
+  if(!is.null(CTMM$timelink.cycle))
+  { CTMM$timelink.cycle <- CTMM$timelink.cycle/time }
 
   # if(class(CTMM$error)[1]=='numeric')
   { CTMM$error <- CTMM$error/length } # don't divide logicals
