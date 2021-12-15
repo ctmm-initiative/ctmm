@@ -61,6 +61,7 @@ get.sundial <- function(object,CTMM=NULL,twilight="civil",dt.max=6 %#% 'hr')
   # convert data time into circular variable
   angle <- rep(0,n)
   day <- rep(1,n) # TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! SOMETHING CONSISTENT WITH DAWN INTERPOLATION
+  # TODO !!! track last dawn (interpolated)
   dawn <- dusk <- array(0,c(n,2)) # previous and next
   for(i in 1:n)
   {

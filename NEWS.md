@@ -1,7 +1,7 @@
-ctmm 0.6.2 (2021-12-12)
+ctmm 0.6.2 (2021-12-15)
 ================
 
-  * new function rsf.fit() to fit integrated resource selection functions (RSFs) with autocorrelation-adjusted weighted likelihood
+  * new function rsf.fit() to fit integrated resource selection functions (iRSFs) with autocorrelation-adjusted weighted likelihood
   
   * new function revisitation() to calculate the distribution of revisitations.
   
@@ -9,7 +9,7 @@ ctmm 0.6.2 (2021-12-12)
   
   * new argument SP in plot.telemetry and plot.UD() for plotting shapefile base layers
   
-  * tbind now works correctly with different projections and calibrations
+  * tbind() now works correctly with different projections and calibrations
   
   * bugfix in ctmm.loglike() when fitting multiple error classes, where some are zero
 

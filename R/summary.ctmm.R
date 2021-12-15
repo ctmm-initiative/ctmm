@@ -255,15 +255,16 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
   }
 
   # did we estimate RSF betas?
-  PARS <- rownames(object$COV)
-  PARS <- PARS[grepl("RSF",PARS)]
+  PARS <- names(object$beta)
   for(P in rev(PARS)) # stack in front
   {
     RSF <- object$beta[P]
     VAR <- diag(object$COV)[P]
+    VAR <- nant(VAR,Inf)
     RSF <- norm.ci(RSF,VAR,level=level)
 
-    name <- c(paste0("1/",substr(P,nchar("RSF #"),nchar(P))),name)
+    PU <- substr(P,nchar("RSF *"),nchar(P))
+    name <- c(paste0("1/",PU),name)
     scale <- c(1,scale)
 
     par <- rbind(RSF,par)
@@ -290,7 +291,7 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
 
   # affix DOF info
   # only valid for processes with a stationary mean
-  SUM$DOF <- c( DOF.mean(object) , DOF.area(object) , DOF.speed/2 )
+  SUM$DOF <- c( nant(DOF.mean(object),0) , DOF.area(object) , DOF.speed/2 )
   names(SUM$DOF) <- c("mean","area","speed")
 
   SUM$CI <- par

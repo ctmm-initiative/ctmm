@@ -1,5 +1,4 @@
 PRIORITY
-* ctmm.guess informative error on non-telemetry object
 * rsf.fit simulate, predict
 * timelink par upper-lower function
 * only rareify models after compatible features are selected
@@ -8,7 +7,6 @@ PRIORITY
 * timelink simulate and predict
 * export list of objects
 * BHHH approximation for first step of optimizer to initialize Hessian
-* rsf.fit record the normalization constant for future evaluation
 * plot.variogram fraction=1 for phylogenetic variograms
 * profile upper speed CI?
 * rsf.fit categorical variables
@@ -16,7 +14,6 @@ PRIORITY
 * plot of overlap, area, mean distance versus time (relative to reference)
 * update the turtle vignette example to talk about location classes
 * rsf.fit time-dependent covariate * raster interaction term - formula
-* RSF synoptic=FALSE option for models that are automatically spatially constrained
 * meta - plot distribution when data are sorted in plot
 * error - IID Gaussian mean weights
 * parameter table creation code
