@@ -1,4 +1,7 @@
 PRIORITY
+* rsf.fit variable scaling option
+* timeseries annotate tool
+* rsf.fit categorical variables
 * rsf.fit simulate, predict
 * timelink par upper-lower function
 * only rareify models after compatible features are selected

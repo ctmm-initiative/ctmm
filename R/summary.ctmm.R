@@ -263,8 +263,9 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
     VAR <- nant(VAR,Inf)
     RSF <- norm.ci(RSF,VAR,level=level)
 
-    PU <- substr(P,nchar("RSF *"),nchar(P))
-    name <- c(paste0("1/",PU),name)
+    # PU <- substr(P,nchar("RSF *"),nchar(P))
+    # name <- c(paste0("1/",PU),name)
+    name <- c(paste0("1/",P),name)
     scale <- c(1,scale)
 
     par <- rbind(RSF,par)

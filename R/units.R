@@ -180,6 +180,7 @@ unit <- function(data,dimension,thresh=1,concise=FALSE,SI=FALSE)
   }
 
   data <- data[!is.na(data)]
+  data <- data[abs(data)<Inf]
   if(length(data)) { max.data <- max(abs(data)) } else { max.data <- 1 }
 
   if(concise) { name.list <- abrv.list }

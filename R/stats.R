@@ -49,6 +49,7 @@ mint <- function(mat,ind)
 bint <- function(M,ind)
 {
   ind <- cbind(ind) # vectorize
+  # rownames(ind) <- c('x','y')
 
   # index each dimension
   INDx <- vint(M[,1],ind[1,],return.ind=TRUE)
@@ -66,14 +67,40 @@ bint <- function(M,ind)
   }
 
   M <- vapply(1:ncol(ind),BINT,0)
-  M
+  return(M)
 }
 
 
 # tri-linear interpolation
-tint <- function(X,ind)
+tint <- function(M,ind)
 {
-  # TODO
+  ind <- cbind(ind) # vectorize
+  # rownames(ind) <- c('x','y','z')
+
+  # index each dimension
+  INDx <- vint(M[,1,1],ind[1,],return.ind=TRUE)
+  INDy <- vint(M[1,,1],ind[2,],return.ind=TRUE)
+  INDz <- vint(M[1,1,],ind[3,],return.ind=TRUE)
+
+  CINT <- function(i)
+  {
+    dX <- c(INDx[2,i]-ind[1,i],ind[1,i]-INDx[1,i]) / (INDx[2,i]-INDx[1,i])
+    dX <- nant(dX,1)
+
+    dY <- c(INDy[2,i]-ind[2,i],ind[2,i]-INDy[1,i]) / (INDy[2,i]-INDy[1,i])
+    dY <- nant(dY,1)
+
+    dZ <- c(INDz[2,i]-ind[3,i],ind[3,i]-INDz[1,i]) / (INDz[2,i]-INDz[1,i])
+    dZ <- nant(dZ,1)
+
+    M <- M[INDx[,i],INDy[,i],INDz[,i]] # tensor block
+    M <- dX %.% M # tensor contraction of first index
+    M <- dY %*% M %*% dZ
+    c(M)
+  }
+
+  M <- vapply(1:ncol(ind),CINT,0)
+  return(M)
 }
 
 # confidence interval functions
