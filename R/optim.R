@@ -520,7 +520,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
   {
     if(ZERO) { R <- abs(diff(fns))<=TOL.STAGE+TOL.ZERO }
     else { R <- abs(diff(fns))/fn0<=TOL.STAGE }
-    return(!is.good(R)) # avoid 0/0 error
+    return(!length(R) || is.na(R) || R) # avoid 0/0 error
   }
 
   is.toosmallp <- function(ps,p0,tol=STEP[STAGE])
@@ -529,7 +529,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
     # relative step sizes
     dp <- sqrt(abs(c((ps[,2]-ps[,1])^2 %*% (1/SCL^2)))) # formula explained in numderiv.diff()
     R <- dp <= tol
-    return(!is.good(R)) # avoid 0/0 error
+    return(!length(R) || is.na(R) || R) # avoid 0/0 error
   }
 
   numderiv.diff <- function(p0,DIR)

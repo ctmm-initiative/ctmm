@@ -77,8 +77,7 @@ vertex <- function(UD,level.UD=0.95)
   S <- -1:1
   C <- 3*3+5 # center index of cube
 
-  # replace with utils::txtProgressBar
-#  pb <- progress::progress_bar$new(total=DIM[1]-2)
+  pb <- utils::txtProgressBar(min=1,max=DIM[1]-1,initial=1,style=3)
   for(i in 2:(DIM[1]-1))
   {
     for(j in 2:(DIM[2]-1))
@@ -159,7 +158,7 @@ vertex <- function(UD,level.UD=0.95)
         } # end vertex solver
       } # end z loop
     } # end y loop
-#    pb$tick()
+    utils::setTxtProgressBar(pb,i)
   } # end x loop
 
   colnames(VERTEX) <- c('x','y','z')
@@ -168,6 +167,7 @@ vertex <- function(UD,level.UD=0.95)
   VERTEX[,'y'] <- UD$r$y[1] + (VERTEX[,'y']-1)*UD$dr['y']
   VERTEX[,'z'] <- UD$r$z[1] + (VERTEX[,'z']-1)*UD$dr['z']
 
+  close(pb)
   return(VERTEX)
 }
 

@@ -53,6 +53,7 @@ diffusion <- function(CTMM,level=0.95,finish=TRUE)
   nu <- CTMM$f.nu[2]
   Omega2 <- CTMM$Omega2
   circle <- abs(CTMM$circle) # only magnitude matters for this
+  circle <- FALSE # turning circulation off, because it reduces diffusion rate
 
   sigma <- var.covm(CTMM$sigma,ave=TRUE) # variance
   COV <- CTMM$COV
@@ -138,7 +139,9 @@ diffusion <- function(CTMM,level=0.95,finish=TRUE)
     LAG <- MAX$par
     D <- -MAX$value
 
-
+    # UNFINISHED
+    # UNFINISHED
+    # UNFINISHED
 
     # zero circulation result
     R0 <- CTMM
@@ -152,8 +155,8 @@ diffusion <- function(CTMM,level=0.95,finish=TRUE)
   # return information for CIs but not completed CIs
   if(!finish) { return(list(D=D,D.grad=D.grad,NAMES=NAMES)) }
 
-  NAMES <- c(NAMES,"variance")
-  D.grad <- c( sigma * D.grad, D )
+  NAMES <- c("variance",NAMES)
+  D.grad <- c( D, sigma * D.grad )
   D <- sigma * D
 
   names(D.grad) <- NAMES
