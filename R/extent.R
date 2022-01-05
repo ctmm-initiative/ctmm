@@ -87,6 +87,8 @@ setMethod('extent', signature(x='matrix'), extent.matrix)
 # range of Gaussian contours
 extent.ctmm <- function(x,level=0.95,level.UD=0.95,...)
 {
+  axes <- x$axes
+
   level <- max(level)
   level.UD <- max(level.UD)
 
@@ -95,7 +97,10 @@ extent.ctmm <- function(x,level=0.95,level.UD=0.95,...)
   alpha <- 1 - level
   alpha.UD <- 1 - level.UD
   # standard Gaussian quantile stuff
-  z <- sqrt(-2*log(alpha.UD))
+  if(length(axes)==2)
+  { z <- sqrt(-2*log(alpha.UD)) }
+  else if(length(axes)==1)
+  { z <- stats::qnorm(1-alpha.UD/2) }
 
   # proportionality constants for outer CIs
   sigma <- x$sigma
@@ -111,10 +116,21 @@ extent.ctmm <- function(x,level=0.95,level.UD=0.95,...)
 
   buff <- z*sqrt(const*diag(sigma))
 
-  X <- x$mu[1] + c(-1,1)*buff[1]
-  Y <- x$mu[2] + c(-1,1)*buff[2]
+  if(length(axes)==2)
+  {
+    X <- x$mu[1] + c(-1,1)*buff[1]
+    Y <- x$mu[2] + c(-1,1)*buff[2]
 
-  RANGE <- data.frame(x=X,y=Y)
+    RANGE <- data.frame(x=X,y=Y)
+  }
+  else
+  {
+    Z <- x$mu[1] + c(-1,1)*buff
+
+    RANGE <- data.frame(Z)
+    colnames(RANGE) <- axes
+  }
+
   row.names(RANGE) <- c("min","max")
   return(RANGE)
 }

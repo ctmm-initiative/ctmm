@@ -369,7 +369,7 @@ rsf.mcint <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,le
       log.MEAN <- log(MEAN)
 
       if(debias || verbose) # numerical error variance (per w^2)
-      { VAR.log <- apply(SAMP,2,var)/dim(SAMP)[1] /MEAN^2 }
+      { VAR.log <- apply(SAMP,2,stats::var)/dim(SAMP)[1] /MEAN^2 }
       if(debias) # MEAN-log != log-MEAN bias for small N (per w)
       { log.MEAN <- log.MEAN + w/2*VAR.log } # +1/2 from Taylor series
 

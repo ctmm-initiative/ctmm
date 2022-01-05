@@ -420,7 +420,7 @@ akde <- function(data,CTMM,VMM=NULL,variable="utilization",debias=TRUE,weights=F
   weights <- array(weights,n)
 
   # loop over individuals for bandwidth optimization
-  CTMM0 <- list()
+  CTMM0 <- VMM0 <- list()
   KDE <- list()
   DEBIAS <- list()
   for(i in 1:n)
@@ -435,7 +435,8 @@ akde <- function(data,CTMM,VMM=NULL,variable="utilization",debias=TRUE,weights=F
       if(!is.null(VMM[[i]]))
       {
         axis <- VMM[[i]]$axes
-        if(VMM[[i]]$error && smooth) { z <- predict(VMM[[i]],data=data[[i]],t=data[[i]]$t)[,axis] }
+        if(VMM[[i]]$error && smooth)
+        { z <- predict(VMM[[i]],data=data[[i]],t=data[[i]]$t)[[axis]] } # [,axis] fails?
         axes <- c(axes,axis)
       }
       if(CTMM[[i]]$error && smooth)
@@ -447,6 +448,7 @@ akde <- function(data,CTMM,VMM=NULL,variable="utilization",debias=TRUE,weights=F
       if(!is.null(VMM[[i]]))
       {
         data[[i]][,axis] <- z
+        VMM0[[i]] <- VMM[[i]] # original model fit
         VMM[[i]]$error <- FALSE # smoothed error model (approximate)
       }
 
@@ -461,7 +463,10 @@ akde <- function(data,CTMM,VMM=NULL,variable="utilization",debias=TRUE,weights=F
     else
     { stop(paste("CTMM argument is of class",class(CTMM)[1])) }
 
-    DEBIAS[[i]] <- ifelse(debias,KDE[[i]]$bias,FALSE)
+    if(debias)
+    { DEBIAS[[i]] <- KDE[[i]]$bias }
+    else
+    { DEBIAS[[i]] <- FALSE }
   } # end loop over individuals
 
   COL <- length(axes)
@@ -480,7 +485,11 @@ akde <- function(data,CTMM,VMM=NULL,variable="utilization",debias=TRUE,weights=F
   # loop over individuals
   for(i in 1:n)
   {
-    EXT <- extent(CTMM[[i]],level=1-error)[,axes] # Gaussian extent (includes uncertainty)
+    if(is.null(VMM))
+    { EXT <- CTMM[[i]] }
+    else
+    { EXT <- list(horizontal=CTMM[[i]],vertical=VMM[[i]]) }
+    EXT <- extent(EXT,level=1-error)[,axes] # Gaussian extent (includes uncertainty)
     GRID <- kde.grid(data[[i]],H=KDE[[i]]$H,axes=axes,alpha=error,res=res,dr=dr,grid=grid,EXT.min=EXT) # individual grid
 
     KDE[[i]] <- c(KDE[[i]],kde(data[[i]],KDE[[i]]$H,axes=axes,bias=DEBIAS[[i]],W=KDE[[i]]$weights,alpha=error,dr=dr,grid=GRID))
@@ -488,6 +497,7 @@ akde <- function(data,CTMM,VMM=NULL,variable="utilization",debias=TRUE,weights=F
     KDE[[i]] <- new.UD(KDE[[i]],info=attr(data[[i]],"info"),type='range',variable="utilization",CTMM=ctmm())
     # in case bandwidth is pre-calculated...
     if(class(CTMM0[[i]])[1]=="ctmm") { attr(KDE[[i]],"CTMM") <- CTMM0[[i]] }
+    if(!is.null(VMM)) { KDE[[i]]$VMM <- VMM0[[i]] }
   }
 
   names(KDE) <- names(data)
@@ -1004,9 +1014,9 @@ CI.UD <- function(object,level.UD=0.95,level=0.95,P=FALSE)
   P <- round(area / dV)
 
   # fix lower bound
-  P[1] <- max(1,P[1])
+  P <- pmax(P,1)
   # fix upper bound to not overflow
-  P[3] <- min(length(object$CDF),P[3])
+  P <- pmin(P,length(object$CDF))
   if(P[3]==length(object$CDF)) { warning("Outer contour extends beyond raster.") }
 
   P <- sort(object$CDF,method="quick")[P]

@@ -518,8 +518,9 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
 
   is.toosmallf <- function(fns,fn0)
   {
-    if(ZERO) { abs(diff(fns))<=TOL.STAGE+TOL.ZERO }
-    else { abs(diff(fns))/fn0<=TOL.STAGE }
+    if(ZERO) { R <- abs(diff(fns))<=TOL.STAGE+TOL.ZERO }
+    else { R <- abs(diff(fns))/fn0<=TOL.STAGE }
+    return(!is.good(R)) # avoid 0/0 error
   }
 
   is.toosmallp <- function(ps,p0,tol=STEP[STAGE])
@@ -527,7 +528,8 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
     SCL <- pmax(abs(p0),1)
     # relative step sizes
     dp <- sqrt(abs(c((ps[,2]-ps[,1])^2 %*% (1/SCL^2)))) # formula explained in numderiv.diff()
-    return(dp <= tol)
+    R <- dp <= tol
+    return(!is.good(R)) # avoid 0/0 error
   }
 
   numderiv.diff <- function(p0,DIR)
@@ -944,6 +946,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
       # evaluate objective function at new P and store to fn.queue
       fn.queue <- unlist(plapply(split(P,col(P)),func,cores=cores))
       PROGRESS <- any(fn.queue<fn.par) # did this iteration improve things?
+      PROGRESS <- is.good(PROGRESS) # possible 0/0 error somewhere
 
       # combine with older results
       par.all <- cbind(par.all,P)

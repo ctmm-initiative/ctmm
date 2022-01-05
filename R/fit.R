@@ -413,7 +413,25 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
     # revert to ML/HREML if pREML step failed
     if(method %in% c("pREML","pHREML") && PREML.FAIL)
     {
-      warning("pREML failure: indefinite ML Hessian or divergent REML gradient.")
+      # shouldn't need to warn if using ctmm.select
+      WARN <- TRUE
+      N <- sys.nframe()
+      if(N>=2)
+      {
+        for(i in 2:N)
+        {
+          CALL <- deparse(sys.call(-i))[1]
+          CALL <- grepl("ctmm.select",CALL) || grepl("cv.like",CALL) || grepl("ctmm.boot",CALL)
+          if(CALL)
+          {
+            WARN <- FALSE
+            break
+          }
+        }
+      }
+      # warn if weren't using ctmm.select
+      if(WARN) { warning("pREML failure: indefinite ML Hessian or divergent REML gradient.") }
+
       if(method=='pREML') { method <- 'ML' }
       else if(method=='pHREML') { method <- 'HREML' }
     }

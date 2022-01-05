@@ -7,8 +7,8 @@ match.arg <- function(arg,choices,...)
 
 
 # does this thing exist and, if so, is it true
-true <- function(x) { !is.null(x) & !is.na(x) & x }
-
+is.good <- function(x) { !is.null(x) & !is.na(x) & x }
+is.bad <- function(x) { is.null(x) | is.na(x) | !x }
 
 # not in #
 "%nin%" <- function(x, table) { match(x, table, nomatch = 0) == 0 }
@@ -171,7 +171,7 @@ cov.loglike <- function(hess,grad=rep(0,sqrt(length(hess))),tol=.Machine$double.
       for(i in 2:N)
       {
         CALL <- deparse(sys.call(-i))[1]
-        CALL <- grepl("ctmm.select",CALL) || grepl("cv.like",CALL)
+        CALL <- grepl("ctmm.select",CALL) || grepl("cv.like",CALL) || grepl("ctmm.boot",CALL)
         if(CALL)
         {
           WARN <- FALSE

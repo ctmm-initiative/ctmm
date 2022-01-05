@@ -609,6 +609,7 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,VMM=NULL,t=NULL,dt=N
       {
         z <- get.telemetry(data)
         v <- NULL
+        Green <- Sigma <- mu <- Lambda <- K <- circle <- R <- NULL # make sure get() doesn't fail
       }
       else # have model
       {
@@ -708,6 +709,8 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,VMM=NULL,t=NULL,dt=N
         colnames(v) <- paste0("v",axes)
       }
     } # end if(!is.null(object))
+    else # no process variance
+    { z <- (object$mean.vec %*% mu) }
 
     # throw in error
     if(any(object$error>0))

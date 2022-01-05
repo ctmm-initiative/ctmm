@@ -175,7 +175,8 @@ kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=NULL,dr=NULL,EXT=NUL
   H <- prepare.H(H,n=length(data$t),axes=axes) # (times,dim,dim)
 
   # how far to extend range from data as to ensure alpha significance in total probability
-  z <- sqrt(-2*log(alpha))
+  z <- qmvnorm(1-alpha,length(axes))
+
   dH <- z * apply(H,1,function(h){sqrt(diag(h))}) # (dim,times)
   dH <- t(dH) # (times,dim)
 

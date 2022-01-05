@@ -569,3 +569,38 @@ loglike.chisq <- function(sigma,dof,constant=FALSE)
   if(constant) { R <- R + df2*log(df2) - lgamma(df2) }
   return(R)
 }
+
+
+qmvnorm <- function(p,dim=1,tol=1/2)
+{
+  tol <- .Machine$double.eps^tol
+  alpha <- 1-p
+
+  if(dim==1)
+  { z <- stats::qnorm(1-alpha/2) }
+  else if(dim==2)
+  { z <- sqrt(-2*log(alpha)) }
+  else
+  {
+    if(dim==3)
+    {
+      # distribution function
+      p.fn <- function(z) { stats::pchisq(z^2,df=1) - sqrt(2/pi)*z*exp(-z^2/2) }
+      # density function (derivative)
+      dp.fn <- function(z) { sqrt(2/pi)*z^2*exp(-z^2/2) }
+      # initial guess # dimensional extrapolation
+      z <- 2*qmvnorm(p,2) - qmvnorm(p,1)
+    }
+
+    ERROR <- Inf
+    while(ERROR>tol)
+    {
+      # p == p.fn(z) + dp.fn(z)*dz + O(dz^2)
+      dz <- (p-p.fn(z))/dp.fn(z)
+      z <- z + dz
+      ERROR <- abs(dz)
+    }
+  }
+
+  return(z)
+}

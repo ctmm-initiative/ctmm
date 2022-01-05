@@ -160,6 +160,14 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,#R=NULL,
   if(class(CTMM[[1]])=="UD") { UD <- CTMM; CTMM <- NULL }
   if(class(CTMM[[1]])=="RS") { R <- CTMM; CTMM <- NULL }
 
+  # catch 3D UDs
+  if(length(dim(UD[[1]]$CDF))==3)
+  { return(plot3d(data=x,UD=UD,level=level,level.UD=level.UD,xlim=xlim,ylim=ylim,ext=ext,
+                  cex=cex,col=col,lwd=lwd,pch=pch,type=type,error=error,transparency.error=transparency.error,velocity=velocity,
+                  DF=DF,col.DF=col.DF,col.grid=col.grid,labels=labels,col.level=col.level,lwd.level=lwd.level,
+                  SP=SP,border.SP=border.SP,col.SP=col.SP,
+                  fraction=fraction,units=units,add=add,...)) }
+
   # median time step of data
   dt <- lapply(x,function(X){diff(X$t)})
   dt <- stats::median(unlist(dt))
@@ -445,6 +453,13 @@ plot.UD <- function(x,DF="CDF",col.DF="blue",col.grid="white",labels=NULL,level=
 {
   x <- listify(x)
 
+  # catch 3D UDs
+  if(length(dim(x[[1]]$CDF))==3)
+  { return(plot3d(UD=x,level=level,level.UD=level.UD,xlim=xlim,ylim=ylim,ext=ext,
+                  DF=DF,col.DF=col.DF,col.grid=col.grid,labels=labels,col.level=col.level,lwd.level=lwd.level,
+                  SP=SP,border.SP=border.SP,col.SP=col.SP,
+                  fraction=fraction,units=units,add=add,...)) }
+
   if(class(x[[1]])[1]=="RS") { DF <- 'RS' }
 
   dist <- new.plot(UD=x,units=units,fraction=fraction,xlim=xlim,ylim=ylim,ext=ext,level.UD=level.UD,level=level,add=add,...)
@@ -509,32 +524,35 @@ plot.UD <- function(x,DF="CDF",col.DF="blue",col.grid="white",labels=NULL,level=
 
       # extent of data
       B <- (x[[i]]$PDF > 0)
-      u <- u[B]
-      v <- v[B]
+      if(any(B))
+      {
+        u <- u[B]
+        v <- v[B]
 
-      ex.u <- range(u)
-      ex.v <- range(v)
+        ex.u <- range(u)
+        ex.v <- range(v)
 
-      mu.u <- mean(ex.u)
-      mu.v <- mean(ex.v)
+        mu.u <- mean(ex.u)
+        mu.v <- mean(ex.v)
 
-      # grid numbers
-      n.u <- diff(ex.u)/du
-      n.v <- diff(ex.v)/dv
+        # grid numbers
+        n.u <- diff(ex.u)/du
+        n.v <- diff(ex.v)/dv
 
-      n.u <- ceiling(n.u/2)
-      n.v <- ceiling(n.v/2)
+        n.u <- ceiling(n.u/2)
+        n.v <- ceiling(n.v/2)
 
-      # grid nodes
-      u <- mu.u + du*(-n.u):n.u
-      v <- mu.v + dv*(-n.v):n.v
+        # grid nodes
+        u <- mu.u + du*(-n.u):n.u
+        v <- mu.v + dv*(-n.v):n.v
 
-      # transform back
-      X <- outer(u*COS,-v*SIN,"+")
-      Y <- outer(u*SIN,+v*COS,"+")
+        # transform back
+        X <- outer(u*COS,-v*SIN,"+")
+        Y <- outer(u*SIN,+v*COS,"+")
 
-      for(j in 1:length(u)) { graphics::segments(x0=X[j,1],y0=Y[j,1],x1=last(X[j,]),y1=last(Y[j,]),col=col.grid[i],...) }
-      for(j in 1:length(v)) { graphics::segments(x0=X[1,j],y0=Y[1,j],x1=last(X[,j]),y1=last(Y[,j]),col=col.grid[i],...) }
+        for(j in 1:length(u)) { graphics::segments(x0=X[j,1],y0=Y[j,1],x1=last(X[j,]),y1=last(Y[j,]),col=col.grid[i],...) }
+        for(j in 1:length(v)) { graphics::segments(x0=X[1,j],y0=Y[1,j],x1=last(X[,j]),y1=last(Y[,j]),col=col.grid[i],...) }
+      }
     }
 
     # not sure why this is necessary

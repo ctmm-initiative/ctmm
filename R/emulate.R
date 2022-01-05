@@ -251,12 +251,13 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,AICc=FALSE,iterate=FALSE,robu
   ### outer loop: designing the weight matrix until estimate converges
   P0 <- P1 <- EST <- Transform(get.parameters(CTMM,NAMES)) # null model for parametric bootstrap
   #if(trace>1) { print(Transform(P0,inverse=TRUE)) }
+  PROGRESS <- TRUE
   ERROR <- Inf -> ERROR.OLD
   BEST <- list()
   tol <- error*sqrt(length(NAMES)) # eigen-value tolerance for pseudo-inverse
   MAX <- max(1/error^2,length(NAMES)+1) # maximum sample size
   if(trace) { pb <- utils::txtProgressBar(style=3) }
-  while(ERROR>error && ERROR<=ERROR.OLD)
+  while(ERROR>error && PROGRESS)
   {
     # base progress
     PG <- sqrt(error/ERROR.OLD)
@@ -312,7 +313,10 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,AICc=FALSE,iterate=FALSE,robu
     if(is.nan(ERROR)) { ERROR <- Inf }
 
     # check to make sure relative error is decreasing
-    if(ERROR<ERROR.OLD) # made progress
+    names(BIAS) <- NAMES
+    PROGRESS <- ERROR<ERROR.OLD && EST['major']>BIAS['major']
+    # also make sure variance doesn't collapse
+    if(PROGRESS) # made progress
     {
       ERROR -> ERROR.OLD
 
@@ -325,7 +329,7 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,AICc=FALSE,iterate=FALSE,robu
       if(ERROR<=error || !iterate)
       {
         ## calculate COV (somewhat robustly in untransformed basis)
-        # calculate all weighted esitmates in sample
+        # calculate all weighted estimates in sample
         SAMPLE <- SAMPLE - c(BIAS) # debiased estimates
         dim(SAMPLE) <- c(length(NAMES),N)
         rownames(SAMPLE) <- NAMES
@@ -340,6 +344,9 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,AICc=FALSE,iterate=FALSE,robu
     }
     else # back up to previous and quit
     {
+      # failed on first round
+      if(ERROR.OLD==Inf) { return(CTMM) }
+
       # go back to previous (best) result
       BEST$COV -> COV
       BEST$BIAS -> BIAS

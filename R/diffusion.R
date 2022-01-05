@@ -1,3 +1,46 @@
+# NECESSARY NOT-SO-SPECIAL FUNCTIONS
+
+# the z->1 limit is numerically unstable
+Diff.OUF.fn <- function(z,deriv=0)
+{
+  w <- 1-z
+  if(w > 0.004)
+  {
+    if(deriv==0)
+    { z <- z^(z/w) }
+    else if(deriv==1)
+    { z <- Diff.OUF.fn(z) * ( w + log(z) )/w^2 }
+  }
+  else
+  {
+    if(deriv==0)
+    { z <- exp(-1) * series(w,c(1,1/2,7/24,3/16,743/5760,215/2304)) }
+    else if(deriv==1)
+    { z <- -Diff.OUF.fn(z) * series(w,1/2:10) }
+  }
+  return(z)
+}
+
+# NaN at 0
+Diff.OUO.fn <- function(x,deriv=0)
+{
+  if(deriv==0)
+  { x <- sqrt(1+x^2) * exp(-ifelse(x==0,1,atan(x)/x)) }
+  else if(deriv==1)
+  {
+    if(x>0.1)
+    { x <- Diff.OUO.fn(x)/x^2 * ( x - 2*x/(1+x^2) + atan(x) ) }
+    else
+    {
+      n <- 10
+      coef <- seq(5,by=4,length.out=n)/seq(3,by=2,length.out=n) * (-1)^(1+1:n)
+      x <- Diff.OUO.fn(x) * x*series(x^2,coef)
+    }
+  }
+  return(x)
+}
+
+
 # calculate the max_lag diffusion rate for a movement model
 diffusion <- function(CTMM,level=0.95,finish=TRUE)
 {
@@ -16,6 +59,8 @@ diffusion <- function(CTMM,level=0.95,finish=TRUE)
   if(!is.null(COV)) { COV <- axes2var(CTMM,MEAN=TRUE) }
 
   NAMES <- CTMM$tau.names
+  if(circle) { NAMES <- c(NAMES,"circle") }
+
   if(!length(tau)) # IID
   { return( c(0,Inf,Inf) ) }
   else if(!range) # Brownian motion # IOU # max diffusion rate at infinite lag
@@ -33,23 +78,26 @@ diffusion <- function(CTMM,level=0.95,finish=TRUE)
     }
     else # circulation enhanced max diffusion rate
     {
-      D1 <- circle*tau
-      D <- atan((D1^2-1)/(2*D1))/circle
-      D.grad <- 2/(1+D1^2)/circle * c(circle,tau) - c(0,D/circle)
-      NAMES <- c(NAMES,"circle")
+      z <- circle*tau
+      z.grad <- c(circle,tau)
+      # D <- atan((z^2-1)/(2*z))/circle
+      D <- (2*atan(z)-pi/2)/circle
+      D.grad <- 2/(1+z^2)/circle * z.grad - c(0,D/circle)
     }
   }
   else if(length(tau)==2 && !omega && tau[1]!=tau[2] && !circle) # OUF
   {
-    D1 <- tau[2]/tau[1]
-    D <- D1^(D1/(1-D1)) / tau[1]
-    D.grad <- D * (1/(1-D1) + log(D1)/(1-D1)^2 ) * c(-D1/tau[1],1/tau[1]) - c(D/tau[1],0)
+    z <- tau[2]/tau[1]
+    z.grad <- c(-1,1)*z/tau
+    D <- Diff.OUF.fn(z) / tau[1]
+    D.grad <- Diff.OUF.fn(z,deriv=1)/tau[1]*z.grad - c(D/tau[1],0)
   }
   else if(length(tau)==2 && omega && tau[1]==tau[2] && !circle) # OUO
   {
-    D1 <- tau[1]*omega
-    D <- sqrt(1+D1)*exp(-atan(D1)/D1) / tau[1]
-    D.grad <- D * ( (D1^1-1)/(D1^1+1)/D1 + atan(D1)/D1^2 ) * c(omega,tau[1]) - c(D/tau[1],0)
+    z <- tau[1]*omega
+    z.grad <- c(omega,tau[1])
+    D <- Diff.OUO.fn(z) / tau[1]
+    D.grad <- Diff.OUO.fn(z,deriv=1) * z.grad - c(D/tau[1],0)
   }
   else if(length(tau)==2 && !omega && tau[1]==tau[2] && !circle) # OUf
   {
@@ -58,38 +106,39 @@ diffusion <- function(CTMM,level=0.95,finish=TRUE)
   }
   else if(circle) # OUF, OUO, OUf with circulation can't be solved analytically
   {
-    NAMES <- c(NAMES,"circle")
-
     if(!omega && tau[1]!=tau[2]) # OUF
     {
-      A0.fn <- function(t) { diff(exp(-t/tau)/tau)/diff(tau) }
+      S0.fn <- function(t) { -diff(exp(-t/tau)*tau)/diff(tau) }
       D0.fn <- function(t) { diff(exp(-t/tau))/diff(tau) }
+      D1.fn <- function(t) { -diff(exp(-t/tau)/tau)/diff(tau) }
       J <- diag(2)
       LAG0 <- log(tau[1]/tau[2])/(1/tau[2]-1/tau[1])
     }
     else if(!omega && tau[1]==tau[2]) # OUf
     {
-      A0.fn <- function(t) { (1+f*t) * exp(-f*t) }
-      D0.fn <- function(t) { Omega2/nu * sin(nu*t) * exp(-f*t) }
+      S0.fn <- function(t) { -(1+f*t) * exp(-f*t) }
+      D0.fn <- function(t) { f^2*t * exp(-f*t) }
+      D1.fn <- function(t) { f^2*(1-f*t) * exp(-f*t) }
       J <- CTMM$J.f.tau
       LAG0 <- tau[1]
     }
     else if(omega) # OUO
     {
-      A0.fn <- function(t) { (cos(nu*t)+f/nu*sin(nu*t)) * exp(-f*t) }
+      S0.fn <- function(t) { -(cos(nu*t)+f/nu*sin(nu*t)) * exp(-f*t) }
       D0.fn <- function(t) { Omega2/nu * sin(nu*t) * exp(-f*t) }
+      D1.fn <- function(t) { Omega2 * ( cos(nu*t) - f/nu*sin(nu*t) ) * exp(-f*t) }
       J <- CTMM$J.nu.tau
       LAG0 <- atan(nu*t)/nu
     }
 
-    # total diffusion rate function of lag
-    D.fn <- function(t) { D0.fn(t)*cos(circle*t) + A0.fn(t)*circle*sin(circle*t) }
+    # negative diffusion rate function of lag
+    nD.fn <- function(t) { -(D0.fn(t)*cos(circle*t) - S0.fn(t)*circle*sin(circle*t)) }
 
-    upper <- max(LAG0,pi/circle)
+    MAX <- optimizer(LAG0,nD.fn,lower=0)
+    LAG <- MAX$par
+    D <- -MAX$value
 
-    MAX <- stats::optimize(D.fn,lower=0,upper=upper,maximum=TRUE,tol=.Machine$double.eps^0.5)
-    LAG <- MAX$objective
-    D <- MAX$maximum
+
 
     # zero circulation result
     R0 <- CTMM

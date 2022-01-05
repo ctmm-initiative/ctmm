@@ -1,4 +1,4 @@
-ctmm 0.6.2 (2021-12-28)
+ctmm 0.6.2 (2021-01-04)
 ================
 
   * new function rsf.fit() to fit integrated resource selection functions (iRSFs) with autocorrelation-adjusted weighted likelihood
@@ -9,9 +9,13 @@ ctmm 0.6.2 (2021-12-28)
   
   * new argument SP in plot.telemetry and plot.UD() for plotting shapefile base layers
   
+  * plot() now works on 3D UDs
+  
   * tbind() now works correctly with different projections and calibrations
   
   * bugfix in ctmm.loglike() when fitting multiple error classes, where some are zero
+  
+  * bugfix in ctmm.boot() when bias estimate exceeds variance parameter
 
 ctmm 0.6.1 (2021-07-26)
 ================
