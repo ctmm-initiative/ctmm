@@ -381,6 +381,33 @@ unit.variogram <- function(SVF,time=1,area=1)
   }
 
   name <- canonical.name(name)
+  if(name=="") { return(num) }
+
+  name <- strsplit(name,'*',fixed=TRUE)[[1]]
+  if(length(name)>1)
+  {
+    if(pow==1)
+    { for(i in 1:length(name)) { num <- num %#% name[i] } }
+    else if(pow==-1)
+    { for(i in 1:length(name)) { num <- name[i] %#% num } }
+    return(num)
+  }
+
+  name <- strsplit(name,"/",fixed=TRUE)[[1]]
+  if(length(name)>1)
+  {
+    if(pow==1)
+    {
+      num <- num %#% name[1]
+      for(i in 2:length(name)) { num <- name[i] %#% num }
+    }
+    else if(pow==-1)
+    {
+      num <- name[1] %#% num
+      for(i in 2:length(name)) { num <- num %#% name[i] }
+    }
+    return(num)
+  }
 
   alias <- UNIT$alias
   scale <- UNIT$scale

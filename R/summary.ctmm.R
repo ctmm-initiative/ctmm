@@ -232,6 +232,22 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
   else
   { DOF.speed <- 0 }
 
+  # can we estimate diffusion?
+  if(length(tau) && tau[1]>0)
+  {
+    STUFF <- diffusion(object,finish=FALSE)
+    DOF.diffusion <- STUFF$DOF
+    D <- chisq.ci(STUFF$D,STUFF$VAR,level=level)
+    unit.list <- unit.par(D,"diffusion",SI=!units)
+    name <- c(name,unit.list$name)
+    scale <- c(scale,unit.list$scale)
+
+    par <- rbind(par,D)
+    rownames(par)[nrow(par)] <- "diffusion"
+  }
+  else
+  { DOF.diffusion <- 0 }
+
   # did we estimate errors?
   PARS <- rownames(object$COV)
   PARS <- PARS[grepl("error",PARS)]
@@ -292,8 +308,8 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
 
   # affix DOF info
   # only valid for processes with a stationary mean
-  SUM$DOF <- c( nant(DOF.mean(object),0) , DOF.area(object) , DOF.speed/2 )
-  names(SUM$DOF) <- c("mean","area","speed")
+  SUM$DOF <- c( nant(DOF.mean(object),0) , DOF.area(object) , DOF.diffusion/2 , DOF.speed/2 )
+  names(SUM$DOF) <- c("mean","area","diffusion","speed")
 
   SUM$CI <- par
 

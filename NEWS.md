@@ -1,4 +1,4 @@
-ctmm 0.6.2 (2021-01-04)
+ctmm 0.6.2 (2021-01-05)
 ================
 
   * new function rsf.fit() to fit integrated resource selection functions (iRSFs) with autocorrelation-adjusted weighted likelihood
@@ -7,11 +7,15 @@ ctmm 0.6.2 (2021-01-04)
   
   * new function npr() to calculate non-parametric spatial regressions
   
-  * new argument SP in plot.telemetry and plot.UD() for plotting shapefile base layers
+  * summary.ctmm() now outputs diffusion rate estimates
+  
+  * new argument SP in plot.telemetry() and plot.UD() for plotting shapefile base layers
   
   * plot() now works on 3D UDs
   
   * tbind() now works correctly with different projections and calibrations
+  
+  * %#% unit conversion operator can now interpret products and ratios
   
   * bugfix in ctmm.loglike() when fitting multiple error classes, where some are zero
   

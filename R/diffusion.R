@@ -55,9 +55,9 @@ diffusion <- function(CTMM,level=0.95,finish=TRUE)
   circle <- abs(CTMM$circle) # only magnitude matters for this
   circle <- FALSE # turning circulation off, because it reduces diffusion rate
 
-  sigma <- var.covm(CTMM$sigma,ave=TRUE) # variance
+  sigma <- var.covm(CTMM$sigma,ave=FALSE) # variance
   COV <- CTMM$COV
-  if(!is.null(COV)) { COV <- axes2var(CTMM,MEAN=TRUE) }
+  if(!is.null(COV)) { COV <- axes2var(CTMM,MEAN=FALSE) }
 
   NAMES <- CTMM$tau.names
   if(circle) { NAMES <- c(NAMES,"circle") }
@@ -98,7 +98,7 @@ diffusion <- function(CTMM,level=0.95,finish=TRUE)
     z <- tau[1]*omega
     z.grad <- c(omega,tau[1])
     D <- Diff.OUO.fn(z) / tau[1]
-    D.grad <- Diff.OUO.fn(z,deriv=1) * z.grad - c(D/tau[1],0)
+    D.grad <- Diff.OUO.fn(z,deriv=1)/tau[1]*z.grad - c(D/tau[1],0)
   }
   else if(length(tau)==2 && !omega && tau[1]==tau[2] && !circle) # OUf
   {
@@ -109,6 +109,7 @@ diffusion <- function(CTMM,level=0.95,finish=TRUE)
   {
     if(!omega && tau[1]!=tau[2]) # OUF
     {
+      NAMES <- paste("tau",NAMES)
       S0.fn <- function(t) { -diff(exp(-t/tau)*tau)/diff(tau) }
       D0.fn <- function(t) { diff(exp(-t/tau))/diff(tau) }
       D1.fn <- function(t) { -diff(exp(-t/tau)/tau)/diff(tau) }
@@ -152,9 +153,6 @@ diffusion <- function(CTMM,level=0.95,finish=TRUE)
     # very annoying to calculate this better (optimize inside gradient)
   }
 
-  # return information for CIs but not completed CIs
-  if(!finish) { return(list(D=D,D.grad=D.grad,NAMES=NAMES)) }
-
   NAMES <- c("variance",NAMES)
   D.grad <- c( D, sigma * D.grad )
   D <- sigma * D
@@ -163,8 +161,11 @@ diffusion <- function(CTMM,level=0.95,finish=TRUE)
   if(!is.null(COV)) { VAR <- c(D.grad %*% COV[NAMES,NAMES] %*% D.grad) }
   else { VAR <- Inf }
 
-  DOF <- 2*D^2/VAR / length(CTMM$axes)
-  return(list(D=D,VAR=VAR,DOF=DOF))
+  # this is for chi^2 CIs
+  DOF <- 2*D^2/VAR # / length(CTMM$axes) # /2 is for counting
+
+  # return information for CIs but not completed CIs
+  if(!finish) { return(list(D=D,grad=D.grad,VAR=VAR,DOF=DOF)) }
 
   CI <- chisq.ci(D,VAR,level=level)
   return(CI)
