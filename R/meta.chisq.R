@@ -475,17 +475,20 @@ shrink.chisq <- function(s,dof,S,DOF,...)
 }
 
 
-meta <- function(x,level=0.95,level.UD=0.95,method="MLE",IC="AICc",boot=FALSE,error=0.01,debias=TRUE,verbose=FALSE,units=TRUE,plot=TRUE,sort=FALSE,mean=TRUE,col="black",...)
+meta <- function(x,variable="area",level=0.95,level.UD=0.95,method="MLE",IC="AICc",boot=FALSE,error=0.01,debias=TRUE,verbose=FALSE,units=TRUE,plot=TRUE,sort=FALSE,mean=TRUE,col="black",...)
 {
-  method <- tolower(method)
+  method <- canonical.name(method)
   method <- match.arg(method,c("mle","blue"))
 
-  meta.area(x=x,level=level,level.UD=level.UD,IC=IC,boot=boot,error=error,debias=debias,method=method,verbose=verbose,units=units,plot=plot,sort=sort,mean=mean,col=col,...)
+  variable <- canonical.name(variable)
+  variable <- match.arg(variable,c("area","diffusion","speed","tauposition","tauvelocity"))
+
+  meta.uni(x=x,variable=variable,level=level,level.UD=level.UD,IC=IC,boot=boot,error=error,debias=debias,method=method,verbose=verbose,units=units,plot=plot,sort=sort,mean=mean,col=col,...)
 }
 
 
 ############
-import.area <- function(x,level.UD=0.95)
+import.variable <- function(x,variable="area",level.UD=0.95)
 {
   N <- length(x)
   ID <- names(x) # may be null
@@ -502,26 +505,82 @@ import.area <- function(x,level.UD=0.95)
 
     if(CLASS=="ctmm")
     {
-      AREA[i] <- area.covm(x[[i]]$sigma)
-      DOF[i] <- DOF.area(x[[i]])
+      if(variable=="area")
+      {
+        AREA[i] <- area.covm(x[[i]]$sigma)
+        DOF[i] <- DOF.area(x[[i]]) * 2 # 2D
+      }
+      else if(variable=="diffusion")
+      {
+        STUFF <- diffusion(x[[i]],finish=FALSE)
+        AREA[i] <- STUFF$D
+        DOF[i] <- STUFF$DOF
+      }
+      else if(variable=="speed")
+      {
+        STUFF <- speed(x[[i]],units=FALSE)
+        AREA[i] <- STUFF$CI[2]
+        DOF[i] <- STUFF$DOF * 2 # 2D
+      }
+      else if(variable=="tauposition")
+      {
+        E <- x[[i]]$tau[1]
+        if(is.na(E))
+        {
+          AREA[i] <- 0
+          DOF[i] <- 0
+        }
+        else
+        {
+          AREA[i] <- E
+          DOF[i] <- 2*E^2/x[[i]]$COV["tau position","tau position"]
+        }
+      }
+      else if(variable=="tauvelocity")
+      {
+        E <- x[[i]]$tau[2]
+        if(is.na(E))
+        {
+          AREA[i] <- 0
+          DOF[i] <- 0
+        }
+        else
+        {
+          AREA[i] <- E
+          DOF[i] <- 2*E^2/x[[i]]$COV["tau velocity","tau velocity"]
+        }
+      }
     }
-    else # UD or summary(UD)
+    else # UD or summary(UD) or speed()
     {
-      if(CLASS=="UD") { x[[i]] <- summary(x[[i]],level.UD=level.UD,units=FALSE) }
-      # now summary(UD) list
-      DOF[i] <- x[[i]]$DOF['area']
-      # convert to SI units
-      UNITS <- rownames(x[[i]]$CI) # "area (units)"
-      UNITS <- substr(UNITS,nchar("area (")+1,nchar(UNITS)-1)
-      AREA[i] <- x[[i]]$CI[2] %#% UNITS
+      if(variable=="area")
+      {
+        if(CLASS=="UD") { x[[i]] <- summary(x[[i]],level.UD=level.UD,units=FALSE) }
+        # now summary(UD) list
+        DOF[i] <- x[[i]]$DOF['area'] * 2 # 2D
+        # convert to SI units
+        UNITS <- rownames(x[[i]]$CI) # "area (units)"
+        UNITS <- substr(UNITS,nchar("area (")+1,nchar(UNITS)-1)
+        AREA[i] <- x[[i]]$CI[2] %#% UNITS
+      }
+      else if(variable=="speed")
+      {
+        DOF[i] <- x[[i]]$DOF * 2 # 2D
+        UNITS <- rownames(x[[i]]$CI) # "speed (units)"
+        UNITS <- substr(UNITS,nchar("speed (")+1,nchar(UNITS)-1)
+        AREA[i] <- x[[i]]$CI[2] %#% UNITS
+      }
     }
   }
 
-  # 2-dimensions
-  DOF <- 2*DOF
-
   # level.UD coverage (e.g., 95% home ranges rather than straight variance)
-  if(CLASS=="ctmm") { AREA <- -2*log(1-level.UD)*pi * AREA }
+  if(variable=="area" && CLASS=="ctmm")
+  { AREA <- -2*log(1-level.UD)*pi * AREA }
+  else if(variable=="speed") # chi DOF changes when chi is approximated as chi^2
+  {
+    VAR <- chi.var(DOF) # modulo E[X]^2
+    DOF <- 2/VAR
+  }
 
   R <- list(ID=ID,AREA=AREA,DOF=DOF)
   return(R)
@@ -530,12 +589,12 @@ import.area <- function(x,level.UD=0.95)
 
 # wrapper: meta-analysis of CTMM areas
 # TODO range=FALSE ???
-meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC="AICc",boot=FALSE,error=0.01,debias=TRUE,verbose=FALSE,units=TRUE,plot=TRUE,sort=FALSE,mean=TRUE,col="black",...)
+meta.uni <- function(x,variable="area",level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC="AICc",boot=FALSE,error=0.01,debias=TRUE,verbose=FALSE,units=TRUE,plot=TRUE,sort=FALSE,mean=TRUE,col="black",...)
 {
   N <- length(x)
 
   # N group comparisons (list of lists that are not summaries)
-  SUBPOP <- class(x)=='list' && class(x[[1]])=='list' && !( length(names(x[[1]]))==2 && all(names(x[[1]])==c('DOF','CI')) )
+  SUBPOP <- class(x)[1]=='list' && class(x[[1]])[1]=='list' && !( length(names(x[[1]]))==2 && all(names(x[[1]])==c('DOF','CI')) )
   if(SUBPOP)
   {
     ID <- names(x)
@@ -545,7 +604,7 @@ meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC=
     RESULTS <- AREA <- DOF <- list()
     for(i in 1:N)
     {
-      STUFF <- import.area(x[[i]],level.UD=level.UD)
+      STUFF <- import.variable(x[[i]],variable,level.UD=level.UD)
       AREA[[i]] <- STUFF$AREA
       DOF[[i]] <- STUFF$DOF
 
@@ -571,7 +630,13 @@ meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC=
   }
   else
   {
-    STUFF <- import.area(x,level.UD=level.UD)
+    # fix variable argument if necessary
+    if(class(x[[1]])[1] %in% c("UD","area"))
+    { variable <- "area" }
+    else if(class(x[[1]])[1]=="speed")
+    { variable <- "speed" }
+
+    STUFF <- import.variable(x,variable=variable,level.UD=level.UD)
     AREA <- STUFF$AREA
     DOF <- STUFF$DOF
     ID <- STUFF$ID
@@ -588,6 +653,22 @@ meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC=
     PLOT[,N+1] <- CI[1,1:3] # overwrite chi^2 CI with better
   }
 
+  if(variable=="tauposition")
+  {
+    VAR.UNITS <- "time"
+    VAR.NAME <- "Position timescale"
+  }
+  else if(variable=="tauvelocity")
+  {
+    VAR.UNITS <- "time"
+    VAR.NAME <- "Velocity timescale"
+  }
+  else
+  {
+    VAR.UNITS <- variable
+    VAR.NAME <- capitalize(variable)
+  }
+
   if(plot)
   {
     PLOT <- PLOT[,1:(N+mean)] # drop mean if FALSE
@@ -597,10 +678,11 @@ meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC=
     col <- array(col,N+mean)
     if(M<N+1 && mean) { col[N+1] <- "black" } # default if mean not specified
 
-    UNITS <- unit(PLOT,"area",SI=!units)
+    UNITS <- unit(PLOT[,N+1],VAR.UNITS,SI=!units)
     PLOT <- PLOT/UNITS$scale
 
-    xlab <- paste0(100*level.UD,"% Area (",UNITS$name,")")
+    xlab <- paste0(VAR.NAME," (",UNITS$name,")")
+    if(variable=="area") { xlab <- paste0(100*level.UD,"% ",xlab) }
     # base layer plot
     plot(range(PLOT),c(1,N+mean),col=grDevices::rgb(1,1,1,0),xlab=xlab,ylab=NA,yaxt="n",...)
 
@@ -665,7 +747,7 @@ meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC=
     if(verbose)
     {
       UNITS <- sapply(RESULTS,function(R){R$CI[1,]})
-      UNITS <- unit(UNITS,"area",SI=!units,concise=TRUE)
+      UNITS <- unit(UNITS,variable,SI=!units,concise=TRUE)
 
       for(i in 1:N)
       {
@@ -684,7 +766,7 @@ meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC=
   {
     CI <- CI[c(1,3,4),] # mean and CoV^2
 
-    UNITS <- unit(CI[1,],"area",SI=!units,concise=TRUE)
+    UNITS <- unit(CI[1,],VAR.UNITS,SI=!units,concise=TRUE)
     CI[1,] <- CI[1,]/UNITS$scale
 
     rownames(CI)[1] <- paste0(rownames(CI)[1]," (",UNITS$name,")")
@@ -693,31 +775,4 @@ meta.area <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,method="MLE",IC=
   }
 
   return(CI)
-}
-
-
-# wrapper: meta-analysis of CTMM speeds
-meta.speed <- function(x,level=0.95,level.UD=0.95,level.pop=0.95,units=TRUE,...)
-{
-  N <- length(x)
-
-  MSS <- DOF <- array(0,N)
-  for(i in 1:N)
-  {
-    MSS[i] <- speed(x[[i]],prior=FALSE,units=FALSE)[2]^2 # mean square speed ~ chi^2
-    DOF[i] <- DOF.speed(x[[i]])
-  }
-
-  # TODO substitute infinite speed (zero DOF) with 1s so to not produce NaNs
-  #
-  #
-
-  CI <- meta.chisq(MSS,DOF,level=level,level.pop=level.pop,...)
-  CI[,1:3] <- sqrt(CI[,1:3]) # root mean square speed
-
-  UNITS <- unit(CI[,1:3],"speed",SI=!units)
-  CI[,1:3] <- CI[,1:3]/UNITS$scale
-  rownames(CI) <- paste0(rownames(CI)," speed (",UNITS$name,")")
-
-  return(CI[3:1,])
 }

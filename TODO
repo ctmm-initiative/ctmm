@@ -1,5 +1,4 @@
 PRIORITY
-* 3d vertex code - switch to linear interpolation
 * timelink upgrade to use periodic splinefun with deriv argument
 * rsf.fit variable scaling option
 * timeseries annotate tool

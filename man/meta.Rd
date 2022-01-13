@@ -3,19 +3,21 @@
 \encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Meta-analysis of movement-model parameters}
-\description{These functions estimate population-level parameters from individual movement models and related estimates, including AKDE home-range areas, while taking into account estimation uncertainty.
+\description{These functions estimate population-level mean parameters from individual movement models and related estimates, including AKDE home-range areas, while taking into account estimation uncertainty.
 }
 \usage{
-meta(x,level=0.95,level.UD=0.95,method="MLE",IC="AICc",boot=FALSE,error=0.01,debias=TRUE,
-     verbose=FALSE,units=TRUE,plot=TRUE,sort=FALSE,mean=TRUE,col="black",...)
+meta(x,variable="area",level=0.95,level.UD=0.95,method="MLE",IC="AICc",boot=FALSE,
+     error=0.01,debias=TRUE,verbose=FALSE,units=TRUE,plot=TRUE,sort=FALSE,mean=TRUE,
+     col="black",...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{A list of \code{ctmm} movement-model objects, \code{UD} objects, or \code{UD} \code{summary} output, constituting a sampled population, or a list of such lists, each constituting a sampled sub-population.}
+  \item{variable}{Variable of interest. Can be \code{"area"}, \code{"diffusion"}, \code{"speed"}, \code{"tau position"}, or \code{"tau velocity"}.}
   \item{level}{Confidence level for parameter estimates.}
   \item{level.UD}{Coverage level for home-range estimates. E.g., 50\% core home range.}
 %  \item{level.pop}{Coverage level for the population of individuals.}
-  \item{method}{Statistical estimator used---either maximum likelihood estimation based (\code{"MLE"}) or approximate `best linear unbiased estimator' (\code{"BLUE"}).}
+  \item{method}{Statistical estimator used---either maximum likelihood estimation based (\code{"MLE"}) or approximate `best linear unbiased estimator' (\code{"BLUE"})---for comparison purposes.}
   \item{IC}{Information criterion to determine whether or not population variation can be estimated. Can be \code{"AICc"}, \code{AIC}, or \code{"BIC"}.}
   \item{boot}{Perform a parametric bootstrap for confidence intervals and first-order bias correction if \code{debias=TRUE}.}
   \item{error}{Relative error tolerance for parametric bootstrap.}
@@ -30,9 +32,10 @@ meta(x,level=0.95,level.UD=0.95,method="MLE",IC="AICc",boot=FALSE,error=0.01,deb
 }
 
 \details{
-So-far only the meta-analysis of home-range areas is implemented. More details will be provided in an upcomming manuscript.
-
-For both estimator \code{methods}, the same underlying model is assumed.
+\code{meta} employs a custom \eqn{\chi^2-IG} hierarchical model to calculate relatively unbiased population mean estimates of positive scale parameters,
+including home-range areas, diffusion rates, mean speeds, and autocorrelation timescales.
+Population coefficient of variation (CoV) estimates are also provided.
+More details will be provided in an upcomming manuscript.
 }
 
 \value{If \code{x} constitutes a sampled population, then \code{meta} returns a table with rows corresponding to the population mean and coefficient of variation.
@@ -45,7 +48,9 @@ If \code{x} constitutes a list of sampled sub-populations, then \code{meta} retu
 
 \author{ C. H. Fleming. }
 
-\note{The AICc formula is approximated via the Gaussian relation.}
+\note{The AICc formula is approximated via the Gaussian relation.
+
+Confidence intervals depicted in the forest plot are \eqn{\chi^2} and may differ from the output of \code{summary()} in the case of mean speed and timescale parameters.}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
@@ -74,7 +79,7 @@ COL <- color(AKDES,by='individual')
 # plot AKDEs
 plot(AKDES,col.DF=COL,col.level=COL,col.grid=NA,level=NA)
 
-# meta-analysis of buffalo
+# meta-analysis of buffalo home-range areas
 meta(AKDES,col=c(COL,'black'),sort=TRUE)
 }}
 

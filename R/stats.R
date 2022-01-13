@@ -396,6 +396,23 @@ chi.dof <- function(M1,M2,precision=1/2)
   return(DOF)
 }
 
+# variance of chi variable, given dof
+chi.var <- function(DOF,M1=1)
+{
+  R <- 2*pi/DOF/beta(DOF/2,1/2)^2
+  VAR <- (1/R-1)*M1^2
+  return(VAR)
+}
+
+# relative bias in chi estimate, given unbiased chi^2 estimate
+# 1 is no bias
+chi.bias <- function(DOF)
+{
+  BIAS <- sqrt(2/DOF)*exp(lgamma((DOF+1)/2)-lgamma(DOF/2))
+  ifelse(DOF==0,0,BIAS)
+  ifelse(DOF==Inf,1,BIAS)
+  return(BIAS)
+}
 
 # (scaled) chi^2 degrees-of-freedom from median and interquartile range
 chisq.dof <- function(MED,IQR,alpha=0.25)

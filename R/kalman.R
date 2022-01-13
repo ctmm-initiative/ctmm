@@ -181,7 +181,7 @@ langevin <- function(dt,CTMM,DIM=1)
 # fixes a priori known limits
 nant <- function(x,to)
 {
-  NAN <- is.nan(x)
+  NAN <- is.na(x) # TRUE for NaN and NA
   if(any(NAN)) { x[NAN] <- to }
   return(x)
 }

@@ -272,7 +272,7 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,precisi
     #!! could do an IID evaluation here for minimum h !!#
     #!! could do an n=1 evaluation here for maximum h !!#
 
-    h <- 4/5/n^(1/7) # User Silverman's rule of thumb as initial guess
+    h <- 4/5/n^(1/7) # Use Silverman's rule of thumb as initial guess
     MISE <- optimizer(c(h,h),MISE,lower=c(0,0),control=list(precision=precision))
     h <- MISE$par
     MISE <- MISE$value
@@ -1056,6 +1056,7 @@ summary.UD <- function(object,level=0.95,level.UD=0.95,units=TRUE,...)
   names(SUM$DOF) <- c("area","bandwidth")
 
   SUM$CI <- area
+  class(SUM) <- "area"
 
   return(SUM)
 }

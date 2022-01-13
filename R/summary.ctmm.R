@@ -87,10 +87,14 @@ ci.tau <- function(tau,COV,alpha=0.05,min=0,max=Inf)
   if(is.nan(COV)) { COV <- Inf }
 
   # tau normal for lower CI
-  CI <- tau + c(1,-1)*z*sqrt(COV)
-
+  # CI <- tau + c(1,-1)*z*sqrt(COV)
   # lower CI of f==1/tau normal for upper CI of tau
-  CI <- c(CI, (1/tau + c(1,-1)*z*sqrt(COV/tau^4))^-1)
+  # CI <- c(CI, (1/tau + c(1,-1)*z*sqrt(COV/tau^4))^-1)
+
+  # tau chi^2 for lower CI
+  CI <- chisq.ci(tau,VAR=COV,alpha=alpha)
+  # tau chi^2 for upper CI
+  CI <- c(CI,1/chisq.ci(1/tau,VAR=COV/tau^4,alpha=alpha))
 
   # take most conservative estimates
   CI <- sort(range(CI,na.rm=TRUE))
@@ -222,6 +226,7 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
     # root mean square velocity
     # pretty units
     rms <- sqrt(chisq.ci(ms,VAR=var.ms,alpha=alpha))
+    rms <- rms / chi.bias(DOF.speed) # if chi^2 estimate was unbiased, then chi estimate is now unbiased too
     unit.list <- unit.par(rms,"speed",SI=!units)
     name <- c(name,unit.list$name)
     scale <- c(scale,unit.list$scale)

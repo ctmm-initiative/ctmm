@@ -8,7 +8,9 @@ speed.ctmm <- function(object,data=NULL,t=NULL,level=0.95,robust=FALSE,units=TRU
   names(INF) <- NAMES.CI
   INF <- rbind(INF)
   rownames(INF) <- "speed (meters/second)"
-  #attr(CI,"DOF") <- 0
+  INF <- list(DOF=0,CI=INF)
+  names(INF$DOF) <- "speed"
+  class(INF) <- "speed"
 
   if(length(object$tau)<2 || object$tau[2]<=.Machine$double.eps)
   {
@@ -34,7 +36,11 @@ speed.ctmm <- function(object,data=NULL,t=NULL,level=0.95,robust=FALSE,units=TRU
   if(!robust && is.null(data) && object$mean=="stationary" && (!prior || fast))
   {
     if(object$isotropic) # chi_2 : circular velocity distribution
-    { CI <- summary(object,level=level,units=FALSE)$CI['speed (meters/second)',] * sqrt(pi/2/2) }
+    {
+      CI <- summary(object,level=level,units=FALSE)
+      DOF <- CI$DOF['speed']
+      CI <- CI$CI['speed (meters/second)',] * sqrt(pi/2/2)
+    }
     else # elliptical velocity distribution
     {
       # propagate error uncertainty
@@ -67,7 +73,8 @@ speed.ctmm <- function(object,data=NULL,t=NULL,level=0.95,robust=FALSE,units=TRU
         M2 <- VAR + MEAN^2
         DOF <- chi.dof(MEAN,M2) # chi DOF
         CI <- sqrt(chisq.ci(M2,DOF=DOF,alpha=1-level)) # chi=sqrt(chi^2) CI
-        CI[2] <- MEAN
+        CI <- CI / chi.bias(DOF)
+        CI[2] <- MEAN # shouldn't be necessary?
       }
       else # ! prior
       {
@@ -79,6 +86,9 @@ speed.ctmm <- function(object,data=NULL,t=NULL,level=0.95,robust=FALSE,units=TRU
   }
   else # simulation based evaluation
   {
+    # pilot estimate of DOF
+    DOF <- 2*speed(object)$DOF
+
     # time range to consider
     if(is.null(t)) { t <- data$t }
     t <- t[c(1,length(t))]
@@ -87,7 +97,7 @@ speed.ctmm <- function(object,data=NULL,t=NULL,level=0.95,robust=FALSE,units=TRU
 
     # random speed calculation
     DT <- diff(data$t)
-    spd.fn <- function(i=0) { speed.rand(object,data=data,prior=prior,fast=fast,cor.min=cor.min,dt.max=dt.max,error=error,precompute=precompute,DT=DT,TP=t,...) }
+    spd.fn <- function(i=0) { speed.rand(object,data=data,prior=prior,fast=fast,cor.min=cor.min,dt.max=dt.max,error=error,precompute=precompute,DT=DT,TP=t,DOF=DOF,...) }
 
     # setup precompute stuff
     if(prior==FALSE)
@@ -180,22 +190,29 @@ speed.ctmm <- function(object,data=NULL,t=NULL,level=0.95,robust=FALSE,units=TRU
       alpha <- (1-level)/2
       CI <- stats::quantile(SPEEDS,c(alpha,0.5,1-alpha))
       names(CI) <- NAMES.CI
+
+      M1 <- AVE
+      M2 <- ((Q2-Q1)/2)^2 + M1^2
+      DOF <- chi.dof(M1,M2)
     }
 
     close(pb)
-  }
+  } # end simulations
 
   UNITS <- unit(CI,"speed",SI=!units)
   CI <- rbind(CI)/UNITS$scale
   rownames(CI) <- paste0("speed (",UNITS$name,")")
   #attr(CI,"DOF") <- DOF
   if(CI[1]==Inf) { CI[1] <- 0 } # sampled all Inf
+  CI <- list(DOF=DOF/2,CI=CI)
+  names(CI$DOF) <- "speed"
+  class(CI) <- "speed"
   return(CI)
 }
 
 
 # calculate speed of one random trajectory
-speed.rand <- function(CTMM,data=NULL,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,precompute=FALSE,DT=diff(data$t),TP=range(data$t),...)
+speed.rand <- function(CTMM,data=NULL,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,precompute=FALSE,DT=diff(data$t),TP=range(data$t),DOF=Inf,...)
 {
   # capture model uncertainty
   if(prior) { CTMM <- emulate(CTMM,data=data,fast=fast,...) }
@@ -208,7 +225,7 @@ speed.rand <- function(CTMM,data=NULL,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NU
   if(is.null(data))
   {
     # analytic result possible here
-    if(CTMM$mean=="stationary") { return(speed.deterministic(CTMM)) }
+    if(CTMM$mean=="stationary") { return(speed.deterministic(CTMM)/chi.bias(DOF)) }
     # else do a sufficient length simulation
     t <- seq(0,CTMM$tau[2]/error^2,dt) # this should give O(error) estimation error
     data <- simulate(CTMM,t=t,precompute=precompute)

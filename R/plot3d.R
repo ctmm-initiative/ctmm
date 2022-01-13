@@ -65,18 +65,70 @@ plot3d <- function(data=NULL,UD,level=0.95,level.UD=0.95,xlim=NULL,ylim=NULL,ext
   manipulate::manipulate(plot.fn(z),z=manipulate::slider(min=zext[1],max=zext[2],initial=MODE,label="z (m)"))
 }
 
+
 # calculate vertex mesh of 3D UD
 # UNFINISHED
-vertex <- function(UD,level.UD=0.95)
+mesh3d.UD <- function(UD,level.UD=0.95)
 {
-  VERTEX <- array(0,c(0,3))
-
   DIM <- dim(UD$CDF)
   IN <- UD$CDF < level.UD
+  isVERT <- array(FALSE,DIM)
+  VERTEX <- array(0,c(0,3)) # matrix of vertex (x,y,z) per index
+  NORM <- array(0,c(0,3)) # matrix of normal vectors per index
+  TRI <- array(integer(1),c(0,3)) # matrix of 3 vertex indices per triangle
 
   S <- -1:1
   C <- 3*3+5 # center index of cube
 
+  SHELL <- array(integer(1),c(0,3))
+  for(i in S) { for(j in S) { for(k in S) { SHELL <- rbind(SHELL,c(i,j,k)) } } }
+  SHELL <- SHELL[-14,] # (0,0,0)
+
+  # table intersection
+  row.intersect <- function(X,Y)
+  {
+    Z <- rbind(X,Y)
+    # sort by all columns
+    Z <- Z[order(Z[,1],Z[,2],Z[,3]),]
+    # do rows change
+    I <- apply(Z,2,diff) # [n-1,3]
+    I <- apply(abs(I),1,sum) # [n-1]
+    I <- c(TRUE,I) # [n]
+    # return repeated rows
+    Z[!I,]
+  }
+
+  # table unique
+  row.unique <- function(Z)
+  {
+    # sort by all columns
+    Z <- Z[order(Z[,1],Z[,2],Z[,3]),]
+    # do rows change
+    I <- apply(Z,2,diff) # [n-1,3]
+    I <- apply(abs(I),1,sum) # [n-1]
+    I <- c(TRUE,I) # [n]
+    # return unique rows  (different from previous)
+    Z[I,]
+  }
+
+  # level.fn <- function(adbmal,return.X=FALSE)
+  # {
+  #   lambda <- 1/adbmal
+  #   M <- 2/lambda*diag(3) - VV
+  #   X <- V[1:3]
+  #
+  #   X <- t(M) %*% X
+  #   M <- t(M) %*% M
+  #   M <- PDsolve(M)
+  #   X <- M %*% X # this is now (x,y,z) for lambda
+  #
+  #   if(return.X) { return(X) }
+  #
+  #   level <- SUB[C] + sum(X[1:3]*V[1:3]) + X[1]*X[2]*V[4] + X[2]*X[3]*V[5] + X[3]*X[1]*V[6] + sum(X[1:3]^2*V[7:9])
+  #   return((level-level.UD)^2)
+  # }
+
+  # vertex loop
   pb <- utils::txtProgressBar(min=1,max=DIM[1]-1,initial=1,style=3)
   for(i in 2:(DIM[1]-1))
   {
@@ -88,18 +140,25 @@ vertex <- function(UD,level.UD=0.95)
         # is there a surface running through pixel (i,j,k) ?
         if(any(SIN[C] != SIN[-C]))
         {
-          # fit a solvable regression function to cube data
+          # fit a solvable quadratic regression function to cube data
           x <- y <- z <- array(-1:1,c(3,3,3))
           y <- aperm(x,c(3,1,2))
           z <- aperm(x,c(2,3,1))
 
-          M <- matrix(0,3^3-1,6)
+          # M <- matrix(0,3^3-1,9)
+          M <- matrix(0,3^3-1,3)
+          # linear regression terms
           M[,1] <- c(x)[-C]
           M[,2] <- c(y)[-C]
           M[,3] <- c(z)[-C]
-          M[,4] <- c(x*y)[-C]
-          M[,5] <- c(y*z)[-C]
-          M[,6] <- c(z*x)[-C]
+          # # terms also found in tri-linear splines
+          # M[,4] <- c(x*y)[-C]
+          # M[,5] <- c(y*z)[-C]
+          # M[,6] <- c(z*x)[-C]
+          # # quadratic regression terms
+          # M[,7] <- c(x*x)[-C]
+          # M[,8] <- c(y*y)[-C]
+          # M[,9] <- c(z*z)[-C]
 
           SUB <- UD$CDF[i+S,j+S,k+S]
           V <- c(SUB)[-C] - SUB[C]
@@ -110,62 +169,97 @@ vertex <- function(UD,level.UD=0.95)
           V <- M %*% V # coefficients
 
           # minimize distance from center while constrained to surface
-          # L == x^2+y^2+z^2 + lambda*(level - V*(x,y,z,xy,yz,zx) )
+          # L == x^2+y^2+z^2 + lambda*(level - V*(x,y,z,xy,yz,zx,xx,yy,zz) )
           # minimized by
-          # 2*x == lambda*( V['x'] + V['xy']*y + V['zx']*z)
-          # 2*y == lambda*( V['y'] + V['yz']*z + V['xy']*x)
-          # 2*z == lambda*( V['z'] + V['zx']*x + V['yz']*y)
+          # 2*x == lambda*( V['x'] + V['xy']*y + V['zx']*z + 2*V['xx'] )
+          # 2*y == lambda*( V['y'] + V['yz']*z + V['xy']*x + 2*V['yy'] )
+          # 2*z == lambda*( V['z'] + V['zx']*x + V['yz']*y + 2*V['zz'] )
           #
           # (2/lambda*I - VV)*(x,y,z) = V['x','y','z']
-          VV <- matrix(0,3,3)
-          VV[1,2] <- VV[2,1] <- V[4]
-          VV[2,3] <- VV[3,2] <- V[5]
-          VV[3,1] <- VV[1,3] <- V[6]
+          # VV <- matrix(0,3,3)
+          # VV[1,2] <- VV[2,1] <- V[4]
+          # VV[2,3] <- VV[3,2] <- V[5]
+          # VV[3,1] <- VV[1,3] <- V[6]
+          # diag(VV) <- 2*V[7:9]
 
-          level.fn <- function(lambda,return.X=FALSE)
+          # linear regression solution lambda/2*V[1:3]^2 == level.UD-SUB[C]
+          lambda <- 2*(level.UD-SUB[C])/sum(V[1:3]^2) # initial guess (linear regression solution)
+          # adbmal <- 1/lambda # doesn't diverge between -Inf and +Inf
+          # adbmal <- optimizer(adbmal,level.fn)$par
+          # lambda <- 1/adbmal
+          # X <- level.fn(adbmal,return.X=TRUE)
+          X <- lambda/2*V[1:3]
+
+          if(all(abs(X)<1/2)) # record if within pixel
           {
-            if(lambda<=0) { return(Inf) }
-            M <- 2/lambda*diag(3) - VV
-            X <- V[1:3]
+            # store vertex coordinate
+            Xc <- t(X + c(i,j,k))
+            VERTEX <- rbind(VERTEX,Xc)
+            isVERT[i,j,k] <- length(VERTEX) # store index for triangulation
 
-            X <- t(M) %*% X
-            M <- t(M) %*% M
-            M <- PDsolve(M)
-            X <- M %*% X # this is now (x,y,z) for lambda
-
-            if(return.X) { return(X) }
-
-            level <- X[1]*V[1] + X[2]*V[2] + X[3]*V[3] + X[1]*X[2]*V[4] + X[2]*X[3]*V[5] + X[3]*X[1]*V[6]
-            return((level-level.UD)^2)
+            # store normal vector
+            # Xn <- V[1:3] + c(X[2]*V[4]+X[3]*V[6],X[1]*V[4]+X[3]*V[5],X[2]*V[5]+X[1]*V[6]) + 2*X[1:3]*V[7:9]
+            Xn <- V[1:3]
+            Xn <- +lambda/2*t(Xn) # gradient points outwards to higher coverage
+            # no point in normalizing this until we include (x,y,z) scale information
+            NORM <- rbind(NORM,Xn)
           }
-
-          LEVEL <- max(2/sum(abs(V)),1) # initial guess (order of magnitude)
-          LEVEL <- optimizer(LEVEL,level.fn,lower=0)$par
-          LEVEL <- level.fn(LEVEL,return.X=TRUE)
-
-          if(all(abs(LEVEL)<1/2)) # record if within pixel
-          {
-            LEVEL <- LEVEL + c(i,j,k)
-            LEVEL <- t(LEVEL)
-            VERTEX <- rbind(VERTEX,LEVEL)
-          }
-
-          # NOT SURE IF THIS IS WORTH DOING WITHOUT GRADIENTS EXPLICITLY CALCULATED
-          # TODO normal vector (gradient)
-          # TODO normal vector (gradient)
-          # TODO normal vector (gradient)
-          # TODO normal vector (gradient)
         } # end vertex solver
       } # end z loop
     } # end y loop
     utils::setTxtProgressBar(pb,i)
   } # end x loop
 
+  # Nearest Neighbor triangles
+  utils::setTxtProgressBar(pb,0)
+  for(i in 2:(DIM[1]-1))
+  {
+    for(j in 2:(DIM[2]-1))
+    {
+      for(k in 2:(DIM[3]-1))
+      {
+        i1 <- isVERT[i,j,k] # first vertex of triangle
+        if(i1)
+        {
+          V2 <- t(c(i,j,k) + t(SHELL))
+          for(l in 1%:%nrow(V2))
+          {
+            i2 <- isVERT[V2[l,1],V2[l,2],V2[l,3]] # second vertex of triangle
+            if(i2)
+            {
+              V3 <- t(V2[l,] + t(SHELL))
+              # must also be a neighbor of v1
+              V3 <- row.intersect(V3,V2)
+              for(m in 1%:%nrow(V3))
+              {
+                i3 <- isVERT[V3[m,1],V3[m,2],V3[m,3]]
+                if(i3){ TRI <- rbind(TRI,c(i1,i2,i3)) }
+              }
+            }
+          }
+        }
+      } # end z loop
+    } # end y loop
+    utils::setTxtProgressBar(pb,i)
+  } # end x loop
+
+  # remove duplicate NN triangles
+  TRI <- row.unique(TRI)
+
+  # convert from fractional indices to locations
   colnames(VERTEX) <- c('x','y','z')
-  # convert from indices to locations
   VERTEX[,'x'] <- UD$r$x[1] + (VERTEX[,'x']-1)*UD$dr['x']
   VERTEX[,'y'] <- UD$r$y[1] + (VERTEX[,'y']-1)*UD$dr['y']
   VERTEX[,'z'] <- UD$r$z[1] + (VERTEX[,'z']-1)*UD$dr['z']
+
+  # convert from index gradient to spatial gradient
+  colnames(NORM) <- c('x','y','z')
+  NORM[,'x'] <- NORM[,'x']*UD$dr['x']
+  NORM[,'y'] <- NORM[,'y']*UD$dr['y']
+  NORM[,'z'] <- NORM[,'z']*UD$dr['z']
+
+#  MESH <- rgl::mesh3d(VERTEX,triangles=TRI)
+#  return(MESH)
 
   close(pb)
   return(VERTEX)

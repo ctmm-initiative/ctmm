@@ -327,3 +327,11 @@ glue <- function(...)
   x <- paste(x) # paste different strings together
   return(x)
 }
+
+
+# from
+capitalize <- function(s)
+{
+  substr(s,1,1) <- toupper(substr(s,1,1))
+  s
+}

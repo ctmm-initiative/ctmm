@@ -3,25 +3,31 @@ ctmm 0.6.2 (2021-01-05)
 
   * new function rsf.fit() to fit integrated resource selection functions (iRSFs) with autocorrelation-adjusted weighted likelihood
   
-  * new function revisitation() to calculate the distribution of revisitations.
+  * new function revisitation() to calculate the distribution of revisitations
   
   * new function npr() to calculate non-parametric spatial regressions
   
   * summary.ctmm() now outputs diffusion rate estimates
   
+  * new argument variable for meta() to estimate population diffusion rates, mean speeds, and autocorrelation timescales
+  
   * new argument SP in plot.telemetry() and plot.UD() for plotting shapefile base layers
   
   * plot() now works on 3D UDs
+  
+  * speed() output now includes DOF estimate for use with meta()
   
   * tbind() now works correctly with different projections and calibrations
   
   * %#% unit conversion operator can now interpret products and ratios
   
+  * summary() timescale confidence intervals are now gamma/inverse-gamma more inline with meta()
+  
   * bugfix in ctmm.loglike() when fitting multiple error classes, where some are zero
   
   * bugfix in ctmm.boot() when bias estimate exceeds variance parameter
 
-ctmm 0.6.1 (2021-07-26)
+ctmm 0.6.1 (2021-07-13)
 ================
 
   * ctmm.fit() can now fit multiple UERE parameters and update uncertain calibration parameter estimates

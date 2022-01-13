@@ -10,7 +10,7 @@ cluster.area <- function(x,level=0.95,level.UD=0.95,IC="BIC",debias=TRUE,units=T
 {
   N <- length(x)
   ID <- names(x)
-  STUFF <- import.area(x,level.UD=level.UD)
+  STUFF <- import.variable(x,level.UD=level.UD)
   AREA <- STUFF$AREA
   DOF <- STUFF$DOF
 

@@ -63,7 +63,10 @@ diffusion <- function(CTMM,level=0.95,finish=TRUE)
   if(circle) { NAMES <- c(NAMES,"circle") }
 
   if(!length(tau)) # IID
-  { return( c(0,Inf,Inf) ) }
+  {
+    if(!finish) { return(list(D=Inf,grad=0,VAR=Inf,DOF=0)) }
+    return( c(0,Inf,Inf) )
+  }
   else if(!range) # Brownian motion # IOU # max diffusion rate at infinite lag
   {
     D <- 1
