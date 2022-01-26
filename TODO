@@ -1,4 +1,6 @@
 PRIORITY
+* RSF habitat suitability calculation
+* RSF ctmm synoptic model calculation
 * timelink upgrade to use periodic splinefun with deriv argument
 * rsf.fit variable scaling option
 * timeseries annotate tool

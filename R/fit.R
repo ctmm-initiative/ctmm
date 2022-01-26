@@ -49,11 +49,11 @@ get.loglike <- function(data)
 # FIT MODEL WITH LIKELIHOOD FUNCTION (convenience wrapper to optim)
 ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),trace=FALSE)
 {
-  # DEBUG <<- CTMM
-
   loglike.fn <- get.loglike(data)
 
   if(!is.null(control$message)) { message <- control$message }
+  # pass trace argument (demoted)
+  if(is.null(control$trace) && trace) { control$trace <- trace-1 }
 
   method <- match.arg(method,c("ML","pREML","pHREML","HREML","REML"))
   axes <- CTMM$axes

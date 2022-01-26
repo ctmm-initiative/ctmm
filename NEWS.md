@@ -1,4 +1,4 @@
-ctmm 0.6.2 (2021-01-05)
+ctmm 0.6.2 (2021-01-26)
 ================
 
   * new function rsf.fit() to fit integrated resource selection functions (iRSFs) with autocorrelation-adjusted weighted likelihood
@@ -6,6 +6,8 @@ ctmm 0.6.2 (2021-01-05)
   * new function revisitation() to calculate the distribution of revisitations
   
   * new function npr() to calculate non-parametric spatial regressions
+  
+  * akde() now supports RSF-informed kernels
   
   * summary.ctmm() now outputs diffusion rate estimates
   
@@ -23,11 +25,13 @@ ctmm 0.6.2 (2021-01-05)
   
   * summary() timescale confidence intervals are now gamma/inverse-gamma more inline with meta()
   
+  * progress bar added to optimizer() when trace=1
+  
   * bugfix in ctmm.loglike() when fitting multiple error classes, where some are zero
   
   * bugfix in ctmm.boot() when bias estimate exceeds variance parameter
 
-ctmm 0.6.1 (2021-07-13)
+ctmm 0.6.1 (2021-07-26)
 ================
 
   * ctmm.fit() can now fit multiple UERE parameters and update uncertain calibration parameter estimates

@@ -9,6 +9,11 @@ rsf.mcint <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,le
   axes <- CTMM$axes
   GEO <- c('longitude','latitude')
 
+  # control list for optimizer
+  control <- list()
+  # pass trace argument (demoted)
+  if(trace) { control$trace <- trace-1 }
+
   # smooth the data, but don't drop
   if(smooth && any(CTMM$error>0))
   { data[,c(axes,GEO)] <- predict(data,CTMM=CTMM,t=data$t,complete=TRUE)[,c(axes,GEO)] }
@@ -506,8 +511,8 @@ rsf.mcint <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,le
     precision <- precision^2 # improve over Monte-Carlo error
     precision <- log(precision)/log(.Machine$double.eps) # relative to machine error
     precision <- clamp(precision,1/8,1/2)
-    # parscales will default to 1 if beta are 0
-    control <- list(precision=precision)
+    control$precision <- precision
+
     RESULT <- optimizer(beta,nloglike,control=control)
     beta.OLD <- beta
     beta <- RESULT$par
@@ -674,6 +679,7 @@ rsf.mcint <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,le
   # package results and return
   # turn this into ctmm object
   RSF <- ctmm(axes=axes,mu=mu,COV.mu=COV.mu,beta=beta,sigma=sigma,isotropic=isotropic,COV=COV)
+  RSF@info <- CTMM@info
   RSF$loglike <- loglike
   RSF$VAR.loglike <- VAR.loglike
   # RSF$Z <- NORM
@@ -738,6 +744,200 @@ rsf.mcint <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,le
   RSF$range <- TRUE
 
   return(RSF)
+}
+
+
+# prepare raster data for processing
+R.prepare <- function(R)
+{
+  PROJ <- raster::projection(R)
+
+  DIM <- dim(R)
+  X <- raster::xFromCol(R,1:DIM[2])
+  Y <- raster::yFromRow(R,1:DIM[1])
+  Z <- raster::getZ(R)
+
+  dX <- stats::median(diff(X))
+  dY <- stats::median(diff(Y))
+
+  R <- raster::as.array(R)[,,] # last dim will be dropped if length-1
+  if(length(dim(R))==2) # RasterLayer (static)
+  {
+    R <- aperm(R,2:1)
+    dZ <- NULL
+  } # [x,y]
+  else if (length(dim(R))==3) # RasterStack or RasterBrick
+  {
+    STATIONARY <- FALSE
+    R <- aperm(R,c(2,1,3)) # [x,y,z]
+
+    if(class(Z)[1]=="Date") { Z <- as.POSIXct(Z) } # numeric is in days
+    if(class(Z)[1]=="POSIXct") { Z <- as.numeric(Z) }
+
+    dZ <- stats::median(diff(Z))
+  }
+
+  R <- list(R=R,PROJ=PROJ,X=X,Y=Y,Z=Z,dX=dX,dY=dY,dZ=dZ)
+  return(R)
+}
+
+
+# sample location xy (in projection proj) from raster R with grid coordinates X,Y in (in projection PROJ)
+R.extract <- function(xy,proj,R,X,Y,Z=NULL,PROJ,dX,dY,dZ=NULL)
+{
+  DIM <- dim(R)
+
+  xy <- project(xy,from=proj,to=PROJ)
+  # continuous index
+  xy[,1] <- (xy[,1] - X[1])/dX + 1
+  xy[,2] <- (xy[,2] - Y[1])/dY + 1
+
+  # # catch truncation error and record !!!
+  # BAD <- (xy[,1]<0) | (nrow(R)+1<xy[,1]) | (xy[,2]<0) | (ncol(R)+1<xy[,2])
+  # BADS <- sum(BAD)
+
+  if(length(DIM)==2)
+  { E <- bint(R,t(xy)) }
+  else # xyt
+  {
+    # missing t axis
+    # this is not fully coded yet, but it is not used either
+    E <- tint(R,t(xy))
+  }
+
+  return(E)
+}
+
+# Evaluate raster on new spatial grid
+R.grid <- function(r,proj,R)
+{
+  R <- R.prepare(R)
+  PROJ <- R$PROJ
+  X <- R$X
+  Y <- R$Y
+  Z <- R$Z
+  dX <- R$dX
+  dY <- R$dY
+  dZ <- R$dZ
+  R <- R$R
+
+  DIM <- c(length(r$x),length(r$y))
+  xy <- array(0,c(DIM,2))
+  xy[,,1] <- r$x
+  xy <- aperm(xy,c(2,1,3))
+  xy[,,2] <- r$y
+  xy <- aperm(xy,c(2,1,3))
+  dim(xy) <- c(prod(DIM),2)
+
+  # xy <- array(0,c(prod(DIM),2))
+  # for(i in 1:DIM[1]) { for(j in 1:DIM[2]) { xy[i+(j-1)*DIM[1],] <- c(r$x[i],r$y[j]) } }
+  colnames(xy) <- c('x','y')
+
+  if(length(dim(R))==2)
+  {
+    G <- R.extract(xy,proj=proj,R=R,X=X,Y=Y,PROJ=PROJ,dX=dX,dY=dY)
+    G <- array(G,DIM)
+  }
+  else if(length(dim(R))==3)
+  {
+    G <- array(0,c(DIM,length(Z)))
+    for(i in 1:length(Z))
+    { G[,,i] <- R.extract(xy,proj,R=R[,,i],X=X,Y=Y,PROJ=PROJ,dX=dX,dY=dY) }
+  }
+
+  return(G)
+}
+
+# evaluate habitat suitability raster(s)
+R.suit <- function(R,CTMM,data=NULL)
+{
+  DIM <- dim(R[[1]])
+  beta <- CTMM$beta
+
+  offset <- stats::terms(CTMM$formula)
+  offset <- attr(offset,"variables")[ attr(offset,"offset") ]
+
+  PREP <- FALSE
+  S <- 1
+
+  if(length(beta))
+  {
+    BETA <- names(beta)
+
+    PREP <- !all(BETA %in% names(R))
+    if(!PREP)
+    {
+      # these will never be raster stacks
+      S <- vapply(BETA,function(B){beta[B]*R[[B]]},R[[1]])
+      dim(S) <- c(prod(DIM),length(beta))
+    }
+    else # formula required
+    {
+      R <- lapply(R,c)
+      R <- data.frame(R)
+      # need to copy over data if time varying formula
+      if(!is.null(data)) { for(COL in names(data)) { R[[COL]] <- data[[COL]] } }
+
+      n <- length(beta)
+
+      # fix formula multiplication
+      for(i in 1:n) { BETA[i] <- gsub(":","*",BETA[i]) }
+
+      S <- sapply(1:n,function(i){beta[i]*eval(parse(text=BETA[i]),envir=R)})
+    }
+    S <- rowSums(S)
+    S <- array(S,DIM)
+    S <- exp(S)
+  } # end beta
+
+  if(length(offset))
+  {
+    if(all(offset %in% names(R)))
+    { for(off in offset) { S <- S * R[[off]] } }
+    else # formula required
+    {
+      # didn't prepare data before
+      if(!PREP)
+      {
+        R <- lapply(R,c)
+        R <- data.frame(R)
+        # need to copy over data if time varying formula
+        if(!is.null(data)) { for(COL in names(data)) { R[[COL]] <- data[[COL]] } }
+      }
+
+      # fix formula multiplication
+      for(i in 1:length(offset)) { offset[i] <- gsub(":","*",offset[i]) }
+
+      O <- sapply(1:length(offset),function(i){eval(parse(text=offset[i]),envir=R)})
+      O <- apply(O,1,prod)
+      O <- array(O,DIM)
+
+      S <- O*S
+    }
+  } # end offset
+
+  return(S)
+}
+
+
+# is RSF model stationary or non-stationary
+is.stationary <- function(R,CTMM)
+{
+  STATIONARY <- TRUE
+
+  DIM <- sapply(R,function(r){length(dim(r))})
+  DIM <- max(DIM)
+  if(DIM==3) { STATIONARY <- FALSE }
+
+  formula <- CTMM$formula
+  if(!is.null(formula))
+  {
+    VARS <- all.vars(formula)
+    DVARS <- VARS[ VARS %nin% names(R) ]
+    if(length(DVARS)) { STATIONARY <- FALSE }
+  }
+
+  return(STATIONARY)
 }
 
 

@@ -592,6 +592,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
   ######################
   # MAIN LOOP
   ######################
+  if(trace==1) { pb <- utils::txtProgressBar(style=3) }
   while(STAGE<=last(stages) && counts<=maxit)
   {
     # udpate zero shift
@@ -965,8 +966,8 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
 
       END <- (MIN==1 || MIN==length(fn.all))
 
-      if(trace) { message(sprintf("%s %s search",format(zero+fn.par,digits=16),LINE.TYPE)) }
-      if(trace>1) { message("\tc(",paste0(NAMES,"=",par,collapse=', '),")") }
+      if(trace==2) { message(sprintf("%s %s search",format(zero+fn.par,digits=16),LINE.TYPE)) }
+      if(trace==3) { message("\tc(",paste0(NAMES,"=",par,collapse=', '),")") }
 
       # if(DEBUG>1)
       # {
@@ -1221,11 +1222,13 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
       }
     }
 
+    if(trace==1) { utils::setTxtProgressBar(pb,clamp(nant(log(ERROR)/log(TOL.GOAL),0))) }
   } # end main loop
+  if(trace==1) { close(pb) }
 
   if(counts<maxit) { convergence <- 0} else { convergence <- 1 }
   if(trace) { message(sprintf("%s in %d parallel function evaluations.",ifelse(convergence,"No convergence","Convergence"),counts)) }
-  if(trace==2) { message("\tc(",paste0(NAMES,"=",par,collapse=', '),")") }
+  if(trace==3) { message("\tc(",paste0(NAMES,"=",par,collapse=', '),")") }
 
   if(PMAP) { par <- pmap(par,theta,inverse=TRUE) }
 

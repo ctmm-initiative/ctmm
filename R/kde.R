@@ -397,7 +397,7 @@ homerange <- function(data,CTMM,method="AKDE",...)
 # AKDE single or list
 # (C) C.H. Fleming (2016-2019)
 # (C) Kevin Winner & C.H. Fleming (2016)
-akde <- function(data,CTMM,VMM=NULL,variable="utilization",debias=TRUE,weights=FALSE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
+akde <- function(data,CTMM,VMM=NULL,R=list(),variable="utilization",debias=TRUE,weights=FALSE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
 {
   if(variable!="utilization")
   { stop("variable=",variable," not yet supported by akde(). See npr() or revisitation().") }
@@ -492,7 +492,7 @@ akde <- function(data,CTMM,VMM=NULL,variable="utilization",debias=TRUE,weights=F
     EXT <- extent(EXT,level=1-error)[,axes] # Gaussian extent (includes uncertainty)
     GRID <- kde.grid(data[[i]],H=KDE[[i]]$H,axes=axes,alpha=error,res=res,dr=dr,grid=grid,EXT.min=EXT) # individual grid
 
-    KDE[[i]] <- c(KDE[[i]],kde(data[[i]],KDE[[i]]$H,axes=axes,bias=DEBIAS[[i]],W=KDE[[i]]$weights,alpha=error,dr=dr,grid=GRID))
+    KDE[[i]] <- c(KDE[[i]],kde(data[[i]],H=KDE[[i]]$H,axes=axes,CTMM=CTMM0[[i]],RASTER=R,bias=DEBIAS[[i]],W=KDE[[i]]$weights,alpha=error,dr=dr,grid=GRID))
 
     KDE[[i]] <- new.UD(KDE[[i]],info=attr(data[[i]],"info"),type='range',variable="utilization",CTMM=ctmm())
     # in case bandwidth is pre-calculated...
@@ -536,7 +536,7 @@ prepare.H <- function(H,n,axes=c('x','y'))
 # construct my own KDE objects
 # was using ks-package but it has some bugs
 # alpha is the error goal in my total probability
-kde <- function(data,H,axes=c("x","y"),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr=NULL,grid=NULL,variable=NA,normalize=TRUE)
+kde <- function(data,H,axes=c("x","y"),CTMM=list(),RASTER=list(),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr=NULL,grid=NULL,variable=NA,normalize=TRUE)
 {
   if(!is.na(variable))
   {
@@ -570,6 +570,21 @@ kde <- function(data,H,axes=c("x","y"),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr
   #r <- t(t(r) - R0)
   #R <- lapply(1:length(R0),function(i){ R[[i]] - R0[i] })
 
+  # stationary versus non-stationary suitability
+  if(length(RASTER))
+  {
+    proj <- CTMM@info$projection
+    # calculate RASTERs on spatial grid
+    RASTER <- lapply(RASTER,function(r){R.grid(grid$r,proj=proj,r)})
+    # this needs to be moved up for multiple individuals?
+
+    STATIONARY <- is.stationary(CTMM,RASTER)
+
+    # calculate one suitability layer for all times
+    if(STATIONARY) { RASTER <- R.suit(RASTER,CTMM) }
+    # otherwise we calculate one suitability per time/kernel
+  }
+
   # probability mass function
   PMF <- array(0,sapply(R,length))
   # Nadaraya-Watson numerator (for regressions)
@@ -590,12 +605,52 @@ kde <- function(data,H,axes=c("x","y"),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr
 
     SUB <- lapply(1:length(i1),function(d){ i1[d]:i2[d] })
 
-    # I can't figure out how to do this in one line
+    # I can't figure out how to do these cases in one line
     if(length(SUB)==1) # 1D
     { PMF[SUB[[1]]] <- PMF[SUB[[1]]] + W[i]*pnorm1(R[[1]][SUB[[1]]]-r[i,1],H[i,,],dr,alpha) }
     else if(length(SUB)==2) # 2D
     {
+      # extract suitability sub-grid
+      if(length(RASTER))
+      {
+        if(STATIONARY) # one suitability raster for all kernels
+        { R.SUB <- RASTER[ SUB[[1]], SUB[[2]] ] }
+        else
+        {
+          # time interpolate if necessary
+          R.SUB <- list()
+          for(j in 1:length(RASTER))
+          {
+            if(length(dim(RASTER))==2)
+            { R.SUB[[j]] <- RASTER[[j]][ SUB[[1]], SUB[[2]] ] }
+            else
+            {
+              T.INT <- (data$t[i]-RASTER[[j]]$Z[1])/RASTER[[j]]$dZ + 1
+              T.SUB <- c(floor(T.INT),ceiling(T.INT))
+              if(T.SUB[1]==T.SUB[2])
+              { R.SUB[[j]] <- RASTER[[j]][ SUB[[1]], SUB[[2]], T.SUB[1] ] }
+              else
+              {
+                T.CON <- c(T.SUB[2]-T.INT,T.INT-T.SUB[1])
+                R.SUB[[j]] <- T.CON[1]*RASTER[[j]][ SUB[[1]], SUB[[2]], T.SUB[1] ] + T.CON[2]*RASTER[[j]][ SUB[[1]], SUB[[2]], T.SUB[2] ]
+              }
+            } # end time interpolation
+          } # end raster stack preparation
+          names(R.SUB) <- names(RASTER)
+          R.SUB <- R.suit(R.SUB,CTMM,data[i,])
+        } # end non-stationary suitability calculation
+      } # end suitability modulus
+
       dPMF <- W[i]*pnorm2(R[[1]][SUB[[1]]]-r[i,1],R[[2]][SUB[[2]]]-r[i,2],H[i,,],dr,alpha)
+
+      # apply suitability and re-normalize
+      if(length(RASTER))
+      {
+        SUM <- sum(dPMF)
+        dPMF <- dPMF * R.SUB
+        dPMF <- (SUM/sum(dPMF)) * dPMF
+      }
+
       PMF[SUB[[1]],SUB[[2]]] <- PMF[SUB[[1]],SUB[[2]]] + dPMF
       if(!is.na(variable))
       { NUM[SUB[[1]],SUB[[2]]] <- NUM[SUB[[1]],SUB[[2]]] + data[[VARIABLE]][i]*dPMF }

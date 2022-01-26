@@ -41,7 +41,9 @@ If summary is called on a list of \code{ctmm} objects output from \code{\link{ct
 
 \code{IC="LOOCV"} can only be attempted if also specified during \code{\link{ctmm.select}}, as this argument requires additional calculations.
 
-In \code{ctmm} v0.5.1 the MSPE was averaged over all possible times instead of over all sampled times.
+Prior to \code{ctmm} v0.6.2, timescale confidence intervals were constructed from normal and inverse-normal sampling distributions, whereas v0.6.2 onward uses gamma and inverse-gamma sampling distributions.
+
+In \code{ctmm} v0.5.1 onward the MSPE is averaged over all possible times instead of over all sampled times.
 
 In \code{ctmm} v0.3.4 the speed estimate was fixed to be the RMS velocity and not \eqn{1/\sqrt{2}} times the RMS velocity.
 }

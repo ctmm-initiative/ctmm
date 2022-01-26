@@ -9,14 +9,15 @@
 This function calculates autocorrelated kernel density home-range estimates from \code{telemetry} data and a corresponding continuous-time movement model.
 }
 \usage{
-akde(data,CTMM,VMM=NULL,variable="utilization",debias=TRUE,weights=FALSE,smooth=TRUE,
-     error=0.001,res=10,grid=NULL,...)
+akde(data,CTMM,VMM=NULL,R=list(),variable="utilization",debias=TRUE,weights=FALSE,
+     smooth=TRUE,error=0.001,res=10,grid=NULL,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{data}{ 2D timeseries telemetry data represented as a \code{telemetry} object or list of objects. }
   \item{CTMM}{A \code{ctmm} movement model from the output of \code{ctmm.fit} or list of objects.}
   \item{VMM}{An optional vertical \code{ctmm} object for 3D home-range calculation.}
+  \item{R}{A named list of raster covariates if \code{CTMM} contains an RSF model}
   \item{variable}{Not yet supported.}
   \item{debias}{Debias the distribution for area estimation (AKDEc).}
   \item{smooth}{"Smooth" out errors from the data.}
