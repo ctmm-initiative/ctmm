@@ -641,7 +641,7 @@ meta.uni <- function(x,variable="area",level=0.95,level.UD=0.95,level.pop=0.95,m
     DOF <- STUFF$DOF
     ID <- STUFF$ID
 
-    # inverse-chi^2 population distribution
+    # inverse-Gaussian population distribution
     CI <- meta.chisq(AREA,DOF,level=level,level.pop=level.pop,IC=IC,boot=boot,error=error,debias=debias,method=method)
     CI.VAR <- CI$VAR
     CI <- CI$CI
@@ -737,11 +737,16 @@ meta.uni <- function(x,variable="area",level=0.95,level.UD=0.95,level.pop=0.95,m
     DVAR <- sapply(RESULTS,function(R){R$VAR[2]})
 
     CI <- array(1,c(N,N,3))
+    PV <- array(1,c(N,N))
     dimnames(CI) <- list(paste0(ID,"/"),paste0("/",ID),NAMES.CI)
+    dimnames(PV) <- list(paste0(ID,"/"),paste0("/",ID))
     for(i in 1:N)
     {
       for(j in (1:N)[-i]) # diagonal == 1/1
-      { CI[i,j,] <- F.CI(NUM[i],NVAR[i],DEN[j],DVAR[j],level=level) }
+      {
+        CI[i,j,] <- F.CI(NUM[i],NVAR[i],DEN[j],DVAR[j],level=level)
+        PV[i,j] <- stats::pf(NUM[i]/NUM[j],2*NUM[i]^2/NVAR[i],2*NUM[j]^2/NVAR[j],lower.tail=NUM[i]<NUM[j])
+      }
     }
 
     if(verbose)
@@ -756,8 +761,11 @@ meta.uni <- function(x,variable="area",level=0.95,level.UD=0.95,level.pop=0.95,m
         rownames(RESULTS[[i]])[1] <- paste0(rownames(RESULTS[[i]])[1]," (",UNITS$name,")")
       }
 
-      RESULTS[[N+1]] <- CI
-      names(RESULTS)[N+1] <- "mean ratio"
+      RESULTS[[N+1]] <- PV
+      names(RESULTS)[N+1] <- "p-value"
+
+      RESULTS[[N+2]] <- CI
+      names(RESULTS)[N+2] <- "mean ratio"
 
       CI <- RESULTS
     }

@@ -50,7 +50,7 @@ If \code{x} constitutes a list of sampled sub-populations, then \code{meta} retu
 
 \note{The AICc formula is approximated via the Gaussian relation.
 
-Confidence intervals depicted in the forest plot are \eqn{\chi^2} and may differ from the output of \code{summary()} in the case of mean speed and timescale parameters.}
+Confidence intervals depicted in the forest plot are \eqn{\chi^2} and may differ from the output of \code{summary()} in the case of mean speed and timescale parameters with small effective sample sizes.}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 

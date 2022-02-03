@@ -340,7 +340,7 @@ capitalize <- function(s)
 simplify.formula <- function(x)
 {
   x <- as.character(x)[2]
-  x <- terms(x,simplify=TRUE)
+  x <- stats::terms(x,simplify=TRUE)
   x <- as.character(x)[2]
   x <- paste("~",x)
   x <- eval(parse(text=x))

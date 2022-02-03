@@ -1,12 +1,13 @@
 Encoding: UTF-8
 Package: ctmm
 Version: 0.6.2
-Date: 2021-01-26
+Date: 2021-02-03
 Title: Continuous-Time Movement Modeling
 Authors@R: c(person(c("Christen","H."),"Fleming",email="flemingc@si.edu",role=c("aut","cre")),
              person(c("Justin","M."),"Calabrese",email="calabresej@si.edu",role="aut"),
              person("Xianghui","Dong",role="ctb"),
              person("Kevin","Winner",role="ctb"),
+             person("Björn","Reineking",role="ctb"),
              person("Guillaume","Péron",role="ctb"),
              person(c("Michael","J."),"Noonan",role="ctb"),
              person("Bart","Kranstauber",role="ctb"),

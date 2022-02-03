@@ -44,7 +44,7 @@ Intercept terms are ignored, as they generally do not make sense for individual 
 This includes terms only involving the columns of \code{data}, as they lack spatial dependence.
 
 Categorical raster variables are expanded into indicator variables, according to the \code{reference} category argument.
-Upon import via \code{\link[raster]{raster}}, categorical variables may need to be assigned with \code{\link{raster::as.factor}}, or else they may be interpreted as numerical variables.
+Upon import via \code{\link[raster]{raster}}, categorical variables may need to be assigned with \code{\link[raster]{as.factor}}, or else they may be interpreted as numerical variables.
 }
 
 %\value{}
