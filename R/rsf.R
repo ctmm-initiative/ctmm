@@ -1,7 +1,7 @@
-rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,isotropic=TRUE,debias=TRUE,smooth=TRUE,error=0.01,trace=TRUE,...)
-{ rsf.mcint(data,UD,beta=beta,R=R,formula=formula,integrated=integrated,level.UD=level.UD,isotropic=isotropic,debias=debias,smooth=smooth,error=error,trace=trace,...) }
+rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,reference="auto",level.UD=0.99,isotropic=TRUE,debias=TRUE,smooth=TRUE,error=0.01,trace=TRUE,...)
+{ rsf.mcint(data,UD,beta=beta,R=R,formula=formula,integrated=integrated,reference=reference,level.UD=level.UD,isotropic=isotropic,debias=debias,smooth=smooth,error=error,trace=trace,...) }
 
-rsf.mcint <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,isotropic=TRUE,debias=TRUE,smooth=TRUE,error=0.01,trace=TRUE,NORM=NULL,...)
+rsf.mcint <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,reference="auto",level.UD=0.99,isotropic=TRUE,debias=TRUE,smooth=TRUE,error=0.01,trace=TRUE,NORM=NULL,...)
 {
   # error <- error^2 # convert from error[beta] to error[loglike]
   STATIONARY <- TRUE
@@ -49,6 +49,9 @@ rsf.mcint <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,le
   w <- UD$weights * W
 
   R <- listify(R)
+  TEST <- sapply(R,raster::inMemory)
+  TEST <- any(!TEST)
+  if(TEST) { message('Some rasters are not loaded in RAM and may be slow to process. See help("raster::readAll").') }
 
   if(length(R) && is.null(names(R)))
   {
@@ -56,11 +59,16 @@ rsf.mcint <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,le
     names(R) <- paste("R",1:length(R))
   }
 
+  # expand any categorical variables into indicator variables
+  STUFF <- expand.factors(R=R,formula=formula,reference=reference,data=data)
+  R <- STUFF$R
+  formula <- STUFF$formula
+
   ## The basic setup is:
   # RVARS - raster variables
   # DVARS - data annotation variables - overridden by RVARS
   # TERMS - all predictors - some may be RVARS
-  # CVARS - composite variables in TERMS that are not in RVARS || DVARS
+  # CVARS - composite variables in TERMS that are single RVARS || DVARS
   # OFFSET - offset T/F variables
 
   RVARS <- names(R)
@@ -154,21 +162,22 @@ rsf.mcint <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,le
     PROJ[[i]] <- raster::projection(R[[i]])
 
     DIM <- dim(R[[i]])
-    X[[i]] <- raster::xFromCol(R[[i]],1:DIM[2])
-    Y[[i]] <- raster::yFromRow(R[[i]],1:DIM[1])
-    Z[[i]] <- raster::getZ(R[[i]])
 
-    dX[i] <- stats::median(diff(X[[i]]))
-    dY[i] <- stats::median(diff(Y[[i]]))
+    # if(length(dim(R[[i]]))==2) # RasterLayer (static)
+    # {
+    #   R[[i]] <- aperm(R[[i]],2:1) # [x,y]
+    # }
+    if(DIM[3]>1) # RasterStack or RasterBrick
+    {
+      X[[i]] <- raster::xFromCol(R[[i]],1:DIM[2])
+      Y[[i]] <- raster::yFromRow(R[[i]],1:DIM[1])
+      Z[[i]] <- raster::getZ(R[[i]])
 
-    R[[i]] <- raster::as.array(R[[i]])[,,] # last dim will be dropped if length-1
-    if(length(dim(R[[i]]))==2) # RasterLayer (static)
-    {
-      # R[[i]] <- R[[i]][,,1]
-      R[[i]] <- aperm(R[[i]],2:1) # [x,y]
-    }
-    else if (length(dim(R[[i]]))==3) # RasterStack or RasterBrick
-    {
+      dX[i] <- stats::median(diff(X[[i]]))
+      dY[i] <- stats::median(diff(Y[[i]]))
+
+      R[[i]] <- raster::as.array(R[[i]])[,,]
+
       STATIONARY <- FALSE
       R[[i]] <- aperm(R[[i]],c(2,1,3)) # [x,y,z]
 
@@ -180,16 +189,16 @@ rsf.mcint <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,le
       # index for data times in raster stack
       Z.ind[[i]] <- (data$t - Z[[i]][1])/dZ[i] + 1
     }
-    else
-    { stop("") }
+    # else
+    # { stop("") }
 
     # if(names(R)[i] %in% TERMS) { R[[i]] <- R[[i]] - mean(R[[i]]) } # could go wrong with effect modifiers
 
     # RSCALE[i] <- sqrt(stats::var(c(R[[i]])))
     # R[[i]] <- R[[i]]/RSCALE[i]
   }
-  names(X) <- names(Y) <- names(dX) <- names(dY) <- RVARS
-  if(length(Z)) { names(Z) <- names(dZ) <- names(Z.ind) <- RVARS }
+  if(length(X)) { names(X) <- names(Y) <- names(dX) <- names(dY) <- RVARS[1:length(X)] }
+  if(length(Z)) { names(Z) <- names(dZ) <- names(Z.ind) <- RVARS[1:length(Z)] }
   # names(RSCALE) <- RVARS
 
   ## prepare annotated data
@@ -267,21 +276,31 @@ rsf.mcint <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,le
   # beta <- beta * SCALE
 
   # store raster covariates
-  for(r in RVARS)
+  for(i in 1:length(RVARS))
   {
+    r <- RVARS[i]
     # store data-sampled covariates
-    xy <- get.telemetry(data,GEO)
-    xy <- project(xy,to=PROJ[[i]])
-    # convert to indices
-    xy[,1] <- (xy[,1] - X[[r]][1])/dX[r] + 1
-    xy[,2] <- (xy[,2] - Y[[r]][1])/dY[r] + 1
-
-    if(length(dim(R[[r]]))==2)
-    { DATA[,r] <- bint(R[[r]],t(xy)) }
-    else # 3D
+    if(i==1 || PROJ[[i]]!=PROJ[[i-1]])
     {
-      xy <- cbind(xy,Z.ind[[r]])
-      DATA[,r] <- tint(R[[r]],t(xy))
+      xy <- get.telemetry(data,GEO)
+      xy <- project(xy,to=PROJ[[i]])
+    }
+
+    DIM <- dim(R[[i]])
+    if(DIM[3]==1) # 2D
+    {
+      DATA[,r] <- raster::extract(R[[i]],xy,method="bilinear")
+      # DATA[,RI] <- bint(R[[i]],t(xy))
+    }
+    else # 3D space-time stack
+    {
+      # convert to indices
+      XY <- xy
+      XY[,1] <- (XY[,1] - X[[i]][1])/dX[i] + 1
+      XY[,2] <- (XY[,2] - Y[[i]][1])/dY[i] + 1
+
+      XY <- cbind(XY,Z.ind[[i]])
+      DATA[,r] <- tint(R[[i]],t(XY))
     }
   }
 
@@ -316,6 +335,7 @@ rsf.mcint <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,le
   } # end if(integrated)
 
   DAVE <- c(w %*% DATA)
+  if(any(is.na(DAVE))) { stop("NA values in sampled rasters.") }
   names(DAVE) <- VARS
   SATA <- array(0,c(0,dim(DATA))) # simulated data [track,time,vars]
   dimnames(SATA)[[3]] <- VARS
@@ -343,6 +363,7 @@ rsf.mcint <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,le
   nloglike <- function(beta,zero=0,verbose=FALSE)
   {
     SAMP <- exp(SATA[,,TERMS,drop=FALSE] %.% beta) # [track,time]
+    SAMP[] <- nant(SAMP,0) # treat NA as inaccessible region
 
     if(length(OFFSET))
     {
@@ -416,61 +437,38 @@ rsf.mcint <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,le
     dimnames(SATA)[[3]] <- VARS
     SUB <- N.OLD+1:N # new indices
 
-    # if(!STATIONARY) { t.rand <- sample.time(N) } # random time indices according to weights
-
     # store simulation-sampled raster covariates
-    # OUT <- 0
-    for(r in RVARS)
+    for(i in 1:length(RVARS))
     {
-      if(integrated)
-      { xy <- get.telemetry(SIM,GEO) }
-      else
-      { xy <- SIM }
-      xy <- project(xy,to=PROJ[[i]])
-      xy[,1] <- (xy[,1] - X[[r]][1])/dX[r] + 1
-      xy[,2] <- (xy[,2] - Y[[r]][1])/dY[r] + 1
+      r <- RVARS[i]
 
-      # catch truncation error and record !!!
-      BAD <- (xy[,1]<0) | (nrow(R[[r]])+1<xy[,1]) | (xy[,2]<0) | (ncol(R[[r]])+1<xy[,2])
-      BADS <- sum(BAD)
-
-      BADS <- BADS/(length(SIM))
-      if(BADS > error) { warning(100*BADS,"% of random samples fell outside of rasters.") }
-
-      # if(BADS)
-      # {
-      #   OUT <- OUT + BADS
-      #   BAD <- which(BAD)
-      #
-      #   # remove bad samples from this set
-      #   xy <- xy[-BAD,]
-      #   if(!STATIONARY) { t.rand <- t.rand[-BAD] }
-      #
-      #   # remove bad samples from simulation
-      #   SIM <- SIM[-BAD,]
-      #
-      #   # remove bad samples from all rasters
-      #   SATA <- SATA[-(N.OLD+BAD),]
-      # }
-
-      # SUB <- N.OLD+1%:%nrow(SIM)
-
-      if(length(SUB))
+      # store data-sampled covariates
+      if(i==1 || PROJ[[i]]!=PROJ[[i-1]])
       {
-        if(length(dim(R[[r]]))==2)
-        { SATA[SUB,,r] <- bint(R[[r]],t(xy)) }
+        if(integrated)
+        { xy <- get.telemetry(SIM,GEO) }
         else
-        {
-          xy <- cbind(xy,rep(data$t,N))
-          SATA[SUB,,r] <- tint(R[[r]],t(xy))
-        }
-      }
-    } # end for(i in 1:length(R))
+        { xy <- SIM }
 
-    # OUT <- OUT/(OUT+nrow(SIM))
-    # if(OUT > error) { warning(100*OUT,"% of random samples fell outside of rasters and were discarded.") }
-    #
-    # SUB <- N.OLD+1:nrow(SIM)
+        xy <- project(xy,to=PROJ[[i]])
+      }
+
+      DIM <- dim(R[[i]])
+      if(DIM[3]==1)
+      {
+        SATA[SUB,,r] <- raster::extract(R[[i]],xy,method="bilinear")
+        #SATA[SUB,,r] <- bint(R[[r]],t(xy))
+      }
+      else
+      {
+        XY <- xy
+        XY[,1] <- (XY[,1] - X[[i]][1])/dX[i] + 1
+        XY[,2] <- (XY[,2] - Y[[i]][1])/dY[i] + 1
+
+        XY <- cbind(XY,rep(data$t,N))
+        SATA[SUB,,r] <- tint(R[[i]],t(xy))
+      }
+    }
 
     for(v in CVARS) { SATA[SUB,,v] <- evaluate(v,SATA[SUB,,,drop=FALSE]) }
 
@@ -744,6 +742,70 @@ rsf.mcint <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,le
   RSF$range <- TRUE
 
   return(RSF)
+}
+
+
+# expand raster factors into
+expand.factors <- function(R,formula,reference="auto",data=NULL,fixed=FALSE)
+{
+  NAMES <- names(R)
+  for(i in 1:length(R))
+  {
+    if(raster::is.factor(R[[i]]))
+    {
+      NAME <- NAMES[i]
+      FACT <- R[[i]]
+      R <- R[-i]
+      NAMES <- NAMES[-i]
+
+      LEVELS <- raster::levels(FACT)[[1]]$ID # assuming one layer
+
+      if(fixed)
+      {
+        TERMS <- attr(stats::terms(formula),"term.labels")
+        # I am not good with regexp
+        HEAD <- paste0(NAME,"[")
+        reference <- TERMS[grepl(HEAD,TERMS,fixed=TRUE)][1] # *NAME[#/ref]*
+        reference <- strsplit(reference,HEAD,fixed=TRUE)[[1]][2] # #/ref]*
+        reference <- strsplit(reference,"/",fixed=TRUE)[[1]][2] # ref]*
+        reference <- strsplit(reference,"]",fixed=TRUE)[[1]][1] # ref
+        reference <- which(LEVELS==reference)
+      }
+      else if(reference=="auto") # fix base layer
+      {
+        PROJ <- raster::projection(FACT)
+        data <- get.telemetry(data,c("longitude","latitude"))
+        colnames(data) <- c('x','y')
+        data <- project(data,to=PROJ)
+        data <- raster::extract(FACT,data) # don't interpolate
+        UNIQUE <- unique(data) # may be missing some levels
+        data <- tabulate(match(data,UNIQUE)) # tallies
+        reference <- UNIQUE[which.max(data)]
+        message("Reference category set to ",reference,".")
+      }
+      # else the reference category is specified by `reference`
+
+      DIFF <- LEVELS %nin% reference
+      FACT <- lapply(LEVELS[DIFF],function(l){FACT==l})
+      LEVELS <- paste0(NAME,"[",LEVELS,"/",LEVELS[reference],"]")[DIFF]
+      names(FACT) <- LEVELS
+
+      R <- c(R,FACT)
+
+      # expand terms
+      if(!fixed && !is.null(formula))
+      {
+        formula <- as.character(formula)[2]
+        formula <- sapply(LEVELS,function(l){gsub(NAME,l,formula,fixed=TRUE)})
+        formula <- paste(formula,collapse="+")
+        formula <- paste("~",formula)
+        formula <- eval(parse(text=formula))
+        formula <- simplify.formula(formula)
+      }
+    }
+  }
+  if(fixed) { return(R) }
+  RETURN <- list(R=R,formula=formula)
 }
 
 

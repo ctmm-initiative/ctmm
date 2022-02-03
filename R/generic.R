@@ -335,3 +335,14 @@ capitalize <- function(s)
   substr(s,1,1) <- toupper(substr(s,1,1))
   s
 }
+
+
+simplify.formula <- function(x)
+{
+  x <- as.character(x)[2]
+  x <- terms(x,simplify=TRUE)
+  x <- as.character(x)[2]
+  x <- paste("~",x)
+  x <- eval(parse(text=x))
+  return(x)
+}

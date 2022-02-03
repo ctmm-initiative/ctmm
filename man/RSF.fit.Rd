@@ -7,8 +7,8 @@
 This function is in development and is subject to change.
 }
 \usage{
-rsf.fit(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
-        isotropic=TRUE,debias=TRUE,smooth=TRUE,error=0.01,trace=TRUE,...)
+rsf.fit(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,reference="auto",
+        level.UD=0.99,isotropic=TRUE,debias=TRUE,smooth=TRUE,error=0.01,trace=TRUE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -18,6 +18,7 @@ rsf.fit(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
   \item{R}{A named list of rasters or time-varying raster stacks [NOT TESTED] to fit Poisson regression coefficients to (under a log link).}
   \item{formula}{Formula object for \eqn{\log(\lambda)} referencing the elements of \code{R} and columns of \code{data} (see Details below). If not specified, a linear term will be included for every element of \code{R}.}
   \item{integrated}{Fit an integrated RSF model with simultaneously estimated spatial constraints. \code{integrated=FALSE} is for comparison purposes only.}
+  \item{reference}{When expanding categorical predictors into indicator variables, \code{reference="auto"} will choose the most common predictor to be the reference category. Otherwise, the reference category can be specified by this argument.}
   \item{level.UD}{Coverage probability of \code{UD} to sample uniformly from if \code{integrated=FALSE}. Can also be a pre-defined spatial polygon object.}
   \item{isotropic}{Force spatial constraint parameters to be symmetric (only \code{isotropic=TRUE} is currently supported).}
   \item{debias}{Apply a post-hoc bias correction to the spatial constraint parameters, and apply bias corrections to the numerical log-likelihood estimates.}
@@ -41,6 +42,9 @@ Any \code{offset} terms are applied under a log transformation (or multiplicativ
 where \code{offset(raster)=TRUE} denotes accesible points and \code{offset(raster)=FALSE} denotes inaccessible points [NOT TESTED].
 Intercept terms are ignored, as they generally do not make sense for individual Poisson point process models.
 This includes terms only involving the columns of \code{data}, as they lack spatial dependence.
+
+Categorical raster variables are expanded into indicator variables, according to the \code{reference} category argument.
+Upon import via \code{\link[raster]{raster}}, categorical variables may need to be assigned with \code{\link{raster::as.factor}}, or else they may be interpreted as numerical variables.
 }
 
 %\value{}

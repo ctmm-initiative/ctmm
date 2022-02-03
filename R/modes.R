@@ -1,6 +1,8 @@
 # statistical mode
-modes.numeric <- function(x,method="exact")
+modes.numeric <- function(x,method="exact",na.rm=TRUE)
 {
+  if(na.rm) { x <- x[!is.na(x)] }
+
   x <- sort(x)
   unique.x <- unique(x)
 
@@ -8,21 +10,24 @@ modes.numeric <- function(x,method="exact")
   {
     freq <- tabulate(match(x, unique.x))
     MAX <- max(freq)
-    IND <- which(freq==MAX)
+    IND <- freq==MAX
+    MODES <- unique.x[IND]
 
     # well defined sample mode
-    if(length(IND)==1) { return(x[IND]) }
+    if(length(MODES)==1) { return(MODES) }
+
     # else minimize log-distance
+    IND <- x %in% MODES
   }
   else
-  { IND <- 1:length(x) }
+  { IND <- rep(TRUE,length(x)) }
 
   # log distance
   D <- log(abs(outer(x,x,'-')))
   # no self distance
   diag(D) <- 0
   # no ties
-  if(length(IND)<length(x))
+  if(sum(IND)<length(x))
   {
     D[IND,IND] <- 0
     D[!IND,!IND] <- Inf
