@@ -209,7 +209,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,#R=NULL,
       CTMM[[i]] <- unit.ctmm(CTMM[[i]],dist$scale)
 
       # plot denisty function lazily reusing KDE code
-      pdf <- kde(data.frame(CTMM[[i]]$mu[1,,drop=FALSE]),H=methods::getDataPart(CTMM[[i]]$sigma),axes=c("x","y"),res=500)
+      pdf <- agde(CTMM[[i]],res=500)
       plot.df(pdf,DF=DF,col=col.DF[[i]],...)
 
       # plot ML estimate, regular style

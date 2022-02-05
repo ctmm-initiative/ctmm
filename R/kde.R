@@ -388,14 +388,8 @@ akde.bias <- function(CTMM,H,lag,DOF,weights)
 }
 
 
-###################
-# homerange wrapper function
-homerange <- function(data,CTMM,method="AKDE",...)
-{ akde(data,CTMM,...) }
-
-
 # AKDE single or list
-# (C) C.H. Fleming (2016-2019)
+# (C) C.H. Fleming (2016-2022)
 # (C) Kevin Winner & C.H. Fleming (2016)
 akde <- function(data,CTMM,VMM=NULL,R=list(),variable="utilization",debias=TRUE,weights=FALSE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
 {
@@ -643,15 +637,17 @@ kde <- function(data,H,axes=c("x","y"),CTMM=list(),RASTER=list(),bias=FALSE,W=NU
         } # end non-stationary suitability calculation
       } # end suitability modulus
 
-      dPMF <- W[i]*pnorm2(R[[1]][SUB[[1]]]-r[i,1],R[[2]][SUB[[2]]]-r[i,2],H[i,,],dr,alpha)
+      dPMF <- pnorm2(R[[1]][SUB[[1]]]-r[i,1],R[[2]][SUB[[2]]]-r[i,2],H[i,,],dr,alpha)
 
       # apply suitability and re-normalize
       if(length(RASTER))
       {
-        SUM <- sum(dPMF)
+        SUM <- sum(dPMF) # preserve truncation error
         dPMF <- dPMF * R.SUB
         dPMF <- (SUM/sum(dPMF)) * dPMF
       }
+
+      dPMF <- W[i]*dPMF
 
       PMF[SUB[[1]],SUB[[2]]] <- PMF[SUB[[1]],SUB[[2]]] + dPMF
       if(!is.na(variable))

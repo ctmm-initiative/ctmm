@@ -53,9 +53,13 @@ Upon import via \code{\link[raster]{raster}}, categorical variables may need to 
 
 %\references{}
 
-\author{ C. H. Fleming }
+\author{ C. H. Fleming and B. Reineking }
 
-\note{AIC and BIC values for \code{integrated=FALSE} models do not include any penalty for the estimated location and shape of the available area, and so their AIC and BIC values  are expected to be \emph{worse} than reported.}
+\note{\bold{For numerical stability, all rasters should be scaled to a range or variance of 1.}
+
+It is much faster to calculate all predictors ahead of time and specifying them in the \code{R} list than to reference then in the \code{formula} argument, which will calculate them as needed, saving memory.
+
+AIC and BIC values for \code{integrated=FALSE} models do not include any penalty for the estimated location and shape of the available area, and so their AIC and BIC values  are expected to be \emph{worse} than reported.}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 

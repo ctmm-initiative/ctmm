@@ -130,7 +130,7 @@ rsf.mcint <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,re
       {
         DIM <- dim(envir)
         dim(envir) <- c(DIM[1]*DIM[2],DIM[3])
-        colnames(envir) <- TERMS
+        colnames(envir) <- VARS
         RET <- evaluate(term,envir)
         dim(RET) <- DIM[1:2]
       }
@@ -140,7 +140,7 @@ rsf.mcint <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,re
                 {
                   ENVIR <- envir[i,,];
                   dim(ENVIR) <- dim(envir)[-1];
-                  colnames(ENVIR) <- TERMS
+                  colnames(ENVIR) <- VARS
                   ENVIR <- cbind(ENVIR,data);
                   evaluate(term,ENVIR)
                 }) # [time,track]
@@ -854,12 +854,10 @@ R.extract <- function(xy,proj,R,X,Y,Z=NULL,PROJ,dX,dY,dZ=NULL)
   xy[,1] <- (xy[,1] - X[1])/dX + 1
   xy[,2] <- (xy[,2] - Y[1])/dY + 1
 
-  # # catch truncation error and record !!!
-  # BAD <- (xy[,1]<0) | (nrow(R)+1<xy[,1]) | (xy[,2]<0) | (ncol(R)+1<xy[,2])
-  # BADS <- sum(BAD)
-
   if(length(DIM)==2)
-  { E <- bint(R,t(xy)) }
+  {
+    E <- bint(R,t(xy))
+  }
   else # xyt
   {
     # missing t axis

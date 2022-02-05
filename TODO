@@ -14,8 +14,10 @@
 * overlap VAR
 
 ** RSF
+* calculate parscales from predictors of data (variance?)
+* RSF AGDE non-stationary needs times
+* non-integrated RSFs need to switch autocorrelation model to BM/IOU?
 * RSF habitat suitability calculation
-* RSF ctmm synoptic model calculation
 * timelink upgrade to use periodic splinefun with deriv argument
 * rsf.fit variable scaling option
 * rsf.fit simulate, predict
