@@ -62,7 +62,7 @@ diffusion <- function(CTMM,level=0.95,finish=TRUE)
   NAMES <- CTMM$tau.names
   if(circle) { NAMES <- c(NAMES,"circle") }
 
-  if(!length(tau)) # IID
+  if(!length(tau) || all(tau==0)) # IID
   {
     if(!finish) { return(list(D=Inf,grad=0,VAR=Inf,DOF=0)) }
     return( c(0,Inf,Inf) )
@@ -73,8 +73,11 @@ diffusion <- function(CTMM,level=0.95,finish=TRUE)
     D.grad <- NULL
     NAMES <- NULL
   }
-  else if(length(tau)==1) # OU
+  else if(length(tau)==1 || tau[2]==0) # OU
   {
+    tau <- tau[1]
+    NAMES <- CTMM$tau.names[1]
+
     if(circle*tau <= 1) # max diffusion rate at zero lag
     {
       D <- 1/tau
@@ -89,72 +92,75 @@ diffusion <- function(CTMM,level=0.95,finish=TRUE)
       D.grad <- 2/(1+z^2)/circle * z.grad - c(0,D/circle)
     }
   }
-  else if(length(tau)==2 && !omega && tau[1]!=tau[2] && !circle) # OUF
+  else if(length(tau)==2)
   {
-    z <- tau[2]/tau[1]
-    z.grad <- c(-1,1)*z/tau
-    D <- Diff.OUF.fn(z) / tau[1]
-    D.grad <- Diff.OUF.fn(z,deriv=1)/tau[1]*z.grad - c(D/tau[1],0)
-  }
-  else if(length(tau)==2 && omega && tau[1]==tau[2] && !circle) # OUO
-  {
-    z <- tau[1]*omega
-    z.grad <- c(omega,tau[1])
-    D <- Diff.OUO.fn(z) / tau[1]
-    D.grad <- Diff.OUO.fn(z,deriv=1)/tau[1]*z.grad - c(D/tau[1],0)
-  }
-  else if(length(tau)==2 && !omega && tau[1]==tau[2] && !circle) # OUf
-  {
-    D <- exp(-1)/tau[1]
-    D.grad <- -D/tau[1]
-  }
-  else if(circle) # OUF, OUO, OUf with circulation can't be solved analytically
-  {
-    if(!omega && tau[1]!=tau[2]) # OUF
+    if(!omega && tau[1]!=tau[2] && !circle) # OUF
     {
-      NAMES <- paste("tau",NAMES)
-      S0.fn <- function(t) { -diff(exp(-t/tau)*tau)/diff(tau) }
-      D0.fn <- function(t) { diff(exp(-t/tau))/diff(tau) }
-      D1.fn <- function(t) { -diff(exp(-t/tau)/tau)/diff(tau) }
-      J <- diag(2)
-      LAG0 <- log(tau[1]/tau[2])/(1/tau[2]-1/tau[1])
+      z <- tau[2]/tau[1]
+      z.grad <- c(-1,1)*z/tau
+      D <- Diff.OUF.fn(z) / tau[1]
+      D.grad <- Diff.OUF.fn(z,deriv=1)/tau[1]*z.grad - c(D/tau[1],0)
     }
-    else if(!omega && tau[1]==tau[2]) # OUf
+    else if(omega && tau[1]==tau[2] && !circle) # OUO
     {
-      S0.fn <- function(t) { -(1+f*t) * exp(-f*t) }
-      D0.fn <- function(t) { f^2*t * exp(-f*t) }
-      D1.fn <- function(t) { f^2*(1-f*t) * exp(-f*t) }
-      J <- CTMM$J.f.tau
-      LAG0 <- tau[1]
+      z <- tau[1]*omega
+      z.grad <- c(omega,tau[1])
+      D <- Diff.OUO.fn(z) / tau[1]
+      D.grad <- Diff.OUO.fn(z,deriv=1)/tau[1]*z.grad - c(D/tau[1],0)
     }
-    else if(omega) # OUO
+    else if(!omega && tau[1]==tau[2] && !circle) # OUf
     {
-      S0.fn <- function(t) { -(cos(nu*t)+f/nu*sin(nu*t)) * exp(-f*t) }
-      D0.fn <- function(t) { Omega2/nu * sin(nu*t) * exp(-f*t) }
-      D1.fn <- function(t) { Omega2 * ( cos(nu*t) - f/nu*sin(nu*t) ) * exp(-f*t) }
-      J <- CTMM$J.nu.tau
-      LAG0 <- atan(nu*t)/nu
+      D <- exp(-1)/tau[1]
+      D.grad <- -D/tau[1]
     }
-
-    # negative diffusion rate function of lag
-    nD.fn <- function(t) { -(D0.fn(t)*cos(circle*t) - S0.fn(t)*circle*sin(circle*t)) }
-
-    MAX <- optimizer(LAG0,nD.fn,lower=0)
-    LAG <- MAX$par
-    D <- -MAX$value
-
-    # UNFINISHED
-    # UNFINISHED
-    # UNFINISHED
-
-    # zero circulation result
-    R0 <- CTMM
-    R0$circle <- FALSE
-    R0 <- diffusion(R0,finish=FALSE)
-
-    D.grad <- c(R0$D.grad,(D-R0$D)/circle) # crude calculation of gradient if circle>>0
-    # very annoying to calculate this better (optimize inside gradient)
   }
+  # else if(circle) # OUF, OUO, OUf with circulation can't be solved analytically
+  # {
+  #   if(!omega && tau[1]!=tau[2]) # OUF
+  #   {
+  #     NAMES <- paste("tau",NAMES)
+  #     S0.fn <- function(t) { -diff(exp(-t/tau)*tau)/diff(tau) }
+  #     D0.fn <- function(t) { diff(exp(-t/tau))/diff(tau) }
+  #     D1.fn <- function(t) { -diff(exp(-t/tau)/tau)/diff(tau) }
+  #     J <- diag(2)
+  #     LAG0 <- log(tau[1]/tau[2])/(1/tau[2]-1/tau[1])
+  #   }
+  #   else if(!omega && tau[1]==tau[2]) # OUf
+  #   {
+  #     S0.fn <- function(t) { -(1+f*t) * exp(-f*t) }
+  #     D0.fn <- function(t) { f^2*t * exp(-f*t) }
+  #     D1.fn <- function(t) { f^2*(1-f*t) * exp(-f*t) }
+  #     J <- CTMM$J.f.tau
+  #     LAG0 <- tau[1]
+  #   }
+  #   else if(omega) # OUO
+  #   {
+  #     S0.fn <- function(t) { -(cos(nu*t)+f/nu*sin(nu*t)) * exp(-f*t) }
+  #     D0.fn <- function(t) { Omega2/nu * sin(nu*t) * exp(-f*t) }
+  #     D1.fn <- function(t) { Omega2 * ( cos(nu*t) - f/nu*sin(nu*t) ) * exp(-f*t) }
+  #     J <- CTMM$J.nu.tau
+  #     LAG0 <- atan(nu*t)/nu
+  #   }
+  #
+  #   # negative diffusion rate function of lag
+  #   nD.fn <- function(t) { -(D0.fn(t)*cos(circle*t) - S0.fn(t)*circle*sin(circle*t)) }
+  #
+  #   MAX <- optimizer(LAG0,nD.fn,lower=0)
+  #   LAG <- MAX$par
+  #   D <- -MAX$value
+  #
+  #   # UNFINISHED
+  #   # UNFINISHED
+  #   # UNFINISHED
+  #
+  #   # zero circulation result
+  #   R0 <- CTMM
+  #   R0$circle <- FALSE
+  #   R0 <- diffusion(R0,finish=FALSE)
+  #
+  #   D.grad <- c(R0$D.grad,(D-R0$D)/circle) # crude calculation of gradient if circle>>0
+  #   # very annoying to calculate this better (optimize inside gradient)
+  # }
 
   NAMES <- c("variance",NAMES)
   D.grad <- c( D, sigma * D.grad )

@@ -1,7 +1,7 @@
 # solve a quadratic programming problem constrained to the probability simplex
 # this method uses the KKT relations to identify what appears to be the current feasible/free region
 # and then within that region we apply preconditioned conjugate gradient to the equality constrained optimization problem
-PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC="circulant",IG=NULL,MARKOV=NULL)
+PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC="circulant",IG=NULL,MARKOV=NULL,trace=FALSE,...)
 {
   silent <- TRUE
 

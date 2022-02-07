@@ -38,9 +38,10 @@ lag.DOF <- function(data,dt=NULL,weights=NULL,lag=NULL,FLOOR=NULL,p=NULL)
 ##################################
 # Bandwidth optimizer
 #lag.DOF is an unsupported option for end users
-bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,precision=1/2,PC="Markov",verbose=FALSE,trace=FALSE)
+bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,precision=1/2,PC="Markov",verbose=FALSE,trace=FALSE,...)
 {
   PC <- match.arg(PC,c("Markov","circulant","IID","direct"))
+  trace2 <- ifelse(trace,trace-1,FALSE)
 
   if(length(CTMM$tau)==0 || all(CTMM$tau==0)) { weights <- FALSE }
 
@@ -255,7 +256,7 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,precisi
     # { hlim[2] <- bandwidth(data,CTMM,VMM=VMM,weights=FALSE,fast=fast,dt=dt,precision=precision,verbose=TRUE)$h[1] }
     # Not sure how helpful this is?
 
-    MISE <- optimizer(sqrt(prod(hlim)),MISE,lower=hlim[1],upper=hlim[2],control=list(precision=precision))
+    MISE <- optimizer(sqrt(prod(hlim)),MISE,lower=hlim[1],upper=hlim[2],control=list(precision=precision,trace=trace2))
     h <- MISE$par
     MISE <- MISE$value
 
@@ -273,7 +274,7 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,precisi
     #!! could do an n=1 evaluation here for maximum h !!#
 
     h <- 4/5/n^(1/7) # Use Silverman's rule of thumb as initial guess
-    MISE <- optimizer(c(h,h),MISE,lower=c(0,0),control=list(precision=precision))
+    MISE <- optimizer(c(h,h),MISE,lower=c(0,0),control=list(precision=precision,trace=trace2))
     h <- MISE$par
     MISE <- MISE$value
 
@@ -408,7 +409,6 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),variable="utilization",debias=TRUE,
   COMPATIBLE <- length(data)>1 && !is.grid.complete(grid)
 
   axes <- CTMM[[1]]$axes
-  grid <- format.grid(grid,axes=axes)
 
   n <- length(data)
   weights <- array(weights,n)
@@ -425,12 +425,13 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),variable="utilization",debias=TRUE,
       axes <- CTMM[[i]]$axes
 
       # smooth out errors (which also removes duplicate times)
-      z <- NULL
       if(!is.null(VMM[[i]]))
       {
         axis <- VMM[[i]]$axes
         if(VMM[[i]]$error && smooth)
         { z <- predict(VMM[[i]],data=data[[i]],t=data[[i]]$t)[[axis]] } # [,axis] fails?
+        else
+        { z <- data[[i]][[axis]] }
         axes <- c(axes,axis)
       }
       if(CTMM[[i]]$error && smooth)
@@ -463,6 +464,7 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),variable="utilization",debias=TRUE,
     { DEBIAS[[i]] <- FALSE }
   } # end loop over individuals
 
+  grid <- format.grid(grid,axes=axes)
   COL <- length(axes)
 
   # determine desired (absolute) resolution
@@ -486,7 +488,7 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),variable="utilization",debias=TRUE,
     EXT <- extent(EXT,level=1-error)[,axes] # Gaussian extent (includes uncertainty)
     GRID <- kde.grid(data[[i]],H=KDE[[i]]$H,axes=axes,alpha=error,res=res,dr=dr,grid=grid,EXT.min=EXT) # individual grid
 
-    KDE[[i]] <- c(KDE[[i]],kde(data[[i]],H=KDE[[i]]$H,axes=axes,CTMM=CTMM0[[i]],RASTER=R,bias=DEBIAS[[i]],W=KDE[[i]]$weights,alpha=error,dr=dr,grid=GRID))
+    KDE[[i]] <- c(KDE[[i]],kde(data[[i]],H=KDE[[i]]$H,axes=axes,CTMM=CTMM0[[i]],RASTER=R,bias=DEBIAS[[i]],W=KDE[[i]]$weights,alpha=error,dr=dr,grid=GRID,...))
 
     KDE[[i]] <- new.UD(KDE[[i]],info=attr(data[[i]],"info"),type='range',variable="utilization",CTMM=ctmm())
     # in case bandwidth is pre-calculated...
@@ -530,7 +532,7 @@ prepare.H <- function(H,n,axes=c('x','y'))
 # construct my own KDE objects
 # was using ks-package but it has some bugs
 # alpha is the error goal in my total probability
-kde <- function(data,H,axes=c("x","y"),CTMM=list(),RASTER=list(),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr=NULL,grid=NULL,variable=NA,normalize=TRUE)
+kde <- function(data,H,axes=c("x","y"),CTMM=list(),RASTER=list(),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr=NULL,grid=NULL,variable=NA,normalize=TRUE,trace=FALSE)
 {
   if(!is.na(variable))
   {
@@ -586,6 +588,7 @@ kde <- function(data,H,axes=c("x","y"),CTMM=list(),RASTER=list(),bias=FALSE,W=NU
   # Nadaraya-Watson numerator (for regressions)
   if(!is.na(variable)) { NUM <- PMF }
 
+  if(trace) { pb <- utils::txtProgressBar(style=3) } # time loops
   for(i in 1:n)
   {
     # sub-grid lower/upper bound indices
@@ -655,7 +658,9 @@ kde <- function(data,H,axes=c("x","y"),CTMM=list(),RASTER=list(),bias=FALSE,W=NU
     }
     else if(length(SUB)==3) # 3D
     { PMF[SUB[[1]],SUB[[2]],SUB[[3]]] <- PMF[SUB[[1]],SUB[[2]],SUB[[3]]] + W[i]*pnorm3(R[[1]][SUB[[1]]]-r[i,1],R[[2]][SUB[[2]]]-r[i,2],R[[3]][SUB[[3]]]-r[i,3],H[i,,],dr,alpha) }
-  }
+
+    if(trace) { utils::setTxtProgressBar(pb,i/n) }
+  } # end time loop
 
   if(!is.na(variable)) # revisitation is treated separately
   { return(NUM/PMF) } # E[variable|data]
@@ -695,6 +700,7 @@ kde <- function(data,H,axes=c("x","y"),CTMM=list(),RASTER=list(),bias=FALSE,W=NU
   { CDF <- pmf2cdf(PMF) }
 
   result <- list(PDF=PMF/dV,CDF=CDF,axes=axes,r=R,dr=dr)
+  if(trace) { close(pb) }
   return(result)
 }
 

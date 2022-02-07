@@ -1,4 +1,4 @@
-ctmm 0.6.2 (2021-02-04)
+ctmm 0.6.2 (2021-02-07)
 ================
 
   * new function rsf.fit() to fit integrated resource selection functions (iRSFs) with autocorrelation-adjusted weighted likelihood
@@ -6,6 +6,8 @@ ctmm 0.6.2 (2021-02-04)
   * new function revisitation() to calculate the distribution of revisitations
   
   * new function npr() to calculate non-parametric spatial regressions
+  
+  * new function agde() to calculate autocorrelated Gaussian distribution estimates, with RSF support
   
   * akde() now supports RSF-informed kernels
   
@@ -30,6 +32,8 @@ ctmm 0.6.2 (2021-02-04)
   * bugfix in ctmm.loglike() when fitting multiple error classes, where some are zero
   
   * bugfix in ctmm.boot() when bias estimate exceeds variance parameter
+  
+  * bugfixes in 3D akde()
 
 ctmm 0.6.1 (2021-07-26)
 ================

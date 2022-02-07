@@ -14,7 +14,7 @@
 * overlap VAR
 
 ** RSF
-* calculate parscales from predictors of data (variance?)
+* rescale option for rasters (and annotations) when no formula is provided
 * RSF AGDE non-stationary needs times
 * non-integrated RSFs need to switch autocorrelation model to BM/IOU?
 * RSF habitat suitability calculation

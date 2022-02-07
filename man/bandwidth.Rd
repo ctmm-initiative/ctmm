@@ -6,7 +6,7 @@
 \description{This function calculates the optimal bandwidth matrix (kernel covariance) for a two-dimensional animal tracking dataset, given an autocorrelated movement model (Fleming et al, 2015). This optimal bandwidth can fully take into account all autocorrelation in the data, assuming it is captured by the movement model.}
 \usage{
 bandwidth(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,precision=1/2,PC="Markov",
-  verbose=FALSE,trace=FALSE)
+  verbose=FALSE,trace=FALSE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -20,6 +20,7 @@ bandwidth(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,precision=1/2,PC="M
   \item{PC}{Preconditioner to use: can be "Markov", "circulant", "IID", or "direct".}
   \item{verbose}{ Optionally return the optimal \code{weights}, effective sample size \code{DOF.H}, and other information along with the bandwidth matrix \code{H}.}
   \item{trace}{Produce tracing information on the progress of weight optimization.}
+  \item{...}{Additional arguments not currently used.}
 }
 \details{
 The \code{weights=TRUE} argument can be used to correct temporal sampling bias caused by autocorrelation.
