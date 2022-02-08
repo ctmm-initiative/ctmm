@@ -567,6 +567,7 @@ F.CI <- function(E1,VAR1,E2,VAR2,level=0.95)
   N1 <- 2*E1^2/VAR1 # chi^2 DOF
   N2 <- 2*E2^2/VAR2 + 4 # inverse-chi^2 DOF
   BIAS <- N2/(N2-2) # F-distribution mean bias factor
+  if(BIAS<0) { BIAS <- Inf }
 
   alpha <- (1-level)/2
   CI <- stats::qf(c(alpha,1-alpha),N1,N2)

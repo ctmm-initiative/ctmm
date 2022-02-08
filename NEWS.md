@@ -9,13 +9,15 @@ ctmm 0.6.2 (2021-02-07)
   
   * new function agde() to calculate autocorrelated Gaussian distribution estimates, with RSF support
   
+  * new function suitability() to calculate suitability rasters from RSF fit objects
+  
   * akde() now supports RSF-informed kernels
   
   * summary.ctmm() now outputs diffusion rate estimates
   
   * new argument variable for meta() to estimate population diffusion rates, mean speeds, and autocorrelation timescales
   
-  * new argument SP in plot.telemetry() and plot.UD() for plotting shapefile base layers
+  * new arguments R and SP in plot.telemetry() and plot.UD() for plotting raster and shapefile base layers
   
   * plot() now works on 3D UDs
   

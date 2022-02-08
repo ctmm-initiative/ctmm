@@ -12,7 +12,7 @@ methods::setMethod("zoom",signature(x="telemetry"), function(x,fraction=1,...) z
 methods::setMethod("zoom",signature(x="UD"), function(x,fraction=1,...) zoom.telemetry(x,fraction=fraction,...))
 
 ##############
-new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,R=NULL,level.UD=0.95,level=0.95,units=TRUE,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,ext=NULL,...)
+new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,R=NULL,col.R="green",legend=FALSE,level.UD=0.95,level=0.95,units=TRUE,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,ext=NULL,...)
 {
   RESIDUALS <- !is.null(data) && !is.null(attr(data[[1]],"info")$residual)
 
@@ -107,6 +107,7 @@ new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,R=NULL,level.UD=0.95,level=0.95
 
     # empty base layer plot
     plot(ext, xlab=xlab, ylab=ylab, col=grDevices::rgb(1,1,1,0), asp=1, ...)
+
     # plot information for further layering
     projection <- unique(c(projection(data),projection(CTMM),projection(UD))) # some objects could be NULL
     if(length(projection)>1 && !RESIDUALS) { stop("Multiple projections not yet supported.") }
@@ -132,6 +133,9 @@ new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,R=NULL,level.UD=0.95,level=0.95
     }
   }
 
+  # PLOT RASTER / SUITABILITY
+  if(!is.null(R)) { plot.R(R,col=col.R,legend=legend) }
+
   return(dist)
 }
 # setup environment
@@ -144,10 +148,9 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,#R=NULL,
                            cex=NULL,col="red",lwd=1,pch=1,type='p',error=TRUE,transparency.error=0.25,velocity=FALSE,
                            DF="CDF",col.DF="blue",col.grid="white",labels=NULL,level=0.95,level.UD=0.95,col.level="black",lwd.level=1,
                            SP=NULL,border.SP=TRUE,col.SP=NA,
+                           R=NULL,col.R="green",legend=FALSE,
                            fraction=1,xlim=NULL,ylim=NULL,ext=NULL,units=TRUE,add=FALSE,...)
 {
-  R <- NULL
-
   alpha <- 1-level
   alpha.UD <- 1-level.UD
 
@@ -157,8 +160,8 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,#R=NULL,
   UD <- listify(UD)
   R <- listify(R)
   # fix argument order
-  if(class(CTMM[[1]])=="UD") { UD <- CTMM; CTMM <- NULL }
-  if(class(CTMM[[1]])=="RS") { R <- CTMM; CTMM <- NULL }
+  if(class(CTMM[[1]])[1]=="UD") { UD <- CTMM; CTMM <- NULL }
+  if(class(CTMM[[1]])[1]=="RasterLayer") { R <- CTMM; CTMM <- NULL }
 
   # catch 3D UDs
   if(length(dim(UD[[1]]$CDF))==3)
@@ -181,15 +184,16 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,#R=NULL,
     CTMM <- list(ctmm(sigma=1,mu=c(0,0)))
   }
 
-  dist <- new.plot(data=x,CTMM=CTMM,UD=UD,R=R,level.UD=level.UD,level=level,units=units,fraction=fraction,add=add,xlim=xlim,ylim=ylim,ext=ext,...)
-
-  # extents calculated without RS
-  if(!is.null(R)) { UD <- R; rm(R); DF <- "RS" }
+  dist <- new.plot(data=x,CTMM=CTMM,UD=UD,R=R,col.R=col.R,legend=legend,level.UD=level.UD,level=level,units=units,fraction=fraction,add=add,xlim=xlim,ylim=ylim,ext=ext,...)
 
   # plot cm per unit of distance plotted (m or km)
   cmpkm <- 2.54*mean(graphics::par("fin")*diff(graphics::par("plt"))[-2]/diff(graphics::par("usr"))[-2])
   # plot px per unit of distance plotted (m or km)
   pxpkm <- mean(grDevices::dev.size("px")*diff(graphics::par("plt"))[-2]/diff(graphics::par("usr"))[-2])
+
+  # #######################
+  # # PLOT RASTER / SUITABILITY
+  # if(!is.null(R)) { plot.R(R,col=col.R) }
 
   #########################3
   # PLOT SHAPEFILES
@@ -428,6 +432,27 @@ pull <- function(pchar,i)
 }
 
 
+# plot raster layer
+plot.R <- function(R,col="green",legend=FALSE)
+{
+  x.scale <- get0('x.scale',plot.env)
+
+  for(i in 1:length(R))
+  {
+    PROJ <- raster::projection(R[[i]])
+    if(x.scale==1000 && grepl("+units=m",PROJ)) # km scale (not meters)
+    { raster::extent(R[[i]]) <- raster::extent(R[[i]])[]/1000 }
+
+    if(length(col)==length(R))
+    { COL <- malpha(col[i],(0:255)/255) }
+    else
+    { COL <- col }
+
+    raster::plot(R[[i]],col=COL,legend=legend,maxpixels=.Machine$integer.max,add=TRUE)
+  }
+}
+
+
 # plot shapefiles
 plot.SP <- function(SP=NULL,border.SP=TRUE,col.SP=NA,PROJ=NULL,...)
 {
@@ -449,6 +474,7 @@ plot.SP <- function(SP=NULL,border.SP=TRUE,col.SP=NA,PROJ=NULL,...)
 ##############
 plot.UD <- function(x,DF="CDF",col.DF="blue",col.grid="white",labels=NULL,level=0.95,level.UD=0.95,col.level="black",lwd.level=1,
                     SP=NULL,border.SP=TRUE,col.SP=NA,
+                    R=NULL,col.R="green",legend=FALSE,
                     fraction=1,xlim=NULL,ylim=NULL,ext=NULL,units=TRUE,add=FALSE,...)
 {
   x <- listify(x)
@@ -462,7 +488,10 @@ plot.UD <- function(x,DF="CDF",col.DF="blue",col.grid="white",labels=NULL,level=
 
   if(class(x[[1]])[1]=="RS") { DF <- 'RS' }
 
-  dist <- new.plot(UD=x,units=units,fraction=fraction,xlim=xlim,ylim=ylim,ext=ext,level.UD=level.UD,level=level,add=add,...)
+  dist <- new.plot(UD=x,R=R,col.R=col.R,legend=legend,units=units,fraction=fraction,xlim=xlim,ylim=ylim,ext=ext,level.UD=level.UD,level=level,add=add,...)
+
+  # # PLOT RASTER / SUITABILITY
+  # if(!is.null(R)) { plot.R(R,col=col.R) }
 
   # PLOT SHAPEFILES
   if(!is.null(SP)) { plot.SP(SP=SP,border.SP=border.SP,col.SP=col.SP,PROJ=ctmm::projection(x),...) }

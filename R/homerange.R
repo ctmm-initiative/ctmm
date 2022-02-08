@@ -107,8 +107,22 @@ agde <- function(CTMM,R=list(),variable="utilization",error=0.001,res=100,grid=N
 }
 
 
-suitability <- function(CTMM,R=list(),error=0.001,res=100,grid=NULL,...)
+suitability <- function(CTMM,R=list(),grid=NULL,...)
 {
-  R.suit(R,CTMM)
+  grid <- format.grid(grid=grid,axes=CTMM$axes)
+  x <- grid$r$x
+  y <- grid$r$y
+
+  R <- expand.factors(R,CTMM$formula,fixed=TRUE)
+
+  proj <- CTMM@info$projection
+  # calculate RASTERs on spatial grid
+  R <- lapply(R,function(r){R.grid(grid$r,proj=proj,r)})
+
+  R <- R.suit(R,CTMM)
+  R <- list(x=x,y=y,z=R)
+  proj <- sp::CRS(proj)
+  R <- raster::raster(R,crs=proj)
+  return(R)
 }
 

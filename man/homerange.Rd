@@ -1,14 +1,17 @@
 \name{homerange}
 \alias{homerange}
+\alias{suitability}
 \alias{agde}
 \encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Calculate a range distribution estimate}
 \description{
-This function estimates the range distribution from \code{telemetry} data and a continuous-time movement model.
+Estimates the range distributions and suitability from \code{telemetry} data and a continuous-time movement model.
 }
 \usage{
 homerange(data,CTMM,method="AKDE",...)
+
+suitability(CTMM,R=NULL,grid=NULL,...)
 
 agde(CTMM,R=list(),variable="utilization",error=0.001,res=100,grid=NULL,...)
 }
@@ -19,17 +22,19 @@ agde(CTMM,R=list(),variable="utilization",error=0.001,res=100,grid=NULL,...)
   \item{method}{Which range distribution method to use. Can be "AKDE" or "AGDE".}
   \item{...}{Arguments passed to the method call or \code{\link{bandwidth}}.}
   \item{R}{A named list of raster covariates if \code{CTMM} contains an RSF model}
+  \item{grid}{Grid specification via \code{raster}, \code{UD}, or list of arguments (See \code{\link{akde}} for details).}
   \item{variable}{Not yet supported.}
   \item{error}{Target probability error.}
   \item{res}{Number of grid points along each axis, relative to the location covariance.}
-  \item{grid}{Optional grid specification via \code{raster}, \code{UD}, or list of arguments (See `Details' in \code{\link{akde}}).}
 }
 
-\details{\code{agde} calculates autocorrelated Gaussian and RSF home-range areas.
+\details{\code{homerange} is a wrapper function that calls either \code{\link{akde}} or \code{agde}. Please consult \code{\link{akde}} for further details on \code{method="AKDE"}.
 
-Please consult \code{\link{akde}} for further details on \code{method="AKDE"}.}
+\code{suitability} calculates a suitability raster from an \code{\link{rsf.fit}} object.
 
-\value{Returns a \code{UD} object.}
+\code{agde} calculates autocorrelated Gaussian and RSF home-range areas.}
+
+\value{\code{homerange} and \code{agde} return a \code{UD} object. \code{suitability} returns a \code{\link{raster}} object.}
 
 %\references{
 %C. H. Fleming and W. F. Fagan and T. Mueller and K. A. Olson and P. Leimgruber and J. M. Calabrese (2015).

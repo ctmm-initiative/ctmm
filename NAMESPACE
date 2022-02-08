@@ -88,7 +88,7 @@ S3method(str,ctmm)
 #MEAN FUNCTIONS
 
 #AKDE FUNCTIONS
-export(agde,akde,bandwidth,homerange,writeShapefile,SpatialPolygonsDataFrame.UD)
+export(agde,akde,bandwidth,homerange,SpatialPolygonsDataFrame.UD,suitability,writeShapefile)
 #S3method(akde,list)
 #S3method(akde,telemetry)
 S3method(mean,UD)

@@ -1,9 +1,5 @@
-rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,reference="auto",level.UD=0.99,isotropic=TRUE,debias=TRUE,smooth=TRUE,error=0.01,trace=TRUE,...)
-{ rsf.mcint(data,UD,beta=beta,R=R,formula=formula,integrated=integrated,reference=reference,level.UD=level.UD,isotropic=isotropic,debias=debias,smooth=smooth,error=error,trace=trace,...) }
-
-rsf.mcint <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,reference="auto",level.UD=0.99,isotropic=TRUE,debias=TRUE,smooth=TRUE,error=0.01,trace=TRUE,NORM=NULL,...)
+rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,reference="auto",level.UD=0.99,isotropic=TRUE,debias=TRUE,smooth=TRUE,standardize=TRUE,error=0.01,trace=TRUE,...)
 {
-  # error <- error^2 # convert from error[beta] to error[loglike]
   STATIONARY <- TRUE
   CTMM <- UD@CTMM
   axes <- CTMM$axes
@@ -57,6 +53,17 @@ rsf.mcint <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,re
   {
     warning("R is not a named list of rasters.")
     names(R) <- paste("R",1:length(R))
+  }
+
+  if(!is.null(formula) && standardize)
+  {
+    message("Users are responsible for standardizing ",names(R)," when formula argument is supplied.")
+    standardize <- FALSE
+  }
+  else
+  {
+    RSCALE <- array(1,length(R))
+    names(RSCALE) <- names(R)
   }
 
   # expand any categorical variables into indicator variables
@@ -161,8 +168,17 @@ rsf.mcint <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,re
   {
     PROJ[[i]] <- raster::projection(R[[i]])
 
-    DIM <- dim(R[[i]])
+    if(standardize)
+    {
+      # # raster::median is not defined correctly
+      # R[[i]] <- R[[i]] - raster::median(R[[i]],na.rm=TRUE)
+      # RSCALE[i] <- raster::median(abs(R[[i]]),na.rm=TRUE)
+      R[[i]] <- R[[i]] - raster::cellStats(R[[i]],'mean',na.rm=TRUE)
+      RSCALE[i] <- raster::cellStats(R[[i]],'sd',na.rm=TRUE)
+      R[[i]] <- R[[i]]/RSCALE[i]
+    }
 
+    DIM <- dim(R[[i]])
     # if(length(dim(R[[i]]))==2) # RasterLayer (static)
     # {
     #   R[[i]] <- aperm(R[[i]],2:1) # [x,y]
@@ -188,27 +204,10 @@ rsf.mcint <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,re
 
       # index for data times in raster stack
       Z.ind[[i]] <- (data$t - Z[[i]][1])/dZ[i] + 1
-    }
-    # else
-    # { stop("") }
-
-    # if(names(R)[i] %in% TERMS) { R[[i]] <- R[[i]] - mean(R[[i]]) } # could go wrong with effect modifiers
-
-    # RSCALE[i] <- sqrt(stats::var(c(R[[i]])))
-    # R[[i]] <- R[[i]]/RSCALE[i]
-  }
+    } # end XYZ
+  } # end R loop
   if(length(X)) { names(X) <- names(Y) <- names(dX) <- names(dY) <- RVARS[1:length(X)] }
   if(length(Z)) { names(Z) <- names(dZ) <- names(Z.ind) <- RVARS[1:length(Z)] }
-  # names(RSCALE) <- RVARS
-
-  ## prepare annotated data
-  # DSCALE <- rep(1,length(DVARS))
-  # for(i in 1%:% length(DVARS))
-  # {
-  #   DSCALE[i] <- sqrt(stats::var(data[[DVARS]]))
-  #   data[[DVARS]] <- data[[DVARS]]/DSCALE[i]
-  # }
-  # names(DSCALE) <- DVARS
 
   # setup integrated spatial covariates
   if(!integrated)
@@ -674,6 +673,12 @@ rsf.mcint <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,re
     dimnames(COV.mu) <- list(axes,axes)
   }
 
+  if(standardize)
+  {
+    beta <- beta/RSCALE
+    COV[RVARS,RVARS] <- COV[RVARS,RVARS] / outer(RSCALE)
+  }
+
   # package results and return
   # turn this into ctmm object
   RSF <- ctmm(axes=axes,mu=mu,COV.mu=COV.mu,beta=beta,sigma=sigma,isotropic=isotropic,COV=COV)
@@ -1015,7 +1020,7 @@ rsf.loglike <- function(data,CTMM,R=list(),smooth=TRUE,...)
   n <- nrow(data)
   UD <- list(CTMM=CTMM,weights=rep(1,n),DOF.area=n)
 
-  rsf.mcint(data,UD,R=R,formula=formula,integrated=integrated,level.UD=level.UD,isotropic=isotropic,beta=beta,smooth=smooth,NORM=Z,...)
+#  rsf.mcint(data,UD,R=R,formula=formula,integrated=integrated,level.UD=level.UD,isotropic=isotropic,beta=beta,smooth=smooth,NORM=Z,...)
 }
 
 # model selection on anisotropy

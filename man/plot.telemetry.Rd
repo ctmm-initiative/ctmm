@@ -16,8 +16,8 @@ plot(x,y,...)
 \S3method{plot}{telemetry}(x,CTMM=NULL,UD=NULL,cex=NULL,col="red",lwd=1,pch=1,type='p',error=TRUE,
      transparency.error=0.25,velocity=FALSE,DF="CDF",col.DF="blue",col.grid="white",
      labels=NULL,level=0.95,level.UD=0.95,col.level="black",lwd.level=1,SP=NULL,
-     border.SP=TRUE,col.SP=NA,fraction=1,xlim=NULL,ylim=NULL,ext=NULL,units=TRUE,
-     add=FALSE,...)
+     border.SP=TRUE,col.SP=NA,R=NULL,col.R="green",legend=FALSE,fraction=1,xlim=NULL,
+     ylim=NULL,ext=NULL,units=TRUE,add=FALSE,...)
 
 \S4method{zoom}{list}(x,...)
 
@@ -50,6 +50,9 @@ plot(x,y,...)
   \item{SP}{\code{SpatialPolygonsDataFrame} object for plotting a shapefile base layer.}
   \item{border.SP}{Color option for shapefile polygon boundaries.}
   \item{col.SP}{Color option for shapefile polygon regions.}
+  \item{R}{Background raster, such as habitat \code{\link{suitability}}.}
+  \item{col.R}{Color option for background raster.}
+  \item{legend}{Plot a color legend for background raster.}
   \item{fraction}{Quantile fraction of the data, Gaussian \code{ctmm}, or \code{UD} range to plot, whichever is larger.}
   \item{xlim}{The \code{x} limits \code{c(x1, x2)} of the plot (in SI units).}
   \item{ylim}{The \code{y} limits \code{c(y1, y2)} of the plot (in SI units).}

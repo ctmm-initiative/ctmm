@@ -142,6 +142,15 @@ malpha <- function(col,alpha=1)
   return(col)
 }
 
+grad.white <- function(col)
+{
+  col <- c(grDevices::col2rgb(col))
+  col <- c(grDevices::rgb2hsv(col[1],col[2],col[3]))
+  white <- (255:0)/255
+  col <- grDevices::hsv(col[1],white,col[3])
+  return(col)
+}
+
 
 ##############################
 # COLOR BY INDIVIDUAL

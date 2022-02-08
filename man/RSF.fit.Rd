@@ -8,7 +8,8 @@ This function is in development and is subject to change.
 }
 \usage{
 rsf.fit(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,reference="auto",
-        level.UD=0.99,isotropic=TRUE,debias=TRUE,smooth=TRUE,error=0.01,trace=TRUE,...)
+        level.UD=0.99,isotropic=TRUE,debias=TRUE,smooth=TRUE,standardize=TRUE,error=0.01,
+        trace=TRUE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -23,6 +24,7 @@ rsf.fit(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,reference="auto"
   \item{isotropic}{Force spatial constraint parameters to be symmetric (only \code{isotropic=TRUE} is currently supported).}
   \item{debias}{Apply a post-hoc bias correction to the spatial constraint parameters, and apply bias corrections to the numerical log-likelihood estimates.}
   \item{smooth}{Apply location-error smoothing to the tracking data before regression.}
+  \item{standardize}{For numerical stability, predictors are \emph{internally} standardized, if \code{rescale=TRUE} and no \code{formula} is specified. (The final outputs are not standardized.) \bold{Otherwise, users are responsible for standardizing their predictors.}}
   \item{error}{Relative numerical error threshold for the parameter estimates and log-likelihood.}
   \item{trace}{Report progress on convergence (see Details).}
   \item{...}{Arguments passed to \code{optimizer}.}
@@ -55,9 +57,7 @@ Upon import via \code{\link[raster]{raster}}, categorical variables may need to 
 
 \author{ C. H. Fleming and B. Reineking }
 
-\note{\bold{For numerical stability, all rasters should be scaled to a range or variance of 1.}
-
-It is much faster to calculate all predictors ahead of time and specifying them in the \code{R} list than to reference then in the \code{formula} argument, which will calculate them as needed, saving memory.
+\note{It is much faster to calculate all predictors ahead of time and specifying them in the \code{R} list than to reference then in the \code{formula} argument, which will calculate them as needed, saving memory.
 
 AIC and BIC values for \code{integrated=FALSE} models do not include any penalty for the estimated location and shape of the available area, and so their AIC and BIC values  are expected to be \emph{worse} than reported.}
 

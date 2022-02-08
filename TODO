@@ -15,6 +15,7 @@
 
 ** RSF
 * rescale option for rasters (and annotations) when no formula is provided
+* precompute option for formula (with no annotations)
 * RSF AGDE non-stationary needs times
 * non-integrated RSFs need to switch autocorrelation model to BM/IOU?
 * RSF habitat suitability calculation
