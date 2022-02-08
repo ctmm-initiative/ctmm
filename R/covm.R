@@ -409,3 +409,22 @@ pars.covm <- function(COVM)
   else
   { return(COVM@par) }
 }
+
+
+# convert sigma and COV to log(sigma) and COV[log(sigma)]
+log.ctmm <- function(CTMM)
+{
+  axes <- CTMM$axes
+  isotropic <- CTMM$isotropic
+  sigma <- attr(CTMM$sigma,"par")
+  COV <- CTMM$COV
+
+  # variance parameters
+  PARS <- 1:min(2,length(sigma)) # major, (minor)
+  PARS <- names(sigma)[PARS]
+  VARS <- sigma[PARS]
+
+
+
+  return(CTMM)
+}

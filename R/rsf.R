@@ -62,7 +62,7 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
   }
   else
   {
-    RSCALE <- array(1,length(R))
+    RSCALE <- rep(1,length(R))
     names(RSCALE) <- names(R)
   }
 
@@ -673,10 +673,12 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
     dimnames(COV.mu) <- list(axes,axes)
   }
 
+  # unstandardize
   if(standardize)
   {
     beta <- beta/RSCALE
-    COV[RVARS,RVARS] <- COV[RVARS,RVARS] / outer(RSCALE)
+    COV[RVARS,] <- COV[RVARS,,drop=FALSE] / RSCALE
+    COV[,RVARS] <- t( t(COV[,RVARS,drop=FALSE]) / RSCALE )
   }
 
   # package results and return
