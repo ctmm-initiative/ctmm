@@ -2,6 +2,7 @@
 # create a raster of the ML akde
 raster.UD <- function(x,DF="CDF",...)
 {
+  proj <- attr(x,"info")$projection
   UD <- x
 
   dx <- UD$dr[1]
@@ -13,16 +14,27 @@ raster.UD <- function(x,DF="CDF",...)
   ymn <- UD$r$y[1]-dy/2
   ymx <- last(UD$r$y)+dy/2
 
+  z <- UD$r$z
+
   # probability mass for the cells
   if(DF=="PMF")
+  { UD <- UD[["PDF"]] * prod(UD$dr) }
+  else
+  { UD <- UD[[DF]] }
+
+  if(length(dim(UD))==2)
   {
-    DF <- "PDF"
-    UD[[DF]] <- UD[[DF]] * prod(UD$dr)
+    UD <- t(UD[,dim(UD)[2]:1])
+    R <- raster::raster(UD,xmn=xmn,xmx=xmx,ymn=ymn,ymx=ymx,crs=proj)
+  }
+  else
+  {
+    UD <- aperm(UD[,dim(UD)[2]:1,],c(2,1,3))
+    R <- raster::brick(UD,xmn=xmn,xmx=xmx,ymn=ymn,ymx=ymx,crs=proj)
+    R <- raster::setZ(R,z,name="height")
   }
 
-  Raster <- raster::raster(t(UD[[DF]][,dim(UD[[DF]])[2]:1]),xmn=xmn,xmx=xmx,ymn=ymn,ymx=ymx,crs=attr(UD,"info")$projection)
-
-  return(Raster)
+  return(R)
 }
 methods::setMethod("raster",signature(x="UD"), function(x,DF="CDF",...) raster.UD(x,DF=DF,...))
 

@@ -14,7 +14,7 @@
 * overlap VAR
 
 ** RSF
-* rescale option for rasters (and annotations) when no formula is provided
+* distinguish between temporal stacks and height stacks
 * precompute option for formula (with no annotations)
 * RSF AGDE non-stationary needs times
 * non-integrated RSFs need to switch autocorrelation model to BM/IOU?

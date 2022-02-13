@@ -1,4 +1,4 @@
-ctmm 0.6.2 (2021-02-07)
+ctmm 0.6.2 (2021-02-12)
 ================
 
   * new function rsf.fit() to fit integrated resource selection functions (iRSFs) with autocorrelation-adjusted weighted likelihood
@@ -19,7 +19,7 @@ ctmm 0.6.2 (2021-02-07)
   
   * new arguments R and SP in plot.telemetry() and plot.UD() for plotting raster and shapefile base layers
   
-  * plot() now works on 3D UDs
+  * plot() and raster() now work on 3D UDs
   
   * speed() output now includes DOF estimate for use with meta()
   

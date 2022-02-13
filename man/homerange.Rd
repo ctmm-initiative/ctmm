@@ -11,7 +11,7 @@ Estimates the range distributions and suitability from \code{telemetry} data and
 \usage{
 homerange(data,CTMM,method="AKDE",...)
 
-suitability(CTMM,R=NULL,grid=NULL,...)
+suitability(CTMM,R=list(),grid=NULL,...)
 
 agde(CTMM,R=list(),variable="utilization",error=0.001,res=100,grid=NULL,...)
 }

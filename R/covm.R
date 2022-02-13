@@ -329,7 +329,7 @@ axes2var <- function(CTMM,MEAN=TRUE)
 }
 
 
-# gradient matrix d sigma / d par
+# gradient matrix d sigma / d par from par
 J.sigma.par <- function(par)
 {
   major <- par["major"]
@@ -356,6 +356,35 @@ J.sigma.par <- function(par)
   return(grad)
 }
 
+# gradient matrix d par / d sigma from sigma
+J.par.sigma <- function(sigma)
+{
+  par.fn <- function(s)
+  {
+    par <- matrix(s[c("xx","xy","yy","yy")],2,2)
+    covm(par)@par
+  }
+
+  rho <- sqrt(sigma['xx']*sigma['yy']) # max value
+  parscale <- sigma
+  parscale['xy'] <- rho
+  lower <- c(0,0,-rho)
+  upper <- c(Inf,Inf,rho)
+
+  J <- genD(sigma,par.fn,lower=lower,upper=upper,parscale=parscale,order=1)
+  J <- J$grad
+  dimnames(J) <- list(c('major','minor','angle'),names(sigma))
+  return(J)
+
+  # solver method - could fail
+  J <- J.sigma.par(sigma)
+  J <- solve(J)
+  return(J)
+
+  # analytic calculation - unfinished, requires a limit corner case solution
+  TR <- sum(sigma[c("xx","yy")])
+  DET <- sigma["xx"]*sigma["yy"] - sigma["xy"]^2
+}
 
 # return the COV matrix for covm par representation
 COV.covm <- function(sigma,n,k=1,REML=TRUE)
@@ -408,23 +437,4 @@ pars.covm <- function(COVM)
   { return(COVM@par[1]) }
   else
   { return(COVM@par) }
-}
-
-
-# convert sigma and COV to log(sigma) and COV[log(sigma)]
-log.ctmm <- function(CTMM)
-{
-  axes <- CTMM$axes
-  isotropic <- CTMM$isotropic
-  sigma <- attr(CTMM$sigma,"par")
-  COV <- CTMM$COV
-
-  # variance parameters
-  PARS <- 1:min(2,length(sigma)) # major, (minor)
-  PARS <- names(sigma)[PARS]
-  VARS <- sigma[PARS]
-
-
-
-  return(CTMM)
 }
