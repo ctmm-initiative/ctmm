@@ -20,56 +20,68 @@ log.ctmm <- function(CTMM,debias=FALSE)
   }
   else
   { PARS <- c("major","minor") }
-  par[PARS] <- sigma[PARS] <- log(sigma[PARS])
   COV[PARS,] <- COV[PARS,,drop=FALSE] / sigma[PARS]
-  COV[,PARS] <- COV[,PARS,drop=FALSE] / sigma[PARS]
+  COV[,PARS] <- t( t(COV[,PARS,drop=FALSE]) / sigma[PARS] )
+  par[PARS] <- sigma[PARS] <- log(sigma[PARS])
 
   # convert log(eigen) to log(xy)
   sigma <- covm(sigma,isotropic=isotropic,axes=axes)
   if(!isotropic)
   {
+    PARS <- c("major","minor","angle")
     par[PARS] <- sigma[c(1,4,2)]  # log 'xx', 'yy', 'xy'
 
-    PARS <- c("major","minor","angle")
-    J <- J.sigma.par(sigma)
+    J <- J.sigma.par(par[PARS])
     COV[PARS,] <- J %*% COV[PARS,,drop=FALSE]
     COV[,PARS] <- COV[,PARS,drop=FALSE] %*% t(J)
   }
 
   ### log transform all positive parameters that haven't been logged
   # features to log transform
-  FEAT <- features[features %in% POSITIVE.PARAMETERS]
-  FEAT <- FEAT[FEAT %nin% names(CTMM$sigma@par)]
+  FEAT.ALL <- features[ features %in% POSITIVE.PARAMETERS | grepl("error",features) ]
+  FEAT <- FEAT.ALL[FEAT.ALL %nin% names(CTMM$sigma@par)]
 
   if(length(FEAT))
   {
-    COV[FEAT,] <- COV[FEAT,] / par[FEAT]
-    COV[,FEAT] <- COV[,FEAT] / par[FEAT]
+    COV[FEAT,] <- COV[FEAT,,drop=FALSE] / par[FEAT]
+    COV[,FEAT] <- t( t(COV[,FEAT,drop=FALSE]) / par[FEAT] )
     par[FEAT] <- log(par[FEAT])
   }
 
   # log chi^2 bias correction
-  if(debias)
+  SUB <- features[features %in% c(FEAT.ALL,"angle")]
+  if(debias && length(SUB))
   {
+    VAR <- diag(COV)
+    COR <- stats::cov2cor(COV)
+
     # diagonalize and log-chi^2 debias relevant parameter estimates
-    EIGEN <- eigen(COV)
-    dimnames(EIGEN$vectors) <- list(features,features)
-    names(EIGEN$values) <- features
+    EIGEN <- eigen(COV[SUB,SUB])
+    dimnames(EIGEN$vectors) <- list(SUB,SUB)
+    names(EIGEN$values) <- SUB
 
     # fix signs
     if(isotropic) { PARS <- "major" } else { PARS <- c("major","minor") }
     # VAR goes in log numerator for chi^2 variates: variance, diffusion, MS speed, ...
-    for(i in 1:nrow(EIGEN$vectors)) { if(sum(EIGEN$vectors[i,PARS])<0) { EIGEN$vectors[i,] <- -EIGEN$vectors[i,] } }
+    for(i in 1:ncol(EIGEN$vectors)) { if(sum(EIGEN$vectors[PARS,i])<0) { EIGEN$vectors[,i] <- -EIGEN$vectors[,i] } }
 
     # transform to diagonalized basis with VARs in log numerator
-    par <- t(EIGEN$vectors) %*% par # diagonalize parameters
+    par[SUB] <- t(EIGEN$vectors) %*% par[SUB] # diagonalize parameters
     DOF <- 2/EIGEN$values # log-chi^2 VAR-DOF relation
     BIAS <- digamma(DOF/2)-log(DOF/2) # negative bias for log(chi^2) variates
-    par <- par + BIAS # E[log-chi^2] bias correction
-    par <- EIGEN$vectors %*% par # transform back (still under logarithm)
+    par[SUB] <- par[SUB] + BIAS # E[log-chi^2] bias correction
+    par[SUB] <- c(EIGEN$vectors %*% par[SUB]) # transform back (still under logarithm)
+
+    # log-gamma variance (better than delta method)
+    EIGEN$values <- trigamma(DOF/2)
+    EIGEN <- EIGEN$vectors %*% (EIGEN$values * t(EIGEN$vectors))
+
+    COR[SUB,SUB] <- stats::cov2cor(EIGEN)
+    VAR[SUB] <- diag(EIGEN)
+    COV <- COR * outer(sqrt(VAR))
   }
 
-  RETURN <- list(par=par,COV=COV)
+  RETURN <- list(par=par,COV=COV,isotropic=isotropic)
   return(RETURN)
 }
 
@@ -81,89 +93,219 @@ exp.ctmm <- function(CTMM,debias=FALSE)
   isotropic <- CTMM$isotropic
   axes <- CTMM$axes
   features <- CTMM$features
-  par <- get.parameters(CTMM,features,linear.cov=TRUE)
+  if("par" %in% names(CTMM))
+  { par <- CTMM$par }
+  else
+  { par <- get.parameters(CTMM,features,linear.cov=TRUE) }
   COV <- CTMM$COV
-  POV <- CTMM$log.PCOV
+  POV <- CTMM$POV
+  COV.POV <- CTMM$COV.POV
+  JP <- diag(1,nrow(POV))
+  dimnames(JP) <- dimnames(COV)
 
   # log chi^2 bias correction
-  if(debias)
+  FEAT.ALL <- features[ features %in% POSITIVE.PARAMETERS | grepl("error",features) ]
+  SUB <- features[features %in% c(FEAT.ALL,"angle")]
+  if(debias && length(SUB))
   {
-    # diagonalize and log-chi^2 debias relevant parameter estimates
-    EIGEN <- eigen(COV+POV)
-    dimnames(EIGEN$vectors) <- list(features,features)
-    names(EIGEN$values) <- features
+    ##################
+    ### diagonalize and log-chi^2 debias point estimates
+    EIGEN <- (COV+POV)[SUB,SUB]
+    EIGEN <- eigen(EIGEN)
+    dimnames(EIGEN$vectors) <- list(SUB,SUB)
+    names(EIGEN$values) <- SUB
 
     # fix signs
     if(isotropic) { PARS <- "major" } else { PARS <- c("major","minor") }
     # VAR goes in log numerator for chi^2 variates: variance, diffusion, MS speed, ...
-    for(i in 1:nrow(EIGEN$vectors)) { if(sum(EIGEN$vectors[i,PARS])<0) { EIGEN$vectors[i,] <- -EIGEN$vectors[i,] } }
+    for(i in 1:nrow(EIGEN$vectors)) { if(sum(EIGEN$vectors[PARS,i])<0) { EIGEN$vectors[,i] <- -EIGEN$vectors[,i] } }
 
     # transform to diagonalized basis with VARs in log numerator
-    par <- t(EIGEN$vectors) %*% par # diagonalize parameters
-    DOF <- 2/EIGEN$values # log-chi^2 VAR-DOF relation
+    par[SUB] <- t(EIGEN$vectors) %*% par[SUB] # diagonalize parameters
+
+    # log-gamma variance (better than delta method)
+    DOF <- 2*itrigamma(EIGEN$values)
     BIAS <- digamma(DOF/2)-log(DOF/2) # negative bias for log(chi^2) variates
-    par <- par - BIAS # E[log-chi^2] bias correction
-    par <- EIGEN$vectors %*% par # transform back (still under logarithm)
+    par[SUB] <- par[SUB] - BIAS # E[log-chi^2] bias correction
+    par[SUB] <- c(EIGEN$vectors %*% par[SUB]) # transform back (still under logarithm)
+
+    ################
+    ### diagonalize and log-chi^2 debias COV
+    VAR <- diag(COV)
+    COR <- stats::cov2cor(COV)
+
+    EIGEN <- COV[SUB,SUB]
+    EIGEN <- eigen(EIGEN)
+    dimnames(EIGEN$vectors) <- list(SUB,SUB)
+    names(EIGEN$values) <- SUB
+
+    # fix signs
+    # VAR goes in log numerator for chi^2 variates: variance, diffusion, MS speed, ...
+    for(i in 1:nrow(EIGEN$vectors)) { if(sum(EIGEN$vectors[PARS,i])<0) { EIGEN$vectors[,i] <- -EIGEN$vectors[,i] } }
+
+    # log-gamma variance (better than delta method)
+    DOF <- 2*itrigamma(EIGEN$values)
+    EIGEN$values <- 2/DOF
+    EIGEN <- EIGEN$vectors %*% (EIGEN$values * t(EIGEN$vectors))
+
+    COR[SUB,SUB] <- stats::cov2cor(EIGEN)
+    VAR[SUB] <- diag(EIGEN)
+    COV <- COR * outer(sqrt(VAR))
+
+    #################
+    ### diagonalize and log-chi^2 debias POV
+    VAR <- diag(POV)
+    COR <- stats::cov2cor(POV)
+
+    EIGEN <- POV[SUB,SUB]
+    EIGEN <- eigen(EIGEN)
+    dimnames(EIGEN$vectors) <- list(SUB,SUB)
+    names(EIGEN$values) <- SUB
+
+    # fix signs
+    # VAR goes in log numerator for chi^2 variates: variance, diffusion, MS speed, ...
+    for(i in 1:nrow(EIGEN$vectors)) { if(sum(EIGEN$vectors[PARS,i])<0) { EIGEN$vectors[,i] <- -EIGEN$vectors[,i] } }
+
+    # log-gamma variance (better than delta method)
+    SCALE <- EIGEN$values
+
+    DOF <- 2*itrigamma(EIGEN$values)
+    EIGEN$values <- 2/DOF
+    POV.SUB <- EIGEN$vectors %*% (EIGEN$values * t(EIGEN$vectors))
+    COR[SUB,SUB] <- stats::cov2cor(POV.SUB)
+    VAR[SUB] <- diag(POV.SUB)
+    POV <- COR * outer(sqrt(VAR))
+
+    SCALE <- sqrt(EIGEN$values/SCALE)
+    JP[SUB,SUB] <- EIGEN$vectors %*% diag(SCALE) %*% t(EIGEN$vectors)
   }
 
   ### exp transform all positive parameters except sigma
   # features to log transform
   FEAT <- features[features %in% POSITIVE.PARAMETERS]
-  FEAT <- FEAT[FEAT %nin% names(CTMM$sigma@par)]
+  PARS <- c("major","minor","angle")
+  FEAT <- FEAT[FEAT %nin% PARS]
 
   if(length(FEAT))
   {
     par[FEAT] <- exp(par[FEAT])
-    COV[FEAT,] <- COV[FEAT,] * par[FEAT]
-    COV[,FEAT] <- COV[,FEAT] * par[FEAT]
+
+    COV[FEAT,] <- COV[FEAT,,drop=FALSE] * par[FEAT]
+    COV[,FEAT] <- t( t(COV[,FEAT,drop=FALSE]) * par[FEAT] )
+
+    POV[FEAT,] <- POV[FEAT,,drop=FALSE] * par[FEAT]
+    POV[,FEAT] <- t( t(POV[,FEAT,drop=FALSE]) * par[FEAT] )
+
+    JP[FEAT,] <- JP[FEAT,] * par[FEAT]
   }
 
   ### exp transform sigma
-  sigma <- attr(CTMM$sigma,"par")
+  PARS <- PARS[PARS %in% features]
+  sigma <- par[PARS]
 
   # convert COV[log(xy)] to COV[log(eigen)]
   if(!isotropic)
   {
-    PARS <- names(sigma)
     J <- J.par.sigma(sigma)
+
     COV[PARS,] <- J %*% COV[PARS,,drop=FALSE]
     COV[,PARS] <- COV[,PARS,drop=FALSE] %*% t(J)
 
-    PARS <- c("major","minor")
+    POV[PARS,] <- J %*% POV[PARS,,drop=FALSE]
+    POV[,PARS] <- POV[,PARS,drop=FALSE] %*% t(J)
+
+    JP[PARS,] <- J %*% JP[PARS,,drop=FALSE]
   }
-  else
-  { PARS <- "major" }
 
   # now log (major,minor,angle)
   sigma[PARS] <- exp(sigma[PARS])
-  COV[PARS,] <- COV[PARS,] * sigma[PARS]
-  COV[,PARS] <- COV[,PARS] * sigma[PARS]
+
+  COV[PARS,] <- COV[PARS,,drop=FALSE] * sigma[PARS]
+  COV[,PARS] <- t( t(COV[,PARS,drop=FALSE]) * sigma[PARS] )
+
+  POV[PARS,] <- POV[PARS,,drop=FALSE] * sigma[PARS]
+  POV[,PARS] <- t( t(POV[,PARS,drop=FALSE]) * sigma[PARS] )
+
+  JP[PARS,] <- JP[PARS,,drop=FALSE] * sigma[PARS]
+
+  # finally transform COV.POV
+  JP <- quad2lin(JP)
+  NAMES <- dimnames(COV.POV)
+  COV.POV <- JP %*% COV.POV %*% t(JP)
+  dimnames(COV.POV) <- NAMES
 
   sigma <- covm(sigma,axes=axes,isotropic=isotropic)
   CTMM$sigma <- sigma
   CTMM$COV <- COV
+  CTMM$POV <- POV
+  CTMM$COV.POV <- COV.POV
 
-  RETURN <- list(par=par,COV=COV)
-  return(RETURN)
+  CTMM$par <- NULL
+  PARS <- c("major","minor","angle")
+  PARS <- PARS[PARS %in% features]
+  par[PARS] <- sigma@par[PARS]
+  CTMM <- set.parameters(CTMM,par)
+
+  return(CTMM)
 }
 
+# M %*% X %*% t(M) -> L %*% X[TRI]
+quad2lin <- function(M,diag=FALSE)
+{
+  M <- rbind(M)
+  n <- nrow(M)
+  m <- ncol(M)
+
+  TRI <- diag(1,m)
+  TRI <- upper.tri(TRI,diag=TRUE)
+  TRI <- which(TRI)
+  p <- length(TRI)
+
+  if(diag)
+  { J <- matrix(0,n,p) }
+  else
+  { J <- matrix(0,p,p) }
+
+  for(i in 1:p)
+  {
+    E <- array(0,dim(M))
+    E[TRI[i]] <- 1
+    E <- E + t(E)
+    E <- E/max(E)
+    E <- M %*% E %*% t(M) # [n,n]
+    if(diag) # n!=m and only care about n variances
+    { E <- diag(E) }
+    else # n==m and want full covariance
+    { E <- E[TRI] }
+    J[,i] <- E
+  }
+
+  return(J)
+}
 
 #############
 mean.features <- function(x,debias=TRUE,isotropic=FALSE,...)
 {
   N <- length(x)
+  axes <- x[[1]]$axes
 
   # all possible features
   FEATURES <- lapply(x,function(y){y$features})
   FEATURES <- unlist(FEATURES)
   FEATURES <- unique(FEATURES)
   M <- length(FEATURES)
+  # all possible RSF beta
+  BETA <- lapply(x,function(y){names(y$beta)})
+  BETA <- unlist(BETA)
+  BETA <- unique(BETA)
 
   MEANS <- VARS <- rep(TRUE,M)
-  names(VARS) <- names(VARS) <- FEATURES
+  names(MEANS) <- names(VARS) <- FEATURES
 
   if(isotropic && "minor" %in% FEATURES)
   { MEANS[c("minor","angle")] <- VARS[c("minor","angle")] <- c(FALSE,FALSE) }
+
+  # TODO !!!!!!!!!!!!!!! OUF and OUf and OUO
 
   MU <- array(0,c(N,M))
   SIGMA <- array(0,c(N,M,M))
@@ -173,8 +315,8 @@ mean.features <- function(x,debias=TRUE,isotropic=FALSE,...)
 
   for(i in 1:N)
   {
-    x[[i]] <- log.ctmm(x[[i]])
-    features <- x[[i]]$features
+    x[[i]] <- log.ctmm(x[[i]],debias=debias)
+    features <- names(x[[i]]$par)
     MU[i,features] <- x[[i]]$par
     SIGMA[i,,] <- INF
     SIGMA[i,features,features] <- x[[i]]$COV
@@ -195,25 +337,33 @@ mean.features <- function(x,debias=TRUE,isotropic=FALSE,...)
   }
 
   R <- meta.normal(MU,SIGMA,MEANS=MEANS,VARS=VARS,debias=debias)
+  R$isotropic <- isotropic
+  R$axes <- axes
   names(R)[ which(names(R)=="mu") ] <- "par" # population mean of features
   names(R)[ which(names(R)=="COV.mu") ] <- "COV" # uncertainty in population mean
-  names(R)[ which(names(R)=="sigma") ] <- "log.PCOV" # population dispersion of features (under log)
-  names(R)[ which(names(R)=="COV.sigma") ] <- "COV.log.PCOV" # uncertainty in population dispersion of features (under log)
+  names(R)[ which(names(R)=="sigma") ] <- "POV" # population dispersion of features (under log)
+  names(R)[ which(names(R)=="COV.sigma") ] <- "COV.POV" # uncertainty in population dispersion of features (under log)
 
   # information for fitting that we no longer use
   if(isotropic && "minor" %in% FEATURES)
   {
     FEATURES <- FEATURES[FEATURES %nin% c('minor','angle')]
-    par <- par[FEATURES]
-    R$par <- NULL
+    R$par <- R$par[FEATURES]
+    # R$par <- NULL
     R$COV <- R$COV[FEATURES,FEATURES]
-    R$log.PCOV <- R$log.PCOV[FEATURES,FEATURES]
-    # COV.log.PCOV should be okay
+    R$POV <- R$POV[FEATURES,FEATURES]
+    # COV.PCOV should be okay
   }
+  R$features <- FEATURES
+
+  # set beta structure
+  beta <- rep(0,length(BETA))
+  names(beta) <- BETA
+  R$beta <- beta
 
   # reverse log transformation
-  R <- set.parameters(R,par,linear.cov=TRUE)
-  R <- exp.ctmm(R)
+  # R <- set.parameters(R,par,linear.cov=TRUE)
+  R <- exp.ctmm(R,debias=debias)
 
   return(R)
 }
@@ -245,8 +395,8 @@ mean.mu <- function(x,debias=TRUE,isotropic=FALSE,...)
   R <- meta.normal(MU,SIGMA,isotropic=isotropic,debias=debias)
   # R$mu # population mean of mean locations
   # R$COV.mu # uncertainty in mean of means estimate
-  names(R)[ which(names(R)=="sigma") ] <- "PCOV.mu" # dispersion of means
-  names(R)[ which(names(R)=="COV.sigma") ] <- "COV.PCOV.mu" # uncertainty in dispersion of means
+  names(R)[ which(names(R)=="sigma") ] <- "POV.mu" # dispersion of means
+  names(R)[ which(names(R)=="COV.sigma") ] <- "COV.POV.mu" # uncertainty in dispersion of means
 
   return(R)
 }
@@ -285,7 +435,9 @@ mean.ctmm <- function(x,debias=TRUE,IC="AICc",...)
   }
 
   info <- mean.info(x)
-  x <- FU
+  x <- copy(from=FU,to=MU)
+  x$info <- info
+  x <- do.call(ctmm,x)
 
   # STORE EVERYTHING
   x$isotropic <- isotropic
@@ -294,13 +446,11 @@ mean.ctmm <- function(x,debias=TRUE,IC="AICc",...)
   x$AICc <- MU$AICc + FU$AICc
   x$BIC <- MU$BIC + FU$BIC
 
-  x$mu <- MU$mu
-  x$COV.mu <- MU$COV.mu
-
   # return final result
-  x <- new.ctmm(x,info)
+  # x <- new.ctmm(x,info)
   return(x)
 }
 
 # TODO !!!!!!!!!!!!!!!!!!!!!
 # function to calculate the population range from the above
+

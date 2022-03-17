@@ -28,6 +28,10 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
   MEANS <- array(MEANS,DIM)
   ZEROM <- !MEANS
 
+  # observations
+  OBS <- array(TRUE,c(N,DIM))
+  for(i in 1:N) { OBS[i,] <- diag(cbind(SIGMA[i,,]))<Inf }
+
   tol <- .Machine$double.eps^precision
   REML <- debias
 
@@ -38,6 +42,7 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
   sigma <- 0
   for(i in 1:N) { sigma <- sigma + outer(MU[i,]-mu) }
   sigma <- sigma/(N-REML)
+  if(isotropic) { sigma <- diag( mean(diag(sigma)), DIM ) }
   if(any(ZEROV))
   {
     sigma[ZEROV,] <- 0
@@ -65,7 +70,7 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
     # we are solving the unconstrained mu above and then projecting back to the constrained mu below
     if(any(ZEROM)) { mu[ZEROM] <- 0 }
 
-    loglike <- REML/2*log(det(COV.mu)) - DIM*(N-REML)/2*log(2*pi)
+    loglike <- REML/2*log(abs(det(COV.mu))) - DIM*(N-REML)/2*log(2*pi)
     # gradient with respect to sigma
     RHS <- 0
     LHS <- P.mu
@@ -74,14 +79,14 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
       D <- mu - MU[i,]
       RHS <- RHS + (P[i,,] %*% outer(D) %*% P[i,,])
       if(debias) { LHS <- LHS - (P[i,,] %*% COV.mu %*% P[i,,]) }
-      loglike <- loglike - 1/2*log(det(sigma + SIGMA[i,,])) - 1/2*c(D %*% P[i,,] %*% D)
+      # set aside infinite uncertainty measurements
+      loglike <- loglike + 1/2*log(abs(det(P[i,OBS[i,],OBS[i,]]))) - 1/2*c(D %*% P[i,,] %*% D)
     }
 
-    K <- PDfunc(sigma,sqrt,force=TRUE) %*% PDfunc(LHS,function(m){1/sqrt(m)},pseudo=TRUE)
+    K <- sqrtm(sigma,force=TRUE) %*% PDfunc(LHS,function(m){1/sqrt(m)},pseudo=TRUE)
     sigma <- K %*% RHS %*% t(K)
     # we are solving the unconstrained sigma above and then projecting back to the constrained sigma below
-    if(isotropic)
-    { sigma <- diag( mean(diag(sigma)), DIM ) }
+    if(isotropic) { sigma <- diag( mean(diag(sigma)), DIM ) }
     if(any(ZEROV))
     {
       sigma[ZEROV,] <- 0
@@ -90,10 +95,10 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
 
     # Standardized error
     ERROR <- sigma - sigma.old # absolute error
-    K <- PDfunc(sigma,function(m){1/sqrt(m)},pseudo=TRUE)
-    ERROR <- K %*% ERROR %*% K # standardize to make ~1
     ERROR <- ERROR %*% ERROR # square to make positive
-    ERROR <- sqrt(mean(diag(ERROR %*% ERROR))) # error in standard deviations
+    K <- PDsolve(sigma)
+    ERROR <- K %*% ERROR %*% K # standardize to make ~1 unitless
+    ERROR <- sum(abs(diag(ERROR)),na.rm=TRUE)
   }
 
   # non-zero unique sigma parameters
@@ -130,12 +135,13 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
     if(any(ZEROM)) { mu[ZEROM] <- 0 }
 
     # sum up log-likelihood
-    loglike <- REML/2*log(det(COV.mu)) - DIM*(N-REML)/2*log(2*pi)
+    loglike <- REML/2*log(abs(det(COV.mu))) - DIM*(N-REML)/2*log(2*pi)
     for(i in 1:N)
     {
       D <- mu - MU[i,]
-      loglike <- loglike - 1/2*log(det(sigma + SIGMA[i,,])) - 1/2*c(D %*% P[i,,] %*% D)
+      loglike <- loglike + 1/2*log(abs(det(P[i,OBS[i,],OBS[i,]]))) - 1/2*c(D %*% P[i,,] %*% D)
     }
+    loglike <- nant(loglike,-Inf)
     return(-loglike)
   }
 
@@ -144,6 +150,7 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
     par <- mean(diag(sigma))
 
     parscale <- par
+    lower <- 0
   }
   else
   {
@@ -152,9 +159,11 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
     parscale <- sqrt( diag(sigma) )
     parscale <- parscale %o% parscale
     parscale <- parscale[DUP]
-  }
 
-  lower <- rep(-Inf,length(par))
+    lower <- array(-Inf,dim(sigma))
+    diag(lower) <- 0
+    lower <- lower[DUP]
+  }
 
   # implement zero if this is needed
   #par <- optimizer(par,nlog.like,parscale=parscale,lower=lower,upper=Inf)
@@ -182,8 +191,13 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
   dimnames(COV.mu) <- list(NAMES,NAMES)
   dimnames(sigma) <- list(NAMES,NAMES)
   # sigma <- sigma[VARS,VARS]
-  NAMES <- outer(NAMES,NAMES,function(x,y){paste0(x,"-",y)})
-  NAMES <- NAMES[DUP]
+  if(isotropic)
+  { NAMES <- "sigma-sigma" }
+  else
+  {
+    NAMES <- outer(NAMES,NAMES,function(x,y){paste0(x,"-",y)})
+    NAMES <- NAMES[DUP]
+  }
   dimnames(COV.sigma) <- list(NAMES,NAMES)
 
   return(list(mu=mu,sigma=sigma,COV.mu=COV.mu,COV.sigma=COV.sigma,loglike=loglike,AIC=AIC,AICc=AICc,BIC=BIC,isotropic=isotropic))

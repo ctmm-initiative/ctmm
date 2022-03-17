@@ -17,7 +17,8 @@ ctmm <- function(tau=NULL,omega=FALSE,isotropic=FALSE,range=TRUE,circle=FALSE,er
 
   # put covariance into universal format
   if(length(axes)==1) { isotropic <- TRUE }
-  if(!is.null(List$sigma)) { List$sigma <- covm(List$sigma,isotropic=isotropic,axes=axes) }
+  if(!is.null(List$sigma)) { List$sigma <- covm(List$sigma,isotropic=isotropic[1],axes=axes) }
+  names(isotropic) <- c("sigma","mu")[1:length(isotropic)]
   List$isotropic <- isotropic
 
   # label tau elements

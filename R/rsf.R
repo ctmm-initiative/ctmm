@@ -1,9 +1,10 @@
-rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,reference="auto",level.UD=0.99,isotropic=TRUE,debias=TRUE,smooth=TRUE,standardize=TRUE,error=0.01,trace=TRUE,...)
+rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,reference="auto",level.UD=0.99,isotropic=TRUE,debias=TRUE,smooth=TRUE,standardize=TRUE,error=0.01,max.mem="1 Gb",trace=TRUE,...)
 {
   STATIONARY <- TRUE
   CTMM <- UD@CTMM
   axes <- CTMM$axes
   GEO <- c('longitude','latitude')
+  max.mem <- ustring(max.mem)
 
   # control list for optimizer
   control <- list()
@@ -67,9 +68,12 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
   }
 
   # expand any categorical variables into indicator variables
-  STUFF <- expand.factors(R=R,formula=formula,reference=reference,data=data)
-  R <- STUFF$R
-  formula <- STUFF$formula
+  if(length(R))
+  {
+    STUFF <- expand.factors(R=R,formula=formula,reference=reference,data=data)
+    R <- STUFF$R
+    formula <- STUFF$formula
+  }
 
   ## The basic setup is:
   # RVARS - raster variables
@@ -110,6 +114,8 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
 
     if(attr(stats::terms(formula),"response")[1]>0) { stop("Response variable not yet supported.") }
   }
+  environment(formula) <- NULL
+
   VARS <- c(RVARS,CVARS) # vars that need to be recorded per location
   if(length(DVARS)) { STATIONARY <- FALSE }
 
@@ -275,7 +281,7 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
   # beta <- beta * SCALE
 
   # store raster covariates
-  for(i in 1:length(RVARS))
+  for(i in 1%:%length(RVARS))
   {
     r <- RVARS[i]
     # store data-sampled covariates
@@ -437,7 +443,7 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
     SUB <- N.OLD+1:N # new indices
 
     # store simulation-sampled raster covariates
-    for(i in 1:length(RVARS))
+    for(i in 1%:%length(RVARS))
     {
       r <- RVARS[i]
 
@@ -534,6 +540,14 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
     # estimated errors for this round
     ERROR.BIG <- c(STDloglike,abs(c(loglike-loglike.OLD,STDbeta))/sqrt(2)) > error
     ERROR.BIG <- any(ERROR.BIG)
+
+    SIZE <- 2*utils::object.size(SATA)
+    if(SIZE[1]>max.mem)
+    {
+      SIZE <- format(SIZE,units="auto")
+      warning("Calculation stopped before ",SIZE," allocation.")
+      break
+    }
   } # while(ERROR.BIG)
 
   # compute hessian
@@ -575,7 +589,7 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
     # un-scale mu, sigma, COV[...]
     beta[SVARS] <- beta[SVARS] / SCALE
     COV[SVARS,] <- COV[SVARS,] / SCALE
-    COV[,SVARS] <- COV[,SVARS] / SCALE
+    COV[,SVARS] <- t( t(COV[,SVARS]) / SCALE )
 
     # log-likelihood adjustment (unscale)
     loglike <- loglike - W*log(prod(std)) # 1/2 from sqrt
@@ -771,11 +785,13 @@ expand.factors <- function(R,formula,reference="auto",data=NULL,fixed=FALSE)
       {
         TERMS <- attr(stats::terms(formula),"term.labels")
         # I am not good with regexp
-        HEAD <- paste0(NAME,"[")
+        # HEAD <- paste0(NAME,"[")
+        HEAD <- paste0(NAME,".")
         reference <- TERMS[grepl(HEAD,TERMS,fixed=TRUE)][1] # *NAME[#/ref]*
         reference <- strsplit(reference,HEAD,fixed=TRUE)[[1]][2] # #/ref]*
-        reference <- strsplit(reference,"/",fixed=TRUE)[[1]][2] # ref]*
-        reference <- strsplit(reference,"]",fixed=TRUE)[[1]][1] # ref
+        # reference <- strsplit(reference,"/",fixed=TRUE)[[1]][2] # ref]*
+        reference <- strsplit(reference,"_",fixed=TRUE)[[1]][2] # ref]*
+        # reference <- strsplit(reference,"]",fixed=TRUE)[[1]][1] # ref
         reference <- which(LEVELS==reference)
       }
       else if(reference=="auto") # fix base layer
@@ -794,7 +810,8 @@ expand.factors <- function(R,formula,reference="auto",data=NULL,fixed=FALSE)
 
       DIFF <- LEVELS %nin% reference
       FACT <- lapply(LEVELS[DIFF],function(l){FACT==l})
-      LEVELS <- paste0(NAME,"[",LEVELS,"/",LEVELS[reference],"]")[DIFF]
+      # LEVELS <- paste0(NAME,"[",LEVELS,"/",LEVELS[reference],"]")[DIFF]
+      LEVELS <- paste0(NAME,".",LEVELS,"_",LEVELS[reference])[DIFF]
       names(FACT) <- LEVELS
 
       R <- c(R,FACT)
@@ -812,6 +829,7 @@ expand.factors <- function(R,formula,reference="auto",data=NULL,fixed=FALSE)
     }
   }
   if(fixed) { return(R) }
+  environment(formula) <- NULL
   RETURN <- list(R=R,formula=formula)
 }
 

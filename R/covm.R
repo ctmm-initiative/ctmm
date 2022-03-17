@@ -286,7 +286,7 @@ axes2var <- function(CTMM,MEAN=TRUE)
   OLD <- rownames(COV)
   OTHER <- OLD[OLD %nin% PAR]
 
-  if(CTMM$isotropic)
+  if(CTMM$isotropic[1])
   {
     NEW <- c("variance",OTHER)
 
@@ -359,19 +359,19 @@ J.sigma.par <- function(par)
 # gradient matrix d par / d sigma from sigma
 J.par.sigma <- function(sigma)
 {
+  names(sigma) <- c("xx","yy","xy")
+
   par.fn <- function(s)
   {
     par <- matrix(s[c("xx","xy","yy","yy")],2,2)
     covm(par)@par
   }
 
-  rho <- sqrt(sigma['xx']*sigma['yy']) # max value
   parscale <- sigma
-  parscale['xy'] <- rho
-  lower <- c(0,0,-rho)
-  upper <- c(Inf,Inf,rho)
+  parscale['xy'] <- sqrt(sigma['xx']*sigma['yy'])
+  lower <- c(0,0,-Inf)
 
-  J <- genD(sigma,par.fn,lower=lower,upper=upper,parscale=parscale,order=1)
+  J <- genD(sigma,par.fn,lower=lower,parscale=parscale,order=1)
   J <- J$grad
   dimnames(J) <- list(c('major','minor','angle'),names(sigma))
   return(J)

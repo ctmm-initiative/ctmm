@@ -100,6 +100,17 @@ generate.units <- function()
   add(c("st","stone","stones"),0.45359237*14)
   add(c("ton","tons"),0.45359237*2000) # NA ton (not UK)
 
+  # memory
+  add(c("byte","bytes","B"),1)
+  add(c("Kb","KiB"),1024)
+  add(c("Mb","MiB"),1024^2)
+  add(c("Gb","GiB"),1024^3)
+  add(c("Tb","TiB"),1024^4)
+  add(c("Pb","PiB"),1024^5)
+  add(c("Eb","EiB"),1024^6)
+  add(c("Zb","ZiB"),1024^7)
+  add(c("Yb","YiB"),1024^8)
+
   return(list(alias=alias,scale=scale))
 }
 UNIT <- list() # generated onLoad
@@ -416,4 +427,18 @@ unit.variogram <- function(SVF,time=1,area=1)
     if(name %in% alias[[i]]) { return(num*scale[i]^pow) }
   }
   stop(paste("Unit",name,"unknown."))
+}
+
+# interpret a string as number with units
+ustring <- function(x)
+{
+  x <- canonical.name(x)
+
+  y <- strsplit(x,"[a-z,A-Z]")[[1]][1]
+  n <- nchar(y)+1
+  y <- as.numeric(y)
+  x <- substr(x,n,nchar(x))
+
+  x <- y %#% x
+  return(x)
 }

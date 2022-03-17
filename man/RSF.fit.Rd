@@ -9,7 +9,7 @@ This function is in development and is subject to change.
 \usage{
 rsf.fit(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,reference="auto",
         level.UD=0.99,isotropic=TRUE,debias=TRUE,smooth=TRUE,standardize=TRUE,error=0.01,
-        trace=TRUE,...)
+        max.mem="1 Gb",trace=TRUE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -26,6 +26,7 @@ rsf.fit(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,reference="auto"
   \item{smooth}{Apply location-error smoothing to the tracking data before regression.}
   \item{standardize}{For numerical stability, predictors are \emph{internally} standardized, if \code{rescale=TRUE} and no \code{formula} is specified. (The final outputs are not standardized.) \bold{Otherwise, users are responsible for standardizing their predictors.}}
   \item{error}{Relative numerical error threshold for the parameter estimates and log-likelihood.}
+  \item{max.mem}{Maximum amount of memory to allocate for availability sampling.}
   \item{trace}{Report progress on convergence (see Details).}
   \item{...}{Arguments passed to \code{optimizer}.}
 }

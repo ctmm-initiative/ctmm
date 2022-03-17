@@ -13,6 +13,10 @@
 * akde on fit with DOF=0 error()
 * overlap VAR
 
+** mean.ctmm
+* subtract prior from location-error posteriors before averaging and then add back at the end
+* remove MLE is near boundary or optimized failed warning (selection)
+
 ** RSF
 * distinguish between temporal stacks and height stacks
 * precompute option for formula (with no annotations)

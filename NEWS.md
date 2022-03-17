@@ -1,7 +1,9 @@
-ctmm 0.6.2 (2021-02-12)
+ctmm 0.6.2 (2021-03-16)
 ================
 
   * new function rsf.fit() to fit integrated resource selection functions (iRSFs) with autocorrelation-adjusted weighted likelihood
+  
+  * new function mean.ctmm() to calculate population average movement models
   
   * new function revisitation() to calculate the distribution of revisitations
   

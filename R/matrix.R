@@ -1,4 +1,10 @@
-tr <- function(x) { sum(diag(x)) }
+tr <- function(x)
+{
+  x <- cbind(x)
+  x <- sum(diag(x))
+  return(x)
+}
+
 
 # 2D rotation matrix
 rotate <- function(theta)
@@ -179,6 +185,7 @@ PDfunc <-function(M,func=function(m){1/m},force=FALSE,pseudo=FALSE,tol=.Machine$
   # PSEUDO <- (abs(M) < tol) # why abs(M)?
 
   if(any(FORCE) && force) { M[FORCE] <- tol }
+  if(any(PSEUDO) && pseudo) { M[PSEUDO] <- 0 }
   M <- func(M)
   if(any(PSEUDO) && pseudo) { M[PSEUDO] <- 0 }
 

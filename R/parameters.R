@@ -193,7 +193,11 @@ get.parameters <- function(CTMM,NAMES,profile=FALSE,linear.cov=FALSE)
   names(par) <- NAMES
 
   # can't loop this easily because R collapses NULL values
-  getter <- function(NAME,VALUE=CTMM[[NAME]]) { if(NAME %in% NAMES) { par[NAME] <<- VALUE } }
+  getter <- function(NAME,VALUE=CTMM[[NAME]])
+  { if(NAME %in% NAMES) { par[NAME] <<- VALUE } }
+
+  beta <- CTMM$beta
+  for(B in names(beta)) { getter(B,beta[B]) }
 
   sigma <- CTMM$sigma
   if(!linear.cov)
@@ -345,6 +349,12 @@ set.parameters <- function(CTMM,par,profile=FALSE,linear.cov=FALSE)
 {
   NAMES <- names(par)
   AXES <- length(CTMM$axes)
+
+  beta <- CTMM$beta
+  BETA <- names(beta)
+  beta[] <- NA
+  for(B in BETA) { beta[B] <- par[B] }
+  CTMM$beta <- beta
 
   sigma <- CTMM$sigma
   if(!linear.cov)

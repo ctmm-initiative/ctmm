@@ -4,6 +4,12 @@ annotate <- function(object,by="all",cores=1,...)
   if(class(object)[1]=="list") { return(plapply(object,annotate,cores=cores,fast=FALSE)) }
   # else one at a time below
 
+  #
+  if(class(by)[1]=="data.frame")
+  {
+    # FOR THE FUTURE
+  }
+
   if(by=='all' || 'moon' %in% by)
   {
     ADD <- suncalc::getMoonIllumination(object$timestamp,keep="fraction")$fraction

@@ -24,7 +24,6 @@ subset.telemetry <- function(x,...)
 head.telemetry <- function(x, n = 6L, ...) { utils::head(data.frame(x),n=n,...) }
 tail.telemetry <- function(x, n = 6L, ...) { utils::tail(data.frame(x),n=n,...) }
 
-
 # rbind track segments
 tbind <- function(...)
 {
@@ -228,6 +227,22 @@ tbind <- function(...)
   }
 
   return(y)
+}
+
+# bind UERE calibrations - NOT FINISHED
+ubind <- function(x)
+{
+  if(class(x)[1]=="UERE") { return(x) }
+
+  for(i in 1:length(x))
+  {
+    CLASS <- rownames(x[[i]]$DOF)
+    y <- data.frame(t=1:length(CLASS),class=as.factor(CLASS))
+    x[[i]] <- new.telemetry(y,info=list(),UERE=x[[i]])
+  }
+  x <- tbind(x)
+  x <- x@UERE
+  return(x)
 }
 
 
@@ -562,8 +577,8 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   NAMES$id <- c("animal.ID","individual.local.identifier","local.identifier","individual.ID","Name","ID","ID.Names","Animal","Full.ID",
                 "tag.local.identifier","tag.ID","band.number","band.num","device.info.serial","Device.ID","collar.id","Logger","Logger.ID",
                 "Deployment","deployment.ID","track.ID")
-  NAMES$long <- c("location.long","Longitude","longitude.WGS84","Longitude.deg","long","lon","lng","GPS.Longitude","\u7D4C\u5EA6")
-  NAMES$lat <- c("location.lat","Latitude","latitude.WGS84","Latitude.deg","latt","lat","GPS.Latitude","\u7DEF\u5EA6")
+  NAMES$long <- c("location.longitude","location.long","Longitude","longitude.WGS84","Longitude.deg","long","lon","lng","GPS.Longitude","\u7D4C\u5EA6")
+  NAMES$lat <- c("location.latitude","location.lat","Latitude","latitude.WGS84","Latitude.deg","latt","lat","GPS.Latitude","\u7DEF\u5EA6")
   NAMES$zone <- c("GPS.UTM.zone","UTM.zone","zone")
   NAMES$east <- c("GPS.UTM.Easting","GPS.UTM.East","GPS.UTM.x","UTM.Easting","UTM.East","UTM.E","UTM.x","Easting","East","x")
   NAMES$north <- c("GPS.UTM.Northing","GPS.UTM.North","GPS.UTM.y","UTM.Northing","UTM.North","UTM.N","UTM.y","Northing","North","y")
@@ -581,7 +596,9 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   NAMES$v <- c("ground.speed",'speed.over.ground','speed.over.ground.m.s',"speed","GPS.speed")
   NAMES$heading <- c("heading","heading.degree","heading.degrees","GPS.heading","Course","direction","direction.deg")
 
-  # get rid of tibble class # it does weird stuff
+  # get rid of tibble classes # they don't extend data.frame objects quite right
+  if(class(object)[1] == "grouped_df")
+  { object <- dplyr::ungroup(object) }
   if(class(object)[1] %in% c("tbl_df","tbl"))
   { object <- as.data.frame(object) }
 

@@ -112,8 +112,16 @@ genD <- function(par,fn,zero=FALSE,lower=-Inf,upper=Inf,step=NULL,precision=1/2,
   hess <- nant(hess,0) # seems reasonable for inverse covariance
   grad <- nant(grad,0) # not sure about this
 
-  names(grad) <- NAMES
-  dimnames(hess) <- list(NAMES,NAMES)
+  if(length(dim(grad)))
+  {
+    # TODO rownames
+    colnames(grad) <- NAMES
+  }
+  else
+  {
+    names(grad) <- NAMES
+    dimnames(hess) <- list(NAMES,NAMES)
+  }
 
   return(list(gradient=grad,hessian=hess))
 }

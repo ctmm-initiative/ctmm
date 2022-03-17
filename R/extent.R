@@ -111,7 +111,7 @@ extent.ctmm <- function(x,level=0.95,level.UD=0.95,...)
   if("COV" %in% names(x))
   {
     K <- length(x$tau)
-    const <- confint.ctmm(x,alpha)[1,3]/sqrt(det(sigma))
+    const <- confint.ctmm(x,alpha)["area",3]/sqrt(det(sigma))
   }
 
   buff <- z*sqrt(const*diag(sigma))

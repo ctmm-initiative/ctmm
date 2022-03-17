@@ -566,12 +566,17 @@ name.ctmm <- function(CTMM,whole=TRUE)
   }
 
   # isotropy
+  isotropic <- CTMM$isotropic
   if(length(CTMM$axes)>1)
   {
-    if(CTMM$isotropic)
-    { NAME <- c(NAME,"isotropic") }
-    else
+    if(all(!isotropic))
     { NAME <- c(NAME,"anisotropic") }
+    else if(!isotropic[1])
+    { NAME <- c(NAME,"anisotropic-\u03C3") }
+    else if(length(isotropic)>1 && !isotropic[2])
+    { NAME <- c(NAME,"anisotropic-\u03BC") }
+    # else
+    # { NAME <- c(NAME,"isotropic") }
   }
 
   # circulation

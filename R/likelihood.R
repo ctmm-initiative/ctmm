@@ -466,6 +466,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     # assign variables
     if(profile && PROFILE) { CTMM$sigma <- M.sigma }
     else { CTMM$sigma <- sigma }
+    CTMM$UERE <- attr(data,"UERE")$UERE
 
     CTMM <- ctmm.repair(CTMM,K=K)
 

@@ -1,3 +1,96 @@
+# generalized covariance from negative-log-likelihood derivatives
+cov.loglike <- function(hess,grad=rep(0,sqrt(length(hess))),tol=.Machine$double.eps)
+{
+  # in case of bad derivatives, use worst-case numbers
+  grad <- nant(grad,Inf)
+  hess <- nant(hess,0)
+
+  # if hessian is likely to be positive definite
+  if(all(diag(hess)>0))
+  {
+    COV <- try(PDsolve(hess))
+    if(class(COV)[1]=="matrix" && all(diag(COV)>0)) { return(COV) }
+  }
+  # one of the curvatures is negative or close to negative
+  # return something sensible just in case we are on a boundary and this makes sense
+
+  # normalize parameter scales by curvature or gradient (whatever is larger)
+  V <- abs(diag(hess))
+  V <- sqrt(V)
+  V <- pmax(V,abs(grad))
+
+  # don't divide by zero
+  TEST <- V<=tol
+  if(any(TEST)) { V[TEST] <- 1 }
+
+  W <- V %o% V
+
+  grad <- grad/V
+  hess <- hess/W
+
+  EIGEN <- eigen(hess)
+  values <- EIGEN$values
+  if(any(values<=0))
+  {
+    # shouldn't need to warn if using ctmm.select
+    WARN <- TRUE
+    N <- sys.nframe()
+    if(N>=2)
+    {
+      for(i in 2:N)
+      {
+        CALL <- deparse(sys.call(-i))[1]
+        CALL <- grepl("ctmm.select",CALL) || grepl("cv.like",CALL) || grepl("ctmm.boot",CALL) || grepl("mean.mu",CALL) || grepl("mean.features",CALL)
+        if(CALL)
+        {
+          WARN <- FALSE
+          break
+        }
+      }
+    }
+    # warn if weren't using ctmm.select
+    if(WARN) { warning("MLE is near a boundary or optimizer failed.") }
+  }
+  values <- clamp(values,0,Inf)
+  vectors <- EIGEN$vectors
+
+  # transform gradient to hess' coordinate system
+  grad <- t(vectors) %*% grad
+
+  # generalized Wald-like formula with zero-curvature limit
+  # VAR ~ square change required to decrease log-likelihood by 1/2
+  for(i in 1:length(values))
+  {
+    DET <- values[i]+grad[i]^2
+
+    if(values[i]==0.0) # Wald limit of below
+    { values[i] <- 1/(2*grad[i])^2 }
+    else if(DET>=0.0) # Wald
+    { values[i] <- ((sqrt(DET)-grad[i])/values[i])^2 }
+    else # minimum loglike? optim probably failed or hit a boundary
+    {
+      # (parameter distance to worst parameter * 1/2 / loglike difference to worst parameter)^2
+      # values[i] <- 1/grad[i]^2
+      # pretty close to the other formula, so just using that
+      values[i] <- 1/(2*grad[i])^2
+    }
+  }
+
+  COV <- array(0,dim(hess))
+  values <- nant(values,Inf) # worst case NaN fix
+  SUB <- values<Inf
+  if(any(SUB)) # separate out the finite part
+  { COV <- COV + Reduce("+",lapply((1:length(grad))[SUB],function(i){ values[i] * outer(vectors[,i]) })) }
+  SUB <- !SUB
+  if(any(SUB)) # toss out the off-diagonal NaNs
+  { COV <- COV + Reduce("+",lapply((1:length(grad))[SUB],function(i){ D <- diag(outer(vectors[,i])) ; D[D>0] <- Inf ; diag(D,length(D)) })) }
+
+  COV <- COV/W
+
+  return(COV)
+}
+
+
 # interpolate vector by continuous index (vectorized by index)
 # vec is a vector, ind is a continuous index
 vint <- function(vec,ind,return.ind=FALSE)

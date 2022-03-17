@@ -57,10 +57,17 @@ diffusion <- function(CTMM,level=0.95,finish=TRUE)
 
   sigma <- var.covm(CTMM$sigma,ave=FALSE) # variance
   COV <- CTMM$COV
-  if(!is.null(COV)) { COV <- axes2var(CTMM,MEAN=FALSE) }
-
-  NAMES <- CTMM$tau.names
-  if(circle) { NAMES <- c(NAMES,"circle") }
+  if(!is.null(COV))
+  {
+    COV <- axes2var(CTMM,MEAN=FALSE)
+    D.grad <- rep(0,nrow(COV))
+    names(D.grad) <- rownames(COV)
+  }
+  else
+  { D.grad <- NULL }
+  # this is redundant with D.grad, but needed for mean.ctmm summary
+  J <- rep(0,length(CTMM$features))
+  names(J) <- CTMM$features
 
   if(!length(tau) || all(tau==0)) # IID
   {
@@ -68,11 +75,7 @@ diffusion <- function(CTMM,level=0.95,finish=TRUE)
     return( c(0,Inf,Inf) )
   }
   else if(!range) # Brownian motion # IOU # max diffusion rate at infinite lag
-  {
-    D <- 1
-    D.grad <- NULL
-    NAMES <- NULL
-  }
+  { D <- 1 }
   else if(length(tau)==1 || tau[2]==0) # OU
   {
     tau <- tau[1]
@@ -81,37 +84,41 @@ diffusion <- function(CTMM,level=0.95,finish=TRUE)
     if(circle*tau <= 1) # max diffusion rate at zero lag
     {
       D <- 1/tau
-      D.grad <- -1/tau^2
+      D.grad[NAMES] <- J[NAMES] <- -1/tau^2
     }
     else # circulation enhanced max diffusion rate
     {
+      NAMES <- c(NAMES,"circle")
       z <- circle*tau
       z.grad <- c(circle,tau)
       # D <- atan((z^2-1)/(2*z))/circle
       D <- (2*atan(z)-pi/2)/circle
-      D.grad <- 2/(1+z^2)/circle * z.grad - c(0,D/circle)
+      D.grad[NAMES] <- J[NAMES] <- 2/(1+z^2)/circle * z.grad - c(0,D/circle)
     }
   }
   else if(length(tau)==2)
   {
+    NAMES <- CTMM$tau.names
+
     if(!omega && tau[1]!=tau[2] && !circle) # OUF
     {
       z <- tau[2]/tau[1]
       z.grad <- c(-1,1)*z/tau
       D <- Diff.OUF.fn(z) / tau[1]
-      D.grad <- Diff.OUF.fn(z,deriv=1)/tau[1]*z.grad - c(D/tau[1],0)
+      D.grad[NAMES] <- J[NAMES] <- Diff.OUF.fn(z,deriv=1)/tau[1]*z.grad - c(D/tau[1],0)
     }
     else if(omega && tau[1]==tau[2] && !circle) # OUO
     {
       z <- tau[1]*omega
       z.grad <- c(omega,tau[1])
       D <- Diff.OUO.fn(z) / tau[1]
-      D.grad <- Diff.OUO.fn(z,deriv=1)/tau[1]*z.grad - c(D/tau[1],0)
+      D.grad[NAMES] <- J[NAMES] <- Diff.OUO.fn(z,deriv=1)/tau[1]*z.grad - c(D/tau[1],0)
     }
     else if(!omega && tau[1]==tau[2] && !circle) # OUf
     {
+      NAMES <- NAMES[1]
       D <- exp(-1)/tau[1]
-      D.grad <- -D/tau[1]
+      D.grad[NAMES] <- J[NAMES] <- -D/tau[1]
     }
   }
   # else if(circle) # OUF, OUO, OUf with circulation can't be solved analytically
@@ -162,19 +169,26 @@ diffusion <- function(CTMM,level=0.95,finish=TRUE)
   #   # very annoying to calculate this better (optimize inside gradient)
   # }
 
-  NAMES <- c("variance",NAMES)
-  D.grad <- c( D, sigma * D.grad )
+  D.grad <- sigma * D.grad
+  J <- sigma * J
+
+  D.grad["variance"] <- D
+  if(CTMM$isotropic[1])
+  { J["major"] <- 2*D }
+  else
+  { J["major"] <- J["minor"] <- D }
   D <- sigma * D
 
-  names(D.grad) <- NAMES
-  if(!is.null(COV)) { VAR <- c(D.grad %*% COV[NAMES,NAMES] %*% D.grad) }
-  else { VAR <- Inf }
+  if(!is.null(COV))
+  { VAR <- c(D.grad %*% COV %*% D.grad) }
+  else
+  { VAR <- Inf }
 
   # this is for chi^2 CIs
   DOF <- 2*D^2/VAR # / length(CTMM$axes) # /2 is for counting
 
   # return information for CIs but not completed CIs
-  if(!finish) { return(list(D=D,grad=D.grad,VAR=VAR,DOF=DOF)) }
+  if(!finish) { return(list(D=D,grad=D.grad,VAR=VAR,DOF=DOF,J=J)) }
 
   CI <- chisq.ci(D,VAR,level=level)
   return(CI)
