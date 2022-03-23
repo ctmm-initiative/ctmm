@@ -5,8 +5,8 @@
 \title{Calculate the optimal bandwidth matrix of movement data}
 \description{This function calculates the optimal bandwidth matrix (kernel covariance) for a two-dimensional animal tracking dataset, given an autocorrelated movement model (Fleming et al, 2015). This optimal bandwidth can fully take into account all autocorrelation in the data, assuming it is captured by the movement model.}
 \usage{
-bandwidth(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,precision=1/2,PC="Markov",
-  verbose=FALSE,trace=FALSE,...)
+bandwidth(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,error=0.01,precision=1/2,
+  PC="Markov",verbose=FALSE,trace=FALSE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -15,7 +15,8 @@ bandwidth(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,precision=1/2,PC="M
   \item{VMM}{An optional vertical \code{ctmm} object for 3D bandwidth calculation.}
   \item{weights}{By default, the weights are taken to be uniform, whereas \code{weights=TRUE} will optimize the weights.}
   \item{fast}{Use FFT algorithms for weight optimization.}
-  \item{dt}{ Optional lag bin width for the FFT algorithm.}
+  \item{dt}{Optional lag bin width for the FFT algorithm.}
+  \item{error}{Maximum grid error for FFT algorithm, if \code{dt} is not specified.}
   \item{precision}{Fraction of maximum possible digits of precision to target in weight optimization. \code{precision=1/2} results in about 7 decimal digits of precision if the preconditioner is stable.}
   \item{PC}{Preconditioner to use: can be "Markov", "circulant", "IID", or "direct".}
   \item{verbose}{ Optionally return the optimal \code{weights}, effective sample size \code{DOF.H}, and other information along with the bandwidth matrix \code{H}.}
@@ -28,10 +29,10 @@ The \code{weights=TRUE} argument can be used to correct temporal sampling bias c
 These algorithms have a few options that should be considered if the data are very irregular.
 
 \code{fast=TRUE} grids the data with grid width \code{dt} and applies FFT algorithms, for a computational cost as low as \eqn{O(n \log n)} with only \eqn{O(n)} function evaluations.
-If no \code{dt} is specified, the minimum sampling interval \code{min(diff(data$t))} is used.
-\strong{If the data are irregular (permitting gaps), then \code{dt} may need to be several times smaller} to avoid slow down.
-In this case, try setting \code{trace=TRUE} and decreasing \code{dt} until the interations speed up and the number of feasibility assessments becomes less than \eqn{O(n)}.
-On the other hand, \strong{if the data contain some very tiny time intervals}, say 1 second among hourly sampled data, then the default \code{dt} setting will create an excessively high-resolution discretization of time, which will also cause slowdown. In this case \code{CTMM} should contain an error model and \code{dt} can likely be increased to a larger fraction of the median sampling interval.
+If no \code{dt} is specified, then a choice of \code{dt} will be automated with a message.
+\strong{If the data contain some very tiny time intervals}, say 1 second among hourly sampled data, then the default \code{dt} setting will create an excessively high-resolution discretization of time, which will cause slowdown. In this case \code{CTMM} should contain an error model and \code{dt} should be increased to a larger fraction of the median sampling interval than the minimum.
+\strong{If the data are irregular (permitting gaps), then \code{dt} may need to be several times smaller} than the median to avoid slow down.
+In this case, try setting \code{trace=TRUE} and decreasing \code{dt} below the median until the interations speed up and the number of feasibility assessments becomes less than \eqn{O(n)}.
 %With the sub-optimal \code{PC="IID"} preconditioner, \code{dt} can be relaxed to the median value, but the computational cost is then increased to \eqn{O(n^2 \log n)}.
 
 \code{fast=FALSE} uses exact times and has a computational cost as low as \eqn{O(n^2)}, including \eqn{O(n^2)} function evaluations. With \code{PC="direct"} this method will produce a result that is exact to within machine precision, but with a computational cost of \eqn{O(n^3)}. \strong{\code{fast=FALSE,PC='direct'} is often the fastest method with small datasets}, where \eqn{n \le O}(1,000), but scales terribly with larger datasets.
@@ -57,7 +58,9 @@ Ecological Applications, 28:4, 1003-1010 (2018) \doi{10.1002/eap.1704}.
 
 \author{ C. H. Fleming. }
 
-\note{ To obtain a bandwidth scalar representing the variance of each kernel, a \code{ctmm} object with \code{isotropic=TRUE} is required.  In this case, \code{bandwidth} will return bandwidth matrix with identical variances along its diagonal. Note that forcing \code{isotropic=TRUE} will provide an inaccurate estimate for very eccentric distributions.}
+\note{ To obtain a bandwidth scalar representing the variance of each kernel, a \code{ctmm} object with \code{isotropic=TRUE} is required.  In this case, \code{bandwidth} will return bandwidth matrix with identical variances along its diagonal. Note that forcing \code{isotropic=TRUE} will provide an inaccurate estimate for very eccentric distributions.
+
+In v0.6.2 the default \code{dt} was increased form the minimum time difference to a small quantile no less than \code{error} times the median.}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 

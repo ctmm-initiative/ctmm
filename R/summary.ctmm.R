@@ -244,6 +244,7 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
 {
   alpha <- 1-level
   alpha.UD <- 1-level.UD
+  axes <- object$axes
 
   object <- get.taus(object) # populate with parameter stuff
   drift <- get(object$mean)
@@ -266,13 +267,15 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
     COV <- diag(Inf,nrow=length(P))
     dimnames(COV) <- list(P,P)
     object$COV <- COV
+    POV <- NULL
   }
   P <- nrow(COV)
 
   if(is.null(object$COV.mu))
   {
-    object$COV.mu <- diag(Inf,nrow=length(object$mu))
-    object$DOF.mu <- diag(0,nrow=length(object$mu))
+    object$COV.mu <- diag(Inf,nrow=length(axes))
+    object$DOF.mu <- diag(0,nrow=length(axes))
+    dimnames(object$COV.mu) <- dimnames(object$DOF.mu) <- list(axes,axes)
   }
 
   ### AREA

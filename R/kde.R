@@ -38,7 +38,7 @@ lag.DOF <- function(data,dt=NULL,weights=NULL,lag=NULL,FLOOR=NULL,p=NULL)
 ##################################
 # Bandwidth optimizer
 #lag.DOF is an unsupported option for end users
-bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,precision=1/2,PC="Markov",verbose=FALSE,trace=FALSE,...)
+bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,error=0.01,precision=1/2,PC="Markov",verbose=FALSE,trace=FALSE,...)
 {
   PC <- match.arg(PC,c("Markov","circulant","IID","direct"))
   trace2 <- ifelse(trace,trace-1,FALSE)
@@ -46,6 +46,7 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,precisi
   if(length(CTMM$tau)==0 || all(CTMM$tau==0)) { weights <- FALSE }
 
   n <- length(data$t)
+  ERROR <- error
   error <- 2^(log(.Machine$double.eps,2)*precision)
 
   sigma <- methods::getDataPart(CTMM$sigma)
@@ -74,7 +75,11 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,precisi
   {
     if(fast & is.null(dt))
     {
-      dt <- min(diff(data$t))
+      dt <- diff(data$t)
+      dt <- sort(dt)
+      DT <- stats::median(dt)
+      dt <- dt[ceiling(ERROR*length(dt))] # small quantile
+      dt <- DT/floor(DT/dt) # integer divisor of median
       if(trace)
       {
         UNITS <- unit(dt,"time")
@@ -448,7 +453,7 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),variable="utilization",debias=TRUE,
       }
 
       # calculate optimal bandwidth and some other information
-      KDE[[i]] <- bandwidth(data=data[[i]],CTMM=CTMM[[i]],VMM=VMM[[i]],weights[i],verbose=TRUE,...)
+      KDE[[i]] <- bandwidth(data=data[[i]],CTMM=CTMM[[i]],VMM=VMM[[i]],weights[i],verbose=TRUE,error=error,...)
     }
     else if(class(CTMM)[1]=="bandwidth") # bandwidth information was precalculated
     {

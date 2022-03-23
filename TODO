@@ -15,9 +15,9 @@
 
 ** mean.ctmm
 * subtract prior from location-error posteriors before averaging and then add back at the end
-* remove MLE is near boundary or optimized failed warning (selection)
 
 ** RSF
+* Riemann sum / Simpson integration method
 * distinguish between temporal stacks and height stacks
 * precompute option for formula (with no annotations)
 * RSF AGDE non-stationary needs times
