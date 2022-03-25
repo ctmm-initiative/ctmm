@@ -502,8 +502,8 @@ chi.var <- function(DOF,M1=1)
 chi.bias <- function(DOF)
 {
   BIAS <- sqrt(2/DOF)*exp(lgamma((DOF+1)/2)-lgamma(DOF/2))
-  ifelse(DOF==0,0,BIAS)
-  ifelse(DOF==Inf,1,BIAS)
+  BIAS <- ifelse(DOF==0,0,BIAS)
+  BIAS <- ifelse(DOF==Inf,1,BIAS)
   return(BIAS)
 }
 

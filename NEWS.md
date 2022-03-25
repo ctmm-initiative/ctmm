@@ -1,4 +1,4 @@
-ctmm 0.6.2 (2021-03-22)
+ctmm 0.6.2 (2021-03-25)
 ================
 
   * new function rsf.fit() to fit integrated resource selection functions (iRSFs) with autocorrelation-adjusted weighted likelihood

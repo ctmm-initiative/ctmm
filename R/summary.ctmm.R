@@ -324,7 +324,8 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
     # root mean square velocity
     # pretty units
     rms <- sqrt(chisq.ci(ms,VAR=var.ms,alpha=alpha))
-    rms <- rms / chi.bias(DOF.speed) # if chi^2 estimate was unbiased, then chi estimate is now unbiased too
+    # if chi^2 estimate was unbiased, then chi estimate is now unbiased too
+    if(DOF.speed>0) { rms <- rms / chi.bias(DOF.speed) }
     unit.list <- unit.par(rms,"speed",SI=!units)
     name <- c(name,unit.list$name)
     scale <- c(scale,unit.list$scale)
