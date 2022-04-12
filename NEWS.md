@@ -1,4 +1,4 @@
-ctmm 0.6.2 (2021-03-25)
+ctmm 0.6.2 (2021-04-11)
 ================
 
   * new function rsf.fit() to fit integrated resource selection functions (iRSFs) with autocorrelation-adjusted weighted likelihood
@@ -38,6 +38,8 @@ ctmm 0.6.2 (2021-03-25)
   * bugfix in ctmm.boot() when bias estimate exceeds variance parameter
   
   * bugfixes in 3D akde()
+  
+  * bugfix in time gridding code when dt is coarse
 
 ctmm 0.6.1 (2021-07-26)
 ================

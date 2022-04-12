@@ -405,6 +405,7 @@ PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC=
   ############################
   # INITIALIZE SOLUTION
   # use previous solution
+  # if(TRUE)
   if(!length(ls(envir=PQP.env)) || get("EMPTY",pos=PQP.env))
   {
     # not yet a normalized probability

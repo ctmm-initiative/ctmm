@@ -49,7 +49,7 @@ confint.ctmm <- function(model,alpha=0.05,UNICODE=FALSE)
       # dArea/dpar
       J0 <- 1/2 * AREA / sigma@par[P]
       # CoV^2
-      PAR <- (J0 %*% POV[P,P] %*% t(J0))/AREA^2
+      PAR <- c(J0 %*% POV[P,P] %*% J0)/AREA^2
       # Jacobian for VAR[Area]
       J[P,P] <- J0
       J <- quad2lin(J,diag=TRUE)

@@ -219,16 +219,11 @@ PDsolve <- function(M,force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
   ZERO <- sapply(1:nrow(M),function(i){all(M[i,]==0)})
   if(any(INF) || any(ZERO))
   {
-    # 1/Inf == 0
-    if(any(INF))
-    { M[INF,INF] <- 0 }
+    # 1/Inf == 0 # correlations not accounted for
+    if(any(INF)) { M[INF,] <- M[,INF] <- 0 }
 
     # 1/0 == Inf
-    if(any(ZERO))
-    {
-      M[ZERO,ZERO] <- 0
-      diag(M)[ZERO] <- Inf
-    }
+    if(any(ZERO)) { diag(M)[ZERO] <- Inf }
 
     # regular inverse of remaining dimensions
     REM <- !(INF|ZERO)
@@ -334,14 +329,20 @@ sqrtm <- function(M,force=FALSE,pseudo=FALSE)
     {
       S <- sqrt(DET)
       M <- (M + S*diag(2))/sqrt(TR+2*S)
+      M <- nant(M,0) # not sure if this is a general fix
     }
   }
   else
   {
+    FAIL <- diag(-1,nrow=DIM)
+
     if(all(diag(M)>=-TOL))
-    { R <- expm::sqrtm(M) }
+    {
+      R <- try(expm::sqrtm(M),silent=TRUE)
+      if(class(R)[1]=="try-error") { R <- FAIL }
+    }
     else
-    { R <- diag(-1,nrow=DIM) }
+    { R <- FAIL }
 
     if(all(Re(diag(R))>=-TOL && abs(Im(diag(R)))<=TOL))
     {

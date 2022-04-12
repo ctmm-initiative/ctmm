@@ -234,13 +234,23 @@ gridder <- function(t,z=NULL,dt=NULL,W=NULL,lag=NULL,p=NULL,FLOOR=NULL,finish=TR
   if(!is.null(z)) { Z.grid <- array(0,c(n,COL)) } else { Z.grid <- NULL }
   # lower time spread
   P <- p*W
-  W.grid[FLOOR] <- W.grid[FLOOR] + P
-  if(!is.null(z)) { Z.grid[FLOOR,] <- Z.grid[FLOOR,] + P*z }
+  Z <- P*z
+  for(i in 1:length(P)) # don't vector addition because duplicate indices overwrite
+  {
+    j <- FLOOR[i]
+    W.grid[j] <- W.grid[j] + P[i]
+    if(!is.null(z)) { Z.grid[j,] <- Z.grid[j,] + Z[i] }
+  }
   # upper time spread
-  FLOOR <- FLOOR+1
+  FLOOR <- FLOOR+1 # this is now ceiling
   P <- (1-p)*W
-  W.grid[FLOOR] <- W.grid[FLOOR] + P
-  if(!is.null(z)) { Z.grid[FLOOR,] <- Z.grid[FLOOR,] + P*z }
+  Z <- P*z
+  for(i in 1:length(P)) # dont't vector addition because duplicate indices overwrite
+  {
+    j <- FLOOR[i]
+    W.grid[j] <- W.grid[j] + P[i]
+    if(!is.null(z)) { Z.grid[j,] <- Z.grid[j,] + Z[i] }
+  }
 
   if(finish)
   {

@@ -4,34 +4,33 @@
 # matrix casts location covariance, diffusion rate, velocity covariance all as distinct matrices for above bias correction
 log.ctmm <- function(CTMM,debias=FALSE)
 {
+  SIGMA <- c("major","minor","angle")
   isotropic <- CTMM$isotropic
   axes <- CTMM$axes
   features <- CTMM$features
-  par <- get.parameters(CTMM,features,linear.cov=TRUE)
-  sigma <- attr(CTMM$sigma,"par")
+  par <- get.parameters(CTMM,features,linear.cov=FALSE)
+  sigma <- CTMM$sigma
   COV <- CTMM$COV
 
   ### log transform sigma
-  # log transform major-minor
-  if(isotropic)
-  {
-    PARS <- "major"
-    sigma <- sigma[PARS]
-  }
-  else
-  { PARS <- c("major","minor") }
-  COV[PARS,] <- COV[PARS,,drop=FALSE] / sigma[PARS]
-  COV[,PARS] <- t( t(COV[,PARS,drop=FALSE]) / sigma[PARS] )
-  par[PARS] <- sigma[PARS] <- log(sigma[PARS])
+  # log transform major-minor in sigma and COV
+  PARS <- SIGMA[SIGMA %in% features]
+  PARS <- PARS[PARS %in% POSITIVE.PARAMETERS]
 
-  # convert log(eigen) to log(xy)
-  sigma <- covm(sigma,isotropic=isotropic,axes=axes)
+  COV[PARS,] <- COV[PARS,,drop=FALSE] / par[PARS]
+  COV[,PARS] <- t( t(COV[,PARS,drop=FALSE]) / par[PARS] )
+
+  sigma <- log.covm(sigma)
+
+  # convert log(eigen) to log(xy) in COV
+  PARS <- SIGMA[SIGMA %in% features]
+  if(isotropic)
+  { par[PARS] <- sigma@par[PARS] }
   if(!isotropic)
   {
-    PARS <- c("major","minor","angle")
     par[PARS] <- sigma[c(1,4,2)]  # log 'xx', 'yy', 'xy'
 
-    J <- J.sigma.par(par[PARS])
+    J <- J.sigma.par(sigma@par)
     COV[PARS,] <- J %*% COV[PARS,,drop=FALSE]
     COV[,PARS] <- COV[,PARS,drop=FALSE] %*% t(J)
   }
@@ -39,7 +38,7 @@ log.ctmm <- function(CTMM,debias=FALSE)
   ### log transform all positive parameters that haven't been logged
   # features to log transform
   FEAT.ALL <- features[ features %in% POSITIVE.PARAMETERS | grepl("error",features) ]
-  FEAT <- FEAT.ALL[FEAT.ALL %nin% names(CTMM$sigma@par)]
+  FEAT <- FEAT.ALL[FEAT.ALL %nin% SIGMA]
 
   if(length(FEAT))
   {
@@ -49,11 +48,12 @@ log.ctmm <- function(CTMM,debias=FALSE)
   }
 
   # log chi^2 bias correction
-  SUB <- features[features %in% c(FEAT.ALL,"angle")]
+  VAR <- diag(COV) # don't include features that shouldn't be there
+  SUB <- features[features %in% c(FEAT.ALL,"angle") & VAR[features]<Inf]
   if(debias && length(SUB))
   {
-    VAR <- diag(COV)
     COR <- stats::cov2cor(COV)
+    COR <- nant(COR,0)
 
     # diagonalize and log-chi^2 debias relevant parameter estimates
     EIGEN <- eigen(COV[SUB,SUB])
@@ -79,6 +79,7 @@ log.ctmm <- function(CTMM,debias=FALSE)
     COR[SUB,SUB] <- stats::cov2cor(EIGEN)
     VAR[SUB] <- diag(EIGEN)
     COV <- COR * outer(sqrt(VAR))
+    COV <- nant(COV,0)
   }
 
   RETURN <- list(par=par,COV=COV,isotropic=isotropic)
@@ -90,6 +91,7 @@ log.ctmm <- function(CTMM,debias=FALSE)
 # inverse transformation of above
 exp.ctmm <- function(CTMM,debias=FALSE)
 {
+  SIGMA <- c("major","minor","angle")
   isotropic <- CTMM$isotropic
   axes <- CTMM$axes
   features <- CTMM$features
@@ -126,6 +128,7 @@ exp.ctmm <- function(CTMM,debias=FALSE)
     # log-gamma variance (better than delta method)
     DOF <- 2*itrigamma(EIGEN$values)
     BIAS <- digamma(DOF/2)-log(DOF/2) # negative bias for log(chi^2) variates
+    BIAS <- nant(BIAS,0)
     par[SUB] <- par[SUB] - BIAS # E[log-chi^2] bias correction
     par[SUB] <- c(EIGEN$vectors %*% par[SUB]) # transform back (still under logarithm)
 
@@ -183,8 +186,7 @@ exp.ctmm <- function(CTMM,debias=FALSE)
   ### exp transform all positive parameters except sigma
   # features to log transform
   FEAT <- features[features %in% POSITIVE.PARAMETERS]
-  PARS <- c("major","minor","angle")
-  FEAT <- FEAT[FEAT %nin% PARS]
+  FEAT <- FEAT[FEAT %nin% SIGMA]
 
   if(length(FEAT))
   {
@@ -200,10 +202,10 @@ exp.ctmm <- function(CTMM,debias=FALSE)
   }
 
   ### exp transform sigma
-  PARS <- PARS[PARS %in% features]
+  PARS <- SIGMA[SIGMA %in% features]
   sigma <- par[PARS]
 
-  # convert COV[log(xy)] to COV[log(eigen)]
+  # convert COV[log(xy)] to COV[log(eigen)] (and POV)
   if(!isotropic)
   {
     J <- J.par.sigma(sigma)
@@ -215,18 +217,27 @@ exp.ctmm <- function(CTMM,debias=FALSE)
     POV[,PARS] <- POV[,PARS,drop=FALSE] %*% t(J)
 
     JP[PARS,] <- J %*% JP[PARS,,drop=FALSE]
+
+    sigma <- matrix(sigma[c('major','angle','angle','minor')],2,2)
   }
+  # else sigma is just 'major'
 
-  # now log (major,minor,angle)
-  sigma[PARS] <- exp(sigma[PARS])
+  # exp of eigen
+  sigma <- covm(sigma,axes=axes,isotropic=isotropic)
+  sigma <- exp.covm(sigma)
 
-  COV[PARS,] <- COV[PARS,,drop=FALSE] * sigma[PARS]
-  COV[,PARS] <- t( t(COV[,PARS,drop=FALSE]) * sigma[PARS] )
+  # copy over
+  par[PARS] <- sigma@par[PARS]
 
-  POV[PARS,] <- POV[PARS,,drop=FALSE] * sigma[PARS]
-  POV[,PARS] <- t( t(POV[,PARS,drop=FALSE]) * sigma[PARS] )
+  PARS <- PARS[PARS %in% POSITIVE.PARAMETERS]
 
-  JP[PARS,] <- JP[PARS,,drop=FALSE] * sigma[PARS]
+  COV[PARS,] <- COV[PARS,,drop=FALSE] * par[PARS]
+  COV[,PARS] <- t( t(COV[,PARS,drop=FALSE]) * par[PARS] )
+
+  POV[PARS,] <- POV[PARS,,drop=FALSE] * par[PARS]
+  POV[,PARS] <- t( t(POV[,PARS,drop=FALSE]) * par[PARS] )
+
+  JP[PARS,] <- JP[PARS,,drop=FALSE] * par[PARS]
 
   # finally transform COV.POV
   JP <- quad2lin(JP)
@@ -234,16 +245,12 @@ exp.ctmm <- function(CTMM,debias=FALSE)
   COV.POV <- JP %*% COV.POV %*% t(JP)
   dimnames(COV.POV) <- NAMES
 
-  sigma <- covm(sigma,axes=axes,isotropic=isotropic)
   CTMM$sigma <- sigma
   CTMM$COV <- COV
   CTMM$POV <- POV
   CTMM$COV.POV <- COV.POV
 
   CTMM$par <- NULL
-  PARS <- c("major","minor","angle")
-  PARS <- PARS[PARS %in% features]
-  par[PARS] <- sigma@par[PARS]
   CTMM <- set.parameters(CTMM,par)
 
   return(CTMM)
@@ -329,7 +336,7 @@ mean.features <- function(x,debias=TRUE,isotropic=FALSE,...)
     }
     else if(isotropic && !x[[i]]$isotropic)
     {
-      MU[i,P] <- c(mean(MU[i,P]),diff(MU[i,P]))
+      MU[i,P] <- c(mean(MU[i,P]),-diff(MU[i,P]))
       J <- rbind( c(1/2,1/2) , c(1,-1) )
       SIGMA[i,P,] <- J %*% SIGMA[i,P,]
       SIGMA[i,,P] <- SIGMA[i,,P] %*% t(J)
@@ -359,7 +366,7 @@ mean.features <- function(x,debias=TRUE,isotropic=FALSE,...)
   # set beta structure
   beta <- rep(0,length(BETA))
   names(beta) <- BETA
-  R$beta <- beta
+  if(length(BETA)) { R$beta <- beta }
 
   # reverse log transformation
   # R <- set.parameters(R,par,linear.cov=TRUE)

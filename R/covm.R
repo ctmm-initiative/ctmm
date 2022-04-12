@@ -259,21 +259,29 @@ sqrtm.covm <- function(sigma)
   return(sigma)
 }
 
-
 # matrix power
-mpow.covm <- function(sigma,pow)
+fn.covm <- function(sigma,fn)
 {
   isotropic <- sigma@isotropic
   axes <- colnames(sigma)
 
   sigma <- attr(sigma,"par")
   PARS <- 1:min(2,length(sigma)) # major, (minor)
-  sigma[PARS] <- sigma[PARS]^pow
+  sigma[PARS] <- fn(sigma[PARS])
 
   sigma <- covm(sigma,isotropic=isotropic,axes=axes)
 
   return(sigma)
 }
+
+# matrix power
+mpow.covm <- function(sigma,pow) { fn.covm(sigma,function(s){s^pow}) }
+
+# matrix logarithm
+log.covm <- function(sigma,pow) { fn.covm(sigma,log) }
+
+# matrix exponental
+exp.covm <- function(sigma,pow) { fn.covm(sigma,exp) }
 
 
 ####### calculate variance and variance-covariance from major/minor information
@@ -363,7 +371,7 @@ J.par.sigma <- function(sigma)
 
   par.fn <- function(s)
   {
-    par <- matrix(s[c("xx","xy","yy","yy")],2,2)
+    par <- matrix(s[c("xx","xy","xy","yy")],2,2)
     covm(par)@par
   }
 

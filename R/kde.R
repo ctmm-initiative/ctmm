@@ -24,7 +24,7 @@ lag.DOF <- function(data,dt=NULL,weights=NULL,lag=NULL,FLOOR=NULL,p=NULL)
 
   # fix initial and total DOF
   DOF[1] <- w2
-  DOF[-1] <- DOF[-1]*((1-DOF[1])/sum(DOF[-1]))
+  DOF[-1] <- DOF[-1]*nant((1-DOF[1])/sum(DOF[-1]),0)
 
   # add positive and negative lags
   # DOF[-1] <- 2*DOF[-1]
@@ -76,10 +76,13 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,error=0
     if(fast & is.null(dt))
     {
       dt <- diff(data$t)
-      dt <- sort(dt)
+      dt <- dt[dt>0]
+      # dt <- sort(dt)
       DT <- stats::median(dt)
-      dt <- dt[ceiling(ERROR*length(dt))] # small quantile
-      dt <- DT/floor(DT/dt) # integer divisor of median
+      dt <- min(dt)
+      dt <- max(dt,DT*error) # don't make dt too small
+      # dt <- dt[ceiling(ERROR*length(dt))] # small quantile
+      # dt <- DT/ceiling(DT/dt) # integer divisor of median
       if(trace)
       {
         UNITS <- unit(dt,"time")
@@ -493,7 +496,7 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),variable="utilization",debias=TRUE,
     EXT <- extent(EXT,level=1-error)[,axes] # Gaussian extent (includes uncertainty)
     GRID <- kde.grid(data[[i]],H=KDE[[i]]$H,axes=axes,alpha=error,res=res,dr=dr,grid=grid,EXT.min=EXT) # individual grid
 
-    KDE[[i]] <- c(KDE[[i]],kde(data[[i]],H=KDE[[i]]$H,axes=axes,CTMM=CTMM0[[i]],RASTER=R,bias=DEBIAS[[i]],W=KDE[[i]]$weights,alpha=error,dr=dr,grid=GRID,...))
+    KDE[[i]] <- c(KDE[[i]],kde(data[[i]],H=KDE[[i]]$H,axes=axes,CTMM=CTMM0[[i]],RASTER=R,bias=DEBIAS[[i]],W=KDE[[i]]$weights,alpha=error,dr=dr,grid=GRID))
 
     KDE[[i]] <- new.UD(KDE[[i]],info=attr(data[[i]],"info"),type='range',variable="utilization",CTMM=ctmm())
     # in case bandwidth is pre-calculated...

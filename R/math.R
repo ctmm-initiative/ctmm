@@ -16,6 +16,7 @@ ipsigamma <- function(x,deriv=0,precision=1/2)
     # dy == dx/psigamma'(y0)
     dx <- x - psigamma(y,deriv=deriv)
     dy <- dx/psigamma(y,deriv=deriv+1)
+    dy <- nant(dy,1)
     y <- y + dy
     ERROR <- max(abs(dy/y))
   }
@@ -23,5 +24,6 @@ ipsigamma <- function(x,deriv=0,precision=1/2)
   return(y)
 }
 
+# inverse trigamma
 itrigamma <- function(x,precision=1/2)
 { ipsigamma(x,deriv=1,precision=precision) }
