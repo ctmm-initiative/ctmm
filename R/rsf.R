@@ -759,7 +759,7 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
     # if any data isn't inside polygon then loglike = -Inf
     level.UD <- level.UD@Polygons[[1]]@coords
     TEST <- sp::point.in.polygon(data$x,data$y,level.UD[,1],level.UD[,2])
-    TEST <- sum(which(TEST==0)) # number of exterior points
+    TEST <- sum(TEST==0) # number of exterior points
     if(TEST>0)
     {
       warning(TEST," data points outside of available area.")
