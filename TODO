@@ -1,3 +1,8 @@
+** PRIORITY
+* RSF boundary check for Jack
+* mean UD for Mark
+* relative encounter rates for Laura
+
 ** MISC
 * only rareify models after compatible features are selected
 * export list of objects

@@ -80,22 +80,26 @@ agde <- function(CTMM,R=list(),variable="utilization",error=0.001,res=100,grid=N
     xy <- aperm(xy,c(2,1,3))
     dim(xy) <- c(prod(DIM),2)
 
-    R <- expand.factors(R,CTMM$formula,fixed=TRUE)
+    if(length(R))
+    {
+      R <- expand.factors(R,CTMM$formula,fixed=TRUE)
 
-    # calculate RASTERs on spatial grid
-    R <- lapply(R,function(RAS){R.grid(r,proj=proj,RAS)})
-    # this needs to be moved up for multiple individuals?
+      # calculate RASTERs on spatial grid
+      R <- lapply(R,function(RAS){R.grid(r,proj=proj,RAS)})
+      # this needs to be moved up for multiple individuals?
+    }
 
     # not finished with this part
     STATIONARY <- is.stationary(CTMM,R)
 
     # suitability raster
-    R <- R.suit(R,CTMM)
+    if(length(R))
+    { R <- R.suit(R,CTMM) }
 
-    O <- sp::point.in.polygon(xy[,1],xy[,2],level.UD[,1],level.UD[,2])
-    dim(O) <- DIM
+    PMF <- sp::point.in.polygon(xy[,1],xy[,2],level.UD[,1],level.UD[,2])
+    dim(PMF) <- DIM
 
-    PMF <- O*R
+    if(length(R)) { PMF <- PMF*R }
     PMF <- PMF/sum(PMF)
     CDF <- pmf2cdf(PMF)
 

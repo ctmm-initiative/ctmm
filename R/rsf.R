@@ -11,6 +11,8 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
   # pass trace argument (demoted)
   if(trace) { control$trace <- trace-1 }
 
+  CALC <- integrated || length(R) # anything to calculate?
+
   # smooth the data, but don't drop
   if(smooth && any(CTMM$error>0))
   { data[,c(axes,GEO)] <- predict(data,CTMM=CTMM,t=data$t,complete=TRUE)[,c(axes,GEO)] }
@@ -422,8 +424,17 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
   N <- ifelse(STATIONARY,1,8) # starting value, will increase iteratively
   N.OLD <- 0
   loglike <- -Inf
-  ERROR.BIG <- TRUE
   STDloglike <- Inf
+
+  if(CALC)
+  { ERROR.BIG <- TRUE }
+  else # nothing to calculate below
+  {
+    ERROR.BIG <- FALSE
+    loglike <- 0 # log(1/AREA) later
+    VAR.loglike <- 0
+  }
+
   while(ERROR.BIG)
   {
     # double the random sample
@@ -551,13 +562,20 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
   } # while(ERROR.BIG)
 
   # compute hessian
-  if(trace) { message("Calculating Hessian") }
-  DIFF <- genD(par=beta,fn=nloglike,zero=-loglike,Richardson=2,mc.cores=1)
-  hess <- DIFF$hessian
-  grad <- DIFF$gradient
-  # more robust covariance calculation than straight inverse
-  COV <- cov.loglike(hess,grad)
-  dimnames(COV) <- list(TERMS,TERMS)
+  if(CALC)
+  {
+    if(trace) { message("Calculating Hessian") }
+    DIFF <- genD(par=beta,fn=nloglike,zero=-loglike,Richardson=2,mc.cores=1)
+    hess <- DIFF$hessian
+    grad <- DIFF$gradient
+    # more robust covariance calculation than straight inverse
+    COV <- cov.loglike(hess,grad)
+    dimnames(COV) <- list(TERMS,TERMS)
+  }
+  else # no parameters
+  {
+    COV <- matrix(0,0,0)
+  }
 
   if(integrated)
   {
@@ -577,15 +595,7 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
       beta['yy'] <- 1 + beta['yy']
       beta['xy'] <- 0 + beta['xy']
     }
-  }
 
-  # This doesn't account for bias correction
-  # partition function (per W)
-  # STUFF <- nloglike(beta,verbose=TRUE)
-  # NORM <- STUFF$Z
-
-  if(integrated)
-  {
     # un-scale mu, sigma, COV[...]
     beta[SVARS] <- beta[SVARS] / SCALE
     COV[SVARS,] <- COV[SVARS,] / SCALE
