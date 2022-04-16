@@ -13,11 +13,11 @@ Produces simple plots of \code{telemetry} objects, possibly overlayed with a Gau
 \usage{
 plot(x,y,...)
 
-\S3method{plot}{telemetry}(x,CTMM=NULL,UD=NULL,cex=NULL,col="red",lwd=1,pch=1,type='p',error=TRUE,
-     transparency.error=0.25,velocity=FALSE,DF="CDF",col.DF="blue",col.grid="white",
-     labels=NULL,level=0.95,level.UD=0.95,col.level="black",lwd.level=1,SP=NULL,
-     border.SP=TRUE,col.SP=NA,R=NULL,col.R="green",legend=FALSE,fraction=1,xlim=NULL,
-     ylim=NULL,ext=NULL,units=TRUE,add=FALSE,...)
+\S3method{plot}{telemetry}(x,CTMM=NULL,UD=NULL,col.bg="white",cex=NULL,col="red",lwd=1,pch=1,type='p',
+     error=TRUE,transparency.error=0.25,velocity=FALSE,DF="CDF",col.DF="blue",
+     col.grid="white",labels=NULL,level=0.95,level.UD=0.95,col.level="black",lwd.level=1,
+     SP=NULL,border.SP=TRUE,col.SP=NA,R=NULL,col.R="green",legend=FALSE,fraction=1,
+     xlim=NULL,ylim=NULL,ext=NULL,units=TRUE,add=FALSE,...)
 
 \S4method{zoom}{list}(x,...)
 
@@ -29,6 +29,9 @@ plot(x,y,...)
 \arguments{
   \item{x}{\code{telemetry} or \code{UD} object.}
   \item{y}{Unused option.}
+  \item{CTMM}{Optional Gaussian \code{ctmm} movement model from the output of \code{ctmm.fit} or list of such objects.}
+  \item{UD}{Optional \code{UD} object such as from the output of \code{akde} or list of such objects.}
+  \item{col.bg}{Background color}
   \item{cex}{Relative size of plotting symbols. Only used when \code{error=FALSE}, because \code{error=TRUE} uses the location-error radius instead of \code{cex}.}
   \item{col}{Color option for telemetry data. Can be an array or list of arrays.}
   \item{lwd}{Line widths of \code{telemetry} points.}
@@ -37,11 +40,9 @@ plot(x,y,...)
   \item{error}{Plot error circles/ellipses if present in the data. \code{error=2} will fill in the circles and \code{error=3} will plot densities instead. \code{error=FALSE} will disable this feature.}
   \item{transparency.error}{Transparency scaling for erroneous locations when \code{error=1:2}. \code{trans=0} disables transparancy. Should be no greater than \code{1}.}
   \item{velocity}{Plot velocity vectors if present in the data.}
-  \item{CTMM}{Optional Gaussian \code{ctmm} movement model from the output of \code{ctmm.fit} or list of such objects.}
-  \item{UD}{Optional \code{UD} object such as from the output of \code{akde} or list of such objects.}
   \item{DF}{Plot the maximum likelihood probability density function \code{"PDF"} or cumulative distribution function \code{"CDF"}.}
-  \item{col.grid}{Color option for the maximum likelihood \code{akde} bandwidth grid.}
   \item{col.DF}{Color option for the density function. Can be an array.}
+  \item{col.grid}{Color option for the maximum likelihood \code{akde} bandwidth grid.}
   \item{labels}{Labels for UD contours. Can be an array or list of arrays.}
   \item{level}{ Confidence levels placed on the contour estimates themselves. I.e., the above 50\% core home-range area can be estimated with 95\% confidence via \code{level=0.95}. }
   \item{level.UD}{Coverage level of Gaussian \code{ctmm} model or \code{UD} estimate contours to be displayed. I.e., \code{level.UD=0.50} can yield the 50\% core home range within the rendered contours.}

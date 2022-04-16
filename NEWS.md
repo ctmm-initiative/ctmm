@@ -1,4 +1,4 @@
-ctmm 0.6.2 (2021-04-11)
+ctmm 0.6.2 (2021-04-15)
 ================
 
   * new function rsf.fit() to fit integrated resource selection functions (iRSFs) with autocorrelation-adjusted weighted likelihood
@@ -13,7 +13,7 @@ ctmm 0.6.2 (2021-04-11)
   
   * new function suitability() to calculate suitability rasters from RSF fit objects
   
-  * akde() now supports RSF-informed kernels
+  * akde() now supports RSF-informed kernels and boundary-respecting kernels
   
   * summary.ctmm() now outputs diffusion rate estimates
   

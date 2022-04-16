@@ -400,7 +400,7 @@ akde.bias <- function(CTMM,H,lag,DOF,weights)
 # AKDE single or list
 # (C) C.H. Fleming (2016-2022)
 # (C) Kevin Winner & C.H. Fleming (2016)
-akde <- function(data,CTMM,VMM=NULL,R=list(),variable="utilization",debias=TRUE,weights=FALSE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
+akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utilization",debias=TRUE,weights=FALSE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
 {
   if(variable!="utilization")
   { stop("variable=",variable," not yet supported by akde(). See npr() or revisitation().") }
@@ -496,7 +496,7 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),variable="utilization",debias=TRUE,
     EXT <- extent(EXT,level=1-error)[,axes] # Gaussian extent (includes uncertainty)
     GRID <- kde.grid(data[[i]],H=KDE[[i]]$H,axes=axes,alpha=error,res=res,dr=dr,grid=grid,EXT.min=EXT) # individual grid
 
-    KDE[[i]] <- c(KDE[[i]],kde(data[[i]],H=KDE[[i]]$H,axes=axes,CTMM=CTMM0[[i]],RASTER=R,bias=DEBIAS[[i]],W=KDE[[i]]$weights,alpha=error,dr=dr,grid=GRID))
+    KDE[[i]] <- c(KDE[[i]],kde(data[[i]],H=KDE[[i]]$H,axes=axes,CTMM=CTMM0[[i]],SP=SP,SP.in=SP.in,RASTER=R,bias=DEBIAS[[i]],W=KDE[[i]]$weights,alpha=error,dr=dr,grid=GRID))
 
     KDE[[i]] <- new.UD(KDE[[i]],info=attr(data[[i]],"info"),type='range',variable="utilization",CTMM=ctmm())
     # in case bandwidth is pre-calculated...
@@ -540,7 +540,7 @@ prepare.H <- function(H,n,axes=c('x','y'))
 # construct my own KDE objects
 # was using ks-package but it has some bugs
 # alpha is the error goal in my total probability
-kde <- function(data,H,axes=c("x","y"),CTMM=list(),RASTER=list(),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr=NULL,grid=NULL,variable=NA,normalize=TRUE,trace=FALSE)
+kde <- function(data,H,axes=c("x","y"),CTMM=list(),SP=NULL,SP.in=TRUE,RASTER=list(),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr=NULL,grid=NULL,variable=NA,normalize=TRUE,trace=FALSE)
 {
   if(!is.na(variable))
   {
@@ -590,6 +590,48 @@ kde <- function(data,H,axes=c("x","y"),CTMM=list(),RASTER=list(),bias=FALSE,W=NU
     if(STATIONARY) { RASTER <- R.suit(RASTER,CTMM) }
     # otherwise we calculate one suitability per time/kernel
   }
+
+  if(length(SP))
+  {
+    proj <- CTMM@info$projection
+    SP <- sp::spTransform(SP,proj)
+
+    # create raster template
+    dx <- grid$dr[1]
+    dy <- grid$dr[2]
+
+    xmn <- grid$r$x[1]-dx/2
+    xmx <- last(grid$r$x)+dx/2
+
+    ymn <- grid$r$y[1]-dy/2
+    ymx <- last(grid$r$y)+dy/2
+
+    RSP <- matrix(0,length(grid$r$y),length(grid$r$x))
+    RSP <- raster::raster(RSP,xmn=xmn,xmx=xmx,ymn=ymn,ymx=ymx,crs=proj)
+
+    # rasterize SP -> RSP
+    RSP <- raster::rasterize(SP,RSP,background=0)
+    RSP <- raster::as.matrix(RSP)
+    RSP <- t(RSP)[,dim(RSP)[1]:1]
+
+    if(!SP.in) { RSP <- 1-RSP }
+
+    # incorporate into RASTER
+    if(length(RASTER))
+    {
+      if(STATIONARY)
+      { RASTER <- RASTER * RSP }
+      else
+      { RASTER <- lapply(RASTER,function(r){r * RSP}) }
+    }
+    else
+    {
+      RASTER <- RSP
+      STATIONARY <- TRUE
+    }
+  }
+  else
+  { RSP <- NULL }
 
   # probability mass function
   PMF <- array(0,sapply(R,length))

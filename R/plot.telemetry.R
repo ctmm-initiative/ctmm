@@ -12,7 +12,7 @@ methods::setMethod("zoom",signature(x="telemetry"), function(x,fraction=1,...) z
 methods::setMethod("zoom",signature(x="UD"), function(x,fraction=1,...) zoom.telemetry(x,fraction=fraction,...))
 
 ##############
-new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,R=NULL,col.R="green",legend=FALSE,level.UD=0.95,level=0.95,units=TRUE,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,ext=NULL,...)
+new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,R=NULL,col.bg="white",col.R="green",legend=FALSE,level.UD=0.95,level=0.95,units=TRUE,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,ext=NULL,...)
 {
   RESIDUALS <- !is.null(data) && !is.null(attr(data[[1]],"info")$residual)
 
@@ -108,6 +108,14 @@ new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,R=NULL,col.R="green",legend=FAL
     # empty base layer plot
     plot(ext, xlab=xlab, ylab=ylab, col=grDevices::rgb(1,1,1,0), asp=1, ...)
 
+    # plot background color
+    lim <- graphics::par('usr')
+    xlim <- lim[1:2]
+    dx <- diff(xlim)
+    ylim <- lim[3:4]
+    dy <- diff(ylim)
+    graphics::rect(xlim[1]-dx/2,ylim[1]-dy/2,xlim[2]+dx/2,ylim[2]+dy/2,border=col.bg,col=col.bg)
+
     # plot information for further layering
     projection <- unique(c(projection(data),projection(CTMM),projection(UD))) # some objects could be NULL
     if(length(projection)>1 && !RESIDUALS) { stop("Multiple projections not yet supported.") }
@@ -144,7 +152,7 @@ plot.env <- new.env()
 #######################################
 # PLOT TELEMETRY DATA
 #######################################
-plot.telemetry <- function(x,CTMM=NULL,UD=NULL,#R=NULL,
+plot.telemetry <- function(x,CTMM=NULL,UD=NULL,col.bg='white',
                            cex=NULL,col="red",lwd=1,pch=1,type='p',error=TRUE,transparency.error=0.25,velocity=FALSE,
                            DF="CDF",col.DF="blue",col.grid="white",labels=NULL,level=0.95,level.UD=0.95,col.level="black",lwd.level=1,
                            SP=NULL,border.SP=TRUE,col.SP=NA,
@@ -184,7 +192,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,#R=NULL,
     CTMM <- list(ctmm(sigma=1,mu=c(0,0)))
   }
 
-  dist <- new.plot(data=x,CTMM=CTMM,UD=UD,R=R,col.R=col.R,legend=legend,level.UD=level.UD,level=level,units=units,fraction=fraction,add=add,xlim=xlim,ylim=ylim,ext=ext,...)
+  dist <- new.plot(data=x,CTMM=CTMM,UD=UD,col.bg=col.bg,R=R,col.R=col.R,legend=legend,level.UD=level.UD,level=level,units=units,fraction=fraction,add=add,xlim=xlim,ylim=ylim,ext=ext,...)
 
   # plot cm per unit of distance plotted (m or km)
   cmpkm <- 2.54*mean(graphics::par("fin")*diff(graphics::par("plt"))[-2]/diff(graphics::par("usr"))[-2])
@@ -437,6 +445,8 @@ plot.R <- function(R,col="green",legend=FALSE)
 {
   x.scale <- get0('x.scale',plot.env)
 
+  R <- listify(R)
+
   for(i in 1:length(R))
   {
     PROJ <- raster::projection(R[[i]])
@@ -472,7 +482,7 @@ plot.SP <- function(SP=NULL,border.SP=TRUE,col.SP=NA,PROJ=NULL,...)
 
 
 ##############
-plot.UD <- function(x,DF="CDF",col.DF="blue",col.grid="white",labels=NULL,level=0.95,level.UD=0.95,col.level="black",lwd.level=1,
+plot.UD <- function(x,col.bg="white",DF="CDF",col.DF="blue",col.grid="white",labels=NULL,level=0.95,level.UD=0.95,col.level="black",lwd.level=1,
                     SP=NULL,border.SP=TRUE,col.SP=NA,
                     R=NULL,col.R="green",legend=FALSE,
                     fraction=1,xlim=NULL,ylim=NULL,ext=NULL,units=TRUE,add=FALSE,...)
@@ -488,7 +498,7 @@ plot.UD <- function(x,DF="CDF",col.DF="blue",col.grid="white",labels=NULL,level=
 
   if(class(x[[1]])[1]=="RS") { DF <- 'RS' }
 
-  dist <- new.plot(UD=x,R=R,col.R=col.R,legend=legend,units=units,fraction=fraction,xlim=xlim,ylim=ylim,ext=ext,level.UD=level.UD,level=level,add=add,...)
+  dist <- new.plot(UD=x,R=R,col.bg=col.bg,col.R=col.R,legend=legend,units=units,fraction=fraction,xlim=xlim,ylim=ylim,ext=ext,level.UD=level.UD,level=level,add=add,...)
 
   # # PLOT RASTER / SUITABILITY
   # if(!is.null(R)) { plot.R(R,col=col.R) }

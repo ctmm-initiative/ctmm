@@ -1,7 +1,7 @@
 Encoding: UTF-8
 Package: ctmm
 Version: 0.6.2
-Date: 2021-04-11
+Date: 2021-04-15
 Title: Continuous-Time Movement Modeling
 Authors@R: c(person(c("Christen","H."),"Fleming",email="flemingc@si.edu",role=c("aut","cre")),
              person(c("Justin","M."),"Calabrese",email="calabresej@si.edu",role="aut"),
@@ -40,8 +40,9 @@ Description: Functions for identifying, fitting, and applying continuous-space, 
   Fleming et al (2019) <doi:10.1111/2041-210X.13270>,
   Noonan & Fleming et al (2019) <doi:10.1186/s40462-019-0177-1>,
   Fleming et al (2020) <doi:10.1101/2020.06.12.130195>,
+  Noonan et al (2021) <doi:10.1111/2041-210X.13597>,
   and
-  Noonan et al (2021) <doi:10.1111/2041-210X.13597>.
+  Fleming et al (2022) <10.1111/2041-210X.13815>.
 License: GPL-3
 VignetteBuilder: knitr
 NeedsCompilation: no

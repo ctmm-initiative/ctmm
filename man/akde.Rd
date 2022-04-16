@@ -9,7 +9,7 @@
 This function calculates autocorrelated kernel density home-range estimates from \code{telemetry} data and a corresponding continuous-time movement model.
 }
 \usage{
-akde(data,CTMM,VMM=NULL,R=list(),variable="utilization",debias=TRUE,weights=FALSE,
+akde(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utilization",debias=TRUE,weights=FALSE,
      smooth=TRUE,error=0.001,res=10,grid=NULL,...)
 }
 %- maybe also 'usage' for other objects documented here.
@@ -17,7 +17,9 @@ akde(data,CTMM,VMM=NULL,R=list(),variable="utilization",debias=TRUE,weights=FALS
   \item{data}{ 2D timeseries telemetry data represented as a \code{telemetry} object or list of objects. }
   \item{CTMM}{A \code{ctmm} movement model from the output of \code{ctmm.fit} or list of objects.}
   \item{VMM}{An optional vertical \code{ctmm} object for 3D home-range calculation.}
-  \item{R}{A named list of raster covariates if \code{CTMM} contains an RSF model}
+  \item{R}{A named list of raster covariates if \code{CTMM} contains an RSF model.}
+  \item{SP}{SpatialPolygonsDataFrame object for enforcing hard boundaries.}
+  \item{SP.in}{Locations are assumed to be inside the \code{SP} polygons if \code{SP.in=TRUE} and outside of \code{SP} if \code{SP.in=FALSE}.}
   \item{variable}{Not yet supported.}
   \item{debias}{Debias the distribution for area estimation (AKDEc).}
   \item{smooth}{"Smooth" out errors from the data.}

@@ -28,7 +28,7 @@ Noonan et al (2020) <doi:10.1101/2020.08.24.261628>.
 Package: \tab ctmm\cr
 Type: \tab Package\cr
 Version: \tab 0.6.2 \cr
-Date: \tab 2021-04-11 \cr
+Date: \tab 2021-04-15 \cr
 License: \tab GPL-3 \cr
 }
 

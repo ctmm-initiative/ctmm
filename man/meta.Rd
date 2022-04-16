@@ -12,7 +12,7 @@ meta(x,variable="area",level=0.95,level.UD=0.95,method="MLE",IC="AICc",boot=FALS
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{x}{A list of \code{ctmm} movement-model objects, \code{UD} objects, or \code{UD} \code{summary} output, constituting a sampled population, or a list of such lists, each constituting a sampled sub-population.}
+  \item{x}{A named list of \code{ctmm} movement-model objects, \code{UD} objects, or \code{UD} \code{summary} output, constituting a sampled population, or a named list of such lists, with each constituting a sampled population.}
   \item{variable}{Variable of interest. Can be \code{"area"}, \code{"diffusion"}, \code{"speed"}, \code{"tau position"}, or \code{"tau velocity"}.}
   \item{level}{Confidence level for parameter estimates.}
   \item{level.UD}{Coverage level for home-range estimates. E.g., 50\% core home range.}
@@ -22,7 +22,7 @@ meta(x,variable="area",level=0.95,level.UD=0.95,method="MLE",IC="AICc",boot=FALS
   \item{boot}{Perform a parametric bootstrap for confidence intervals and first-order bias correction if \code{debias=TRUE}.}
   \item{error}{Relative error tolerance for parametric bootstrap.}
   \item{debias}{Apply Bessel's inverse-Gaussian correction and various other bias corrections if \code{method="MLE"}, REML if \code{method="BLUE"}, and an additional first-order correction if \code{boot=TRUE}.}
-  \item{verbose}{Return a list of both cross-population and sub-population analyses if \code{TRUE} and \code{x} is a list of sub-population lists.}
+  \item{verbose}{Return a list of both population and meta-population analyses if \code{TRUE} and \code{x} is a list of population lists.}
   \item{units}{Convert result to natural units.}
   \item{plot}{Generate a meta-analysis forest plot.}
   \item{sort}{Sort individuals by their point estimates in forest plot.}
@@ -32,25 +32,33 @@ meta(x,variable="area",level=0.95,level.UD=0.95,method="MLE",IC="AICc",boot=FALS
 }
 
 \details{
-\code{meta} employs a custom \eqn{\chi^2-IG} hierarchical model to calculate relatively unbiased population mean estimates of positive scale parameters,
+\code{meta} employs a custom \eqn{\chi^2-IG} hierarchical model to calculate debiased population mean estimates of positive scale parameters,
 including home-range areas, diffusion rates, mean speeds, and autocorrelation timescales.
 Population coefficient of variation (CoV) estimates are also provided.
-More details will be provided in an upcomming manuscript.
+More details are provided in Fleming et al (2022).
 }
 
 \value{If \code{x} constitutes a sampled population, then \code{meta} returns a table with rows corresponding to the population mean and coefficient of variation.
-If \code{x} constitutes a list of sampled sub-populations, then \code{meta} returns confidence intervals on the sub-population mean ratios.}
+
+If \code{x} constitutes a list of sampled populations, then \code{meta} returns confidence intervals on the population mean \code{variable} ratios.}
 
 %\section{Warnings}{}
 
-%\references{}
+\references{
+C. H. Fleming, I. Deznabi, S. Alavi, M. C. Crofoot, B. T. Hirsch, E. P. Medici, M. J. Noonan, R. Kays, W. F. Fagan, D. Sheldon, J. M. Calabrese,
+``Population-level inference for home-range areas'',
+Methods in Ecology and Evolution (2022) \doi{10.1111/2041-210X.13815}.
+}
 
 
 \author{ C. H. Fleming. }
 
 \note{The AICc formula is approximated via the Gaussian relation.
 
-Confidence intervals depicted in the forest plot are \eqn{\chi^2} and may differ from the output of \code{summary()} in the case of mean speed and timescale parameters with small effective sample sizes.}
+Confidence intervals depicted in the forest plot are \eqn{\chi^2} and may differ from the output of \code{summary()} in the case of mean speed and timescale parameters with small effective sample sizes.
+
+As mean ratio estimates are debiased, reciprocal estimates can differ slightly.
+}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
