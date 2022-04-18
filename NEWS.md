@@ -1,4 +1,4 @@
-ctmm 0.6.2 (2021-04-15)
+ctmm 0.6.2 (2021-04-17)
 ================
 
   * new function rsf.fit() to fit integrated resource selection functions (iRSFs) with autocorrelation-adjusted weighted likelihood
@@ -20,6 +20,8 @@ ctmm 0.6.2 (2021-04-15)
   * new argument variable for meta() to estimate population diffusion rates, mean speeds, and autocorrelation timescales
   
   * new arguments R and SP in plot.telemetry() and plot.UD() for plotting raster and shapefile base layers
+  
+  * mean.UD() now propagates uncertainties
   
   * plot() and raster() now work on 3D UDs
   

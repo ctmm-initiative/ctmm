@@ -3,7 +3,7 @@
 # population-level parameter estimates for normally distributed parameters and parameter uncertainties
 # VARS Boolean denotes whether or not there is natural variance
 # MEANS Boolean denotes whether or not there is a non-zero mean
-meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRUE,precision=1/2)
+meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRUE,weights=NULL,precision=1/2)
 {
   if(length(dim(MU))<2)
   {
@@ -19,6 +19,11 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
     N <- dim(MU)[1]
     DIM <- dim(MU)[2]
   }
+
+  if(is.null(weights))
+  { weights <- rep(1,N) }
+  else
+  { weights <- weights/mean(weights) }
 
   # do we give variance to each dimension
   VARS <- array(VARS,DIM)
@@ -40,12 +45,13 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
 
   ####################
   # initial non-zero guesses
-  mu <- colMeans(MU)
+  mu <- colMeans(weights*MU)
   if(any(ZEROM)) { mu[ZEROM] <- 0 }
 
   sigma <- 0
-  for(i in 1:N) { sigma <- sigma + outer(MU[i,]-mu) }
+  for(i in 1:N) { sigma <- sigma + weights[i]*outer(MU[i,]-mu) }
   sigma <- sigma/(N-REML)
+  sigma <- PDclamp(sigma,lower=.Machine$double.eps,upper=1/.Machine$double.eps)
   COV.mu <- sigma/N
   if(any(ZEROV)) { sigma[ZEROV,] <- sigma[,ZEROV] <- 0 }
   if(any(ZEROM)) { COV.mu[ZEROM,] <- COV.mu[,ZEROM] <- 0 }
@@ -55,6 +61,8 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
   DUP <- upper.tri(sigma,diag=TRUE)
   DUP[ZEROV,] <- FALSE
   DUP[,ZEROV] <- FALSE
+
+  INF <- list(loglike=-Inf,mu=mu,COV.mu=sigma,sigma=sigma,sigma.old=sigma)
 
   # negative log-likelihood
   CONSTRAIN <- TRUE
@@ -71,21 +79,32 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
     }
 
     # check for bad sigma matrices
-    V <- abs(diag(sigma[VARS,VARS]))
-    V <- sqrt(V)
-    # don't divide by zero
-    TEST <- V<=.Machine$double.eps
-    if(any(TEST)) { V[TEST] <- 1 }
-    V <- V %o% V
-    S <- sigma[VARS,VARS]/V
-    S <- eigen(S)
-    if(CONSTRAIN)
-    { if(any(S$values<0)) { return(Inf) } }
-    else
+    if(any(VARS))
     {
-      S$values <- pmax(S$values,.Machine$double.eps)
-      S <- S$vectors %*% diag(S$values) %*% t(S$vectors)
-      sigma[VARS,VARS] <- S * V
+      V <- abs(diag(sigma[VARS,VARS]))
+      V <- sqrt(V)
+      # don't divide by zero
+      TEST <- V<=.Machine$double.eps
+      if(any(TEST)) { V[TEST] <- 1 }
+      V <- V %o% V
+      S <- sigma[VARS,VARS]/V
+      S <- eigen(S)
+      if(CONSTRAIN)
+      {
+        if(any(S$values<0))
+        {
+          if(!verbose)
+          { return(Inf) }
+          else
+          { return(INF) }
+        }
+      }
+      else
+      {
+        S$values <- pmax(S$values,.Machine$double.eps)
+        S <- S$vectors %*% diag(S$values) %*% t(S$vectors)
+        sigma[VARS,VARS] <- S * V
+      }
     }
 
     # estimate mu exactly | sigma
@@ -94,8 +113,8 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
     for(i in 1:N)
     {
       P[i,,] <- PDsolve(sigma + SIGMA[i,,])
-      P.mu <- P.mu + P[i,,]
-      mu <- mu + c(P[i,,] %*% MU[i,])
+      P.mu <- P.mu + weights[i]*P[i,,]
+      mu <- mu + weights[i]*c(P[i,,] %*% MU[i,])
     }
     COV.mu <- array(0,c(DIM,DIM))
     COV.mu[MEANS,MEANS] <- PDsolve(P.mu[MEANS,MEANS])
@@ -110,25 +129,29 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
     {
       D <- mu - MU[i,]
       # set aside infinite uncertainty measurements
-      loglike <- loglike + 1/2*log(abs(det(P[i,OBS[i,],OBS[i,]]))) - 1/2*c(D %*% P[i,,] %*% D)
+      loglike <- loglike + weights[i]/2*( log(abs(det(P[i,OBS[i,],OBS[i,]]))) - c(D %*% P[i,,] %*% D) )
 
       # gradient with respect to sigma, under sum and trace
       if(verbose)
       {
-        RHS <- RHS + (P[i,,] %*% outer(D) %*% P[i,,])
-        if(debias) { LHS <- LHS - (P[i,,] %*% COV.mu %*% P[i,,]) }
+        RHS <- RHS + weights[i]*(P[i,,] %*% outer(D) %*% P[i,,])
+        if(debias) { LHS <- LHS - weights[i]*(P[i,,] %*% COV.mu %*% P[i,,]) }
       }
     }
     loglike <- nant(loglike,-Inf)
     if(!verbose) { return(-loglike) }
 
-    K <- sqrtm(sigma[VARS,VARS],pseudo=TRUE)
-    K <- K %*% PDfunc(LHS[VARS,VARS],function(m){1/sqrt(m)},pseudo=TRUE)
     sigma.old <- sigma
-    sigma[VARS,VARS] <- K %*% RHS[VARS,VARS] %*% t(K)
-    # we are solving the unconstrained sigma above and then projecting back to the constrained sigma below
-    # not sure how approximate this is, but will do numerical optimization afterwards
-    if(isotropic) { sigma <- diag( mean(diag(sigma)), DIM ) }
+    # update sigma
+    if(any(VARS))
+    {
+      K <- sqrtm(sigma[VARS,VARS],pseudo=TRUE)
+      K <- K %*% PDfunc(LHS[VARS,VARS],function(m){1/sqrt(m)},pseudo=TRUE)
+      sigma[VARS,VARS] <- K %*% RHS[VARS,VARS] %*% t(K)
+      # we are solving the unconstrained sigma above and then projecting back to the constrained sigma below
+      # not sure how approximate this is, but will do numerical optimization afterwards
+      if(isotropic) { sigma <- diag( mean(diag(sigma)), DIM ) }
+    }
 
     R <- list(loglike=loglike,mu=mu,COV.mu=COV.mu,sigma=sigma,sigma.old=sigma.old)
     return(R)
@@ -151,9 +174,18 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
 
   #############
   # non zero sigma iterative solution
+  if(any(VARS))
+  {
+    ERROR <- Inf
+    SOL <- INF
+  }
+  else
+  {
+    ERROR <- 0
+    SOL <- ZSOL
+  }
+
   count.0 <- 0
-  ERROR <- Inf
-  SOL <- list(loglike=-Inf,sigma=sigma)
   while(ERROR>tol)
   {
     par <- sigma2par( SOL$sigma )
@@ -185,7 +217,7 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
       # Standardized error
       ERROR <- (NSOL$sigma - SOL$sigma)[VARS,VARS] # absolute error
       ERROR <- ERROR %*% ERROR # square to make positive
-      K <- PDsolve(NSOL$sigma[VARS,VARS])
+      K <- PDsolve(NSOL$sigma[VARS,VARS],pseudo=TRUE)
       ERROR <- K %*% ERROR %*% K # standardize to make ~1 unitless
       ERROR <- sum(abs(diag(ERROR)),na.rm=TRUE)
       count.0 <- 0
@@ -193,6 +225,11 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
 
     SOL <- NSOL
   } # end while
+
+  # end check
+  if(ZSOL$loglike>SOL$loglike)
+  { SOL <- ZSOL }
+
   # pull out results
   loglike <- SOL$loglike
   mu <- SOL$mu
@@ -228,7 +265,7 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
 
   # not sure if the iterative solution always works in constrained problems
   # if(any(ZEROV) || any(ZEROM))
-  if(TRUE)
+  if(any(VARS))
   {
     SOL <- optimizer(par,nloglike,parscale=parscale,lower=lower,upper=Inf)
     par <- SOL$par
@@ -241,12 +278,20 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
     COV.mu <- SOL$COV.mu
     sigma <- SOL$sigma.old
     par <- sigma2par(sigma)
-  }
 
-  # uncertainty estimates
-  CONSTRAIN <- FALSE # numderiv doesn't deal well with boundaries
-  DIFF <- genD(par,nloglike,parscale=parscale,lower=lower,upper=Inf)
-  COV.sigma <- cov.loglike(DIFF$hessian,DIFF$gradient)
+    # uncertainty estimates
+    CONSTRAIN <- FALSE # numderiv doesn't deal well with boundaries
+    DIFF <- genD(par,nloglike,parscale=parscale,lower=lower,upper=Inf)
+    COV.sigma <- cov.loglike(DIFF$hessian,DIFF$gradient)
+  }
+  else
+  {
+    if(isotropic)
+    { P <- 1 }
+    else
+    { P <- DIM*(DIM+1)/2 }
+    COV.sigma <- matrix(0,P,P)
+  }
 
   loglike <- -nloglike(par,REML=FALSE) # non-REML for AIC/BIC
 
@@ -255,13 +300,16 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
   q <- DIM
   qk <- sum(MEANS)
   if(isotropic)
-  { nu <- 1 }
+  { nu <- min(1,sum(DUP)) }
   else
   { nu <- sum(DUP) }
   K <- qk + nu
 
   AIC <- 2*K - 2*loglike
-  AICc <- (q*n-qk)*2*K/max(q*n-K-nu,0) - 2*loglike
+  if(nu==0) # no variance parameters estimated, no bias
+  { AICc <- AIC }
+  else # some variance parameters estimated
+  { AICc <- (q*n-qk)*2*K/max(q*n-K-nu,0) - 2*loglike }
   BIC <- K*log(N) - 2*loglike
 
   names(mu) <- NAMES
@@ -273,7 +321,10 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
   else
   {
     NAMES <- outer(NAMES,NAMES,function(x,y){paste0(x,"-",y)})
-    NAMES <- NAMES[DUP]
+    if(any(VARS))
+    { NAMES <- NAMES[DUP] }
+    else
+    { NAMES <- NAMES[upper.tri(NAMES,diag=TRUE)] }
   }
   dimnames(COV.sigma) <- list(NAMES,NAMES)
 

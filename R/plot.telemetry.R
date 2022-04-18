@@ -114,7 +114,10 @@ new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,R=NULL,col.bg="white",col.R="gr
     dx <- diff(xlim)
     ylim <- lim[3:4]
     dy <- diff(ylim)
+    # dx <- dy <- 0
     graphics::rect(xlim[1]-dx/2,ylim[1]-dy/2,xlim[2]+dx/2,ylim[2]+dy/2,border=col.bg,col=col.bg)
+    # this can cover the plot box
+    graphics::box()
 
     # plot information for further layering
     projection <- unique(c(projection(data),projection(CTMM),projection(UD))) # some objects could be NULL

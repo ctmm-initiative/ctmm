@@ -217,38 +217,3 @@ overlap.UD <- function(object,level=0.95,debias=TRUE,...)
   names(OVER) <- NAMES.CI
   return(OVER)
 }
-
-
-###################
-# average aligned UDs
-mean.UD <- function(x,weights=NULL,...)
-{
-  if(is.null(weights)) { weights <- rep(1,length(x)) }
-  weights <- weights/sum(weights)
-
-  info <- mean.info(x)
-  type <- unique(sapply(x,function(y){attr(y,"type")}))
-  if(length(type)>1) { stop("Distribution types ",type," differ.") }
-  dV <- prod(x[[1]]$dr)
-  n <- length(x)
-  N <- rowSums(sapply(x,function(y){ y$DOF.area }))
-
-  GRID <- grid.union(x) # r,dr of grid union
-  DIM <- c(length(GRID$r$x),length(GRID$r$y))
-  PDF <- matrix(0,DIM[1],DIM[2]) # initialize Joint PDF
-
-  for(i in 1:n)
-  {
-    SUB <- grid.intersection(list(GRID,x[[i]]))
-    PDF[SUB[[1]]$x,SUB[[1]]$y] <- PDF[SUB[[1]]$x,SUB[[1]]$y] + weights[i] * x[[i]]$PDF[SUB[[2]]$x,SUB[[2]]$y]
-  }
-
-  x <- GRID
-  x$PDF <- PDF
-  x$DOF.area <- N
-  x$CDF <- pmf2cdf(PDF*dV)
-
-  x <- new.UD(x,info=info,type=type,CTMM=ctmm())
-
-  return(x)
-}

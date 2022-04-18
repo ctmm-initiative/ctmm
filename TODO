@@ -1,6 +1,6 @@
 ** PRIORITY
-* RSF boundary check for Jack
 * mean UD for Mark
+** weighted meta.normal for mean.UD
 * relative encounter rates for Laura
 
 ** MISC
@@ -57,6 +57,7 @@
 * track updating for elliptical errors (additive errors or overall update?)
 
 ** NPR
+* grad %*% -solve(Hess.max) %*% grad
 * NPR occurrence
 * NPR range debias numerator and denominator?
 

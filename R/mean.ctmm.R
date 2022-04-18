@@ -116,6 +116,7 @@ exp.ctmm <- function(CTMM,debias=FALSE)
     EIGEN <- eigen(EIGEN)
     dimnames(EIGEN$vectors) <- list(SUB,SUB)
     names(EIGEN$values) <- SUB
+    EIGEN$values <- clamp(EIGEN$values,0,Inf)
 
     # fix signs
     if(isotropic) { PARS <- "major" } else { PARS <- c("major","minor") }
@@ -141,6 +142,7 @@ exp.ctmm <- function(CTMM,debias=FALSE)
     EIGEN <- eigen(EIGEN)
     dimnames(EIGEN$vectors) <- list(SUB,SUB)
     names(EIGEN$values) <- SUB
+    EIGEN$values <- clamp(EIGEN$values,0,Inf)
 
     # fix signs
     # VAR goes in log numerator for chi^2 variates: variance, diffusion, MS speed, ...
@@ -158,29 +160,34 @@ exp.ctmm <- function(CTMM,debias=FALSE)
     #################
     ### diagonalize and log-chi^2 debias POV
     VAR <- diag(POV)
-    COR <- stats::cov2cor(POV)
+    if(all(VAR>0))
+    {
+      COR <- stats::cov2cor(POV)
 
-    EIGEN <- POV[SUB,SUB]
-    EIGEN <- eigen(EIGEN)
-    dimnames(EIGEN$vectors) <- list(SUB,SUB)
-    names(EIGEN$values) <- SUB
+      EIGEN <- POV[SUB,SUB]
+      EIGEN <- eigen(EIGEN)
+      dimnames(EIGEN$vectors) <- list(SUB,SUB)
+      names(EIGEN$values) <- SUB
+      EIGEN$values <- clamp(EIGEN$values,0,Inf)
 
-    # fix signs
-    # VAR goes in log numerator for chi^2 variates: variance, diffusion, MS speed, ...
-    for(i in 1:nrow(EIGEN$vectors)) { if(sum(EIGEN$vectors[PARS,i])<0) { EIGEN$vectors[,i] <- -EIGEN$vectors[,i] } }
+      # fix signs
+      # VAR goes in log numerator for chi^2 variates: variance, diffusion, MS speed, ...
+      for(i in 1:nrow(EIGEN$vectors)) { if(sum(EIGEN$vectors[PARS,i])<0) { EIGEN$vectors[,i] <- -EIGEN$vectors[,i] } }
 
-    # log-gamma variance (better than delta method)
-    SCALE <- EIGEN$values
+      # log-gamma variance (better than delta method)
+      SCALE <- EIGEN$values
 
-    DOF <- 2*itrigamma(EIGEN$values)
-    EIGEN$values <- 2/DOF
-    POV.SUB <- EIGEN$vectors %*% (EIGEN$values * t(EIGEN$vectors))
-    COR[SUB,SUB] <- stats::cov2cor(POV.SUB)
-    VAR[SUB] <- diag(POV.SUB)
-    POV <- COR * outer(sqrt(VAR))
+      DOF <- 2*itrigamma(EIGEN$values)
+      EIGEN$values <- 2/DOF
+      POV.SUB <- EIGEN$vectors %*% (EIGEN$values * t(EIGEN$vectors))
+      COR[SUB,SUB] <- stats::cov2cor(POV.SUB)
+      VAR[SUB] <- diag(POV.SUB)
+      POV <- COR * outer(sqrt(VAR))
 
-    SCALE <- sqrt(EIGEN$values/SCALE)
-    JP[SUB,SUB] <- EIGEN$vectors %*% diag(SCALE) %*% t(EIGEN$vectors)
+      SCALE <- sqrt(EIGEN$values/SCALE)
+      SCALE <- nant(SCALE,1)
+      JP[SUB,SUB] <- EIGEN$vectors %*% diag(SCALE) %*% t(EIGEN$vectors)
+    }
   }
 
   ### exp transform all positive parameters except sigma
@@ -291,8 +298,11 @@ quad2lin <- function(M,diag=FALSE)
 }
 
 #############
-mean.features <- function(x,debias=TRUE,isotropic=FALSE,...)
+mean.features <- function(x,debias=TRUE,isotropic=FALSE,variance=TRUE,weights=NULL,...)
 {
+  if(is.null(weights))
+  { weights <- rep(1,length(x)) }
+
   N <- length(x)
   axes <- x[[1]]$axes
 
@@ -343,7 +353,8 @@ mean.features <- function(x,debias=TRUE,isotropic=FALSE,...)
     }
   }
 
-  R <- meta.normal(MU,SIGMA,MEANS=MEANS,VARS=VARS,debias=debias)
+  if(!variance) { VARS <- FALSE }
+  R <- meta.normal(MU,SIGMA,MEANS=MEANS,VARS=VARS,debias=debias,weights=weights)
   R$isotropic <- isotropic
   R$axes <- axes
   names(R)[ which(names(R)=="mu") ] <- "par" # population mean of features
@@ -359,7 +370,10 @@ mean.features <- function(x,debias=TRUE,isotropic=FALSE,...)
     # R$par <- NULL
     R$COV <- R$COV[FEATURES,FEATURES]
     R$POV <- R$POV[FEATURES,FEATURES]
-    # COV.PCOV should be okay
+    # COV.POV should be okay except when missing POV
+    FEAT <- grepl('minor',rownames(R$COV.POV),fixed=TRUE) | grepl('angle',rownames(R$COV.POV),fixed=TRUE)
+    FEAT <- !FEAT
+    R$COV.POV <- R$COV.POV[FEAT,FEAT]
   }
   R$features <- FEATURES
 
@@ -377,8 +391,11 @@ mean.features <- function(x,debias=TRUE,isotropic=FALSE,...)
 
 
 ##########
-mean.mu <- function(x,debias=TRUE,isotropic=FALSE,...)
+mean.mu <- function(x,debias=TRUE,isotropic=FALSE,variance=TRUE,weights=NULL,...)
 {
+  if(is.null(weights))
+  { weights <- rep(1,length(x)) }
+
   axes <- x[[1]]$axes
   AXES <- length(axes)
   N <- length(x)
@@ -399,7 +416,7 @@ mean.mu <- function(x,debias=TRUE,isotropic=FALSE,...)
     # fill in with zeroes for non-stationary means
     # TODO !!!
   }
-  R <- meta.normal(MU,SIGMA,isotropic=isotropic,debias=debias)
+  R <- meta.normal(MU,SIGMA,isotropic=isotropic,VARS=variance,debias=debias,weights=weights)
   # R$mu # population mean of mean locations
   # R$COV.mu # uncertainty in mean of means estimate
   names(R)[ which(names(R)=="sigma") ] <- "POV.mu" # dispersion of means
@@ -410,34 +427,60 @@ mean.mu <- function(x,debias=TRUE,isotropic=FALSE,...)
 
 
 ###########
-mean.ctmm <- function(x,debias=TRUE,IC="AICc",...)
+mean.ctmm <- function(x,weights=NULL,debias=TRUE,IC="AICc",...)
 {
+  if(is.null(weights))
+  { weights <- rep(1,length(x)) }
+  else
+  { weights <- weights/max(weights) }
+  names(weights) <- names(x)
+
   isotropic <- c(TRUE,TRUE)
   names(isotropic) <- c("sigma","mu")
 
   # average of mean locations
-  MU <- mean.mu(x,debias=debias,isotropic=TRUE,...)
+  MU <- mean.mu(x,debias=debias,isotropic=TRUE,weights=weights,...)
   if(length(x)>2)
   {
-    AN <- mean.mu(x,debias=debias,isotropic=FALSE,...)
-    if(AN[[IC]]<MU[[IC]])
+    AN <- mean.mu(x,debias=debias,isotropic=FALSE,weights=weights,...)
+    if(AN[[IC]]<=MU[[IC]])
     {
       isotropic["mu"] <- FALSE
       MU <- AN
+    }
+    else # model selection on variance
+    {
+      ZV <- mean.mu(x,debias=debias,isotropic=TRUE,variance=FALSE,weights=weights,...)
+      if(ZV[[IC]]<=MU[[IC]])
+      {
+        ZV$POV.mu <- 0 * MU$POV.mu
+        ZV$COV.POV.mu <- 0 * MU$COV.POV.mu
+        MU <- ZV
+      }
     }
   }
 
   # average of features
   ISO <- sapply(x,function(y){y$isotropic})
   ISO <- all(ISO)
-  FU <- mean.features(x,debias=debias,isotropic=TRUE,...)
+  FU <- mean.features(x,debias=debias,isotropic=TRUE,weights=weights,...)
   if(!ISO)
   {
-    AN <- mean.features(x,debias=debias,isotropic=FALSE,...)
-    if(AN[[IC]]<FU[[IC]])
+    AN <- mean.features(x,debias=debias,isotropic=FALSE,weights=weights,...)
+    if(AN[[IC]]<=FU[[IC]])
     {
       isotropic["sigma"] <- FALSE
       FU <- AN
+    }
+    else # model selection on variance
+    {
+      ZV <- mean.features(x,debias=debias,isotropic=TRUE,variance=FALSE,weights=weights,...)
+      if(ZV[[IC]]<=FU[[IC]])
+      {
+        ZV$POV.sigma <- 0 * FU$POV.sigma
+        ZV$COV.POV.sigma <- 0 * FU$COV.POV.sigma
+        FU <- ZV
+      }
     }
   }
 
@@ -453,11 +496,67 @@ mean.ctmm <- function(x,debias=TRUE,IC="AICc",...)
   x$AICc <- MU$AICc + FU$AICc
   x$BIC <- MU$BIC + FU$BIC
 
+  x$weights <- weights
+
   # return final result
   # x <- new.ctmm(x,info)
   return(x)
 }
 
-# TODO !!!!!!!!!!!!!!!!!!!!!
-# function to calculate the population range from the above
+
+## population stationary distribution
+mean.pop <- function(CTMM)
+{
+  # spread (x,y)
+  sigma <- CTMM$POV.mu + CTMM$sigma
+  # uncertainty of spread (x-x,x-y,y-y)
+  if(CTMM$isotropic['mu'])
+  { COV <- c(CTMM$COV.POV.mu) * diag(c(1,1,0)) }
+  else
+  {
+    P <- c(1,3,2) # xx,yy,xy
+    COV <- CTMM$COV.POV.mu[P,P]
+  }
+
+  if(CTMM$isotropic['sigma'])
+  {
+    P <- 'major'
+    COV <- COV + c(CTMM$COV[P,P]+CTMM$POV[P,P])*diag(c(1,1,0))
+  }
+  else
+  {
+    P <- c('major','minor','angle')
+    J <- J.sigma.par(CTMM$sigma@par)
+    COV <- COV + J%*%(CTMM$COV[P,P]+CTMM$POV[P,P])%*%t(J)
+  }
+
+  isotropic <- all(CTMM$isotropic)
+  sigma <- covm(sigma,isotropic=isotropic)
+
+  if(isotropic)
+  {
+    P <- 'major'
+    COV <- COV[1,1,drop=FALSE]
+  }
+  else
+  {
+    P <- c('major','minor','angle')
+    J <- J.par.sigma(sigma[c(1,4,2)])
+    COV <- J %*% COV %*% t(J)
+  }
+  dimnames(COV) <- list(P,P)
+
+  CTMM$isotropic <- isotropic
+  CTMM$sigma <- sigma
+  CTMM$COV <- COV
+  CTMM$POV <- CTMM$COV.POV <- CTMM$COV.POV.mu <- NULL
+  CTMM$features <- rownames(COV)
+  CTMM$tau <- NULL
+  CTMM$circle <- FALSE
+
+  # BETA ARE TOTALLY UNFINISHED
+  # will need eventually...
+
+  return(CTMM)
+}
 

@@ -379,7 +379,7 @@ conditionNumber <- function(M)
 
 
 # Positive definite part of matrix
-PDclamp <- function(M,lower=0,upper=Inf)
+PDclamp <- function(M,lower=0,upper=Inf,...)
 {
   # Inf fix
   INF <- diag(M)==Inf
@@ -400,7 +400,19 @@ PDclamp <- function(M,lower=0,upper=Inf)
     # symmetrize
     M <- He(M)
 
-    M <- PDfunc(M,function(m){clamp(m,lower,upper)},pseudo=TRUE)
+    # similarity transform
+    V <- abs(diag(M))
+    V <- sqrt(V)
+    # don't divide by zero
+    TEST <- V<=.Machine$double.eps
+    if(any(TEST)) { V[TEST] <- 1 }
+    V <- V %o% V
+    M <- M/V
+
+    M <- PDfunc(M,function(m){clamp(m,lower,upper)},pseudo=TRUE,...)
+
+    # similarity back-transform
+    M <- M*V
 
     # symmetrize
     M <- He(M)

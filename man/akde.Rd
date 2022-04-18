@@ -9,8 +9,8 @@
 This function calculates autocorrelated kernel density home-range estimates from \code{telemetry} data and a corresponding continuous-time movement model.
 }
 \usage{
-akde(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utilization",debias=TRUE,weights=FALSE,
-     smooth=TRUE,error=0.001,res=10,grid=NULL,...)
+akde(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utilization",debias=TRUE,
+     weights=FALSE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
