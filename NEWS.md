@@ -1,4 +1,4 @@
-ctmm 0.6.2 (2021-04-17)
+ctmm 0.6.2 (2021-04-20)
 ================
 
   * new function rsf.fit() to fit integrated resource selection functions (iRSFs) with autocorrelation-adjusted weighted likelihood
@@ -24,6 +24,8 @@ ctmm 0.6.2 (2021-04-17)
   * mean.UD() now propagates uncertainties
   
   * plot() and raster() now work on 3D UDs
+  
+  * plot.outlie() now works on lists of outlie objects
   
   * speed() output now includes DOF estimate for use with meta()
   

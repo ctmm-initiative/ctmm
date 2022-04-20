@@ -104,14 +104,37 @@ outlie <- function(data,plot=TRUE,by='d',...)
 # plot outlier information with error bars
 plot.outlie <- function(x,level=0.95,units=TRUE,axes=c('d','v'),...)
 {
-  n <- nrow(x)
-  t <- x$t
-  d <- x$distance
-  v <- x$speed
+  x <- listify(x)
+  t <- NULL
+  d <- v <- NULL
+  dz <- vz <- NULL
 
-  # CIs
-  d <- sapply(1:n,function(i){tnorm.hdr(d[i],x$VAR.distance[i],level=level)})
-  v <- sapply(1:n,function(i){tnorm.hdr(v[i],x$VAR.speed[i],level=level)})
+  VERTICAL <- any(c('z','vz') %in% axes)
+
+  for(i in 1:length(x))
+  {
+    n <- nrow(x[[i]])
+
+    if(VERTICAL && "vertical.distance" %in% names(x[[i]]))
+    {
+      dzi <- sapply(1:n,function(j){tnorm.hdr(x[[i]]$vertical.distance[j],x[[i]]$VAR.vertical.distance[j],level=level)})
+      dz <- cbind(dz,dzi)
+
+      vzi <- sapply(1:n,function(j){tnorm.hdr(x[[i]]$vertical.speed[j],x[[i]]$VAR.vertical.speed[j],level=level)})
+      vz <- cbind(vz,vzi)
+    }
+    else if(VERTICAL)
+    { next }
+
+    t <- c(t, x[[i]]$t )
+
+    di <- sapply(1:n,function(j){tnorm.hdr(x[[i]]$distance[j],x[[i]]$VAR.distance[j],level=level)})
+    d <- cbind(d,di)
+
+    vi <- sapply(1:n,function(j){tnorm.hdr(x[[i]]$speed[j],x[[i]]$VAR.speed[j],level=level)})
+    v <- cbind(v,vi)
+  }
+  n <- length(t)
 
   # unit conversions ... (simpler)
   UNITS <- unit(t,dimension='time',concise=FALSE,SI=!units)
@@ -126,14 +149,8 @@ plot.outlie <- function(x,level=0.95,units=TRUE,axes=c('d','v'),...)
   v <- v/UNITS$scale
   v.lab <- paste0("Minimum speed (",UNITS$name,"/s)")
 
-  if("vertical.distance" %in% names(x))
+  if(VERTICAL)
   {
-    dz <- x$vertical.distance
-    vz <- x$vertical.speed
-
-    dz <- sapply(1:n,function(i){tnorm.hdr(dz[i],x$VAR.vertical.distance[i],level=level)})
-    vz <- sapply(1:n,function(i){tnorm.hdr(vz[i],x$VAR.vertical.speed[i],level=level)})
-
     UNITS <- unit(dz,dimension='length',concise=TRUE,SI=!units)
     dz <- dz/UNITS$scale
     dz.lab <- paste0("Core vertical deviation (",UNITS$name,")")
