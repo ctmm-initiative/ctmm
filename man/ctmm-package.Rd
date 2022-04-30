@@ -28,12 +28,12 @@ Noonan et al (2020) <doi:10.1101/2020.08.24.261628>.
 Package: \tab ctmm\cr
 Type: \tab Package\cr
 Version: \tab 0.6.2 \cr
-Date: \tab 2021-04-20 \cr
+Date: \tab 2022-04-29 \cr
 License: \tab GPL-3 \cr
 }
 
 \itemize{
-\item{ \href{http://biology.umd.edu/movement.html}{CTMM Initiative} }
+\item{ \href{https://biology.umd.edu/movement}{CTMM Initiative} }
 \item{ \href{https://movementoflife.si.edu/analytical-tools/}{Movement of Life} }
 \item{ \href{https://CRAN.R-project.org/package=ctmm}{CRAN package} }
 \item{ \href{https://github.com/ctmm-initiative/ctmm}{Github project} }

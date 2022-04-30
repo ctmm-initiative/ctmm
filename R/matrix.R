@@ -1,3 +1,4 @@
+# matrix trace
 tr <- function(x)
 {
   x <- cbind(x)

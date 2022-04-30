@@ -5,7 +5,7 @@ BESSEL_LIMIT <- 2^16
 outlie <- function(data,plot=TRUE,by='d',...)
 {
   if(class(data)[1]=="list")
-  { return( lapply(1:length(data), function(i){OUT <- outlie(data[[i]],plot=plot,by=by); graphics::title(names(data)[i]); OUT} ) ) }
+  { return( lapply(1:length(data), function(i){OUT <- outlie(data[[i]],plot=plot,by=by); if(plot){ graphics::title(names(data)[i]) }; OUT} ) ) }
 
   UERE <- uere(data)
   if(DOP.LIST$horizontal$VAR %nin% names(data)) { uere(data) <- UERE } # adds VAR guesstimate columns if missing (DOF==0)

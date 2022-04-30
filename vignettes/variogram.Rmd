@@ -15,7 +15,7 @@ In this vignette, we walk through data preparation, variogram analysis, and maxi
 
 # Data Preparation
 
-We highly recommend that you get your data onto [Movebank](http://www.movebank.org/).
+We highly recommend that you get your data onto [Movebank](https://www.movebank.org/).
 This will help ensure that your data are of the correct format for `ctmm`, help you identify outliers, and you can keep your data completely private if you wish.
 `ctmm` requires that your dataframe conforms to [Movebank naming conventions](https://www.movebank.org/node/2381) (see `help(as.telemetry)`).
 The next step is then to import your MoveBank csv file:

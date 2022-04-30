@@ -8,8 +8,8 @@ This function is in development and is subject to change.
 }
 \usage{
 rsf.fit(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,reference="auto",
-        level.UD=0.99,isotropic=TRUE,debias=TRUE,smooth=TRUE,standardize=TRUE,error=0.01,
-        max.mem="1 Gb",trace=TRUE,...)
+        level.UD=0.99,isotropic=TRUE,debias=TRUE,smooth=TRUE,standardize=TRUE,
+        integrator="MonteCarlo",error=0.01,max.mem="1 Gb",trace=TRUE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -25,6 +25,7 @@ rsf.fit(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,reference="auto"
   \item{debias}{Apply a post-hoc bias correction to the spatial constraint parameters, and apply bias corrections to the numerical log-likelihood estimates.}
   \item{smooth}{Apply location-error smoothing to the tracking data before regression.}
   \item{standardize}{For numerical stability, predictors are \emph{internally} standardized, if \code{rescale=TRUE} and no \code{formula} is specified. (The final outputs are not standardized.) \bold{Otherwise, users are responsible for standardizing their predictors.}}
+  \item{integrator}{Numerical integrator used for likelihood evaluation. Can be \code{"MonteCarlo"} or \code{"Riemann"} (IN TESTING).}
   \item{error}{Relative numerical error threshold for the parameter estimates and log-likelihood.}
   \item{max.mem}{Maximum amount of memory to allocate for availability sampling.}
   \item{trace}{Report progress on convergence (see Details).}

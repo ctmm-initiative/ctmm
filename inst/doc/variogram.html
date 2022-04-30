@@ -224,7 +224,7 @@ pre, code {
 background-color: #f7f7f7;
 border-radius: 3px;
 color: #333;
-white-space: pre-wrap; 
+white-space: pre-wrap;
 }
 pre {
 border-radius: 3px;
@@ -292,18 +292,18 @@ text-decoration: underline; }
 a[href^="https:"] {
 text-decoration: underline; }
 
-code > span.kw { color: #555; font-weight: bold; } 
-code > span.dt { color: #902000; } 
-code > span.dv { color: #40a070; } 
-code > span.bn { color: #d14; } 
-code > span.fl { color: #d14; } 
-code > span.ch { color: #d14; } 
-code > span.st { color: #d14; } 
-code > span.co { color: #888888; font-style: italic; } 
-code > span.ot { color: #007020; } 
-code > span.al { color: #ff0000; font-weight: bold; } 
-code > span.fu { color: #900; font-weight: bold; } 
-code > span.er { color: #a61717; background-color: #e3d2d2; } 
+code > span.kw { color: #555; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #d14; }
+code > span.fl { color: #d14; }
+code > span.ch { color: #d14; }
+code > span.st { color: #d14; }
+code > span.co { color: #888888; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #900; font-weight: bold; }
+code > span.er { color: #a61717; background-color: #e3d2d2; }
 </style>
 
 
@@ -325,7 +325,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <p>In this vignette, we walk through data preparation, variogram analysis, and maximum likelihood estimation.</p>
 <div id="data-preparation" class="section level1">
 <h1>Data Preparation</h1>
-<p>We highly recommend that you get your data onto <a href="http://www.movebank.org/">Movebank</a>. This will help ensure that your data are of the correct format for <code>ctmm</code>, help you identify outliers, and you can keep your data completely private if you wish. <code>ctmm</code> requires that your dataframe conforms to <a href="https://www.movebank.org/node/2381">Movebank naming conventions</a> (see <code>help(as.telemetry)</code>). The next step is then to import your MoveBank csv file:</p>
+<p>We highly recommend that you get your data onto <a href="https://www.movebank.org/">Movebank</a>. This will help ensure that your data are of the correct format for <code>ctmm</code>, help you identify outliers, and you can keep your data completely private if you wish. <code>ctmm</code> requires that your dataframe conforms to <a href="https://www.movebank.org/node/2381">Movebank naming conventions</a> (see <code>help(as.telemetry)</code>). The next step is then to import your MoveBank csv file:</p>
 <pre><code>yourAnimals &lt;- as.telemetry(&quot;yourAnimalsMoveBank.csv&quot;)</code></pre>
 <p>Alternatively, if you want to clean your csv file first, you can import it as a data frame</p>
 <pre><code>yourAnimalsDF &lt;- read.csv(&quot;yourAnimalsMoveBank.csv&quot;)</code></pre>
@@ -452,11 +452,11 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <a class="sourceLine" id="cb16-2" title="2"><span class="kw">summary</span>(M.IID)</a></code></pre></div>
 <pre><code>## $name
 ## [1] &quot;IID anisotropic&quot;
-## 
+##
 ## $DOF
-##     mean     area    speed 
-## 3527.000 3522.146    0.000 
-## 
+##     mean     area    speed
+## 3527.000 3522.146    0.000
+##
 ## $CI
 ##                               low      est     high
 ## area (square kilometers) 356.9182 369.0051 381.2905</code></pre>
@@ -464,11 +464,11 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <a class="sourceLine" id="cb18-2" title="2"><span class="kw">summary</span>(M.OU)</a></code></pre></div>
 <pre><code>## $name
 ## [1] &quot;OU anisotropic&quot;
-## 
+##
 ## $DOF
-##     mean     area    speed 
-## 5.430229 8.231787 0.000000 
-## 
+##     mean     area    speed
+## 5.430229 8.231787 0.000000
+##
 ## $CI
 ##                                 low       est      high
 ## area (square kilometers) 181.703274 414.86723 742.63012
@@ -477,11 +477,11 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <a class="sourceLine" id="cb20-2" title="2"><span class="kw">summary</span>(M.OUF)</a></code></pre></div>
 <pre><code>## $name
 ## [1] &quot;OUF anisotropic&quot;
-## 
+##
 ## $DOF
-##       mean       area      speed 
-##   10.73354   18.13597 3445.13306 
-## 
+##       mean       area      speed
+##   10.73354   18.13597 3445.13306
+##
 ## $CI
 ##                                 low        est      high
 ## area (square kilometers) 239.647411 403.458818 609.24119

@@ -1,13 +1,13 @@
 svf.test <- function(x,y,test="F",level=0.95)
 {
-  if(class(x)=="ctmm")
+  if(class(x)[1]=="ctmm")
   {
     z <- x
     x <- y # variogram
     y <- z # ctmm
   }
 
-  if(class(x)=="variogram" && class(y)=="ctmm")
+  if(class(x)[1]=="variogram" && class(y)[1]=="ctmm")
   {
     # # expected location error contribution
     # if("MSE" %in% names(x)) { y$MSE <- x$MSE }

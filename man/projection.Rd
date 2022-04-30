@@ -53,7 +53,8 @@ compass(loc=NULL,cex=3,...) % fix this
 
 \author{C. H. Fleming}
 
-\note{Plotting UTF-8 chracters in a PDF, like the compass needle "➢", requires specifying a compatible font family. For example:
+%\note{Plotting UTF-8 chracters in a PDF, like the compass needle "➢", requires specifying a compatible font family. For example:
+\note{Plotting UTF-8 chracters in a PDF, like the compass needle, requires specifying a compatible font family. For example:
 
 \code{library(ctmm)} \cr
 \code{data(buffalo)} \cr
