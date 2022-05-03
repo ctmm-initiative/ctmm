@@ -1,4 +1,4 @@
-ctmm 0.6.2 (2022-04-29)
+ctmm 0.6.2 (2022-05-03)
 ================
 
   * new function rsf.fit() to fit integrated resource selection functions (iRSFs) with autocorrelation-adjusted weighted likelihood
@@ -22,6 +22,8 @@ ctmm 0.6.2 (2022-04-29)
   * new arguments R and SP in plot.telemetry() and plot.UD() for plotting raster and shapefile base layers
   
   * mean.UD() now propagates uncertainties
+  
+  * new convex argument to UD summary(), plot(), and export functions
   
   * plot() and raster() now work on 3D UDs
   

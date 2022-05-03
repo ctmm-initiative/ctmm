@@ -157,7 +157,7 @@ plot.env <- new.env()
 #######################################
 plot.telemetry <- function(x,CTMM=NULL,UD=NULL,col.bg='white',
                            cex=NULL,col="red",lwd=1,pch=1,type='p',error=TRUE,transparency.error=0.25,velocity=FALSE,
-                           DF="CDF",col.DF="blue",col.grid="white",labels=NULL,level=0.95,level.UD=0.95,col.level="black",lwd.level=1,
+                           DF="CDF",col.DF="blue",col.grid="white",labels=NULL,convex=FALSE,level=0.95,level.UD=0.95,col.level="black",lwd.level=1,
                            SP=NULL,border.SP=TRUE,col.SP=NA,
                            R=NULL,col.R="green",legend=FALSE,
                            fraction=1,xlim=NULL,ylim=NULL,ext=NULL,units=TRUE,add=FALSE,...)
@@ -252,7 +252,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,col.bg='white',
   if(!is.null(UD))
   {
     # UD <- lapply(UD,function(ud){ unit.UD(ud,length=dist$scale) }) # now done in plot.UD
-    plot.UD(UD,level.UD=level.UD,level=level,DF=DF,col.level=col.level,col.DF=col.DF,col.grid=col.grid,labels=labels,fraction=fraction,add=TRUE,xlim=xlim,ylim=ylim,ext=ext,cex=cex,lwd.level=lwd.level,...)
+    plot.UD(UD,level.UD=level.UD,level=level,DF=DF,col.level=col.level,col.DF=col.DF,col.grid=col.grid,labels=labels,fraction=fraction,add=TRUE,xlim=xlim,ylim=ylim,ext=ext,cex=cex,lwd.level=lwd.level,convex=convex,...)
   }
 
   #########################
@@ -485,7 +485,7 @@ plot.SP <- function(SP=NULL,border.SP=TRUE,col.SP=NA,PROJ=NULL,...)
 
 
 ##############
-plot.UD <- function(x,col.bg="white",DF="CDF",col.DF="blue",col.grid="white",labels=NULL,level=0.95,level.UD=0.95,col.level="black",lwd.level=1,
+plot.UD <- function(x,col.bg="white",DF="CDF",col.DF="blue",col.grid="white",labels=NULL,convex=FALSE,level=0.95,level.UD=0.95,col.level="black",lwd.level=1,
                     SP=NULL,border.SP=TRUE,col.SP=NA,
                     R=NULL,col.R="green",legend=FALSE,
                     fraction=1,xlim=NULL,ylim=NULL,ext=NULL,units=TRUE,add=FALSE,...)
@@ -607,12 +607,12 @@ plot.UD <- function(x,col.bg="white",DF="CDF",col.DF="blue",col.grid="white",lab
     if(!any(is.na(col.level[i,,])) && !any(is.na(level.UD)))
     {
       # make sure that correct style is used for low,ML,high even in absence of lows and highs
-      plot.kde(x[[i]],level=level.UD,labels=labels[i,,2],col=malpha(col.level[i,,2],1),lwd=lwd.level,...)
+      plot.kde(x[[i]],level=level.UD,labels=labels[i,,2],col=malpha(col.level[i,,2],1),lwd=lwd.level,convex=convex,...)
 
       if(!is.na(level) && !is.null(x[[i]]$DOF.area))
       {
         P <- sapply(level.UD, function(l) { CI.UD(x[[i]],l,level,P=TRUE)[-2] } )
-        plot.kde(x[[i]],level=P,labels=c(t(labels[i,,c(1,3)])),col=malpha(c(t(col.level[i,,c(1,3)])),0.5),lwd=lwd.level/2,...)
+        plot.kde(x[[i]],level=P,labels=c(t(labels[i,,c(1,3)])),col=malpha(c(t(col.level[i,,c(1,3)])),0.5),lwd=lwd.level/2,convex=convex,...)
       }
     }
   }
@@ -649,15 +649,26 @@ plot.df <- function(kde,DF="CDF",col="blue",...)
 
 #############################
 # Plot a KDE object's contours
-plot.kde <- function(kde,level=0.95,labels=round(level*100),col="black",...)
+plot.kde <- function(kde,level=0.95,labels=round(level*100),col="black",convex=FALSE,...)
 {
   # record current option
   # MAX <- getOption("max.contour.segments")
 
   # do something that works
-  options(max.contour.segments=.Machine$integer.max)
   drawlabels <- !(labels==FALSE | is.na(labels))
-  graphics::contour(kde$r,z=kde$CDF,levels=level,labels=labels,labelcex=1,drawlabels=drawlabels,col=col,add=TRUE,...)
+  if(!convex)
+  {
+    options(max.contour.segments=.Machine$integer.max)
+    graphics::contour(kde$r,z=kde$CDF,levels=level,labels=labels,labelcex=1,drawlabels=drawlabels,col=col,add=TRUE,...)
+  }
+  else
+  {
+    for(i in 1:length(level))
+    {
+      SP <- convex(kde,level=level[i]) # now spatial polygons
+      sp::plot(SP,border=col,add=TRUE,...)
+    }
+  }
 
   # reinstate initial option (or default if was NULL--can't set back to NULL???)
   # if(is.null(MAX)) { MAX <- 25000 }

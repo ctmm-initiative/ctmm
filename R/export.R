@@ -58,7 +58,7 @@ inside <- function(A,B)
 
 
 ##############
-SpatialPolygonsDataFrame.UD <- function(object,level.UD=0.95,level=0.95,...)
+SpatialPolygonsDataFrame.UD <- function(object,convex=FALSE,level.UD=0.95,level=0.95,...)
 {
   UD <- object
 
@@ -67,7 +67,7 @@ SpatialPolygonsDataFrame.UD <- function(object,level.UD=0.95,level=0.95,...)
   ID <- NULL
   for(i in 1:length(level.UD))
   {
-    p <- CI.UD(UD,level.UD[i],level,P=TRUE)
+    p <- CI.UD(UD,level.UD[i],level,P=TRUE,convex=convex)
     P <- cbind(P,p)
     ID <- cbind(ID,paste(UD@info$identity," ",round(100*level.UD[i]),"% ",names(p),sep=""))
   }
@@ -83,6 +83,16 @@ SpatialPolygonsDataFrame.UD <- function(object,level.UD=0.95,level=0.95,...)
 
     if(length(CL)==0) # nuge sp to make a contour
     { CL <- grDevices::contourLines(UD$r,z=UD$CDF,levels=P[i]*(1+.Machine$double.eps)) }
+
+    if(convex)
+    {
+      xy <- NULL
+      for(cl in CL) { xy <- rbind(xy, cbind(x=cl$x,y=cl$y) ) }
+      SUB <- grDevices::chull(xy) # convex hull indices
+      xy <- xy[SUB,] # convex hull points
+      # format like contourLines output
+      CL <- list( list(level=P[i],x=xy[,'x'],y=xy[,'y']) )
+    }
 
     # create contour heirarchy matrix (half of it)
     H <- array(0,c(1,1)*length(CL))
@@ -126,12 +136,12 @@ SpatialPolygonsDataFrame.UD <- function(object,level.UD=0.95,level=0.95,...)
 
 
 ################
-writeShapefile.UD <- function(object,folder,file=NULL,level.UD=0.95,level=0.95,...)
+writeShapefile.UD <- function(object,folder,file=NULL,convex=FALSE,level.UD=0.95,level=0.95,...)
 {
   UD <- object
   if(is.null(file)) { file <- attr(object,"info")$identity }
 
-  SP <- SpatialPolygonsDataFrame.UD(UD,level.UD=level.UD,level=level)
+  SP <- SpatialPolygonsDataFrame.UD(UD,convex=convex,level.UD=level.UD,level=level)
 
   rgdal::writeOGR(SP, dsn=folder, layer=file, driver="ESRI Shapefile",...)
 }

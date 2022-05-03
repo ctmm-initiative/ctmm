@@ -15,9 +15,9 @@ plot(x,y,...)
 
 \S3method{plot}{telemetry}(x,CTMM=NULL,UD=NULL,col.bg="white",cex=NULL,col="red",lwd=1,pch=1,type='p',
      error=TRUE,transparency.error=0.25,velocity=FALSE,DF="CDF",col.DF="blue",
-     col.grid="white",labels=NULL,level=0.95,level.UD=0.95,col.level="black",lwd.level=1,
-     SP=NULL,border.SP=TRUE,col.SP=NA,R=NULL,col.R="green",legend=FALSE,fraction=1,
-     xlim=NULL,ylim=NULL,ext=NULL,units=TRUE,add=FALSE,...)
+     col.grid="white",labels=NULL,convex=FALSE,level=0.95,level.UD=0.95,col.level="black",
+     lwd.level=1,SP=NULL,border.SP=TRUE,col.SP=NA,R=NULL,col.R="green",legend=FALSE,
+     fraction=1,xlim=NULL,ylim=NULL,ext=NULL,units=TRUE,add=FALSE,...)
 
 \S4method{zoom}{list}(x,...)
 
@@ -44,6 +44,7 @@ plot(x,y,...)
   \item{col.DF}{Color option for the density function. Can be an array.}
   \item{col.grid}{Color option for the maximum likelihood \code{akde} bandwidth grid.}
   \item{labels}{Labels for UD contours. Can be an array or list of arrays.}
+  \item{convex}{Plot convex coverage-area contours if \code{TRUE}. By default, the highest density region (HDR) contours are plotted.}
   \item{level}{ Confidence levels placed on the contour estimates themselves. I.e., the above 50\% core home-range area can be estimated with 95\% confidence via \code{level=0.95}. }
   \item{level.UD}{Coverage level of Gaussian \code{ctmm} model or \code{UD} estimate contours to be displayed. I.e., \code{level.UD=0.50} can yield the 50\% core home range within the rendered contours.}
   \item{col.level}{Color option for home-range contours. Can be an array.}

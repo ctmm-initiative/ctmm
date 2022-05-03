@@ -1096,7 +1096,7 @@ Gauss3 <- function(X,Y,Z,sigma=NULL,sigma.inv=solve(sigma[1:2,1:2]),sigma.GM=sqr
 
 #####################
 # AKDE CIs
-CI.UD <- function(object,level.UD=0.95,level=0.95,P=FALSE)
+CI.UD <- function(object,level.UD=0.95,level=0.95,P=FALSE,convex=FALSE)
 {
   if(is.null(object$DOF.area) && P)
   {
@@ -1104,10 +1104,11 @@ CI.UD <- function(object,level.UD=0.95,level=0.95,P=FALSE)
     return(level.UD)
   }
 
-  dV <- prod(object$dr)
-
   # point estimate
-  area <- sum(object$CDF <= level.UD) * dV
+  # area <- sum(object$CDF <= level.UD) * dV
+
+  SP <- convex(object,level=level.UD,convex=convex)
+  area <- sum( sapply(SP@polygons, function(POLY){POLY@area}) )
   names(area) <- NAMES.CI[2] # point estimate
 
   # chi square approximation of uncertainty
@@ -1119,6 +1120,7 @@ CI.UD <- function(object,level.UD=0.95,level=0.95,P=FALSE)
 
   if(!P) { return(area) }
 
+  dV <- prod(object$dr)
   # probabilities associated with these areas
   P <- round(area / dV)
 
@@ -1139,12 +1141,12 @@ CI.UD <- function(object,level.UD=0.95,level=0.95,P=FALSE)
 
 #######################
 # summarize details of akde object
-summary.UD <- function(object,level=0.95,level.UD=0.95,units=TRUE,...)
+summary.UD <- function(object,convex=FALSE,level=0.95,level.UD=0.95,units=TRUE,...)
 {
   type <- attr(object,'type')
   if(type %nin% c('range','revisitation')) { stop(type," area is not generally meaningful, biologically.") }
 
-  area <- CI.UD(object,level.UD,level)
+  area <- CI.UD(object,level.UD,level,convex=convex)
   if(length(area)==1) { stop("Object is not a range distribution.") }
 
   # pretty units

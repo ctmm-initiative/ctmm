@@ -28,7 +28,7 @@ SpatialPointsDataFrame.telemetry(object,...)
 SpatialPolygonsDataFrame.telemetry(object,level.UD=0.95,...)
 
 ## method for class 'UD'
-SpatialPolygonsDataFrame.UD(object,level.UD=0.95,level=0.95,...)
+SpatialPolygonsDataFrame.UD(object,convex=FALSE,level.UD=0.95,level=0.95,...)
 
 \S4method{raster}{UD}(x,DF="CDF",...)
 
@@ -36,7 +36,7 @@ writeShapefile(object,folder,file=NULL,...)
 
 \S3method{writeShapefile}{telemetry}(object,folder,file=NULL,error=TRUE,level.UD=0.95,...)
 
-\S3method{writeShapefile}{UD}(object,folder,file=NULL,level.UD=0.95,level=0.95,...)
+\S3method{writeShapefile}{UD}(object,folder,file=NULL,convex=FALSE,level.UD=0.95,level=0.95,...)
 
 \S4method{writeRaster}{UD,character}(x,filename,format,DF="CDF",...)
 }
@@ -45,6 +45,7 @@ writeShapefile(object,folder,file=NULL,...)
   \item{x}{ \code{telemetry} or \code{UD} object. }
   \item{error}{Export \code{telemetry} location error circles/ellipses as polygons if \code{TRUE}.}
   \item{object}{ \code{telemetry} or \code{UD} object. }
+  \item{convex}{Export convex coverage areas if \code{TRUE}. By default, the highest density regions (HDRs) are exported.}
   \item{level.UD}{ Coverage level of the UD area. I.e., the 50\% core home range would be given by \code{level.UD=0.50}. }
   \item{level}{ Confidence level for the magnitude of the above area. I.e., the 95\% CI of the core home range area. }
   \item{DF}{Rasterize the probability density function \code{"PDF"}, probability mass function \code{"PMF"}, or cumulative distribution function \code{"CDF"}.}
