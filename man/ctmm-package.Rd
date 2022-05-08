@@ -20,15 +20,16 @@ Winner & Noonan et al (2018) <doi:10.1111/2041-210X.13027>,
 Fleming et al (2019) <doi:10.1111/2041-210X.13270>,
 Noonan & Fleming et al (2019) <doi:10.1186/s40462-019-0177-1>,
 Fleming et al (2020) <doi:10.1101/2020.06.12.130195>,
+Noonan et al (2021) <doi:10.1111/2041-210X.13597>,
 and
-Noonan et al (2020) <doi:10.1101/2020.08.24.261628>.
+Fleming et al (2022) <doi:10.1111/2041-210X.13815>.
 }
 \details{
 \tabular{ll}{
 Package: \tab ctmm\cr
 Type: \tab Package\cr
 Version: \tab 0.6.2 \cr
-Date: \tab 2022-05-03 \cr
+Date: \tab 2022-05-06 \cr
 License: \tab GPL-3 \cr
 }
 
@@ -107,6 +108,14 @@ Methods in Ecology and Evolution 10:10, 1679-1689 (2019) \doi{10.1111/2041-210X.
 M. J. Noonan, C. H. Fleming, T. S. Akre, J. Drescher-Lehman, E. Gurarie, A.-L. Harrison, R. Kays, Justin Calabrese,
 ``Scale-insensitive estimation of speed and distance traveled from animal tracking data'',
 Movement Ecology, 7:35 (2019) \doi{10.1186/s40462-019-0177-1}.
+
+C. H. Fleming et al, ``A comprehensive framework for handling location error in animal tracking data'', bioRxiv (2020) \doi{10.1101/2020.06.12.130195}.
+
+M. J. Noonan R. Martinez-Garcia, G. H. Davis, M. C. Crofoot, R. Kays, B. T. Hirsch, D. Caillaud, E. Payne, A. Sihm, D. L. Sinn, O. Spiegel, W. F. Fagan, C. H. Fleming, J. M. Calabrese, ``Estimating encounter location distributions from animal tracking data'', Methods in Ecology and Evolution, 12:7, 1158-1173 (2021) \doi{10.1111/2041-210X.13597}.
+
+C. H. Fleming, I. Deznabi, S. Alavi, M. C. Crofoot, B. T. Hirsch, E. P. Medici, M. J. Noonan, R. Kays, W. F. Fagan, D. Sheldon, J. M. Calabrese,
+``Population-level inference for home-range areas'',
+Methods in Ecology and Evolution (2022) \doi{10.1111/2041-210X.13815}.
 }
 
 %~~ Optionally other standard keywords, one per line, from file KEYWORDS in ~~

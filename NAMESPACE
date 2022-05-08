@@ -137,7 +137,7 @@ export(annotate,color)
 export(lasso,marquee,cleave)
 
 # ENCOUNTER FUNCTIONS
-export(encounter)
+export(encounter,rates)
 
 # RSF functions
 export(rsf.fit)

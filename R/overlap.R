@@ -1,7 +1,7 @@
 # overlap <- function(object,...) UseMethod("overlap") #S3 generic
 
 # forwarding function for list of a particular datatype
-overlap <- function(object,level=0.95,debias=TRUE,...)
+overlap <- function(object,method="Bhattacharyya",level=0.95,debias=TRUE,...)
 {
   check.projections(object)
 
@@ -24,15 +24,20 @@ overlap <- function(object,level=0.95,debias=TRUE,...)
   # tabulate overlaps
   for(i in 1:n)
   {
-    for(j in (i+1):n)
-    { if(j<=n) { OVER[i,j,] <- OverlapFun(object[c(i,j)],level=level,debias=debias,...) } }
+    if(method=="Rate")
+    { START <- i }
+    else
+    { START <- i+1 }
+
+    for(j in START:n)
+    { if(j<=n) { OVER[i,j,] <- OverlapFun(object[c(i,j)],level=level,debias=debias,method=method,...) } }
   }
 
   # symmetrize matrix
   OVER <- OVER + aperm(OVER,c(2,1,3))
 
-  # fix diagonals
-  diag(OVER[,,1]) <- diag(OVER[,,2]) <- diag(OVER[,,3]) <- 1
+  # fix diagonals # self overlap
+  if(method!="Rate") { diag(OVER[,,1]) <- diag(OVER[,,2]) <- diag(OVER[,,3]) <- 1 }
 
   dimnames(OVER) <- list(names(object),names(object),NAMES.CI)
 
@@ -85,9 +90,7 @@ overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,method="Bhattach
   CTMM2 <- object[[2]]
   DIM <- length(CTMM1$axes)
 
-  if(method=="Bhattacharyya") { Dfunc <- BhattacharyyaD }
-  else if(method=="Mahalanobis") { Dfunc <- MahalanobisD }
-  else if(method=="Euclidean") { Dfunc <- EuclideanD }
+  Dfunc <- get(paste0(method,'D')) # functions in distance.R
   STUFF <- gauss.comp(Dfunc,object,COV=COV)
   MLE <- c(STUFF$MLE)
   VAR <- c(STUFF$COV)
@@ -143,6 +146,20 @@ overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,method="Bhattach
     BIAS <- BIAS + max( ElogW(sigma,n0)/2 - ElogW(CTMM1$sigma,n1)/4 - ElogW(CTMM2$sigma,n2)/4 , 0)
     # this is actually the expectation value?
   }
+  else if(method=="Encounter")
+  {
+    BIAS <- BIAS/4
+    # AMGM covariance terms
+    BIAS <- BIAS + max( ElogW(sigma,n0)/2 - ElogW(CTMM1$sigma,n1)/4 - ElogW(CTMM2$sigma,n2)/4 , 0)
+    # this is actually the expectation value?
+  }
+  else if(method=="Rate")
+  {
+    BIAS <- BIAS/4
+    # covariance terms
+    BIAS <- BIAS + max( ElogW(sigma,n0)/2 , 0)
+    # this is actually the expectation value?
+  }
 
   # relative bias instead of absolute bias
   BIAS <- BIAS/MLE
@@ -173,7 +190,7 @@ overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,method="Bhattach
 
 #####################
 #overlap density function
-overlap.UD <- function(object,level=0.95,debias=TRUE,...)
+overlap.UD <- function(object,level=0.95,debias=TRUE,method="Bhattacharyya",...)
 {
   CTMM <- list(attr(object[[1]],"CTMM"),attr(object[[2]],"CTMM"))
   type <- c(attr(object[[1]],"type"),attr(object[[2]],"type"))
@@ -188,15 +205,22 @@ overlap.UD <- function(object,level=0.95,debias=TRUE,...)
   dA <- prod(dr)
 
   OVER <- object[[1]]$PDF * object[[2]]$PDF
-  if(!is.null(OVER)) { OVER <- sqrt(OVER) }
+  if(!is.null(OVER) && method=="Bhattacharyya") { OVER <- sqrt(OVER) }
 
   # overlap point estimate
   OVER <- sum(OVER)*dA
 
+  if(!is.null(OVER) && method=="Encounter")
+  {
+    OVER <- OVER / sqrt(sum(object[[1]]$PDF^2)*dA*sum(object[[2]]$PDF^2)*dA)
+    # no shared support after subsetting
+    OVER <- nant(OVER,0)
+  }
+
   if(!is.null(CTMM))
   {
     # calculate Gaussian overlap distance^2 variance, bias, etc.
-    CI <- overlap.ctmm(CTMM,level=FALSE)
+    CI <- overlap.ctmm(CTMM,method=method,level=FALSE)
 
     # Bhattacharyya distances
     D <- -log(OVER)
@@ -209,7 +233,6 @@ overlap.UD <- function(object,level=0.95,debias=TRUE,...)
 
     # transform from (square) distance to overlap measure
     OVER <- exp(-rev(CI))
-
   }
   else
   { OVER <- c(NA,OVER,NA) }

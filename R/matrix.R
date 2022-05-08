@@ -319,7 +319,7 @@ sqrtm <- function(M,force=FALSE,pseudo=FALSE)
     TR <- M[1,1] + M[2,2]
     DET <- M[1,1]*M[2,2] - M[1,2]*M[2,1]
 
-    if(DET<0 || TR^2<4*DET || diag(M)<0)
+    if(DET<0 || TR^2<4*DET || any(diag(M)<0))
     {
       if(force || pseudo)
       { M <- PDfunc(M,func=sqrt,force=force,pseudo=pseudo) }
@@ -345,7 +345,7 @@ sqrtm <- function(M,force=FALSE,pseudo=FALSE)
     else
     { R <- FAIL }
 
-    if(all(Re(diag(R))>=-TOL && abs(Im(diag(R)))<=TOL))
+    if(all(Re(diag(R))>=-TOL) && all(abs(Im(diag(R)))<=TOL))
     {
       M <- Re(R)
       TEST <- (diag(M)<=0)

@@ -1,5 +1,5 @@
 ####################
-# square distance between stationary Gaussian distributions
+# Bhattacharyya distance between stationary Gaussian distributions
 BhattacharyyaD <- function(CTMM)
 {
   CTMM1 <- CTMM[[1]]
@@ -9,6 +9,35 @@ BhattacharyyaD <- function(CTMM)
   mu <- CTMM1$mu[1,] - CTMM2$mu[1,]
 
   D <- as.numeric(mu %*% PDsolve(sigma) %*% mu)/8 + log(det(sigma)/sqrt(det(CTMM1$sigma)*det(CTMM2$sigma)))/2
+
+  return(D)
+}
+
+# encounter rate "distance" between stationary Gaussian distributions
+RateD <- function(CTMM)
+{
+  CTMM1 <- CTMM[[1]]
+  CTMM2 <- CTMM[[2]]
+
+  sigma <- (CTMM1$sigma + CTMM2$sigma)/2
+  mu <- CTMM1$mu[1,] - CTMM2$mu[1,]
+
+  D <- as.numeric(mu %*% PDsolve(sigma) %*% mu)/4 + log(det(sigma))/2
+  # modulo log(2*pi*2^dim)
+
+  return(D)
+}
+
+# encounter distance between stationary Gaussian distributions
+EncounterD <- function(CTMM)
+{
+  CTMM1 <- CTMM[[1]]
+  CTMM2 <- CTMM[[2]]
+
+  sigma <- (CTMM1$sigma + CTMM2$sigma)/2
+  mu <- CTMM1$mu[1,] - CTMM2$mu[1,]
+
+  D <- as.numeric(mu %*% PDsolve(sigma) %*% mu)/4 + log(det(sigma)/sqrt(det(CTMM1$sigma)*det(CTMM2$sigma)))/2
 
   return(D)
 }
@@ -46,7 +75,7 @@ EuclideanD <- function(CTMM)
 
 distance <- function(object,method="Mahalanobis",level=0.95,debias=TRUE,...)
 {
-  method <- match.arg(method,c("Bhattacharyya","Mahalanobis","Euclidean"))
+  method <- match.arg(method,c("Bhattacharyya","Mahalanobis","Euclidean","Encounter"))
   n <- length(object)
   D <- array(NA_real_,c(n,n,3))
 

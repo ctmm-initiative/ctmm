@@ -1,4 +1,4 @@
-ctmm 0.6.2 (2022-05-03)
+ctmm 0.6.2 (2022-05-06)
 ================
 
   * new function rsf.fit() to fit integrated resource selection functions (iRSFs) with autocorrelation-adjusted weighted likelihood
@@ -13,6 +13,8 @@ ctmm 0.6.2 (2022-05-03)
   
   * new function suitability() to calculate suitability rasters from RSF fit objects
   
+  * new function rates() to calculate relative encounter rates
+  
   * akde() now supports RSF-informed kernels and boundary-respecting kernels
   
   * summary.ctmm() now outputs diffusion rate estimates
@@ -20,6 +22,8 @@ ctmm 0.6.2 (2022-05-03)
   * new argument variable for meta() to estimate population diffusion rates, mean speeds, and autocorrelation timescales
   
   * new arguments R and SP in plot.telemetry() and plot.UD() for plotting raster and shapefile base layers
+  
+  * new option method="Encounter" in overlap()
   
   * mean.UD() now propagates uncertainties
   

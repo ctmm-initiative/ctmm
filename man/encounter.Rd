@@ -1,30 +1,37 @@
 \name{encounter}
 \alias{encounter}
+\alias{rates}
 \encoding{UTF-8}
 %\alias{overlap.ctmm}
 %\alias{overlap.telemetry}
 %- Also NEED an '\alias' for EACH other topic documented here.
 
-\title{Calculate the conditional location distribution of ecounters}
+\title{Encounter statistics}
 
-\description{Functions to calculate the location distribution of where encounters take place, conditional on said encounters taking place, as described in Noonan et al (2021).}
+\description{Functions to calculate \emph{relative} encounter rates and the conditional location distribution of where encounters take place (conditional on said encounters taking place), as described in Noonan et al (2021).}
 
-\usage{ encounter(object,include=NULL,exclude=NULL,debias=FALSE,...) }
+\usage{rates(object,debias=TRUE,level=0.95,normalize=TRUE,...)
+
+encounter(object,include=NULL,exclude=NULL,debias=FALSE,...) }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{object}{A \code{list} of aligned \code{UD} objects.}
+  \item{debias}{Approximate bias corrections (\code{encounter} corrections in development).}
+  \item{level}{Confidence level for relative encounter rates.}
+  \item{normalize}{Normalize relative encounter rates by the average uncorrelated self-encounter rate.}
   \item{include}{A matrix of interactions to include in the calculation (see Details below).}
   \item{exclude}{A matrix of interactions to exclude in the calculation (see Details below).}
-  \item{debias}{Approximate GRF bias correction (in development).}
   \item{...}{Additional arguments for future use.}
 }
 
 \details{
+If \code{normalize=FALSE}, the relative encounter rates have units of \eqn{1/m^2} and tend to be very small numbers for very large home-range areas. If \code{normalize=TRUE}, the relative encounter rates are normalized by the average uncorrelated self-encounter rate, which is an arbitrary value that provides a convenient scaling.
+
 The \code{include} argument is a matrix that indicates which interactions are considered in the calculation.
 By default, \code{include = 1 - diag(length(object))}, which implies that all interactions are considered aside from self-interactions. Alternatively, \code{exclude = 1 - include} can be specified, and is by-default \code{exclude = diag(length(object))}, which implies that only self-encounters are excluded.
 }
 
-\value{A \code{UD} object.}
+\value{\code{rates} produces an array of relative encounter rates with CIs, while \code{encounter} produces a single \code{UD} object.}
 
 %% ~put references to the literature/web site here ~
 \references{
