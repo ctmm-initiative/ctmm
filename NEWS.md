@@ -50,6 +50,8 @@ ctmm 0.6.2 (2022-05-06)
   * bugfixes in 3D akde()
   
   * bugfix in time gridding code when dt is coarse
+  
+  * bugfix in SpatialPoints.telemetry for single individuals
 
 ctmm 0.6.1 (2021-07-26)
 ================

@@ -194,6 +194,7 @@ SpatialPolygonsDataFrame.telemetry <- function(object,level.UD=0.95,...)
 {
   object <- listify(object)
   identity <- unlist(sapply(object,function(o){ rep(attr(o,"info")$identity,length(o$t)) }))
+  if(!length(identity)) { identity <- 1:length(object) }
   # sp does something weird to POSIXct columns -> character
   timestamp <- do.call(c,lapply(object,function(o){ paste(o$timestamp,attr(o,"info")$timezone) }))
 
@@ -222,6 +223,12 @@ SpatialPolygonsDataFrame.telemetry <- function(object,level.UD=0.95,...)
   polygons <- sp::SpatialPolygons(polygons, proj4string=sp::CRS(proj))
   # names(polygons) <- 1:length(polygons)
 
+  n <- length(polygons)
+  if(n>length(identity))
+  {
+    identity <- rep(identity,n)
+    timestamp <- rep(timestamp,n)
+  }
   # spatial polygons data frame
   DF <- data.frame(identity=identity,timestamp=timestamp,row.names=names(polygons))
   names(DF) <- c("identity","timestamp") # weird namespace collision with identity()

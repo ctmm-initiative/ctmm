@@ -72,16 +72,16 @@ DiffGrid <- function(SUB,dx,dy,dx2=dx^2,dy2=dy^2,dr2=dx2+dy2,dxdydr2=dx*dy/dr2)
 {
   # calculate gradient
   GRAD <- numeric(2)
-  GRAD[1] <- mean( diff(SUB[2,1:2]) , diff(SUB[2,2:3]) )/dx
-  GRAD[2] <- mean( diff(SUB[1:2,2]) , diff(SUB[2:3,2]) )/dy
+  GRAD[1] <- mean( c( diff(SUB[1:2,2]) , diff(SUB[2:3,2]) ) )/dx
+  GRAD[2] <- mean( c( diff(SUB[2,1:2]) , diff(SUB[2,2:3]) ) )/dy
 
   # calculate Hessian
   HESS <- diag(2)
-  HESS[1,1] <- diff(diff(SUB[2,]))/dx2 # (+x,+x)
-  HESS[2,2] <- diff(diff(SUB[,2]))/dy2 # (+y,+y)
-  HESS[1,2] <- diff(diff(c(SUB[1,1],SUB[2,2],SUB[3,3])))/dr2 # (+x+y,+x+y)
-  HESS[2,1] <- diff(diff(c(SUB[1,3],SUB[2,2],SUB[3,1])))/dr2 # (+x-y,+x-y)
-  HESS[1,2] <- HESS[2,1] <- dxdydr2 * (HESS[1,2]-HESS[2,1]) # (+x,+y)
+  HESS[1,1] <- diff(diff(SUB[,2]))/dx2 # (+x,+x)
+  HESS[2,2] <- diff(diff(SUB[2,]))/dy2 # (+y,+y)
+  HESS[1,2] <- diff(diff(c(SUB[1,3],SUB[2,2],SUB[3,1])))/dr2 # (+x+y,+x+y)
+  HESS[2,1] <- diff(diff(c(SUB[1,1],SUB[2,2],SUB[3,3])))/dr2 # (+x-y,+x-y)
+  HESS[1,2] <- HESS[2,1] <- dxdydr2 * (HESS[2,1]-HESS[1,2]) # (+x,+y)
 
   return(list(GRAD=GRAD,HESS=HESS))
 }
@@ -101,7 +101,7 @@ modes.UD <- function(object,...)
   SCALE <- mpow.covm(COV.mu,1/2) %*% mpow.covm(COV,-1/2)
 
   PDF <- object$PDF
-  CDF <- object$CDF
+  PDF <- log(PDF) # log transform for numerics
   dx <- object$dr['x']
   dy <- object$dr['y']
   dx2 <- dx^2
@@ -123,47 +123,43 @@ modes.UD <- function(object,...)
       {
         m <- m + 1
 
-        SUB <- log(SUB)
         STUFF <- DiffGrid(SUB,dx,dy,dx2,dy2,dr2,dxdydr2)
         GRAD <- STUFF$GRAD
         HESS <- STUFF$HESS
+        HESS <- HESS + (GRAD %o% GRAD) # logarithm correction
         COV <- -PDsolve(HESS)
 
         # locate mode
         dr <- c(COV %*% GRAD)
-        # in case of bad Hessian
-        dr[1] <- clamp(dr[1],-dx/2,dx/2)
-        dr[2] <- clamp(dr[2],-dy/2,dy/2)
-        r <- c(object$r$x[i],object$r$y[j]) + dr
-        # store mode
-        data[m,axes] <- r
 
-        # GRF mode uncertainty ellipse
-        COV <- SCALE %*% COV %*% t(SCALE)
-
-        # CDF/N heuristic correction
-        SUB <- CDF[i+(-1):1,j+(-1):1]
-        STUFF <- DiffGrid(SUB,dx,dy,dx2,dy2,dr2,dxdydr2)
-        GRAD <- STUFF$GRAD
-        HESS <- STUFF$HESS
-        cdf <- CDF[i,j] + c(GRAD %*% dr) + c(dr %*% HESS %*% dr)/2
-        cdf <- clamp(cdf,0,1)
-        COV <- COV/(1-cdf) # DOES THIS MAKE SENSE?
-
-        # store uncertainty ellipse
-        for(I in 1:length(axes))
+        # is mode well estimated as within pixel?
+        if(dr[1] > -dx/2 && dr[1] < dx/2 && dr[2] > -dy/2 && dr[2] < dy/2)
         {
-          for(J in I:length(axes))
+          r <- c(object$r$x[i],object$r$y[j]) + dr
+          # store mode
+          data[m,axes] <- r
+
+          # GRF mode uncertainty ellipse
+          COV <- SCALE %*% COV %*% t(SCALE)
+
+          # store uncertainty ellipse
+          for(I in 1:length(axes))
           {
-            NAME <- paste("COV.",axes[I],".",axes[J],sep="") # consistent with imported ARGOS error ellipse notation
-            data[m,NAME] <- COV[I,J]
-          }
-        } # end uncertainty ellipse
+            for(J in I:length(axes))
+            {
+              NAME <- paste("COV.",axes[I],".",axes[J],sep="") # consistent with imported ARGOS error ellipse notation
+              data[m,NAME] <- COV[I,J]
+            }
+          } # end uncertainty ellipse
+        } # end mode recording
       } # end if local minimum
     } # end col loop
   } # end row loop
 
   data <- new.telemetry(data,info=CTMM@info)
+  FIX <- data
+  uere(FIX) <- 1
+  data@UERE <- FIX@UERE
   return(data)
 }
 
@@ -173,19 +169,10 @@ modes.UD <- function(object,...)
 #
 ridges.UD <- function(object,...)
 {
-  CTMM <- object@CTMM
-  axes <- CTMM$axes
-  COV <- CTMM$sigma
-  COV.mu <- CTMM$COV.mu
-  if(length(dim(COV.mu))==4) { COV.mu <- COV.mu[,1,1,] }
-  COV.mu <- covm(COV.mu,axes=axes,isotropic=CTMM$isotropic)
-  # SCALE %*% COV %*% t(SCALE) -> COV.mu
-  # SCALE == DOF^(-1/2)
-  SHRINK <- mpow.covm(COV.mu,1/2) %*% mpow.covm(COV,-1/2)
-  GROW <- mpow.covm(COV.mu,-1/2) %*% mpow.covm(COV,1/2)
-
-  PDF <- object$PDF # log first in ridge code? NO!
-  CDF <- object$CDF
+  PDF <- object$PDF
+  PDF <- log(PDF) # log transform
+  COST <- array(Inf,dim(PDF))
+  POINT <- array(FALSE,dim(PDF))
   dx <- object$dr['x']
   dy <- object$dr['y']
   dx2 <- dx^2
@@ -193,89 +180,41 @@ ridges.UD <- function(object,...)
   dr2 <- dx^2+dy^2
   dxdydr2 <- dx*dy/dr2
 
-  data <- data.frame(t(rep(0,length(axes))))
-  names(data) <- axes
-  m <- 0
-
   for(i in 2:(nrow(PDF)-1))
   {
     for(j in 2:(ncol(PDF)-1))
     {
       SUB <- PDF[i+(-1):1,j+(-1):1]
-      if(all(SUB>0)) # non-zero density (under logarithm)
+      if(all(SUB>-Inf)) # non-zero density (under logarithm)
       {
         DIFF <- DiffGrid(SUB,dx,dy,dx2,dy2,dr2,dxdydr2)
         GRAD <- DIFF$GRAD # 1/p D p # under log
         HESS <- DIFF$HESS # 1/p DD p - 1/p^2 Dp Dp # under log
-        #HESS <- HESS + (GRAD %o% GRAD) # logarithm correction
-        EIGEN <- eigen(HESS)
-        if(last(EIGEN$values) < -.Machine$double.eps) # some negative curvature
+        HESS <- HESS + (GRAD %o% GRAD) # logarithm correction
+        EIGEN <- eigen(-HESS)
+        if(EIGEN$values[1]>=0)
         {
-          VAR <- -1/EIGEN$values[2] # -1/ridge curvature > 0
-          DIR <- EIGEN$vectors[,2] # tangent to ridge line
-          dr <- VAR*c(DIR%*%GRAD) * DIR # move from center of cell up to the ridge line
-          # this is the closest ridge-line point to the center of the cell
+          COST[i,j] <- (GRAD %*% EIGEN$vectors[,1])^2 / EIGEN$values[1]
 
-          # local ridge-line equation
-          # r(t) = r + dr + t*EIGEN$vectors[,1]
-          # grad(t) = (GRAD + t*HESS) * EIGEN$vectors[,1]
-          # grad(t) %*% EIGEN$vectors[,2] == 0
-
-          # closest rige-line point is actually in cell
-          TEST <- all(abs(dr)<c(dx,dy)/2)
-          if(TEST)
-          {
-            m <- m + 1
-
-            # middling ridge point
-            r <- c(object$r$x[i],object$r$y[j]) + dr
-            # store ridge point
-            data[m,axes] <- r
-
-            # gradient at middling ridge point
-            # t <- which.max(abs(DIR))
-            # t <- DR[t]/DIR[t]
-            # grad <- (grad + t*hess) * DIR
-            # # store as velocity
-            # data[m,paste0("v",axes)] <- grad
-
-            grad <- GRAD + c(HESS%*%dr) # gradient on ridge line
-            DIR <- EIGEN$vectors[,1] # direction along ridge line
-            data[m,paste0("v",axes)] <- sign(c(grad%*%DIR)) * DIR
-
-            # # GRF adjusted Hessian
-            # iCOV <- GROW %*% HESS %*% t(GROW)
-            #
-            # # CDF/N heuristic correction
-            # SUB <- CDF[i+(-1):1,j+(-1):1]
-            # STUFF <- DiffGrid(SUB,dx,dy,dx2,dy2,dr2,dxdydr2)
-            # GRAD <- STUFF$GRAD
-            # HESS <- STUFF$HESS
-            # dr <- dr + DR
-            # cdf <- CDF[i,j] + c(GRAD %*% dr) + c(dr %*% HESS %*% dr)/2
-            # cdf <- clamp(cdf,0,1)
-            #
-            # Fstat <- EIGEN$values[1]/EIGEN$values[2]
-            #
-            # VAR <- VAR / (1-cdf) # DOES THIS MAKE SENSE?
-
-            # ridge-only covariance
-            # DIR <- STUFF$vectors[,2]
-            # COV <- VAR * (DIR %o% DIR)
-            # GRF mode uncertainty ellipse
-            # COV <- SCALE %*% COV %*% t(SCALE)
-            # VAR <- eigen(COV,only.values=TRUE)$values[1]
-
-            # data[m,"VAR.xy"] <- VAR
-          } # end if ridge-line passes through cell
-        } # end if some negative curvature
+          # solve for ridge points
+          # (GRAD + HESS %*% DL ) %*% EIGEN$vectors[,1] == 0
+          # climbing directly up to the ridge
+          # DL == dl * EIGEN$vectors[,1]
+          # GRAD %*% EIGEN$vectors[,1] + (EIGEN$vectors[,1] %*% HESS %*% EIGEN$vectors[,1])*dl == 0
+          # GRAD %*% EIGEN$vectors[,1] + EIGEN$values[1]*dl == 0
+          dr <- -c(GRAD %*% EIGEN$vectors[,1])/EIGEN$values[1]
+          dr <- dr * EIGEN$vectors[,1]
+          # is this point within the pixel?
+          if(dr[1] > -dx/2 && dr[1] < dx/2 && dr[2] > -dy/2 && dr[2] < dy/2)
+          { POINT[i,j] <- TRUE }
+        }
       } # end if non-zero density
     } # end col loop
   } # end row loop
 
-  # temporary fix
-  data$t <- (1:nrow(data)) * sqrt(dr2)
+  CTMM <- object@CTMM
+  DOF <- ctmm:::DOF.mean(CTMM)
+  COST <- DOF * COST # now like grad^2/std.err^2 ~ F
 
-  data <- new.telemetry(data,info=CTMM@info)
-  return(data)
+  return(POINT)
 }
