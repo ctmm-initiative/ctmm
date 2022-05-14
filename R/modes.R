@@ -213,7 +213,7 @@ ridges.UD <- function(object,...)
   } # end row loop
 
   CTMM <- object@CTMM
-  DOF <- ctmm:::DOF.mean(CTMM)
+  DOF <- DOF.mean(CTMM)
   COST <- DOF * COST # now like grad^2/std.err^2 ~ F
 
   return(POINT)

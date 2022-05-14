@@ -7,13 +7,16 @@
 This function calculates an occurrence distribution from \code{telemetry} data and a continuous-time movement model.
 }
 \usage{
-occurrence(data,CTMM,H=0,variable="utilization",res.time=10,res.space=10,grid=NULL,
-           cor.min=0.05,dt.max=NULL,buffer=TRUE,...)
+occurrence(data,CTMM,R=list(),SP=NULL,SP.in=TRUE,H=0,variable="utilization",res.time=10,
+           res.space=10,grid=NULL,cor.min=0.05,dt.max=NULL,buffer=TRUE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{data}{ 2D timeseries telemetry data represented as a \code{telemetry} object. }
-  \item{CTMM}{A \code{ctmm} movement model from the output of \code{ctmm.fit}.}
+  \item{data}{ A \code{telemetry} object or list of \code{telemetry} objects. }
+  \item{CTMM}{A \code{ctmm} movement model, as from the output of \code{ctmm.select}, or a list of \code{ctmm} objects.}
+    \item{R}{A named list of raster covariates if \code{CTMM} contains an RSF model.}
+  \item{SP}{SpatialPolygonsDataFrame object for enforcing hard boundaries.}
+  \item{SP.in}{Locations are assumed to be inside the \code{SP} polygons if \code{SP.in=TRUE} and outside of \code{SP} if \code{SP.in=FALSE}.}
   \item{H}{Optional additional bandwidth matrix for future use.}
   \item{variable}{Either \code{"utilization"} or \code{"revisitation"}. Only utilization is accurately estimated.}
   \item{res.time}{Number of temporal grid points per median timestep.}

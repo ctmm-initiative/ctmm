@@ -1,4 +1,4 @@
-ctmm 0.6.2 (2022-05-06)
+ctmm 0.6.2 (2022-05-13)
 ================
 
   * new function rsf.fit() to fit integrated resource selection functions (iRSFs) with autocorrelation-adjusted weighted likelihood
@@ -15,7 +15,7 @@ ctmm 0.6.2 (2022-05-06)
   
   * new function rates() to calculate relative encounter rates
   
-  * akde() now supports RSF-informed kernels and boundary-respecting kernels
+  * akde() and occurrence() now support RSF-informed kernels and boundary-respecting kernels
   
   * summary.ctmm() now outputs diffusion rate estimates
   
@@ -26,6 +26,8 @@ ctmm 0.6.2 (2022-05-06)
   * new option method="Encounter" in overlap()
   
   * mean.UD() now propagates uncertainties
+  
+  * mean.UD() now functions on occurrence distributions
   
   * new convex argument to UD summary(), plot(), and export functions
   

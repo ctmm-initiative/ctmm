@@ -62,7 +62,9 @@ M. J. Noonan, C. H. Fleming, T. S. Akre, J. Drescher-Lehman, E. Gurarie, A.-L. H
 
 \author{ C. H. Fleming. }
 
-\note{ The average speeds estimated here are mean speeds. The speeds reported by \code{\link{summary.ctmm}} are root-mean-square (RMS) speeds. These quantities are sometimes proportional, but not equivalent. }
+\note{ The mean speed estimated by \code{speed} is applicable only during the sampling periods. If an individual is diurnal/nocturnal and only tracked during the day/night, then the output of \code{speed} will only be the mean speed during the day/night. For instance, if an individual is tracked the 12 hours per day during which it is active, and \code{speed} reports a mean speed of 10 kilometers per day during those periods, then the average distance traveled per day is only 5 kilometers (from 10 kilometers \code{/} day \code{*} 12 hours). An average of 10 kilometers would only result if the individual were similarly active for 24 hours a day.
+
+The average speeds estimated here are mean speeds. The speeds reported by \code{\link{summary.ctmm}} are root-mean-square (RMS) speeds. These quantities are sometimes proportional, but not equivalent. }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 

@@ -80,7 +80,7 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,error=0
       # dt <- sort(dt)
       DT <- stats::median(dt)
       dt <- min(dt)
-      dt <- max(dt,DT*error) # don't make dt too small
+      dt <- DT/floor(min(c(DT/dt,1/ERROR))) # don't make dt too small & make sure dt is a divisor of DT
       # dt <- dt[ceiling(ERROR*length(dt))] # small quantile
       # dt <- DT/ceiling(DT/dt) # integer divisor of median
       if(trace)

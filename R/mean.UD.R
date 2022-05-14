@@ -44,7 +44,7 @@ mean.UD <- function(x,weights=NULL,...)
   x$axes <- axes
   x$PDF <- PDF
   x$CDF <- pmf2cdf(PDF*dV)
-  x$DOF.area <- DOF.area(CTMM)
+  if(type!="occurrence") { x$DOF.area <- DOF.area(CTMM) }
   x$H <- H
 
   x <- new.UD(x,info=info,type=type,CTMM=CTMM)
