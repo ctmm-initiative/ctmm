@@ -6,7 +6,7 @@
 \alias{zoom,UD-method}
 \encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{Plotting methods for telemetry objects.}
+\title{Plotting methods for telemetry objects}
 \description{
 Produces simple plots of \code{telemetry} objects, possibly overlayed with a Gaussian \code{ctmm} movement model or a \code{UD} utilization distribution.
 }
@@ -66,7 +66,7 @@ plot(x,y,...)
 
 
 \details{
-Confidence intervals placed on the \code{ctmm} Gaussian home-range contour estimates only represent uncertainty in the area's magnitude and not uncertainty in the mean location, eccentricity, or orientation angle. For \code{akde} \code{UD} estimates, the provided contours also only represent uncertainty in the magnitude of the area. With \code{akde} estimates, it is also important to note the scale of the bandwidth and, by default, grid cells are plotted with \code{akde} contours such that their length and width matches that of a bandwidth kernels' standard deviation in each direction. Therefore, this grid provides a visual approximation of the kernel-density estimate's ``resolution''.}
+Confidence intervals placed on the \code{ctmm} Gaussian home-range contour estimates only represent uncertainty in the area's magnitude and not uncertainty in the mean location, eccentricity, or orientation angle. For \code{akde} \code{UD} estimates, the provided contours also only represent uncertainty in the magnitude of the area. With \code{akde} estimates, it is also important to note the scale of the bandwidth and, by default, grid cells are plotted with \code{akde} contours such that their length and width matches that of a bandwidth kernels' standard deviation in each direction. Therefore, this grid provides a visual approximation of the kernel-density estimate's ``resolution''. Grid lines can be disabled with the argument \code{col.grid=NA}.}
 
 \value{Returns a plot of \eqn{x} vs. \eqn{y}, and, if specified, Gaussian \code{ctmm} distribution or \code{UD}.
 \code{akde} \code{UD} plots also come with a standard resolution grid.

@@ -310,6 +310,10 @@ mean.features <- function(x,debias=TRUE,isotropic=FALSE,variance=TRUE,weights=NU
   FEATURES <- lapply(x,function(y){y$features})
   FEATURES <- unlist(FEATURES)
   FEATURES <- unique(FEATURES)
+
+  TAU.EXPAND <- all(c("tau","tau position") %in% FEATURES)
+  if(TAU.EXPAND) { FEATURES <- FEATURES[FEATURES!="tau"] }
+
   M <- length(FEATURES)
   # all possible RSF beta
   BETA <- lapply(x,function(y){names(y$beta)})
@@ -322,8 +326,6 @@ mean.features <- function(x,debias=TRUE,isotropic=FALSE,variance=TRUE,weights=NU
   if(isotropic && "minor" %in% FEATURES)
   { MEANS[c("minor","angle")] <- VARS[c("minor","angle")] <- c(FALSE,FALSE) }
 
-  # TODO !!!!!!!!!!!!!!! OUF and OUf and OUO
-
   MU <- array(0,c(N,M))
   SIGMA <- array(0,c(N,M,M))
   INF <- diag(Inf,M)
@@ -334,6 +336,29 @@ mean.features <- function(x,debias=TRUE,isotropic=FALSE,variance=TRUE,weights=NU
   {
     x[[i]] <- log.ctmm(x[[i]],debias=debias)
     features <- names(x[[i]]$par)
+
+    if(TAU.EXPAND && "tau" %in% features)
+    {
+      # expand features
+      features[features=="tau"] <- "tau position"
+      features <- c(features,"tau velocity")
+
+      # expand point estimates
+      NAMES <- names(x[[i]]$par)
+      names(x[[i]]$par)[NAMES=="tau"] <- "tau position"
+      x[[i]]$par["tau velocity"] <- x[[i]]$par["tau position"]
+
+      # expand covariance
+      NAMES <- rownames(x[[i]]$COV)
+      NAMES[NAMES=="tau"] <- "tau position"
+      dimnames(x[[i]]$COV) <- list(NAMES,NAMES)
+
+      ROW <- x[[i]]$COV['tau position',]
+      x[[i]]$COV <- rbind(x[[i]]$COV,'tau velocity'=ROW)
+      ROW['tau velocity'] <- ROW['tau position']
+      x[[i]]$COV <- cbind(x[[i]]$COV,'tau velocity'=ROW)
+    }
+
     MU[i,features] <- x[[i]]$par
     SIGMA[i,,] <- INF
     SIGMA[i,features,features] <- x[[i]]$COV
@@ -342,7 +367,7 @@ mean.features <- function(x,debias=TRUE,isotropic=FALSE,variance=TRUE,weights=NU
     if(!isotropic && x[[i]]$isotropic)
     {
       MU[i,'minor'] <- MU[i,'major']
-      SIGMA[i,P] <- matrix(SIGMA[i,'major','major'],2,2)
+      SIGMA[i,P,P] <- matrix(SIGMA[i,'major','major'],2,2)
     }
     else if(isotropic && !x[[i]]$isotropic)
     {
@@ -429,6 +454,12 @@ mean.mu <- function(x,debias=TRUE,isotropic=FALSE,variance=TRUE,weights=NULL,...
 ###########
 mean.ctmm <- function(x,weights=NULL,debias=TRUE,IC="AICc",...)
 {
+  # if(length(x)==1)
+  # {
+  #   warning("Only one individual in list.")
+  #   return(x)
+  # }
+
   if(is.null(weights))
   { weights <- rep(1,length(x)) }
   else
@@ -438,49 +469,59 @@ mean.ctmm <- function(x,weights=NULL,debias=TRUE,IC="AICc",...)
   isotropic <- c(TRUE,TRUE)
   names(isotropic) <- c("sigma","mu")
 
+  #######################
   # average of mean locations
   MU <- mean.mu(x,debias=debias,isotropic=TRUE,weights=weights,...)
+
+  # anisotropic mu ?
   if(length(x)>2)
   {
     AN <- mean.mu(x,debias=debias,isotropic=FALSE,weights=weights,...)
-    if(AN[[IC]]<=MU[[IC]])
+    if(AN[[IC]]<MU[[IC]])
     {
       isotropic["mu"] <- FALSE
       MU <- AN
     }
-    else # model selection on variance
+  }
+
+  # zero variance in mu ?
+  if(isotropic["mu"])
+  {
+    ZV <- mean.mu(x,debias=debias,isotropic=TRUE,variance=FALSE,weights=weights,...)
+    if(ZV[[IC]]<=MU[[IC]])
     {
-      ZV <- mean.mu(x,debias=debias,isotropic=TRUE,variance=FALSE,weights=weights,...)
-      if(ZV[[IC]]<=MU[[IC]])
-      {
-        ZV$POV.mu <- 0 * MU$POV.mu
-        ZV$COV.POV.mu <- 0 * MU$COV.POV.mu
-        MU <- ZV
-      }
+      ZV$POV.mu <- 0 * MU$POV.mu
+      ZV$COV.POV.mu <- 0 * MU$COV.POV.mu
+      MU <- ZV
     }
   }
 
+  ########################
   # average of features
   ISO <- sapply(x,function(y){y$isotropic})
   ISO <- all(ISO)
   FU <- mean.features(x,debias=debias,isotropic=TRUE,weights=weights,...)
-  if(!ISO)
+
+  # anisotropic sigma ?
+  if(length(x)>2 && !ISO)
   {
     AN <- mean.features(x,debias=debias,isotropic=FALSE,weights=weights,...)
-    if(AN[[IC]]<=FU[[IC]])
+    if(AN[[IC]]<FU[[IC]])
     {
       isotropic["sigma"] <- FALSE
       FU <- AN
     }
-    else # model selection on variance
+  }
+
+  # zero variance in sigma
+  if(isotropic["sigma"])
+  {
+    ZV <- mean.features(x,debias=debias,isotropic=TRUE,variance=FALSE,weights=weights,...)
+    if(ZV[[IC]]<=FU[[IC]])
     {
-      ZV <- mean.features(x,debias=debias,isotropic=TRUE,variance=FALSE,weights=weights,...)
-      if(ZV[[IC]]<=FU[[IC]])
-      {
-        ZV$POV.sigma <- 0 * FU$POV.sigma
-        ZV$COV.POV.sigma <- 0 * FU$COV.POV.sigma
-        FU <- ZV
-      }
+      ZV$POV.sigma <- 0 * FU$POV.sigma
+      ZV$COV.POV.sigma <- 0 * FU$COV.POV.sigma
+      FU <- ZV
     }
   }
 

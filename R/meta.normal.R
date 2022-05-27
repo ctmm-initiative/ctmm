@@ -50,7 +50,7 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
 
   sigma <- 0
   for(i in 1:N) { sigma <- sigma + weights[i]*outer(MU[i,]-mu) }
-  sigma <- sigma/(N-REML)
+  sigma <- sigma/max(N-REML,1)
   sigma <- PDclamp(sigma,lower=.Machine$double.eps,upper=1/.Machine$double.eps)
   COV.mu <- sigma/N
   if(any(ZEROV)) { sigma[ZEROV,] <- sigma[,ZEROV] <- 0 }
@@ -112,12 +112,12 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
     mu <- P.mu <- 0
     for(i in 1:N)
     {
-      P[i,,] <- PDsolve(sigma + SIGMA[i,,])
+      P[i,,] <- PDsolve(sigma + SIGMA[i,,],force=TRUE)
       P.mu <- P.mu + weights[i]*P[i,,]
       mu <- mu + weights[i]*c(P[i,,] %*% MU[i,])
     }
     COV.mu <- array(0,c(DIM,DIM))
-    COV.mu[MEANS,MEANS] <- PDsolve(P.mu[MEANS,MEANS])
+    COV.mu[MEANS,MEANS] <- PDsolve(P.mu[MEANS,MEANS],force=TRUE)
     mu <- c(COV.mu %*% mu)
     # if(any(ZEROM)) { mu[ZEROM] <- 0 } # should be okay
 
@@ -309,7 +309,10 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
   if(nu==0) # no variance parameters estimated, no bias
   { AICc <- AIC }
   else # some variance parameters estimated
-  { AICc <- (q*n-qk)*2*K/max(q*n-K-nu,0) - 2*loglike }
+  {
+    AICc <- (q*n-qk)*2*K/max(q*n-K-nu,0) - 2*loglike
+    AICc <- nant(AICc,Inf)
+  }
   BIC <- K*log(N) - 2*loglike
 
   names(mu) <- NAMES

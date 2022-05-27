@@ -1,4 +1,4 @@
-ctmm 0.6.2 (2022-05-13)
+ctmm 0.6.2 (2022-05-26)
 ================
 
   * new function rsf.fit() to fit integrated resource selection functions (iRSFs) with autocorrelation-adjusted weighted likelihood
@@ -14,6 +14,8 @@ ctmm 0.6.2 (2022-05-13)
   * new function suitability() to calculate suitability rasters from RSF fit objects
   
   * new function rates() to calculate relative encounter rates
+  
+  * new function dt.plot() to inspect sampling intervals
   
   * akde() and occurrence() now support RSF-informed kernels and boundary-respecting kernels
   

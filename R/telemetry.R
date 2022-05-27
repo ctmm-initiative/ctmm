@@ -679,10 +679,20 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     COL <- pull.column(object,COL)
     XY <- cbind(XY,COL)
 
-    if(!is.null(XY) && ncol(XY)==2 && !is.null(zone))
+    # XY information present but zone not present
+    if(!is.null(XY) && ncol(XY)==2)
     {
-      # construct UTM projections
-      if(any(grepl("^[0-9]*$",zone))) { message('UTM zone missing lattitude bands; assuming UTM hemisphere="north". Alternatively, format zone column "# +south".') }
+      # missing zone
+      if(is.null(zone))
+      {
+        message('UTM zone missing; assuming UTM zone="1N".')
+        zone <- rep("1N",nrow(XY))
+      }
+
+      # missing hemisphere / latitude
+      if(any(grepl("^[0-9]*$",zone)))
+      { message('UTM zone missing lattitude bands; assuming UTM hemisphere="north". Alternatively, format zone column "# +south".') }
+
       zone <- paste0("+proj=utm +zone=",zone)
 
       # convert to long-lat

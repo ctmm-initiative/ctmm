@@ -413,6 +413,16 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utiliz
   CTMM <- listify(CTMM)
   VMM <- listify(VMM)
 
+  DOF <- sapply(CTMM,DOF.area)
+  SUB <- DOF<error
+  if(any(SUB))
+  {
+    warning("Fit object returned. DOF[area] = ",paste(DOF[SUB],collapse="; "))
+    SUB <- !SUB
+    if(any(SUB)) { CTMM[SUB] <- akde(data[SUB],CTMM[SUB],VMM=VMM[SUB],R=R,SP=SP,SP.in=SP.in,variable=variable,debias=debias,weights=weights,smooth=smooth,error=error,res=res,grid=grid,...) }
+    return(CTMM)
+  }
+
   # force grids to be compatible
   COMPATIBLE <- length(data)>1 && !is.grid.complete(grid)
 

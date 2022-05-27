@@ -1,5 +1,8 @@
 ** PRIORITY
-* RSF-occurrence
+* dt.plot color divisions
+* DDIM natural resolution option
+* raster -> terra : drawPoly, ...
+* export UD on CTMM objects
 
 ** MISC
 * only rareify models after compatible features are selected

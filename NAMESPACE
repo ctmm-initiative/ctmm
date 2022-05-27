@@ -64,6 +64,7 @@ S3method(head,telemetry)
 S3method(tail,telemetry)
 #S3method(rbind,telemetry)
 #S3method(sample,telemetry)
+export(dt.plot)
 
 #VARIOGRAM FUNCTIONS
 export(variogram,variogram.fit)
