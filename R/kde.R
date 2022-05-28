@@ -79,10 +79,13 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,error=0
       dt <- dt[dt>0]
       # dt <- sort(dt)
       DT <- stats::median(dt)
-      dt <- min(dt)
-      dt <- DT/floor(min(c(DT/dt,1/ERROR))) # don't make dt too small & make sure dt is a divisor of DT
-      # dt <- dt[ceiling(ERROR*length(dt))] # small quantile
-      # dt <- DT/ceiling(DT/dt) # integer divisor of median
+      dt <- min(dt) # smallest dt
+
+      if((DT-dt)/DT > ERROR)
+      { dt <- DT/2 } # some allowance for error
+      else
+      { dt <- DT }
+
       if(trace)
       {
         UNITS <- unit(dt,"time")

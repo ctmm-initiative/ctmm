@@ -1,5 +1,4 @@
 ** PRIORITY
-* dt.plot color divisions
 * DDIM natural resolution option
 * raster -> terra : drawPoly, ...
 * export UD on CTMM objects

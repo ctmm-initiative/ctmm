@@ -473,7 +473,10 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
     if(integrator=="MonteCarlo")
     {
       if(integrated)
-      { SIM <- simulate(IID,t=1:(N*nrow(data)),complete=TRUE) }
+      {
+        SIM <- simulate(IID,t=1:(N*nrow(data)),complete=TRUE)
+        SIM <- data.frame(SIM)
+      }
       else
       {
         SIM <- sp::spsample(level.UD,n=N*nrow(data),type="random")
