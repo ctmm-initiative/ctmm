@@ -359,7 +359,7 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
   { DOF.speed <- 0 }
 
   # can we estimate diffusion?
-  if(length(tau) && tau[1]>0)
+  if(length(object$tau) && object$tau[1]>0)
   {
     STUFF <- diffusion(object,finish=FALSE)
     DOF.diffusion <- STUFF$DOF

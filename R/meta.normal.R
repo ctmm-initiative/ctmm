@@ -122,14 +122,14 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
     # if(any(ZEROM)) { mu[ZEROM] <- 0 } # should be okay
 
     # sum up log-likelihood
-    loglike <- REML/2*log(abs(det(COV.mu[MEANS,MEANS]))) - DIM*(N-REML)/2*log(2*pi)
+    loglike <- REML/2*log(abs(det(COV.mu[MEANS,MEANS,drop=FALSE]))) - DIM*(N-REML)/2*log(2*pi)
     RHS <- 0
     LHS <- P.mu
     for(i in 1:N)
     {
       D <- mu - MU[i,]
       # set aside infinite uncertainty measurements
-      loglike <- loglike + weights[i]/2*( log(abs(det(P[i,OBS[i,],OBS[i,]]))) - c(D %*% P[i,,] %*% D) )
+      loglike <- loglike + weights[i]/2*( log(abs(det(cbind(P[i,OBS[i,],OBS[i,]])))) - c(D %*% P[i,,] %*% D) )
 
       # gradient with respect to sigma, under sum and trace
       if(verbose)
@@ -138,6 +138,7 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
         if(debias) { LHS <- LHS - weights[i]*(P[i,,] %*% COV.mu %*% P[i,,]) }
       }
     }
+    LHS <- unnant(LHS)
     loglike <- nant(loglike,-Inf)
     if(!verbose) { return(-loglike) }
 

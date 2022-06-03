@@ -312,7 +312,12 @@ mean.features <- function(x,debias=TRUE,isotropic=FALSE,variance=TRUE,weights=NU
   FEATURES <- unique(FEATURES)
 
   TAU.EXPAND <- all(c("tau","tau position") %in% FEATURES)
-  if(TAU.EXPAND) { FEATURES <- FEATURES[FEATURES!="tau"] }
+  if(TAU.EXPAND)
+  {
+    FEATURES <- FEATURES[FEATURES!="tau"]
+    if("tau velocity" %nin% FEATURES)
+    { FEATURES <- c(FEATURES,"tau velocity") }
+  }
 
   M <- length(FEATURES)
   # all possible RSF beta

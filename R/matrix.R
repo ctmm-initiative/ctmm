@@ -129,11 +129,43 @@ He <- function(M) { (M + Adj(M))/2 }
 PDfunc <-function(M,func=function(m){1/m},force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
 {
   DIM <- dim(M)[1]
-  if(is.null(DIM)) { DIM <- 1 }
+  if(is.null(DIM))
+  {
+    DIM <- 1
+    M <- cbind(M)
+  }
   # tol <- max(tol,.Machine$double.eps)
+
+  # for singular maps
+  INF <- diag(M)==Inf
+  if(func(0)<Inf)
+  { ZERO <- sapply(1:nrow(M),function(i){all(M[i,]==0)}) }
+  else
+  { ZERO <- rep(FALSE,DIM) }
 
   if(DIM==1)
   { M <- c(M) }
+  else if(any(INF) || any(ZERO)) # check for Inf & map those properly
+  {
+    if(any(INF))
+    {
+      if(func(Inf)==0) # maps to zero
+      { M[INF,] <- M[,INF] <- 0 }
+      else if(func(Inf)==Inf) # maps to infinity
+      {
+        M[INF,] <- M[,INF] <- 0
+        M[INF,INF] <- Inf
+      }
+    }
+
+    if(any(ZERO)) { diag(M)[ZERO] <- func(0) }
+
+    # regular inverse of remaining dimensions
+    REM <- !(INF|ZERO)
+    if(any(REM)) { M[REM,REM] <- PDfunc(M[REM,REM,drop=FALSE],func=func,force=force,pseudo=pseudo) }
+
+    return(M)
+  }
   else if(DIM==2)
   {
     TR <- (M[1,1] + M[2,2])/2 # half trace
@@ -228,7 +260,7 @@ PDsolve <- function(M,force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
 
     # regular inverse of remaining dimensions
     REM <- !(INF|ZERO)
-    if(any(REM)) { M[REM,REM] <- PDsolve(M[REM,REM,drop=FALSE]) }
+    if(any(REM)) { M[REM,REM] <- PDsolve(M[REM,REM,drop=FALSE],force=force,pseudo=pseudo) }
 
     return(M)
   }
@@ -359,6 +391,20 @@ sqrtm <- function(M,force=FALSE,pseudo=FALSE)
       { stop("Matrix is not positive definite.") }
     }
   }
+
+  return(M)
+}
+
+
+unnant <- function(M)
+{
+  NAN <- is.nan(M)
+  DIAG <- diag(TRUE,nrow(M))
+
+  if(any(NAN)) { M[NAN] <- 0 }
+
+  INF <- NAN & DIAG
+  if(any(INF)) { M[INF] <- Inf }
 
   return(M)
 }

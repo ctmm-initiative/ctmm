@@ -31,6 +31,9 @@ new.variogram <- methods::setClass("variogram",representation=methods::represent
 methods::setOldClass("outlie")
 new.outlie <- methods::setClass("outlie",representation=methods::representation("data.frame"),prototype=methods::prototype(data.frame()))
 
+# R drop is very annoying and yet this doesn't do anything despite the error on det(1)
+#setMethod('determinant', signature(x='numeric'), identity)
+
 # existing functions -> S4 generics
 # this doesn't work
 #methods::setGeneric("SpatialPoints",package="sp",signature=signature("coords",...))
@@ -50,6 +53,7 @@ methods::setGeneric("projection", getGeneric("projection", package="raster"))
 methods::setGeneric("projection<-", getGeneric("projection<-", package="raster"))
 methods::setGeneric("raster", getGeneric("raster", package="raster"))
 methods::setGeneric("zoom", getGeneric("zoom", package="raster"))
+
 
 # new S3 generic functions
 writeShapefile <- function(object,folder,file=NULL,...) UseMethod("writeShapefile")

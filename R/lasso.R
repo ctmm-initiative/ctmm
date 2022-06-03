@@ -13,14 +13,25 @@ selector <- function(object,tool,...)
 
   if(tool=='lasso')
   {
-    if(.Platform$GUI=="RStudio") { message("Click to place vertices and press [ESC] when done.") }
-    else { message("Left-click to place vertices and right-click for menu when done.") }
+    if(.Platform$GUI=="RStudio")
+    {
+      message("Click to place vertices and press [ESC] when done.")
+      #SP <- terra::draw("polygon",col='black')
+    }
+    else
+    {
+      message("Left-click to place vertices and right-click for menu when done.")
+    }
     SP <- raster::drawPoly(sp=FALSE,col='black')
   }
   else if(tool=='marquee')
   {
     message("Click opposite corners.")
-    SP <- raster::drawExtent(col='black')
+    #if(.Platform$GUI=="RStudio")
+    #{ SP <- terra::draw("extent",col='black') }
+    #else
+    { SP <- raster::drawExtent(col='black') }
+
     SP <- rbind( c(SP@xmin,SP@ymin), c(SP@xmax,SP@ymin), c(SP@xmax,SP@ymax), c(SP@xmin,SP@ymax) )
   }
   SP <- SCALE * SP # convert to SI units
