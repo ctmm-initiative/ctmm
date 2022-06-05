@@ -44,14 +44,18 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
   REML <- debias
 
   ####################
-  # initial non-zero guesses
-  mu <- colMeans(weights*MU)
+  # robust initial guesses
+  # mu <- colMeans(weights*MU)
+  WU <- weights*MU
+  mu <- apply(WU,2,stats::median)
   if(any(ZEROM)) { mu[ZEROM] <- 0 }
 
-  sigma <- 0
-  for(i in 1:N) { sigma <- sigma + weights[i]*outer(MU[i,]-mu) }
-  sigma <- sigma/max(N-REML,1)
-  sigma <- PDclamp(sigma,lower=.Machine$double.eps,upper=1/.Machine$double.eps)
+  # sigma <- 0
+  # for(i in 1:N) { sigma <- sigma + weights[i]*outer(MU[i,]-mu) }
+  # sigma <- sigma/max(N-REML,1)
+  # sigma <- PDclamp(sigma,lower=.Machine$double.eps,upper=1/.Machine$double.eps)
+  sigma <- apply(WU,2,stats::mad)
+  sigma <- diag(sigma,nrow=length(sigma))
   COV.mu <- sigma/N
   if(any(ZEROV)) { sigma[ZEROV,] <- sigma[,ZEROV] <- 0 }
   if(any(ZEROM)) { COV.mu[ZEROM,] <- COV.mu[,ZEROM] <- 0 }

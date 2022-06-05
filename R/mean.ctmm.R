@@ -69,6 +69,7 @@ log.ctmm <- function(CTMM,debias=FALSE)
     par[SUB] <- t(EIGEN$vectors) %*% par[SUB] # diagonalize parameters
     DOF <- 2/EIGEN$values # log-chi^2 VAR-DOF relation
     BIAS <- digamma(DOF/2)-log(DOF/2) # negative bias for log(chi^2) variates
+    BIAS <- nant(BIAS,0)
     par[SUB] <- par[SUB] + BIAS # E[log-chi^2] bias correction
     par[SUB] <- c(EIGEN$vectors %*% par[SUB]) # transform back (still under logarithm)
 
@@ -77,6 +78,8 @@ log.ctmm <- function(CTMM,debias=FALSE)
     EIGEN <- EIGEN$vectors %*% (EIGEN$values * t(EIGEN$vectors))
 
     COR[SUB,SUB] <- stats::cov2cor(EIGEN)
+    # diag(COR) <- nant(diag(COR),1)
+    # COR <- nant(COR,0)
     VAR[SUB] <- diag(EIGEN)
     COV <- COR * outer(sqrt(VAR))
     COV <- nant(COV,0)
