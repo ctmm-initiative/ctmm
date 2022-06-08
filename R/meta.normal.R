@@ -44,7 +44,7 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
   REML <- debias
 
   ####################
-  # robust initial guesses
+  # robust initial guesses in case of outliers
   # mu <- colMeans(weights*MU)
   WU <- weights*MU
   mu <- apply(WU,2,stats::median)
@@ -55,6 +55,7 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
   # sigma <- sigma/max(N-REML,1)
   # sigma <- PDclamp(sigma,lower=.Machine$double.eps,upper=1/.Machine$double.eps)
   sigma <- apply(WU,2,stats::mad)
+  sigma <- pmax(sigma,1)  # stable fallback in case MAD is zero
   sigma <- diag(sigma,nrow=length(sigma))
   COV.mu <- sigma/N
   if(any(ZEROV)) { sigma[ZEROV,] <- sigma[,ZEROV] <- 0 }
