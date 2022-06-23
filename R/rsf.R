@@ -444,6 +444,8 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
     }
 
     nll <- c(nll)
+    nll <- nant(nll,Inf)
+
     if(verbose)
     {
       RET <- list(loglike=-nll,Z=log.MEAN,VAR.loglike=VAR.log)
@@ -457,6 +459,7 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
   N.OLD <- 0
   loglike <- -Inf
   STDloglike <- Inf
+  beta.init <- beta
 
   if(CALC)
   { ERROR.BIG <- TRUE }
@@ -642,6 +645,13 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
     }
     else # STATIONARY ONLY FOR NOW !!!!!!!!!
     { if(trace) { message("Maximizing likelihood @ n=",N) } }
+
+    # fix bad early runs
+    if(any(beta!=beta.init))
+    {
+      if(nloglike(beta.init)<=nloglike(beta))
+      { beta <- beta.init }
+    }
 
     RESULT <- optimizer(beta,nloglike,control=control)
     beta.OLD <- beta
