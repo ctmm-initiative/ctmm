@@ -126,7 +126,7 @@ He <- function(M) { (M + Adj(M))/2 }
 
 
 # map function for real-valued PSD matrices
-PDfunc <-function(M,func=function(m){1/m},force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
+PDfunc <-function(M,func=function(m){1/m},sym=TRUE,force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
 {
   DIM <- dim(M)[1]
   if(is.null(DIM))
@@ -201,11 +201,23 @@ PDfunc <-function(M,func=function(m){1/m},force=FALSE,pseudo=FALSE,tol=.Machine$
   }
   else if(DIM>2) # arbitrary DIM
   {
-    M <- eigen(M)
-    V <- M$vectors
-    M <- Re(M$values)
+    if(sym)
+    {
+      M <- eigen(M)
+      V <- M$vectors
+      M <- Re(M$values)
 
-    V <- vapply(1:DIM,function(i){Re(V[,i] %o% Conj(V[,i]))},diag(1,DIM))
+      V <- vapply(1:DIM,function(i){Re(V[,i] %o% Conj(V[,i]))},diag(1,DIM))
+    }
+    else
+    {
+      M <- svd(M)
+      U <- solve(Adj(M$v))
+      V <- solve(M$u)
+      M <- Re(M$d)
+
+      V <- vapply(1:DIM,function(i){Re(U[,i] %o% V[i,])},diag(1,DIM))
+    }
   }
 
   if(any(M<0) && !force && !pseudo) { stop("Matrix not positive definite.") }
@@ -237,7 +249,7 @@ PDfunc <-function(M,func=function(m){1/m},force=FALSE,pseudo=FALSE,tol=.Machine$
 
 
 # Positive definite solver
-PDsolve <- function(M,force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
+PDsolve <- function(M,sym=TRUE,force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
 {
   DIM <- dim(M)
   if(is.null(DIM))
@@ -280,7 +292,7 @@ PDsolve <- function(M,force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
   }
 
   # symmetrize
-  M <- He(M)
+  if(sym) { M <- He(M) }
 
   # rescale
   W <- abs(diag(M))
@@ -304,13 +316,13 @@ PDsolve <- function(M,force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
   if( class(M.try)[1] == "matrix")
   { M <- M.try }
   else
-  { M <- PDfunc(M,func=function(m){1/m},force=force,pseudo=pseudo,tol=tol) }
+  { M <- PDfunc(M,func=function(m){1/m},sym=sym,force=force,pseudo=pseudo,tol=tol) }
 
   # back to covariance matrix
   M <- M/W
 
   # symmetrize
-  M <- He(M)
+  if(sym) { M <- He(M) }
 
   return(M)
 }

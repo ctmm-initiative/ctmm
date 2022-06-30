@@ -1,4 +1,4 @@
-ctmm 0.6.2 (2022-06-08)
+ctmm 0.6.2 (2022-06-30)
 ================
 
   * new function rsf.fit() to fit integrated resource selection functions (iRSFs) with autocorrelation-adjusted weighted likelihood
@@ -46,6 +46,8 @@ ctmm 0.6.2 (2022-06-08)
   * summary() timescale confidence intervals are now gamma/inverse-gamma more inline with meta()
   
   * progress bar added to optimizer() when trace=1
+  
+  * bugfix in IID area CIs
   
   * bugfix in ctmm.loglike() when fitting multiple error classes, where some are zero
   
