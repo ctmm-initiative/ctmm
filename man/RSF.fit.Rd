@@ -9,7 +9,7 @@ This function is in development and is subject to change.
 \usage{
 rsf.fit(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,reference="auto",
         level.UD=0.99,isotropic=TRUE,debias=TRUE,smooth=TRUE,standardize=TRUE,
-        integrator="MonteCarlo",error=0.01,max.mem="1 Gb",trace=TRUE,...)
+        integrator="MonteCarlo",error=0.01,max.mem="1 Gb",interpolate=TRUE,trace=TRUE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -28,6 +28,7 @@ rsf.fit(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,reference="auto"
   \item{integrator}{Numerical integrator used for likelihood evaluation. Can be \code{"MonteCarlo"} or \code{"Riemann"} (IN TESTING).}
   \item{error}{Relative numerical error threshold for the parameter estimates and log-likelihood.}
   \item{max.mem}{Maximum amount of memory to allocate for availability sampling.}
+  \item{interpolate}{Whether or not to interpolate raster values during extraction.}
   \item{trace}{Report progress on convergence (see Details).}
   \item{...}{Arguments passed to \code{optimizer}.}
 }

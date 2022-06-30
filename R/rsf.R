@@ -1,4 +1,4 @@
-rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,reference="auto",level.UD=0.99,isotropic=TRUE,debias=TRUE,smooth=TRUE,standardize=TRUE,integrator="MonteCarlo",error=0.01,max.mem="1 Gb",trace=TRUE,...)
+rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,reference="auto",level.UD=0.99,isotropic=TRUE,debias=TRUE,smooth=TRUE,standardize=TRUE,integrator="MonteCarlo",error=0.01,max.mem="1 Gb",interpolate=TRUE,trace=TRUE,...)
 {
   STATIONARY <- TRUE
   CTMM <- UD@CTMM
@@ -57,6 +57,11 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
     warning("R is not a named list of rasters.")
     names(R) <- paste("R",1:length(R))
   }
+
+  # how to sample rasters
+  interpolate <- rep(interpolate,length(R))
+  interpolate <- ifelse(interpolate,"bilinear","simple")
+  names(interpolate) <- names(R)
 
   if(!is.null(formula) && standardize)
   {
@@ -324,7 +329,7 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
     DIM <- dim(R[[i]])
     if(DIM[3]==1) # 2D
     {
-      DATA[,r] <- raster::extract(R[[i]],xy,method="bilinear")
+      DATA[,r] <- raster::extract(R[[i]],xy,method=interpolate[i])
       # DATA[,RI] <- bint(R[[i]],t(xy))
     }
     else # 3D space-time stack
@@ -585,7 +590,7 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
       DIM <- dim(R[[i]])
       if(DIM[3]==1)
       {
-        SATA[SUB,,r] <- raster::extract(R[[i]],xy,method="bilinear")
+        SATA[SUB,,r] <- raster::extract(R[[i]],xy,method=interpolate[i])
         #SATA[SUB,,r] <- bint(R[[r]],t(xy))
       }
       else
