@@ -189,6 +189,11 @@ unit <- function(data,dimension,thresh=1,concise=FALSE,SI=FALSE)
     abrv.list <- c("ng","\u03BCg","mg","gm","kg","Mg")
     scale.list <- c(1/1000^4,1/1000^3,1/1000^2,1/1000,1,1000)
   }
+  else # units not recognized
+  {
+    R <- list(scale=1,name=NULL)
+    return(R)
+  }
 
   data <- data[!is.na(data)]
   data <- data[abs(data)<Inf]

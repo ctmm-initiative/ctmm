@@ -175,7 +175,7 @@ color.individual <- function(object,cores=1,...)
   { OVER <- plapply(object,function(o){ ctmm.fit(o,ctmm(isotropic=(nrow(o)<3)),method='ML',COV=FALSE) },cores=cores) }
   else if(CLASS %in% c('ctmm','UD'))
   { OVER <- object }
-  OVER <- overlap(OVER,debias=FALSE,COV=FALSE)[,,2]
+  OVER <- overlap(OVER,debias=FALSE,COV=FALSE)$CI[,,2]
   diag(OVER) <- 0 # no self interactions
 
   # who has the worst spatial overlap

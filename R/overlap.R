@@ -20,28 +20,30 @@ overlap <- function(object,method="Bhattacharyya",level=0.95,debias=TRUE,...)
   else { stop(CLASS," object class not supported by overlap.") }
 
   n <- length(object)
-  OVER <- array(0,c(n,n,3))
+  DOF <- array(Inf,c(n,n))
+  OVER <- array(1,c(n,n,3))
   # tabulate overlaps
   for(i in 1:n)
   {
     if(method=="Rate")
-    { START <- i }
+    { START <- i } # include diagonal for normalization
     else
     { START <- i+1 }
 
-    for(j in START:n)
-    { if(j<=n) { OVER[i,j,] <- OverlapFun(object[c(i,j)],level=level,debias=debias,method=method,...) } }
+    for(j in START%:%n)
+    {
+      R <- OverlapFun(object[c(i,j)],level=level,debias=debias,method=method,...)
+      DOF[i,j] <- DOF[j,i] <- R$DOF
+      OVER[i,j,] <- OVER[j,i,] <- R$CI
+    }
   }
-
-  # symmetrize matrix
-  OVER <- OVER + aperm(OVER,c(2,1,3))
-
-  # fix diagonals # self overlap
-  if(method!="Rate") { diag(OVER[,,1]) <- diag(OVER[,,2]) <- diag(OVER[,,3]) <- 1 }
 
   dimnames(OVER) <- list(names(object),names(object),NAMES.CI)
 
-  return(OVER)
+  R <- list(DOF=DOF,CI=OVER)
+  class(R) <- "overlap"
+
+  return(R)
   # utils::getS3method("overlap",CLASS)(object,...)
 }
 
@@ -174,14 +176,16 @@ overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,method="Bhattach
   {
     if(debias) { MLE <- MLE/BIAS }
 
-    CI <- chisq.ci(MLE,VAR=VAR,alpha=1-level)
+    DOF <- 2*MLE^2/VAR
+    CI <- chisq.ci(MLE,DOF=DOF,alpha=1-level)
     if(distance) { return(CI) } # return distance
 
     # transform from (square) distance to overlap measure
     CI <- exp(-rev(CI))
     names(CI) <- NAMES.CI
 
-    return(CI)
+    R <- list(DOF=DOF,CI=CI)
+    return(R)
   }
   else # return BD ingredients
   { return(list(MLE=MLE,VAR=VAR,DOF=DOF,BIAS=BIAS)) }
@@ -229,14 +233,20 @@ overlap.UD <- function(object,level=0.95,debias=TRUE,method="Bhattacharyya",...)
     if(debias){ D <- D/CI$BIAS }
 
     # calculate new distance^2 with KDE point estimate
-    CI <- chisq.ci(D,VAR=CI$VAR,alpha=1-level)
+    DOF <- 2*D^2/CI$VAR
+    CI <- chisq.ci(D,DOF=DOF,alpha=1-level)
 
     # transform from (square) distance to overlap measure
-    OVER <- exp(-rev(CI))
+    CI <- exp(-rev(CI))
   }
   else
-  { OVER <- c(NA,OVER,NA) }
+  {
+    DOF <- NA
+    CI <- c(NA,OVER,NA)
+  }
 
-  names(OVER) <- NAMES.CI
-  return(OVER)
+  names(CI) <- NAMES.CI
+
+  R <- list(DOF=DOF,CI=CI)
+  return(R)
 }

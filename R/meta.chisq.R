@@ -481,7 +481,7 @@ meta <- function(x,variable="area",level=0.95,level.UD=0.95,method="MLE",IC="AIC
   method <- match.arg(method,c("mle","blue"))
 
   variable <- canonical.name(variable)
-  variable <- match.arg(variable,c("area","diffusion","speed","tauposition","tauvelocity"))
+  variable <- match.arg(variable,c("area","diffusion","speed","tauposition","tauvelocity","distance"))
 
   meta.uni(x=x,variable=variable,level=level,level.UD=level.UD,IC=IC,boot=boot,error=error,debias=debias,method=method,verbose=verbose,units=units,plot=plot,sort=sort,mean=mean,col=col,...)
 }
@@ -553,7 +553,21 @@ import.variable <- function(x,variable="area",level.UD=0.95)
     }
     else # UD or summary(UD) or speed()
     {
-      if(variable=="area")
+      if(CLASS=="overlap")
+      {
+        variable <- "distance"
+        DOF[i] <- x[[i]]$DOF[1,2]
+        AREA[i] <- -log(x[[i]]$CI[1,2,'est'])
+      }
+      if(CLASS=="speed" || variable=="speed")
+      {
+        variable <- "speed"
+        DOF[i] <- x[[i]]$DOF * 2 # 2D
+        UNITS <- rownames(x[[i]]$CI) # "speed (units)"
+        UNITS <- substr(UNITS,nchar("speed (")+1,nchar(UNITS)-1)
+        AREA[i] <- x[[i]]$CI[2] %#% UNITS
+      }
+      else if(variable=="area")
       {
         if(CLASS=="UD") { x[[i]] <- summary(x[[i]],level.UD=level.UD,units=FALSE) }
         # now summary(UD) list
@@ -561,13 +575,6 @@ import.variable <- function(x,variable="area",level.UD=0.95)
         # convert to SI units
         UNITS <- rownames(x[[i]]$CI) # "area (units)"
         UNITS <- substr(UNITS,nchar("area (")+1,nchar(UNITS)-1)
-        AREA[i] <- x[[i]]$CI[2] %#% UNITS
-      }
-      else if(variable=="speed")
-      {
-        DOF[i] <- x[[i]]$DOF * 2 # 2D
-        UNITS <- rownames(x[[i]]$CI) # "speed (units)"
-        UNITS <- substr(UNITS,nchar("speed (")+1,nchar(UNITS)-1)
         AREA[i] <- x[[i]]$CI[2] %#% UNITS
       }
     }
@@ -582,7 +589,7 @@ import.variable <- function(x,variable="area",level.UD=0.95)
     DOF <- 2/VAR
   }
 
-  R <- list(ID=ID,AREA=AREA,DOF=DOF)
+  R <- list(ID=ID,AREA=AREA,DOF=DOF,variable=variable)
   return(R)
 }
 
@@ -635,6 +642,8 @@ meta.uni <- function(x,variable="area",level=0.95,level.UD=0.95,level.pop=0.95,m
     { variable <- "area" }
     else if(class(x[[1]])[1]=="speed")
     { variable <- "speed" }
+    else if(class(x[[1]])[1]=="overlap")
+    { variable <- "overlap" }
 
     STUFF <- import.variable(x,variable=variable,level.UD=level.UD)
     AREA <- STUFF$AREA
@@ -663,6 +672,11 @@ meta.uni <- function(x,variable="area",level=0.95,level.UD=0.95,level.pop=0.95,m
     VAR.UNITS <- "time"
     VAR.NAME <- "Velocity timescale"
   }
+  else if(variable=="overlap")
+  {
+    VAR.UNITS <- "dissimilarity"
+    VAR.NAME <- "Distance"
+  }
   else
   {
     VAR.UNITS <- variable
@@ -681,7 +695,8 @@ meta.uni <- function(x,variable="area",level=0.95,level.UD=0.95,level.pop=0.95,m
     UNITS <- unit(PLOT[,N+1],VAR.UNITS,SI=!units)
     PLOT <- PLOT/UNITS$scale
 
-    xlab <- paste0(VAR.NAME," (",UNITS$name,")")
+    xlab <- VAR.NAME
+    if(length(UNITS$name)) { xlab <- paste0(xlab," (",UNITS$name,")") }
     if(variable=="area") { xlab <- paste0(100*level.UD,"% ",xlab) }
     # base layer plot
     plot(range(PLOT),c(1,N+mean),col=grDevices::rgb(1,1,1,0),xlab=xlab,ylab=NA,yaxt="n",...)
@@ -758,7 +773,7 @@ meta.uni <- function(x,variable="area",level=0.95,level.UD=0.95,level.pop=0.95,m
       {
         RESULTS[[i]] <- RESULTS[[i]]$CI[c(1,3,4),]
         RESULTS[[i]][1,] <- RESULTS[[i]][1,]/UNITS$scale
-        rownames(RESULTS[[i]])[1] <- paste0(rownames(RESULTS[[i]])[1]," (",UNITS$name,")")
+        if(length(UNITS$name)) { rownames(RESULTS[[i]])[1] <- paste0(rownames(RESULTS[[i]])[1]," (",UNITS$name,")") }
       }
 
       RESULTS[[N+1]] <- PV
@@ -777,7 +792,7 @@ meta.uni <- function(x,variable="area",level=0.95,level.UD=0.95,level.pop=0.95,m
     UNITS <- unit(CI[1,],VAR.UNITS,SI=!units,concise=TRUE)
     CI[1,] <- CI[1,]/UNITS$scale
 
-    rownames(CI)[1] <- paste0(rownames(CI)[1]," (",UNITS$name,")")
+    if(length(UNITS$name)) { rownames(CI)[1] <- paste0(rownames(CI)[1]," (",UNITS$name,")") }
     #rownames(CI)[2] <- "CoV\u00B2 (RVAR)"
     #rownames(CI)[3] <- "CoV  (RSTD)"
   }

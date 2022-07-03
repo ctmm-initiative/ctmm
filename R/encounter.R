@@ -209,6 +209,7 @@ rates <- function(object,debias=TRUE,level=0.95,normalize=TRUE,...)
   units <- FALSE
 
   R <- overlap(object,debias=debias,level=level,method="Rate",...)
+  R <- R$CI
 
   if(normalize)
   {

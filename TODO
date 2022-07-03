@@ -1,6 +1,4 @@
 ** PRIORITY
-* create overlap object and summary.overlap()
-** implement meta.overlap() for Bill
 * fit periodicity frequencies for Bill
 * DDIM natural resolution option
 * export UD on CTMM objects
