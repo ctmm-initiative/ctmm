@@ -1,5 +1,8 @@
 cleave <- function(object,fraction=0.5,name="CLEFT",...)
 {
+  C1 <- 'blue'
+  C2 <- 'red'
+
   data <- object
   n <- nrow(data)
   SUB <- object$t[1] + fraction*(last(object$t)-first(object$t))
@@ -21,19 +24,19 @@ cleave <- function(object,fraction=0.5,name="CLEFT",...)
       }
       else # don't store, update plot
       {
-        plot(DATA,col=c('red','blue'),...)
+        plot(DATA,col=c(C1,C2),...)
         TITLE1 <- c( paste0("1:",SUB) , as.character(last(DATA[[1]]$timestamp)) )
         TITLE2 <- c( paste0(SUB+1,":",n) , as.character(DATA[[2]]$timestamp[1]) )
 
         if(SUB==0)
         {
-          graphics::title(paste0(TITLE2[1],),col.main="blue",line=1)
-          graphics::title(paste0(TITLE2[2],),col.main="blue")
+          graphics::title(paste0(TITLE2[1],),col.main=C2,line=1)
+          graphics::title(paste0(TITLE2[2],),col.main=C2)
         }
         else if(SUB==n)
         {
-          graphics::title(TITLE1[1],col.main="red",line=1)
-          graphics::title(TITLE1[2],col.main="red")
+          graphics::title(TITLE1[1],col.main=C1,line=1)
+          graphics::title(TITLE1[2],col.main=C1)
         }
         else
         {
@@ -42,10 +45,10 @@ cleave <- function(object,fraction=0.5,name="CLEFT",...)
           t <- as.character(t)
 
           # this was amazingly annoying to figure out
-          eval( bquote(graphics::title(expression(.(TITLE1[1]) * "   " * phantom(.(TITLE2[1]))),col.main="red",line=1)) )
-          eval( bquote(graphics::title(expression(.(TITLE1[2]) * "   " * phantom(.(TITLE2[2]))),col.main="red")) )
-          eval( bquote(graphics::title(expression(phantom(.(TITLE1[1])) * "   " * .(TITLE2[1])),col.main="blue",line=1)) )
-          eval( bquote(graphics::title(expression(phantom(.(TITLE1[2])) * "   " * .(TITLE2[2])),col.main="blue")) )
+          eval( bquote(graphics::title(expression(.(TITLE1[1]) * "   " * phantom(.(TITLE2[1]))),col.main=C1,line=1)) )
+          eval( bquote(graphics::title(expression(.(TITLE1[2]) * "   " * phantom(.(TITLE2[2]))),col.main=C1)) )
+          eval( bquote(graphics::title(expression(phantom(.(TITLE1[1])) * "   " * .(TITLE2[1])),col.main=C2,line=1)) )
+          eval( bquote(graphics::title(expression(phantom(.(TITLE1[2])) * "   " * .(TITLE2[2])),col.main=C2)) )
         }
       }
     },

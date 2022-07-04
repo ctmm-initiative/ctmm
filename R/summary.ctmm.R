@@ -320,6 +320,7 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
 
     # chi^2 degrees of freedom
     DOF.speed <- 2*ms^2/var.ms
+    DOF.speed <- nant(DOF.speed,0)
 
     # root mean square velocity
     # pretty units
