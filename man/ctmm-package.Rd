@@ -28,8 +28,8 @@ Fleming et al (2022) <doi:10.1111/2041-210X.13815>.
 \tabular{ll}{
 Package: \tab ctmm\cr
 Type: \tab Package\cr
-Version: \tab 0.6.2 \cr
-Date: \tab 2022-05-13 \cr
+Version: \tab 1.0.0 \cr
+Date: \tab 2022-07-07 \cr
 License: \tab GPL-3 \cr
 }
 

@@ -18,34 +18,61 @@ library(ctmm)
 data(buffalo)
 Pepper <- buffalo$Pepper
 M.IID <- ctmm.fit(Pepper) # no autocorrelation timescales
-m.ouf <- ctmm.guess(Pepper,interactive=FALSE) # automated model guess
-M.OUF <- ctmm.fit(Pepper,m.ouf)
+GUESS <- ctmm.guess(Pepper,interactive=FALSE) # automated model guess
+M.OUF <- ctmm.fit(Pepper,GUESS) # in general, use ctmm.select instead
 ```
 
 `M.IID` is the innapropriate, IID model, which will result in a conventional kernel-density estimate, while `M.OUF` is the superior, continuous-velocity OUF model. Note that you want the best model for each individual, even if that differs by individual. Different movement behaviors and sampling schedules will reveal different autocorrelation structures in the data.
 
-Now we can calculate an `akde` object for each model.
+Now we can calculate a uniformly weighted `akde` object for each model.
 
 ```{r,  fig.show='hold', results = "hide"}
-UD0 <- akde(Pepper,M.IID)
-UD2 <- akde(Pepper,M.OUF)
-UD2w <- akde(Pepper,M.OUF,weights=TRUE)
-# calculate one extent for all UDs
-EXT <- extent(list(UD0,UD2,UD2w),level=0.95)
+KDE <- akde(Pepper,M.IID) # KDE
+AKDE <- akde(Pepper,M.OUF) # AKDE
 ```
 
-Finally we calculate UDs with and with out accounting for autocorrelation (`M.OUF` versus `M.IID`), with and without optimal weighting of the data (`weights=TRUE`). Now let us plot the results.
+However, Pepper's sampling schedule is anything but uniform.
+
+```{r,  fig.show='hold'}
+# plot all sampling intervals
+dt.plot(Pepper)
+```
+
+Keeping in mind that Pepper's home-range crossing timescale is two weeks, we have several options for calculating optimal weights here. The exact algorithm is the easiest to implement, but it can be prohibitively slow on larger datasets (10k-100k). On the other hand, the fast algorithm can scale to extremely large datasets, but requires an appropriate choice of discrete-time grid `dt` argument. Here, for the fast algorithm, we need to either toss out the the tiny sampling intervals from the data or choose a tiny discrete-time grid `dt` argument.
+
+For the exact algorithm, Pepper's 1,725 locations would not be prohibitive. On the other hand, for the fast algorithm, if we use the minimum sampling interval for `dt` and considering that Pepper was sampled for 8.5 months (`summary(Pepper)`) and has a minimum sampling interval of 3 minutes (`min(diff(Pepper$t))`), then the discrete-time grid would be `(8.5 %#% 'month') / (3 %#% 'min')` or 120k points, which is very feasible in terms of computer memory. (A very large discrete-time grid could cause an out-of-memory error!) Finally, we could toss out the tiny (and not very informative) sampling intervals and then use the fast algorithm with `dt=1 %#% 'hr'`. This would reduce the discrete-time grid size to  `(8.5 %#% 'month') / (1 %#% 'hr')` or 6k points.
+
+```{r,  fig.show='hold', results = "hide"}
+# Option 1) exact calculation - slow on larger datasets
+# UD2w <- akde(Pepper,M.OUF,weights=TRUE,fast=FALSE,PC='direct')
+
+# Option 2) use tiny dt
+dt <- min(diff(Pepper$t))
+wAKDE <- akde(Pepper,M.OUF,weights=TRUE,dt=dt)
+
+# Option 3) remove tiny sampling intervals and use smaller dt
+# dt <- 1 %#% 'hr'
+# ...
+# wAKDE <- akde(Pepper,M.OUF,weights=TRUE,dt=dt)
+```
+
+Now let us plot the results.
 
 ```{r,  fig.show='hold', results = "hide", eval=FALSE}
-plot(Pepper,UD=UD0,xlim=EXT$x,ylim=EXT$y)
+# calculate one extent for all UDs
+EXT <- extent(list(KDE,AKDE,wAKDE),level=0.95)
+
+plot(Pepper,UD=KDE,xlim=EXT$x,ylim=EXT$y)
 title(expression("IID KDE"["C"]))
-plot(Pepper,UD=UD2,xlim=EXT$x,ylim=EXT$y)
+plot(Pepper,UD=AKDE,xlim=EXT$x,ylim=EXT$y)
 title(expression("OUF AKDE"["C"]))
-plot(Pepper,UD=UD2w,xlim=EXT$x,ylim=EXT$y)
+plot(Pepper,UD=wAKDE,xlim=EXT$x,ylim=EXT$y)
 title(expression("weighted OUF AKDE"["C"]))
 ```
 
 ```{r,  fig.show='hold', results = "hide", echo=FALSE}
+# calculate one extent for all UDs
+EXT <- extent(list(KDE,AKDE,wAKDE),level=0.95)
 # sampling intervals in hours
 col <- "hr" %#% diff(Pepper$t)
 # minimum adjacent sampling interval
@@ -55,11 +82,11 @@ col <- (col < 1.5)
 # red (low-frequency) or yellow (high-frequency)
 col <- grDevices::rgb(1,col,0)
 
-plot(Pepper,UD=UD0,xlim=EXT$x,ylim=EXT$y,col=col)
+plot(Pepper,UD=KDE,xlim=EXT$x,ylim=EXT$y,col=col)
 title(expression("IID KDE"["C"]))
-plot(Pepper,UD=UD2,xlim=EXT$x,ylim=EXT$y,col=col)
+plot(Pepper,UD=AKDE,xlim=EXT$x,ylim=EXT$y,col=col)
 title(expression("OUF AKDE"["C"]))
-plot(Pepper,UD=UD2w,xlim=EXT$x,ylim=EXT$y,col=col)
+plot(Pepper,UD=wAKDE,xlim=EXT$x,ylim=EXT$y,col=col)
 title(expression("weighted OUF AKDE"["C"]))
 ```
 
@@ -72,6 +99,6 @@ In the case of Pepper, the GPS collar malfunctioned during data collection and t
 Finally, we can compare the area estimates and effective sample sizes.
 
 ```{r,  fig.show='hold'}
-summary(UD0)
-summary(UD2w)
+summary(KDE)
+summary(wAKDE)
 ```

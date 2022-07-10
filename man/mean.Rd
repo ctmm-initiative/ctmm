@@ -3,7 +3,7 @@
 \alias{mean.UD}
 \encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{Average movement models and autocorrelated kernel density estimates [IN DEVELOPMENT]}
+\title{Average movement models and autocorrelated kernel density estimates}
 \description{
 These functions calculate population averages of continuous-time movement models and utilization distributions.}
 \usage{
@@ -43,9 +43,7 @@ When applied to a list of \code{UD} objects, \code{mean} returns a \code{UD} obj
 
 \author{ C. H. Fleming}
 
-\note{
-Mean \code{ctmm} location-error estimates are not yet calculated correctly.
-}
+%\note{ }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 

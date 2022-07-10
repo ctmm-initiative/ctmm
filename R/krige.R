@@ -472,7 +472,7 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,VMM=NULL,t=NULL,dt=N
   } # conditional simulation
   else # Gaussian simulation not conditioned off of any data
   {
-    STUFF <- c('Green','Sigma','error','object','mu','Lambda','n','K','z','v','circle','R')
+    STUFF <- c('Green','Sigma','error','ELLIPSE','object','mu','Lambda','n','K','z','v','circle','R')
     if(precompute>=0)
     {
       if(is.null(data))
@@ -707,7 +707,7 @@ predict.ctmm <- function(object,data=NULL,VMM=NULL,t=NULL,dt=NULL,res=1,complete
     sigma <- methods::getDataPart(object$sigma)
     if(length(axes)==1 || object$isotropic)
     {
-      sigma <- mean(diag(sigma,length(axes)))
+      if(length(sigma)>1) { sigma <- mean(diag(sigma,length(axes))) }
       data[[DOP.LIST[[DOP]]$VAR]] <- sigma
       if(length(object$tau)>1) { data[[paste0("VAR.v",axes)]] <- sigma/prod(object$tau) }
     }

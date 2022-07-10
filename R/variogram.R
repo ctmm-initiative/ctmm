@@ -239,7 +239,7 @@ gridder <- function(t,z=NULL,dt=NULL,W=NULL,lag=NULL,p=NULL,FLOOR=NULL,finish=TR
   {
     j <- FLOOR[i]
     W.grid[j] <- W.grid[j] + P[i]
-    if(!is.null(z)) { Z.grid[j,] <- Z.grid[j,] + Z[i] }
+    if(!is.null(z)) { Z.grid[j,] <- Z.grid[j,] + Z[i,] }
   }
   # upper time spread
   FLOOR <- FLOOR+1 # this is now ceiling
@@ -249,7 +249,7 @@ gridder <- function(t,z=NULL,dt=NULL,W=NULL,lag=NULL,p=NULL,FLOOR=NULL,finish=TR
   {
     j <- FLOOR[i]
     W.grid[j] <- W.grid[j] + P[i]
-    if(!is.null(z)) { Z.grid[j,] <- Z.grid[j,] + Z[i] }
+    if(!is.null(z)) { Z.grid[j,] <- Z.grid[j,] + Z[i,] }
   }
 
   if(finish)
@@ -258,8 +258,10 @@ gridder <- function(t,z=NULL,dt=NULL,W=NULL,lag=NULL,p=NULL,FLOOR=NULL,finish=TR
     POS <- (W.grid>0)
     if(!is.null(z)) { Z.grid[POS,] <- Z.grid[POS,]/W.grid[POS] }
 
-    W <- sum(W) # now total DOF
+    # W <- sum(W) # now total DOF
   }
+
+  W.grid <- clamp(W.grid,0,1)
 
   return(list(w=W.grid,z=Z.grid,lag=lag,dt=dt))
 }

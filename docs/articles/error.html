@@ -19,6 +19,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -31,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.0</span>
       </span>
     </div>
 
@@ -44,7 +46,7 @@
   <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Vignettes
      
     <span class="caret"></span>
@@ -67,7 +69,7 @@
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
-  <a href="https://github.com/ctmm-initiative/ctmm">
+  <a href="https://github.com/ctmm-initiative/ctmm" class="external-link">
     <span class="fa fa-github fa-2x"></span>
      
   </a>
@@ -86,253 +88,256 @@
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Telemetry error</h1>
-                        <h4 class="author">Christen H. Fleming</h4>
+                        <h4 data-toc-skip class="author">Christen H. Fleming</h4>
             
-            <h4 class="date">2021-07-27</h4>
+            <h4 data-toc-skip class="date">2022-07-09</h4>
       
-      <small class="dont-index">Source: <a href="https://github.com/ctmm-initiative/ctmm/blob/master/vignettes/error.Rmd"><code>vignettes/error.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ctmm-initiative/ctmm/blob/HEAD/vignettes/error.Rmd" class="external-link"><code>vignettes/error.Rmd</code></a></small>
       <div class="hidden name"><code>error.Rmd</code></div>
 
     </div>
 
     
     
-<div id="error-calibration" class="section level1">
-<h1 class="hasAnchor">
-<a href="#error-calibration" class="anchor"></a>Error calibration</h1>
+<div class="section level2">
+<h2 id="error-calibration">Error calibration<a class="anchor" aria-label="anchor" href="#error-calibration"></a>
+</h2>
 <p>The first step to handling errors is to quantify them. Make sure that your data’s “dilution of precision” (DOP) and error columns import correctly into <code>ctmm</code>. In the following wood turtle dataset, we have some calibration data and a turtle track. Note that the calibration data must be collected from the same model device as the tracking data, and their data formatting bust be similar enough that the same location classes are detected by <code>as.telemetry</code>.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ctmm-initiative/ctmm">ctmm</a></span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span> <span class="co"># data are not yet calibrated, but HDOP and location class is present</span></code></pre></div>
-<pre><code>## [1] "t"     "HDOP"  "class" "x"     "y"</code></pre>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ctmm-initiative/ctmm" class="external-link">ctmm</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span> <span class="co"># data are not yet calibrated, but HDOP and location class is present</span></span></code></pre></div>
+<pre><code><span><span class="co">## [1] "t"     "HDOP"  "class" "x"     "y"</span></span></code></pre>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">)</span> <span class="co"># two calibration datasets and two turtle datasets</span></code></pre></div>
-<pre><code>## [1] "60s"  "90s"  "F231" "F403"</code></pre>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">)</span> <span class="co"># two calibration datasets and two turtle datasets</span></span></code></pre></div>
+<pre><code><span><span class="co">## [1] "60s"  "90s"  "F231" "F403"</span></span></code></pre>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/plot.telemetry.html">plot</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>,col<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/grDevices/palettes.html">rainbow</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span> <span class="co"># calibration data only</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.telemetry.html">plot</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>,col<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/grDevices/palettes.html" class="external-link">rainbow</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span> <span class="co"># calibration data only</span></span></code></pre></div>
 <p><img src="error_files/figure-html/unnamed-chunk-1-1.png" width="700"></p>
 <p>The <code>uere</code> command is used to estimate the RMS UERE parameter(s) from calibration data. Do not use this command on animal tracking data.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">UERE</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/uere.html">uere.fit</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span> <span class="co"># only using calibration data</span>
-<span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">UERE</span><span class="op">)</span></code></pre></div>
-<pre><code>## , , horizontal
-## 
-##          low       est      high
-## 2D 22.786528 29.598802 36.397467
-## 3D  6.477391  6.946024  7.414237</code></pre>
+<code class="sourceCode R"><span><span class="va">UERE</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/uere.html">uere.fit</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span> <span class="co"># only using calibration data</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">UERE</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## , , horizontal</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">##          low       est      high</span></span>
+<span><span class="co">## 2D 22.786528 29.598802 36.397467</span></span>
+<span><span class="co">## 3D  6.477391  6.946024  7.414237</span></span></code></pre>
 <p>For GPS data, the RMS UERE will typically be 10-15 meters. Here we have two location classes, “2D” and “3D”, which for this device have substantially different RMS UERE values. The UERE parameters can then be assigned to a dataset with the <code>uere()&lt;-</code> command.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/uere.html">uere</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">UERE</span>
-<span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="fu"><a href="../reference/uere.html">uere</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="co"># this should be the same as summary(UERE)</span></code></pre></div>
-<pre><code>## , , horizontal
-## 
-##          low       est      high
-## 2D 22.786528 29.598802 36.397467
-## 3D  6.477391  6.946024  7.414237</code></pre>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/uere.html">uere</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">UERE</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu"><a href="../reference/uere.html">uere</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="co"># this should be the same as summary(UERE)</span></span></code></pre></div>
+<pre><code><span><span class="co">## , , horizontal</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">##          low       est      high</span></span>
+<span><span class="co">## 2D 22.786528 29.598802 36.397467</span></span>
+<span><span class="co">## 3D  6.477391  6.946024  7.414237</span></span></code></pre>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/plot.telemetry.html">plot</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span>,error<span class="op">=</span><span class="fl">2</span><span class="op">)</span> <span class="co"># turtle plot with 95% error discs</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.telemetry.html">plot</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span>,error<span class="op">=</span><span class="fl">2</span><span class="op">)</span> <span class="co"># turtle plot with 95% error discs</span></span></code></pre></div>
 <p><img src="error_files/figure-html/unnamed-chunk-3-1.png" width="700"></p>
 <p>If you have Argos data, they will import with calibration already applied to the horizontal dimensions, but not the vertical dimension.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">pelican</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">pelican</span><span class="op">)</span></code></pre></div>
-<pre><code>## [1] "gps"   "argos"</code></pre>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">pelican</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">pelican</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## [1] "gps"   "argos"</span></span></code></pre>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">pelican</span><span class="op">$</span><span class="va">argos</span><span class="op">)</span> <span class="co"># error ellipse information (COV and VAR) already present</span></code></pre></div>
-<pre><code>##  [1] "timestamp" "longitude" "latitude"  "t"         "COV.angle" "HDOP"     
-##  [7] "COV.major" "COV.minor" "VAR.xy"    "class"     "z"         "VDOP"     
-## [13] "x"         "y"         "COV.x.x"   "COV.x.y"   "COV.y.y"</code></pre>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">pelican</span><span class="op">$</span><span class="va">argos</span><span class="op">)</span> <span class="co"># error ellipse information (COV and VAR) already present</span></span></code></pre></div>
+<pre><code><span><span class="co">##  [1] "timestamp" "longitude" "latitude"  "t"         "COV.angle" "HDOP"     </span></span>
+<span><span class="co">##  [7] "COV.major" "COV.minor" "VAR.xy"    "class"     "z"         "VDOP"     </span></span>
+<span><span class="co">## [13] "x"         "y"         "COV.x.x"   "COV.x.y"   "COV.y.y"</span></span></code></pre>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/plot.telemetry.html">plot</a></span><span class="op">(</span><span class="va">pelican</span><span class="op">$</span><span class="va">argos</span><span class="op">)</span> <span class="co"># pelican Argos plot with 95% error ellipses</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.telemetry.html">plot</a></span><span class="op">(</span><span class="va">pelican</span><span class="op">$</span><span class="va">argos</span><span class="op">)</span> <span class="co"># pelican Argos plot with 95% error ellipses</span></span></code></pre></div>
 <p><img src="error_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
-<div id="error-model-selection" class="section level2">
-<h2 class="hasAnchor">
-<a href="#error-model-selection" class="anchor"></a>Error model selection</h2>
+<div class="section level3">
+<h3 id="error-model-selection">Error model selection<a class="anchor" aria-label="anchor" href="#error-model-selection"></a>
+</h3>
 <p>Not all GPS devices provide reliable DOP values and sometimes it is not obvious what error information will prove to be the most predictive. Generally speaking, <code>as.telemetry</code> will attempt to import the “best” column from among those that estimate error, DOP value, number of satellites and fix type, including timed-out fixes (see the <code>timeout</code> argument in <code><a href="../reference/as.telemetry.html">help(as.telemetry)</a></code>). Researchers may want to import their data with different error information, run <code>uere.fit</code> for each error model, and then select among the candidate models. Here we do this by comparing the turtle calibration data with and without HDOP values.</p>
 <p>First, we consider whether or not the HDOP and location class information are informative.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">t.noHDOP</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">turtle</span>,<span class="kw">function</span><span class="op">(</span><span class="va">t</span><span class="op">)</span><span class="op">{</span> <span class="va">t</span><span class="op">$</span><span class="va">HDOP</span>  <span class="op">&lt;-</span> <span class="cn">NULL</span>; <span class="va">t</span> <span class="op">}</span><span class="op">)</span>
-<span class="va">t.noclass</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">turtle</span>,<span class="kw">function</span><span class="op">(</span><span class="va">t</span><span class="op">)</span><span class="op">{</span> <span class="va">t</span><span class="op">$</span><span class="va">class</span> <span class="op">&lt;-</span> <span class="cn">NULL</span>; <span class="va">t</span> <span class="op">}</span><span class="op">)</span>
-<span class="va">t.nothing</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">turtle</span>,<span class="kw">function</span><span class="op">(</span><span class="va">t</span><span class="op">)</span><span class="op">{</span> <span class="va">t</span><span class="op">$</span><span class="va">HDOP</span>  <span class="op">&lt;-</span> <span class="cn">NULL</span>; <span class="va">t</span><span class="op">$</span><span class="va">class</span> <span class="op">&lt;-</span> <span class="cn">NULL</span>; <span class="va">t</span> <span class="op">}</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">t.noHDOP</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">turtle</span>,<span class="kw">function</span><span class="op">(</span><span class="va">t</span><span class="op">)</span><span class="op">{</span> <span class="va">t</span><span class="op">$</span><span class="va">HDOP</span>  <span class="op">&lt;-</span> <span class="cn">NULL</span>; <span class="va">t</span> <span class="op">}</span><span class="op">)</span></span>
+<span><span class="va">t.noclass</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">turtle</span>,<span class="kw">function</span><span class="op">(</span><span class="va">t</span><span class="op">)</span><span class="op">{</span> <span class="va">t</span><span class="op">$</span><span class="va">class</span> <span class="op">&lt;-</span> <span class="cn">NULL</span>; <span class="va">t</span> <span class="op">}</span><span class="op">)</span></span>
+<span><span class="va">t.nothing</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">turtle</span>,<span class="kw">function</span><span class="op">(</span><span class="va">t</span><span class="op">)</span><span class="op">{</span> <span class="va">t</span><span class="op">$</span><span class="va">HDOP</span>  <span class="op">&lt;-</span> <span class="cn">NULL</span>; <span class="va">t</span><span class="op">$</span><span class="va">class</span> <span class="op">&lt;-</span> <span class="cn">NULL</span>; <span class="va">t</span> <span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>In other cases, manipulation will need to be performed before importing, so that <code>as.telemetry</code> can format the <code>telemetry</code> object properly. Running <code>uere.fit</code> now results in errors calibrated under the assumption of homoskedastic errors.</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">UERE.noHDOP</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/uere.html">uere.fit</a></span><span class="op">(</span><span class="va">t.noHDOP</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span>
-<span class="va">UERE.noclass</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/uere.html">uere.fit</a></span><span class="op">(</span><span class="va">t.noclass</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span>
-<span class="va">UERE.nothing</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/uere.html">uere.fit</a></span><span class="op">(</span><span class="va">t.nothing</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">UERE.noHDOP</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/uere.html">uere.fit</a></span><span class="op">(</span><span class="va">t.noHDOP</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="va">UERE.noclass</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/uere.html">uere.fit</a></span><span class="op">(</span><span class="va">t.noclass</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="va">UERE.nothing</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/uere.html">uere.fit</a></span><span class="op">(</span><span class="va">t.nothing</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
 <p>We can now apply model selection to the UERE model fits by summarizing them in a list.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>HDOP.class<span class="op">=</span><span class="va">UERE</span>,class<span class="op">=</span><span class="va">UERE.noHDOP</span>,HDOP<span class="op">=</span><span class="va">UERE.noclass</span>,homoskedastic<span class="op">=</span><span class="va">UERE.nothing</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<pre><code>##                  ΔAICc  Z[red]²
-## HDOP.class      0.0000 2.366617
-## HDOP          286.5747 3.908826
-## class         418.5174 3.696585
-## homoskedastic 637.2580 4.681067</code></pre>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>HDOP.class<span class="op">=</span><span class="va">UERE</span>,class<span class="op">=</span><span class="va">UERE.noHDOP</span>,HDOP<span class="op">=</span><span class="va">UERE.noclass</span>,homoskedastic<span class="op">=</span><span class="va">UERE.nothing</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##                  ΔAICc  Z[red]²</span></span>
+<span><span class="co">## HDOP.class      0.0000 2.366617</span></span>
+<span><span class="co">## HDOP          286.5747 3.908826</span></span>
+<span><span class="co">## class         418.5174 3.696585</span></span>
+<span><span class="co">## homoskedastic 637.2580 4.681067</span></span></code></pre>
 <p>We can see that the combination of location class and HDOP values yield the best error model, both in terms of AICc and in terms of reduced Z squared. Reduced Z squared is a goodness-of-fit statistic akin to reduced chi squared, but designed for comparing error models.</p>
 <p>We had two calibration datasets, so we can also see if there is any substantial difference between the two GPS tags. We do this by making a list of individual UERE objects to compare to the previous joint UERE model.</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">UERES</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>,<span class="va">uere.fit</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>joint<span class="op">=</span><span class="va">UERE</span>,individual<span class="op">=</span><span class="va">UERES</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<pre><code>##               ΔAICc  Z[red]²
-## joint      0.000000 2.366617
-## individual 3.314758 2.367412</code></pre>
+<code class="sourceCode R"><span><span class="va">UERES</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>,<span class="va">uere.fit</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>joint<span class="op">=</span><span class="va">UERE</span>,individual<span class="op">=</span><span class="va">UERES</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##               ΔAICc  Z[red]²</span></span>
+<span><span class="co">## joint      0.000000 2.366617</span></span>
+<span><span class="co">## individual 3.314758 2.367412</span></span></code></pre>
 <p>In this case, performance of the individualized and joint error models are comparable, and AICc selects the joint model.</p>
 </div>
 </div>
-<div id="outlier-detection" class="section level1">
-<h1 class="hasAnchor">
-<a href="#outlier-detection" class="anchor"></a>Outlier detection</h1>
+<div class="section level2">
+<h2 id="outlier-detection">Outlier detection<a class="anchor" aria-label="anchor" href="#outlier-detection"></a>
+</h2>
 <p>Now we come to the task of identifying outliers. The <code>outlie</code> function uses error information to estimate straight-line speeds between sampled times and distances from the bulk of the data.</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/outlie.html">outlie</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="va">OUT</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/outlie.html">outlie</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="va">OUT</span></span></code></pre></div>
 <p><img src="error_files/figure-html/unnamed-chunk-9-1.png" width="700"></p>
 <p>High-speed segments are colored in blue, while distant locations are colored in red. More emphasis is placed on the more extreme locations in the <code>outlie</code> plot. Visually we can see at least one outlier in the wood turtle data. The output of <code>outlie</code> also contains the error-informed speed and distance estimates (in SI units) used to generate the plot.</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/plot.telemetry.html">plot</a></span><span class="op">(</span><span class="va">OUT</span>,units<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.telemetry.html">plot</a></span><span class="op">(</span><span class="va">OUT</span>,units<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <p><img src="error_files/figure-html/unnamed-chunk-10-1.png" width="700"></p>
 <p>A sustained speed of 0.1 m/s is not biologically implausible for a wood turtle, but this location is highly suspicious, both in terms of speed and lack of proximity. After removing the outlier, we can check the data again.</p>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">BAD</span> <span class="op">&lt;-</span> <span class="va">OUT</span><span class="op">$</span><span class="va">speed</span><span class="op">&gt;</span><span class="fl">0.08</span> <span class="co"># not appropriate for other species!</span>
-<span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="op">!</span><span class="va">BAD</span>,<span class="op">]</span>
-<span class="fu"><a href="../reference/outlie.html">outlie</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="va">OUT</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">BAD</span> <span class="op">&lt;-</span> <span class="va">OUT</span><span class="op">$</span><span class="va">speed</span><span class="op">&gt;</span><span class="fl">0.08</span> <span class="co"># not appropriate for other species!</span></span>
+<span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="op">!</span><span class="va">BAD</span>,<span class="op">]</span></span>
+<span><span class="fu"><a href="../reference/outlie.html">outlie</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="va">OUT</span></span></code></pre></div>
 <p><img src="error_files/figure-html/unnamed-chunk-11-1.png" width="700"></p>
 <p>Datasets may have multiple outliers. In pathological situations, there may be no clear separation between the normative data and the outliers. This necessitates a better error model, either by improving inadequate (or absent) HDOP estimates or by employing a heavier tailed error distribution (not yet supported).</p>
 </div>
-<div id="variograms-and-model-selection" class="section level1">
-<h1 class="hasAnchor">
-<a href="#variograms-and-model-selection" class="anchor"></a>Variograms and model selection</h1>
-<div id="variograms" class="section level2">
-<h2 class="hasAnchor">
-<a href="#variograms" class="anchor"></a>Variograms</h2>
+<div class="section level2">
+<h2 id="variograms-and-model-selection">Variograms and model selection<a class="anchor" aria-label="anchor" href="#variograms-and-model-selection"></a>
+</h2>
+<div class="section level3">
+<h3 id="variograms">Variograms<a class="anchor" aria-label="anchor" href="#variograms"></a>
+</h3>
 <p>If we were working with Argos data or high resolution GPS data on a small animal, then we can get a “nugget” effect in the variogram that looks like an initial discontinuity at short time lags.</p>
 <p><img src="error_files/figure-html/unnamed-chunk-12-1.png" width="700"><img src="error_files/figure-html/unnamed-chunk-12-2.png" width="700"></p>
 <p>The height of this initial discontinuity corresponds to the variance of uncorrelated location errors. The second plot is the kind of initial discontinuity one has with detector array data. The end of the (slope) discontinuity is highlighted with a circle. This discontinuity is smooth because the movement and detection are correlated. The height of this initial discontinuity is also (at least roughly) the variance of the location errors.</p>
 </div>
-<div id="model-fitting" class="section level2">
-<h2 class="hasAnchor">
-<a href="#model-fitting" class="anchor"></a>Model fitting</h2>
-<p>Because of some convenient mathematical relations, fitting with telemetry errors involves numerically fitting 1-4 more parameters and is, therefore, slower and less reliable at converging on the MLE than fitting without telemetry error. Therefore, by default, telemetry error is not turned on in <code>ctmm</code> models (<code>error=FALSE</code>). Furthermore, in cases with an error model, <code><a href="../reference/ctmm.html">ctmm.select()</a></code> is safer to use than direct applicaiton of <code><a href="../reference/ctmm.html">ctmm.fit()</a></code>, because <code><a href="../reference/ctmm.html">ctmm.select()</a></code> will start with the simplest “compatible” model and then consider further model features that require numerical optimization in stepwise fashion.</p>
-<div id="fitting-with-calibrated-data" class="section level3">
-<h3 class="hasAnchor">
-<a href="#fitting-with-calibrated-data" class="anchor"></a>Fitting with calibrated data</h3>
+<div class="section level3">
+<h3 id="model-fitting">Model fitting<a class="anchor" aria-label="anchor" href="#model-fitting"></a>
+</h3>
+<p>Because of some convenient mathematical relations, fitting with telemetry errors involves numerically fitting 1-4 more parameters and is, therefore, slower and less reliable at converging on the MLE than fitting without telemetry error. Therefore, by default, telemetry error is not turned on in <code>ctmm</code> models (<code>error=FALSE</code>). Furthermore, in cases with an error model, <code><a href="../reference/ctmm.fit.html">ctmm.select()</a></code> is safer to use than direct applicaiton of <code><a href="../reference/ctmm.fit.html">ctmm.fit()</a></code>, because <code><a href="../reference/ctmm.fit.html">ctmm.select()</a></code> will start with the simplest “compatible” model and then consider further model features that require numerical optimization in stepwise fashion.</p>
+<div class="section level4">
+<h4 id="fitting-with-calibrated-data">Fitting with calibrated data<a class="anchor" aria-label="anchor" href="#fitting-with-calibrated-data"></a>
+</h4>
 <p>For calibrated errors, we have to set <code>error=TRUE</code> in the model guess to fit with telemetry error accounted for.</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># automated guestimate for calibrated data</span>
-<span class="va">GUESS</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/variogram.fit.html">ctmm.guess</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span>,CTMM<span class="op">=</span><span class="fu"><a href="../reference/ctmm.html">ctmm</a></span><span class="op">(</span>error<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>,interactive<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
-<span class="co"># stepwise fitting # CRAN policy limits us to 2 cores</span>
-<span class="va">FIT</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ctmm.html">ctmm.select</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span>,<span class="va">GUESS</span>,trace<span class="op">=</span><span class="cn">TRUE</span>,cores<span class="op">=</span><span class="fl">2</span><span class="op">)</span></code></pre></div>
-<pre><code>## * Fitting model OUF isotropic error</code></pre>
-<pre><code>## * Fitting model OUF anisotropic error</code></pre>
-<pre><code>## * Fitting model IID anisotropic error</code></pre>
+<code class="sourceCode R"><span><span class="co"># automated guestimate for calibrated data</span></span>
+<span><span class="va">GUESS</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/variogram.fit.html">ctmm.guess</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span>,CTMM<span class="op">=</span><span class="fu"><a href="../reference/ctmm.fit.html">ctmm</a></span><span class="op">(</span>error<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>,interactive<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="co"># stepwise fitting # CRAN policy limits us to 2 cores</span></span>
+<span><span class="va">FIT</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ctmm.fit.html">ctmm.select</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span>,<span class="va">GUESS</span>,trace<span class="op">=</span><span class="cn">TRUE</span>,cores<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## * Fitting model OUF error</span></span></code></pre>
+<pre><code><span><span class="co">## * Fitting model OUF anisotropic error</span></span></code></pre>
+<pre><code><span><span class="co">## * Fitting model IID anisotropic error</span></span></code></pre>
 <div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># if you get errors on your platform, then try cores=1</span>
-<span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">FIT</span><span class="op">)</span></code></pre></div>
-<pre><code>## $name
-## [1] "OU anisotropic error"
-## 
-## $DOF
-##     mean     area    speed 
-## 13.90248 23.94129  0.00000 
-## 
-## $CI
-##                          low       est      high
-## area (hectares)    13.619545 21.269568 30.597374
-## τ[position] (days)  3.308121  5.684258  9.767110
-## error 2D (meters)  18.539478 21.885657 25.225931
-## error 3D (meters)   6.590232  7.063694  7.536733</code></pre>
-<p><code>trace=TRUE</code> allows us to see the models considered. <code>verbose=TRUE</code> would save each model. Since we started with a finite amount of calibration data, the location-error parameter estimates were updated by the tracking data, and we can compare the results here with the previous estimates in <code><a href="https://rdrr.io/r/base/summary.html">summary(UERE)</a></code>.</p>
+<code class="sourceCode R"><span><span class="co"># if you get errors on your platform, then try cores=1</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">FIT</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## $name</span></span>
+<span><span class="co">## [1] "OU anisotropic error"</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## $DOF</span></span>
+<span><span class="co">##      mean      area diffusion     speed </span></span>
+<span><span class="co">##  13.90249  23.94126 194.84079   0.00000 </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## $CI</span></span>
+<span><span class="co">##                                       low         est        high</span></span>
+<span><span class="co">## area (hectares)                 13.619548   21.269578   30.597393</span></span>
+<span><span class="co">## τ[position] (days)               3.561603    5.684253    9.071964</span></span>
+<span><span class="co">## diffusion (square meters/day) 4663.856965 5394.802783 6178.179249</span></span>
+<span><span class="co">## error 2D (meters)               18.539391   21.885519   25.225743</span></span>
+<span><span class="co">## error 3D (meters)                6.590233    7.063696    7.536735</span></span></code></pre>
+<p><code>trace=TRUE</code> allows us to see the models considered. <code>verbose=TRUE</code> would save each model. Since we started with a finite amount of calibration data, the location-error parameter estimates were updated by the tracking data, and we can compare the results here with the previous estimates in <code>summary(UERE)</code>.</p>
 </div>
-<div id="simultaneous-fitting-with-uncalibrated-data" class="section level3">
-<h3 class="hasAnchor">
-<a href="#simultaneous-fitting-with-uncalibrated-data" class="anchor"></a>Simultaneous fitting with uncalibrated data</h3>
+<div class="section level4">
+<h4 id="simultaneous-fitting-with-uncalibrated-data">Simultaneous fitting with uncalibrated data<a class="anchor" aria-label="anchor" href="#simultaneous-fitting-with-uncalibrated-data"></a>
+</h4>
 <p>Fitting with unknown errors is a method of last resort. We have to provide an initial guess for <code>error</code>, which will be the device’s RMS UERE. <code>error=10</code> is usually a good guess for GPS data (other than e-obs). Unlike <code>uere.fit</code>, <code>ctmm.fit</code> is not yet coded to use the location classes, as simultaneous fitting is a method of last resort that becomes increasingly dangerous with more location classes.</p>
 <div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># delete UERE information</span>
-<span class="fu"><a href="../reference/uere.html">uere</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># delete UERE information</span></span>
+<span><span class="fu"><a href="../reference/uere.html">uere</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></span></code></pre></div>
 <p>The only difference is that you have to provide an initial guess for the RMS UERE. Otherwise, the steps are the same.</p>
 <div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># automated guestimate for uncalibrated data (with 10 meter RMS UERE guess)</span>
-<span class="va">GUESS</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/variogram.fit.html">ctmm.guess</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span>,CTMM<span class="op">=</span><span class="fu"><a href="../reference/ctmm.html">ctmm</a></span><span class="op">(</span>error<span class="op">=</span><span class="fl">10</span><span class="op">)</span>,interactive<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
-<span class="co"># fit and select models # CRAN policy limits us to 2 cores</span>
-<span class="va">FIT</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ctmm.html">ctmm.select</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span>,<span class="va">GUESS</span>,trace<span class="op">=</span><span class="cn">TRUE</span>,cores<span class="op">=</span><span class="fl">2</span><span class="op">)</span></code></pre></div>
-<pre><code>## * Fitting model OUF isotropic error</code></pre>
-<pre><code>## * Fitting model OUF anisotropic error</code></pre>
-<pre><code>## * Fitting model IID anisotropic error</code></pre>
+<code class="sourceCode R"><span><span class="co"># automated guestimate for uncalibrated data (with 10 meter RMS UERE guess)</span></span>
+<span><span class="va">GUESS</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/variogram.fit.html">ctmm.guess</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span>,CTMM<span class="op">=</span><span class="fu"><a href="../reference/ctmm.fit.html">ctmm</a></span><span class="op">(</span>error<span class="op">=</span><span class="fl">10</span><span class="op">)</span>,interactive<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="co"># fit and select models # CRAN policy limits us to 2 cores</span></span>
+<span><span class="va">FIT</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ctmm.fit.html">ctmm.select</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span>,<span class="va">GUESS</span>,trace<span class="op">=</span><span class="cn">TRUE</span>,cores<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## * Fitting model OUF error</span></span></code></pre>
+<pre><code><span><span class="co">## * Fitting model OUF anisotropic error</span></span></code></pre>
+<pre><code><span><span class="co">## * Fitting model IID anisotropic error</span></span></code></pre>
 <div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># if you get errors on your platform, then try cores=1</span>
-<span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">FIT</span><span class="op">)</span></code></pre></div>
-<pre><code>## $name
-## [1] "OU anisotropic error"
-## 
-## $DOF
-##     mean     area    speed 
-## 12.85422 21.90117  0.00000 
-## 
-## $CI
-##                          low       est     high
-## area (hectares)    13.034809 20.823809 30.40792
-## τ[position] (days)  3.417195  6.186524 11.20015
-## error 2D (meters)   7.750749 10.815925 13.87594
-## error 3D (meters)   6.940394  8.749032 10.55405</code></pre>
+<code class="sourceCode R"><span><span class="co"># if you get errors on your platform, then try cores=1</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">FIT</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## $name</span></span>
+<span><span class="co">## [1] "OU anisotropic error"</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## $DOF</span></span>
+<span><span class="co">##      mean      area diffusion     speed </span></span>
+<span><span class="co">##  12.85419  21.90090 140.47094   0.00000 </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## $CI</span></span>
+<span><span class="co">##                                       low         est       high</span></span>
+<span><span class="co">## area (hectares)                 13.034813   20.823882   30.40809</span></span>
+<span><span class="co">## τ[position] (days)               3.734214    6.186542   10.24936</span></span>
+<span><span class="co">## diffusion (square meters/day) 4229.452300 5026.247835 5890.78952</span></span>
+<span><span class="co">## error 2D (meters)                7.750808   10.816022   13.87607</span></span>
+<span><span class="co">## error 3D (meters)                6.940371    8.749011   10.55403</span></span></code></pre>
 <p>Here, fitting the RMS UERE simultaneously with the movement model produced a largely consistent result. This will not always be the case.</p>
 </div>
-<div id="fitting-with-uncalibrated-data-under-a-prior" class="section level3">
-<h3 class="hasAnchor">
-<a href="#fitting-with-uncalibrated-data-under-a-prior" class="anchor"></a>Fitting with uncalibrated data under a prior</h3>
+<div class="section level4">
+<h4 id="fitting-with-uncalibrated-data-under-a-prior">Fitting with uncalibrated data under a prior<a class="anchor" aria-label="anchor" href="#fitting-with-uncalibrated-data-under-a-prior"></a>
+</h4>
 <p>An alternative method of last resort is to simply assign a range of credible RMS UERE values to the data. Again, 10-meter error is usually a good guess for 3D GPS data. For e-obs, and other devices that report error in meters, a number on the order of 1 is usually more relevant.</p>
 <div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># assign 20-meter 2D RMS UERE and 10-meter 3D RMS UERE</span>
-<span class="fu"><a href="../reference/uere.html">uere</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">20</span>,<span class="fl">10</span><span class="op">)</span>
-<span class="co"># the default uncertainty is none for numerical assignments</span>
-<span class="va">UERE</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/uere.html">uere</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">UERE</span><span class="op">)</span></code></pre></div>
-<pre><code>## , , horizontal
-## 
-##    low est high
-## 2D  20  20   20
-## 3D  10  10   10</code></pre>
+<code class="sourceCode R"><span><span class="co"># assign 20-meter 2D RMS UERE and 10-meter 3D RMS UERE</span></span>
+<span><span class="fu"><a href="../reference/uere.html">uere</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">20</span>,<span class="fl">10</span><span class="op">)</span></span>
+<span><span class="co"># the default uncertainty is none for numerical assignments</span></span>
+<span><span class="va">UERE</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/uere.html">uere</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">UERE</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## , , horizontal</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">##    low est high</span></span>
+<span><span class="co">## 2D  20  20   20</span></span>
+<span><span class="co">## 3D  10  10   10</span></span></code></pre>
 <div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># this is becasue the degrees-of-freedom are set to Inf</span>
-<span class="va">UERE</span><span class="op">$</span><span class="va">DOF</span></code></pre></div>
-<pre><code>##    horizontal
-## 2D        Inf
-## 3D        Inf</code></pre>
+<code class="sourceCode R"><span><span class="co"># this is becasue the degrees-of-freedom are set to Inf</span></span>
+<span><span class="va">UERE</span><span class="op">$</span><span class="va">DOF</span></span></code></pre></div>
+<pre><code><span><span class="co">##    horizontal</span></span>
+<span><span class="co">## 2D        Inf</span></span>
+<span><span class="co">## 3D        Inf</span></span></code></pre>
 <div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># here I set the DOF to a smaller value</span>
-<span class="va">UERE</span><span class="op">$</span><span class="va">DOF</span><span class="op">[</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">2</span>
-<span class="co"># which now gives plausible credible intervals</span>
-<span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">UERE</span><span class="op">)</span></code></pre></div>
-<pre><code>## , , horizontal
-## 
-##         low est     high
-## 2D 6.960018  20 33.38156
-## 3D 3.480009  10 16.69078</code></pre>
+<code class="sourceCode R"><span><span class="co"># here I set the DOF to a smaller value</span></span>
+<span><span class="va">UERE</span><span class="op">$</span><span class="va">DOF</span><span class="op">[</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">2</span></span>
+<span><span class="co"># which now gives plausible credible intervals</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">UERE</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## , , horizontal</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">##         low est     high</span></span>
+<span><span class="co">## 2D 6.960018  20 33.38156</span></span>
+<span><span class="co">## 3D 3.480009  10 16.69078</span></span></code></pre>
 <div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># assign the prior to the data</span>
-<span class="fu"><a href="../reference/uere.html">uere</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">UERE</span>
-<span class="co"># automated guestimate for calibrated data</span>
-<span class="va">GUESS</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/variogram.fit.html">ctmm.guess</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span>,CTMM<span class="op">=</span><span class="fu"><a href="../reference/ctmm.html">ctmm</a></span><span class="op">(</span>error<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>,interactive<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
-<span class="co"># stepwise fitting # CRAN policy limits us to 2 cores</span>
-<span class="va">FIT</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ctmm.html">ctmm.select</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span>,<span class="va">GUESS</span>,trace<span class="op">=</span><span class="cn">TRUE</span>,cores<span class="op">=</span><span class="fl">2</span><span class="op">)</span></code></pre></div>
-<pre><code>## * Fitting model OUF isotropic error</code></pre>
-<pre><code>## * Fitting model OUF anisotropic error</code></pre>
-<pre><code>## * Fitting model IID anisotropic error</code></pre>
+<code class="sourceCode R"><span><span class="co"># assign the prior to the data</span></span>
+<span><span class="fu"><a href="../reference/uere.html">uere</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">UERE</span></span>
+<span><span class="co"># automated guestimate for calibrated data</span></span>
+<span><span class="va">GUESS</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/variogram.fit.html">ctmm.guess</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span>,CTMM<span class="op">=</span><span class="fu"><a href="../reference/ctmm.fit.html">ctmm</a></span><span class="op">(</span>error<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>,interactive<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="co"># stepwise fitting # CRAN policy limits us to 2 cores</span></span>
+<span><span class="va">FIT</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ctmm.fit.html">ctmm.select</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span>,<span class="va">GUESS</span>,trace<span class="op">=</span><span class="cn">TRUE</span>,cores<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## * Fitting model OUF error</span></span></code></pre>
+<pre><code><span><span class="co">## * Fitting model OUF anisotropic error</span></span></code></pre>
+<pre><code><span><span class="co">## * Fitting model IID anisotropic error</span></span></code></pre>
 <div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># if you get weird errors on your platform, then try cores=1</span>
-<span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">FIT</span><span class="op">)</span></code></pre></div>
-<pre><code>## $name
-## [1] "OU anisotropic error"
-## 
-## $DOF
-##     mean     area    speed 
-## 12.70939 21.64675  0.00000 
-## 
-## $CI
-##                          low       est     high
-## area (hectares)    12.966265 20.778038 30.40196
-## τ[position] (days)  3.450901  6.262954 11.36648
-## error 2D (meters)   9.462779 12.388743 15.30890
-## error 3D (meters)   7.186910  8.889048 10.58784</code></pre>
+<code class="sourceCode R"><span><span class="co"># if you get weird errors on your platform, then try cores=1</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">FIT</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## $name</span></span>
+<span><span class="co">## [1] "OU anisotropic error"</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## $DOF</span></span>
+<span><span class="co">##      mean      area diffusion     speed </span></span>
+<span><span class="co">##   12.7094   21.6469  143.5052    0.0000 </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## $CI</span></span>
+<span><span class="co">##                                       low         est       high</span></span>
+<span><span class="co">## area (hectares)                 12.966260   20.777991   30.40185</span></span>
+<span><span class="co">## τ[position] (days)               3.773825    6.262948   10.39383</span></span>
+<span><span class="co">## diffusion (square meters/day) 4197.630511 4978.893352 5825.84586</span></span>
+<span><span class="co">## error 2D (meters)                9.462780   12.388745   15.30890</span></span>
+<span><span class="co">## error 3D (meters)                7.186927    8.889066   10.58786</span></span></code></pre>
 <p>This method is still being developed and so this material is subject to change.</p>
 </div>
 </div>
@@ -350,11 +355,13 @@
 
 
       <footer><div class="copyright">
-  <p>Developed by Christen H. Fleming, Justin M. Calabrese.</p>
+  <p></p>
+<p>Developed by Christen H. Fleming, Justin M. Calabrese.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
 </div>
 
       </footer>
@@ -362,6 +369,8 @@
 
   
 
+
+  
 
   </body>
 </html>

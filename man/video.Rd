@@ -40,7 +40,7 @@ video(x,ext=extent(x),fps=60,dt=NULL,ghost=0,timestamp=FALSE,file="ctmm.mp4",res
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
-\seealso{ \code{\link{plot}}, \code{\link{plot.telemetry}}, \code{\link[animation]{ani.options}} }
+\seealso{ \code{\link{plot}}, \code{\link{plot.telemetry}}, \code{\link[animation]{ani.options}}}
 
 \examples{\donttest{
 # Load package and data
