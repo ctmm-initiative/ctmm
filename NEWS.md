@@ -1,3 +1,7 @@
+ctmm 1.0.1 (2022-07-10)
+
+  * bugfix in speeds() without telemetry object
+
 ctmm 1.0.0 (2022-07-07)
 ================
 

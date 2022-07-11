@@ -707,9 +707,15 @@ predict.ctmm <- function(object,data=NULL,VMM=NULL,t=NULL,dt=NULL,res=1,complete
     sigma <- methods::getDataPart(object$sigma)
     if(length(axes)==1 || object$isotropic)
     {
-      if(length(sigma)>1) { sigma <- mean(diag(sigma,length(axes))) }
+      if(length(sigma)>1) { sigma <- mean(diag(sigma)) }
       data[[DOP.LIST[[DOP]]$VAR]] <- sigma
-      if(length(object$tau)>1) { data[[paste0("VAR.v",axes)]] <- sigma/prod(object$tau) }
+      if(length(object$tau)>1)
+      {
+        if(length(axes)==1)
+        { data[,paste0("VAR.v",axes)] <- sigma/prod(object$tau) }
+        else
+        { data[,DOP.LIST$speed$VAR] <- sigma/prod(object$tau) }
+      }
     }
     else
     {
@@ -717,7 +723,7 @@ predict.ctmm <- function(object,data=NULL,VMM=NULL,t=NULL,dt=NULL,res=1,complete
       for(i in 1:3)
       {
         data[[DOP.LIST[[DOP]]$COV[i]]] <- sigma[i]
-        if(length(object$tau)>1) { data[[DOP.LIST$speed$COV[i]]] <- sigma[i]/prod(object$tau) }
+        if(length(object$tau)>1) { data[,DOP.LIST$speed$COV[i]] <- sigma[i]/prod(object$tau) }
       }
     }
   }
