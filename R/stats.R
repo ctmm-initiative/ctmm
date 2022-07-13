@@ -307,30 +307,36 @@ idchisq <- function(p,df)
 
 
 # normal confidence intervals
-norm.ci <- function(MLE,COV,level=0.95,alpha=1-level)
+norm.ci <- function(MLE,VAR,level=0.95,alpha=1-level)
 {
   # z-values for low, ML, high estimates
   z <- stats::qnorm(1-alpha/2)*c(-1,0,1)
 
   # normal ci
-  CI <- MLE + z*sqrt(COV)
+  CI <- MLE + z*sqrt(VAR)
 
   names(CI) <- NAMES.CI
   return(CI)
 }
 
 # calculate log-normal confidence intervals from MLE and COV estimates
-lognorm.ci <- function(MLE,COV,level=0.95,alpha=1-level)
+lognorm.ci <- function(MLE,VAR,level=0.95,alpha=1-level)
 {
-  # log transform of variance
-  COV <- COV/MLE^2
-  # log transform of point estimate
-  MLE <- log(MLE)
+  # MLE = exp(mu + sigma/2)
+  # VAR = (exp(sigma)-1) * MLE^2
 
-  CI <- norm.ci(MLE,COV,alpha=alpha)
+  # exp(sigma)-1 = VAR/MLE^2
+  # exp(sigma) = 1+VAR/MLE^2
+  sigma <- log(1 + VAR/MLE^2)
+
+  # mu+sigma/2 = log(MLE)
+  mu <- log(MLE) - sigma/2
+
+  CI <- norm.ci(mu,sigma,alpha=alpha)
 
   # transform back
   CI <- exp(CI)
+  CI[2] <- MLE
 
   return(CI)
 }

@@ -132,6 +132,8 @@ new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,R=NULL,col.bg="white",col.R="gr
     # unit conversion
     assign("x.scale",dist$scale,pos=plot.env)
     assign("y.scale",dist$scale,pos=plot.env)
+
+    scale <- dist$scale
   } # end !add
   else # get distance information from environment
   {
@@ -142,10 +144,12 @@ new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,R=NULL,col.bg="white",col.R="gr
       dist$name <- name
       dist$scale <- scale
     }
+    projection <- get('projection',plot.env)
   }
 
   # PLOT RASTER / SUITABILITY
-  if(!is.null(R)) { plot.R(R,col=col.R,legend=legend) }
+  if(!is.null(R))
+  { plot.R(R,col=col.R,legend=legend,projection=projection,scale=scale) }
 
   return(dist)
 }
@@ -201,10 +205,6 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,col.bg='white',
   cmpkm <- 2.54*mean(graphics::par("fin")*diff(graphics::par("plt"))[-2]/diff(graphics::par("usr"))[-2])
   # plot px per unit of distance plotted (m or km)
   pxpkm <- mean(grDevices::dev.size("px")*diff(graphics::par("plt"))[-2]/diff(graphics::par("usr"))[-2])
-
-  # #######################
-  # # PLOT RASTER / SUITABILITY
-  # if(!is.null(R)) { plot.R(R,col=col.R) }
 
   #########################3
   # PLOT SHAPEFILES
@@ -444,24 +444,47 @@ pull <- function(pchar,i)
 
 
 # plot raster layer
-plot.R <- function(R,col="green",legend=FALSE)
+plot.R <- function(R,col="green",legend=FALSE,projection="",scale=1)
 {
-  x.scale <- get0('x.scale',plot.env)
-
   R <- listify(R)
 
   for(i in 1:length(R))
   {
     PROJ <- raster::projection(R[[i]])
-    if(x.scale==1000 && grepl("+units=m",PROJ)) # km scale (not meters)
+
+    if(PROJ!=projection) # reproject raster
+    {
+      message("Reprojecting raster.")
+
+      ext <- graphics::par('usr') * scale
+      ext <- raster::extent(ext)
+
+      res <- raster::res(R[[i]])
+      res <- min(res)
+
+      if(grepl("+units=km",PROJ)) { res <- res * 1000 }
+      if(grepl("long",PROJ) && grepl("lat",PROJ)) { res <- 2*pi*DATA.EARTH$R.EQ/360 * res }
+
+      CRS <- sp::CRS(projection)
+
+      # res <- res/10 # ensure that reprojection looks good
+
+      TEMP <- raster(resolution=res,ext=ext,crs=CRS)
+
+      R[[i]] <- raster::projectRaster(R[[i]],TEMP)
+    }
+
+    if(scale==1000) # km scale (not meters)
     { raster::extent(R[[i]]) <- raster::extent(R[[i]])[]/1000 }
 
     if(length(col)==length(R))
-    { COL <- malpha(col[i],(0:255)/255) }
+    { COL <- col[i] }
     else
     { COL <- col }
+    COL <- malpha(COL,(0:255)/255)
 
-    raster::plot(R[[i]],col=COL,legend=legend,maxpixels=.Machine$integer.max,add=TRUE)
+    maxpixels <- raster::ncell(R[[i]])
+    raster::plot(R[[i]],col=COL,legend=legend,maxpixels=maxpixels,add=TRUE)
   }
 }
 
@@ -502,9 +525,6 @@ plot.UD <- function(x,col.bg="white",DF="CDF",col.DF="blue",col.grid="white",lab
   if(class(x[[1]])[1]=="RS") { DF <- 'RS' }
 
   dist <- new.plot(UD=x,R=R,col.bg=col.bg,col.R=col.R,legend=legend,units=units,fraction=fraction,xlim=xlim,ylim=ylim,ext=ext,level.UD=level.UD,level=level,add=add,...)
-
-  # # PLOT RASTER / SUITABILITY
-  # if(!is.null(R)) { plot.R(R,col=col.R) }
 
   # PLOT SHAPEFILES
   if(!is.null(SP)) { plot.SP(SP=SP,border.SP=border.SP,col.SP=col.SP,PROJ=ctmm::projection(x),...) }

@@ -296,6 +296,22 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
   # SCALE <- rep(0,length(TERMS))
   # for(i in 1:length(TERMS)) { SCALE[i] <- evaluate(TERMS[i],SCALES) }
 
+  # natural scales for differentiation/optimization
+  parscale <- rep(1,length(TERMS))
+  lower <- rep(-Inf,length(TERMS))
+  upper <- rep(Inf,length(TERMS))
+  names(parscale) <- names(lower) <- names(upper) <- TERMS
+
+  if(integrated)
+  {
+    LOV <- ifelse(integrator=="MonteCarlo",-1,0)
+
+    if(isotropic)
+    { lower['rr'] <- LOV }
+    else
+    { lower[c('xx','yy')] <- LOV }
+  }
+
   # initial estimates
   BETA <- rep(0,length(TERMS))
   names(BETA) <- TERMS
@@ -658,7 +674,7 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
       { beta <- beta.init }
     }
 
-    RESULT <- optimizer(beta,nloglike,control=control)
+    RESULT <- optimizer(beta,nloglike,parscale=parscale,lower=lower,upper=upper,control=control)
     beta.OLD <- beta
     beta <- RESULT$par
     loglike.OLD <- loglike
@@ -702,7 +718,7 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
   if(CALC)
   {
     if(trace) { message("Calculating Hessian") }
-    DIFF <- genD(par=beta,fn=nloglike,zero=-loglike,Richardson=2,mc.cores=1)
+    DIFF <- genD(par=beta,fn=nloglike,zero=-loglike,parscale=parscale,lower=lower,upper=upper,Richardson=2,mc.cores=1)
     hess <- DIFF$hessian
     grad <- DIFF$gradient
     # more robust covariance calculation than straight inverse
