@@ -177,6 +177,8 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
 
   # can we profile any variances?
   profile <- !any(UERE.FIX)
+  # doesn't always work to profile with error fitting
+  profile <- profile & !any(UERE.FIT)
 
   ### id and characterize parameters for profiling ###
   pars <- NAMES <- parscale <- lower <- upper <- period <- NULL
@@ -212,6 +214,12 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
   fn <- function(p,zero=0)
   {
     names(p) <- NAMES
+
+    # catch for zero error
+    if(any(CTMM$error>0 & UERE.DOF>0 & p[paste("error",names(CTMM$error))]==0))
+    { return(Inf) }
+    # otherwise, UERE.DOF is not counted in likelihood
+
     p <- clean.parameters(p,profile=profile,linear.cov=linear.cov,timelink=CTMM$timelink)
     CTMM <- set.parameters(CTMM,p,profile=profile,linear.cov=linear.cov)
 

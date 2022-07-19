@@ -4,6 +4,7 @@
 * export UD on CTMM objects
 
 ** MISC
+* overlap class error check
 * only rareify models after compatible features are selected
 * export list of objects
 * profile upper speed CI?

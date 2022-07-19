@@ -1,6 +1,8 @@
-ctmm 1.0.1 (2022-07-13)
+ctmm 1.0.1 (2022-07-18)
 
   * numerical stability improvements in rsf.fit optimization and hessian calculations
+  
+  * numerical convergence improvements in location error fitting
   
   * plot.telemetry can now subset and reproject rasters
 

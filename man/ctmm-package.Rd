@@ -29,7 +29,7 @@ Fleming et al (2022) <doi:10.1111/2041-210X.13815>.
 Package: \tab ctmm\cr
 Type: \tab Package\cr
 Version: \tab 1.0.1 \cr
-Date: \tab 2022-07-13 \cr
+Date: \tab 2022-07-18 \cr
 License: \tab GPL-3 \cr
 }
 
