@@ -368,7 +368,7 @@ PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC=
   FREE <- !ACTIVE # current feasible dimensions
   m <- n # number of free dimensions
   CHANGE <- TRUE # did our constraints change?, then keep working
-  MISE <- rep(Inf,3) # last 3 MISE objectives - the 3>1 is arbitrary
+  MISE <- rep(Inf,3) # last 3 MISE objectives - the 3>2 is arbitrary
   LAMBDA <- rep(1/n,3) # last 3 normalization constants
   KKT <- function()
   {
@@ -510,7 +510,8 @@ PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC=
     # CHECK KKT CONDITIONS AND RESET ACTIVE/FREE SPACE
     KKT()
 
-    # make sure the MISE is decreasing and we are not stuck in a rare numerical-indiscrimination / solution-boundary loop
+    # make sure the MISE is decreasing
+    # make sure we are not stuck in a rare numerical-indiscrimination / solution-boundary loop
     if(all(MISE[1] >= MISE[2:3])) { break }
   }
 
