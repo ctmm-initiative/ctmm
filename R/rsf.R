@@ -65,7 +65,7 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
 
   if(!is.null(formula) && standardize)
   {
-    message("Users are responsible for standardizing ",names(R)," when formula argument is supplied.")
+    message("Users are responsible for standardizing rasters when formula argument is supplied.")
     standardize <- FALSE
   }
   else
@@ -136,7 +136,7 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
   # evaluate term on data.frame
   evaluate <- function(term,envir)
   {
-    if(length(dim(envir))==2)
+    if(length(dim(envir))==2) # (term,DATA[time,var])
     {
       term <- gsub(":","*",term) # multiplication
       # term <- gsub("I(","(",term) # function evaluations # don't think this is necessary
@@ -144,7 +144,7 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
       if(!STATIONARY) { envir <- cbind(envir,data) }
       RET <- eval(parse(text=term),envir=envir)
     }
-    else # loop over runs
+    else # [space,time,var] loop over runs
     {
       if(STATIONARY) # time doesn't matter
       {
@@ -158,14 +158,14 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
       {
         RET <- sapply(1:dim(envir)[1],function(i)
                 {
-                  ENVIR <- envir[i,,];
+                  ENVIR <- envir[i,,]; # [time,var]
                   dim(ENVIR) <- dim(envir)[-1];
                   colnames(ENVIR) <- VARS
-                  ENVIR <- cbind(ENVIR,data);
+                  ENVIR <- cbind(ENVIR,data); # [time,vars]
                   evaluate(term,ENVIR)
-                }) # [time,track]
-        dim(RET) <- dim(envir)[2:1]
-        RET <- t(RET) # [track,time]
+                }) # [time,space]
+        dim(RET) <- c(nrow(data),dim(envir)[1])
+        RET <- t(RET) # [space,time]
       }
     }
     return(RET)
@@ -288,13 +288,6 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
   # data and simulation sampled covariates
   DATA <- matrix(0,nrow(data),length(VARS))
   colnames(DATA) <- VARS
-
-  # # generic SCALE code for arbitrary formula terms not possible
-  # SCALES <- c(RVARS,DVARS)
-  # SCALES <- t(SCALES)
-  # SCALES <- as.data.frame(SCALES)
-  # SCALE <- rep(0,length(TERMS))
-  # for(i in 1:length(TERMS)) { SCALE[i] <- evaluate(TERMS[i],SCALES) }
 
   # natural scales for differentiation/optimization
   parscale <- rep(1,length(TERMS))
@@ -574,8 +567,10 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
       else # elliptical grid
       { stop('Inconsistent grids not yet supported when method!="MonteCarlo".') }
 
-      # This is currently coded for stationary only
-      SATA <- array(0,c(N,1,length(VARS)))
+      if(STATIONARY)
+      { SATA <- array(0,c(N,1,length(VARS))) }
+      else
+      { SATA <- array(0,c(N,nrow(data),length(VARS))) }
     } # end quadrature points
 
     dimnames(SATA)[[3]] <- VARS
