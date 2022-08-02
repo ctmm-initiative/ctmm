@@ -70,7 +70,7 @@ log.ctmm <- function(CTMM,debias=FALSE)
     DOF <- 2/EIGEN$values # log-chi^2 VAR-DOF relation
     BIAS <- digamma(DOF/2)-log(DOF/2) # negative bias for log(chi^2) variates
     BIAS <- nant(BIAS,0)
-    par[SUB] <- par[SUB] + BIAS # E[log-chi^2] bias correction
+    par[SUB] <- par[SUB] - BIAS # E[log(chi^2)] bias correction
     par[SUB] <- c(EIGEN$vectors %*% par[SUB]) # transform back (still under logarithm)
 
     # log-gamma variance (better than delta method)
@@ -133,7 +133,7 @@ exp.ctmm <- function(CTMM,debias=FALSE)
     DOF <- 2*itrigamma(EIGEN$values)
     BIAS <- digamma(DOF/2)-log(DOF/2) # negative bias for log(chi^2) variates
     BIAS <- nant(BIAS,0)
-    par[SUB] <- par[SUB] - BIAS # E[log-chi^2] bias correction
+    par[SUB] <- par[SUB] + BIAS # E[log-chi^2] bias correction
     par[SUB] <- c(EIGEN$vectors %*% par[SUB]) # transform back (still under logarithm)
 
     ################

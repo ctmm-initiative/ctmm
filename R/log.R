@@ -41,6 +41,11 @@ log.area <- function(x,debias=TRUE,...)
   return(y)
 }
 
+exp.area <- function()
+{
+  # DOF <- 2*itrigamma(VAR)
+}
+
 
 # speed
 log.speed <- function(x,debias=TRUE,...)

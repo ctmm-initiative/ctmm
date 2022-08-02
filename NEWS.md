@@ -11,6 +11,8 @@ ctmm 1.0.1 (2022-08-02)
   * plot.telemetry can now subset and reproject rasters
 
   * bugfix in speeds() without telemetry object
+  
+  * fixed log-chi^2 bias correction in mean.ctmm()
 
 ctmm 1.0.0 (2022-07-07)
 ================

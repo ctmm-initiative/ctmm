@@ -91,7 +91,7 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,error=0
       if(trace)
       { message("Default grid size of ",STRING," chosen for bandwidth(...,fast=TRUE).") }
 
-      if(dt.min<=dt/2)
+      if(WEIGHTS && dt.min<=dt/2)
       {
         UNITS <- unit(dt.min,"time")
         STRING2 <- paste(c(dt.min/UNITS$scale,UNITS$name),collapse=" ")
