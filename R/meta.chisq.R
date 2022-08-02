@@ -488,7 +488,7 @@ meta <- function(x,variable="area",level=0.95,level.UD=0.95,method="MLE",IC="AIC
 
 
 ############
-import.variable <- function(x,variable="area",level.UD=0.95)
+import.variable <- function(x,variable="area",level.UD=0.95,chi=FALSE)
 {
   N <- length(x)
   ID <- names(x) # may be null
@@ -583,7 +583,7 @@ import.variable <- function(x,variable="area",level.UD=0.95)
   # level.UD coverage (e.g., 95% home ranges rather than straight variance)
   if(variable=="area" && CLASS=="ctmm")
   { AREA <- -2*log(1-level.UD)*pi * AREA }
-  else if(variable=="speed") # chi DOF changes when chi is approximated as chi^2
+  else if(variable=="speed" && !chi) # chi DOF changes when chi is approximated as chi^2
   {
     VAR <- chi.var(DOF) # modulo E[X]^2
     DOF <- 2/VAR

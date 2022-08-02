@@ -22,6 +22,8 @@ export(as.sf,cluster,compass,emulate,meta,speed,speeds,video,writeShapefile)
 #GENERAL FUNCTIONS
 #S3method(det,numeric)
 #S3method(determinant,numeric) # can't get these to work???
+#S3method(log,list) # this doesn't work
+export(Log)
 S3method(mean,list)
 S3method(median,list)
 S3method(plot,list)
@@ -99,6 +101,7 @@ S3method(summary,UD)
 S3method(writeShapefile,list)
 S3method(writeShapefile,telemetry)
 S3method(writeShapefile,UD)
+#S3method(log,area)
 
 #S3method(plot,RS)
 

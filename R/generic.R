@@ -55,6 +55,7 @@ mpsigamma <- function(x,deriv=0,dim=1)
   return(PSI)
 }
 
+### S4 ###
 
 # forwarding function for list of a particular datatype
 zoom.list <- function(x,...)
@@ -66,6 +67,17 @@ zoom.list <- function(x,...)
 methods::setMethod("zoom",signature(x="list"), function(x,...) zoom.list(x,...))
 
 
+### S3 ###
+
+# forwarding function for list of a particular datatype
+log.list <- function(x,...)
+{
+  CLASS <- class(x[[1]])[1]
+  utils::getS3method("log",CLASS)(x,...)
+}
+# this doesn't work outside of ctmm
+
+
 # forwarding function for list of a particular datatype
 mean.list <- function(x,...)
 {
@@ -74,14 +86,12 @@ mean.list <- function(x,...)
 }
 #methods::setMethod("mean",signature(x="list"), function(x,...) mean.list(x,...))
 
-
 # forwarding function for list of a particular datatype
 median.list <- function(x,na.rm=FALSE,...)
 {
   CLASS <- class(x[[1]])[1]
   utils::getS3method("median",CLASS)(x,na.rm=na.rm,...)
 }
-
 
 # forwarding function for list of a particular datatype
 plot.list <- function(x,...)

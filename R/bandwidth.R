@@ -77,17 +77,26 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,error=0
       dt <- dt[dt>0]
       # dt <- sort(dt)
       DT <- stats::median(dt)
-      dt <- min(dt) # smallest dt
+      dt.min <- min(dt) # smallest dt
+      dt <- dt.min
 
       if((DT-dt)/DT > error)
       { dt <- DT/2 } # some allowance for error
       else
       { dt <- DT }
 
+      UNITS <- unit(dt,"time")
+      STRING <- paste(c(dt/UNITS$scale,UNITS$name),collapse=" ")
+
       if(trace)
+      { message("Default grid size of ",STRING," chosen for bandwidth(...,fast=TRUE).") }
+
+      if(dt.min<=dt/2)
       {
-        UNITS <- unit(dt,"time")
-        message("Default grid size of ",dt/UNITS$scale," ",UNITS$name," chosen for bandwidth(...,fast=TRUE).")
+        UNITS <- unit(dt.min,"time")
+        STRING2 <- paste(c(dt.min/UNITS$scale,UNITS$name),collapse=" ")
+
+        warning("Minimum time interval of ",STRING2," is much smaller than grid size of ",STRING,".")
       }
     }
 
