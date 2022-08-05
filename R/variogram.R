@@ -106,7 +106,7 @@ variogram.dt <- function(data,dt=NULL,fast=NULL,res=1,CI="Markov",error=FALSE,ax
     if(REPEAT[i+1])
     {
       di <- 1
-      while(REPEAT[i+di+1]) { di <- di + 1 }
+      while(i+di+1<=nrow(data) && REPEAT[i+di+1]) { di <- di + 1 }
 
       e <- error[i + 0:di] # variances
       w <- 1/e # precisions
@@ -356,9 +356,9 @@ variogram.fast <- function(data,error=NULL,dt=NULL,res=1,CI="Markov",axes=c("x",
     SUB <- (-SUB):(+SUB)
 
     lag <- (0:m)*dt # aggregated lags > 0
-    SVF <- c(SVF[1], sapply(1:m,function(j){ SUB <- j*n + SUB ; sum(W*DOF[SUB]*SVF[SUB]) }) )
-    if(EOV) { error <- c(error[1], sapply(1:m,function(j){ SUB <- j*n + SUB ; sum(W*DOF[SUB]*error[SUB]) }) ) }
-    DOF <- c(DOF[1], sapply(1:m,function(j){ SUB <- j*n + SUB ; sum(W*DOF[SUB]) }) )
+    SVF <- c(SVF[1], sapply(1:m,function(j){ SUB <- SUB + round(j*n) ; sum(W*DOF[SUB]*SVF[SUB]) }) )
+    if(EOV) { error <- c(error[1], sapply(1:m,function(j){ SUB <- SUB + round(j*n) ; sum(W*DOF[SUB]*error[SUB]) }) ) }
+    DOF <- c(DOF[1], sapply(1:m,function(j){ SUB <- SUB + round(j*n) ; sum(W*DOF[SUB]) }) )
 
     SVF[-1] <- SVF[-1]/DOF[-1]
     if(EOV) { error[-1] <- error[-1]/DOF[-1] }

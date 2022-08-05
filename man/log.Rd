@@ -1,23 +1,35 @@
 \name{Log}
 \alias{Log}
+\alias{Exp}
 \encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Log transformation of parameter estimates and their uncertainties}
-\description{Methods for log transforming individual parameter estimates and their uncertainty estimates for use in meta-analytic regression.
+\description{Methods for log transforming individual parameter estimates and their uncertainty estimates for use in meta-analytic regression, and then back-transforming mean-log parameter estimates back to mean parameter estimates.
 }
 \usage{
 Log(x,debias=TRUE,...)
+
+Exp(est,VAR.est=0,VAR=0,VAR.VAR=0,variable="area",debias=TRUE,level=0.95,units=TRUE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{A list of \code{UD} objects, \code{UD} \code{summary} objects, or \code{speed} objects.}
   \item{debias}{Apply \eqn{\log\chi^2} and \eqn{\log\chi} bias corrections if \code{TRUE}.}
   \item{...}{Further arguments passed.}
+  \item{est}{Point estimate of the mean log-parameter.}
+  \item{VAR.est}{Uncertainty in the mean log-parameter estimate (square standard error).}
+  \item{VAR}{Variance in the log-parameters.}
+  \item{VAR.VAR}{Uncertainty in the log-paramter variance estimate (square standard error).}
+  \item{variable}{Variable being back-transformed. Can be \code{"area"} or \code{"speed"}.}
+  \item{level}{Confidence level for parameter estimates.}
+  \item{units}{Convert result to natural units.}
 }
 
 %\details{ }
 
-\value{A list with two slots, \code{log} and \code{VAR.log}, corresponding to the point estimates and variance estimates of the logged variables.}
+\value{\code{Log} returns a list with two slots, \code{log} and \code{VAR.log}, corresponding to the point estimates and variance estimates of the logged variables.
+
+\code{Exp} returns a confidence intervals for the back-transformed mean parameter estimate.}
 
 %\section{Warnings}{}
 

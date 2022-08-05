@@ -790,29 +790,36 @@ summary.UD <- function(object,convex=FALSE,level=0.95,level.UD=0.95,units=TRUE,.
   area <- CI.UD(object,level.UD,level,convex=convex)
   if(length(area)==1) { stop("Object is not a range distribution.") }
 
+  DOF <- c(object$DOF.area[1],object$DOF.H)
+  R <- summary.UD.format(area,DOF=DOF,units=units)
+  return(R)
+}
+#methods::setMethod("summary",signature(object="UD"), function(object,...) summary.UD(object,...))
+
+summary.UD.format <- function(CI,DOF,units=TRUE)
+{
   # pretty units
   # do we convert base units?
-  unit.info <- unit(area[2],"area",SI=!units)
+  unit.info <- unit(CI[2],"area",SI=!units)
   name <- unit.info$name
   scale <- unit.info$scale
 
-  area <- array(area/scale,c(1,3))
-  rownames(area) <- paste("area (",name,")",sep="")
+  CI <- array(CI/scale,c(1,3))
+  rownames(CI) <- paste("area (",name,")",sep="")
 
-  colnames(area) <- NAMES.CI
+  colnames(CI) <- NAMES.CI
 
   SUM <- list()
 
-  SUM$DOF <- c(object$DOF.area[1],object$DOF.H)
+  SUM$DOF <- DOF
   if(length(SUM$DOF)==1) { SUM$DOF[2] <- NA }
   names(SUM$DOF) <- c("area","bandwidth")
 
-  SUM$CI <- area
+  SUM$CI <- CI
   class(SUM) <- "area"
 
   return(SUM)
 }
-#methods::setMethod("summary",signature(object="UD"), function(object,...) summary.UD(object,...))
 
 
 extract <- function(r,UD,DF="CDF",...)

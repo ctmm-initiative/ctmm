@@ -1,6 +1,6 @@
-ctmm 1.0.1 (2022-08-02)
+ctmm 1.0.1 (2022-08-05)
 
-  * new function Log() to log transform parameter estimates and their uncertainties for meta-analytic regression
+  * new function Log(), Exp() to log transform parameter estimates and their uncertainties for meta-analytic regression
 
   * numerical stability improvements in rsf.fit optimization and hessian calculations
   

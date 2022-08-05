@@ -23,7 +23,7 @@ export(as.sf,cluster,compass,emulate,meta,speed,speeds,video,writeShapefile)
 #S3method(det,numeric)
 #S3method(determinant,numeric) # can't get these to work???
 #S3method(log,list) # this doesn't work
-export(Log)
+export(Log,Exp)
 S3method(mean,list)
 S3method(median,list)
 S3method(plot,list)

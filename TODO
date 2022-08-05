@@ -1,5 +1,6 @@
 ** PRIORITY
 * fit periodicity frequencies for Bill
+* remove bad UD returns (ctmm objects) from functions like mean and overlap
 * DDIM natural resolution option
 * export UD on CTMM objects
 * rsf.fit initial guesses determined by MOM

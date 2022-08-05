@@ -9,6 +9,25 @@ Log <- function(x,debias=TRUE,...)
 }
 
 
+Exp <- function(est,VAR.est=0,VAR=0,VAR.VAR=0,variable="area",debias=TRUE,level=0.95,units=TRUE,...)
+{
+  fn <- paste0("exp.log.",variable)
+  fn <- get(fn)
+
+  fn(est,VAR.est=VAR.est,VAR=VAR,VAR.VAR=VAR.VAR,debias=debias,level=level,units=units,...)
+}
+
+exp.log <- function(est,VAR.est=0,VAR=0,VAR.VAR=0,...)
+{
+  mu <- exp(est + VAR/2)
+  grad <- c(1,1/2) * mu
+  VAR.mu <- sum( grad^2 * c(VAR.est,VAR.VAR) )
+
+  R <- list(mu=mu,VAR=VAR.mu)
+  return(R)
+}
+
+
 log.UD <- function(x,debias=TRUE,level.UD=0.95,...)
 {
   x <- listify(x)
@@ -41,9 +60,27 @@ log.area <- function(x,debias=TRUE,...)
   return(y)
 }
 
-exp.area <- function()
+
+exp.log.area <- function(est,VAR.est=0,VAR=0,VAR.VAR=0,debias=TRUE,level=0.95,units=TRUE,...)
 {
-  # DOF <- 2*itrigamma(VAR)
+  R <- exp.log(est=est,VAR.est=VAR.est,VAR=VAR,VAR.VAR=VAR.VAR,...)
+  est <- R$est
+  VAR <- R$VAR
+
+  DOF <- 2*est^2/VAR
+
+  if(debias)
+  {
+    BIAS <- digamma(DOF/2) - log(DOF/2)
+    est <- est + BIAS
+  }
+
+  CI <- chisq.ci(est,VAR=VAR,level=level)
+
+  # apply units and name
+  CI <- summary.UD.format(CI,DOF/2,units=units)
+
+  return(CI)
 }
 
 
@@ -61,14 +98,40 @@ log.speed <- function(x,debias=TRUE,...)
   { y$VAR.log <- 2/x$DOF/4 }
   else
   {
-    y$VAR.log <- trigamma(x$DOF/2)/4
+    y$VAR.log <- trigamma(x$DOF/2)
+    y$VAR.log <- y$VAR.log/4
 
-    BIAS <- ( digamma(x$DOF/2) - log(x$DOF/2) )/2
+    BIAS <- digamma(x$DOF/2) - log(x$DOF/2)
+    BIAS <- BIAS/2
     BIAS <- nant(BIAS,0)
     y$log <- y$log - BIAS
   }
 
   return(y)
+}
+
+exp.log.speed <- function(est,VAR.est=0,VAR=0,VAR.VAR=0,debias=TRUE,level=0.95,units=TRUE,...)
+{
+  # convert from log-chi to log-chi^2
+  R <- exp.log(est=est,VAR.est=VAR.est,VAR=VAR,VAR.VAR=VAR.VAR,...)
+  est <- R$est
+  VAR <- R$VAR
+
+  DOF <- chi.dof(est,est^2+VAR)
+
+  if(debias)
+  {
+    BIAS <- digamma(DOF/2) - log(DOF/2)
+    BIAS <- BIAS/2
+    est <- est + BIAS
+  }
+
+  CI <- chisq.ci(est,VAR=VAR,level=level)
+
+  # apply units and name
+  CI <- summary.UD.format(CI,DOF/2,units=units)
+
+  return(CI)
 }
 
 # models
