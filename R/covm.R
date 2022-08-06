@@ -376,7 +376,8 @@ J.par.sigma <- function(sigma)
   }
 
   parscale <- sigma
-  parscale['xy'] <- sqrt(sigma['xx']*sigma['yy'])
+  DIAG <- c('xx','yy')
+  parscale['xy'] <- max( sqrt(prod(abs(sigma[DIAG]))) , mean(abs(sigma[DIAG])), abs(sigma['xy']) )
   lower <- c(0,0,-Inf)
 
   J <- genD(sigma,par.fn,lower=lower,parscale=parscale,order=1)

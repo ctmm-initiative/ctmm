@@ -322,6 +322,8 @@ mean.features <- function(x,debias=TRUE,isotropic=FALSE,variance=TRUE,weights=NU
     { FEATURES <- c(FEATURES,"tau velocity") }
   }
 
+  NFEAT <- FEATURES[FEATURES %nin% c('major','minor','angle')]
+
   M <- length(FEATURES)
   # all possible RSF beta
   BETA <- lapply(x,function(y){names(y$beta)})
@@ -375,7 +377,11 @@ mean.features <- function(x,debias=TRUE,isotropic=FALSE,variance=TRUE,weights=NU
     if(!isotropic && x[[i]]$isotropic)
     {
       MU[i,'minor'] <- MU[i,'major']
+      # perfectly correlated observation
       SIGMA[i,P,P] <- matrix(SIGMA[i,'major','major'],2,2)
+      # copy over other correlations as well
+      SIGMA[i,'minor',NFEAT] <- SIGMA[i,'major',NFEAT]
+      SIGMA[i,NFEAT,'minor'] <- SIGMA[i,NFEAT,'major']
     }
     else if(isotropic && !x[[i]]$isotropic)
     {
@@ -384,7 +390,7 @@ mean.features <- function(x,debias=TRUE,isotropic=FALSE,variance=TRUE,weights=NU
       SIGMA[i,P,] <- J %*% SIGMA[i,P,]
       SIGMA[i,,P] <- SIGMA[i,,P] %*% t(J)
     }
-  }
+  } # for(i in 1:N)
 
   if(!variance) { VARS <- FALSE }
   R <- meta.normal(MU,SIGMA,MEANS=MEANS,VARS=VARS,debias=debias,weights=weights)

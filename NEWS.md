@@ -1,4 +1,4 @@
-ctmm 1.0.1 (2022-08-05)
+ctmm 1.0.1 (2022-08-06)
 
   * new function Log(), Exp() to log transform parameter estimates and their uncertainties for meta-analytic regression
 
@@ -9,6 +9,8 @@ ctmm 1.0.1 (2022-08-05)
   * numerical convergence improvements in AKDE weight optimization
   
   * plot.telemetry can now subset and reproject rasters
+  
+  * bugfix in mean() when averaging isotropic and anisotropic models together
 
   * bugfix in speeds() without telemetry object
   

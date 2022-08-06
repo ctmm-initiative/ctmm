@@ -663,7 +663,9 @@ plot.df <- function(kde,DF="CDF",col="blue",...)
     zlim <- range(kde[[DF]],na.rm=TRUE)
   }
 
-  graphics::image(kde$r,z=kde[[DF]],useRaster=TRUE,zlim=zlim,col=col,add=TRUE,...)
+  # imageRaster is faster but is not reliably called from image
+  TEST <- try( graphics::image(kde$r,z=kde[[DF]],useRaster=TRUE,zlim=zlim,col=col,add=TRUE,...) )
+  if(!is.null(TEST)) { graphics::image(kde$r,z=kde[[DF]],useRaster=FALSE,zlim=zlim,col=col,add=TRUE,...) }
 }
 
 
