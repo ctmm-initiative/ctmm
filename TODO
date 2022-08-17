@@ -1,5 +1,9 @@
 ** PRIORITY
+* include dt.plot diagnostic in bandwidth with weights=TRUE by default
+** add some quick calculation messages when dt is automated
+* error message for as.telemetry on zero rows
 * fit periodicity frequencies for Bill
+* check for consistent projections in rsf.fit
 * remove bad UD returns (ctmm objects) from functions like mean and overlap
 * DDIM natural resolution option
 * export UD on CTMM objects

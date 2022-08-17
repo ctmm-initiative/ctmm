@@ -38,8 +38,12 @@ lag.DOF <- function(data,dt=NULL,weights=NULL,lag=NULL,FLOOR=NULL,p=NULL)
 ##################################
 # Bandwidth optimizer
 #lag.DOF is an unsupported option for end users
-bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,error=0.01,precision=1/2,PC="Markov",verbose=FALSE,trace=FALSE,...)
+bandwidth <- function(data,CTMM,VMM=NULL,UD=NULL,weights=FALSE,fast=TRUE,dt=NULL,error=0.01,precision=1/2,PC="Markov",verbose=FALSE,trace=FALSE,...)
 {
+  if(class(CTMM)[1]=="list" && class(CTMM[[1]])[1]=="UD") { UD <- CTMM }
+
+  if(!is.null(UD)) { return(bandwidth.pop(data,UD,precision=precision)) }
+
   PC <- match.arg(PC,c("Markov","circulant","IID","direct"))
   trace2 <- ifelse(trace,trace-1,FALSE)
 
@@ -354,7 +358,10 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,error=0
     }
 
     if(is.null(CTMM$tau))
-    { bias <- 1 - 1/n + h^2 }
+    {
+      bias <- 1 - 1/n + h^2
+      COV <- cbind(bias*CTMM$sigma)
+    }
     else
     {
       # weights were optimized and now DOF can be calculated
@@ -365,19 +372,180 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,error=0
         DOF <- DOF$DOF
       }
 
-      bias <- akde.bias(CTMM,H=H[1:2,1:2],lag=lag,DOF=DOF,weights=weights)
+      STUFF <- akde.bias(CTMM,H=H[1:2,1:2],lag=lag,DOF=DOF,weights=weights)
+      COV <- STUFF$COV
+      bias <- STUFF$bias
 
-      if(!is.null(VMM))  { bias[3] <- akde.bias(VMM,H=VH,lag=lag,DOF=DOF,weights=weights) }
+      if(!is.null(VMM))
+      {
+        STUFF <- akde.bias(VMM,H=VH,lag=lag,DOF=DOF,weights=weights)
+        bias[3] <- STUFF$bias
+        ZERO <- rep(0,3)
+        COV <- rbind(cbind(COV,ZERO),ZERO)
+        COV[3,3] <- STUFF$COV
+        dimnames(COV) <- list(axes,axes)
+      }
     }
 
     names(bias) <- axes
     names(h) <- axes
     names(DOF.area) <- axes
 
-    H <- list(H=H,h=h,DOF.H=DOF.H,bias=bias,DOF.area=DOF.area,weights=weights,MISE=MISE)
+    H <- list(H=H,h=h,bias=bias,COV=COV,DOF.H=DOF.H,DOF.area=DOF.area,weights=weights,MISE=MISE)
+
+    if(!WEIGHTS || !fast) { H$dt <- dt } # store dt argument used for calculation
+
     class(H) <- "bandwidth"
-  }
+  } # end if verbose
 
   if(trace) { message("Bandwidth optimization complete.") }
+  return(H)
+}
+
+
+# calculate bandwidth and weights the sample of a population
+bandwidth.pop <- function(data,UD,precision=1/2)
+{
+  CTMM <- lapply(UD,function(ud){ud$CTMM})
+  MEAN <- mean(CTMM)
+  MEAN <- mean.pop(MEAN)
+  axes <- MEAN$axes
+
+  # prepare semi-variance lag matrix/vector
+  S <- list() # semi-variance
+  DOF <- list()
+  DET <- list()
+  for(i in 1:length(data))
+  {
+    DET[[i]] <- det(CTMM[[i]]$sigma)
+
+    dt <- UD[[i]]$dt
+    if(is.null(dt)) # exact matrix calculation
+    {
+      lag <- outer(data[[i]]$t,data[[i]]$t,'-')
+      lag <- abs(lag) # SVF not defined correctly for negative lags yet
+    }
+    else
+    {
+      # for fixed weights we can calculate the pair number straight up
+      STUFF <- lag.DOF(data,dt=dt,weights=UD[[i]]$weights)
+      lag <- STUFF$lag
+      DOF[[i]] <- STUFF$DOF
+    }
+
+    # standardized SVF
+    svf <- CTMM[[i]]
+    svf$sigma <- covm(diag(1,2))
+    svf <- svf.func(svf,moment=FALSE)$svf
+    s <- Vectorize(svf)
+
+    S[[i]] <- lag # copy structure if lag is matrix
+    S[[i]][] <- s(lag) # preserve structure... why is this necessary here?
+  }
+
+  MISE <- function(h,finish=FALSE)
+  {
+    if(h==0) { return(Inf) }
+    H <- h^2
+
+    # QUAD
+    Q <- matrix(0,length(data),length(data))
+
+    # QUAD diagonal (slowest term - more optimized)
+    for(i in 1:length(data))
+    {
+      DEN <- 1/sqrt(DET[[i]]*(2*(s+H))^2)
+
+      if(!is.null(dim(S[[i]])))
+      { Q[i,i] <- UD[[i]]$weights %*% DEN %*% UD[[i]]$weights }
+      else
+      { Q[i,i] <- sum(DOF[[i]] * DEN) }
+    }
+
+    # QUAD off-diagonals
+    for(i in 1:length(data))
+    {
+      for(j in (i+1)%:%length(data))
+      {
+        MU <- CTMM[[i]]$mu - CTMM[[j]]$mu
+        SIG <- (1+H)*(CTMM[[i]]$sigma + CTMM[[j]]$sigma)
+        Q[i,j] <- Q[j,i] <- exp((MU %*% PDsolve(SIG) %*% MU)/2) / sqrt(det(SIG))
+      }
+    }
+
+    # LINEAR
+    L <- rep(0,length(data))
+    for(i in 1:length(data))
+    {
+      MU <- CTMM[[i]]$mu - MEAN$mu
+      SIG <- MEAN$sigma + (1+H)*CTMM[[i]]$sigma
+      L[i] <- exp((MU %*% PDsolve(SIG) %*% MU)/2) / sqrt(det(SIG))
+    }
+
+    # minimize w.Q.w - L.w | 1==1.w
+    # minimize w.Q.w - 2*L.w + 2*lambda*(1-1.w)
+    # Q.w - L - lambda*1 = 0
+    # w = solve(Q).(L+lambda*1)
+    # 1 = 1.solve(Q).L + 1.solve(Q).1 * lambda
+    # lambda = (1-1.solve(Q).L)/(1.solve(Q).1)
+    iQ <- PDsolve(Q)
+    lambda <- (1-sum(iQ%*%L))/sum(iQ)
+    w <- iQ %*% (L+lambda)
+
+    # MISE + constant modulo constant
+    mise <- w %*% Q %*% w - 2*(w %*% L)
+    mise <- c(mise)
+
+    if(!finish) { return(mise) }
+
+    mise <- mise + 1/sqrt(det(2*MEAN$sigma))
+    mise <- mise / (2*pi)
+
+    R <- list(MISE=mise,weights=w)
+    return(R)
+  }
+
+  control <- list(precision=precision/2)
+
+  # h relative to population COV
+  n <- sapply(data,nrow)
+  n <- sum(n)
+  hmax <- sqrt(2) * (det(MEAN$sigma)/min(DET))^(1/4)
+  hlim <- c(1/n^(1/6)/2,hmax)
+  h <- optimizer(sqrt(prod(hlim)),MISE,lower=hlim[1],upper=hlim[2],control=control)
+  h <- h$par
+  names(h) <- names(data)
+  H <- h^2
+
+  STUFF <- MISE(h,finish=TRUE)
+  MISE <- STUFF$MISE
+  weights <- STUFF$weights
+  names(weights) <- names(data)
+
+  # KDE bias
+  M1 <- M2 <- 0
+  for(i in 1:length(UD))
+  {
+    MU <- CTMM[[i]]$mu - MEAN$mu
+    M1 <- M1 + weights[i] * MU
+    M2 <- M2 + weights[i] * ( UD[[i]]$COV + H*CTMM[[i]]$sigma + outer(MU) )
+  }
+  COV <- cbind(M2) - outer(M1) # sample covariance
+
+  # variance inflation factor
+  bias <- ( det(COV)/det(MEAN$sigma) )^(1/length(axes))
+
+  DOF.area <- rep( DOF.area(MEAN) , length(axes) )
+  DOF.H <- ( 1/(2*H)^2 - 1/(2+2*H)^2 ) / ( 1/(2+H)^2 - 1/(2+2*H)^2 )
+
+  axes <- MEAN$axes
+  names(bias) <- axes
+  names(h) <- axes
+  names(DOF.area) <- axes
+
+  H <- list(h=h,bias=bias,COV=COV,DOF.area=DOF.area,weights=weights,MISE=MISE,CTMM=MEAN)
+
+  class(H) <- "bandwidth"
+
   return(H)
 }

@@ -144,6 +144,7 @@ data(buffalo)
 DATA <- buffalo$Cilla
 
 GUESS <- ctmm.guess(DATA,interactive=FALSE)
+# in general, you want to run ctmm.select instead
 FIT <- ctmm.fit(DATA,GUESS)
 
 # some human-readable information

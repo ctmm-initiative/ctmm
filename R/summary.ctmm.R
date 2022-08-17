@@ -67,10 +67,17 @@ confint.ctmm <- function(model,alpha=0.05,UNICODE=FALSE)
   if(K>0)
   {
     NAME <- LABEL <- model$tau.names # canonical parameter names
-    TAU <- model$tau # human-readable parameters
+    TAU <- model$TAU # human-readable parameters (canonical timescales)
     J0 <- diag(1,length(NAME))
 
-    if(K==2 && "omega" %in% VARS) # OUO
+    if(K==2 && all(c("tau position","tau velocity","omega") %in% VARS)) # population model with both tau and omega
+    {
+      if(UNICODE) { LABEL <- c("\u03C4[position]","\u03C4[velocity]","\u03C4[period]") }
+      else { LABEL <- c("tau position","tau velocity","tau period") }
+
+      J0 <- model$J.TAU.tau
+    }
+    else if(K==2 && "omega" %in% VARS) # OUO
     {
       if(UNICODE) { LABEL <- c("\u03C4[decay]","\u03C4[period]") }
       else { LABEL <- c("tau decay","tau period") }
@@ -81,10 +88,14 @@ confint.ctmm <- function(model,alpha=0.05,UNICODE=FALSE)
     {
       if(UNICODE) { LABEL <- "\u03C4" }
     } # end OUf
-    else # OU, OUF, IOU
+    else if(tau[1]==Inf) # IOU
+    {
+      if(UNICODE) { LABEL <- paste0("\u03C4[velocity]") }
+    } # end IOU
+    else # OU, OUF
     {
       if(UNICODE) { LABEL <- paste0("\u03C4[",names(tau),"]") }
-    } # end OU, OUF, IOU
+    } # end OU, OUF
 
     VAR.TAU <- J0 %*% COV[NAME,NAME] %*% t(J0)
     VAR.TAU <- diag(VAR.TAU)
@@ -362,8 +373,47 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
   # can we estimate diffusion?
   if(length(object$tau) && object$tau[1]>0)
   {
-    STUFF <- diffusion(object,finish=FALSE)
-    DOF.diffusion <- STUFF$DOF
+    if(!is.null(COV) && all(c('tau position','tau velocity','omega') %in% rownames(COV))) # population mix
+    {
+      ## OUF estimate
+      D1 <- object
+      D1$omega <- FALSE
+      D1 <- diffusion(D1,finish=FALSE)
+
+      ## OUO estimate
+      D2 <- object
+      D2$tau <- c(1,1)/mean(1/D2$tau)
+      J <- diag(1,nrow=nrow(COV))
+      dimnames(J) <- dimnames(COV)
+      # frequency transformation
+      J <- diag(1,nrow=nrow(COV))
+      dimnames(J) <- dimnames(COV)
+      J <- J[rownames(J) %nin% c('tau position','tau position'),]
+      J <- rbind(J,'tau'=rep(0,ncol(J)))
+      J['tau',c('tau position','tau position')] <- -1/object$tau^2/2
+      D2$COV <- J %*% D2$COV %*% t(J)
+      D2 <- diffusion(D2,finish=FALSE)
+
+      # combine estimates (this can be improved by iteration?)
+      STUFF <- list()
+      STUFF$DOF <- D1$DOF + D2$DOF
+      W <- c(D1$DOF,D2$DOF)/STUFF$DOF
+      D <- W[1]*D1$D + W[2]*D2$D
+      f <- mean(1/object$tau)
+      j <- 1/2/f^2/object$tau^2 # d.tau/d.taus
+      STUFF$J <- D1$J
+      STUFF$J['omega'] <- W[2]*D2$J['omega']
+      STUFF$J['tau position'] <- W[1]*D1$J['tau position'] + W[2]*D2$J['tau']*j[1]
+      STUFF$J['tau velocity'] <- W[1]*D1$J['tau velocity'] + W[2]*D2$J['tau']*j[2]
+      STUFF$VAR <- sum( STUFF$J^2 * diag(COV) )
+      DOF.diffusion <- 2*D^2/STUFF$VAR
+      # STUFF$VAR <- 2*STUFF$D^2/STUFF$DOF
+    }
+    else
+    {
+      STUFF <- diffusion(object,finish=FALSE)
+      DOF.diffusion <- STUFF$DOF
+    }
     D <- chisq.ci(STUFF$D,VAR=STUFF$VAR,level=level)
     unit.list <- unit.par(D,"diffusion",SI=!units)
     name <- c(name,unit.list$name)

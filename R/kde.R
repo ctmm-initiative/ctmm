@@ -2,42 +2,53 @@
 # generalize to non-stationary mean
 akde.bias <- function(CTMM,H,lag,DOF,weights)
 {
+  axes <- CTMM$axes
   sigma <- methods::getDataPart(CTMM$sigma)
 
   # weighted correlation
   ACF <- Vectorize( svf.func(CTMM,moment=FALSE)$ACF )
   if(is.null(DOF)) # exact version
   {
-    COV <- lag # copy structure
-    COV[] <- ACF(lag) # preserve structure... why do I have to do it this way?
-    COV <- c(weights %*% COV %*% weights)
+    MM <- lag # copy structure
+    MM[] <- ACF(lag) # preserve structure... why do I have to do it this way?
+    MM <- c(weights %*% MM %*% weights)
   }
   else # fast version
-  { COV <- sum(DOF*ACF(lag)) }
+  { MM <- sum(DOF*ACF(lag)) }
+  VAR <- 1-MM # sample variance (relative)
+  COV <- cbind(VAR*sigma) # sample covariance
+  dimnames(COV) <- list(axes,axes)
 
   # variance inflation factor
-  bias <- ( det(cbind((1-COV)*sigma + H))/det(cbind(sigma)) )^(1/length(CTMM$axes))
+  bias <- ( det(COV+H)/det(cbind(sigma)) )^(1/length(axes))
   # remove cbind if/when I can get det.numeric working
 
   # name dimensions of bias
-  axes <- CTMM$axes
   bias <- rep(bias,length(axes))
   names(bias) <- axes
 
-  return(bias)
+  R <- list(bias=bias,COV=COV)
+  return(R)
 }
 
 
 # AKDE single or list
 # (C) C.H. Fleming (2016-2022)
 # (C) Kevin Winner & C.H. Fleming (2016)
-akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utilization",debias=TRUE,weights=FALSE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
+akde <- function(data,CTMM,VMM=NULL,UD=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utilization",debias=TRUE,weights=FALSE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
 {
   if(variable!="utilization")
   { stop("variable=",variable," not yet supported by akde(). See npr() or revisitation().") }
 
   if(length(projection(data))>1) { stop("Data not in single coordinate system.") }
   validate.grid(data,grid)
+
+  if(class(CTMM)[1]=="list" && class(CTMM[[1]])[1]=="UD")
+  {
+    UD <- CTMM
+    # extract models
+    CTMM <- lapply(UD,function(ud){ud$CTMM})
+  }
 
   DROP <- class(data)[1] != "list"
   data <- listify(data)
@@ -97,7 +108,7 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utiliz
       }
 
       # calculate optimal bandwidth and some other information
-      KDE[[i]] <- bandwidth(data=data[[i]],CTMM=CTMM[[i]],VMM=VMM[[i]],weights[i],verbose=TRUE,error=error,...)
+      if(is.null(UD)) { KDE[[i]] <- bandwidth(data=data[[i]],CTMM=CTMM[[i]],VMM=VMM[[i]],weights=weights[i],verbose=TRUE,error=error,...) }
     }
     else if(class(CTMM)[1]=="bandwidth") # bandwidth information was precalculated
     {
@@ -116,10 +127,35 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utiliz
   grid <- format.grid(grid,axes=axes)
   COL <- length(axes)
 
-  # determine desired (absolute) resolution
-  dr <- sapply(1:n,function(i){sqrt(diag(KDE[[i]]$H))/res}) # (axes,individuals)
+  # determine desired (absolute) resolution from smallest of all individual bandwidths
+  if(is.null(UD))
+  { dr <- sapply(1:n,function(i){KDE[[1]]$h*sqrt(diag(CTMM[[i]]$sigma))/res}) }
+  else
+  { dr <- sapply(1:n,function(i){sqrt(diag(KDE[[i]]$H))/res}) } # (axes,individuals)
   dim(dr) <- c(COL,n)
   dr <- apply(dr,1,min)
+
+  # format population KDE as an individual
+  if(!is.null(UD))
+  {
+    # weights and bandwidth
+    KDE[[1]] <- bandwidth.pop(data,UD)
+    # bandwidth [d,d,n]
+    H <- KDE[[1]]$H
+    KDE[[1]]$H <- lapply(1:length(data),function(i){prepare.H(H*CTMM[[i]]$sigma,nrow(data[[i]]))})
+    # weights * weights
+    weights <- lapply(1:length(data),function(i){KDE[[1]]$weights[i]*UD[[i]]$weights})
+    # population GRF
+    CTMM0 <- CTMM <- list(KDE[[1]]$CTMM)
+    # assemble data
+    data <- lapply(data,function(d){d[,c('t',axes)]})
+    data <- do.call(rbind,data)
+    data <- list(data)
+    # assemble bandwidth
+    H <- do.call(cbind,H)
+    # assemble weights
+    weights <- unlist(weights)
+  }
 
   if(COMPATIBLE) # force grids compatible
   {
@@ -138,6 +174,8 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utiliz
     GRID <- kde.grid(data[[i]],H=KDE[[i]]$H,axes=axes,alpha=error,res=res,dr=dr,grid=grid,EXT.min=EXT) # individual grid
 
     KDE[[i]] <- c(KDE[[i]],kde(data[[i]],H=KDE[[i]]$H,axes=axes,CTMM=CTMM0[[i]],SP=SP,SP.in=SP.in,RASTER=R,bias=DEBIAS[[i]],W=KDE[[i]]$weights,alpha=error,dr=dr,grid=GRID))
+
+    if(!is.null(UD)) { KDE[[i]]$H <- KDE[[i]]$h^2 }
 
     KDE[[i]] <- new.UD(KDE[[i]],info=attr(data[[i]],"info"),type='range',variable="utilization",CTMM=ctmm())
     # in case bandwidth is pre-calculated...

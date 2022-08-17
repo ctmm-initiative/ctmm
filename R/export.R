@@ -81,8 +81,16 @@ SpatialPolygonsDataFrame.UD <- function(object,convex=FALSE,level.UD=0.95,level=
   {
     CL <- grDevices::contourLines(UD$r,z=UD$CDF,levels=P[i])
 
-    if(length(CL)==0) # nuge sp to make a contour
+    if(length(CL)==0) # nudge sp to make a contour
     { CL <- grDevices::contourLines(UD$r,z=UD$CDF,levels=P[i]*(1+.Machine$double.eps)) }
+
+    # # sp complains when less than 4 vertices
+    # GOOD <- rep(TRUE,length(CL))
+    # for(i in 1:length(CL))
+    # { if(length(CL[[i]]$x)<4) { GOOD[i] <- FALSE } }
+    # CL <- CL[GOOD]
+    # # doing this, sp then gives an error about the area slot missing
+    # # TODO check if sf also complains about this
 
     if(convex)
     {

@@ -1,4 +1,4 @@
-ctmm 1.0.1 (2022-08-06)
+ctmm 1.0.1 (2022-08-16)
 
   * new function Log(), Exp() to log transform parameter estimates and their uncertainties for meta-analytic regression
 
@@ -13,6 +13,8 @@ ctmm 1.0.1 (2022-08-06)
   * bugfix in mean() when averaging isotropic and anisotropic models together
 
   * bugfix in speeds() without telemetry object
+  
+  * summary() now works on mean.ctmm() outputs from different input model structures (OUF & OUO)
   
   * fixed log-chi^2 bias correction in mean.ctmm()
 

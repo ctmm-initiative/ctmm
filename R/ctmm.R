@@ -107,10 +107,14 @@ get.taus <- function(CTMM,zeroes=FALSE,simplify=FALSE)
 
   # can't use range boolean because of approximations in ctmm.loglike
   if(K==1 && CTMM$tau[1]<Inf) # OU
-  { CTMM$tau.names <- "tau position" }
+  {
+    CTMM$tau.names <- "tau position"
+    CTMM$TAU <- CTMM$tau[1]
+  }
   else if(K>1 && CTMM$tau[1]==Inf) # IOU
   {
     CTMM$tau.names <- "tau velocity"
+    CTMM$TAU <- CTMM$tau[2]
     CTMM$Omega2 <- 1/CTMM$tau[2] # tau[1]*Omega^2 (everything is renormalized via tau[1] for IOU)
     CTMM$J.Omega2 <- -1/CTMM$tau[2]^2
 
@@ -118,10 +122,29 @@ get.taus <- function(CTMM,zeroes=FALSE,simplify=FALSE)
     CTMM$f.nu <- c( mean(CTMM$f) , +diff(CTMM$f)/2 ) # (f,nu)
     CTMM$TfOmega2 <- 2*CTMM$f.nu[1]/CTMM$Omega2 # 2f/Omega^2 with renormalized Omega^2 -> tau[1]*Omega^2
   }
+  else if(K>1 && all(c("tau position","tau velocity","omega") %in% VARS)) # population model with tau.p, tau.v, omega
+  {
+    CTMM$tau.names <- c('tau position','tau velocity','omega')
+    CTMM$f <- 1/CTMM$tau # make sure this isn't used outside of this function
+    CTMM$f.nu <- c( CTMM$f , CTMM$omega ) # (f,omega)
+    CTMM$Omega2 <- prod(CTMM$f) + CTMM$omega^2
+    # CTMM$TfOmega2 <- 2*CTMM$f.nu[1]/CTMM$Omega2 # what would this be for here?
+    # decay & oscillation period
+    CTMM$TAU <- c(1,1,2*pi)/CTMM$f.nu
+
+    # d(f,omega)/d(tau,omega) # needed for SVC CIs
+    CTMM$J.nu.tau <- diag(c(-CTMM$f^2,1))
+
+    # d(tau,T)/d(tau,omega) # needed for summary
+    CTMM$J.TAU.tau <- diag(c(1,1,-2*pi/CTMM$omega^2))
+
+    CTMM$J.Omega2 <- c(CTMM$f[2:1],2*CTMM$omega) %*% CTMM$J.nu.tau # dOmega^2/d(f,omega) d(f,omega)/d(tau,tau,omega)
+  }
   else if(K>1 && (CTMM$tau[1]>CTMM$tau[2] || all(c("tau position","tau velocity") %in% VARS))) # overdamped
   {
     # the canonical parameterization in this regime is (tau1,tau2) as this includes (0,0) and extends to (Inf,Inf) with rectangular boundary conditions
     CTMM$tau.names <- c('tau position','tau velocity')
+    CTMM$TAU <- CTMM$tau
     CTMM$f <- 1/CTMM$tau
     CTMM$f.nu <- c( mean(CTMM$f) , +diff(CTMM$f)/2 ) # (f,nu)
     CTMM$Omega2 <- prod(CTMM$f) # Omega^2
@@ -143,6 +166,7 @@ get.taus <- function(CTMM,zeroes=FALSE,simplify=FALSE)
   {
     # the canonical parameterization in this regime is (tau) as this includes (0) and extends to (Inf)
     CTMM$tau.names <- c('tau')
+    CTMM$TAU <- CTMM$tau[1]
     CTMM$f <- 1/CTMM$tau
     CTMM$f.nu <- c( CTMM$f[1] , 0 )
     CTMM$Omega2 <- prod(CTMM$f)
