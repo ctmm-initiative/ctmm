@@ -204,7 +204,7 @@ encounter.ctmm <- function(CTMM,include=NULL,exclude=NULL,debias=FALSE,...)
 
 
 # relative encounter rates
-rates <- function(object,debias=TRUE,level=0.95,normalize=TRUE,...)
+rates <- function(object,debias=TRUE,level=0.95,normalize=TRUE,self=TRUE,...)
 {
   units <- FALSE
 
@@ -219,7 +219,7 @@ rates <- function(object,debias=TRUE,level=0.95,normalize=TRUE,...)
   }
 
   # fix diagonals # self encounter rate
-  diag(R[,,1]) <- diag(R[,,2]) <- diag(R[,,3]) <- Inf
+  if(self) { diag(R[,,1]) <- diag(R[,,2]) <- diag(R[,,3]) <- Inf }
 
   return(R)
 }

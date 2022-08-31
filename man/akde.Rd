@@ -2,22 +2,25 @@
 \alias{akde}
 \alias{akde.telemetry}
 \alias{akde.list}
+\alias{pkde}
 \encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Calculate an autocorrelated kernel density estimate}
 \description{
-This function calculates autocorrelated kernel density home-range estimates from \code{telemetry} data and a corresponding continuous-time movement model.
+These functions calculate individual and population-level autocorrelated kernel density home-range estimates from \code{telemetry} data and a corresponding continuous-time movement models.
 }
 \usage{
-akde(data,CTMM,VMM=NULL,UD=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utilization",debias=TRUE,
+akde(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utilization",debias=TRUE,
      weights=FALSE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
+
+pkde(data,UD,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{data}{ 2D timeseries telemetry data represented as a \code{telemetry} object or list of objects. }
   \item{CTMM}{A \code{ctmm} movement model from the output of \code{ctmm.fit} or list of objects.}
   \item{VMM}{An optional vertical \code{ctmm} object for 3D home-range calculation.}
-  \item{UD}{A list of \code{UD} objects for calculating a population density estimate [IN DEVELOPMENT].}
+%  \item{UD}{A list of \code{UD} objects for calculating a population density estimate [IN DEVELOPMENT].}
   \item{R}{A named list of raster covariates if \code{CTMM} contains an RSF model.}
   \item{SP}{SpatialPolygonsDataFrame object for enforcing hard boundaries.}
   \item{SP.in}{Locations are assumed to be inside the \code{SP} polygons if \code{SP.in=TRUE} and outside of \code{SP} if \code{SP.in=FALSE}.}
@@ -29,6 +32,7 @@ akde(data,CTMM,VMM=NULL,UD=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utilizatio
   \item{res}{Number of grid points along each axis, relative to the bandwidth.}
   \item{grid}{Optional grid specification via \code{raster}, \code{UD}, or list of arguments (See `Details' below).}
   \item{...}{Arguments passed to all instances of \code{\link{bandwidth}}.}
+  \item{UD}{A list of individual \code{UD} objects corresponding to \code{data}.}
 }
 
 \details{For weighted AKDE, please note additional \code{...} arguments passed to \code{\link{bandwidth}}, which can have a large impact on computation time in certain cases.

@@ -1,4 +1,6 @@
-ctmm 1.0.1 (2022-08-16)
+ctmm 1.0.1 (2022-08-30)
+
+  * new function pkde() for population kernel density estimates
 
   * new function Log(), Exp() to log transform parameter estimates and their uncertainties for meta-analytic regression
 

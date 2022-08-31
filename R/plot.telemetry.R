@@ -564,7 +564,7 @@ plot.UD <- function(x,col.bg="white",DF="CDF",col.DF="blue",col.grid="white",lab
   # plot grid
   for(i in 1:length(x))
   {
-    if(sum(diag(x[[i]]$H)>0))
+    if("H" %in% names(x[[i]]) && sum(diag(x[[i]]$H)>0))
     {
       H <- covm(x[[i]]$H)
       theta <- H@par["angle"]

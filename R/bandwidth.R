@@ -38,11 +38,11 @@ lag.DOF <- function(data,dt=NULL,weights=NULL,lag=NULL,FLOOR=NULL,p=NULL)
 ##################################
 # Bandwidth optimizer
 #lag.DOF is an unsupported option for end users
-bandwidth <- function(data,CTMM,VMM=NULL,UD=NULL,weights=FALSE,fast=TRUE,dt=NULL,error=0.01,precision=1/2,PC="Markov",verbose=FALSE,trace=FALSE,...)
+bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,error=0.01,precision=1/2,PC="Markov",verbose=FALSE,trace=FALSE,...)
 {
-  if(class(CTMM)[1]=="list" && class(CTMM[[1]])[1]=="UD") { UD <- CTMM }
-
-  if(!is.null(UD)) { return(bandwidth.pop(data,UD,precision=precision)) }
+  # temporary solution
+  if(class(CTMM)[1]=="list" && class(CTMM[[1]])[1]=="UD")
+  { return(bandwidth.pop(data,CTMM,precision=precision)) }
 
   PC <- match.arg(PC,c("Markov","circulant","IID","direct"))
   trace2 <- ifelse(trace,trace-1,FALSE)
@@ -393,7 +393,7 @@ bandwidth <- function(data,CTMM,VMM=NULL,UD=NULL,weights=FALSE,fast=TRUE,dt=NULL
 
     H <- list(H=H,h=h,bias=bias,COV=COV,DOF.H=DOF.H,DOF.area=DOF.area,weights=weights,MISE=MISE)
 
-    if(!WEIGHTS || !fast) { H$dt <- dt } # store dt argument used for calculation
+    if(fast) { H$dt <- dt } # store dt argument used for calculation
 
     class(H) <- "bandwidth"
   } # end if verbose
@@ -404,20 +404,29 @@ bandwidth <- function(data,CTMM,VMM=NULL,UD=NULL,weights=FALSE,fast=TRUE,dt=NULL
 
 
 # calculate bandwidth and weights the sample of a population
-bandwidth.pop <- function(data,UD,precision=1/2)
+bandwidth.pop <- function(data,UD,weights=FALSE,ref="Gaussian",precision=1/2,...)
 {
-  CTMM <- lapply(UD,function(ud){ud$CTMM})
+  ref <- match.arg(ref,c("Gaussian","AKDE"))
+
+  CTMM <- lapply(UD,function(ud){ud@CTMM})
   MEAN <- mean(CTMM)
   MEAN <- mean.pop(MEAN)
   axes <- MEAN$axes
+  n <- length(data)
+
+  if(all(weights==FALSE)) # uniform weights
+  { w <- rep(1/n,n) }
+  else # individual weights
+  { w <- weights/sum(weights) }
+  W.OPT <- all(weights==TRUE) # optimize weights
 
   # prepare semi-variance lag matrix/vector
   S <- list() # semi-variance
   DOF <- list()
-  DET <- list()
+  DET <- rep(NA,length(data))
   for(i in 1:length(data))
   {
-    DET[[i]] <- det(CTMM[[i]]$sigma)
+    DET[i] <- det(CTMM[[i]]$sigma)
 
     dt <- UD[[i]]$dt
     if(is.null(dt)) # exact matrix calculation
@@ -428,7 +437,7 @@ bandwidth.pop <- function(data,UD,precision=1/2)
     else
     {
       # for fixed weights we can calculate the pair number straight up
-      STUFF <- lag.DOF(data,dt=dt,weights=UD[[i]]$weights)
+      STUFF <- lag.DOF(data[[i]],dt=dt,weights=UD[[i]]$weights)
       lag <- STUFF$lag
       DOF[[i]] <- STUFF$DOF
     }
@@ -443,6 +452,17 @@ bandwidth.pop <- function(data,UD,precision=1/2)
     S[[i]][] <- s(lag) # preserve structure... why is this necessary here?
   }
 
+  if(ref=="AKDE")
+  {
+    Q.R <- rates(UD,normalize=FALSE,self=FALSE)[,,'est'] / rates(CTMM,normalize=FALSE,self=FALSE)[,,'est']
+    Q.R <- stats::cov2cor(Q.R)
+
+    # MEAN.UD <- mean(UD)
+    # L.R <- rates(c(list(MEAN.UD),UD),normalize=FALSE,self=FALSE)[,,'est'] / rates(c(list(MEAN),CTMM),normalize=FALSE,self=FALSE)[,,'est']
+    # L.R <- stats::cov2cor(L.R)
+    # L.R <- L.R[1,-1]
+  }
+
   MISE <- function(h,finish=FALSE)
   {
     if(h==0) { return(Inf) }
@@ -454,7 +474,7 @@ bandwidth.pop <- function(data,UD,precision=1/2)
     # QUAD diagonal (slowest term - more optimized)
     for(i in 1:length(data))
     {
-      DEN <- 1/sqrt(DET[[i]]*(2*(s+H))^2)
+      DEN <- 1/( sqrt(DET[i])*2*(S[[i]]+H) )
 
       if(!is.null(dim(S[[i]])))
       { Q[i,i] <- UD[[i]]$weights %*% DEN %*% UD[[i]]$weights }
@@ -463,49 +483,75 @@ bandwidth.pop <- function(data,UD,precision=1/2)
     }
 
     # QUAD off-diagonals
+    # Gaussian
     for(i in 1:length(data))
     {
       for(j in (i+1)%:%length(data))
       {
-        MU <- CTMM[[i]]$mu - CTMM[[j]]$mu
+        MU <- c( CTMM[[i]]$mu - CTMM[[j]]$mu )
         SIG <- (1+H)*(CTMM[[i]]$sigma + CTMM[[j]]$sigma)
-        Q[i,j] <- Q[j,i] <- exp((MU %*% PDsolve(SIG) %*% MU)/2) / sqrt(det(SIG))
+        Q[i,j] <- Q[j,i] <- exp(-(MU %*% PDsolve(SIG) %*% MU)/2) / sqrt(det(SIG))
       }
     }
 
     # LINEAR
+    # Gaussian
     L <- rep(0,length(data))
     for(i in 1:length(data))
     {
-      MU <- CTMM[[i]]$mu - MEAN$mu
+      MU <- c( CTMM[[i]]$mu - MEAN$mu )
       SIG <- MEAN$sigma + (1+H)*CTMM[[i]]$sigma
-      L[i] <- exp((MU %*% PDsolve(SIG) %*% MU)/2) / sqrt(det(SIG))
+      L[i] <- exp(-(MU %*% PDsolve(SIG) %*% MU)/2) / sqrt(det(SIG))
     }
 
-    # minimize w.Q.w - L.w | 1==1.w
-    # minimize w.Q.w - 2*L.w + 2*lambda*(1-1.w)
-    # Q.w - L - lambda*1 = 0
-    # w = solve(Q).(L+lambda*1)
-    # 1 = 1.solve(Q).L + 1.solve(Q).1 * lambda
-    # lambda = (1-1.solve(Q).L)/(1.solve(Q).1)
-    iQ <- PDsolve(Q)
-    lambda <- (1-sum(iQ%*%L))/sum(iQ)
-    w <- iQ %*% (L+lambda)
+    # correct non-Gaussian overlap
+    if(ref=="AKDE")
+    {
+      Q <- Q * Q.R
+      # L <- L * L.R
+    }
 
-    # MISE + constant modulo constant
-    mise <- w %*% Q %*% w - 2*(w %*% L)
-    mise <- c(mise)
+    if(W.OPT)
+    {
+      # # minimize w.Q.w - L.w | 1==1.w
+      # # minimize w.Q.w - 2*L.w + 2*lambda*(1-1.w)
+      # # Q.w - L - lambda*1 = 0
+      # # w = solve(Q).(L+lambda*1)
+      # # 1 = 1.solve(Q).L + 1.solve(Q).1 * lambda
+      # # lambda = (1-1.solve(Q).L)/(1.solve(Q).1)
+      # iQ <- PDsolve(Q)
+      # lambda <- (1-sum(iQ%*%L))/sum(iQ)
+      # w <- c( iQ %*% (L+lambda) )
+
+      CON <- cbind(rep(1,length(L)),diag(length(L)))
+      BOUND <- c(1,rep(0,length(L)))
+      QPS <- quadprog::solve.QP(Q,L,CON,BOUND,meq=1)
+      mise <- 2*QPS$value
+    }
+    else # fixed weights
+    {
+      # MISE + constant modulo constant
+      mise <- w %*% Q %*% w - 2*(w %*% L)
+      mise <- c(mise)
+    }
 
     if(!finish) { return(mise) }
 
-    mise <- mise + 1/sqrt(det(2*MEAN$sigma))
-    mise <- mise / (2*pi)
+    mise <- ( mise + 1/sqrt(det(2*MEAN$sigma)) ) / (2*pi)
+
+    if(W.OPT)
+    {
+      w <- QPS$solution
+      # fix small numerical errors
+      w[w<0] <- 0
+      w <- w/sum(w)
+    }
 
     R <- list(MISE=mise,weights=w)
     return(R)
   }
 
-  control <- list(precision=precision/2)
+  control <- list(precision=precision)
 
   # h relative to population COV
   n <- sapply(data,nrow)
@@ -514,7 +560,7 @@ bandwidth.pop <- function(data,UD,precision=1/2)
   hlim <- c(1/n^(1/6)/2,hmax)
   h <- optimizer(sqrt(prod(hlim)),MISE,lower=hlim[1],upper=hlim[2],control=control)
   h <- h$par
-  names(h) <- names(data)
+  # names(h) <- names(data)
   H <- h^2
 
   STUFF <- MISE(h,finish=TRUE)
@@ -526,7 +572,7 @@ bandwidth.pop <- function(data,UD,precision=1/2)
   M1 <- M2 <- 0
   for(i in 1:length(UD))
   {
-    MU <- CTMM[[i]]$mu - MEAN$mu
+    MU <- c( CTMM[[i]]$mu - MEAN$mu )
     M1 <- M1 + weights[i] * MU
     M2 <- M2 + weights[i] * ( UD[[i]]$COV + H*CTMM[[i]]$sigma + outer(MU) )
   }
@@ -535,12 +581,15 @@ bandwidth.pop <- function(data,UD,precision=1/2)
   # variance inflation factor
   bias <- ( det(COV)/det(MEAN$sigma) )^(1/length(axes))
 
-  DOF.area <- rep( DOF.area(MEAN) , length(axes) )
+  DOF.area <- DOF.area(MEAN)
   DOF.H <- ( 1/(2*H)^2 - 1/(2+2*H)^2 ) / ( 1/(2+H)^2 - 1/(2+2*H)^2 )
 
   axes <- MEAN$axes
+  bias <- c(bias,bias)
   names(bias) <- axes
+  h <- c(h,h)
   names(h) <- axes
+  DOF.area <- c(DOF.area,DOF.area)
   names(DOF.area) <- axes
 
   H <- list(h=h,bias=bias,COV=COV,DOF.area=DOF.area,weights=weights,MISE=MISE,CTMM=MEAN)

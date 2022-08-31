@@ -5,7 +5,7 @@
 \title{Calculate the optimal bandwidth matrix of movement data}
 \description{This function calculates the optimal bandwidth matrix (kernel covariance) for a two-dimensional animal tracking dataset, given an autocorrelated movement model (Fleming et al, 2015). This optimal bandwidth can fully take into account all autocorrelation in the data, assuming it is captured by the movement model.}
 \usage{
-bandwidth(data,CTMM,VMM=NULL,UD=NULL,weights=FALSE,fast=TRUE,dt=NULL,error=0.01,precision=1/2,
+bandwidth(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,error=0.01,precision=1/2,
   PC="Markov",verbose=FALSE,trace=FALSE,...)
 }
 %- maybe also 'usage' for other objects documented here.
@@ -13,7 +13,7 @@ bandwidth(data,CTMM,VMM=NULL,UD=NULL,weights=FALSE,fast=TRUE,dt=NULL,error=0.01,
   \item{data}{ 2D timeseries telemetry data represented as a \code{telemetry} object. }
   \item{CTMM}{A \code{ctmm} movement model as from the output of \code{ctmm.fit}.}
   \item{VMM}{An optional vertical \code{ctmm} object for 3D bandwidth calculation.}
-  \item{UD}{A list of \code{UD} objects for calculating population weights and bandwidth [IN DEVELOPMENT].}
+%  \item{UD}{A list of \code{UD} objects for calculating population weights and bandwidth [IN DEVELOPMENT].}
   \item{weights}{By default, the weights are taken to be uniform, whereas \code{weights=TRUE} will optimize the weights.}
   \item{fast}{Use FFT algorithms for weight optimization.}
   \item{dt}{Optional lag bin width for the FFT algorithm.}

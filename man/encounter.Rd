@@ -10,7 +10,7 @@
 
 \description{Functions to calculate \emph{relative} encounter rates and the conditional location distribution of where encounters take place (conditional on said encounters taking place), as described in Noonan et al (2021).}
 
-\usage{rates(object,debias=TRUE,level=0.95,normalize=TRUE,...)
+\usage{rates(object,debias=TRUE,level=0.95,normalize=TRUE,self=TRUE,...)
 
 encounter(object,include=NULL,exclude=NULL,debias=FALSE,...) }
 %- maybe also 'usage' for other objects documented here.
@@ -19,6 +19,7 @@ encounter(object,include=NULL,exclude=NULL,debias=FALSE,...) }
   \item{debias}{Approximate bias corrections (\code{encounter} corrections in development).}
   \item{level}{Confidence level for relative encounter rates.}
   \item{normalize}{Normalize relative encounter rates by the average uncorrelated self-encounter rate.}
+  \item{self}{Fix the self-interaction rate appropriately.}
   \item{include}{A matrix of interactions to include in the calculation (see Details below).}
   \item{exclude}{A matrix of interactions to exclude in the calculation (see Details below).}
   \item{...}{Additional arguments for future use.}

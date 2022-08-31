@@ -32,10 +32,15 @@ akde.bias <- function(CTMM,H,lag,DOF,weights)
 }
 
 
+# population AKDE
+pkde <- function(data,UD,...)
+{ akde(data,CTMM=UD,...) }
+
+
 # AKDE single or list
 # (C) C.H. Fleming (2016-2022)
 # (C) Kevin Winner & C.H. Fleming (2016)
-akde <- function(data,CTMM,VMM=NULL,UD=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utilization",debias=TRUE,weights=FALSE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
+akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utilization",debias=TRUE,weights=FALSE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
 {
   if(variable!="utilization")
   { stop("variable=",variable," not yet supported by akde(). See npr() or revisitation().") }
@@ -43,12 +48,15 @@ akde <- function(data,CTMM,VMM=NULL,UD=NULL,R=list(),SP=NULL,SP.in=TRUE,variable
   if(length(projection(data))>1) { stop("Data not in single coordinate system.") }
   validate.grid(data,grid)
 
+  # if called by pakde
   if(class(CTMM)[1]=="list" && class(CTMM[[1]])[1]=="UD")
   {
     UD <- CTMM
     # extract models
-    CTMM <- lapply(UD,function(ud){ud$CTMM})
+    CTMM <- lapply(UD,function(ud){ud@CTMM})
   }
+  else
+  { UD <- NULL }
 
   DROP <- class(data)[1] != "list"
   data <- listify(data)
@@ -69,6 +77,7 @@ akde <- function(data,CTMM,VMM=NULL,UD=NULL,R=list(),SP=NULL,SP.in=TRUE,variable
   COMPATIBLE <- length(data)>1 && !is.grid.complete(grid)
 
   axes <- CTMM[[1]]$axes
+  AXES <- length(axes)
 
   n <- length(data)
   weights <- array(weights,n)
@@ -88,13 +97,13 @@ akde <- function(data,CTMM,VMM=NULL,UD=NULL,R=list(),SP=NULL,SP.in=TRUE,variable
       if(!is.null(VMM[[i]]))
       {
         axis <- VMM[[i]]$axes
-        if(VMM[[i]]$error && smooth)
+        if(any(VMM[[i]]$error>0) && smooth)
         { z <- predict(VMM[[i]],data=data[[i]],t=data[[i]]$t)[[axis]] } # [,axis] fails?
         else
         { z <- data[[i]][[axis]] }
         axes <- c(axes,axis)
       }
-      if(CTMM[[i]]$error && smooth)
+      if(any(CTMM[[i]]$error>0) && smooth)
       {
         data[[i]] <- predict(CTMM[[i]],data=data[[i]],t=data[[i]]$t)
         CTMM[[i]]$error <- FALSE # smoothed error model (approximate)
@@ -107,7 +116,7 @@ akde <- function(data,CTMM,VMM=NULL,UD=NULL,R=list(),SP=NULL,SP.in=TRUE,variable
         VMM[[i]]$error <- FALSE # smoothed error model (approximate)
       }
 
-      # calculate optimal bandwidth and some other information
+      # calculate individual optimal bandwidth and some other information
       if(is.null(UD)) { KDE[[i]] <- bandwidth(data=data[[i]],CTMM=CTMM[[i]],VMM=VMM[[i]],weights=weights[i],verbose=TRUE,error=error,...) }
     }
     else if(class(CTMM)[1]=="bandwidth") # bandwidth information was precalculated
@@ -118,44 +127,68 @@ akde <- function(data,CTMM,VMM=NULL,UD=NULL,R=list(),SP=NULL,SP.in=TRUE,variable
     else
     { stop(paste("CTMM argument is of class",class(CTMM)[1])) }
 
-    if(debias)
-    { DEBIAS[[i]] <- KDE[[i]]$bias }
-    else
-    { DEBIAS[[i]] <- FALSE }
+    if(is.null(UD))
+    {
+      if(debias)
+      { DEBIAS[[i]] <- KDE[[i]]$bias }
+      else
+      { DEBIAS[[i]] <- FALSE }
+    }
   } # end loop over individuals
 
   grid <- format.grid(grid,axes=axes)
   COL <- length(axes)
 
-  # determine desired (absolute) resolution from smallest of all individual bandwidths
-  if(is.null(UD))
-  { dr <- sapply(1:n,function(i){KDE[[1]]$h*sqrt(diag(CTMM[[i]]$sigma))/res}) }
-  else
-  { dr <- sapply(1:n,function(i){sqrt(diag(KDE[[i]]$H))/res}) } # (axes,individuals)
-  dim(dr) <- c(COL,n)
-  dr <- apply(dr,1,min)
-
-  # format population KDE as an individual
-  if(!is.null(UD))
+  if(!is.null(UD)) # format population KDE as an individual # then set resolution
   {
+    i <- 1 # one population
     # weights and bandwidth
-    KDE[[1]] <- bandwidth.pop(data,UD)
+    KDE[[i]] <- bandwidth.pop(data,UD,weights=weights,...)
+    # bias information
+    if(debias)
+    { DEBIAS[[i]] <- KDE[[i]]$bias }
+    else
+    { DEBIAS[[i]] <- FALSE }
     # bandwidth [d,d,n]
-    H <- KDE[[1]]$H
-    KDE[[1]]$H <- lapply(1:length(data),function(i){prepare.H(H*CTMM[[i]]$sigma,nrow(data[[i]]))})
-    # weights * weights
-    weights <- lapply(1:length(data),function(i){KDE[[1]]$weights[i]*UD[[i]]$weights})
-    # population GRF
-    CTMM0 <- CTMM <- list(KDE[[1]]$CTMM)
+    H <- KDE[[i]]$h^2
+
+    # assemble bandwidth
+    KDE[[i]]$H <- list()
+    for(j in 1:n)
+    {
+      KDE[[i]]$H[[j]] <- prepare.H(H*CTMM[[j]]$sigma,nrow(data[[j]]))
+      DIM <- dim(KDE[[i]]$H[[j]])
+      dim(KDE[[i]]$H[[j]]) <- c(DIM[1],AXES^2)
+    }
+    KDE[[i]]$H <- do.call(rbind,KDE[[i]]$H)
+    DIM <- dim(KDE[[i]]$H)
+    dim(KDE[[i]]$H) <- c(DIM[1],AXES,AXES)
+
+    # assemble weights # weights * weights
+    weights <- KDE[[i]]$weights
+    KDE[[i]]$weights <- lapply(1:n,function(j){KDE[[i]]$weights[j]*UD[[j]]$weights})
+    KDE[[i]]$weights <- unlist(KDE[[i]]$weights)
+
     # assemble data
     data <- lapply(data,function(d){d[,c('t',axes)]})
     data <- do.call(rbind,data)
     data <- list(data)
-    # assemble bandwidth
-    H <- do.call(cbind,H)
-    # assemble weights
-    weights <- unlist(weights)
+    dr <- sapply(1:n,function(j){sqrt(min(1,H)*diag(CTMM[[j]]$sigma))/res})
+    dim(dr) <- c(COL,n)
+
+    # population GRF
+    CTMM0 <- CTMM <- list(KDE[[i]]$CTMM)
+
+    n <- 1 # one population
+    DROP <- TRUE
   }
+  else
+  {
+    # determine desired (absolute) resolution from smallest of all individual bandwidths
+    dr <- sapply(1:n,function(i){sqrt(pmin(diag(KDE[[i]]$H),diag(CTMM0[[i]]$sigma)))/res}) # (axes,individuals)
+    dim(dr) <- c(COL,n)
+  }
+  dr <- apply(dr,1,min)
 
   if(COMPATIBLE) # force grids compatible
   {
@@ -175,7 +208,12 @@ akde <- function(data,CTMM,VMM=NULL,UD=NULL,R=list(),SP=NULL,SP.in=TRUE,variable
 
     KDE[[i]] <- c(KDE[[i]],kde(data[[i]],H=KDE[[i]]$H,axes=axes,CTMM=CTMM0[[i]],SP=SP,SP.in=SP.in,RASTER=R,bias=DEBIAS[[i]],W=KDE[[i]]$weights,alpha=error,dr=dr,grid=GRID))
 
-    if(!is.null(UD)) { KDE[[i]]$H <- KDE[[i]]$h^2 }
+    if(!is.null(UD))
+    {
+      # KDE[[i]]$H <- KDE[[i]]$h^2
+      KDE[[i]]$H <- NULL
+      KDE[[i]]$weights <- weights
+    }
 
     KDE[[i]] <- new.UD(KDE[[i]],info=attr(data[[i]],"info"),type='range',variable="utilization",CTMM=ctmm())
     # in case bandwidth is pre-calculated...
@@ -229,15 +267,23 @@ kde <- function(data,H,axes=c("x","y"),CTMM=list(),SP=NULL,SP.in=TRUE,RASTER=lis
     { VARIABLE <- variable }
   }
 
-  r <- get.telemetry(data,axes)
-  n <- nrow(r)
+  # format bandwidth matrix
+  H <- prepare.H(H,nrow(data),axes=axes)
 
   # normalize weights
-  if(is.null(W)) { W <- rep(1,length(data$x)) }
+  if(is.null(W))
+  { W <- rep(1,length(data$x)) }
+  else # unweighted times can be skipped
+  {
+    SUB <- (W/max(W))>.Machine$double.eps
+    W <- W[SUB]
+    data <- data[SUB,]
+    H <- H[SUB,,,drop=FALSE]
+  }
   if(normalize) { W <- W/sum(W) }
 
-  # format bandwidth matrix
-  H <- prepare.H(H,n,axes=axes)
+  n <- nrow(data)
+  r <- get.telemetry(data,axes)
 
   # fill in grid information
   grid <- kde.grid(data,H=H,axes=axes,alpha=alpha,res=res,dr=dr,grid=grid)
@@ -376,7 +422,7 @@ kde <- function(data,H,axes=c("x","y"),CTMM=list(),SP=NULL,SP.in=TRUE,RASTER=lis
       {
         SUM <- sum(dPMF) # preserve truncation error
         dPMF <- dPMF * R.SUB
-        dPMF <- (SUM/sum(dPMF)) * dPMF
+        dPMF <- nant(SUM/sum(dPMF),0) * dPMF
       }
 
       dPMF <- W[i]*dPMF

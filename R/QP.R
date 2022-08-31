@@ -78,7 +78,7 @@ PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC=
     {
       stop("!fast & Topelitz not yet implemented.")
     }
-  }
+  } # end !fast PC and %*%
   else ### using FFT tricks ###########################################################
   {
     n <- length(FLOOR) # number of sampled times
@@ -210,7 +210,7 @@ PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC=
 
       G.VEC <- function(V,inverse=FALSE) { c(G %*% V) }
     }
-  }
+  } # end fast PC and %*%
 
   ########################################################
   ######### DEFINE PRECONDITIONERS #######################
@@ -260,7 +260,7 @@ PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC=
 
       return(V)
     }
-  }
+  } # end banded PC
   else if(PC=="circulant")
   {
     PC.VEC <- function(V)
@@ -317,7 +317,7 @@ PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC=
 
       return(V)
     }
-  }
+  } # end Markov PC
 
   # find the best linear combination of vectors for solution to V=solve(G,1)
   L.SEARCH <- function(V,G.V)
