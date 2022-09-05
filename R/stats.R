@@ -8,7 +8,7 @@ cov.loglike <- function(hess,grad=rep(0,sqrt(length(hess))),tol=.Machine$double.
   # if hessian is likely to be positive definite
   if(all(diag(hess)>0))
   {
-    COV <- try(PDsolve(hess))
+    COV <- try(PDsolve(hess),silent=TRUE)
     if(class(COV)[1]=="matrix" && all(diag(COV)>0)) { return(COV) }
   }
   # one of the curvatures is negative or close to negative

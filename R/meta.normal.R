@@ -123,6 +123,7 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
     }
     COV.mu <- array(0,c(DIM,DIM))
     COV.mu[MEANS,MEANS] <- PDsolve(P.mu[MEANS,MEANS],force=TRUE)
+    # COV.mu[MEANS,MEANS] <- cov.loglike(P.mu[MEANS,MEANS])
     mu <- c(COV.mu %*% mu)
     # if(any(ZEROM)) { mu[ZEROM] <- 0 } # should be okay
 
