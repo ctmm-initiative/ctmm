@@ -242,7 +242,7 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
     }
 
     if(CONSISTENT) # extract pixel areas for integration
-    { dA <- raster::area(R[[1]]) }
+    { dA <- raster::area(R[[1]]) } # TODO generalize this for projected covariates
     else # choose minimum resolution for integration grid
     {
       dx <- min(UD$dr['x'],dX)

@@ -70,6 +70,7 @@ log.ctmm <- function(CTMM,debias=FALSE)
     DOF <- 2/EIGEN$values # log-chi^2 VAR-DOF relation
     BIAS <- digamma(DOF/2)-log(DOF/2) # negative bias for log(chi^2) variates
     BIAS <- nant(BIAS,0)
+    BIAS <- pmax(BIAS,digamma(1/2)-log(1/2)) # clamp to 1 DOF
     par[SUB] <- par[SUB] - BIAS # E[log(chi^2)] bias correction
     par[SUB] <- c(EIGEN$vectors %*% par[SUB]) # transform back (still under logarithm)
 
@@ -133,6 +134,7 @@ exp.ctmm <- function(CTMM,debias=FALSE)
     DOF <- 2*itrigamma(EIGEN$values)
     BIAS <- digamma(DOF/2)-log(DOF/2) # negative bias for log(chi^2) variates
     BIAS <- nant(BIAS,0)
+    BIAS <- pmax(BIAS,digamma(1/2)-log(1/2)) # clamp to 1 DOF
     par[SUB] <- par[SUB] + BIAS # E[log-chi^2] bias correction
     par[SUB] <- c(EIGEN$vectors %*% par[SUB]) # transform back (still under logarithm)
 
@@ -308,6 +310,21 @@ mean.features <- function(x,debias=TRUE,isotropic=FALSE,variance=TRUE,weights=NU
 
   N <- length(x)
   axes <- x[[1]]$axes
+
+  # only want biological parameters
+  for(i in 1:length(x))
+  {
+    FEATURES <- x[[i]]$features
+    ERRORS <- grepl('error',FEATURES)
+    if(any(ERRORS))
+    {
+      x[[i]]$error <- FALSE
+      x[[i]]$features <- FEATURES[!ERRORS]
+      #FEATURES <- rownames(x[[i]]$COV)
+      #ERRORS <- grepl('error',FEATURES) # how can this differ?
+      x[[i]]$COV <- x[[i]]$COV[!ERRORS,!ERRORS]
+    }
+  }
 
   # all possible features
   FEATURES <- lapply(x,function(y){y$features})

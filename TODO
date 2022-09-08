@@ -1,5 +1,6 @@
 ** PRIORITY
-* population akde with Gaussian or AKDE overlap MISE
+* rsf.fit covariate integrator long-lat fix
+* averaging individuals with different reference categoroes
 * include dt.plot diagnostic in bandwidth with weights=TRUE by default
 ** add some quick calculation messages when dt is automated
 * error message for as.telemetry on zero rows
