@@ -13,11 +13,6 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
 
   CALC <- integrated || length(R) # anything to calculate?
 
-  # smooth the data, but don't drop
-  if(smooth && any(CTMM$error>0))
-  { data[,c(axes,GEO)] <- predict(data,CTMM=CTMM,t=data$t,complete=TRUE)[,c(axes,GEO)] }
-  n <- nrow(data)
-
   if(!integrated) # prepare available region polygon
   {
     if(class(level.UD)[1]=="numeric")
@@ -30,12 +25,17 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
     { level.UD <- sp::spTransform(level.UD,sp::CRS(projection(data))) }
     AREA <- level.UD@area
   }
-  else if(isotropic && !CTMM$isotropic) # keep things simple for now
+  else if(isotropic && !CTMM$isotropic) # until rsf.select() is coded
   {
     message('RSF code is isotropic for the moment.')
     CTMM <- simplify.ctmm(CTMM,'minor')
     CTMM <- ctmm.fit(data,CTMM,trace=trace)
   }
+
+  # smooth the data, but don't drop
+  if(smooth && any(CTMM$error>0))
+  { data[,c(axes,GEO)] <- predict(data,CTMM=CTMM,t=data$t,complete=TRUE)[,c(axes,GEO)] }
+  n <- nrow(data)
 
   # for simulation - uncorrelated, error-less
   IID <- CTMM
