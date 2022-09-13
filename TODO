@@ -1,5 +1,9 @@
 ** PRIORITY
+* pkde weights choice and bandwidth choice
+* simple correlation estimator
+* gps-time fix on import (e-obs)
 * rsf.fit covariate integrator long-lat fix
+* rsf.fit HREML correction after variance fit
 * averaging individuals with different reference categoroes
 * include dt.plot diagnostic in bandwidth with weights=TRUE by default
 ** add some quick calculation messages when dt is automated

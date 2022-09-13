@@ -261,7 +261,7 @@ PDsolve <- function(M,sym=TRUE,force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
 
   # check for Inf & invert those to 0 (and vice versa)
   INF <- diag(M)==Inf
-  ZERO <- diag(M)<=0
+  ZERO <- diag(M)<=0 & sym
   if(any(INF) || any(ZERO))
   {
     # 1/Inf == 0 # correlations not accounted for
@@ -276,7 +276,7 @@ PDsolve <- function(M,sym=TRUE,force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
 
     # regular inverse of remaining dimensions
     REM <- !(INF|ZERO)
-    if(any(REM)) { M[REM,REM] <- PDsolve(M[REM,REM,drop=FALSE],force=force,pseudo=pseudo) }
+    if(any(REM)) { M[REM,REM] <- PDsolve(M[REM,REM,drop=FALSE],force=force,pseudo=pseudo,sym=sym) }
 
     return(M)
   }
@@ -317,7 +317,7 @@ PDsolve <- function(M,sym=TRUE,force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
   # try ordinary inverse
   M.try <- try(qr.solve(M,tol=tol),silent=TRUE)
   # fall back on decomposition
-  if( class(M.try)[1] == "matrix" && all(diag(M.try>=0)) )
+  if( class(M.try)[1] == "matrix" && (!sym || all(diag(M.try>=0))) )
   { M <- M.try }
   else
   { M <- PDfunc(M,func=function(m){1/m},sym=sym,force=force,pseudo=pseudo,tol=tol) }
