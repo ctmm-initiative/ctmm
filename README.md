@@ -20,5 +20,9 @@ install.packages("ctmm")
 
 Installing the latest development release from Github:
 ```r
+remotes::install_github("ctmm-initiative/ctmm")
+```
+or
+```r
 devtools::install_github("ctmm-initiative/ctmm")
 ```

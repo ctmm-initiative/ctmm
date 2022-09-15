@@ -4,6 +4,7 @@
 difference <- function(data,CTMM,dt=NULL,...)
 {
   check.projections(data)
+  INFO <- mean.info(data)
 
   t1 <- max(data[[1]]$t[1],data[[2]]$t[1])
   t2 <- min(last(data[[1]]$t),last(data[[2]]$t))
@@ -36,23 +37,17 @@ difference <- function(data,CTMM,dt=NULL,...)
   for(i in 2:(n-1)) { if(data[[VAR]][i]<min(data[[VAR]][c(i-1,i+1)])) { CANON[i] <- TRUE } }
   if(data[[VAR]][n]<data[[VAR]][n-1]) { CANON[n] <- TRUE }
 
-  int.b <- function(y)
+  IND <- which(CANON)
+  m <- length(IND)
+  DATA <- array(0,c(m,ncol(data)))
+  colnames(DATA) <- colnames(data)
+  for(j in 1:m)
   {
-    b <- c(y[2],0,0)
-    y <- y - y[2]
-    b[2] <- (y[3]-y[1])/2
-    b[3] <- (y[3]+y[1])/2
-    return(b)
-  }
-
-  DATA <- NULL
-  if(CANON[1]) {  }
-  for(i in which(CANON))
-  {
+    i <- IND[j]
     # end points should be exact
     if(i==1 || i==n)
-    { DATA <- rbind(DATA,data[i,]) }
-    else # in between interpolate
+    { DAT <- data[i,] }
+    else # in between interpolate quadratically
     {
       DAT <- data[i+(-1):1,]
       # coefficients
@@ -62,12 +57,24 @@ difference <- function(data,CTMM,dt=NULL,...)
       b2 <- (DAT[3,]+DAT[1,])/2
       # minimum variance index
       x <- -b1[VAR]/(2*b2[VAR])
+      x <- nant(x,sign(b1[VAR]))
       # interpolate
       DAT <- b0 + b1*x + b2*x^2
       # fix time
       DAT['t'] <- data$t[i] + x*dt
       # !!! UNFINISHED
     }
-  }
+    DATA[j,] <- DAT
+  } # end for
+  rm(data)
 
+  # fix repeats for constant VAR...
+  SUB < c(1,diff(DATA$t)) > 0
+  DATA <- DATA[SUB,]
+
+  # make this a telemetry object
+  DATA <- new.telemetry(DATA,info=INFO)
+  # make sure UERE is correct
+
+  return(DATA)
 }
