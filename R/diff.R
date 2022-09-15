@@ -69,7 +69,7 @@ difference <- function(data,CTMM,dt=NULL,...)
   rm(data)
 
   # fix repeats for constant VAR...
-  SUB < c(1,diff(DATA$t)) > 0
+  SUB <- c(1,diff(DATA$t)) > 0
   DATA <- DATA[SUB,]
 
   # make this a telemetry object
