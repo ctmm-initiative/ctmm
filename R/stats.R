@@ -151,10 +151,12 @@ bint <- function(M,ind)
   BINT <- function(i)
   {
     dX <- c(INDx[2,i]-ind[1,i],ind[1,i]-INDx[1,i]) / (INDx[2,i]-INDx[1,i])
-    dX <- nant(dX,1)
+    dX <- nant(dX,1) # in case of 0/0
+    dX <- dX/sum(dX) # in case of two NaNs
 
     dY <- c(INDy[2,i]-ind[2,i],ind[2,i]-INDy[1,i]) / (INDy[2,i]-INDy[1,i])
     dY <- nant(dY,1)
+    dY <- dY/sum(dY)
 
     c( dX %*% M[INDx[,i],INDy[,i]] %*% dY )
   }

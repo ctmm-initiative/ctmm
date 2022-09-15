@@ -121,7 +121,7 @@ currence <- function(data,CTMM,H=0,variable="utilization",res.time=10,res.space=
   n <- length(R[,1])
 
   # continuous velocities will give us more information to use
-  if(length(CTMM$tau)>1)
+  if(length(CTMM$tau)>1 && dt<CTMM$tau[2])
   { V <- state$V[GRID,] }
   else # null velocity data otherwise
   { V <- array(0,c(n,2)) }
