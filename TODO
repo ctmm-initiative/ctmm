@@ -1,5 +1,7 @@
 ** PRIORITY
-* pkde weights choice and bandwidth choice
+* mean() what should the uncertainty be if sample==population? Option for that.
+* pkde weights choice, bandwidth choice, RSF choice - wouldn't be necessary with posterior model predictions
+* posterior model predictions
 * simple correlation estimator
 * gps-time fix on import (e-obs)
 * rsf.fit covariate integrator long-lat fix

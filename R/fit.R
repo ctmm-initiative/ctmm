@@ -216,7 +216,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
     names(p) <- NAMES
 
     # catch for zero error
-    if(any(CTMM$error>0 & UERE.DOF>0 & p[paste("error",names(CTMM$error))]==0))
+    if(any(CTMM$error[UERE.FIT]>0 & UERE.DOF[UERE.FIT]>0 & p[paste("error",names(CTMM$error[UERE.FIT]))]==0))
     { return(Inf) }
     # otherwise, UERE.DOF is not counted in likelihood
 

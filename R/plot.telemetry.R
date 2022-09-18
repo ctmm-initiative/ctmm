@@ -538,6 +538,9 @@ plot.UD <- function(x,col.bg="white",DF="CDF",col.DF="blue",col.grid="white",lab
 
   # contour labels
   if(is.null(labels)) { labels <- round(100*level.UD) }
+
+  LABEL.CI <- (length(labels)<3*length(level.UD))
+
   if((length(labels)==length(level.UD) || length(labels)==3*length(level.UD)) && length(labels) != length(x))
   {
     labels <- array(labels,c(length(level.UD),3,length(x)))
@@ -545,6 +548,12 @@ plot.UD <- function(x,col.bg="white",DF="CDF",col.DF="blue",col.grid="white",lab
   }
   else
   { labels <- array(labels,c(length(x),length(level.UD),3)) }
+
+  if(LABEL.CI)
+  {
+    labels[,,1] <- paste(labels[,,1],"(low)")
+    labels[,,3] <- paste(labels[,,3],"(high)")
+  }
 
   col.DF <- array(col.DF,length(x))
   col.grid <- array(col.grid,length(x))

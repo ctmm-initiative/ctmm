@@ -1,80 +1,132 @@
 # location difference vector
 # data is a list of two telemetry objects
 # CTMM is a list of two ctmm fit objects corresponding to data
-difference <- function(data,CTMM,dt=NULL,...)
+difference <- function(data,CTMM,t=NULL,...)
 {
   check.projections(data)
   INFO <- mean.info(data)
+  INFO$identity <- paste0(data[[1]]@info$identity,'-',data[[2]]@info$identity)
 
-  t1 <- max(data[[1]]$t[1],data[[2]]$t[1])
-  t2 <- min(last(data[[1]]$t),last(data[[2]]$t))
+  if(is.null(t))
+  {
+    # shared time range
+    t1 <- max(data[[1]]$t[1],data[[2]]$t[1])
+    t2 <- min(last(data[[1]]$t),last(data[[2]]$t))
 
-  if(is.null(dt)) { dt <- min( stats::median(diff(data[[1]]$t)) , stats::median(diff(data[[2]]$t)) ) }
-  dt <- dt/10 # search at finer scale
-  n <- (t2-t1)/dt
-  n <- ceiling(n)
-  dt <- (t2-t1)/n
-  t <- seq(t1,t2,length.out=n+1)
-  n <- length(t)
+    # shared times
+    t <- c( data[[1]]$t , data[[2]]$t )
+    t <- t[t>=t1]
+    t <- t[t<=t2]
+    t <- sort(t)
+    t <- unique(t)
+  }
 
   # predict over fine grid
   data[[1]] <- predict(data[[1]],CTMM[[1]],t=t)
   data[[2]] <- predict(data[[2]],CTMM[[2]],t=t)
 
-  axes <- CTMM$axes
+  axes <- CTMM[[1]]$axes
   for(z in axes) { data[[1]][[z]] <- data[[1]][[z]] - data[[2]][[z]] }
 
   VAR <- DOP.LIST$horizontal$VAR
-  VARS <- c(VAR,DOP.LIST$horizontal$COV)
-  for(v in VARS) { data[[1]][[v]] <- data[[1]][[v]] + data[[2]][[v]] }
+  COV <- DOP.LIST$horizontal$COV
 
-  data <- data[[1]][,c('t',axes,VARS)]
-
-  # now find the canonical times that minimize error
-  # initial guess
-  CANON <- rep(FALSE,nrow(data))
-  if(data[[VAR]][1]<data[[VAR]][2]) { CANON[1] <- TRUE }
-  for(i in 2:(n-1)) { if(data[[VAR]][i]<min(data[[VAR]][c(i-1,i+1)])) { CANON[i] <- TRUE } }
-  if(data[[VAR]][n]<data[[VAR]][n-1]) { CANON[n] <- TRUE }
-
-  IND <- which(CANON)
-  m <- length(IND)
-  DATA <- array(0,c(m,ncol(data)))
-  colnames(DATA) <- colnames(data)
-  for(j in 1:m)
+  VARS <- COVS <- rep(FALSE,2)
+  for(i in 1:2)
   {
-    i <- IND[j]
-    # end points should be exact
-    if(i==1 || i==n)
-    { DAT <- data[i,] }
-    else # in between interpolate quadratically
-    {
-      DAT <- data[i+(-1):1,]
-      # coefficients
-      b0 <- DAT[2,]
-      DAT <- t( t(DAT) - DAT[2,] )
-      b1 <- (DAT[3,]-DAT[1,])/2
-      b2 <- (DAT[3,]+DAT[1,])/2
-      # minimum variance index
-      x <- -b1[VAR]/(2*b2[VAR])
-      x <- nant(x,sign(b1[VAR]))
-      # interpolate
-      DAT <- b0 + b1*x + b2*x^2
-      # fix time
-      DAT['t'] <- data$t[i] + x*dt
-      # !!! UNFINISHED
-    }
-    DATA[j,] <- DAT
-  } # end for
-  rm(data)
+    VARS[i] <- VAR %in% names(data[[1]])
+    COVS[i] <- all(COV %in% names(data[[2]]))
+  }
 
-  # fix repeats for constant VAR...
-  SUB <- c(1,diff(DATA$t)) > 0
-  DATA <- DATA[SUB,]
+  if(!all(COVS)) # use only variance for speed later
+  {
+    v <- VAR
+    # var of difference
+    data[[1]][[v]] <- data[[1]][[v]] + data[[2]][[v]]
+
+    COLS <- c('t',axes,VAR)
+  }
+  else # use covariance
+  {
+    for(i in 1:2)
+    {
+      if(!COVS[i]) # missing cov
+      {
+        data[[i]][[COV[1]]] <- data[[i]][[COV[3]]] <- data[[i]][[VAR]]
+        data[[i]][[COV[2]]] <- 0
+      }
+
+      if(!VARS[i]) # missing var
+      { data[[i]][[VAR]] <- (data[[i]][[COV[1]]] + data[[i]][[COV[3]]])/2 }
+    }
+
+    for(v in c(VAR,COV)) # var/cov of difference
+    { data[[1]][[v]] <- data[[1]][[v]] + data[[2]][[v]] }
+
+    COLS <- c('t',axes,VAR,COV)
+  }
+  data <- data.frame(data[[1]][,COLS])
 
   # make this a telemetry object
-  DATA <- new.telemetry(DATA,info=INFO)
-  # make sure UERE is correct
+  data <- new.telemetry(data,info=INFO)
 
-  return(DATA)
+  TYPE <- DOP.match(axes)
+
+  # make sure UERE is correct
+  data@UERE$UERE[] <- 1
+  data@UERE$DOF[] <- Inf
+  data@UERE$AICc[] <- -Inf
+  data@UERE$Zsq[] <- 0
+  data@UERE$VAR.Zsq[] <- 0
+  data@UERE$N[] <- Inf
+
+  colnames(data@UERE$UERE) <- TYPE
+  colnames(data@UERE$DOF) <- TYPE
+  names(data@UERE$AICc) <- TYPE
+  names(data@UERE$Zsq) <- TYPE
+  names(data@UERE$VAR.Zsq) <- TYPE
+  names(data@UERE$N) <- TYPE
+
+  rownames(data@UERE$UERE) <- "all"
+  rownames(data@UERE$DOF) <- "all"
+
+  return(data)
+}
+
+
+# simple correlation test
+cor.test <- function(data,CTMM,GUESS=ctmm(error=TRUE),debias=TRUE,level=0.95,...)
+{
+  # difference vector with uncertainties
+  data.diff <- difference(data,CTMM)
+
+  GUESS <- ctmm.guess(data.diff,CTMM=GUESS,interactive=FALSE)
+  # # fit an autocorrelation model to the difference
+  # GUESS <- CTMM
+  # GUESS[[1]]$error <- GUESS[[2]]$error <- TRUE
+  # # reflection from minus
+  # GUESS[[2]]$sigma[1,2] <- GUESS[[2]]$sigma[2,1] <- -GUESS[[2]]$sigma[1,2]
+  # GUESS[[2]]$sigma <- covm(GUESS[[2]]$sigma@.Data,axes=GUESS[[2]]$axes,isotropic=GUESS[[2]]$isotropic)
+  M.diff <- ctmm.select(data.diff,GUESS,...)
+
+  SIG <- var.covm(CTMM[[1]]$sigma,ave=TRUE) + var.covm(CTMM[[2]]$sigma,ave=TRUE)
+  VAR.SIG <- axes2var(CTMM[[1]])['variance','variance'] + axes2var(CTMM[[2]])['variance','variance']
+
+  SIG.diff <- var.covm(M.diff$sigma,ave=TRUE)
+  VAR.SIG.diff <- axes2var(M.diff)['variance','variance']
+
+  N <- 2*SIG^2/VAR.SIG
+  if(debias)
+  {
+    DEN <- N/max(N-2,1) * 1/SIG
+    VAR.DEN <- 2*DEN^2/max(N-4,1)
+  }
+  else
+  {
+    DEN <- 1/SIG
+    VAR.DEN <- 2*DEN^2/N
+  }
+  # numerator-denominator covariance missing
+
+  F.CI(SIG.diff,VAR.SIG.diff,DEN,VAR.DEN,level=level)
 }

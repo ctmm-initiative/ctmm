@@ -12,6 +12,8 @@ ctmm 1.0.1 (2022-09-04)
   
   * plot.telemetry can now subset and reproject rasters
   
+  * bugfix in agde, suitability, RSF-akde when reprojecting onto the same raster
+  
   * bugfix in mean() when averaging isotropic and anisotropic models together
 
   * bugfix in speeds() without telemetry object

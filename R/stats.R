@@ -181,12 +181,15 @@ tint <- function(M,ind)
   {
     dX <- c(INDx[2,i]-ind[1,i],ind[1,i]-INDx[1,i]) / (INDx[2,i]-INDx[1,i])
     dX <- nant(dX,1)
+    dX <- dX/sum(dX) # in case of two NaNs
 
     dY <- c(INDy[2,i]-ind[2,i],ind[2,i]-INDy[1,i]) / (INDy[2,i]-INDy[1,i])
     dY <- nant(dY,1)
+    dY <- dY/sum(dY) # in case of two NaNs
 
     dZ <- c(INDz[2,i]-ind[3,i],ind[3,i]-INDz[1,i]) / (INDz[2,i]-INDz[1,i])
     dZ <- nant(dZ,1)
+    dZ <- dZ/sum(dZ) # in case of two NaNs
 
     M <- M[INDx[,i],INDy[,i],INDz[,i]] # tensor block
     M <- dX %.% M # tensor contraction of first index
