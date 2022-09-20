@@ -395,8 +395,17 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
   } # end if(integrated)
 
   DAVE <- c(w %*% DATA)
-  if(any(is.na(DAVE))) { stop("NA values in sampled rasters.") }
   names(DAVE) <- VARS
+  NAS <- is.na(DAVE)
+  if(any(NAS))
+  {
+    IND <- rowSums(is.na(DATA))
+    HEAD <- head(IND)
+    STOP <- paste0("NA values in sampled variables ",VARS[NAS]," at points ",HEAD)
+    if(length(HEAD)<length(IND)) { STOP <- paste0(STOP,",...") }
+    stop(STOP)
+  }
+
   SATA <- array(0,c(0,dim(DATA))) # simulated data [track,time,vars]
   dimnames(SATA)[[3]] <- VARS
 
