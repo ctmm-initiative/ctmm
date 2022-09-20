@@ -483,7 +483,7 @@ mean.mu <- function(x,debias=TRUE,isotropic=FALSE,variance=TRUE,weights=NULL,...
 
 
 ###########
-mean.ctmm <- function(x,weights=NULL,debias=TRUE,IC="AICc",...)
+mean.ctmm <- function(x,weights=NULL,sample=TRUE,debias=TRUE,IC="AICc",...)
 {
   # if(length(x)==1)
   # {
@@ -491,8 +491,12 @@ mean.ctmm <- function(x,weights=NULL,debias=TRUE,IC="AICc",...)
   #   return(x)
   # }
 
+  n <- length(x)
+  info <- mean.info(x)
+  axes <- x[[1]]$axes
+
   if(is.null(weights))
-  { weights <- rep(1,length(x)) }
+  { weights <- rep(1,n) }
   else
   { weights <- weights/max(weights) }
   names(weights) <- names(x)
@@ -502,72 +506,129 @@ mean.ctmm <- function(x,weights=NULL,debias=TRUE,IC="AICc",...)
 
   #######################
   # average of mean locations
-  MU <- mean.mu(x,debias=debias,isotropic=TRUE,weights=weights,...)
-
-  # anisotropic mu ?
-  if(length(x)>2)
+  if(sample)
   {
-    AN <- mean.mu(x,debias=debias,isotropic=FALSE,weights=weights,...)
-    if(AN[[IC]]<MU[[IC]])
-    {
-      isotropic["mu"] <- FALSE
-      MU <- AN
-    }
-  }
+    MU <- mean.mu(x,debias=debias,isotropic=TRUE,weights=weights,...)
 
-  # zero variance in mu ?
-  if(isotropic["mu"])
+    # anisotropic mu ?
+    if(length(x)>2)
+    {
+      AN <- mean.mu(x,debias=debias,isotropic=FALSE,weights=weights,...)
+      if(AN[[IC]]<MU[[IC]])
+      {
+        isotropic["mu"] <- FALSE
+        MU <- AN
+      }
+    }
+
+    # zero variance in mu ?
+    if(isotropic["mu"])
+    {
+      ZV <- mean.mu(x,debias=debias,isotropic=TRUE,variance=FALSE,weights=weights,...)
+      if(ZV[[IC]]<=MU[[IC]])
+      {
+        ZV$POV.mu <- 0 * MU$POV.mu
+        ZV$COV.POV.mu <- 0 * MU$COV.POV.mu
+        MU <- ZV
+      }
+    }
+
+    ########################
+    # average of features
+    ISO <- sapply(x,function(y){y$isotropic})
+    ISO <- all(ISO)
+    FU <- mean.features(x,debias=debias,isotropic=TRUE,weights=weights,...)
+
+    # anisotropic sigma ?
+    if(length(x)>2 && !ISO)
+    {
+      AN <- mean.features(x,debias=debias,isotropic=FALSE,weights=weights,...)
+      if(AN[[IC]]<FU[[IC]])
+      {
+        isotropic["sigma"] <- FALSE
+        FU <- AN
+      }
+    }
+
+    # zero variance in sigma
+    if(isotropic["sigma"])
+    {
+      ZV <- mean.features(x,debias=debias,isotropic=TRUE,variance=FALSE,weights=weights,...)
+      if(ZV[[IC]]<=FU[[IC]])
+      {
+        ZV$POV.sigma <- 0 * FU$POV.sigma
+        ZV$COV.POV.sigma <- 0 * FU$COV.POV.sigma
+        FU <- ZV
+      }
+    }
+
+    x <- copy(from=FU,to=MU)
+
+    # STORE EVERYTHING
+    x$AIC <- MU$AIC + FU$AIC
+    x$AICc <- MU$AICc + FU$AICc
+    x$BIC <- MU$BIC + FU$BIC
+  } # end sample
+  else # !sample
   {
-    ZV <- mean.mu(x,debias=debias,isotropic=TRUE,variance=FALSE,weights=weights,...)
-    if(ZV[[IC]]<=MU[[IC]])
+    # COV[mu^mu] diagonal-term
+    cov.diag <- function(cov)
     {
-      ZV$POV.mu <- 0 * MU$POV.mu
-      ZV$COV.POV.mu <- 0 * MU$COV.POV.mu
-      MU <- ZV
+      COV <- cov^2
+      VEC <- c( diag(cov)*cov[1,2] , cov[1,1]*cov[2,2]+cov[1,2]^2 )
+      COV <- rbind(COV,VEC[1:2])
+      COV <- cbind(COV,VEC)
+      COV <- 2*COV
+      return(COV)
     }
-  }
 
-  ########################
-  # average of features
-  ISO <- sapply(x,function(y){y$isotropic})
-  ISO <- all(ISO)
-  FU <- mean.features(x,debias=debias,isotropic=TRUE,weights=weights,...)
-
-  # anisotropic sigma ?
-  if(length(x)>2 && !ISO)
-  {
-    AN <- mean.features(x,debias=debias,isotropic=FALSE,weights=weights,...)
-    if(AN[[IC]]<FU[[IC]])
+    cov.off <- function(cov1,cov2)
     {
-      isotropic["sigma"] <- FALSE
-      FU <- AN
+      COV <- 4 * cov1 * cov2
+      VEC <- c(2*cov1[1,1]*cov2[1,2]+2*cov1[1,2]*cov2[1,1],2*cov1[2,2]*cov2[1,2]+2*cov1[1,2]*cov2[2,2],cov1[1,1]*cov2[2,2]+cov1[2,2]*cov2[1,1]+2*cov1[1,2]*cov2[1,2])
+      COV <- rbind(COV,VEC[1:2])
+      COV <- cbind(COV,VEC)
+      return(COV)
     }
-  }
 
-  # zero variance in sigma
-  if(isotropic["sigma"])
-  {
-    ZV <- mean.features(x,debias=debias,isotropic=TRUE,variance=FALSE,weights=weights,...)
-    if(ZV[[IC]]<=FU[[IC]])
+    MU <- COV.MU <- COV <- COV.COV <- 0
+    w <- weights/sum(weights)
+    for(i in 1:n)
     {
-      ZV$POV.sigma <- 0 * FU$POV.sigma
-      ZV$COV.POV.sigma <- 0 * FU$COV.POV.sigma
-      FU <- ZV
+      MU <- MU + w[i]*x[[i]]$mu
+      COV.MU <- COV.MU + w[i]^2*x[[i]]$COV.mu
+      COV <- COV + w[i]*( x[[i]]$sigma + outer(c(x[[i]]$mu)) ) # M2
+      COV.COV <- COV.COV + w[i]^2*sigma.COV(x[[i]]) + (w[i]-w[i]^2)^2*cov.diag(x[[i]]$COV.mu)
+      for(j in (i+1)%:%n) { COV.COV <- COV.COV - w[i]^2*w[j]^2*cov.off(x[[i]]$COV.mu,x[[j]]$COV.mu) }
     }
-  }
+    COV <- COV - outer(c(MU)) # M2 - M1^2
+    rownames(COV.MU) <- colnames(COV.MU) <- axes
 
-  info <- mean.info(x)
-  x <- copy(from=FU,to=MU)
+    isotropic['mu'] <- FALSE
+    if(!all(sapply(x,function(y){y$isotropic[1]}))) { isotropic['sigma'] <- FALSE }
+
+    sigma <- covm(COV,axes=axes,isotropic=isotropic['sigma'])
+    if(isotropic['sigma'])
+    {
+      COV <- COV.COV[1,1,drop=FALSE]
+      rownames(COV) <- colnames(COV) <- 'major'
+      features <- 'major'
+    }
+    else
+    {
+      J <- J.par.sigma(sigma[c(1,4,2)])
+      COV <- J %*% COV.COV %*% t(J)
+      features <- c('major','minor','angle')
+    }
+
+    x <- ctmm(mu=MU,COV.mu=COV.MU,sigma=sigma,COV=COV,features=features)
+    # TODO non-sigma features
+  } # end !sample
+
   x$info <- info
   x <- do.call(ctmm,x)
 
-  # STORE EVERYTHING
   x$isotropic <- isotropic
-
-  x$AIC <- MU$AIC + FU$AIC
-  x$AICc <- MU$AICc + FU$AICc
-  x$BIC <- MU$BIC + FU$BIC
-
   x$weights <- weights
 
   # return final result

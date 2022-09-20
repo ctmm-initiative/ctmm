@@ -7,14 +7,15 @@
 \description{
 These functions calculate population averages of continuous-time movement models and utilization distributions.}
 \usage{
-\S3method{mean}{ctmm}(x,weights=NULL,debias=TRUE,IC="AICc",...)
+\S3method{mean}{ctmm}(x,weights=NULL,sample=TRUE,debias=TRUE,IC="AICc",...)
 
-\S3method{mean}{UD}(x,weights=NULL,...)
+\S3method{mean}{UD}(x,weights=NULL,sample=TRUE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{A list of \code{ctmm} objects calculated in the same projection or \code{UD} objects calculated on the compatible grids.}
   \item{weights}{A vector of numeric weights with the same length as \code{x}, specifying the relative frequency of each distribution in \code{x}.}
+  \item{sample}{\code{x} represents a sample of a larger population if \code{TRUE}, or the entire statistical population if \code{FALSE}.}
   \item{debias}{Include \eqn{\log-\chi^2} and REML bias corrections.}
   \item{IC}{Model selection criterion for the anisotropy of the distribution of mean locations and covariance matrices.}
   \item{...}{Additional arguments for future use.}

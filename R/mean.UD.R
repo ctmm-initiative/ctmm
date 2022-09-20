@@ -1,6 +1,6 @@
 ###################
 # average aligned UDs
-mean.UD <- function(x,weights=NULL,...)
+mean.UD <- function(x,weights=NULL,sample=TRUE,...)
 {
   n <- length(x)
   axes <- x[[1]]$axes
@@ -13,9 +13,9 @@ mean.UD <- function(x,weights=NULL,...)
   # list of individual models
   CTMM <- lapply(x,function(y){y@CTMM})
   # population model
-  CTMM <- mean.ctmm(CTMM,weights=weights)
+  CTMM <- mean.ctmm(CTMM,weights=weights,sample=sample)
   # population stationary distribution
-  CTMM <- mean.pop(CTMM)
+  if(sample) { CTMM <- mean.pop(CTMM) }
 
   # harmonic mean bandwidth matrix
   H <- 0

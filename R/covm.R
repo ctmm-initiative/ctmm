@@ -364,6 +364,27 @@ J.sigma.par <- function(par)
   return(grad)
 }
 
+# get linear COV[sigma] from ctmm object
+sigma.COV <- function(CTMM)
+{
+  if(CTMM$isotropic[1])
+  {
+    VAR <- CTMM$COV['major','major']
+    COV <- diag(c(VAR,VAR,0))
+    rownames(COV) <- colnames(COV) <- c('xx','yy','xy')
+    COV['xx','yy'] <- COV['yy','xx'] <- VAR
+  }
+  else
+  {
+    P <- c('major','minor','angle')
+    COV <- CTMM$COV[P,P]
+    J <- J.sigma.par(CTMM$sigma@par)
+    COV <- J %*% COV %*% t(J)
+  }
+
+  return(COV)
+}
+
 # gradient matrix d par / d sigma from sigma
 J.par.sigma <- function(sigma)
 {

@@ -95,7 +95,7 @@ difference <- function(data,CTMM,t=NULL,...)
 
 
 # simple correlation test
-cor.test <- function(data,CTMM,GUESS=ctmm(error=TRUE),debias=TRUE,level=0.95,...)
+proximity <- function(data,CTMM,GUESS=ctmm(error=TRUE),debias=TRUE,level=0.95,...)
 {
   # difference vector with uncertainties
   data.diff <- difference(data,CTMM)

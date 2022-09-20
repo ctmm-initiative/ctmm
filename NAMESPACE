@@ -149,3 +149,6 @@ export(rsf.fit)
 # revisitation
 export(revisitation)
 export(npr)
+
+# differenc vector
+export(difference,proximity)
