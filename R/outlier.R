@@ -102,7 +102,7 @@ outlie <- function(data,plot=TRUE,by='d',...)
 
 #########################
 # plot outlier information with error bars
-plot.outlie <- function(x,level=0.95,units=TRUE,axes=c('d','v'),...)
+plot.outlie <- function(x,level=0.95,units=TRUE,axes=c('d','v'),xlim=NULL,ylim=NULL,...)
 {
   x <- listify(x)
   t <- NULL
@@ -138,24 +138,29 @@ plot.outlie <- function(x,level=0.95,units=TRUE,axes=c('d','v'),...)
 
   # unit conversions ... (simpler)
   UNITS <- unit(t,dimension='time',concise=FALSE,SI=!units)
+  t.scale <- UNITS$scale
   t <- t/UNITS$scale
   t.lab <- paste0("Time (",UNITS$name,")")
 
   UNITS <- unit(d,dimension='length',concise=TRUE,SI=!units)
+  d.scale <- UNITS$scale
   d <- d/UNITS$scale
   d.lab <- paste0("Core deviation (",UNITS$name,")")
 
   UNITS <- unit(v,dimension='length',concise=TRUE,SI=!units)
+  v.scale <- UNITS$scale
   v <- v/UNITS$scale
   v.lab <- paste0("Minimum speed (",UNITS$name,"/s)")
 
   if(VERTICAL)
   {
     UNITS <- unit(dz,dimension='length',concise=TRUE,SI=!units)
+    dz.scale <- UNITS$scale
     dz <- dz/UNITS$scale
     dz.lab <- paste0("Core vertical deviation (",UNITS$name,")")
 
     UNITS <- unit(vz,dimension='length',concise=TRUE,SI=!units)
+    vz.scale <- UNITS$scale
     vz <- vz/UNITS$scale
     vz.lab <- paste0("Minimum vertical speed (",UNITS$name,"/s)")
   }
@@ -172,8 +177,24 @@ plot.outlie <- function(x,level=0.95,units=TRUE,axes=c('d','v'),...)
   xlab <- get(paste0(axes[1],".lab"))
   ylab <- get(paste0(axes[2],".lab"))
 
+  if(is.null(xlim))
+  { xlim <- range(x) }
+  else
+  {
+    SCALE <- get(paste0(axes[1],".scale"))
+    xlim <- xlim/SCALE
+  }
+
+  if(is.null(ylim))
+  { ylim <- range(y) }
+  else
+  {
+    SCALE <- get(paste0(axes[2],".scale"))
+    ylim <- ylim/SCALE
+  }
+
   # base plot
-  plot(mid(x),mid(y),xlim=range(x),ylim=range(y),pch=19,xlab=xlab,ylab=ylab,...)
+  plot(mid(x),mid(y),xlim=xlim,ylim=ylim,pch=19,xlab=xlab,ylab=ylab,...)
 
   # ERROR BAR PLOT
   # hack: we draw arrows but with very special "arrowheads"

@@ -10,7 +10,7 @@
 \usage{
 outlie(data,plot=TRUE,by='d',...)
 
-\S3method{plot}{outlie}(x,level=0.95,units=TRUE,axes=c('d','v'),...)
+\S3method{plot}{outlie}(x,level=0.95,units=TRUE,axes=c('d','v'),xlim=NULL,ylim=NULL,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -22,6 +22,8 @@ outlie(data,plot=TRUE,by='d',...)
   \item{level}{Confidence level for error bars.}
   \item{units}{Convert axes to natural units.}
   \item{axes}{\eqn{x}-\eqn{y} axes to plot. Can be any of \code{'d'}, \code{'v'}, \code{'dz'}, \code{'vz'}, for time, distance from center, minimum speed, vertical distance from center, and minimum vertical speed.}
+  \item{xlim}{\eqn{x}-axis plotting range in SI units.}
+  \item{ylim}{\eqn{y}-axis plotting range in SI units.}
 }
 
 \details{If \code{plot=TRUE} in \code{outlie()}, intervals of high speed are highlighted with blue segments, while distant locations are highlighted with red points.

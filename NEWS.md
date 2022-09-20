@@ -9,6 +9,8 @@ ctmm 1.0.1 (2022-09-22)
   * new argument 'sample' in mean()
   
   * new argument 'interpolate' in rsf.fit()
+  
+  * new arguments 'xlim', 'ylim' to plot.outlie()
 
   * numerical stability improvements in rsf.fit optimization and hessian calculations
   
