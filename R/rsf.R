@@ -58,10 +58,13 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
     names(R) <- paste("R",1:length(R))
   }
 
-  # how to sample rasters
-  interpolate <- rep(interpolate,length(R))
-  interpolate <- ifelse(interpolate,"bilinear","simple")
-  names(interpolate) <- names(R)
+  # expand any categorical variables into indicator variables
+  if(length(R))
+  {
+    STUFF <- expand.factors(R=R,formula=formula,reference=reference,data=data)
+    R <- STUFF$R
+    formula <- STUFF$formula
+  }
 
   if(!is.null(formula) && standardize)
   {
@@ -74,13 +77,10 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
     names(RSCALE) <- names(R)
   }
 
-  # expand any categorical variables into indicator variables
-  if(length(R))
-  {
-    STUFF <- expand.factors(R=R,formula=formula,reference=reference,data=data)
-    R <- STUFF$R
-    formula <- STUFF$formula
-  }
+  # how to sample rasters
+  interpolate <- rep(interpolate,length(R))
+  interpolate <- ifelse(interpolate,"bilinear","simple")
+  names(interpolate) <- names(R)
 
   ## The basic setup is:
   # RVARS - raster variables
