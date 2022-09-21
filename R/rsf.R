@@ -399,10 +399,16 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
   NAS <- is.na(DAVE)
   if(any(NAS))
   {
+    VARS <- paste0(VARS[NAS],collapse=",")
+
     IND <- rowSums(is.na(DATA))
     HEAD <- head(IND)
-    STOP <- paste0("NA values in sampled variables ",VARS[NAS]," at points ",HEAD)
-    if(length(HEAD)<length(IND)) { STOP <- paste0(STOP,",...") }
+    if(length(HEAD)<length(IND))
+    { HEAD <- paste0(HEAD,",...",collapse=",") }
+    else
+    { HEAD <- paste0(HEAD,collapse=",") }
+
+    STOP <- paste0("NA values in sampled variables ",VARS," at points ",HEAD)
     stop(STOP)
   }
 

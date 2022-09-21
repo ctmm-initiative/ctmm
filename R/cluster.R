@@ -342,8 +342,8 @@ cluster.chisq <- function(s,dof,level=0.95,IC="BIC",debias=TRUE,precision=1/2,..
 
     if(debias) # debias k=VAR/mu^3 parameter
     {
-      N <- length(s)
-      BC[[m]]["K1"] <- N/max(N-1,0)
+      N <- max( length(s) ,2)
+      BC[[m]]["K1"] <-  N/(N-1)
       PAR[[m]] <- BC[[m]] * PAR[[m]]
       LL[m] <- -COST[[m]](PAR[[m]])
     }
@@ -378,8 +378,8 @@ cluster.chisq <- function(s,dof,level=0.95,IC="BIC",debias=TRUE,precision=1/2,..
 
     if(debias) # debias k=VAR/mu^3 parameter by membership
     {
-      N <- length(s) * (1-PAR[[m]]["P1"])
-      BC[[m]]["K2"] <- N/max(N-1,0)
+      N <- max( length(s) * (1-PAR[[m]]["P1"]) , 2)
+      BC[[m]]["K2"] <-  N/(N-1)
       PAR[[m]] <- BC[[m]] * PAR[[m]]
       LL[m] <- -COST[[m]](PAR[[m]])
     }
@@ -400,8 +400,8 @@ cluster.chisq <- function(s,dof,level=0.95,IC="BIC",debias=TRUE,precision=1/2,..
 
     if(debias) # debias k=VAR/mu^3 parameter by membership
     {
-      N <- length(s) * PAR[[m]]["P1"]
-      BC[[m]]["K1"] <- N/max(N-1,0)
+      N <- max( length(s) * PAR[[m]]["P1"] , 2)
+      BC[[m]]["K1"] <-  N/(N-1)
       PAR[[m]] <- BC[[m]] * PAR[[m]]
       LL[m] <- -COST[[m]](PAR[[m]])
     }
@@ -422,8 +422,8 @@ cluster.chisq <- function(s,dof,level=0.95,IC="BIC",debias=TRUE,precision=1/2,..
 
     if(debias) # debias k=VAR/mu^3-ish parameter... does this make sense?
     {
-      N <- length(s)
-      BC[[m]]["RV"] <- N/max(N-1,0) # numerator and denominator weighted separately # half as big as model with two CoV
+      N <- max( length(s) ,2)
+      BC[[m]]["RV"] <- N/(N-1) # numerator and denominator weighted separately # half as big as model with two CoV
       PAR[[m]] <- BC[[m]] * PAR[[m]]
       LL[m] <- -COST[[m]](PAR[[m]])
     }
@@ -445,10 +445,10 @@ cluster.chisq <- function(s,dof,level=0.95,IC="BIC",debias=TRUE,precision=1/2,..
 
   if(debias) # debias k=VAR/mu^3 parameters by membership
   {
-    N <- length(s) * PAR[[m]]["P1"]
-    BC[[m]]["K1"] <- N/max(N-1,0)
-    N <- length(s) * (1-PAR[[m]]["P1"])
-    BC[[m]]["K2"] <- N/max(N-1,0)
+    N <- max( length(s) * PAR[[m]]["P1"] ,2)
+    BC[[m]]["K1"] <- N/(N-1)
+    N <- max( length(s) * (1-PAR[[m]]["P1"]) ,2)
+    BC[[m]]["K2"] <- N/(N-1)
     PAR[[m]] <- BC[[m]] * PAR[[m]]
     LL[m] <- -COST[[m]](PAR[[m]])
   }

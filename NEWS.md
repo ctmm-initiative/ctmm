@@ -26,6 +26,8 @@ ctmm 1.0.1 (2022-09-22)
 
   * bugfix in speeds() without telemetry object
   
+  * bugfix in cluster() with 0/0 bias correction error
+  
   * summary() now works on mean.ctmm() outputs from different input model structures (OUF & OUO)
   
   * fixed log-chi^2 bias correction in mean.ctmm()
