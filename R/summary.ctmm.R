@@ -577,6 +577,7 @@ DOF.mean <- function(CTMM)
 
   sigma <- sqrtm.covm(sigma)
   # symmetric under trace and det
+  if(any(is.na(COV))) { return(0) }
   DOF <- sigma %*% PDsolve(COV) %*% sigma
   DOF <- mean(diag(DOF))
 

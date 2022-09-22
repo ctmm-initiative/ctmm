@@ -5,8 +5,8 @@
 \title{Calculate the optimal bandwidth matrix of movement data}
 \description{This function calculates the optimal bandwidth matrix (kernel covariance) for a two-dimensional animal tracking dataset, given an autocorrelated movement model (Fleming et al, 2015). This optimal bandwidth can fully take into account all autocorrelation in the data, assuming it is captured by the movement model.}
 \usage{
-bandwidth(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,error=0.01,precision=1/2,
-  PC="Markov",verbose=FALSE,trace=FALSE,...)
+bandwidth(data,CTMM,VMM=NULL,weights=FALSE,fast=NULL,dt=NULL,PC="Markov",error=0.01,
+          precision=1/2,verbose=FALSE,trace=FALSE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -15,11 +15,11 @@ bandwidth(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,error=0.01,precisio
   \item{VMM}{An optional vertical \code{ctmm} object for 3D bandwidth calculation.}
 %  \item{UD}{A list of \code{UD} objects for calculating population weights and bandwidth [IN DEVELOPMENT].}
   \item{weights}{By default, the weights are taken to be uniform, whereas \code{weights=TRUE} will optimize the weights.}
-  \item{fast}{Use FFT algorithms for weight optimization.}
+  \item{fast}{Use FFT algorithms for weight optimization. \code{fast=NULL} will attempt to intelligently decide between the fast and exact algorithms based on computational complexity.}
   \item{dt}{Optional lag bin width for the FFT algorithm.}
+  \item{PC}{Preconditioner to use: can be "Markov", "circulant", "IID", or "direct".}
   \item{error}{Maximum grid error for FFT algorithm, if \code{dt} is not specified.}
   \item{precision}{Fraction of maximum possible digits of precision to target in weight optimization. \code{precision=1/2} results in about 7 decimal digits of precision if the preconditioner is stable.}
-  \item{PC}{Preconditioner to use: can be "Markov", "circulant", "IID", or "direct".}
   \item{verbose}{ Optionally return the optimal \code{weights}, effective sample size \code{DOF.H}, and other information along with the bandwidth matrix \code{H}.}
   \item{trace}{Produce tracing information on the progress of weight optimization.}
   \item{...}{Additional arguments not currently used.}

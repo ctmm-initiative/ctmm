@@ -159,6 +159,9 @@ grid.init <- function(t,dt=stats::median(diff(t)),W=NULL)
   COS <- c(W %*% cos(theta))
   t0 <- -dt/(2*pi)*atan(SIN/COS)
 
+  # not sure if necessary
+  t0 <- -round((t0-t[1])/dt)*dt
+
   return(t0)
 }
 
@@ -172,7 +175,8 @@ pregridder <- function(t,dt=NULL,W=NULL)
   if(is.null(dt)) { dt <- stats::median(diff(t)) }
 
   # choose best grid alignment
-  t <- t - grid.init(t,dt=dt,W=W)
+  t0 <- grid.init(t,dt=dt,W=W)
+  t <- t - t0
 
   # fractional grid index -- starts at >=1
   index <- t/dt
@@ -189,7 +193,8 @@ pregridder <- function(t,dt=NULL,W=NULL)
   n <- ceiling(last(index)) + 1
   lag <- seq(0,n-1)*dt
 
-  return(list(FLOOR=FLOOR,p=p,lag=lag))
+  R <- list(FLOOR=FLOOR,p=p,lag=lag,t0=t0,dt=dt)
+  return(R)
 }
 
 ############################
@@ -207,6 +212,7 @@ gridder <- function(t,z=NULL,dt=NULL,W=NULL,lag=NULL,p=NULL,FLOOR=NULL,finish=TR
   if(!is.na(dt) && dt==0) { dt <- stats::median(DT[DT>0]) }
   if(is.na(dt)) { dt <- 1 } # doesn't really matter
 
+  t0 <- t[1]
   # setup grid transformation
   if(is.null(lag))
   {
@@ -223,6 +229,7 @@ gridder <- function(t,z=NULL,dt=NULL,W=NULL,lag=NULL,p=NULL,FLOOR=NULL,finish=TR
     FLOOR <- pregridder(t,dt=dt/res,W=W)
     p <- FLOOR$p
     lag <- FLOOR$lag
+    t0 <- FLOOR$t0
     FLOOR <- FLOOR$FLOOR
   }
   else if(!W)
@@ -263,7 +270,7 @@ gridder <- function(t,z=NULL,dt=NULL,W=NULL,lag=NULL,p=NULL,FLOOR=NULL,finish=TR
 
   W.grid <- clamp(W.grid,0,1)
 
-  return(list(w=W.grid,z=Z.grid,lag=lag,dt=dt))
+  return(list(w=W.grid,z=Z.grid,lag=lag,dt=dt,t0=t0))
 }
 
 ############################

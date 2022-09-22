@@ -417,7 +417,10 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
 
   nloglike <- function(beta,zero=0,verbose=FALSE)
   {
-    SAMP <- exp(SATA[,,TERMS,drop=FALSE] %.% beta) # [track,time]
+    SAMP <- SATA[,,TERMS,drop=FALSE] %.% beta # [track,time]
+    SHIFT <- mean(SAMP)
+    SAMP <- SAMP - SHIFT
+    SAMP <- exp(SAMP) # + exp(SHIFT)
     SAMP[] <- nant(SAMP,0) # treat NA as inaccessible region
 
     if(length(OFFSET))
@@ -438,7 +441,7 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
       else # Newton integration
       { MEAN <- sum(SAMP*dA) }
 
-      log.MEAN <- log(MEAN)
+      log.MEAN <- log(MEAN) + SHIFT
 
       if(integrator=="MonteCarlo")
       {
@@ -460,7 +463,7 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
     else # !STATIONARY
     {
       MEAN <- apply(SAMP,2,mean) # [time]
-      log.MEAN <- log(MEAN)
+      log.MEAN <- log(MEAN) + SHIFT
 
       if(debias || verbose) # numerical error variance (per w^2)
       { VAR.log <- apply(SAMP,2,stats::var)/dim(SAMP)[1] /MEAN^2 }
@@ -792,7 +795,7 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
       return(beta)
     }
 
-    J <- genD(par=beta,fn=fn,order=1,drop=FALSE)$gradient
+    J <- genD(par=beta,fn=fn,order=1,drop=FALSE,parscale=parscale,lower=lower,upper=upper)$gradient
     beta <- fn(beta)
     COV <- J %*% COV %*% t(J)
 
@@ -821,7 +824,7 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
     if(!is.null(CTMM$MLE))
     { DEBIAS <- sqrt(det.covm(CTMM$sigma)/det.covm(CTMM$MLE$sigma)) }
     else
-    { DEBIAS <- W/(W-1) }
+    { DEBIAS <- max(W,2)/max(W-1,1) }
 
     DSCALE <- rep(1,length(TERMS))
     names(DSCALE) <- TERMS

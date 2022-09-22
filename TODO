@@ -1,4 +1,5 @@
 ** PRIORITY
+* proximity with multiple individuals
 * user rater::project() in agde, akde, ...
 * predict() individual from population ctmm
 * posterior model predictions

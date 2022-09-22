@@ -38,7 +38,7 @@ lag.DOF <- function(data,dt=NULL,weights=NULL,lag=NULL,FLOOR=NULL,p=NULL)
 ##################################
 # Bandwidth optimizer
 #lag.DOF is an unsupported option for end users
-bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,error=0.01,precision=1/2,PC="Markov",verbose=FALSE,trace=FALSE,...)
+bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=NULL,dt=NULL,PC="Markov",error=0.01,precision=1/2,verbose=FALSE,trace=FALSE,dt.plot=TRUE,...)
 {
   # temporary solution
   if(class(CTMM)[1]=="list" && class(CTMM[[1]])[1]=="UD")
@@ -75,32 +75,48 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,error=0
   }
   else # autocorrelated bandwidth optimization (slower, more general algorithm)
   {
-    if(fast & is.null(dt))
+    # determine between fast algorithm and slow algorithm
+    if((is.null(fast) || fast) && is.null(dt))
     {
       dt <- diff(data$t)
       dt <- dt[dt>0]
       # dt <- sort(dt)
       DT <- stats::median(dt)
-      dt.min <- min(dt) # smallest dt
-      dt <- dt.min
+      dt.min <- min(dt) # smallest dt>0
+      DIV <- max( floor(DT/dt.min) , 1 )
+      dt <- DT/DIV
+      dt.calc <- TRUE
+    }
+    else
+    { dt.calc <- FALSE }
 
-      if((DT-dt)/DT > error)
-      { dt <- DT/2 } # some allowance for error
+    if(is.null(fast))
+    {
+      N <- (last(data$t)-data$t[1])/dt
+      if(n^3 <= N*log(N,2))
+      {
+        fast <- FALSE
+        PC <- "Direct"
+      }
+      else if(n^2 <= N*log(N,2))
+      {
+        fast <- FALSE
+        PC <- "Markov"
+      }
       else
-      { dt <- DT }
+      { fast <- TRUE } # end fast
+    } # end null-fast
 
+    if(fast && dt.calc)
+    {
       UNITS <- unit(dt,"time")
       STRING <- paste(c(dt/UNITS$scale,UNITS$name),collapse=" ")
-
-      if(trace)
-      { message("Default grid size of ",STRING," chosen for bandwidth(...,fast=TRUE).") }
-
-      if(WEIGHTS && dt.min<=dt/2)
+      message("Default grid size of ",STRING," chosen for bandwidth(...,fast=TRUE).")
+      if(dt.plot)
       {
-        UNITS <- unit(dt.min,"time")
-        STRING2 <- paste(c(dt.min/UNITS$scale,UNITS$name),collapse=" ")
-
-        warning("Minimum time interval of ",STRING2," is much smaller than grid size of ",STRING,".")
+        dt.plot(data)
+        abline(h=dt,col='red',lty=3)
+        title(data@info$identity)
       }
     }
 
@@ -275,7 +291,7 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=TRUE,dt=NULL,error=0
       VID <- VMM
       VID$tau <- NULL
 
-      hlim[1] <- bandwidth(data,IID,VMM=VID,precision=precision,verbose=TRUE)$h[1]
+      hlim[1] <- bandwidth(data,IID,VMM=VID,precision=precision,verbose=TRUE,fast=fast,dt=dt)$h[1]
     }
 
     # can't do worse than uniform weights
