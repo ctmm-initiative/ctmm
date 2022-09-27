@@ -1,4 +1,5 @@
 ** PRIORITY
+* shift normalize suitability()
 * proximity with multiple individuals
 * user rater::project() in agde, akde, ...
 * predict() individual from population ctmm

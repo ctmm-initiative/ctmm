@@ -270,3 +270,9 @@ copy <- function(from,to)
   for(n in NAMES){ to[[n]] <- from[[n]] }
   return(to)
 }
+
+mid <- function(x)
+{
+  n <- length(x)
+  (x[-1]+x[-n])/2
+}

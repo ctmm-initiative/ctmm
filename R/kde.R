@@ -302,7 +302,9 @@ kde <- function(data,H,axes=c("x","y"),CTMM=list(),SP=NULL,SP.in=TRUE,RASTER=lis
   # stationary versus non-stationary suitability
   if(length(RASTER))
   {
-    RASTER <- expand.factors(RASTER,CTMM$formula,fixed=TRUE)
+    STUFF <- expand.factors(RASTER,CTMM$formula,fixed=TRUE)
+    RASTER <- STUFF$R
+    data <- STUFF$data
 
     proj <- CTMM@info$projection
     # calculate RASTERs on spatial grid

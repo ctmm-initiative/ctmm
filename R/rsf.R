@@ -61,7 +61,17 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
   # expand any categorical variables into indicator variables
   if(length(R))
   {
-    STUFF <- expand.factors(R=R,formula=formula,reference=reference,data=data)
+    if(!is.null(formula))
+    {
+      RVARS <- names(R) # this will be updated
+      VARS <- all.vars(formula) # this will be updated
+      DVARS <- VARS[ VARS %nin% RVARS ]
+    }
+    else
+    { DVARS <- NULL }
+
+    STUFF <- expand.factors(R=R,formula=formula,reference=reference,data=data,DVARS)
+    data <- STUFF$data
     R <- STUFF$R
     formula <- STUFF$formula
   }
@@ -112,9 +122,16 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
     VARS <- all.vars(formula)
     DVARS <- VARS[ VARS %nin% RVARS ]
 
-    TERMS <- attr(stats::terms(formula),"term.labels")
+    # this doesn't work with poly(), etc.
+    # TERMS <- attr(stats::terms(formula),"term.labels")
+    # dummy data for model parameter names
+    DATA <- data.frame(data)
+    DATA[RVARS] <- as.list(rep(0,length(RVARS)))
+    DATA[['rr']] <- 0
+    TERMS <- colnames(stats::model.matrix(formula,data=DATA))
+    TERMS <- TERMS[TERMS!="(Intercept)"]
 
-    CVARS <- TERMS[ TERMS %nin% VARS ] # remaining terms that are not simple variables
+    CVARS <- TERMS[ TERMS %nin% VARS ] # terms that are not simple variables
 
     OFFSET <- stats::terms(formula)
     OFFSET <- attr(OFFSET,"variables")[ attr(OFFSET,"offset") ]
@@ -134,15 +151,17 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
   }
 
   # evaluate term on data.frame
-  evaluate <- function(term,envir)
+  evaluate <- function(term,envir,offset=FALSE)
   {
     if(length(dim(envir))==2) # (term,DATA[time,var])
     {
-      term <- gsub(":","*",term) # multiplication
+      # term <- gsub(":","*",term) # multiplication
       # term <- gsub("I(","(",term) # function evaluations # don't think this is necessary
       envir <- data.frame(envir) # matrices can't be environments, but data.frames can't matrix multiply...
       if(!STATIONARY) { envir <- cbind(envir,data) }
-      RET <- eval(parse(text=term),envir=envir)
+      # RET <- eval(parse(text=term),envir=envir)
+      RET <- stats::model.matrix(formula,envir)[,term]
+      if(offset) { RET <- apply(RET,1,prod) }
     }
     else # [space,time,var] loop over runs
     {
@@ -152,7 +171,7 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
         dim(envir) <- c(DIM[1]*DIM[2],DIM[3])
         colnames(envir) <- VARS
         RET <- evaluate(term,envir)
-        dim(RET) <- DIM[1:2]
+        dim(RET) <- c(DIM[1:2],length(term))
       }
       else # !STATIONARY
       {
@@ -163,9 +182,9 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
                   colnames(ENVIR) <- VARS
                   ENVIR <- cbind(ENVIR,data); # [time,vars]
                   evaluate(term,ENVIR)
-                }) # [time,space]
-        dim(RET) <- c(nrow(data),dim(envir)[1])
-        RET <- t(RET) # [space,time]
+                }) # [time,space,terms]
+        dim(RET) <- c(nrow(data),dim(envir)[1],length(term))
+        RET <- aperm(RET,c(2,1,3)) # [space,time,terms]
       }
     }
     return(RET)
@@ -235,9 +254,7 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
 
     if(length(R)>1)
     {
-      if(any(diff(dX)!=0) || any(diff(dY)!=0)) # check for consistent resolution
-      { CONSISTENT <- FALSE }
-      else if(any(diff(Xo)!=0) || any(diff(Yo)!=0)) # check for consistent origin
+      if(max(abs(c(diff(dX)/mid(dX),diff(dY)/mid(dY),diff(Xo)/mid(Xo),diff(Yo)/mid(Yo))))>.Machine$double.eps) # check for consistent resolution, origin
       { CONSISTENT <- FALSE }
     }
 
@@ -354,7 +371,7 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
   }
 
   # calculate and store composite covariates
-  for(v in CVARS) { DATA[,v] <- evaluate(v,DATA) }
+  DATA[,CVARS] <- evaluate(CVARS,DATA)
 
   ### store sampled integrated terms
   if(integrated)
@@ -426,7 +443,7 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
     if(length(OFFSET))
     {
       ONE <- rep(TRUE,nrow(SATA))
-      for(o in OFFSET) { ONE <- ONE & evaluate(o,SATA) }
+      ONE <- evaluate(OFFSET,SATA,offset=TRUE)
       SAMP <- ONE * SAMP
     }
 
@@ -633,7 +650,7 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
       }
     }
 
-    for(v in CVARS) { SATA[SUB,,v] <- evaluate(v,SATA[SUB,,,drop=FALSE]) }
+    SATA[SUB,,CVARS] <- evaluate(CVARS,SATA[SUB,,,drop=FALSE])
 
     if(integrated)
     {
@@ -795,6 +812,12 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
       return(beta)
     }
 
+    # fix parscale for Jacobian
+    parscale[names(SCALE)] <- 1/SCALE
+    EX <- names(parscale)
+    EX <- EX[EX %nin% names(SCALE)]
+    if(length(EX)) { parscale[EX] <- sqrt(diag(COV)[EX]) }
+
     J <- genD(par=beta,fn=fn,order=1,drop=FALSE,parscale=parscale,lower=lower,upper=upper)$gradient
     beta <- fn(beta)
     COV <- J %*% COV %*% t(J)
@@ -942,10 +965,10 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
 
 
 # expand raster factors into
-expand.factors <- function(R,formula,reference="auto",data=NULL,fixed=FALSE)
+expand.factors <- function(R,formula,reference="auto",data=NULL,DVARS=NULL,fixed=FALSE)
 {
   NAMES <- names(R)
-  for(i in 1:length(R))
+  for(i in 1%:%length(R))
   {
     if(raster::is.factor(R[[i]]))
     {
@@ -972,21 +995,22 @@ expand.factors <- function(R,formula,reference="auto",data=NULL,fixed=FALSE)
       else if(reference=="auto") # fix base layer
       {
         PROJ <- raster::projection(FACT)
-        data <- get.telemetry(data,c("longitude","latitude"))
-        colnames(data) <- c('x','y')
-        data <- project(data,to=PROJ)
-        data <- raster::extract(FACT,data) # don't interpolate
-        UNIQUE <- unique(data) # may be missing some levels
-        data <- tabulate(match(data,UNIQUE)) # tallies
-        reference <- UNIQUE[which.max(data)]
-        message("Reference category set to ",reference,".")
+        XY <- get.telemetry(data,c("longitude","latitude"))
+        colnames(XY) <- c('x','y')
+        XY <- project(XY,to=PROJ)
+        XY <- raster::extract(FACT,XY) # don't interpolate
+        UNIQUE <- unique(XY) # may be missing some levels
+        XY <- tabulate(match(XY,UNIQUE)) # tallies
+        reference <- UNIQUE[which.max(XY)]
+        message(NAME," reference category set to ",reference,".")
       }
       # else the reference category is specified by `reference`
 
+      REF <- reference[reference %in% LEVELS]
       DIFF <- LEVELS %nin% reference
       FACT <- lapply(LEVELS[DIFF],function(l){FACT==l})
       # LEVELS <- paste0(NAME,"[",LEVELS,"/",LEVELS[reference],"]")[DIFF]
-      LEVELS <- paste0(NAME,".",LEVELS,"_",LEVELS[reference])[DIFF]
+      LEVELS <- paste0(NAME,".",LEVELS,"_",REF)[DIFF]
       names(FACT) <- LEVELS
 
       R <- c(R,FACT)
@@ -1002,10 +1026,67 @@ expand.factors <- function(R,formula,reference="auto",data=NULL,fixed=FALSE)
         formula <- simplify.formula(formula)
       }
     }
-  }
-  if(fixed) { return(R) }
+  } # end raster expansion
+
+  NAMES <- DVARS
+  for(i in 1%:%length(DVARS))
+  {
+    NAME <- NAMES[i]
+    if(is.factor(data[[NAME]]))
+    {
+      FACT <- data[[NAME]]
+      KEEP <-
+      data <- data[names(data)!=NAME]
+      NAMES <- NAMES[NAMES!=NAME]
+
+      LEVELS <- levels(FACT) # assuming one layer
+
+      if(fixed)
+      {
+        TERMS <- attr(stats::terms(formula),"term.labels")
+        # I am not good with regexp
+        # HEAD <- paste0(NAME,"[")
+        HEAD <- paste0(NAME,".")
+        reference <- TERMS[grepl(HEAD,TERMS,fixed=TRUE)][1] # *NAME[#/ref]*
+        reference <- strsplit(reference,HEAD,fixed=TRUE)[[1]][2] # #/ref]*
+        # reference <- strsplit(reference,"/",fixed=TRUE)[[1]][2] # ref]*
+        reference <- strsplit(reference,"_",fixed=TRUE)[[1]][2] # ref]*
+        # reference <- strsplit(reference,"]",fixed=TRUE)[[1]][1] # ref
+        reference <- which(LEVELS==reference)
+      }
+      else if(reference=="auto") # fix base layer
+      {
+        UNIQUE <- unique(FACT) # may be missing some levels
+        XY <- tabulate(match(FACT,UNIQUE)) # tallies
+        reference <- UNIQUE[which.max(XY)]
+        message(NAME," reference category set to ",reference,".")
+      }
+      # else the reference category is specified by `reference`
+
+      REF <- reference[reference %in% LEVELS]
+      DIFF <- LEVELS %nin% reference
+      FACT <- lapply(LEVELS[DIFF],function(l){FACT==l})
+      # LEVELS <- paste0(NAME,"[",LEVELS,"/",LEVELS[reference],"]")[DIFF]
+      LEVELS <- paste0(NAME,".",LEVELS,"_",REF)[DIFF]
+      names(FACT) <- LEVELS
+
+      data[LEVELS] <- FACT
+
+      # expand terms
+      if(!fixed && !is.null(formula))
+      {
+        formula <- as.character(formula)[2]
+        formula <- sapply(LEVELS,function(l){gsub(NAME,l,formula,fixed=TRUE)})
+        formula <- paste(formula,collapse="+")
+        formula <- paste("~",formula)
+        formula <- eval(parse(text=formula))
+        formula <- simplify.formula(formula)
+      }
+    }
+  } # end telemetry expansion
+
   environment(formula) <- NULL
-  RETURN <- list(R=R,formula=formula)
+  RETURN <- list(data=data,R=R,formula=formula)
 }
 
 

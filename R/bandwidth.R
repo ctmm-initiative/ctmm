@@ -115,8 +115,8 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=NULL,dt=NULL,PC="Mar
       if(dt.plot)
       {
         dt.plot(data)
-        abline(h=dt,col='red',lty=3)
-        title(data@info$identity)
+        graphics::abline(h=dt,col='red',lty=3)
+        graphics::title(data@info$identity)
       }
     }
 
@@ -409,7 +409,7 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=NULL,dt=NULL,PC="Mar
 
     H <- list(H=H,h=h,bias=bias,COV=COV,DOF.H=DOF.H,DOF.area=DOF.area,weights=weights,MISE=MISE)
 
-    if(fast) { H$dt <- dt } # store dt argument used for calculation
+    if(!is.null(fast) && fast) { H$dt <- dt } # store dt argument used for calculation
 
     class(H) <- "bandwidth"
   } # end if verbose
