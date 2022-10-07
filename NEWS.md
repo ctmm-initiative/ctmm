@@ -1,4 +1,4 @@
-ctmm 1.0.1 (2022-09-22)
+ctmm 1.0.1 (2022-10-05)
 
   * new function pkde() for population kernel density estimates
   
@@ -27,6 +27,8 @@ ctmm 1.0.1 (2022-09-22)
   * bugfix in speeds() without telemetry object
   
   * bugfix in cluster() with 0/0 bias correction error
+  
+  * bugfix in occurrence() with multiple error classes
   
   * summary() now works on mean.ctmm() outputs from different input model structures (OUF & OUO)
   

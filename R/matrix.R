@@ -102,6 +102,10 @@ determinant.numeric <- function(x,logarithm=TRUE,...)
   return(det)
 }
 
+# 2x2 determinant
+det2 <- function(x)
+{ x[1,1]*x[2,2] - x[1,2]*x[2,1] }
+
 
 # dyadic product default
 outer <- function(X,Y=X,FUN="*",...) { base::outer(X,Y,FUN=FUN,...) }

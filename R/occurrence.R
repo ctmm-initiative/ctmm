@@ -157,7 +157,7 @@ currence <- function(data,CTMM,H=0,variable="utilization",res.time=10,res.space=
   else if(length(CTMM$tau)==2) #IOU/OUF
   { dr <- dt^2/24 * dr/CTMM$tau[2] }
 
-  if(CTMM$error){ dr <- dr + MIN.ERR }
+  if(any(CTMM$error)){ dr <- dr + MIN.ERR }
   dr <- sqrt(dr)
 
   # return list of stuff to work with

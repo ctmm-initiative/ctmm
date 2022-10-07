@@ -13,7 +13,7 @@ These functions calculate individual and population-level autocorrelated kernel 
 akde(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utilization",debias=TRUE,
      weights=FALSE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
 
-pkde(data,UD,...)
+pkde(data,UD,kernel="individual",weights=FALSE,ref="Gaussian",...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -27,12 +27,14 @@ pkde(data,UD,...)
   \item{variable}{Not yet supported.}
   \item{debias}{Debias the distribution for area estimation (AKDEc).}
   \item{smooth}{"Smooth" out errors from the data.}
-  \item{weights}{Optimally weight the data to account for temporal sampling bias (See \code{\link{bandwidth}} for details).}
+  \item{weights}{Optimally weight the data to account for sampling bias (See \code{\link{bandwidth}} for \code{akde} details).}
   \item{error}{Target probability error.}
   \item{res}{Number of grid points along each axis, relative to the bandwidth.}
   \item{grid}{Optional grid specification via \code{raster}, \code{UD}, or list of arguments (See `Details' below).}
-  \item{...}{Arguments passed to all instances of \code{\link{bandwidth}}.}
+  \item{...}{Arguments passed to \code{\link{bandwidth}} and \code{akde}.}
   \item{UD}{A list of individual \code{UD} objects corresponding to \code{data}.}
+  \item{kernel}{Bandwidths are proportional to the individual covariances if \code{kernel="individual"} or to the population covariance if \code{kernel="population"}.}
+  \item{ref}{Include non-Gaussian overlap corrections if \code{ref="AKDE"} and \code{weights=TRUE}.}
 }
 
 \details{For weighted AKDE, please note additional \code{...} arguments passed to \code{\link{bandwidth}}, which can have a large impact on computation time in certain cases.

@@ -420,8 +420,9 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=NULL,dt=NULL,PC="Mar
 
 
 # calculate bandwidth and weights the sample of a population
-bandwidth.pop <- function(data,UD,weights=FALSE,ref="Gaussian",precision=1/2,...)
+bandwidth.pop <- function(data,UD,kernel="individual",weights=FALSE,ref="Gaussian",precision=1/2,...)
 {
+  kernel <- match.arg(kernel,c("population","individual"))
   ref <- match.arg(ref,c("Gaussian","AKDE"))
 
   CTMM <- lapply(UD,function(ud){ud@CTMM})
@@ -430,10 +431,13 @@ bandwidth.pop <- function(data,UD,weights=FALSE,ref="Gaussian",precision=1/2,...
   axes <- MEAN$axes
   n <- length(data)
 
-  if(all(weights==FALSE)) # uniform weights
+  if(all(weights==FALSE)) # uniform (across individuals) weights
   { w <- rep(1/n,n) }
   else # individual weights
-  { w <- weights/sum(weights) }
+  {
+    w <- rep(weights,n)
+    w <- w/sum(w)
+  }
   W.OPT <- all(weights==TRUE) # optimize weights
 
   # prepare semi-variance lag matrix/vector
@@ -483,6 +487,7 @@ bandwidth.pop <- function(data,UD,weights=FALSE,ref="Gaussian",precision=1/2,...
   {
     if(h==0) { return(Inf) }
     H <- h^2
+    H.M <- H*MEAN$sigma
 
     # QUAD
     Q <- matrix(0,length(data),length(data))
@@ -490,7 +495,14 @@ bandwidth.pop <- function(data,UD,weights=FALSE,ref="Gaussian",precision=1/2,...
     # QUAD diagonal (slowest term - more optimized)
     for(i in 1:length(data))
     {
-      DEN <- 1/( sqrt(DET[i])*2*(S[[i]]+H) )
+      if(kernel=="individual")
+      { DEN <- 1/( sqrt(DET[i])*2*(S[[i]]+H) ) }
+      else if(kernel=="population")
+      {
+        DEN <- S[[i]] # copy data structure
+        DEN[] <- vapply(c(S[[i]]),function(s){det2(s*CTMM[[i]]$sigma + H.M)},1)
+        DEN <- 1/(2*sqrt(DEN))
+      }
 
       if(!is.null(dim(S[[i]])))
       { Q[i,i] <- UD[[i]]$weights %*% DEN %*% UD[[i]]$weights }
@@ -505,7 +517,12 @@ bandwidth.pop <- function(data,UD,weights=FALSE,ref="Gaussian",precision=1/2,...
       for(j in (i+1)%:%length(data))
       {
         MU <- c( CTMM[[i]]$mu - CTMM[[j]]$mu )
-        SIG <- (1+H)*(CTMM[[i]]$sigma + CTMM[[j]]$sigma)
+
+        if(kernel=="individual")
+        { SIG <- (1+H)*(CTMM[[i]]$sigma + CTMM[[j]]$sigma) }
+        else if(kernel=="population")
+        { SIG <- CTMM[[i]]$sigma + CTMM[[j]]$sigma + 2*H.M }
+
         Q[i,j] <- Q[j,i] <- exp(-(MU %*% PDsolve(SIG) %*% MU)/2) / sqrt(det(SIG))
       }
     }
@@ -516,7 +533,12 @@ bandwidth.pop <- function(data,UD,weights=FALSE,ref="Gaussian",precision=1/2,...
     for(i in 1:length(data))
     {
       MU <- c( CTMM[[i]]$mu - MEAN$mu )
-      SIG <- MEAN$sigma + (1+H)*CTMM[[i]]$sigma
+
+      if(kernel=="individual")
+      { SIG <- MEAN$sigma + (1+H)*CTMM[[i]]$sigma }
+      else if(kernel=="population")
+      { SIG <- MEAN$sigma + CTMM[[i]]$sigma + H.M }
+
       L[i] <- exp(-(MU %*% PDsolve(SIG) %*% MU)/2) / sqrt(det(SIG))
     }
 
@@ -551,9 +573,17 @@ bandwidth.pop <- function(data,UD,weights=FALSE,ref="Gaussian",precision=1/2,...
       mise <- c(mise)
     }
 
-    if(!finish) { return(mise) }
+    CONST <- 1/sqrt(det(2*MEAN$sigma))
+    mise <- mise + CONST
 
-    mise <- ( mise + 1/sqrt(det(2*MEAN$sigma)) ) / (2*pi)
+    if(!finish)
+    {
+      # normalize for numerical stability
+      mise <- mise / CONST
+      return(mise)
+    }
+
+    mise <- mise / (2*pi)
 
     if(W.OPT)
     {
@@ -572,7 +602,12 @@ bandwidth.pop <- function(data,UD,weights=FALSE,ref="Gaussian",precision=1/2,...
   # h relative to population COV
   n <- sapply(data,nrow)
   n <- sum(n)
-  hmax <- sqrt(2) * (det(MEAN$sigma)/min(DET))^(1/4)
+
+  if(kernel=="individual")
+  { hmax <- sqrt(2) * (det(MEAN$sigma)/min(DET))^(1/4) }
+  else if(kernel=="population")
+  { hmax <- sqrt(2) }
+
   hlim <- c(1/n^(1/6)/2,hmax)
   h <- optimizer(sqrt(prod(hlim)),MISE,lower=hlim[1],upper=hlim[2],control=control)
   h <- h$par
@@ -590,7 +625,10 @@ bandwidth.pop <- function(data,UD,weights=FALSE,ref="Gaussian",precision=1/2,...
   {
     MU <- c( CTMM[[i]]$mu - MEAN$mu )
     M1 <- M1 + weights[i] * MU
-    M2 <- M2 + weights[i] * ( UD[[i]]$COV + H*CTMM[[i]]$sigma + outer(MU) )
+    if(kernel=="individual")
+    { M2 <- M2 + weights[i] * ( UD[[i]]$COV + H*CTMM[[i]]$sigma + outer(MU) ) }
+    else if(kernel=="population")
+    { M2 <- M2 + weights[i] * ( UD[[i]]$COV + H*MEAN$sigma + outer(MU) ) }
   }
   COV <- cbind(M2) - outer(M1) # sample covariance
 

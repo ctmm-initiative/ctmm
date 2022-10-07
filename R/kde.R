@@ -33,8 +33,12 @@ akde.bias <- function(CTMM,H,lag,DOF,weights)
 
 
 # population AKDE
-pkde <- function(data,UD,...)
-{ akde(data,CTMM=UD,...) }
+pkde <- function(data,UD,kernel="individual",weights=FALSE,ref="Gaussian",...)
+{
+  CLASS <- class(UD[[1]])[1]
+  if(CLASS!="UD") { stop("UD class is ",CLASS) }
+  akde(data,CTMM=UD,kernel=kernel,weights=weights,ref=ref,...)
+}
 
 
 # AKDE single or list
