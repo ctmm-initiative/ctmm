@@ -130,3 +130,38 @@ proximity <- function(data,CTMM,GUESS=ctmm(error=TRUE),debias=TRUE,level=0.95,..
 
   F.CI(SIG.diff,VAR.SIG.diff,DEN,VAR.DEN,level=level)
 }
+
+
+distances <- function(data,CTMM,t=NULL,level=0.95,...)
+{
+  timezone <- attr(data[[1]],'info')$timezone
+
+  data <- difference(data,CTMM,t=t,...)
+  n <- nrow(data)
+  t <- data$t
+
+  # estimate distances
+  DISTS <- abs.data(data)
+  M1 <- DISTS$M1
+  M2 <- DISTS$M2
+  DOF <- DISTS$DOF
+  VAR <- DISTS$VAR
+
+  # if no level, return point estimate and DOF
+  if(is.null(level))
+  { DISTS <- cbind(speed=M1,DOF=DOF,VAR=VAR) } # output v and chi DOF
+  else
+  {
+    DISTS <- vapply(1:n,function(i){ chisq.ci(M2[i],DOF=DOF[i],level=level) },numeric(3)) # (3,n)
+    DISTS <- sqrt(t(DISTS)) # (n,3)
+    DISTS[,2] <- M1
+  }
+
+  DISTS <- as.data.frame(DISTS)
+  DISTS$t <- t
+  # include timestamps if possible
+  if(!is.null(timezone))
+  { DISTS$timestamp <- as.POSIXct(DISTS$t,tz=timezone,origin=EPOCH) }
+
+  return(DISTS)
+}

@@ -77,6 +77,7 @@ data(buffalo)
 DATA <- buffalo$Gabs
 
 GUESS <- ctmm.guess(DATA,interactive=FALSE)
+# in general, you should use ctmm.select instead
 FIT <- ctmm.fit(DATA,GUESS)
 
 # stationary Gaussian estimate

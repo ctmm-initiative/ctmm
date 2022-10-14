@@ -151,4 +151,4 @@ export(revisitation)
 export(npr)
 
 # differenc vector
-export(difference,proximity)
+export(difference,proximity,distances)

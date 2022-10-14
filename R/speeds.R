@@ -219,34 +219,23 @@ speeds.fast <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,append=FAL
     if(!is.null(CTMM)) { data <- predict(CTMM,data=data,t=t,...) }
 
     axes <- c("vx","vy")
-    v <- get.telemetry(data,axes=axes) # (n,2)
-    VAR <- get.error(data,list(axes=axes,error=TRUE),DIM=2) # (n,2,2)
-
-    # exact second moment - not used currently
-    M2 <- vapply(1:n,function(i){ sum( v[i,]^2 + diag(VAR[i,,]) ) },numeric(1))
-
-    # good approximation to mean speed (delta method fails when velocity estimate is small)
-    M1 <- vapply(1:n,function(i){abs.bivar(v[i,],VAR[i,,])},numeric(1)) # n
+    STUFF <- abs.data(data,axes)
+    v <- STUFF$r
+    M1 <- STUFF$M1
+    M2 <- STUFF$M2
+    VAR <- STUFF$VAR
+    DOF <- STUFF$DOF
 
     if(append)
     {
       data$speed <- M1
       return(data)
     }
-
-    # variance of square speed # exact?
-    # VAR <- 4 * vapply(1:n,function(i){v[i,] %*% VAR[i,,] %*% v[i,]},numeric(1)) # (n)
-    # variance of speed - delta method (M2 might be inconsistent with M1)
-    # VAR <- VAR/AVE^2
-
-    # chi^1 DOF consistent with M1 & VAR about M1 (M2 might be inconsistent with M1)
-    DOF <- vapply(1:n,function(i){chi.dof(M1[i],M2[i])},numeric(1))
   }
-
 
   # if no level, return point estimate and DOF
   if(is.null(level))
-  { v <- cbind(speed=M1,DOF=DOF,VAR=pmax(0,M2-M1^2)) } # output v and chi DOF
+  { v <- cbind(speed=M1,DOF=DOF,VAR=VAR) } # output v and chi DOF
   else
   {
     v <- vapply(1:n,function(i){ chisq.ci(M2[i],DOF=DOF[i],level=level,robust=robust) },numeric(3)) # (3,n)
@@ -286,4 +275,32 @@ abs.bivar <- function(mu,Sigma)
   M1 <- Bv + Bs
 
   return(M1)
+}
+
+
+abs.data <- function(data,axes=c('x','y'))
+{
+  n <- nrow(data)
+
+  v <- get.telemetry(data,axes=axes) # (n,2)
+  VAR <- get.error(data,list(axes=axes,error=TRUE),DIM=2) # (n,2,2)
+
+  # exact second moment - not used currently
+  M2 <- vapply(1:n,function(i){ sum( v[i,]^2 + diag(VAR[i,,]) ) },numeric(1))
+
+  # good approximation to mean speed (delta method fails when velocity estimate is small)
+  M1 <- vapply(1:n,function(i){abs.bivar(v[i,],VAR[i,,])},numeric(1)) # n
+
+  # variance of square speed # exact?
+  # VAR <- 4 * vapply(1:n,function(i){v[i,] %*% VAR[i,,] %*% v[i,]},numeric(1)) # (n)
+  # variance of speed - delta method (M2 might be inconsistent with M1)
+  # VAR <- VAR/AVE^2
+
+  # chi^1 DOF consistent with M1 & VAR about M1 (M2 might be inconsistent with M1)
+  DOF <- vapply(1:n,function(i){chi.dof(M1[i],M2[i])},numeric(1))
+
+  VAR <- pmax(0,M2-M1^2)
+
+  R <- list(r=v,M1=M1,M2=M2,VAR=VAR,DOF=DOF)
+  return(R)
 }
