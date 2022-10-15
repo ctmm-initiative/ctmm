@@ -30,6 +30,8 @@ ctmm 1.0.1 (2022-10-14)
   
   * bugfix in occurrence() with multiple error classes
   
+  * bugfix in chi dof computation
+  
   * summary() now works on mean.ctmm() outputs from different input model structures (OUF & OUO)
   
   * fixed log-chi^2 bias correction in mean.ctmm()

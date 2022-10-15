@@ -473,28 +473,37 @@ mtmean <- function(x,lower=-Inf,upper=Inf,func=mean)
 # degrees-of-freedom of (proportionally) chi distribution with specified moments
 chi.dof <- function(M1,M2,precision=1/2)
 {
+  # DEBUG <<- list(M1=M1,M2=M2,precision=precision)
+  error <- .Machine$double.eps^precision
+
   # solve for chi^2 DOF consistent with M1 & M2
   R <- M1^2/M2 # == 2*pi/DOF / Beta(DOF/2,1/2)^2 # 0 <= R <= 1
-  if(R>=1) { return(Inf) } # purely deterministic
-  if(R<=0) { return(0) }
+  if(1-R <= 0) { return(Inf) } # purely deterministic
+  if(R <= 0) { return(0) }
 
   DOF <- M1^2/(M2-M1^2)/2 # initial guess - asymptotic limit
-  error <- .Machine$double.eps^precision
   ERROR <- Inf
   while(ERROR>=error)
   {
+    DOF.old <- DOF
+    ERROR.old <- ERROR
+
     # current value at guess
     R0 <- 2*pi/DOF/beta(DOF/2,1/2)^2
     # current value of gradient
     G0 <- ( digamma((DOF+1)/2) - digamma(DOF/2) - 1/DOF )*R0
     # correction
     delta <- (R-R0)/G0
+
     # make sure DOF remains positive
     if(DOF+delta<=0)
     { DOF <- DOF/2 }
     else
     { DOF <- DOF + delta }
+
     ERROR <- abs(delta)/DOF
+
+    if(ERROR>ERROR.old) { return(DOF.old) }
   }
 
   return(DOF)
