@@ -602,6 +602,18 @@ meta.uni <- function(x,variable="area",level=0.95,level.UD=0.95,level.pop=0.95,m
 
   # N group comparisons (list of lists that are not summaries)
   SUBPOP <- class(x)[1]=='list' && class(x[[1]])[1]=='list' && !( length(names(x[[1]]))==2 && all(names(x[[1]])==c('DOF','CI')) )
+
+  if(SUBPOP) { CLASS <- class(x[[1]][[1]])[1] }
+  else { CLASS <- class(x[[1]])[1] }
+
+  # fix variable argument if necessary
+  if(CLASS %in% c("UD","area"))
+  { variable <- "area" }
+  else if(CLASS=="speed")
+  { variable <- "speed" }
+  else if(CLASS=="overlap")
+  { variable <- "overlap" }
+
   if(SUBPOP)
   {
     ID <- names(x)
@@ -637,14 +649,6 @@ meta.uni <- function(x,variable="area",level=0.95,level.UD=0.95,level.pop=0.95,m
   }
   else
   {
-    # fix variable argument if necessary
-    if(class(x[[1]])[1] %in% c("UD","area"))
-    { variable <- "area" }
-    else if(class(x[[1]])[1]=="speed")
-    { variable <- "speed" }
-    else if(class(x[[1]])[1]=="overlap")
-    { variable <- "overlap" }
-
     STUFF <- import.variable(x,variable=variable,level.UD=level.UD)
     AREA <- STUFF$AREA
     DOF <- STUFF$DOF

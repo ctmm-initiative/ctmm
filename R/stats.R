@@ -676,16 +676,23 @@ DD.IG.ratio <- function(par,VAR,n)
 # VAR2 == VAR[1/denominator]
 F.CI <- function(E1,VAR1,E2,VAR2,level=0.95)
 {
-  EST <- E1*E2
+  EST <- nant(E1*E2,0)
   N1 <- 2*E1^2/VAR1 # chi^2 DOF
-  N2 <- 2*E2^2/VAR2 + 4 # inverse-chi^2 DOF
-  BIAS <- N2/(N2-2) # F-distribution mean bias factor
-  if(BIAS<0) { BIAS <- Inf }
+  N2 <- nant(2*E2^2/VAR2 + 4,0) # inverse-chi^2 DOF
 
-  alpha <- (1-level)/2
-  CI <- stats::qf(c(alpha,1-alpha),N1,N2)
-  CI <- CI / BIAS # debiased ratio corresponding to EST=1
-  CI <- c(CI[1],1,CI[2]) * EST
+  if(N1<=0 || N2<=0)
+  { CI <- c(0,EST,Inf) }
+  else
+  {
+    BIAS <- N2/(N2-2) # F-distribution mean bias factor
+    if(BIAS<=0) { BIAS <- Inf }
+
+    alpha <- (1-level)/2
+    CI <- stats::qf(c(alpha,1-alpha),N1,N2)
+    CI <- CI / BIAS # debiased ratio corresponding to EST=1
+    CI <- c(CI[1],1,CI[2]) * EST
+  }
+
   names(CI) <- NAMES.CI
 
   return(CI)
