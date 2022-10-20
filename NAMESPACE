@@ -152,3 +152,5 @@ export(npr)
 
 # differenc vector
 export(difference,proximity,distances)
+
+export(sigfig,units)

@@ -117,10 +117,18 @@ UNIT <- list() # generated onLoad
 #UNIT <- generate.units()
 
 
+units <- function(data,dimension,thresh=1,...)
+{
+  UNITS <- unit(data,dimension=dimension,thresh=thresh,...)
+  data <- data/UNITS$scale
+  R <- list(data=data,units=c(UNITS$name,UNITS$abrv))
+  return(R)
+}
+
 # CHOOSE BEST UNITS FOR A LIST OF DATA
 # thresh is threshold for switching to coarser unit
 # concise gives abbreviated names
-unit <- function(data,dimension,thresh=1,concise=FALSE,SI=FALSE)
+unit <- function(data,dimension,thresh=1,concise=FALSE,SI=FALSE,...)
 {
   if(SI) { data <- 1.01 ; thresh <- 1 } # will always choose base units
   OP <- getOption("time.units")
@@ -211,9 +219,10 @@ unit <- function(data,dimension,thresh=1,concise=FALSE,SI=FALSE)
   else { I <- 1 }
 
   name <- name.list[I]
+  abrv <- abrv.list[I]
   scale <- scale.list[I]
 
-  return(list(scale=scale,name=name))
+  return(list(scale=scale,name=name,abrv=abrv))
 }
 
 

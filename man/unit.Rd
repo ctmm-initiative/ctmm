@@ -34,11 +34,11 @@ The default non-SI units include the mean solar \code{'day'}, mean synodic \code
 
 \author{ C. H. Fleming. }
 
-\note{ Dimensions of mass and weight are not currently supported as they are not used by \code{ctmm}. }
+%\note{  }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
-%%\seealso{ }
+\seealso{ \code{\link{unit}} }
 
 \examples{
 # one yard -> meters

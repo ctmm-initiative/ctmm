@@ -1,10 +1,12 @@
-ctmm 1.0.1 (2022-10-14)
+ctmm 1.0.1 (2022-10-19)
 
   * new function pkde() for population kernel density estimates
   
   * new functions difference(), distances(), proximity() for estimating distances between individuals
 
-  * new function Log(), Exp() to log transform parameter estimates and their uncertainties for meta-analytic regression
+  * new functions Log(), Exp() to log transform parameter estimates and their uncertainties for meta-analytic regression
+  
+  * new functions units(), sigfig() to represent quantities with concise units and significant digits
 
   * new argument 'sample' in mean()
   
