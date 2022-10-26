@@ -322,7 +322,7 @@ mean.features <- function(x,debias=TRUE,isotropic=FALSE,variance=TRUE,weights=NU
       x[[i]]$features <- FEATURES[!ERRORS]
       #FEATURES <- rownames(x[[i]]$COV)
       #ERRORS <- grepl('error',FEATURES) # how can this differ?
-      x[[i]]$COV <- x[[i]]$COV[!ERRORS,!ERRORS]
+      x[[i]]$COV <- x[[i]]$COV[!ERRORS,!ERRORS,drop=FALSE]
     }
   }
 
