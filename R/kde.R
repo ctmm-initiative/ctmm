@@ -835,36 +835,63 @@ CI.UD <- function(object,level.UD=0.95,level=0.95,P=FALSE,convex=FALSE)
     return(level.UD)
   }
 
-  # point estimate
-  # area <- sum(object$CDF <= level.UD) * dV
+  # reverse interpolation for CDF
+  interpolate <- function(y,val)
+  {
+    x <- last(which(y < val))
+    if(is.null(x))
+    { x <- 0 }
+    else if(x==length(y))
+    { x <- length(y) }
+    else # interpolate
+    {
+      Y <- y[x + 0:1] - val
+      beta <- diff(Y)
+      # 0 == Y[1] + beta * dx
+      dx <- -Y[1]/beta
+      x <- x + dx
+    }
+    return(x)
+  }
 
-  SP <- convex(object,level=level.UD,convex=convex)
-  area <- sum( sapply(SP@polygons, function(POLY){POLY@area}) )
+  SORT <- sort(object$CDF,method="quick")
+  dV <- prod(object$dr)
+
+  if(convex)
+  {
+    warning("sp polygon areas are unreliable.")
+    SP <- convex(object,level=level.UD,convex=convex)
+    # This estimate seems to be garbage in many cases
+    area <- sum( sapply(SP@polygons, function(POLY){POLY@area}) )
+  }
+  else
+  {
+    # simple estimate
+    # area <- sum(object$CDF <= level.UD) * dV
+
+    # better estimate
+    area <- interpolate(SORT,level.UD) * dV
+  }
   names(area) <- NAMES.CI[2] # point estimate
 
   # chi square approximation of uncertainty
-  if(!is.null(object$DOF.area))
-  {
-    area <- chisq.ci(area,DOF=2*object$DOF.area[1],alpha=1-level)
-    names(area) <- NAMES.CI
-  }
+  if(!is.null(object$DOF.area)) { area <- chisq.ci(area,DOF=2*object$DOF.area[1],alpha=1-level) }
 
   if(!P) { return(area) }
 
-  dV <- prod(object$dr)
   # probabilities associated with these areas
-  P <- round(area / dV)
+  IND <- area / dV # fractional index
+  P <- vint(SORT,IND) # interpolated probability
 
   # fix lower bound
-  P <- pmax(P,1)
-  # fix upper bound to not overflow
-  P <- pmin(P,length(object$CDF))
-  if(P[3]==length(object$CDF)) { warning("Outer contour extends beyond raster.") }
-
-  P <- sort(object$CDF,method="quick")[P]
+  P <- pmax(P,0)
 
   # recorrect point estimate level
   P[2] <- level.UD
+
+  # fix upper bound to not overflow
+  P <- pmin(P,1)
+  if(P[3]==1) { warning("Outer contour extends beyond raster.") }
 
   names(P) <- NAMES.CI
   return(P)

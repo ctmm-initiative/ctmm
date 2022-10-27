@@ -1,4 +1,4 @@
-ctmm 1.0.1 (2022-10-26)
+ctmm 1.0.1 (2022-10-27)
 
   * new function pkde() for population kernel density estimates
   
@@ -21,6 +21,8 @@ ctmm 1.0.1 (2022-10-26)
   * numerical convergence improvements in AKDE weight optimization
   
   * plot.telemetry can now subset and reproject rasters
+  
+  * bugfix in sp::polygon derived areas (used since v1.0.0)
   
   * bugfix in agde, suitability, RSF-akde when reprojecting onto the same raster
   
