@@ -135,7 +135,7 @@ Furthermore, in cases with an error model, `ctmm.select()` is safer to use than 
 For calibrated errors, we have to set `error=TRUE` in the model guess to fit with telemetry error accounted for.
 
 ```{r}
-# automated guestimate for calibrated data
+# automated guesstimate for calibrated data
 GUESS <- ctmm.guess(turtle[[3]],CTMM=ctmm(error=TRUE),interactive=FALSE)
 # stepwise fitting # CRAN policy limits us to 2 cores
 FIT <- ctmm.select(turtle[[3]],GUESS,trace=TRUE,cores=2)
@@ -158,7 +158,7 @@ uere(turtle) <- NULL
 The only difference is that you have to provide an initial guess for the RMS UERE. Otherwise, the steps are the same.
 
 ```{r}
-# automated guestimate for uncalibrated data (with 10 meter RMS UERE guess)
+# automated guesstimate for uncalibrated data (with 10 meter RMS UERE guess)
 GUESS <- ctmm.guess(turtle[[3]],CTMM=ctmm(error=10),interactive=FALSE)
 # fit and select models # CRAN policy limits us to 2 cores
 FIT <- ctmm.select(turtle[[3]],GUESS,trace=TRUE,cores=2)
@@ -174,12 +174,17 @@ This will not always be the case.
 An alternative method of last resort is to simply assign a range of credible RMS UERE values to the data. Again, 10-meter error is usually a good guess for 3D GPS data. For e-obs, and other devices that report error in meters, a number on the order of 1 is usually more relevant.
 
 ```{r}
+# these data have two location classes: 2D & 3D
+summary(uere(turtle))
 # assign 20-meter 2D RMS UERE and 10-meter 3D RMS UERE
 uere(turtle) <- c(20,10)
+# for one location class, the above would likely be unnecessary, but would look like
+# uere(turtle) <- 10
+
 # the default uncertainty is none for numerical assignments
 UERE <- uere(turtle)
 summary(UERE)
-# this is becasue the degrees-of-freedom are set to Inf
+# this is because the degrees-of-freedom are set to Inf
 UERE$DOF
 # here I set the DOF to a smaller value
 UERE$DOF[] <- 2
@@ -187,7 +192,7 @@ UERE$DOF[] <- 2
 summary(UERE)
 # assign the prior to the data
 uere(turtle) <- UERE
-# automated guestimate for calibrated data
+# automated guesstimate for calibrated data
 GUESS <- ctmm.guess(turtle[[3]],CTMM=ctmm(error=TRUE),interactive=FALSE)
 # stepwise fitting # CRAN policy limits us to 2 cores
 FIT <- ctmm.select(turtle[[3]],GUESS,trace=TRUE,cores=2)

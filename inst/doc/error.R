@@ -60,7 +60,7 @@ points(1/4,1)
 title("Detector Array")
 
 ## -----------------------------------------------------------------------------
-# automated guestimate for calibrated data
+# automated guesstimate for calibrated data
 GUESS <- ctmm.guess(turtle[[3]],CTMM=ctmm(error=TRUE),interactive=FALSE)
 # stepwise fitting # CRAN policy limits us to 2 cores
 FIT <- ctmm.select(turtle[[3]],GUESS,trace=TRUE,cores=2)
@@ -72,7 +72,7 @@ summary(FIT)
 uere(turtle) <- NULL
 
 ## -----------------------------------------------------------------------------
-# automated guestimate for uncalibrated data (with 10 meter RMS UERE guess)
+# automated guesstimate for uncalibrated data (with 10 meter RMS UERE guess)
 GUESS <- ctmm.guess(turtle[[3]],CTMM=ctmm(error=10),interactive=FALSE)
 # fit and select models # CRAN policy limits us to 2 cores
 FIT <- ctmm.select(turtle[[3]],GUESS,trace=TRUE,cores=2)
@@ -80,12 +80,17 @@ FIT <- ctmm.select(turtle[[3]],GUESS,trace=TRUE,cores=2)
 summary(FIT)
 
 ## -----------------------------------------------------------------------------
+# these data have two location classes: 2D & 3D
+summary(uere(turtle))
 # assign 20-meter 2D RMS UERE and 10-meter 3D RMS UERE
 uere(turtle) <- c(20,10)
+# for one location class, the above would likely be unnecessary, but would look like
+# uere(turtle) <- 10
+
 # the default uncertainty is none for numerical assignments
 UERE <- uere(turtle)
 summary(UERE)
-# this is becasue the degrees-of-freedom are set to Inf
+# this is because the degrees-of-freedom are set to Inf
 UERE$DOF
 # here I set the DOF to a smaller value
 UERE$DOF[] <- 2
@@ -93,7 +98,7 @@ UERE$DOF[] <- 2
 summary(UERE)
 # assign the prior to the data
 uere(turtle) <- UERE
-# automated guestimate for calibrated data
+# automated guesstimate for calibrated data
 GUESS <- ctmm.guess(turtle[[3]],CTMM=ctmm(error=TRUE),interactive=FALSE)
 # stepwise fitting # CRAN policy limits us to 2 cores
 FIT <- ctmm.select(turtle[[3]],GUESS,trace=TRUE,cores=2)

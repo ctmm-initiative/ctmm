@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.0</span>
       </span>
     </div>
 
@@ -90,7 +90,7 @@
       <h1 data-toc-skip>Telemetry error</h1>
                         <h4 data-toc-skip class="author">Christen H. Fleming</h4>
             
-            <h4 data-toc-skip class="date">2022-07-09</h4>
+            <h4 data-toc-skip class="date">2022-10-28</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/ctmm-initiative/ctmm/blob/HEAD/vignettes/error.Rmd" class="external-link"><code>vignettes/error.Rmd</code></a></small>
       <div class="hidden name"><code>error.Rmd</code></div>
@@ -219,7 +219,7 @@
 </h4>
 <p>For calibrated errors, we have to set <code>error=TRUE</code> in the model guess to fit with telemetry error accounted for.</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># automated guestimate for calibrated data</span></span>
+<code class="sourceCode R"><span><span class="co"># automated guesstimate for calibrated data</span></span>
 <span><span class="va">GUESS</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/variogram.fit.html">ctmm.guess</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span>,CTMM<span class="op">=</span><span class="fu"><a href="../reference/ctmm.fit.html">ctmm</a></span><span class="op">(</span>error<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>,interactive<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co"># stepwise fitting # CRAN policy limits us to 2 cores</span></span>
 <span><span class="va">FIT</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ctmm.fit.html">ctmm.select</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span>,<span class="va">GUESS</span>,trace<span class="op">=</span><span class="cn">TRUE</span>,cores<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></code></pre></div>
@@ -234,15 +234,15 @@
 <span><span class="co">## </span></span>
 <span><span class="co">## $DOF</span></span>
 <span><span class="co">##      mean      area diffusion     speed </span></span>
-<span><span class="co">##  13.90249  23.94126 194.84079   0.00000 </span></span>
+<span><span class="co">##  13.90254  23.94145 194.84088   0.00000 </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $CI</span></span>
 <span><span class="co">##                                       low         est        high</span></span>
-<span><span class="co">## area (hectares)                 13.619548   21.269578   30.597393</span></span>
-<span><span class="co">## τ[position] (days)               3.561603    5.684253    9.071964</span></span>
-<span><span class="co">## diffusion (square meters/day) 4663.856965 5394.802783 6178.179249</span></span>
-<span><span class="co">## error 2D (meters)               18.539391   21.885519   25.225743</span></span>
-<span><span class="co">## error 3D (meters)                6.590233    7.063696    7.536735</span></span></code></pre>
+<span><span class="co">## area (hectares)                 13.619555   21.269547   30.597308</span></span>
+<span><span class="co">## τ[position] (days)               3.561600    5.684233    9.071907</span></span>
+<span><span class="co">## diffusion (square meters/day) 4663.868416 5394.815835 6178.194002</span></span>
+<span><span class="co">## error 2D (meters)               18.539429   21.885581   25.225827</span></span>
+<span><span class="co">## error 3D (meters)                6.590225    7.063685    7.536723</span></span></code></pre>
 <p><code>trace=TRUE</code> allows us to see the models considered. <code>verbose=TRUE</code> would save each model. Since we started with a finite amount of calibration data, the location-error parameter estimates were updated by the tracking data, and we can compare the results here with the previous estimates in <code>summary(UERE)</code>.</p>
 </div>
 <div class="section level4">
@@ -254,7 +254,7 @@
 <span><span class="fu"><a href="../reference/uere.html">uere</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></span></code></pre></div>
 <p>The only difference is that you have to provide an initial guess for the RMS UERE. Otherwise, the steps are the same.</p>
 <div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># automated guestimate for uncalibrated data (with 10 meter RMS UERE guess)</span></span>
+<code class="sourceCode R"><span><span class="co"># automated guesstimate for uncalibrated data (with 10 meter RMS UERE guess)</span></span>
 <span><span class="va">GUESS</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/variogram.fit.html">ctmm.guess</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span>,CTMM<span class="op">=</span><span class="fu"><a href="../reference/ctmm.fit.html">ctmm</a></span><span class="op">(</span>error<span class="op">=</span><span class="fl">10</span><span class="op">)</span>,interactive<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co"># fit and select models # CRAN policy limits us to 2 cores</span></span>
 <span><span class="va">FIT</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ctmm.fit.html">ctmm.select</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span>,<span class="va">GUESS</span>,trace<span class="op">=</span><span class="cn">TRUE</span>,cores<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></code></pre></div>
@@ -269,15 +269,15 @@
 <span><span class="co">## </span></span>
 <span><span class="co">## $DOF</span></span>
 <span><span class="co">##      mean      area diffusion     speed </span></span>
-<span><span class="co">##  12.85419  21.90090 140.47094   0.00000 </span></span>
+<span><span class="co">##  12.85425  21.90133 140.47110   0.00000 </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $CI</span></span>
 <span><span class="co">##                                       low         est       high</span></span>
-<span><span class="co">## area (hectares)                 13.034813   20.823882   30.40809</span></span>
-<span><span class="co">## τ[position] (days)               3.734214    6.186542   10.24936</span></span>
-<span><span class="co">## diffusion (square meters/day) 4229.452300 5026.247835 5890.78952</span></span>
-<span><span class="co">## error 2D (meters)                7.750808   10.816022   13.87607</span></span>
-<span><span class="co">## error 3D (meters)                6.940371    8.749011   10.55403</span></span></code></pre>
+<span><span class="co">## area (hectares)                 13.034813   20.823776   30.40783</span></span>
+<span><span class="co">## τ[position] (days)               3.734215    6.186509   10.24925</span></span>
+<span><span class="co">## diffusion (square meters/day) 4229.459561 5026.255917 5890.79845</span></span>
+<span><span class="co">## error 2D (meters)                7.750744   10.815916   13.87592</span></span>
+<span><span class="co">## error 3D (meters)                6.940386    8.749024   10.55404</span></span></code></pre>
 <p>Here, fitting the RMS UERE simultaneously with the movement model produced a largely consistent result. This will not always be the case.</p>
 </div>
 <div class="section level4">
@@ -285,8 +285,19 @@
 </h4>
 <p>An alternative method of last resort is to simply assign a range of credible RMS UERE values to the data. Again, 10-meter error is usually a good guess for 3D GPS data. For e-obs, and other devices that report error in meters, a number on the order of 1 is usually more relevant.</p>
 <div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># these data have two location classes: 2D &amp; 3D</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu"><a href="../reference/uere.html">uere</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## , , horizontal</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">##    low est high</span></span>
+<span><span class="co">## 2D   0   1  Inf</span></span>
+<span><span class="co">## 3D   0   1  Inf</span></span></code></pre>
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># assign 20-meter 2D RMS UERE and 10-meter 3D RMS UERE</span></span>
 <span><span class="fu"><a href="../reference/uere.html">uere</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">20</span>,<span class="fl">10</span><span class="op">)</span></span>
+<span><span class="co"># for one location class, the above would likely be unnecessary, but would look like</span></span>
+<span><span class="co"># uere(turtle) &lt;- 10</span></span>
+<span></span>
 <span><span class="co"># the default uncertainty is none for numerical assignments</span></span>
 <span><span class="va">UERE</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/uere.html">uere</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">UERE</span><span class="op">)</span></span></code></pre></div>
@@ -295,13 +306,13 @@
 <span><span class="co">##    low est high</span></span>
 <span><span class="co">## 2D  20  20   20</span></span>
 <span><span class="co">## 3D  10  10   10</span></span></code></pre>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># this is becasue the degrees-of-freedom are set to Inf</span></span>
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># this is because the degrees-of-freedom are set to Inf</span></span>
 <span><span class="va">UERE</span><span class="op">$</span><span class="va">DOF</span></span></code></pre></div>
 <pre><code><span><span class="co">##    horizontal</span></span>
 <span><span class="co">## 2D        Inf</span></span>
 <span><span class="co">## 3D        Inf</span></span></code></pre>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># here I set the DOF to a smaller value</span></span>
 <span><span class="va">UERE</span><span class="op">$</span><span class="va">DOF</span><span class="op">[</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">2</span></span>
 <span><span class="co"># which now gives plausible credible intervals</span></span>
@@ -311,17 +322,17 @@
 <span><span class="co">##         low est     high</span></span>
 <span><span class="co">## 2D 6.960018  20 33.38156</span></span>
 <span><span class="co">## 3D 3.480009  10 16.69078</span></span></code></pre>
-<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># assign the prior to the data</span></span>
 <span><span class="fu"><a href="../reference/uere.html">uere</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">UERE</span></span>
-<span><span class="co"># automated guestimate for calibrated data</span></span>
+<span><span class="co"># automated guesstimate for calibrated data</span></span>
 <span><span class="va">GUESS</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/variogram.fit.html">ctmm.guess</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span>,CTMM<span class="op">=</span><span class="fu"><a href="../reference/ctmm.fit.html">ctmm</a></span><span class="op">(</span>error<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>,interactive<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co"># stepwise fitting # CRAN policy limits us to 2 cores</span></span>
 <span><span class="va">FIT</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ctmm.fit.html">ctmm.select</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span>,<span class="va">GUESS</span>,trace<span class="op">=</span><span class="cn">TRUE</span>,cores<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## * Fitting model OUF error</span></span></code></pre>
 <pre><code><span><span class="co">## * Fitting model OUF anisotropic error</span></span></code></pre>
 <pre><code><span><span class="co">## * Fitting model IID anisotropic error</span></span></code></pre>
-<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># if you get weird errors on your platform, then try cores=1</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">FIT</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## $name</span></span>
@@ -329,15 +340,15 @@
 <span><span class="co">## </span></span>
 <span><span class="co">## $DOF</span></span>
 <span><span class="co">##      mean      area diffusion     speed </span></span>
-<span><span class="co">##   12.7094   21.6469  143.5052    0.0000 </span></span>
+<span><span class="co">##  12.70938  21.64663 143.50530   0.00000 </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $CI</span></span>
 <span><span class="co">##                                       low         est       high</span></span>
-<span><span class="co">## area (hectares)                 12.966260   20.777991   30.40185</span></span>
-<span><span class="co">## τ[position] (days)               3.773825    6.262948   10.39383</span></span>
-<span><span class="co">## diffusion (square meters/day) 4197.630511 4978.893352 5825.84586</span></span>
-<span><span class="co">## error 2D (meters)                9.462780   12.388745   15.30890</span></span>
-<span><span class="co">## error 3D (meters)                7.186927    8.889066   10.58786</span></span></code></pre>
+<span><span class="co">## area (hectares)                 12.966265   20.778067   30.40203</span></span>
+<span><span class="co">## τ[position] (days)               3.773821    6.262963   10.39390</span></span>
+<span><span class="co">## diffusion (square meters/day) 4197.637240 4978.901067 5825.85463</span></span>
+<span><span class="co">## error 2D (meters)                9.462792   12.388766   15.30893</span></span>
+<span><span class="co">## error 3D (meters)                7.186905    8.889043   10.58783</span></span></code></pre>
 <p>This method is still being developed and so this material is subject to change.</p>
 </div>
 </div>
@@ -361,7 +372,7 @@
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer>

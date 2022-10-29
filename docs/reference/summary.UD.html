@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.0</span>
       </span>
     </div>
 
@@ -143,14 +143,16 @@ Starting in v0.3.2, this method was improved to use <code>DOF.area</code> in the
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Estimate and summarize the AKDE</span></span></span>
 <span class="r-in"><span><span class="va">UD</span> <span class="op">&lt;-</span> <span class="fu"><a href="akde.html">akde</a></span><span class="op">(</span><span class="va">DATA</span>,<span class="va">FIT</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Default grid size of 3 minutes chosen for bandwidth(...,fast=TRUE).</span>
+<span class="r-plt img"><img src="summary.UD-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">UD</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $DOF</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      area bandwidth </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  18.13598  29.22869 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  18.13597  29.25019 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $CI</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                               low     est     high</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> area (square kilometers) 223.5577 376.371 568.3373</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                               low      est     high</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> area (square kilometers) 223.4711 376.2252 568.1173</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "area"</span>
@@ -169,7 +171,7 @@ Starting in v0.3.2, this method was improved to use <code>DOF.area</code> in the
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer></div>

@@ -1,4 +1,5 @@
-ctmm 1.0.1 (2022-10-27)
+ctmm 1.1.0 (2022-10-28)
+================
 
   * new function pkde() for population kernel density estimates
   
@@ -6,7 +7,7 @@ ctmm 1.0.1 (2022-10-27)
 
   * new functions Log(), Exp() to log transform parameter estimates and their uncertainties for meta-analytic regression
   
-  * new functions units(), sigfig() to represent quantities with concise units and significant digits
+  * new functions dimfig(), sigfig() to represent quantities with concise units and significant digits
 
   * new argument 'sample' in mean()
   
@@ -22,7 +23,7 @@ ctmm 1.0.1 (2022-10-27)
   
   * plot.telemetry can now subset and reproject rasters
   
-  * bugfix in sp::polygon derived areas (used since v1.0.0)
+  * bugfix in sp::polygon derived areas (used since v1.0.0 for summary, plot, meta)
   
   * bugfix in agde, suitability, RSF-akde when reprojecting onto the same raster
   

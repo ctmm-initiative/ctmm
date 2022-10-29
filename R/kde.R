@@ -859,7 +859,7 @@ CI.UD <- function(object,level.UD=0.95,level=0.95,P=FALSE,convex=FALSE)
 
   if(convex)
   {
-    warning("sp polygon areas are unreliable.")
+    # warning("sp polygon areas are unreliable.")
     SP <- convex(object,level=level.UD,convex=convex)
     # This estimate seems to be garbage in many cases
     area <- sum( sapply(SP@polygons, function(POLY){POLY@area}) )

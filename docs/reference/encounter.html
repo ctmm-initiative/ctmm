@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.0</span>
       </span>
     </div>
 
@@ -72,7 +72,7 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">rates</span><span class="op">(</span><span class="va">object</span>,debias<span class="op">=</span><span class="cn">TRUE</span>,level<span class="op">=</span><span class="fl">0.95</span>,normalize<span class="op">=</span><span class="cn">TRUE</span>,<span class="va">...</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">rates</span><span class="op">(</span><span class="va">object</span>,debias<span class="op">=</span><span class="cn">TRUE</span>,level<span class="op">=</span><span class="fl">0.95</span>,normalize<span class="op">=</span><span class="cn">TRUE</span>,self<span class="op">=</span><span class="cn">TRUE</span>,<span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">encounter</span><span class="op">(</span><span class="va">object</span>,include<span class="op">=</span><span class="cn">NULL</span>,exclude<span class="op">=</span><span class="cn">NULL</span>,debias<span class="op">=</span><span class="cn">FALSE</span>,<span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -90,6 +90,9 @@
 
   <dt>normalize</dt>
 <dd><p>Normalize relative encounter rates by the average uncorrelated self-encounter rate.</p></dd>
+
+  <dt>self</dt>
+<dd><p>Fix the self-interaction rate appropriately.</p></dd>
 
   <dt>include</dt>
 <dd><p>A matrix of interactions to include in the calculation (see Details below).</p></dd>
@@ -140,6 +143,10 @@ By default, <code>include = 1 - diag(length(object))</code>, which implies that 
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># create aligned UDs</span></span></span>
 <span class="r-in"><span><span class="va">UDS</span> <span class="op">&lt;-</span> <span class="fu"><a href="akde.html">akde</a></span><span class="op">(</span><span class="va">buffalo</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>,<span class="va">FITS</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Default grid size of 3 minutes chosen for bandwidth(...,fast=TRUE).</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Default grid size of 2 minutes chosen for bandwidth(...,fast=TRUE).</span>
+<span class="r-plt img"><img src="encounter-1.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="encounter-2.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># calculate CDE</span></span></span>
 <span class="r-in"><span><span class="va">CDE</span> <span class="op">&lt;-</span> <span class="fu">encounter</span><span class="op">(</span><span class="va">UDS</span><span class="op">)</span></span></span>
@@ -148,7 +155,7 @@ By default, <code>include = 1 - diag(length(object))</code>, which implies that 
 <span class="r-in"><span><span class="fu"><a href="plot.telemetry.html">plot</a></span><span class="op">(</span><span class="va">buffalo</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>,col<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'red'</span>,<span class="st">'blue'</span><span class="op">)</span>,UD<span class="op">=</span><span class="va">CDE</span>,col.DF<span class="op">=</span><span class="st">'purple'</span>,col.level<span class="op">=</span><span class="st">'purple'</span>,col.grid<span class="op">=</span><span class="cn">NA</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> DOP values missing. Assuming DOP=1.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> DOP values missing. Assuming DOP=1.</span>
-<span class="r-plt img"><img src="encounter-1.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="encounter-3.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
@@ -164,7 +171,7 @@ By default, <code>include = 1 - diag(length(object))</code>, which implies that 
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer></div>

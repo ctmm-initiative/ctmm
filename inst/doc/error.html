@@ -12,7 +12,7 @@
 
 <meta name="author" content="Christen H. Fleming" />
 
-<meta name="date" content="2022-07-10" />
+<meta name="date" content="2022-10-28" />
 
 <title>Telemetry error</title>
 
@@ -107,13 +107,20 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   for (var i = 0; i < sheets.length; i++) {
     if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
     try { var rules = sheets[i].cssRules; } catch (e) { continue; }
-    for (var j = 0; j < rules.length; j++) {
+    var j = 0;
+    while (j < rules.length) {
       var rule = rules[j];
       // check if there is a div.sourceCode rule
-      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
       var style = rule.style.cssText;
       // check if color or background-color is set
-      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
       // replace div.sourceCode by a pre.sourceCode rule
       sheets[i].deleteRule(j);
       sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
@@ -319,7 +326,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Telemetry error</h1>
 <h4 class="author">Christen H. Fleming</h4>
-<h4 class="date">2022-07-10</h4>
+<h4 class="date">2022-10-28</h4>
 
 
 
@@ -419,7 +426,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <div id="fitting-with-calibrated-data" class="section level3">
 <h3>Fitting with calibrated data</h3>
 <p>For calibrated errors, we have to set <code>error=TRUE</code> in the model guess to fit with telemetry error accounted for.</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb25-1" title="1"><span class="co"># automated guestimate for calibrated data</span></a>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb25-1" title="1"><span class="co"># automated guesstimate for calibrated data</span></a>
 <a class="sourceLine" id="cb25-2" title="2">GUESS &lt;-<span class="st"> </span><span class="kw">ctmm.guess</span>(turtle[[<span class="dv">3</span>]],<span class="dt">CTMM=</span><span class="kw">ctmm</span>(<span class="dt">error=</span><span class="ot">TRUE</span>),<span class="dt">interactive=</span><span class="ot">FALSE</span>)</a>
 <a class="sourceLine" id="cb25-3" title="3"><span class="co"># stepwise fitting # CRAN policy limits us to 2 cores</span></a>
 <a class="sourceLine" id="cb25-4" title="4">FIT &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(turtle[[<span class="dv">3</span>]],GUESS,<span class="dt">trace=</span><span class="ot">TRUE</span>,<span class="dt">cores=</span><span class="dv">2</span>)</a></code></pre></div>
@@ -433,15 +440,15 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## 
 ## $DOF
 ##      mean      area diffusion     speed 
-##  13.90249  23.94110 194.84096   0.00000 
+##  13.90252  23.94147 194.84062   0.00000 
 ## 
 ## $CI
 ##                                       low         est        high
-## area (hectares)                 13.619558   21.269630   30.597501
-## τ[position] (days)               3.561601    5.684254    9.071973
-## diffusion (square meters/day) 4663.867556 5394.814680 6178.192521
-## error 2D (meters)               18.539406   21.885543   25.225776
-## error 3D (meters)                6.590225    7.063685    7.536723</code></pre>
+## area (hectares)                 13.619548   21.269531   30.597281
+## τ[position] (days)               3.561602    5.684238    9.071919
+## diffusion (square meters/day) 4663.864056 5394.811348 6178.189416
+## error 2D (meters)               18.539415   21.885557   25.225794
+## error 3D (meters)                6.590230    7.063692    7.536731</code></pre>
 <p><code>trace=TRUE</code> allows us to see the models considered. <code>verbose=TRUE</code> would save each model. Since we started with a finite amount of calibration data, the location-error parameter estimates were updated by the tracking data, and we can compare the results here with the previous estimates in <code>summary(UERE)</code>.</p>
 </div>
 <div id="simultaneous-fitting-with-uncalibrated-data" class="section level3">
@@ -450,7 +457,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb31-1" title="1"><span class="co"># delete UERE information</span></a>
 <a class="sourceLine" id="cb31-2" title="2"><span class="kw">uere</span>(turtle) &lt;-<span class="st"> </span><span class="ot">NULL</span></a></code></pre></div>
 <p>The only difference is that you have to provide an initial guess for the RMS UERE. Otherwise, the steps are the same.</p>
-<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb32-1" title="1"><span class="co"># automated guestimate for uncalibrated data (with 10 meter RMS UERE guess)</span></a>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb32-1" title="1"><span class="co"># automated guesstimate for uncalibrated data (with 10 meter RMS UERE guess)</span></a>
 <a class="sourceLine" id="cb32-2" title="2">GUESS &lt;-<span class="st"> </span><span class="kw">ctmm.guess</span>(turtle[[<span class="dv">3</span>]],<span class="dt">CTMM=</span><span class="kw">ctmm</span>(<span class="dt">error=</span><span class="dv">10</span>),<span class="dt">interactive=</span><span class="ot">FALSE</span>)</a>
 <a class="sourceLine" id="cb32-3" title="3"><span class="co"># fit and select models # CRAN policy limits us to 2 cores</span></a>
 <a class="sourceLine" id="cb32-4" title="4">FIT &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(turtle[[<span class="dv">3</span>]],GUESS,<span class="dt">trace=</span><span class="ot">TRUE</span>,<span class="dt">cores=</span><span class="dv">2</span>)</a></code></pre></div>
@@ -464,69 +471,79 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## 
 ## $DOF
 ##      mean      area diffusion     speed 
-##  12.85422  21.90128 140.47087   0.00000 
+##  12.85425  21.90138 140.47100   0.00000 
 ## 
 ## $CI
 ##                                       low         est       high
-## area (hectares)                 13.034803   20.823773   30.40784
-## τ[position] (days)               3.734218    6.186522   10.24928
-## diffusion (square meters/day) 4229.451375 5026.246957 5890.78871
-## error 2D (meters)                7.750781   10.815974   13.87600
-## error 3D (meters)                6.940405    8.749043   10.55406</code></pre>
+## area (hectares)                 13.034809   20.823756   30.40779
+## τ[position] (days)               3.734216    6.186509   10.24925
+## diffusion (square meters/day) 4229.458240 5026.254682 5890.79733
+## error 2D (meters)                7.750764   10.815948   13.87597
+## error 3D (meters)                6.940392    8.749030   10.55405</code></pre>
 <p>Here, fitting the RMS UERE simultaneously with the movement model produced a largely consistent result. This will not always be the case.</p>
 </div>
 <div id="fitting-with-uncalibrated-data-under-a-prior" class="section level3">
 <h3>Fitting with uncalibrated data under a prior</h3>
 <p>An alternative method of last resort is to simply assign a range of credible RMS UERE values to the data. Again, 10-meter error is usually a good guess for 3D GPS data. For e-obs, and other devices that report error in meters, a number on the order of 1 is usually more relevant.</p>
-<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb38-1" title="1"><span class="co"># assign 20-meter 2D RMS UERE and 10-meter 3D RMS UERE</span></a>
-<a class="sourceLine" id="cb38-2" title="2"><span class="kw">uere</span>(turtle) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">20</span>,<span class="dv">10</span>)</a>
-<a class="sourceLine" id="cb38-3" title="3"><span class="co"># the default uncertainty is none for numerical assignments</span></a>
-<a class="sourceLine" id="cb38-4" title="4">UERE &lt;-<span class="st"> </span><span class="kw">uere</span>(turtle)</a>
-<a class="sourceLine" id="cb38-5" title="5"><span class="kw">summary</span>(UERE)</a></code></pre></div>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb38-1" title="1"><span class="co"># these data have two location classes: 2D &amp; 3D</span></a>
+<a class="sourceLine" id="cb38-2" title="2"><span class="kw">summary</span>(<span class="kw">uere</span>(turtle))</a></code></pre></div>
+<pre><code>## , , horizontal
+## 
+##    low est high
+## 2D   0   1  Inf
+## 3D   0   1  Inf</code></pre>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb40-1" title="1"><span class="co"># assign 20-meter 2D RMS UERE and 10-meter 3D RMS UERE</span></a>
+<a class="sourceLine" id="cb40-2" title="2"><span class="kw">uere</span>(turtle) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">20</span>,<span class="dv">10</span>)</a>
+<a class="sourceLine" id="cb40-3" title="3"><span class="co"># for one location class, the above would likely be unnecessary, but would look like</span></a>
+<a class="sourceLine" id="cb40-4" title="4"><span class="co"># uere(turtle) &lt;- 10</span></a>
+<a class="sourceLine" id="cb40-5" title="5"></a>
+<a class="sourceLine" id="cb40-6" title="6"><span class="co"># the default uncertainty is none for numerical assignments</span></a>
+<a class="sourceLine" id="cb40-7" title="7">UERE &lt;-<span class="st"> </span><span class="kw">uere</span>(turtle)</a>
+<a class="sourceLine" id="cb40-8" title="8"><span class="kw">summary</span>(UERE)</a></code></pre></div>
 <pre><code>## , , horizontal
 ## 
 ##    low est high
 ## 2D  20  20   20
 ## 3D  10  10   10</code></pre>
-<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb40-1" title="1"><span class="co"># this is becasue the degrees-of-freedom are set to Inf</span></a>
-<a class="sourceLine" id="cb40-2" title="2">UERE<span class="op">$</span>DOF</a></code></pre></div>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb42-1" title="1"><span class="co"># this is because the degrees-of-freedom are set to Inf</span></a>
+<a class="sourceLine" id="cb42-2" title="2">UERE<span class="op">$</span>DOF</a></code></pre></div>
 <pre><code>##    horizontal
 ## 2D        Inf
 ## 3D        Inf</code></pre>
-<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb42-1" title="1"><span class="co"># here I set the DOF to a smaller value</span></a>
-<a class="sourceLine" id="cb42-2" title="2">UERE<span class="op">$</span>DOF[] &lt;-<span class="st"> </span><span class="dv">2</span></a>
-<a class="sourceLine" id="cb42-3" title="3"><span class="co"># which now gives plausible credible intervals</span></a>
-<a class="sourceLine" id="cb42-4" title="4"><span class="kw">summary</span>(UERE)</a></code></pre></div>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb44-1" title="1"><span class="co"># here I set the DOF to a smaller value</span></a>
+<a class="sourceLine" id="cb44-2" title="2">UERE<span class="op">$</span>DOF[] &lt;-<span class="st"> </span><span class="dv">2</span></a>
+<a class="sourceLine" id="cb44-3" title="3"><span class="co"># which now gives plausible credible intervals</span></a>
+<a class="sourceLine" id="cb44-4" title="4"><span class="kw">summary</span>(UERE)</a></code></pre></div>
 <pre><code>## , , horizontal
 ## 
 ##         low est     high
 ## 2D 6.960018  20 33.38156
 ## 3D 3.480009  10 16.69078</code></pre>
-<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb44-1" title="1"><span class="co"># assign the prior to the data</span></a>
-<a class="sourceLine" id="cb44-2" title="2"><span class="kw">uere</span>(turtle) &lt;-<span class="st"> </span>UERE</a>
-<a class="sourceLine" id="cb44-3" title="3"><span class="co"># automated guestimate for calibrated data</span></a>
-<a class="sourceLine" id="cb44-4" title="4">GUESS &lt;-<span class="st"> </span><span class="kw">ctmm.guess</span>(turtle[[<span class="dv">3</span>]],<span class="dt">CTMM=</span><span class="kw">ctmm</span>(<span class="dt">error=</span><span class="ot">TRUE</span>),<span class="dt">interactive=</span><span class="ot">FALSE</span>)</a>
-<a class="sourceLine" id="cb44-5" title="5"><span class="co"># stepwise fitting # CRAN policy limits us to 2 cores</span></a>
-<a class="sourceLine" id="cb44-6" title="6">FIT &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(turtle[[<span class="dv">3</span>]],GUESS,<span class="dt">trace=</span><span class="ot">TRUE</span>,<span class="dt">cores=</span><span class="dv">2</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb46-1" title="1"><span class="co"># assign the prior to the data</span></a>
+<a class="sourceLine" id="cb46-2" title="2"><span class="kw">uere</span>(turtle) &lt;-<span class="st"> </span>UERE</a>
+<a class="sourceLine" id="cb46-3" title="3"><span class="co"># automated guesstimate for calibrated data</span></a>
+<a class="sourceLine" id="cb46-4" title="4">GUESS &lt;-<span class="st"> </span><span class="kw">ctmm.guess</span>(turtle[[<span class="dv">3</span>]],<span class="dt">CTMM=</span><span class="kw">ctmm</span>(<span class="dt">error=</span><span class="ot">TRUE</span>),<span class="dt">interactive=</span><span class="ot">FALSE</span>)</a>
+<a class="sourceLine" id="cb46-5" title="5"><span class="co"># stepwise fitting # CRAN policy limits us to 2 cores</span></a>
+<a class="sourceLine" id="cb46-6" title="6">FIT &lt;-<span class="st"> </span><span class="kw">ctmm.select</span>(turtle[[<span class="dv">3</span>]],GUESS,<span class="dt">trace=</span><span class="ot">TRUE</span>,<span class="dt">cores=</span><span class="dv">2</span>)</a></code></pre></div>
 <pre><code>## * Fitting model OUF error</code></pre>
 <pre><code>## * Fitting model OUF anisotropic error</code></pre>
 <pre><code>## * Fitting model IID anisotropic error</code></pre>
-<div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb48-1" title="1"><span class="co"># if you get weird errors on your platform, then try cores=1</span></a>
-<a class="sourceLine" id="cb48-2" title="2"><span class="kw">summary</span>(FIT)</a></code></pre></div>
+<div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb50-1" title="1"><span class="co"># if you get weird errors on your platform, then try cores=1</span></a>
+<a class="sourceLine" id="cb50-2" title="2"><span class="kw">summary</span>(FIT)</a></code></pre></div>
 <pre><code>## $name
 ## [1] &quot;OU anisotropic error&quot;
 ## 
 ## $DOF
 ##      mean      area diffusion     speed 
-##  12.70941  21.64696 143.50495   0.00000 
+##  12.70941  21.64704 143.50511   0.00000 
 ## 
 ## $CI
 ##                                       low         est       high
-## area (hectares)                 12.966257   20.777970   30.40180
-## τ[position] (days)               3.773820    6.262945   10.39384
-## diffusion (square meters/day) 4197.635773 4978.900412 5825.85493
-## error 2D (meters)                9.462854   12.388876   15.30909
-## error 3D (meters)                7.186910    8.889048   10.58784</code></pre>
+## area (hectares)                 12.966256   20.777949   30.40176
+## τ[position] (days)               3.773827    6.262944   10.39382
+## diffusion (square meters/day) 4197.631988 4978.895422 5825.84860
+## error 2D (meters)                9.462806   12.388788   15.30896
+## error 3D (meters)                7.186935    8.889073   10.58786</code></pre>
 <p>This method is still being developed and so this material is subject to change.</p>
 </div>
 </div>

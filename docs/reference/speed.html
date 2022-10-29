@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.0</span>
       </span>
     </div>
 
@@ -179,13 +179,14 @@
 <span class="r-in"><span><span class="va">DATA</span> <span class="op">&lt;-</span> <span class="va">buffalo</span><span class="op">$</span><span class="va">Gabs</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">GUESS</span> <span class="op">&lt;-</span> <span class="fu"><a href="variogram.fit.html">ctmm.guess</a></span><span class="op">(</span><span class="va">DATA</span>,interactive<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># in general, you should use ctmm.select instead</span></span></span>
 <span class="r-in"><span><span class="va">FIT</span> <span class="op">&lt;-</span> <span class="fu"><a href="ctmm.fit.html">ctmm.fit</a></span><span class="op">(</span><span class="va">DATA</span>,<span class="va">GUESS</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># stationary Gaussian estimate</span></span></span>
 <span class="r-in"><span><span class="fu">speed</span><span class="op">(</span><span class="va">FIT</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $DOF</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    speed </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1179.979 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1179.978 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $CI</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                             low      est    high</span>
@@ -198,12 +199,12 @@
 <span class="r-in"><span><span class="fu">speed</span><span class="op">(</span><span class="va">FIT</span>,<span class="va">DATA</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   |                                                                              |                                                                      |   0%  |                                                                              |=======                                                               |  10%  |                                                                              |==========                                                            |  15%  |                                                                              |==============                                                        |  20%  |                                                                              |==================                                                    |  25%  |                                                                              |=====================                                                 |  30%  |                                                                              |========================                                              |  35%  |                                                                              |============================                                          |  40%  |                                                                              |================================                                      |  45%  |                                                                              |===================================                                   |  50%  |                                                                              |======================================                                |  55%  |                                                                              |==========================================                            |  60%  |                                                                              |==============================================                        |  65%  |                                                                              |=================================================                     |  70%  |                                                                              |====================================================                  |  75%  |                                                                              |========================================================              |  80%  |                                                                              |============================================================          |  85%  |                                                                              |===============================================================       |  90%  |                                                                              |==================================================================    |  95%  |                                                                              |======================================================================| 100%</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $DOF</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    speed </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 775.5338 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  speed </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 820.99 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $CI</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                             low      est     high</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> speed (kilometers/day) 11.05366 11.45504 11.85991</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> speed (kilometers/day) 11.03516 11.42427 11.81667</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "speed"</span>
@@ -222,7 +223,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer></div>

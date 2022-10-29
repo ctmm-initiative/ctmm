@@ -29,32 +29,12 @@ Now we can calculate a uniformly weighted `akde` object for each model.
 ```{r,  fig.show='hold', results = "hide"}
 KDE <- akde(Pepper,M.IID) # KDE
 AKDE <- akde(Pepper,M.OUF) # AKDE
+wAKDE <- akde(Pepper,M.OUF,weights=TRUE) # weighted AKDE
 ```
 
 However, Pepper's sampling schedule is anything but uniform.
 
-```{r,  fig.show='hold'}
-# plot all sampling intervals
-dt.plot(Pepper)
-```
-
-Keeping in mind that Pepper's home-range crossing timescale is two weeks, we have several options for calculating optimal weights here. The exact algorithm is the easiest to implement, but it can be prohibitively slow on larger datasets (10k-100k). On the other hand, the fast algorithm can scale to extremely large datasets, but requires an appropriate choice of discrete-time grid `dt` argument. Here, for the fast algorithm, we need to either toss out the the tiny sampling intervals from the data or choose a tiny discrete-time grid `dt` argument.
-
-For the exact algorithm, Pepper's 1,725 locations would not be prohibitive. On the other hand, for the fast algorithm, if we use the minimum sampling interval for `dt` and considering that Pepper was sampled for 8.5 months (`summary(Pepper)`) and has a minimum sampling interval of 3 minutes (`min(diff(Pepper$t))`), then the discrete-time grid would be `(8.5 %#% 'month') / (3 %#% 'min')` or 120k points, which is very feasible in terms of computer memory. (A very large discrete-time grid could cause an out-of-memory error!) Finally, we could toss out the tiny (and not very informative) sampling intervals and then use the fast algorithm with `dt=1 %#% 'hr'`. This would reduce the discrete-time grid size to  `(8.5 %#% 'month') / (1 %#% 'hr')` or 6k points.
-
-```{r,  fig.show='hold', results = "hide"}
-# Option 1) exact calculation - slow on larger datasets
-# UD2w <- akde(Pepper,M.OUF,weights=TRUE,fast=FALSE,PC='direct')
-
-# Option 2) use tiny dt
-dt <- min(diff(Pepper$t))
-wAKDE <- akde(Pepper,M.OUF,weights=TRUE,dt=dt)
-
-# Option 3) remove tiny sampling intervals and use smaller dt
-# dt <- 1 %#% 'hr'
-# ...
-# wAKDE <- akde(Pepper,M.OUF,weights=TRUE,dt=dt)
-```
+Keeping in mind that Pepper's home-range crossing timescale is two weeks, we have several algorithms for calculating optimal weights here. The exact algorithm is the easiest to implement, but it can be prohibitively slow on larger datasets (10k-100k). On the other hand, the fast algorithm can scale to extremely large datasets, but requires an appropriate discrete-time grid `dt` argument, which should be a divisor of the most frequent sampling intervals that can approximate the smallest sampling intervals. The default will try to intelligently choose among these methods, and the above plot depicts the selected `dt` in red. Large volumes of data (>100k) collected over a long period of time with finely sampled bursts (period/interval $\gg$ millions) will not work well with either of the default algorithms. In this case, the user needs to thin their data if optimal weights are required. There is no significant home-range information lost by doing so in such extreme cases.
 
 Now let us plot the results.
 

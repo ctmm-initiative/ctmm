@@ -150,7 +150,8 @@ export(rsf.fit)
 export(revisitation)
 export(npr)
 
-# differenc vector
+# difference vector
 export(difference,proximity,distances)
 
-export(sigfig,units)
+# pretty units and significant figures
+export(sigfig,dimfig)

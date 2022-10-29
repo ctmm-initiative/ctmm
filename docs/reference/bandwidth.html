@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.0</span>
       </span>
     </div>
 
@@ -72,8 +72,8 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">bandwidth</span><span class="op">(</span><span class="va">data</span>,<span class="va">CTMM</span>,VMM<span class="op">=</span><span class="cn">NULL</span>,weights<span class="op">=</span><span class="cn">FALSE</span>,fast<span class="op">=</span><span class="cn">TRUE</span>,dt<span class="op">=</span><span class="cn">NULL</span>,error<span class="op">=</span><span class="fl">0.01</span>,precision<span class="op">=</span><span class="fl">1</span><span class="op">/</span><span class="fl">2</span>,</span>
-<span>  PC<span class="op">=</span><span class="st">"Markov"</span>,verbose<span class="op">=</span><span class="cn">FALSE</span>,trace<span class="op">=</span><span class="cn">FALSE</span>,<span class="va">...</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">bandwidth</span><span class="op">(</span><span class="va">data</span>,<span class="va">CTMM</span>,VMM<span class="op">=</span><span class="cn">NULL</span>,weights<span class="op">=</span><span class="cn">FALSE</span>,fast<span class="op">=</span><span class="cn">NULL</span>,dt<span class="op">=</span><span class="cn">NULL</span>,PC<span class="op">=</span><span class="st">"Markov"</span>,error<span class="op">=</span><span class="fl">0.01</span>,</span>
+<span>          precision<span class="op">=</span><span class="fl">1</span><span class="op">/</span><span class="fl">2</span>,verbose<span class="op">=</span><span class="cn">FALSE</span>,trace<span class="op">=</span><span class="cn">FALSE</span>,dt.plot<span class="op">=</span><span class="cn">TRUE</span>,<span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -87,14 +87,18 @@
   <dt>VMM</dt>
 <dd><p>An optional vertical <code>ctmm</code> object for 3D bandwidth calculation.</p></dd>
 
-  <dt>weights</dt>
+</dl><p><!-- %  \item{UD}{A list of \code{UD} objects for calculating population weights and bandwidth [IN DEVELOPMENT].} --></p>
+<dl><dt>weights</dt>
 <dd><p>By default, the weights are taken to be uniform, whereas <code>weights=TRUE</code> will optimize the weights.</p></dd>
 
   <dt>fast</dt>
-<dd><p>Use FFT algorithms for weight optimization.</p></dd>
+<dd><p>Use FFT algorithms for weight optimization. <code>fast=NULL</code> will attempt to intelligently decide between the fast and exact algorithms based on computational complexity.</p></dd>
 
   <dt>dt</dt>
 <dd><p>Optional lag bin width for the FFT algorithm.</p></dd>
+
+  <dt>PC</dt>
+<dd><p>Preconditioner to use: can be "Markov", "circulant", "IID", or "direct".</p></dd>
 
   <dt>error</dt>
 <dd><p>Maximum grid error for FFT algorithm, if <code>dt</code> is not specified.</p></dd>
@@ -102,14 +106,14 @@
   <dt>precision</dt>
 <dd><p>Fraction of maximum possible digits of precision to target in weight optimization. <code>precision=1/2</code> results in about 7 decimal digits of precision if the preconditioner is stable.</p></dd>
 
-  <dt>PC</dt>
-<dd><p>Preconditioner to use: can be "Markov", "circulant", "IID", or "direct".</p></dd>
-
   <dt>verbose</dt>
 <dd><p>Optionally return the optimal <code>weights</code>, effective sample size <code>DOF.H</code>, and other information along with the bandwidth matrix <code>H</code>.</p></dd>
 
   <dt>trace</dt>
 <dd><p>Produce tracing information on the progress of weight optimization.</p></dd>
+
+  <dt>dt.plot</dt>
+<dd><p>Execute a diagnostic <code><a href="dt.plot.html">dt.plot</a></code> with a red line at <code>dt</code>, if <code>weights=TRUE</code>.</p></dd>
 
   <dt>...</dt>
 <dd><p>Additional arguments not currently used.</p></dd>
@@ -156,6 +160,7 @@ Ecological Applications, 28:4, 1003-1010 (2018) <a href="https://doi.org/10.1002
     <div id="note">
     <h2>Note</h2>
     <p>To obtain a bandwidth scalar representing the variance of each kernel, a <code>ctmm</code> object with <code>isotropic=TRUE</code> is required.  In this case, <code>bandwidth</code> will return bandwidth matrix with identical variances along its diagonal. Note that forcing <code>isotropic=TRUE</code> will provide an inaccurate estimate for very eccentric distributions.</p>
+<p>In v1.0.1 the default <code>fast</code>, <code>dt</code>, <code>PC</code> arguments depend on the sample size, with <code>fast=FALSE</code>, <code>PC="Direct"</code> for small sample sizes, <code>fast=FALSE</code>, <code>PC="Markov"</code> for moderate sample sizes, and <code>fast=TRUE</code>, <code>PC="Markov"</code> for large sample sizes, where <code>dt</code> is taken to be the integer fraction of the median sampling interval closest to the minimum sampling interval.</p>
 <p>In v0.6.2 the default <code>dt</code> was increased form the minimum time difference to a small quantile no less than <code>error</code> times the median.</p>
     </div>
     <div id="see-also">
@@ -175,7 +180,7 @@ Ecological Applications, 28:4, 1003-1010 (2018) <a href="https://doi.org/10.1002
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer></div>

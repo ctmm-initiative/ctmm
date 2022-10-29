@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.0</span>
       </span>
     </div>
 
@@ -67,7 +67,30 @@
     </div>
 
     <div class="section level2">
-<h2 class="page-header" data-toc-text="1.0.0" id="ctmm-100-2022-07-07">ctmm 1.0.0 (2022-07-07)<a class="anchor" aria-label="anchor" href="#ctmm-100-2022-07-07"></a></h2>
+<h2 class="page-header" data-toc-text="1.1.0" id="ctmm-110-2022-10-28">ctmm 1.1.0 (2022-10-28)<a class="anchor" aria-label="anchor" href="#ctmm-110-2022-10-28"></a></h2>
+<ul><li><p>new function pkde() for population kernel density estimates</p></li>
+<li><p>new functions difference(), distances(), proximity() for estimating distances between individuals</p></li>
+<li><p>new functions Log(), Exp() to log transform parameter estimates and their uncertainties for meta-analytic regression</p></li>
+<li><p>new functions dimfig(), sigfig() to represent quantities with concise units and significant digits</p></li>
+<li><p>new argument ‘sample’ in mean()</p></li>
+<li><p>new argument ‘interpolate’ in rsf.fit()</p></li>
+<li><p>new arguments ‘xlim’, ‘ylim’ to plot.outlie()</p></li>
+<li><p>numerical stability improvements in rsf.fit optimization and hessian calculations</p></li>
+<li><p>numerical convergence improvements in location error fitting</p></li>
+<li><p>numerical convergence improvements in AKDE weight optimization</p></li>
+<li><p>plot.telemetry can now subset and reproject rasters</p></li>
+<li><p>bugfix in sp::polygon derived areas (used since v1.0.0 for summary, plot, meta)</p></li>
+<li><p>bugfix in agde, suitability, RSF-akde when reprojecting onto the same raster</p></li>
+<li><p>bugfix in mean() when averaging isotropic and anisotropic models together</p></li>
+<li><p>bugfix in speeds() without telemetry object</p></li>
+<li><p>bugfix in cluster() with 0/0 bias correction error</p></li>
+<li><p>bugfix in occurrence() with multiple error classes</p></li>
+<li><p>bugfix in chi dof computation</p></li>
+<li><p>summary() now works on mean.ctmm() outputs from different input model structures (OUF &amp; OUO)</p></li>
+<li><p>fixed log-chi^2 bias correction in mean.ctmm()</p></li>
+</ul></div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="1.0.0" id="ctmm-100-2022-07-07">ctmm 1.0.0 (2022-07-07)<small>2022-07-12</small><a class="anchor" aria-label="anchor" href="#ctmm-100-2022-07-07"></a></h2>
 <ul><li><p>new function rsf.fit() to fit integrated resource selection functions (iRSFs) with autocorrelation-adjusted weighted likelihood</p></li>
 <li><p>new function mean.ctmm() to calculate population average movement models</p></li>
 <li><p>new function revisitation() to calculate the distribution of revisitations</p></li>
@@ -576,7 +599,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer></div>

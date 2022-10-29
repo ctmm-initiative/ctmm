@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.0</span>
       </span>
     </div>
 
@@ -73,10 +73,10 @@
 
     <div id="ref-usage">
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for ctmm</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">x</span>,weights<span class="op">=</span><span class="cn">NULL</span>,debias<span class="op">=</span><span class="cn">TRUE</span>,IC<span class="op">=</span><span class="st">"AICc"</span>,<span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">x</span>,weights<span class="op">=</span><span class="cn">NULL</span>,sample<span class="op">=</span><span class="cn">TRUE</span>,debias<span class="op">=</span><span class="cn">TRUE</span>,IC<span class="op">=</span><span class="st">"AICc"</span>,<span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for UD</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">x</span>,weights<span class="op">=</span><span class="cn">NULL</span>,<span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">x</span>,weights<span class="op">=</span><span class="cn">NULL</span>,sample<span class="op">=</span><span class="cn">TRUE</span>,<span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -86,6 +86,9 @@
 
   <dt>weights</dt>
 <dd><p>A vector of numeric weights with the same length as <code>x</code>, specifying the relative frequency of each distribution in <code>x</code>.</p></dd>
+
+  <dt>sample</dt>
+<dd><p><code>x</code> represents a sample of a larger population if <code>TRUE</code>, or the entire statistical population if <code>FALSE</code>.</p></dd>
 
   <dt>debias</dt>
 <dd><p>Include \(\log-\chi^2\) and REML bias corrections.</p></dd>
@@ -137,7 +140,7 @@ Location-error estimates are not correctly averaged yet.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer></div>

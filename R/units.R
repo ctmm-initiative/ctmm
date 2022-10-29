@@ -117,7 +117,7 @@ UNIT <- list() # generated onLoad
 #UNIT <- generate.units()
 
 
-units <- function(data,dimension,thresh=1,...)
+dimfig <- function(data,dimension,thresh=1,...)
 {
   UNITS <- unit(data,dimension=dimension,thresh=thresh,...)
   data <- data/UNITS$scale

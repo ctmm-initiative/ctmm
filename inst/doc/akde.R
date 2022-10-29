@@ -9,23 +9,7 @@ M.OUF <- ctmm.fit(Pepper,GUESS) # in general, use ctmm.select instead
 ## ----  fig.show='hold', results = "hide"--------------------------------------
 KDE <- akde(Pepper,M.IID) # KDE
 AKDE <- akde(Pepper,M.OUF) # AKDE
-
-## ----  fig.show='hold'--------------------------------------------------------
-# plot all sampling intervals
-dt.plot(Pepper)
-
-## ----  fig.show='hold', results = "hide"--------------------------------------
-# Option 1) exact calculation - slow on larger datasets
-# UD2w <- akde(Pepper,M.OUF,weights=TRUE,fast=FALSE,PC='direct')
-
-# Option 2) use tiny dt
-dt <- min(diff(Pepper$t))
-wAKDE <- akde(Pepper,M.OUF,weights=TRUE,dt=dt)
-
-# Option 3) remove tiny sampling intervals and use smaller dt
-# dt <- 1 %#% 'hr'
-# ...
-# wAKDE <- akde(Pepper,M.OUF,weights=TRUE,dt=dt)
+wAKDE <- akde(Pepper,M.OUF,weights=TRUE) # weighted AKDE
 
 ## ----  fig.show='hold', results = "hide", eval=FALSE--------------------------
 #  # calculate one extent for all UDs
