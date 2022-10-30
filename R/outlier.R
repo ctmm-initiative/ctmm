@@ -32,11 +32,16 @@ outlie <- function(data,plot=TRUE,by='d',...)
   # detrend median
   d <- t(d) - mu
   # distances from median
-  d <- colSums(d^2)
-  d <- sqrt(d)
-  D <- distanceMLE(d,error)
-  VAR.d <- error/(2-(d^2-D^2)/error)
-  d <- D
+  if(length(dim(error))==3)
+  { d <- t(d) }
+  else
+  {
+    d <- colSums(d^2)
+    d <- sqrt(d)
+  }
+  D <- distanceMLE(d,error,return.VAR=TRUE)
+  d <- D[,1]
+  VAR.d <- D[,2]
   rm(D)
 
   if('z' %in% names(data))
@@ -53,9 +58,9 @@ outlie <- function(data,plot=TRUE,by='d',...)
     dz <- get.telemetry(data,axes=c("z"))
     dz <- dz - stats::median(data$z)
     dz <- abs(dz)
-    DZ <- distanceMLE(dz,error,axes='z')
-    VAR.dz <- error/(1-(dz^2-DZ^2)/error)
-    dz <- DZ
+    DZ <- distanceMLE(dz,error,axes='z',return.VAR=TRUE)
+    dz <- DZ[,1]
+    VAR.dz <- DZ[,2]
     rm(DZ)
   }
 
@@ -246,7 +251,12 @@ assign_speeds <- function(data,DT=NULL,UERE=0,method="max",axes=c('x','y'))
     v1 <- speedMLE(data[c(1,3),],DT=sum(DT[1:2]),UERE=UERE)
     v2 <- speedMLE(data[c(N-2,N),],DT=sum(DT[(N-1):N]),UERE=UERE)
   }
-  else # pull out correct errors for calculation if fed all errors
+  else if(length(dim(UERE))==3) # pull out correct errors for calculation if fed all errors
+  {
+    v1 <- speedMLE(data[c(1,3),],DT=sum(DT[1:2]),UERE=UERE[c(1,3),,])
+    v2 <- speedMLE(data[c(N-2,N),],DT=sum(DT[(N-2):(N-1)]),UERE=UERE[c(N-2,N),,])
+  }
+  else # pull out correct errors for calculation if fed all errors (circular)
   {
     v1 <- speedMLE(data[c(1,3),],DT=sum(DT[1:2]),UERE=UERE[c(1,3)])
     v2 <- speedMLE(data[c(N-2,N),],DT=sum(DT[(N-2):(N-1)]),UERE=UERE[c(N-2,N)])
@@ -307,7 +317,7 @@ assign_speeds <- function(data,DT=NULL,UERE=0,method="max",axes=c('x','y'))
 # estimate the speed between the two rows of data with error UERE & temporal resolution dt
 # dt[1] is recording interval
 # dt[2] is minimum time between fixes, which can be smaller than dt[1]
-speedMLE <- function(data,DT=NULL,UERE=0,axes=c('x','y'),CTMM=ctmm(error=UERE,axes=axes,circle=TRUE))
+speedMLE <- function(data,DT=NULL,UERE=0,axes=c('x','y'),CTMM=ctmm(error=UERE,axes=axes))
 {
   AXES <- length(axes)
 
@@ -321,18 +331,28 @@ speedMLE <- function(data,DT=NULL,UERE=0,axes=c('x','y'),CTMM=ctmm(error=UERE,ax
   }
   f <- 1/DT
 
+  ###################
+  if(length(UERE)==1) # 1-time errors
+  { error <- get.error(data,ctmm(error=UERE,axes=axes)) }
+  else # full error array was passed
+  { error <- UERE }
+
   ######################
   # distance estimate
 
   # measured distances
-  if(all(axes==c('x','y')))
+  if(AXES==2)
   {
     dx <- diff(data$x)
     dy <- diff(data$y)
-    dr <- sqrt(dx^2+dy^2)
+
+    if(length(dim(error))==3) # error ellipse
+    { dr <- cbind(dx,dy) } # need full vector
+    else # error circle or interval
+    { dr <- sqrt(dx^2+dy^2) }
     rm(dx,dy)
   }
-  else if(axes=='z')
+  else if(AXES==1)
   {
     dr <- diff(data$z)
     dr <- abs(dr)
@@ -341,22 +361,15 @@ speedMLE <- function(data,DT=NULL,UERE=0,axes=c('x','y'),CTMM=ctmm(error=UERE,ax
   # point estimate of distance with error>0
   if(length(UERE)>1 || UERE)
   {
-    if(length(UERE)==1)
-    {
-      # 1-time errors
-      error <- get.error(data,ctmm(error=UERE,axes=axes),circle=TRUE)
-    }
-    else # full error array was passed
-    {
-      UERE -> error
-      rm(UERE)
-    }
-
     # 2-time errors
-    error <- error[-1] + error[-length(error)]
+    if(length(dim(error))==3) # error ellipse
+    { error <- error[-1,,,drop=FALSE] + error[-nrow(error),,,drop=FALSE] }
+    else # error circle or interval
+    { error <- error[-1] + error[-length(error)] }
 
-    DR <- distanceMLE(dr,error,axes=axes)
-    VAR <- error/(AXES-(dr^2-DR^2)/error) # somehow this formula is general
+    DR <- distanceMLE(dr,error,axes=axes,return.VAR=TRUE)
+    VAR <- DR[,2]
+    DR <- DR[,1]
   }
   else
   {
@@ -370,35 +383,49 @@ speedMLE <- function(data,DT=NULL,UERE=0,axes=c('x','y'),CTMM=ctmm(error=UERE,ax
 
 
 ####################
-distanceMLE <- function(dr,error,axes=c('x','y'))
+distanceMLE <- function(dr,error,axes=c('x','y'),return.VAR=FALSE)
 {
-  SUB <- dr>0 & error>0
-
-  if(any(SUB))
+  if(length(dim(error))==3) # error ellipse
   {
-    if(all(axes==c('x','y')))
-    {
-      # coefficient in transcendental Bessel equation
-      # x I0(x) == y I1(x)
-      y <- dr[SUB]^2/error[SUB]
-      x <- BesselSolver(y)
-      # x = dr*dR/error
-
-      # fixed for Inf error
-      dr[SUB] <- ifelse(error[SUB]<Inf,error[SUB]/dr[SUB]*x,0)
-    }
-    else if(axes=='z')
-    {
-      error[SUB] <- sqrt(error[SUB]) # now standard deviation
-
-      # x = y tanh(x y)
-      y <- dr[SUB]/error[SUB]
-      x <- TanhSolver(y)
-
-      dr[SUB] <- ifelse(error[SUB]<Inf,error[SUB]*x,0)
-    }
+    dr <- sapply(1:nrow(dr),function(i){ abs.bivar(dr[i,],error[i,,],return.VAR=TRUE) })
+    dr <- t(dr) #
   }
+  else # error circle or interval
+  {
+    AXES <- length(axes)
+    DR <- dr
+    SUB <- dr>0 & error>0
 
+    if(any(SUB))
+    {
+      if(AXES==2) # error circle
+      {
+        # coefficient in transcendental Bessel equation
+        # x I0(x) == y I1(x)
+        y <- DR[SUB]^2/error[SUB]
+        x <- BesselSolver(y)
+        # x = DR*dR/error
+
+        # fixed for Inf error
+        DR[SUB] <- ifelse(error[SUB]<Inf,error[SUB]/DR[SUB]*x,0)
+      }
+      else if(AXES==1) # error interval
+      {
+        error[SUB] <- sqrt(error[SUB]) # now standard deviation
+
+        # x = y tanh(x y)
+        y <- DR[SUB]/error[SUB]
+        x <- TanhSolver(y)
+
+        DR[SUB] <- ifelse(error[SUB]<Inf,error[SUB]*x,0)
+      } # end error interval
+    } # end SUB
+
+    VAR <- error/(AXES-(dr^2-DR^2)/error)
+    dr <- cbind(DR,VAR)
+  } # end error circle or error interval
+
+  if(!return.VAR) { dr <- dr[,1] }
   return(dr)
 }
 

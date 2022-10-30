@@ -46,7 +46,7 @@ sigfig(est,VAR=NULL,SD=NULL,level=0.95,digits=2,...)
 
 \seealso{ \code{\link{\%#\%}} }
 
-\examples{
+\examples{\donttest{
 # Load package and data
 library(ctmm)
 data(buffalo)
@@ -64,7 +64,7 @@ summary(FIT,units=TRUE)
 
 # text-formatted summary
 sigfig( summary(FIT)$CI )
-}
+}}
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

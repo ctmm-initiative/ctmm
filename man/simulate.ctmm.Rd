@@ -79,7 +79,7 @@ Ecological Informatics, 40, 8-21 (2017) \doi{10.1016/j.ecoinf.2017.04.008}.
 
 \seealso{ \code{\link{ctmm.fit}} }
 
-\examples{
+\examples{\donttest{
 #Load package
 library(ctmm)
 
@@ -92,7 +92,7 @@ SIM <- simulate(MODEL,t=t)
 
 #plot data with Gaussian model
 plot(SIM,CTMM=MODEL)
-}
+}}
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

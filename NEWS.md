@@ -1,4 +1,4 @@
-ctmm 1.1.0 (2022-10-28)
+ctmm 1.1.0 (2022-10-29)
 ================
 
   * new function pkde() for population kernel density estimates
@@ -36,6 +36,8 @@ ctmm 1.1.0 (2022-10-28)
   * bugfix in occurrence() with multiple error classes
   
   * bugfix in chi dof computation
+  
+  * bugfix in outlie() for error ellipses
   
   * summary() now works on mean.ctmm() outputs from different input model structures (OUF & OUO)
   

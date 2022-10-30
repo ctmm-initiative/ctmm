@@ -251,7 +251,7 @@ speeds.fast <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,append=FAL
 # elliptical functions stuff (exact for zero mean)
 # anistotropic + nonzero combination is approximate
 # returns first two moments
-abs.bivar <- function(mu,Sigma)
+abs.bivar <- function(mu,Sigma,return.VAR=FALSE)
 {
   sigma0 <- mean(diag(Sigma))
   stdev0 <- sqrt(sigma0)
@@ -261,18 +261,28 @@ abs.bivar <- function(mu,Sigma)
   sigma <- eigen(Sigma,only.values=TRUE)$values
 
   Barg <- mu2/(4*sigma0)
-  if(Barg >= BESSEL_LIMIT) { return(mu) }
+  if(Barg >= BESSEL_LIMIT)
+  { M1 <- mu }
+  else
+  {
+    B0 <- besselI(Barg,0,expon.scaled=TRUE)
+    B1 <- besselI(Barg,1,expon.scaled=TRUE)
 
-  B0 <- besselI(Barg,0,expon.scaled=TRUE)
-  B1 <- besselI(Barg,1,expon.scaled=TRUE)
+    # contains deterministic limit
+    sqrtpi2 <- sqrt(pi/2)
+    Bv <-  sqrtpi2 * sqrt(Barg) * ( B0 + B1 ) * mu
+    # contains stochastic limit
+    Bs <- B0 / sqrtpi2 * sqrt(sigma[1]) * pracma::ellipke(1-sigma[2]/sigma[1])$e
 
-  # contains deterministic limit
-  sqrtpi2 <- sqrt(pi/2)
-  Bv <-  sqrtpi2 * sqrt(Barg) * ( B0 + B1 ) * mu
-  # contains stochastic limit
-  Bs <- B0 / sqrtpi2 * sqrt(sigma[1]) * pracma::ellipke(1-sigma[2]/sigma[1])$e
+    M1 <- Bv + Bs
+  }
 
-  M1 <- Bv + Bs
+  if(return.VAR)
+  {
+    M2 <- mu2 + 2*sigma0
+    VAR <- max(0,M2-M1^2)
+    M1 <- c(M1,VAR)
+  }
 
   return(M1)
 }

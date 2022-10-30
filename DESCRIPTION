@@ -1,7 +1,7 @@
 Encoding: UTF-8
 Package: ctmm
 Version: 1.1.0
-Date: 2022-10-28
+Date: 2022-10-29
 Title: Continuous-Time Movement Modeling
 Authors@R: c(person(c("Christen","H."),"Fleming",email="flemingc@si.edu",role=c("aut","cre")),
              person(c("Justin","M."),"Calabrese",email="calabresej@si.edu",role="aut"),
@@ -24,8 +24,8 @@ URL: https://github.com/ctmm-initiative/ctmm, https://groups.google.com/g/ctmm-u
 Depends: R (>= 3.5.0)
 Imports: Bessel, data.table, digest, expm, fasttime, Gmedian, graphics, grDevices, gsl, manipulate, MASS, methods, numDeriv, pbivnorm, pracma, raster, rgdal, shape, sp, statmod, stats, utils
 Suggests: animation, bit64, dplyr, fftw, knitr, move, parallel, parsedate, quadprog, rmarkdown, sf, suncalc
-Description: Functions for identifying, fitting, and applying continuous-space, continuous-time stochastic movement models to animal tracking data.
-  The package is described in Calabrese et al (2016) <doi:10.1111/2041-210X.12559>, with models and methods based on those introduced in
+Description: Functions for identifying, fitting, and applying continuous-space, continuous-time stochastic-process movement models to animal tracking data.
+  The package is described in Calabrese et al (2016) <doi:10.1111/2041-210X.12559>, with models and methods based on those introduced and detailed in
   Fleming & Calabrese et al (2014) <doi:10.1086/675504>,
   Fleming et al (2014) <doi:10.1111/2041-210X.12176>,
   Fleming et al (2015) <doi:10.1103/PhysRevE.91.032107>,
@@ -41,8 +41,8 @@ Description: Functions for identifying, fitting, and applying continuous-space, 
   Noonan & Fleming et al (2019) <doi:10.1186/s40462-019-0177-1>,
   Fleming et al (2020) <doi:10.1101/2020.06.12.130195>,
   Noonan et al (2021) <doi:10.1111/2041-210X.13597>,
-  and
-  Fleming et al (2022) <doi:10.1111/2041-210X.13815>.
+  Fleming et al (2022) <doi:10.1111/2041-210X.13815>,
+  and Silva et al (2022) <doi:10.1111/2041-210X.13786>.
 License: GPL-3
 VignetteBuilder: knitr
 NeedsCompilation: no

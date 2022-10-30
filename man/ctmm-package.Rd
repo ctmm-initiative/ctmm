@@ -4,8 +4,8 @@
 \docType{package}
 \title{Continuous-time movement modeling}
 \description{
-Functions for identifying, fitting, and applying continuous-space, continuous-time stochastic movement models to animal tracking data.
-The package is described in Calabrese & Fleming (2016) <doi:10.1111/2041-210X.12559> and its models and methods are based on those introduced in
+Functions for identifying, fitting, and applying continuous-space, continuous-time stochastic-process movement models to animal tracking data.
+The package is described in Calabrese & Fleming (2016) <doi:10.1111/2041-210X.12559> and its models and methods are based on those introduced and detailed in
 Fleming & Calabrese et al (2014) <doi:10.1086/675504>,
 Fleming et al (2014) <doi:10.1111/2041-210X.12176>,
 Fleming et al (2015) <doi:10.1103/PhysRevE.91.032107>,
@@ -21,15 +21,16 @@ Fleming et al (2019) <doi:10.1111/2041-210X.13270>,
 Noonan & Fleming et al (2019) <doi:10.1186/s40462-019-0177-1>,
 Fleming et al (2020) <doi:10.1101/2020.06.12.130195>,
 Noonan et al (2021) <doi:10.1111/2041-210X.13597>,
+Fleming et al (2022) <doi:10.1111/2041-210X.13815>,
 and
-Fleming et al (2022) <doi:10.1111/2041-210X.13815>.
+and Silva et al (2022) <doi:10.1111/2041-210X.13786>.
 }
 \details{
 \tabular{ll}{
 Package: \tab ctmm\cr
 Type: \tab Package\cr
 Version: \tab 1.1.0 \cr
-Date: \tab 2022-10-28 \cr
+Date: \tab 2022-10-29 \cr
 License: \tab GPL-3 \cr
 }
 
