@@ -435,7 +435,7 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
   nloglike <- function(beta,zero=0,verbose=FALSE)
   {
     SAMP <- SATA[,,TERMS,drop=FALSE] %.% beta # [track,time]
-    SHIFT <- mean(SAMP)
+    SHIFT <- mean(SAMP,na.rm=TRUE)
     SAMP <- SAMP - SHIFT
     SAMP <- exp(SAMP) # + exp(SHIFT)
     SAMP[] <- nant(SAMP,0) # treat NA as inaccessible region
