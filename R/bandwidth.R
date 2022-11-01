@@ -83,7 +83,7 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=NULL,dt=NULL,PC="Mar
       # dt <- sort(dt)
       DT <- stats::median(dt)
       dt.min <- min(dt) # smallest dt>0
-      DIV <- max( floor(DT/dt.min) , 1 )
+      DIV <- max( ceiling(DT/dt.min) , 1 )
       dt <- DT/DIV
       dt.calc <- TRUE
     }
@@ -93,10 +93,10 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=NULL,dt=NULL,PC="Mar
     if(is.null(fast))
     {
       N <- (last(data$t)-data$t[1])/dt
-      if(n^3 <= N*log(N,2))
+      if(n^3 <= N*log(N,2) || n <= 1000)
       {
         fast <- FALSE
-        PC <- "Direct"
+        PC <- "direct"
       }
       else if(n^2 <= N*log(N,2))
       {

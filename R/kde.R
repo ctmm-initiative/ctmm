@@ -351,9 +351,9 @@ kde <- function(data,H,axes=c("x","y"),CTMM=list(),SP=NULL,SP.in=TRUE,RASTER=lis
     if(length(RASTER))
     {
       if(STATIONARY)
-      { RASTER <- RASTER * RSP }
+      { RASTER <- nant(RASTER,0) * RSP }
       else
-      { RASTER <- lapply(RASTER,function(r){r * RSP}) }
+      { RASTER <- lapply(RASTER,function(r){nant(r,0) * RSP}) }
     }
     else
     {
