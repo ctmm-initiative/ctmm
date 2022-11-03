@@ -22,7 +22,7 @@ subset.variogram <- function(x,...)
 
 #########################
 # variogram funcion wrapper
-variogram <- function(data,dt=NULL,fast=TRUE,res=1,CI="Markov",error=FALSE,axes=c("x","y"),precision=1/8)
+variogram <- function(data,dt=NULL,fast=TRUE,res=1,CI="Markov",error=FALSE,axes=c("x","y"),precision=1/8,trace=TRUE)
 {
   CI <- match.arg(CI,c("IID","Markov","Gauss"))
   #if(CI=="Gauss" && fast) { stop("Gaussian CIs not supported by fast method.") }
@@ -36,7 +36,7 @@ variogram <- function(data,dt=NULL,fast=TRUE,res=1,CI="Markov",error=FALSE,axes=
     res[-1] <- pmax(res[-1],dt[-1]/dt[-length(dt)])
 
     # calculate a variogram at each dt
-    SVF <- lapply(1:length(dt), function(i) { variogram.dt(data,dt=dt[i],fast=fast,res=res[i],CI=CI,error=error,axes=axes,precision=precision) } )
+    SVF <- lapply(1:length(dt), function(i) { variogram.dt(data,dt=dt[i],fast=fast,res=res[i],CI=CI,error=error,axes=axes,precision=precision,trace=trace) } )
 
     # subset each variogram to relevant range of lags
     dt <- c(-dt[1],dt,Inf)
@@ -66,7 +66,7 @@ variogram <- function(data,dt=NULL,fast=TRUE,res=1,CI="Markov",error=FALSE,axes=
 
 ################################
 # wrapper for fast and slow variogram codes, for a specified dt
-variogram.dt <- function(data,dt=NULL,fast=NULL,res=1,CI="Markov",error=FALSE,axes=c("x","y"),precision=1/2)
+variogram.dt <- function(data,dt=NULL,fast=NULL,res=1,CI="Markov",error=FALSE,axes=c("x","y"),precision=1/2,trace=TRUE)
 {
   # intelligently select algorithm
   if(is.null(fast))
@@ -133,7 +133,7 @@ variogram.dt <- function(data,dt=NULL,fast=NULL,res=1,CI="Markov",error=FALSE,ax
   if(fast)
   { SVF <- variogram.fast(data=data,error=error,dt=dt,res=res,CI=CI,axes=axes) }
   else
-  { SVF <- variogram.slow(data=data,error=error,dt=dt,CI=CI,axes=axes,precision=precision) }
+  { SVF <- variogram.slow(data=data,error=error,dt=dt,CI=CI,axes=axes,precision=precision,trace=trace) }
 
   # skip missing data
   SVF <- SVF[which(SVF$DOF>0),]
@@ -425,7 +425,7 @@ variogram.fast <- function(data,error=NULL,dt=NULL,res=1,CI="Markov",axes=c("x",
 
 ##################################
 # LAG-WEIGHTED VARIOGRAM
-variogram.slow <- function(data,error=NULL,dt=NULL,res=1,CI="Markov",axes=c("x","y"),ACF=FALSE,precision=1/2)
+variogram.slow <- function(data,error=NULL,dt=NULL,res=1,CI="Markov",axes=c("x","y"),ACF=FALSE,precision=1/2,trace=TRUE)
 {
   t <- data$t
   z <- get.telemetry(data,axes)
@@ -517,7 +517,7 @@ variogram.slow <- function(data,error=NULL,dt=NULL,res=1,CI="Markov",axes=c("x",
   ERROR <- Inf
   ERROR.OLD <- Inf
   TARGET <- .Machine$double.eps^precision
-  pb <- utils::txtProgressBar(style=3) # time loops
+  if(trace) { pb <- utils::txtProgressBar(style=3) } # time loops
   while(ERROR>TARGET && ERROR<=ERROR.OLD)
   {
     PG <- (TARGET/ERROR)^(1/4) # base progress
@@ -532,7 +532,7 @@ variogram.slow <- function(data,error=NULL,dt=NULL,res=1,CI="Markov",axes=c("x",
         accumulate(I1[i,j],W1[i,j],VAR[i,j],EVAR[i,j])
         accumulate(I2[i,j],W2[i,j],VAR[i,j],EVAR[i,j])
       }
-      utils::setTxtProgressBar(pb,PG+(1-PG)*(i*(2*n-i))/(n^2))
+      if(trace) { utils::setTxtProgressBar(pb,PG+(1-PG)*(i*(2*n-i))/(n^2)) }
     }
 
     # normalize SVF before we compare to old and/or correct DOF
@@ -619,7 +619,7 @@ variogram.slow <- function(data,error=NULL,dt=NULL,res=1,CI="Markov",axes=c("x",
   # finish off DOF, one for x and y
   SVF$DOF <- COL * SVF$DOF
 
-  close(pb)
+  if(trace) { close(pb) }
 
   return(SVF)
 }

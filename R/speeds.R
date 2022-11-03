@@ -3,7 +3,7 @@
 # add independent variance from RMS speed?
 
 ####
-speeds.telemetry <- function(object,CTMM,t=NULL,cycle=Inf,level=0.95,robust=FALSE,prior=FALSE,fast=TRUE,error=0.01,cores=1,...)
+speeds.telemetry <- function(object,CTMM,t=NULL,cycle=Inf,level=0.95,robust=FALSE,prior=FALSE,fast=TRUE,error=0.01,cores=1,trace=TRUE,...)
 {
   cores <- resolveCores(cores,fast=FALSE)
   data <- object
@@ -12,7 +12,7 @@ speeds.telemetry <- function(object,CTMM,t=NULL,cycle=Inf,level=0.95,robust=FALS
   if(is.null(t)) { t <- data$t }
 
   if(!prior && fast) { SPEEDS <- speeds.fast(data,CTMM=CTMM,t=t,cycle=cycle,level=level,robust=robust,...) }
-  else { SPEEDS <- speeds.slow(data,CTMM=CTMM,t=t,cycle=cycle,level=level,robust=robust,prior=prior,fast=fast,error=error,cores=cores,...) }
+  else { SPEEDS <- speeds.slow(data,CTMM=CTMM,t=t,cycle=cycle,level=level,robust=robust,prior=prior,fast=fast,error=error,cores=cores,trace=trace,...) }
 
   SPEEDS <- as.data.frame(SPEEDS)
   SPEEDS$t <- t
@@ -24,12 +24,12 @@ speeds.telemetry <- function(object,CTMM,t=NULL,cycle=Inf,level=0.95,robust=FALS
   return(SPEEDS)
 }
 
-speeds.ctmm <- function(object,data=NULL,t=NULL,cycle=Inf,level=0.95,robust=FALSE,prior=FALSE,fast=TRUE,error=0.01,cores=1,...)
-{ speeds.telemetry(data,CTMM=object,t=t,cycle=cycle,level=level,robust=robust,prior=prior,fast=fast,error=error,cores=cores,...) }
+speeds.ctmm <- function(object,data=NULL,t=NULL,cycle=Inf,level=0.95,robust=FALSE,prior=FALSE,fast=TRUE,error=0.01,cores=1,trace=TRUE,...)
+{ speeds.telemetry(data,CTMM=object,t=t,cycle=cycle,level=level,robust=robust,prior=prior,fast=fast,error=error,cores=cores,trace=trace,...) }
 
 
 # emulate then simulate
-speeds.slow <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,prior=FALSE,fast=TRUE,error=0.01,cores=1,...)
+speeds.slow <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,prior=FALSE,fast=TRUE,error=0.01,cores=1,trace=TRUE,...)
 {
   n <- length(t)
 
@@ -101,7 +101,7 @@ speeds.slow <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,prior=FALS
 
   # loop over emulations
   ERROR <- Inf
-  pb <- utils::txtProgressBar(style=3)
+  if(trace){ pb <- utils::txtProgressBar(style=3) }
   while(ERROR>=error || N<=20)
   {
     ADD <- plapply(1:cores,spds.fn,cores=cores,fast=FALSE)
@@ -157,7 +157,7 @@ speeds.slow <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,prior=FALS
       }
 
       # update progress bar
-      utils::setTxtProgressBar(pb,clamp(min(length(SPEEDS)/20,(error/ERROR)^2)))
+      if(trace){ utils::setTxtProgressBar(pb,clamp(min(length(SPEEDS)/20,(error/ERROR)^2))) }
     }
   } # end while
 
@@ -185,7 +185,7 @@ speeds.slow <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,prior=FALS
   }
   CI <- t(CI)
 
-  close(pb)
+  if(trace){ close(pb) }
 
   # all samples were Inf fix
   INF <- CI[,"low"]==Inf

@@ -112,7 +112,7 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=NULL,dt=NULL,PC="Mar
       UNITS <- unit(dt,"time")
       STRING <- paste(c(dt/UNITS$scale,UNITS$name),collapse=" ")
       message("Default grid size of ",STRING," chosen for bandwidth(...,fast=TRUE).")
-      if(dt.plot)
+      if(dt.plot && WEIGHTS)
       {
         dt.plot(data)
         graphics::abline(h=dt,col='red',lty=3)

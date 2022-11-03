@@ -1,7 +1,7 @@
-speed.telemetry <- function(object,CTMM,t=NULL,level=0.95,robust=FALSE,units=TRUE,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,cores=1,...)
-{ speed.ctmm(CTMM,data=object,t=t,level=level,robust=robust,units=units,prior=prior,fast=fast,cor.min=cor.min,dt.max=dt.max,error=error,cores=cores,...) }
+speed.telemetry <- function(object,CTMM,t=NULL,level=0.95,robust=FALSE,units=TRUE,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,cores=1,trace=TRUE,...)
+{ speed.ctmm(CTMM,data=object,t=t,level=level,robust=robust,units=units,prior=prior,fast=fast,cor.min=cor.min,dt.max=dt.max,error=error,cores=cores,trace=trace,...) }
 
-speed.ctmm <- function(object,data=NULL,t=NULL,level=0.95,robust=FALSE,units=TRUE,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,cores=1,...)
+speed.ctmm <- function(object,data=NULL,t=NULL,level=0.95,robust=FALSE,units=TRUE,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,cores=1,trace=TRUE,...)
 {
   # bad return value
   INF <- c(0,Inf,Inf)
@@ -113,7 +113,7 @@ speed.ctmm <- function(object,data=NULL,t=NULL,level=0.95,robust=FALSE,units=TRU
     }
 
     # keep replicating until error target
-    pb <- utils::txtProgressBar(style=3)
+    if(trace) { pb <- utils::txtProgressBar(style=3) }
     ERROR <- Inf
     N <- length(SPEEDS)
     if(!robust)
@@ -167,7 +167,7 @@ speed.ctmm <- function(object,data=NULL,t=NULL,level=0.95,robust=FALSE,units=TRU
         }
 
         # update progress bar
-        utils::setTxtProgressBar(pb,clamp(min(length(SPEEDS)/20,(error/ERROR)^2)))
+        if(trace) { utils::setTxtProgressBar(pb,clamp(min(length(SPEEDS)/20,(error/ERROR)^2))) }
       } # end N>1 ERROR calc
     } # end while ERROR
 
@@ -196,7 +196,7 @@ speed.ctmm <- function(object,data=NULL,t=NULL,level=0.95,robust=FALSE,units=TRU
       DOF <- chi.dof(M1,M2)
     }
 
-    close(pb)
+    if(trace) { close(pb) }
   } # end simulations
 
   UNITS <- unit(CI,"speed",SI=!units)

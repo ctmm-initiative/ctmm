@@ -55,11 +55,11 @@ for(i in 1:length(buffalo))
 {
   GUESS <- ctmm.guess(buffalo[[i]],interactive=FALSE)
   # use ctmm.select unless you are certain that the selected model is OUF
-  FITS[[i]] <- ctmm.fit(buffalo[[i]],GUESS,trace=2)
+  FITS[[i]] <- ctmm.fit(buffalo[[i]],GUESS)
 }
 
 # calculate AKDES on a consistent grid
-AKDES <- akde(buffalo,FITS,trace=1)
+AKDES <- akde(buffalo,FITS)
 
 # extract 95\% areas
 AREAS <- lapply(AKDES,summary)

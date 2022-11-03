@@ -69,26 +69,54 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='mle',bo
 
     # SUB <- 1:n
     # negative log-likelihood
+    DOF.LO <- dof < 1/.Machine$double.eps
+    N.LO <- sum(DOF.LO)
+    DOF.HI <- !DOF.LO
+    N.HI <- sum(DOF.HI)
     nloglike <- function(par,zero=0)
     {
-      # subset for CV
-      # s <- s[SUB]
-      # dof <- dof[SUB]
-      # n <- length(s)
+      nll <- 0
 
       mu <- par[1] # mean
       k <- ifelse(length(par)>=2,par[2],0) # IG var/mu^3
-      theta <- 1/(k*mu)
-      rho <- ifelse(length(par)>=3,par[3],1) # GIG shape
+      theta <- 1/(k*mu) # delta at Inf
+      rho <- ifelse(length(par)>=3,par[3],1) # GIG shape (IG at 1)
 
       if(k<0 || k==Inf || mu<=0 || mu==Inf) { return(Inf) }
 
-      zero <- zero + sum( dof/2*log(dof/2) + (dof/2-1)*log(s) - lgamma(dof/2) )
+      if(theta==Inf) # chi^2-delta == chi^2
+      {
+        zero <- zero + sum( -log(s) + dof/2*log(dof/2)  - lgamma(dof/2) )
 
-      alpha <- dof*s/mu
-      beta <- alpha/theta
-      beta <- 1/2*log1p(beta) # log(sqrt(1+dof*s*k))
-      -sum( -dof/2*log(mu) - (dof+rho)/2*beta + lKK(rho,dof,theta,alpha) + zero/n )
+        r <- s/mu
+        nll <- - sum( +dof/2*log(r) - dof/2*r + zero/n )
+
+        return(nll)
+      }
+
+      # moderate to large dof
+      if(any(DOF.LO)) # chi^2-IG
+      {
+        I <- DOF.LO
+        dz <- sum( dof[I]/2*log(dof[I]/2) - log(s[I]) - lgamma(dof[I]/2) )
+
+        alpha <- dof[I]*s[I]/mu
+        beta <- alpha/theta
+        beta <- 1/2*log1p(beta) # log(sqrt(1+dof*s*k))
+        nll <- nll - sum( -dof[I]/2*log(mu/s[I]) - (dof[I]+rho)/2*beta + lKK(rho,dof[I],theta,alpha) + (zero/n+dz/N.LO) )
+      }
+
+      # extremely large dof case
+      if(any(DOF.HI)) # delta-IG -- IG
+      {
+        I <- DOF.HI
+        dz <- sum( -log(s[I]) - log(2) )
+
+        r <- s[I]/mu
+        nll <- nll - sum( -theta/2*(r+1/r-2) - BesselK(theta,rho/2,expon.scaled=TRUE,log=TRUE) - rho/2*log(r) + (zero/n+dz/N.HI) )
+      }
+
+      return(nll)
     }
 
     # n.min <- 1-2 (AIC-AICc)

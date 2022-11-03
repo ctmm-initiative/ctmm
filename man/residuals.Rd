@@ -19,7 +19,7 @@ Finally, \code{mag} calculates residual magnitudes, which is useful for comparin
 
 \S3method{residuals}{telemetry}(object,CTMM=NULL,...)
 
-correlogram(data,dt=NULL,fast=TRUE,res=1,axes=c("x","y"))
+correlogram(data,dt=NULL,fast=TRUE,res=1,axes=c("x","y"),trace=TRUE)
 
 mag(x,...)
 
@@ -35,6 +35,7 @@ mag(x,...)
   \item{fast}{ Use the lag-weighted algorithm if \code{FALSE} or the FFT algorithm if \code{TRUE}. The slow algorithm outputs a progress bar.}
   \item{res}{Increase the discretization resolution for irregularly sampled data with \code{res>1}. Decreases bias at the cost of smoothness.}
   \item{axes}{Array of axes for which to calculate residual correlogram or magnitudes.}
+  \item{trace}{Display a progress bar if \code{fast=FALSE}.}
   \item{x}{\code{telemetry} object from the output of \code{residuals}.}
 }
 \details{

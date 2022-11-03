@@ -148,6 +148,14 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utiliz
     i <- 1 # one population
     # weights and bandwidth
     KDE[[i]] <- bandwidth.pop(data,UD,weights=weights,...)
+
+    DOF <- DOF.area(KDE[[i]]$CTMM)
+    if(DOF<error)
+    {
+      warning("Population fit object returned. DOF[area] = ",DOF)
+      return(KDE[[i]]$CTMM)
+    }
+
     # bias information
     if(debias)
     { DEBIAS[[i]] <- KDE[[i]]$bias }

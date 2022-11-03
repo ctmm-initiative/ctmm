@@ -56,6 +56,13 @@ lKK <- function(r,n,t,s)
 {
   # log( besselK(sqrt(1+s/t)*t,n/2+r/2)/besselK(t,r/2) )
   # 0/0 limits to 1
+
+  if(t==Inf)
+  {
+    R <- rep(0,length(s))
+    return(R)
+  }
+
   -s*sqrtxp1(s/t) + nant( BesselK(sqrt(1+s/t)*t,n/2+r/2,expon.scaled=TRUE,log=TRUE) - BesselK(t,r/2,expon.scaled=TRUE,log=TRUE), 0)
 }
 
@@ -63,16 +70,26 @@ lKK <- function(r,n,t,s)
 BesselK <- function(x,nu,expon.scaled=FALSE,log=FALSE)
 {
   nu <- abs(nu)
-
-  # try base besselK
-  y <- log(besselK(x,nu,expon.scaled=expon.scaled))
   MAX <- log(.Machine$double.xmax/2)
-  # overflow cases
-  SUB <- y>=MAX & x>0 & nu>1 & nu<Inf
-  if(any(SUB)) # nu too big for base Bessel
-  { y[SUB] <- Bessel::besselK.nuAsym(x[SUB],nu[SUB],k.max=5,expon.scaled=expon.scaled,log=TRUE) }
+
+  # base-R Bessel-K will crash if arguments are too large
+  # try asymptotic expansion first
+  y <- Bessel::besselK.nuAsym(x,nu,k.max=5,expon.scaled=expon.scaled,log=TRUE)
+  # if this is small enough, use base-R Bessel-K for accuracy
+  SUB <- !is.na(y) & y<MAX & nu<Inf
+  if(any(SUB)) { y[SUB] <- log(besselK(x[SUB],nu[SUB],expon.scaled=expon.scaled)) }
 
   if(!log) { y <- exp(y) }
+  return(y)
 
+  # OLD REVERSE ORDERING
+
+  y <- log(besselK(x,nu,expon.scaled=expon.scaled))
+  # overflow cases
+  SUB <- y>=MAX & x>0 & nu>1 & nu<Inf
+  # nu too big for base Bessel
+  if(any(SUB)) { y[SUB] <- Bessel::besselK.nuAsym(x[SUB],nu[SUB],k.max=5,expon.scaled=expon.scaled,log=TRUE) }
+
+  if(!log) { y <- exp(y) }
   return(y)
 }

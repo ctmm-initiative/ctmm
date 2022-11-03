@@ -75,7 +75,7 @@ RES <- lapply(turtle[1:2],residuals)
 plot(RES,col.DF=NA,level.UD=c(0.50,0.95,0.999))
 
 # check calibration data for autocorrelation using fast=FALSE because samples are small
-ACFS <- lapply(RES,function(R){correlogram(R,fast=FALSE,dt=10 \%#\% 'min')})
+ACFS <- lapply(RES,function(R){correlogram(R,fast=FALSE,dt=10 \%#\% 'min',trace=FALSE)})
 
 # pooling ACFs
 ACF <- mean(ACFS)

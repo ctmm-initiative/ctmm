@@ -56,8 +56,8 @@ FIT <- ctmm.select(DATA,GUESS)
 # some human-readable information
 summary(FIT)
 
-# in general, you will want to set iterate=TRUE
-BOOT <- ctmm.boot(DATA,FIT,iterate=FALSE)
+# in general, you will want to set iterate=TRUE,trace=TRUE
+BOOT <- ctmm.boot(DATA,FIT,iterate=FALSE,trace=FALSE)
 
 # compare to the previous estimate
 summary(BOOT)

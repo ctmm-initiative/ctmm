@@ -15,18 +15,18 @@ Given a \code{ctmm} movement model and \code{telemetry} data, \code{speed} simul
 speed(object,...)
 
 \S3method{speed}{ctmm}(object,data=NULL,t=NULL,level=0.95,robust=FALSE,units=TRUE,prior=TRUE,fast=TRUE,
-      cor.min=0.5,dt.max=NULL,error=0.01,cores=1,...)
+      cor.min=0.5,dt.max=NULL,error=0.01,cores=1,trace=TRUE,...)
 
 \S3method{speed}{telemetry}(object,CTMM,t=NULL,level=0.95,robust=FALSE,units=TRUE,prior=TRUE,fast=TRUE,
-      cor.min=0.5,dt.max=NULL,error=0.01,cores=1,...)
+      cor.min=0.5,dt.max=NULL,error=0.01,cores=1,trace=TRUE,...)
 
 speeds(object,...)
 
 \S3method{speeds}{ctmm}(object,data=NULL,t=NULL,cycle=Inf,level=0.95,robust=FALSE,prior=FALSE,fast=TRUE,
-       error=0.01,cores=1,...)
+       error=0.01,cores=1,trace=TRUE,...)
 
 \S3method{speeds}{telemetry}(object,CTMM,t=NULL,cycle=Inf,level=0.95,robust=FALSE,prior=FALSE,fast=TRUE,
-       error=0.01,cores=1,...)
+       error=0.01,cores=1,trace=TRUE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -44,6 +44,7 @@ speeds(object,...)
   \item{dt.max}{Absolute gap sizes to skip (in seconds), alternative to \code{cor.min}.}
   \item{error}{Target (relative) standard error.}
   \item{cores}{Number of simulations to run in parallel. \code{cores=0} will use all cores, while \code{cores<0} will reserve \code{abs(cores)}.}
+  \item{trace}{Display a progress bar.}
   \item{...}{Arguments passed to \code{\link{emulate}}.}
 }
 \details{
@@ -84,7 +85,8 @@ FIT <- ctmm.fit(DATA,GUESS)
 speed(FIT)
 
 # conditional estimate
-speed(FIT,DATA)
+# you will likely want trace=TRUE
+speed(FIT,DATA,trace=FALSE)
 }}
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the

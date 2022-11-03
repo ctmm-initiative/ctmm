@@ -12,7 +12,7 @@ Both methods reduce to the unbiased \dQuote{method of moments} estimator in the 
 }
 \usage{
 variogram(data,dt=NULL,fast=TRUE,res=1,CI="Markov",error=FALSE,axes=c("x","y"),
-          precision=1/8)
+          precision=1/8,trace=TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -25,6 +25,7 @@ variogram(data,dt=NULL,fast=TRUE,res=1,CI="Markov",error=FALSE,axes=c("x","y"),
   \item{axes}{Array of axes to calculate an average (isotropic) variogram for.}
   %\item{max.lag}{Maximum lag of the variogram to calculate when \code{fast=FALSE}, so to minimize computational cost.}
   \item{precision}{Fraction of machine precision to target when adjusting for telemetry error (\code{fast=FALSE} with calibrated errors). \code{precision=1/8} returns about 2 decimal digits of precision.}
+  \item{trace}{Display a progress bar if \code{fast=FALSE}.}
 }
 \details{
 If no \code{dt} is specified, the median sampling interval is used. This is typically a good assumption for most data, even when there are gaps. A \code{dt} coarser than the sampling interval may bias the variogram (particuarly if \code{fast=TRUE}) and so this should be reserved for poor data quality.

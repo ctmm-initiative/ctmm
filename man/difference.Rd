@@ -57,7 +57,7 @@ for(i in 1:2)
 {
   GUESS <- ctmm.guess(DATA[[i]],interactive=FALSE)
   # in general, you want to use ctmm.select
-  FITS[[i]] <- ctmm.fit(DATA[[i]],GUESS,trace=2)
+  FITS[[i]] <- ctmm.fit(DATA[[i]],GUESS)
 }
 
 # calculate difference vectors

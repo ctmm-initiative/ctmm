@@ -1,5 +1,4 @@
 ** PRIORITY
-* units -> unit because of difftime function?
 * convenience functions like dof()<- for UERE models
 * update R.suit to use matrix.model
 * shift normalize suitability()

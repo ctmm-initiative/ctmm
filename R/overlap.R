@@ -39,6 +39,7 @@ overlap <- function(object,method="Bhattacharyya",level=0.95,debias=TRUE,...)
   }
 
   dimnames(OVER) <- list(names(object),names(object),NAMES.CI)
+  dimnames(DOF) <- list(names(object),names(object))
 
   R <- list(DOF=DOF,CI=OVER)
   class(R) <- "overlap"

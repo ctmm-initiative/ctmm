@@ -1,4 +1,4 @@
-ctmm 1.1.0 (2022-11-01)
+ctmm 1.1.0 (2022-11-03)
 ================
 
   * new function pkde() for population kernel density estimates
