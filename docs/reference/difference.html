@@ -142,20 +142,8 @@
 <span class="r-in"><span><span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="va">GUESS</span> <span class="op">&lt;-</span> <span class="fu"><a href="variogram.fit.html">ctmm.guess</a></span><span class="op">(</span><span class="va">DATA</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>,interactive<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="co"># in general, you want to use ctmm.select</span></span></span>
-<span class="r-in"><span>  <span class="va">FITS</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="ctmm.fit.html">ctmm.fit</a></span><span class="op">(</span><span class="va">DATA</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>,<span class="va">GUESS</span>,trace<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">FITS</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="ctmm.fit.html">ctmm.fit</a></span><span class="op">(</span><span class="va">DATA</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>,<span class="va">GUESS</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Maximizing likelihood.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   |                                                                              |                                                                      |   0%  |                                                                              |==                                                                    |   3%  |                                                                              |=====                                                                 |   7%  |                                                                              |=========================                                             |  35%  |                                                                              |=====================================                                 |  53%  |                                                                              |======================================================                |  77%  |                                                                              |======================================================================| 100%</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Convergence in 111 parallel function evaluations.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating Hessian.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating REML gradient.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating REML Hessian.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Maximizing likelihood.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   |                                                                              |                                                                      |   0%  |                                                                              |===                                                                   |   4%  |                                                                              |================================                                      |  45%  |                                                                              |=====================================================                 |  75%  |                                                                              |======================================================================| 100%</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Convergence in 94 parallel function evaluations.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating Hessian.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating REML gradient.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating REML Hessian.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># calculate difference vectors</span></span></span>
 <span class="r-in"><span><span class="va">DIFF</span> <span class="op">&lt;-</span> <span class="fu">difference</span><span class="op">(</span><span class="va">DATA</span>,<span class="va">FITS</span><span class="op">)</span></span></span>
@@ -167,7 +155,7 @@
 <span class="r-in"><span><span class="co"># disabling location error for speed</span></span></span>
 <span class="r-in"><span><span class="fu">proximity</span><span class="op">(</span><span class="va">DATA</span>,<span class="va">FITS</span>,GUESS<span class="op">=</span><span class="fu"><a href="ctmm.fit.html">ctmm</a></span><span class="op">(</span>error<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       low       est      high </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 0.2336485 0.3972438 0.6333081 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 0.2336487 0.3972442 0.6333088 </span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>

@@ -76,21 +76,21 @@
 <span></span>
 <span><span class="co"># S3 method for ctmm</span></span>
 <span><span class="fu">speed</span><span class="op">(</span><span class="va">object</span>,data<span class="op">=</span><span class="cn">NULL</span>,t<span class="op">=</span><span class="cn">NULL</span>,level<span class="op">=</span><span class="fl">0.95</span>,robust<span class="op">=</span><span class="cn">FALSE</span>,units<span class="op">=</span><span class="cn">TRUE</span>,prior<span class="op">=</span><span class="cn">TRUE</span>,fast<span class="op">=</span><span class="cn">TRUE</span>,</span>
-<span>      cor.min<span class="op">=</span><span class="fl">0.5</span>,dt.max<span class="op">=</span><span class="cn">NULL</span>,error<span class="op">=</span><span class="fl">0.01</span>,cores<span class="op">=</span><span class="fl">1</span>,<span class="va">...</span><span class="op">)</span></span>
+<span>      cor.min<span class="op">=</span><span class="fl">0.5</span>,dt.max<span class="op">=</span><span class="cn">NULL</span>,error<span class="op">=</span><span class="fl">0.01</span>,cores<span class="op">=</span><span class="fl">1</span>,trace<span class="op">=</span><span class="cn">TRUE</span>,<span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for telemetry</span></span>
 <span><span class="fu">speed</span><span class="op">(</span><span class="va">object</span>,<span class="va">CTMM</span>,t<span class="op">=</span><span class="cn">NULL</span>,level<span class="op">=</span><span class="fl">0.95</span>,robust<span class="op">=</span><span class="cn">FALSE</span>,units<span class="op">=</span><span class="cn">TRUE</span>,prior<span class="op">=</span><span class="cn">TRUE</span>,fast<span class="op">=</span><span class="cn">TRUE</span>,</span>
-<span>      cor.min<span class="op">=</span><span class="fl">0.5</span>,dt.max<span class="op">=</span><span class="cn">NULL</span>,error<span class="op">=</span><span class="fl">0.01</span>,cores<span class="op">=</span><span class="fl">1</span>,<span class="va">...</span><span class="op">)</span></span>
+<span>      cor.min<span class="op">=</span><span class="fl">0.5</span>,dt.max<span class="op">=</span><span class="cn">NULL</span>,error<span class="op">=</span><span class="fl">0.01</span>,cores<span class="op">=</span><span class="fl">1</span>,trace<span class="op">=</span><span class="cn">TRUE</span>,<span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">speeds</span><span class="op">(</span><span class="va">object</span>,<span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for ctmm</span></span>
 <span><span class="fu">speeds</span><span class="op">(</span><span class="va">object</span>,data<span class="op">=</span><span class="cn">NULL</span>,t<span class="op">=</span><span class="cn">NULL</span>,cycle<span class="op">=</span><span class="cn">Inf</span>,level<span class="op">=</span><span class="fl">0.95</span>,robust<span class="op">=</span><span class="cn">FALSE</span>,prior<span class="op">=</span><span class="cn">FALSE</span>,fast<span class="op">=</span><span class="cn">TRUE</span>,</span>
-<span>       error<span class="op">=</span><span class="fl">0.01</span>,cores<span class="op">=</span><span class="fl">1</span>,<span class="va">...</span><span class="op">)</span></span>
+<span>       error<span class="op">=</span><span class="fl">0.01</span>,cores<span class="op">=</span><span class="fl">1</span>,trace<span class="op">=</span><span class="cn">TRUE</span>,<span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for telemetry</span></span>
 <span><span class="fu">speeds</span><span class="op">(</span><span class="va">object</span>,<span class="va">CTMM</span>,t<span class="op">=</span><span class="cn">NULL</span>,cycle<span class="op">=</span><span class="cn">Inf</span>,level<span class="op">=</span><span class="fl">0.95</span>,robust<span class="op">=</span><span class="cn">FALSE</span>,prior<span class="op">=</span><span class="cn">FALSE</span>,fast<span class="op">=</span><span class="cn">TRUE</span>,</span>
-<span>       error<span class="op">=</span><span class="fl">0.01</span>,cores<span class="op">=</span><span class="fl">1</span>,<span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span>       error<span class="op">=</span><span class="fl">0.01</span>,cores<span class="op">=</span><span class="fl">1</span>,trace<span class="op">=</span><span class="cn">TRUE</span>,<span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -136,6 +136,9 @@
 
   <dt>cores</dt>
 <dd><p>Number of simulations to run in parallel. <code>cores=0</code> will use all cores, while <code>cores&lt;0</code> will reserve <code>abs(cores)</code>.</p></dd>
+
+  <dt>trace</dt>
+<dd><p>Display a progress bar.</p></dd>
 
   <dt>...</dt>
 <dd><p>Arguments passed to <code><a href="emulate.ctmm.html">emulate</a></code>.</p></dd>
@@ -186,7 +189,7 @@
 <span class="r-in"><span><span class="fu">speed</span><span class="op">(</span><span class="va">FIT</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $DOF</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    speed </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1179.978 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1179.979 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $CI</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                             low      est    high</span>
@@ -196,15 +199,15 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "speed"</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># conditional estimate</span></span></span>
-<span class="r-in"><span><span class="fu">speed</span><span class="op">(</span><span class="va">FIT</span>,<span class="va">DATA</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   |                                                                              |                                                                      |   0%  |                                                                              |=======                                                               |  10%  |                                                                              |==========                                                            |  15%  |                                                                              |==============                                                        |  20%  |                                                                              |==================                                                    |  25%  |                                                                              |=====================                                                 |  30%  |                                                                              |========================                                              |  35%  |                                                                              |============================                                          |  40%  |                                                                              |================================                                      |  45%  |                                                                              |===================================                                   |  50%  |                                                                              |======================================                                |  55%  |                                                                              |==========================================                            |  60%  |                                                                              |==============================================                        |  65%  |                                                                              |=================================================                     |  70%  |                                                                              |====================================================                  |  75%  |                                                                              |========================================================              |  80%  |                                                                              |============================================================          |  85%  |                                                                              |===============================================================       |  90%  |                                                                              |==================================================================    |  95%  |                                                                              |======================================================================| 100%</span>
+<span class="r-in"><span><span class="co"># you will likely want trace=TRUE</span></span></span>
+<span class="r-in"><span><span class="fu">speed</span><span class="op">(</span><span class="va">FIT</span>,<span class="va">DATA</span>,trace<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $DOF</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  speed </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 820.99 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    speed </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 606.7151 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $CI</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                             low      est     high</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> speed (kilometers/day) 11.03516 11.42427 11.81667</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                             low      est    high</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> speed (kilometers/day) 11.05168 11.50729 11.9674</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "speed"</span>

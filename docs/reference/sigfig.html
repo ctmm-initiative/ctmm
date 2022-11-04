@@ -126,7 +126,8 @@
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Load package and data</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="co"># Load package and data</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ctmm-initiative/ctmm" class="external-link">ctmm</a></span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">buffalo</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">DATA</span> <span class="op">&lt;-</span> <span class="va">buffalo</span><span class="op">$</span><span class="va">Cilla</span></span></span>
@@ -142,12 +143,12 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $DOF</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       mean       area  diffusion      speed </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   10.73354   18.13596  902.23375 3445.13306 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   10.73355   18.13603  902.23378 3445.13305 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $CI</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                           low          est         high</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> area (square meters)             2.396474e+08 4.034588e+08 6.092413e+08</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> τ[position] (seconds)            3.835258e+05 6.484638e+05 1.096420e+06</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> area (square meters)             2.396474e+08 4.034585e+08 6.092403e+08</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> τ[position] (seconds)            3.835259e+05 6.484631e+05 1.096417e+06</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> τ[velocity] (seconds)            2.376427e+03 2.524141e+03 2.681036e+03</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> speed (meters/second)            1.599590e-01 1.626753e-01 1.653910e-01</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> diffusion (square meters/second) 6.116371e+01 6.535947e+01 6.969245e+01</span>
@@ -160,13 +161,13 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $DOF</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       mean       area  diffusion      speed </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   10.73354   18.13596  902.23375 3445.13306 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   10.73355   18.13603  902.23378 3445.13305 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $CI</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                          low        est       high</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> area (square kilometers)          239.647386 403.458841 609.241285</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> τ[position] (days)                  4.438956   7.505367  12.690043</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> τ[velocity] (minutes)              39.607116  42.069009  44.683928</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> area (square kilometers)          239.647430 403.458457 609.240272</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> τ[position] (days)                  4.438957   7.505360  12.690016</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> τ[velocity] (minutes)              39.607116  42.069009  44.683929</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> speed (kilometers/day)             13.820458  14.055146  14.289780</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> diffusion (square kilometers/day)   5.284545   5.647059   6.021428</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -179,6 +180,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>                "42.1 (39.6—44.7)"             "14.06 (13.82—14.29)" </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> diffusion (square kilometers/day) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                "5.65 (5.28—6.02)" </span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </div>

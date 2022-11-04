@@ -1,4 +1,7 @@
 ** PRIORITY
+* plot.overlap method
+* add ctmmlearn to FAQ
+* color data in data example man files
 * convenience functions like dof()<- for UERE models
 * update R.suit to use matrix.model
 * shift normalize suitability()

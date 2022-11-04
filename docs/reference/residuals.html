@@ -85,7 +85,7 @@ residuals(object,data,...)
 # S3 method for telemetry
 residuals(object,CTMM=NULL,...)
 
-correlogram(data,dt=NULL,fast=TRUE,res=1,axes=c("x","y"))
+correlogram(data,dt=NULL,fast=TRUE,res=1,axes=c("x","y"),trace=TRUE)
 
 mag(x,...)
 
@@ -118,6 +118,9 @@ mag(x,axes=c('x','y'),...)</code></pre></div>
 
   <dt>axes</dt>
 <dd><p>Array of axes for which to calculate residual correlogram or magnitudes.</p></dd>
+
+  <dt>trace</dt>
+<dd><p>Display a progress bar if <code>fast=FALSE</code>.</p></dd>
 
   <dt>x</dt>
 <dd><p><code>telemetry</code> object from the output of <code>residuals</code>.</p></dd>

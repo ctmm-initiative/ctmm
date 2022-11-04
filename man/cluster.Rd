@@ -59,7 +59,7 @@ for(i in 1:length(buffalo))
 }
 
 # calculate AKDES on a consistent grid
-AKDES <- akde(buffalo,FITS,trace=1)
+AKDES <- akde(buffalo,FITS)
 
 # color to be spatially distinct
 COL <- color(AKDES,by='individual')

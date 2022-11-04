@@ -178,81 +178,33 @@ Methods in Ecology and Evolution (2022) <a href="https://doi.org/10.1111/2041-21
 <span class="r-in"><span><span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="va">GUESS</span> <span class="op">&lt;-</span> <span class="fu"><a href="variogram.fit.html">ctmm.guess</a></span><span class="op">(</span><span class="va">buffalo</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>,interactive<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="co"># use ctmm.select unless you are certain that the selected model is OUF</span></span></span>
-<span class="r-in"><span>  <span class="va">FITS</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="ctmm.fit.html">ctmm.fit</a></span><span class="op">(</span><span class="va">buffalo</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>,<span class="va">GUESS</span>,trace<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">FITS</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="ctmm.fit.html">ctmm.fit</a></span><span class="op">(</span><span class="va">buffalo</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>,<span class="va">GUESS</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Maximizing likelihood.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   |                                                                              |                                                                      |   0%  |                                                                              |=                                                                     |   1%  |                                                                              |========================                                              |  34%  |                                                                              |==============================================                        |  65%  |                                                                              |===========================================================           |  85%  |                                                                              |======================================================================| 100%</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Convergence in 108 parallel function evaluations.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating Hessian.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating REML gradient.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating REML Hessian.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Maximizing likelihood.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   |                                                                              |                                                                      |   0%  |                                                                              |=======                                                               |  11%  |                                                                              |============================                                          |  39%  |                                                                              |======================================================================| 100%</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Convergence in 67 parallel function evaluations.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating Hessian.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating REML gradient.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating REML Hessian.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Maximizing likelihood.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   |                                                                              |                                                                      |   0%  |                                                                              |===                                                                   |   4%  |                                                                              |======================                                                |  31%  |                                                                              |==============================                                        |  43%  |                                                                              |==========================================                            |  60%  |                                                                              |======================================================================| 100%</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Convergence in 109 parallel function evaluations.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating Hessian.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating REML gradient.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating REML Hessian.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Maximizing likelihood.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   |                                                                              |                                                                      |   0%  |                                                                              |=========                                                             |  13%  |                                                                              |===================================                                   |  50%  |                                                                              |===================================================================   |  96%  |                                                                              |======================================================================| 100%</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Convergence in 70 parallel function evaluations.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating Hessian.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating REML gradient.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating REML Hessian.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Maximizing likelihood.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   |                                                                              |                                                                      |   0%  |                                                                              |========                                                              |  12%  |                                                                              |==============                                                        |  20%  |                                                                              |======================                                                |  31%  |                                                                              |===============================                                       |  45%  |                                                                              |=============================================                         |  64%  |                                                                              |=============================================================         |  86%  |                                                                              |======================================================================| 100%</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Convergence in 144 parallel function evaluations.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating Hessian.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating REML gradient.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating REML Hessian.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Maximizing likelihood.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   |                                                                              |                                                                      |   0%  |                                                                              |==                                                                    |   3%  |                                                                              |=========================                                             |  36%  |                                                                              |==========================================                            |  60%  |                                                                              |======================================================================| 100%</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Convergence in 102 parallel function evaluations.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating Hessian.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating REML gradient.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating REML Hessian.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># calculate AKDES on a consistent grid</span></span></span>
-<span class="r-in"><span><span class="va">AKDES</span> <span class="op">&lt;-</span> <span class="fu"><a href="akde.html">akde</a></span><span class="op">(</span><span class="va">buffalo</span>,<span class="va">FITS</span>,trace<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">AKDES</span> <span class="op">&lt;-</span> <span class="fu"><a href="akde.html">akde</a></span><span class="op">(</span><span class="va">buffalo</span>,<span class="va">FITS</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Default grid size of 3 minutes chosen for bandwidth(...,fast=TRUE).</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Bandwidth optimization complete.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Default grid size of 2 minutes chosen for bandwidth(...,fast=TRUE).</span>
-<span class="r-plt img"><img src="meta-1.png" alt="" width="700" height="433"></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Bandwidth optimization complete.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Default grid size of 2 minutes chosen for bandwidth(...,fast=TRUE).</span>
-<span class="r-plt img"><img src="meta-2.png" alt="" width="700" height="433"></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Bandwidth optimization complete.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Default grid size of 3 minutes chosen for bandwidth(...,fast=TRUE).</span>
-<span class="r-plt img"><img src="meta-3.png" alt="" width="700" height="433"></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Bandwidth optimization complete.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Default grid size of 2 minutes chosen for bandwidth(...,fast=TRUE).</span>
-<span class="r-plt img"><img src="meta-4.png" alt="" width="700" height="433"></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Bandwidth optimization complete.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Default grid size of 5 minutes chosen for bandwidth(...,fast=TRUE).</span>
-<span class="r-plt img"><img src="meta-5.png" alt="" width="700" height="433"></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Bandwidth optimization complete.</span>
-<span class="r-plt img"><img src="meta-6.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># color to be spatially distinct</span></span></span>
 <span class="r-in"><span><span class="va">COL</span> <span class="op">&lt;-</span> <span class="fu"><a href="color.html">color</a></span><span class="op">(</span><span class="va">AKDES</span>,by<span class="op">=</span><span class="st">'individual'</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># plot AKDEs</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot.telemetry.html">plot</a></span><span class="op">(</span><span class="va">AKDES</span>,col.DF<span class="op">=</span><span class="va">COL</span>,col.level<span class="op">=</span><span class="va">COL</span>,col.grid<span class="op">=</span><span class="cn">NA</span>,level<span class="op">=</span><span class="cn">NA</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="meta-7.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="meta-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># meta-analysis of buffalo home-range areas</span></span></span>
 <span class="r-in"><span><span class="fu">meta</span><span class="op">(</span><span class="va">AKDES</span>,col<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">COL</span>,<span class="st">'black'</span><span class="op">)</span>,sort<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                     ΔAICc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Dirac-δ          0.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> inverse-Gaussian 3.834027</span>
-<span class="r-plt img"><img src="meta-8.png" alt="" width="700" height="433"></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> inverse-Gaussian 3.834023</span>
+<span class="r-plt img"><img src="meta-2.png" alt="" width="700" height="433"></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  low      est     high</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> mean (km²)  357.6295 451.6812 556.5466</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> mean (km²)  357.6295 451.6812 556.5465</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> CoV² (RVAR)   0.0000   0.0000      Inf</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> CoV  (RSTD)   0.0000   0.0000      Inf</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>

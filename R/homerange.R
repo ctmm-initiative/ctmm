@@ -117,11 +117,11 @@ suitability <- function(CTMM,R=list(),grid=NULL,...)
   x <- grid$r$x
   y <- grid$r$y
 
-  R <- expand.factors(R,CTMM$formula,fixed=TRUE)
+  R <- expand.factors(R,CTMM$formula,fixed=TRUE)$R
 
   proj <- CTMM@info$projection
   # calculate RASTERs on spatial grid
-  R <- lapply(R,function(r){R.grid(grid$r,proj=proj,r)})
+  R <- lapply(R,function(S){R.grid(r=grid$r,proj=proj,S)})
 
   R <- R.suit(R,CTMM)
   R <- list(x=x,y=y,z=R)
