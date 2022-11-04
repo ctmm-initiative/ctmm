@@ -29,8 +29,8 @@ and Silva et al (2022) <doi:10.1111/2041-210X.13786>.
 \tabular{ll}{
 Package: \tab ctmm\cr
 Type: \tab Package\cr
-Version: \tab 1.1.0 \cr
-Date: \tab 2022-11-03 \cr
+Version: \tab 1.1.1 \cr
+Date: \tab 2022-11-04 \cr
 License: \tab GPL-3 \cr
 }
 
