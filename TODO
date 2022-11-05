@@ -1,4 +1,5 @@
 ** PRIORITY
+* proximity() check for overlapping times and return (0,Inf)
 * mean() reasonable diagonal models
 * plot.overlap method
 * add ctmmlearn to FAQ

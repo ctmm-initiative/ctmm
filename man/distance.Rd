@@ -10,11 +10,12 @@
 \description{This function calculates various square distances measures between distributions,
 including the, Bhattacharyya distance, Mahalanobis distance, and Euclidean distance.}
 
-\usage{ distance(object,method="Mahalanobis",level=0.95,debias=TRUE,...) }
+\usage{ distance(object,method="Mahalanobis",sqrt=FALSE,level=0.95,debias=TRUE,...) }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{object}{A \code{list} of \code{ctmm} fit objects to compare.}
   \item{method}{Square distance measure to return: \code{"Bhattacharyya"}, \code{"Mahalanobis"}, or \code{"Euclidean"}.}
+  \item{sqrt}{Return the linear distance.}
   \item{level}{The confidence level desired for the output.}
   \item{debias}{Approximate debiasing of the square distance.}
   \item{...}{Not currently used.}

@@ -1,6 +1,8 @@
 ctmm 1.1.1 (2022-11-04)
 ================
 
+  * new argument sqrt in distance()
+
   * bugfix in suitability
 
 ctmm 1.1.0 (2022-11-03)

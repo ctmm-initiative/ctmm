@@ -73,7 +73,7 @@ EuclideanD <- function(CTMM)
 }
 
 
-distance <- function(object,method="Mahalanobis",level=0.95,debias=TRUE,...)
+distance <- function(object,method="Mahalanobis",sqrt=FALSE,level=0.95,debias=TRUE,...)
 {
   method <- match.arg(method,c("Bhattacharyya","Mahalanobis","Euclidean","Encounter"))
   n <- length(object)
@@ -83,7 +83,7 @@ distance <- function(object,method="Mahalanobis",level=0.95,debias=TRUE,...)
   {
     D[i,i,] <- c(0,0,0) # diagonal entries
     for(j in (i+1):n) # off-diagonal entries
-    { D[i,j,] <- D[j,i,] <- overlap.ctmm(object[c(i,j)],level=level,debias=debias,method=method,distance=TRUE,...) }
+    { D[i,j,] <- D[j,i,] <- overlap.ctmm(object[c(i,j)],level=level,debias=debias,method=method,distance=TRUE,sqrt=sqrt,...) }
   }
   D[n,n,] <- c(0,0,0) # diagonal entries
 

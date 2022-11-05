@@ -87,7 +87,7 @@ soft.clamp <- function(n,DIM)
 
 
 #####################
-overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,method="Bhattacharyya",distance=FALSE,...)
+overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,method="Bhattacharyya",distance=FALSE,sqrt=FALSE,...)
 {
   CTMM1 <- object[[1]]
   CTMM2 <- object[[2]]
@@ -179,7 +179,16 @@ overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,method="Bhattach
 
     DOF <- 2*MLE^2/VAR
     CI <- chisq.ci(MLE,DOF=DOF,alpha=1-level)
-    if(distance) { return(CI) } # return distance
+    if(distance) # return distance
+    {
+      if(sqrt) # sqrt and debias
+      {
+        CI <- sqrt(CI)
+        if(debias) { CI <- CI/chi.bias(max(DOF,1)) }
+      }
+
+      return(CI)
+    }
 
     # transform from (square) distance to overlap measure
     CI <- exp(-rev(CI))
