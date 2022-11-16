@@ -3,7 +3,7 @@
 # population-level parameter estimates for normally distributed parameters and parameter uncertainties
 # VARS Boolean denotes whether or not there is natural variance
 # MEANS Boolean denotes whether or not there is a non-zero mean
-meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRUE,weights=NULL,precision=1/2)
+meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,diagonal=FALSE,isotropic=FALSE,debias=TRUE,weights=NULL,precision=1/2)
 {
   if(length(dim(MU))<2)
   {
@@ -60,7 +60,10 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
   COV.mu <- sigma/N
   if(any(ZEROV)) { sigma[ZEROV,] <- sigma[,ZEROV] <- 0 }
   if(any(ZEROM)) { COV.mu[ZEROM,] <- COV.mu[,ZEROM] <- 0 }
-  if(isotropic) { sigma <- diag( mean(diag(sigma)), DIM ) }
+  if(isotropic)
+  { sigma <- diag( mean(diag(sigma)), DIM ) }
+  else if(diagonal)
+  { sigma <- diag( diag(sigma) , DIM ) }
 
   # non-zero unique sigma parameters
   DUP <- upper.tri(sigma,diag=TRUE)
@@ -75,6 +78,11 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
   {
     if(isotropic)
     { sigma <- diag(par,DIM) }
+    else if(diagonal)
+    {
+      sigma <- diag(0,DIM)
+      diag(sigma)[VARS] <- par
+    }
     else
     {
       sigma <- array(0,c(DIM,DIM))
@@ -157,7 +165,10 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
       sigma[VARS,VARS] <- K %*% RHS[VARS,VARS] %*% t(K)
       # we are solving the unconstrained sigma above and then projecting back to the constrained sigma below
       # not sure how approximate this is, but will do numerical optimization afterwards
-      if(isotropic) { sigma <- diag( mean(diag(sigma)), DIM ) }
+      if(isotropic)
+      { sigma <- diag( mean(diag(sigma)), DIM ) }
+      else if(diagonal)
+      { sigma <- diag( diag(sigma) , DIM ) }
     }
 
     R <- list(loglike=loglike,mu=mu,COV.mu=COV.mu,sigma=sigma,sigma.old=sigma.old)
@@ -169,6 +180,8 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
   {
     if(isotropic)
     { par <- mean(diag(sigma)) }
+    else if(diagonal)
+    { par <- diag(sigma)[VARS] }
     else
     { par <- sigma[DUP] }
 
@@ -248,7 +261,13 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
   {
     # in case sigma is zero
     MIN <- mean(diag(COV.mu))
-
+    parscale <- pmax(par,MIN)
+    lower <- 0
+  }
+  else if(diagonal)
+  {
+    # in case sigma is zero
+    MIN <- diag(COV.mu)[VARS]
     parscale <- pmax(par,MIN)
     lower <- 0
   }
@@ -295,6 +314,8 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
   {
     if(isotropic)
     { P <- 1 }
+    else if(diagonal)
+    { P <- DIM }
     else
     { P <- DIM*(DIM+1)/2 }
     COV.sigma <- matrix(0,P,P)
@@ -307,7 +328,9 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
   q <- DIM
   qk <- sum(MEANS)
   if(isotropic)
-  { nu <- min(1,sum(DUP)) }
+  { nu <- min(1,sum(VARS)) }
+  else if(diagonal)
+  { nu <- sum(VARS) }
   else
   { nu <- sum(DUP) }
   K <- qk + nu
@@ -327,16 +350,39 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,debias=TRU
   dimnames(sigma) <- list(NAMES,NAMES)
   # sigma <- sigma[VARS,VARS]
   if(isotropic)
-  { NAMES <- "sigma-sigma" }
+  {
+    NAMES2 <- "sigma-sigma"
+    dimnames(COV.sigma) <- list(NAMES2,NAMES2)
+  }
+  else if(diagonal)
+  {
+    # basic structure
+    NAMES2 <- NAMES[VARS]
+    NAMES2 <- paste0(NAMES2,"-",NAMES2)
+    dimnames(COV.sigma) <- list(NAMES2,NAMES2)
+
+    # promote to general structure below
+    NAMES3 <- outer(NAMES,NAMES,function(x,y){paste0(x,"-",y)})
+    if(any(VARS))
+    { NAMES3 <- NAMES3[DUP] }
+    else
+    { NAMES3 <- NAMES3[upper.tri(NAMES3,diag=TRUE)] }
+    # zeroed COV matrix
+    TEMP <- matrix(0,length(NAMES3),length(NAMES3))
+    dimnames(TEMP) <- list(NAMES3,NAMES3)
+    # copy over non-zero COV
+    TEMP[NAMES2,NAMES2] <- COV.sigma
+    COV.sigma <- TEMP
+  }
   else
   {
-    NAMES <- outer(NAMES,NAMES,function(x,y){paste0(x,"-",y)})
+    NAMES2 <- outer(NAMES,NAMES,function(x,y){paste0(x,"-",y)})
     if(any(VARS))
-    { NAMES <- NAMES[DUP] }
+    { NAMES2 <- NAMES2[DUP] }
     else
-    { NAMES <- NAMES[upper.tri(NAMES,diag=TRUE)] }
+    { NAMES2 <- NAMES2[upper.tri(NAMES2,diag=TRUE)] }
+    dimnames(COV.sigma) <- list(NAMES2,NAMES2)
   }
-  dimnames(COV.sigma) <- list(NAMES,NAMES)
 
   return(list(mu=mu,sigma=sigma,COV.mu=COV.mu,COV.sigma=COV.sigma,loglike=loglike,AIC=AIC,AICc=AICc,BIC=BIC,isotropic=isotropic))
 }

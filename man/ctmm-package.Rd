@@ -30,7 +30,7 @@ and Silva et al (2022) <doi:10.1111/2041-210X.13786>.
 Package: \tab ctmm\cr
 Type: \tab Package\cr
 Version: \tab 1.1.1 \cr
-Date: \tab 2022-11-04 \cr
+Date: \tab 2022-11-15 \cr
 License: \tab GPL-3 \cr
 }
 
@@ -116,9 +116,9 @@ M. J. Noonan R. Martinez-Garcia, G. H. Davis, M. C. Crofoot, R. Kays, B. T. Hirs
 
 C. H. Fleming, I. Deznabi, S. Alavi, M. C. Crofoot, B. T. Hirsch, E. P. Medici, M. J. Noonan, R. Kays, W. F. Fagan, D. Sheldon, J. M. Calabrese,
 ``Population-level inference for home-range areas'',
-Methods in Ecology and Evolution  13 1027-1041 (2022) \doi{10.1111/2041-210X.13815}.
+Methods in Ecology and Evolution 13:5 1027-1041 (2022) \doi{10.1111/2041-210X.13815}.
 
-I. Silva, C. H. Fleming, M. J. Noonan, J. Alston, C. Folta, W. F. Fagan, J. M. Calabrese. ``Autocorrelation-informed home range estimation: A review and practical guide'', Methods in Ecology and Evolution 13 534-544 (2022) \doi{10.1111/2041-210X.13786}.
+I. Silva, C. H. Fleming, M. J. Noonan, J. Alston, C. Folta, W. F. Fagan, J. M. Calabrese. ``Autocorrelation-informed home range estimation: A review and practical guide'', Methods in Ecology and Evolution 13:3 534-544 (2022) \doi{10.1111/2041-210X.13786}.
 }
 
 %~~ Optionally other standard keywords, one per line, from file KEYWORDS in ~~

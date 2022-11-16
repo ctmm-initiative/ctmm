@@ -1,8 +1,10 @@
 ** PRIORITY
+* as.telemetry location class at dt==hot/cold threshold
 * proximity() check for overlapping times and return (0,Inf)
-* mean() reasonable diagonal models
+* plot.rsf method
 * plot.overlap method
 * add ctmmlearn to FAQ
+* RShiny zoom() and variogram.fit()
 * color data in data example man files
 * convenience functions like dof()<- for UERE models
 * update R.suit to use matrix.model

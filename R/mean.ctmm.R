@@ -165,7 +165,7 @@ exp.ctmm <- function(CTMM,debias=FALSE)
     #################
     ### diagonalize and log-chi^2 debias POV
     VAR <- diag(POV)
-    if(all(VAR>0))
+    if(all(VAR>.Machine$double.eps))
     {
       COR <- stats::cov2cor(POV)
 
@@ -303,7 +303,8 @@ quad2lin <- function(M,diag=FALSE)
 }
 
 #############
-mean.features <- function(x,debias=TRUE,isotropic=FALSE,variance=TRUE,weights=NULL,...)
+# diagonal transformation
+mean.features <- function(x,debias=TRUE,isotropic=FALSE,variance=TRUE,diagonal=FALSE,weights=NULL,...)
 {
   if(is.null(weights))
   { weights <- rep(1,length(x)) }
@@ -409,14 +410,51 @@ mean.features <- function(x,debias=TRUE,isotropic=FALSE,variance=TRUE,weights=NU
     }
   } # for(i in 1:N)
 
-  if(!variance) { VARS <- FALSE }
-  R <- meta.normal(MU,SIGMA,MEANS=MEANS,VARS=VARS,debias=debias,weights=weights)
+  # transform to kinetic basis for diagonal covariance model
+  if(diagonal)
+  {
+    J <- diag(1,ncol(MU))
+    dimnames(J) <- list(FEATURES,FEATURES)
+
+    # everything is already log transformed
+    if("tau" %in% FEATURES) { J["tau",c("major","tau")] <- c(1,-2) } # MSV
+    if("tau position" %in% FEATURES) { J["tau position",c("major","tau position")] <- c(1,-1) } # D
+    if("tau velocity" %in% FEATURES) { J["tau velocity",c("major","tau position","tau velocity")] <- c(1,-1,-1) } # MSV
+    if("omega" %in% FEATURES) { J["omega",c("major","omega")] <- c(1,-2) } # delta-MSV
+
+    tJ <- t(J)
+    MU <- MU %*% tJ
+    SIGMA <- SIGMA %.% tJ
+    SIGMA <- aperm(SIGMA,c(1,3,2))
+    SIGMA <- SIGMA %.% tJ
+  }
+
+  variance <- rep(variance,length(FEATURES))
+  names(variance) <- FEATURES
+  if(isotropic) { variance[c('minor','angle')] <- FALSE }
+
+  R <- meta.normal(MU,SIGMA,MEANS=MEANS,VARS=variance,diagonal=diagonal,debias=debias,weights=weights)
   R$isotropic <- isotropic
   R$axes <- axes
   names(R)[ which(names(R)=="mu") ] <- "par" # population mean of features
   names(R)[ which(names(R)=="COV.mu") ] <- "COV" # uncertainty in population mean
   names(R)[ which(names(R)=="sigma") ] <- "POV" # population dispersion of features (under log)
   names(R)[ which(names(R)=="COV.sigma") ] <- "COV.POV" # uncertainty in population dispersion of features (under log)
+
+  # transform from kinetic basis for diagonal covariance model
+  if(diagonal && any(variance))
+  {
+    J <- solve(J)
+    tJ <- t(J)
+    R$par <- (R$par %*% tJ)[1,]
+    R$COV <- J %*% R$COV %*% tJ
+    R$POV <- J %*% R$POV %*% tJ
+    SUB <- FEATURES[variance]
+    J <- J[SUB,SUB]
+    J <- quad2lin(J)
+    dimnames(J) <- dimnames(R$COV.POV)
+    R$COV.POV <- J %*% R$COV.POV %*% t(J)
+  }
 
   # information for fitting that we no longer use
   if(isotropic && "minor" %in% FEATURES)
@@ -472,6 +510,7 @@ mean.mu <- function(x,debias=TRUE,isotropic=FALSE,variance=TRUE,weights=NULL,...
     # fill in with zeroes for non-stationary means
     # TODO !!!
   }
+
   R <- meta.normal(MU,SIGMA,isotropic=isotropic,VARS=variance,debias=debias,weights=weights)
   # R$mu # population mean of mean locations
   # R$COV.mu # uncertainty in mean of means estimate
@@ -508,66 +547,71 @@ mean.ctmm <- function(x,weights=NULL,sample=TRUE,debias=TRUE,IC="AICc",...)
   # average of mean locations
   if(sample)
   {
-    MU <- mean.mu(x,debias=debias,isotropic=TRUE,weights=weights,...)
-
-    # anisotropic mu ?
-    if(length(x)>2)
+    MM <- list()
+    # no variance in mean locations
+    MM$z <- mean.mu(x,debias=debias,weights=weights,isotropic=TRUE,variance=FALSE,...)
+    # isotropic mean location distribution
+    MM$i <- mean.mu(x,debias=debias,weights=weights,isotropic=TRUE,...)
+    if(2*n >= 2+3)
     {
-      AN <- mean.mu(x,debias=debias,isotropic=FALSE,weights=weights,...)
-      if(AN[[IC]]<MU[[IC]])
-      {
-        isotropic["mu"] <- FALSE
-        MU <- AN
-      }
+      # anisotropic mean location distribution
+      MM$a <- mean.mu(x,debias=debias,weights=weights,isotropic=FALSE,...)
     }
 
-    # zero variance in mu ?
-    if(isotropic["mu"])
+    ICS <- sapply(MM,function(m){m[[IC]]})
+    i <- which.min(ICS)
+    if(i<=2) { isotropic["mu"] <- FALSE }
+    if(i==1)
     {
-      ZV <- mean.mu(x,debias=debias,isotropic=TRUE,variance=FALSE,weights=weights,...)
-      if(ZV[[IC]]<=MU[[IC]])
-      {
-        ZV$POV.mu <- 0 * MU$POV.mu
-        ZV$COV.POV.mu <- 0 * MU$COV.POV.mu
-        MU <- ZV
-      }
+      MM[[i]]$POV.mu <- 0 * MM[[i+1]]$POV.mu
+      MM[[i]]$COV.POV.mu <- 0 * MM[[i+1]]$COV.POV.mu
     }
+    MM <- MM[[i]]
+    isotropic['mu'] <- MM$isotropic
 
     ########################
     # average of features
     ISO <- sapply(x,function(y){y$isotropic})
     ISO <- all(ISO)
-    FU <- mean.features(x,debias=debias,isotropic=TRUE,weights=weights,...)
 
-    # anisotropic sigma ?
-    if(length(x)>2 && !ISO)
+    FM <- list()
+    # zero variance - isotropic sigma
+    FM$Zi <- mean.features(x,debias=debias,weights=weights,isotropic=TRUE,variance=FALSE,...)
+    # zero variance - anisotropic sigma
+    FM$Za <- mean.features(x,debias=debias,weights=weights,isotropic=FALSE,variance=FALSE,...)
+    # diagonal covariance - isotropic sigma
+    FM$Di <- mean.features(x,debias=debias,weights=weights,isotropic=TRUE,diagonal=TRUE,...)
+    # diagonal covariance - anisoptropic sigma
+    FM$Da <- mean.features(x,debias=debias,weights=weights,isotropic=FALSE,diagonal=TRUE,...)
+    p <- length(FM[[1]]$features)
+    if(n >= p + (p^2+p)/2)
     {
-      AN <- mean.features(x,debias=debias,isotropic=FALSE,weights=weights,...)
-      if(AN[[IC]]<FU[[IC]])
-      {
-        isotropic["sigma"] <- FALSE
-        FU <- AN
-      }
+      # full covariance - isotropic sigma
+      FM$Fi <- mean.features(x,debias=debias,weights=weights,isotropic=TRUE,...)
+    }
+    p <- length(FM[[2]]$features)
+    if(n >= p + (p^2+p)/2)
+    {
+      # full covariance - anisotropic sigma
+      FM$Fa <- mean.features(x,debias=debias,weights=weights,isotropic=FALSE,...)
     }
 
-    # zero variance in sigma
-    if(isotropic["sigma"])
+    ICS <- sapply(FM,function(m){m[[IC]]})
+    i <- which.min(ICS)
+    if(i<=2)
     {
-      ZV <- mean.features(x,debias=debias,isotropic=TRUE,variance=FALSE,weights=weights,...)
-      if(ZV[[IC]]<=FU[[IC]])
-      {
-        ZV$POV.sigma <- 0 * FU$POV.sigma
-        ZV$COV.POV.sigma <- 0 * FU$COV.POV.sigma
-        FU <- ZV
-      }
+      FM[[i]]$POV.sigma <- 0 * FM[[i+2]]$POV.sigma
+      FM[[i]]$COV.POV.sigma <- 0 * FM[[i+2]]$COV.POV.sigma
     }
+    FM <- FM[[i]]
+    isotropic['sigma'] <- FM$isotropic
 
-    x <- copy(from=FU,to=MU)
+    x <- copy(from=FM,to=MM)
 
     # STORE EVERYTHING
-    x$AIC <- MU$AIC + FU$AIC
-    x$AICc <- MU$AICc + FU$AICc
-    x$BIC <- MU$BIC + FU$BIC
+    x$AIC <- MM$AIC + FM$AIC
+    x$AICc <- MM$AICc + FM$AICc
+    x$BIC <- MM$BIC + FM$BIC
   } # end sample
   else # !sample
   {

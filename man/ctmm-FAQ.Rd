@@ -16,7 +16,8 @@
 \item{Never edit or save your CSV in Microsoft Excel. The dates will be reformatted incorrectly and inconsistently.}
 \item{If using Windows, make sure to have the suggested version of ``Rtools'' installed. If using MacOS, make sure to have ``Xcode'' installed. If using Ubuntu, make sure to have ``build-essential'' installed. Otherwise, you can sometimes run into problems when trying to update packages.}
 \item{Upgrade \code{R} to the latest version and update all of your packages.}
-\item{The development build can be installed via \code{devtools::install_github("ctmm-initiative/ctmm")}.}
+\item{The development build can be installed via \code{remotes::install_github("ctmm-initiative/ctmm")}.}
+\item{Sometimes installing from Github can silently fail to overwrite old files, requiring the package to be manually uninstalled, and then re-installed after restarting.}
 \item{Stable beta releases between the CRAN release are published \href{http://www2.physics.umd.edu/~hfleming/}{here} on request.}
 \item{The \href{https://groups.google.com/g/ctmm-user}{\code{ctmm} user's group} is a good place to find and ask for help.}
 \item{Bug reports and feature requests can be raised at the \href{https://github.com/ctmm-initiative/ctmm}{Github project page}.}

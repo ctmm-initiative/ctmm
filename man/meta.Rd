@@ -32,10 +32,11 @@ meta(x,variable="area",level=0.95,level.UD=0.95,method="MLE",IC="AICc",boot=FALS
 }
 
 \details{
-\code{meta} employs a custom \eqn{\chi^2-IG} hierarchical model to calculate debiased population mean estimates of positive scale parameters,
+\code{meta} employs a custom \eqn{\chi^2}-IG hierarchical model to calculate debiased population mean estimates of positive scale parameters,
 including home-range areas, diffusion rates, mean speeds, and autocorrelation timescales.
-Population coefficient of variation (CoV) estimates are also provided.
-More details are provided in Fleming et al (2022).
+Model selection is performed between the \eqn{\chi^2}-IG population model (with population mean and variance) and the Dirac-\eqn{\delta} population model (population mean only).
+Population ``coefficient of variation'' (CoV) estimates are also provided.
+Further details are given in Fleming et al (2022).
 }
 
 \value{If \code{x} constitutes a sampled population, then \code{meta} returns a table with rows corresponding to the population mean and coefficient of variation.
@@ -47,7 +48,7 @@ If \code{x} constitutes a list of sampled populations, then \code{meta} returns 
 \references{
 C. H. Fleming, I. Deznabi, S. Alavi, M. C. Crofoot, B. T. Hirsch, E. P. Medici, M. J. Noonan, R. Kays, W. F. Fagan, D. Sheldon, J. M. Calabrese,
 ``Population-level inference for home-range areas'',
-Methods in Ecology and Evolution (2022) \doi{10.1111/2041-210X.13815}.
+Methods in Ecology and Evolution 13:5 1027--1041 (2022) \doi{10.1111/2041-210X.13815}.
 }
 
 
