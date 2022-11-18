@@ -298,11 +298,11 @@ set.name <- function(x,NAMES=NULL,drop=TRUE)
 
 #######################
 # Generic import function
-as.telemetry <- function(object,timeformat="",timezone="UTC",projection=NULL,datum=NULL,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...) UseMethod("as.telemetry")
+as.telemetry <- function(object,timeformat="",timezone="UTC",projection=NULL,datum=NULL,dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...) UseMethod("as.telemetry")
 
 
 # MoveStack object
-as.telemetry.MoveStack <- function(object,timeformat="",timezone="UTC",projection=NULL,datum=NULL,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
+as.telemetry.MoveStack <- function(object,timeformat="",timezone="UTC",projection=NULL,datum=NULL,dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
 {
   # get individual names
   NAMES <- move::trackId(object)
@@ -313,7 +313,7 @@ as.telemetry.MoveStack <- function(object,timeformat="",timezone="UTC",projectio
 
   # convert individually
   object <- move::split(object)
-  object <- lapply(object,function(mv){ as.telemetry.Move(mv,timeformat=timeformat,timezone=timezone,projection=projection,datum=datum,timeout=timeout,na.rm=na.rm,mark.rm=mark.rm,keep=keep,...) })
+  object <- lapply(object,function(mv){ as.telemetry.Move(mv,timeformat=timeformat,timezone=timezone,projection=projection,datum=datum,dt.hot=dt.hot,timeout=timeout,na.rm=na.rm,mark.rm=mark.rm,keep=keep,...) })
   # name by MoveStack convention
   names(object) <- NAMES
   for(i in 1:length(object)) { attr(object,"info")$identity <- NAMES[i] }
@@ -328,14 +328,14 @@ as.telemetry.MoveStack <- function(object,timeformat="",timezone="UTC",projectio
 
 
 # Move object
-as.telemetry.Move <- function(object,timeformat="",timezone="UTC",projection=NULL,datum=NULL,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
+as.telemetry.Move <- function(object,timeformat="",timezone="UTC",projection=NULL,datum=NULL,dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
 {
   # preserve Move object projection if possible
   if(is.null(projection) && !raster::isLonLat(object)) { projection <- raster::projection(object) }
 
   DATA <- Move2CSV(object,timeformat=timeformat,timezone=timezone,projection=projection)
   # can now treat this as a MoveBank object
-  DATA <- as.telemetry.data.frame(DATA,timeformat=timeformat,timezone=timezone,projection=projection,timeout=timeout,na.rm=na.rm,mark.rm=mark.rm,keep=keep,drop=drop)
+  DATA <- as.telemetry.data.frame(DATA,timeformat=timeformat,timezone=timezone,projection=projection,dt.hot=dt.hot,timeout=timeout,na.rm=na.rm,mark.rm=mark.rm,keep=keep,drop=drop)
   return(DATA)
 }
 
@@ -516,7 +516,7 @@ merge.class <- function(class1,class2)
 
 
 # read in a MoveBank object file
-as.telemetry.character <- function(object,timeformat="",timezone="UTC",projection=NULL,datum=NULL,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
+as.telemetry.character <- function(object,timeformat="",timezone="UTC",projection=NULL,datum=NULL,dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
 {
   # read with 3 methods: fread, temp_unzip, read.csv, fall back to next if have error.
   # fread error message is lost, we can use print(e) for debugging.
@@ -532,7 +532,7 @@ as.telemetry.character <- function(object,timeformat="",timezone="UTC",projectio
       data <- utils::read.csv(object,...)
     }
   }
-  data <- as.telemetry.data.frame(data,timeformat=timeformat,timezone=timezone,projection=projection,datum=datum,timeout=timeout,na.rm=na.rm,mark.rm=mark.rm,keep=keep,drop=drop)
+  data <- as.telemetry.data.frame(data,timeformat=timeformat,timezone=timezone,projection=projection,datum=datum,dt.hot=dt.hot,timeout=timeout,na.rm=na.rm,mark.rm=mark.rm,keep=keep,drop=drop)
   return(data)
 }
 
@@ -565,7 +565,7 @@ asPOSIXct <- function(x,timeformat="",timezone="UTC",...)
 
 
 # this assumes a MoveBank data.frame
-as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projection=NULL,datum=NULL,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
+as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projection=NULL,datum=NULL,dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
 {
   NAMES <- list()
   NAMES$timestamp <- c('timestamp','timestamp.of.fix','Acquisition.Time',
@@ -800,7 +800,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   {
     # major axis always longitude
     DATA$COV.angle <- 90
-    # error eigen variances
+    # error eigen-variances
     ARGOS.minor <- c('3'=157,'2'=259,'1'=494, '0'=2271,'A'=762, 'B'=4596,'Z'=Inf)^2
     ARGOS.major <- c('3'=295,'2'=485,'1'=1021,'0'=3308,'A'=1244,'B'=7214,'Z'=Inf)^2
     ARGOS.DOF <- c('3'=25,'2'=51,'1'=55, '0'=60,'A'=103, 'B'=132,'Z'=0)
@@ -1021,21 +1021,38 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   else if(class(keep)[1]=="character") # keep specified  columns
   { DATA <- cbind(DATA,object[,keep,drop=FALSE]) }
 
-
   # do this or possibly get empty animals from subset
   DATA <- droplevels(DATA)
 
   id <- levels(DATA$id)
   n <- length(id)
 
+  # sort and clean individuals
   telist <- list()
   for(i in 1:n)
   {
     telist[[i]] <- DATA[DATA$id==id[i],]
     telist[[i]]$id <- NULL
 
-    # clean through duplicates, etc..
+    # clean through duplicates, sort times, etc..
     telist[[i]] <- telemetry.clean(telist[[i]],id=id[i])
+
+    # can only check for hot/cold class after sorting times
+    if(!is.na(dt.hot))
+    {
+      HOT <- diff(telist[[i]]$t) <= dt.hot
+      HOT <- c(FALSE,HOT) # first fix is assumed to be cold
+      HOT <- factor(HOT,labels=c("cold","hot"))
+
+      if("class" %in% names(telist[[i]])) # combine with existing class information
+      {
+        HOT <- as.character(HOT)
+        telist[[i]]$class <- paste(as.character(telist[[i]]$class),HOT)
+        telist[[i]]$class <- as.factor(telist[[i]]$class)
+      }
+      else # only class information so far
+      { telist[[i]]$class <- HOT }
+    }
 
     # delete empty columns in case collars/tags are different
     for(COL in names(telist[[i]]))
@@ -1055,7 +1072,11 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     # should rather return an error below?
     # COL <- c("COV.angle","COV.major","COV.minor")
     # telist[[i]] <- rm.incomplete(telist[[i]],COL)
+  } # for(i in 1:n)
 
+  # format error structure
+  for(i in 1:n)
+  {
     # drop missing levels and set UERE according to calibration
     telist[[i]] <- droplevels(telist[[i]])
 
@@ -1113,7 +1134,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     UERE <- list(UERE=UERE,DOF=DOF,AICc=INF,Zsq=INF,VAR.Zsq=INF,N=N)
     UERE <- new.UERE(UERE)
     telist[[i]] <- new.telemetry( telist[[i]] , info=info, UERE=UERE )
-  }
+  } # for(i in 1:n)
   rm(DATA)
   names(telist) <- id
 

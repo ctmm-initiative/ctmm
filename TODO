@@ -1,5 +1,4 @@
 ** PRIORITY
-* as.telemetry location class at dt==hot/cold threshold
 * proximity() check for overlapping times and return (0,Inf)
 * plot.rsf method
 * plot.overlap method

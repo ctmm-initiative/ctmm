@@ -19,6 +19,14 @@ difference <- function(data,CTMM,t=NULL,...)
     t <- t[t<=t2]
     t <- sort(t)
     t <- unique(t)
+
+    if(!length(t))
+    {
+      warning("No overlapping times.")
+      data <- data.frame(t=numeric(),x=numeric(),y=numeric())
+      data <- new.telemetry(data,info=INFO)
+      return(data)
+    }
   }
 
   # predict over fine grid
@@ -99,6 +107,13 @@ proximity <- function(data,CTMM,GUESS=ctmm(error=TRUE),debias=TRUE,level=0.95,..
 {
   # difference vector with uncertainties
   data.diff <- difference(data,CTMM)
+
+  if(!nrow(data.diff))
+  {
+    INF <- c(0,1,Inf)
+    names(INF) <- NAMES.CI
+    return(INF)
+  }
 
   GUESS <- ctmm.guess(data.diff,CTMM=GUESS,interactive=FALSE)
   # # fit an autocorrelation model to the difference

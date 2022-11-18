@@ -1,9 +1,11 @@
-ctmm 1.1.1 (2022-11-15)
+ctmm 1.1.1 (2022-11-17)
 ================
 
-  * new diagonal population covariance models to select in mean.ctmm()
+  * new population covariance models and improved model selection in mean.ctmm()
 
-  * new argument sqrt in distance()
+  * new argument 'sqrt' in distance()
+  
+  * new argument 'dt.hot' in as.telemetry()
 
   * bugfix in suitability
 

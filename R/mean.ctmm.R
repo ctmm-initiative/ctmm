@@ -548,17 +548,17 @@ mean.ctmm <- function(x,weights=NULL,sample=TRUE,debias=TRUE,IC="AICc",...)
   if(sample)
   {
     MM <- list()
-    # no variance in mean locations
-    MM$z <- mean.mu(x,debias=debias,weights=weights,isotropic=TRUE,variance=FALSE,...)
-    # isotropic mean location distribution
-    MM$i <- mean.mu(x,debias=debias,weights=weights,isotropic=TRUE,...)
+
+    MM$"Dirac-\u03B4" <- mean.mu(x,debias=debias,weights=weights,isotropic=TRUE,variance=FALSE,...)
+
+    if(2*n >= 2+1)
+    { MM$"isotropic-\u03BC" <- mean.mu(x,debias=debias,weights=weights,isotropic=TRUE,...) }
+
     if(2*n >= 2+3)
-    {
-      # anisotropic mean location distribution
-      MM$a <- mean.mu(x,debias=debias,weights=weights,isotropic=FALSE,...)
-    }
+    { MM$"anisotropic-\u03BC" <- mean.mu(x,debias=debias,weights=weights,isotropic=FALSE,...) }
 
     ICS <- sapply(MM,function(m){m[[IC]]})
+    names(ICS) <- names(MM)
     i <- which.min(ICS)
     if(i<=2) { isotropic["mu"] <- FALSE }
     if(i==1)
@@ -569,34 +569,42 @@ mean.ctmm <- function(x,weights=NULL,sample=TRUE,debias=TRUE,IC="AICc",...)
     MM <- MM[[i]]
     isotropic['mu'] <- MM$isotropic
 
+    # report model selection
+    i <- sort(ICS,index.return=TRUE)$ix
+    ICS <- ICS[i] # sorted
+    ICS <- ICS - ICS[1] # start at zero
+    ICS <- data.frame(ICS)
+    colnames(ICS) <- paste0("\u0394",IC)
+    message("* Model selection for location-mean \u03BC distribution.")
+    print(ICS)
+
     ########################
     # average of features
     ISO <- sapply(x,function(y){y$isotropic})
     ISO <- all(ISO)
 
     FM <- list()
-    # zero variance - isotropic sigma
-    FM$Zi <- mean.features(x,debias=debias,weights=weights,isotropic=TRUE,variance=FALSE,...)
-    # zero variance - anisotropic sigma
-    FM$Za <- mean.features(x,debias=debias,weights=weights,isotropic=FALSE,variance=FALSE,...)
-    # diagonal covariance - isotropic sigma
-    FM$Di <- mean.features(x,debias=debias,weights=weights,isotropic=TRUE,diagonal=TRUE,...)
-    # diagonal covariance - anisoptropic sigma
-    FM$Da <- mean.features(x,debias=debias,weights=weights,isotropic=FALSE,diagonal=TRUE,...)
+
+    FM$"isotropic-\u03C3 Dirac-\u03B4" <- mean.features(x,debias=debias,weights=weights,isotropic=TRUE,variance=FALSE,...)
+
+    if(!ISO)
+    { FM$"anisotropic-\u03C3 Dirac-\u03B4" <- mean.features(x,debias=debias,weights=weights,isotropic=FALSE,variance=FALSE,...) }
+
+    FM$"isotropic-\u03C3 diag(\u03A3)" <- mean.features(x,debias=debias,weights=weights,isotropic=TRUE,diagonal=TRUE,...)
+
+    if(!ISO)
+    { FM$"anisotropic-\u03C3 diag(\u03A3)" <- mean.features(x,debias=debias,weights=weights,isotropic=FALSE,diagonal=TRUE,...) }
+
     p <- length(FM[[1]]$features)
-    if(n >= p + (p^2+p)/2)
-    {
-      # full covariance - isotropic sigma
-      FM$Fi <- mean.features(x,debias=debias,weights=weights,isotropic=TRUE,...)
-    }
+    if(n*p >= p + (p^2+p)/2)
+    { FM$"isotropic-\u03C3" <- mean.features(x,debias=debias,weights=weights,isotropic=TRUE,...) }
+
     p <- length(FM[[2]]$features)
-    if(n >= p + (p^2+p)/2)
-    {
-      # full covariance - anisotropic sigma
-      FM$Fa <- mean.features(x,debias=debias,weights=weights,isotropic=FALSE,...)
-    }
+    if(!ISO && n*p >= p + (p^2+p)/2)
+    { FM$"anisotropic-\u03C3" <- mean.features(x,debias=debias,weights=weights,isotropic=FALSE,...) }
 
     ICS <- sapply(FM,function(m){m[[IC]]})
+    names(ICS) <- names(FM)
     i <- which.min(ICS)
     if(i<=2)
     {
@@ -605,6 +613,15 @@ mean.ctmm <- function(x,weights=NULL,sample=TRUE,debias=TRUE,IC="AICc",...)
     }
     FM <- FM[[i]]
     isotropic['sigma'] <- FM$isotropic
+
+    # report model selection
+    i <- sort(ICS,index.return=TRUE)$ix
+    ICS <- ICS[i] # sorted
+    ICS <- ICS - ICS[1] # start at zero
+    ICS <- data.frame(ICS)
+    colnames(ICS) <- paste0("\u0394",IC)
+    message("* Model selection for location-covariance \u03C3 distribution.")
+    print(ICS)
 
     x <- copy(from=FM,to=MM)
 
