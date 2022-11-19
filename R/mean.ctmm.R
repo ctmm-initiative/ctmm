@@ -424,9 +424,15 @@ mean.features <- function(x,debias=TRUE,isotropic=FALSE,variance=TRUE,diagonal=F
 
     tJ <- t(J)
     MU <- MU %*% tJ
+
+    # missing data / infinite uncertainties
+    INF <- t(apply(SIGMA,1,function(M){diag(M)==Inf})) # [ind,par]
+
     SIGMA <- SIGMA %.% tJ
+    for(i in 1:nrow(SIGMA)) { for(j in 1:ncol(SIGMA)) { if(INF[i,j]) { SIGMA[i,j,] <- SIGMA[i,,j] <- 0; SIGMA[i,j,j] <- Inf } } }
     SIGMA <- aperm(SIGMA,c(1,3,2))
     SIGMA <- SIGMA %.% tJ
+    for(i in 1:nrow(SIGMA)) { for(j in 1:ncol(SIGMA)) { if(INF[i,j]) { SIGMA[i,j,] <- SIGMA[i,,j] <- 0; SIGMA[i,j,j] <- Inf } } }
   }
 
   variance <- rep(variance,length(FEATURES))
@@ -583,6 +589,10 @@ mean.ctmm <- function(x,weights=NULL,sample=TRUE,debias=TRUE,IC="AICc",...)
     ISO <- sapply(x,function(y){y$isotropic})
     ISO <- all(ISO)
 
+    # number of estimated features (amount of data)
+    nf <- sapply(x,function(y){length(y$features)})
+    nf <- sum(nf)
+
     FM <- list()
 
     FM$"isotropic-\u03C3 Dirac-\u03B4" <- mean.features(x,debias=debias,weights=weights,isotropic=TRUE,variance=FALSE,...)
@@ -596,11 +606,11 @@ mean.ctmm <- function(x,weights=NULL,sample=TRUE,debias=TRUE,IC="AICc",...)
     { FM$"anisotropic-\u03C3 diag(\u03A3)" <- mean.features(x,debias=debias,weights=weights,isotropic=FALSE,diagonal=TRUE,...) }
 
     p <- length(FM[[1]]$features)
-    if(n*p >= p + (p^2+p)/2)
+    if(nf >= p + (p^2+p)/2)
     { FM$"isotropic-\u03C3" <- mean.features(x,debias=debias,weights=weights,isotropic=TRUE,...) }
 
     p <- length(FM[[2]]$features)
-    if(!ISO && n*p >= p + (p^2+p)/2)
+    if(!ISO && nf >= p + (p^2+p)/2)
     { FM$"anisotropic-\u03C3" <- mean.features(x,debias=debias,weights=weights,isotropic=FALSE,...) }
 
     ICS <- sapply(FM,function(m){m[[IC]]})

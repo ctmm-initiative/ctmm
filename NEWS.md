@@ -1,4 +1,4 @@
-ctmm 1.1.1 (2022-11-17)
+ctmm 1.1.1 (2022-11-18)
 ================
 
   * new population covariance models and improved model selection in mean.ctmm()
@@ -8,6 +8,8 @@ ctmm 1.1.1 (2022-11-17)
   * new argument 'dt.hot' in as.telemetry()
 
   * bugfix in suitability
+  
+  * convergence issue fixed in mean.ctmm()
 
 ctmm 1.1.0 (2022-11-03)
 ================

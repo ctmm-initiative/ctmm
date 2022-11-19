@@ -205,8 +205,9 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,diagonal=FALSE,isotropic=F
     SOL <- ZSOL
   }
 
+  count <- 0
   count.0 <- 0
-  while(ERROR>tol)
+  while(ERROR>tol && count<100)
   {
     par <- sigma2par( SOL$sigma )
     NSOL <- nloglike(par,verbose=TRUE)
@@ -244,6 +245,7 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,diagonal=FALSE,isotropic=F
     }
 
     SOL <- NSOL
+    count <- count + 1
   } # end while
 
   # end check
