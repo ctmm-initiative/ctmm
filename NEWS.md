@@ -1,4 +1,4 @@
-ctmm 1.1.1 (2022-11-18)
+ctmm 1.1.1 (2022-11-19)
 ================
 
   * new population covariance models and improved model selection in mean.ctmm()
@@ -6,8 +6,10 @@ ctmm 1.1.1 (2022-11-18)
   * new argument 'sqrt' in distance()
   
   * new argument 'dt.hot' in as.telemetry()
+  
+  * distance() can now take location arguments
 
-  * bugfix in suitability
+  * bugfix in suitability()
   
   * convergence issue fixed in mean.ctmm()
 
@@ -34,11 +36,11 @@ ctmm 1.1.0 (2022-11-03)
   
   * numerical convergence improvements in AKDE weight optimization
   
-  * plot.telemetry can now subset and reproject rasters
+  * plot.telemetry() can now subset and reproject rasters
   
   * bugfix in sp::polygon derived areas (used since v1.0.0 for summary, plot, meta)
   
-  * bugfix in agde, suitability, RSF-akde when reprojecting onto the same raster
+  * bugfix in agde(), suitability(), akde() when reprojecting onto the same raster
   
   * bugfix in mean() when averaging isotropic and anisotropic models together
 

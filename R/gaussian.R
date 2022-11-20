@@ -20,7 +20,7 @@ gauss.comp <- function(fn,CTMM,COV=TRUE,...)
     lower <- c(lower, c(-Inf,-Inf) )
     upper <- c(upper, c(Inf,Inf) )
 
-    if(CTMM[[i]]$isotropic)
+    if(CTMM[[i]]$isotropic[1])
     {
       par <- c(par,CTMM[[i]]$sigma@par[1])
       parscale <- c(parscale, MAX )
@@ -44,7 +44,7 @@ gauss.comp <- function(fn,CTMM,COV=TRUE,...)
     {
       CTMM[[i]]$mu[1,] <- PAR[j + 1:AXES]
       j <- j + AXES
-      isotropic <- CTMM[[i]]$isotropic
+      isotropic <- CTMM[[i]]$isotropic[1]
       if(isotropic)
       {
         CTMM[[i]]$sigma <- covm(PAR[j + 1],isotropic=isotropic,axes=axes)
@@ -77,7 +77,7 @@ gauss.comp <- function(fn,CTMM,COV=TRUE,...)
       else
       { COV[I,I] <- CTMM[[i]]$COV.mu }
       j <- j + AXES
-      isotropic <- CTMM[[i]]$isotropic
+      isotropic <- CTMM[[i]]$isotropic[1]
       if(isotropic)
       {
         I <- j + 1

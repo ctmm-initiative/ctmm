@@ -547,9 +547,10 @@ DOF.area <- function(CTMM)
     VAR <- c( GRAD %*% CTMM$COV[P,P] %*% GRAD )
   }
 
-  if(CTMM$range) { DOF <- AREA^2/abs(VAR) } else { DOF <- 0 }
-
-  if(is.nan(DOF)) { DOF <- 0 }
+  if(CTMM$range)
+  { DOF <- nant(AREA^2/abs(VAR),0) }
+  else
+  { DOF <- 0 }
 
   return(DOF)
 }

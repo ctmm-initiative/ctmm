@@ -5,7 +5,7 @@
 %\alias{overlap.telemetry}
 %- Also NEED an '\alias' for EACH other topic documented here.
 
-\title{Calculate the square distance between two stationary distributions}
+\title{Calculate the square distance between two distributions or location estimates}
 
 \description{This function calculates various square distances measures between distributions,
 including the, Bhattacharyya distance, Mahalanobis distance, and Euclidean distance.}
@@ -13,7 +13,7 @@ including the, Bhattacharyya distance, Mahalanobis distance, and Euclidean dista
 \usage{ distance(object,method="Mahalanobis",sqrt=FALSE,level=0.95,debias=TRUE,...) }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{object}{A \code{list} of \code{ctmm} fit objects to compare.}
+  \item{object}{A \code{list} of \code{ctmm} fit objects or single-location \code{telemetry} objects to compare.}
   \item{method}{Square distance measure to return: \code{"Bhattacharyya"}, \code{"Mahalanobis"}, or \code{"Euclidean"}.}
   \item{sqrt}{Return the linear distance.}
   \item{level}{The confidence level desired for the output.}

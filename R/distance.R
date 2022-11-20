@@ -79,6 +79,25 @@ distance <- function(object,method="Mahalanobis",sqrt=FALSE,level=0.95,debias=TR
   n <- length(object)
   D <- array(NA_real_,c(n,n,3))
 
+  # convert everything to ctmm centroids
+  for(i in 1:n)
+  {
+    CLASS <- class(object[[i]])[1]
+    if(CLASS=="UD")
+    { object[[i]] <- object[[i]]@CTMM }
+    else if(CLASS=="telemetry")
+    {
+      if(nrow(object[[i]])>1) { stop("Multiple locations in ",names(object)[i]) }
+      CTMM <- ctmm(isotropic=TRUE)
+      CTMM$mu <- get.telemetry(object[[i]])
+      CTMM$COV.mu <- get.error(object[[i]],ctmm(error=uere(object[[1]])$N>0),circle=FALSE,DIM=2)[1,,]
+      CTMM$sigma <- covm(0,isotropic=TRUE)
+      CTMM$COV <- cbind(0)
+      dimnames(CTMM$COV) <- list("major","major")
+      object[[i]] <- CTMM
+    }
+  }
+
   for(i in 1:(n-1))
   {
     D[i,i,] <- c(0,0,0) # diagonal entries

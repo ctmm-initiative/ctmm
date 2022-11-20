@@ -119,13 +119,13 @@ overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,method="Bhattach
   # the above can be flaky
   n1 <- DOF.area(CTMM1)
   n2 <- DOF.area(CTMM2)
-  # using mean variance - additive & rotationally invariant
-  n0 <- 4 * s0^2 / (s1^2/n1 + s2^2/n2)
-  # dim cancels out
 
   # hard clamp before soft clamp
   n1 <- clamp(n1,1,Inf)
   n2 <- clamp(n2,1,Inf)
+
+  # using mean variance - additive & rotationally invariant
+  n0 <- 4 * s0^2 / (s1^2/n1 + s2^2/n2)
   n0 <- clamp(n0,2,Inf)
 
   # clamp the DOF not to diverge <=DIM+1
