@@ -1137,13 +1137,13 @@ R.extract <- function(xy,proj,R,X,Y,Z=NULL,PROJ,dX,dY,dZ=NULL)
 
   if(length(DIM)==2)
   {
-    E <- bint(R,t(xy))
+    E <- bint(R,t(xy),ext=NA)
   }
   else # xyt
   {
     # missing t axis
     # this is not fully coded yet, but it is not used either
-    E <- tint(R,t(xy))
+    E <- tint(R,t(xy),ext=NA)
   }
 
   return(E)

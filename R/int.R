@@ -46,8 +46,9 @@ mint <- function(mat,ind)
 
 
 # bi-linear interpolation
-bint <- function(M,ind)
+bint <- function(M,ind,ext=TRUE)
 {
+  DIM <- dim(M)
   ind <- cbind(ind) # vectorize
   # rownames(ind) <- c('x','y')
 
@@ -69,13 +70,22 @@ bint <- function(M,ind)
   }
 
   M <- vapply(1:ncol(ind),BINT,0)
+
+  if(is.na(ext)) # NA extrapolate
+  {
+    NAS <- ind[1,] < 0.5 | ind[1,] > DIM[1]+0.5 | ind[2,] < 0.5 | ind[2,] > DIM[2]+0.5
+    if(any(NAS)) { M[NAS] <- NA }
+  }
+  # FALSE extrapolate not implemented
+
   return(M)
 }
 
 
 # tri-linear interpolation
-tint <- function(M,ind)
+tint <- function(M,ind,ext=TRUE)
 {
+  DIM <- dim(M)
   ind <- cbind(ind) # vectorize
   # rownames(ind) <- c('x','y','z')
 
@@ -105,5 +115,13 @@ tint <- function(M,ind)
   }
 
   M <- vapply(1:ncol(ind),CINT,0)
+
+  if(is.na(ext)) # NA extrapolate
+  {
+    NAS <- ind[1,] < 0.5 | ind[1,] > DIM[1]+0.5 | ind[2,] < 0.5 | ind[2,] > DIM[2]+0.5 | ind[3,] < 0.5 | ind[3,] > DIM[3]+0.5
+    if(any(NAS)) { M[NAS] <- NA }
+  }
+  # FALSE extrapolate not implemented
+
   return(M)
 }

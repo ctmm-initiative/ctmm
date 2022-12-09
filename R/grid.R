@@ -242,6 +242,7 @@ kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=NULL,dr=NULL,EXT=NUL
   else if(!is.null(grid$dr)) ### grid resolution specified, but not extent ###
   {
     dr <- grid$dr
+    dr <- array(dr,length(axes))
 
     R <- get.telemetry(data,axes) # (times,dim)
     # minimum extent

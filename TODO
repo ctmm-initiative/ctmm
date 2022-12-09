@@ -1,5 +1,5 @@
 ** PRIORITY
-* proximity() check for overlapping times and return (0,Inf)
+* export sundial
 * plot.rsf method
 * plot.overlap method
 * add ctmmlearn to FAQ

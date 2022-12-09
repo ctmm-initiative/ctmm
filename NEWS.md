@@ -1,4 +1,4 @@
-ctmm 1.1.1 (2022-11-19)
+ctmm 1.1.1 (2022-12-08)
 ================
 
   * new population covariance models and improved model selection in mean.ctmm()
@@ -8,6 +8,8 @@ ctmm 1.1.1 (2022-11-19)
   * new argument 'dt.hot' in as.telemetry()
   
   * distance() can now take location arguments
+
+  * extrapolation disabled in suitability()
 
   * bugfix in suitability()
   
