@@ -26,7 +26,7 @@ which has a numerator proportional to the uncorrelated encounter rate.
 Both measures lie between 0 and 1, where 0 indicates no shared support and 1 indicates identical distributions.
 }
 
-\value{A table of confidence intervals on the overlap estimate. A value of \code{1} implies that the two distributions are identical, while a value of \code{0} implies that the two distributions share no area in common.}
+\value{An object with slots \code{DOF}, containing the effective sample sizes, and \code{CI} containing a table of confidence intervals on the overlap estimates. A value of \code{1} implies that the two distributions are identical, while a value of \code{0} implies that the two distributions share no area in common.}
 
 %% ~put references to the literature/web site here ~
 \references{

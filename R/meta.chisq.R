@@ -518,6 +518,7 @@ meta <- function(x,variable="area",level=0.95,level.UD=0.95,method="MLE",IC="AIC
 ############
 import.variable <- function(x,variable="area",level.UD=0.95,chi=FALSE)
 {
+  x <- name.list(x)
   N <- length(x)
   ID <- names(x) # may be null
 

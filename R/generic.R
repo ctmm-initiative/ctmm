@@ -276,3 +276,14 @@ mid <- function(x)
   n <- length(x)
   (x[-1]+x[-n])/2
 }
+
+
+name.list <- function(x)
+{
+  if(class(x)[1]=="list" && !length(names(x)))
+  {
+    NAMES <- sapply(x,function(y){attr(y,"info")$identity})
+    if(class(NAMES)[1]=="character") { names(x) <- NAMES }
+  }
+  return(x)
+}

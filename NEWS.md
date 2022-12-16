@@ -1,4 +1,4 @@
-ctmm 1.1.1 (2022-12-08)
+ctmm 1.1.1 (2022-12-15)
 ================
 
   * new population covariance models and improved model selection in mean.ctmm()
@@ -14,6 +14,8 @@ ctmm 1.1.1 (2022-12-08)
   * bugfix in suitability()
   
   * convergence issue fixed in mean.ctmm()
+  
+  * overlap() and meta() can now extract object names
 
 ctmm 1.1.0 (2022-11-03)
 ================

@@ -3,6 +3,7 @@
 # forwarding function for list of a particular datatype
 overlap <- function(object,method="Bhattacharyya",level=0.95,debias=TRUE,...)
 {
+  object <- name.list(object)
   check.projections(object)
 
   CLASS <- class(object[[1]])[1]
