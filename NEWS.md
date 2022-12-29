@@ -1,5 +1,7 @@
-ctmm 1.1.1 (2022-12-22)
+ctmm 1.1.1 (2022-12-29)
 ================
+
+  * new function funnel() for funnel plots
 
   * new population covariance models and improved model selection in mean.ctmm()
 

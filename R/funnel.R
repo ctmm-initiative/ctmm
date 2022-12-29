@@ -1,104 +1,122 @@
-funnel <- function(data,object,estimate="area",precision="t",level=0.95,level.UD=0.95,...)
+funnel <- function(x,y,variable="area",precision="t",level=0.95,level.UD=0.95,...)
 {
-  precision <- match.arg(precision,c("n","N","t"))
-  if(class(object)[1]=="speed") { estimate <- "speed" }
+  variable <- canonical.name(variable)
+  variable <- match.arg(variable,c("area","diffusion","speed","tauposition","tauvelocity","distance"))
+  effect <- variable
 
-  if(estimate=="tau position") { estimate <- "position" }
-  else if(estimate=="tau velocity") { estimate <- "velocity" }
+  if(precision=="N") { precision <- "DOF" }
+  precision <- canonical.name(precision)
+  precision <- match.arg(precision,c("n","dof","t"))
+
+  # sort x and y
+  if(class(x)[1]=="telemetry")
+  {
+    z <- x
+    x <- y
+    y <- z
+    rm(z)
+  }
+
+  effect.dat <- x
+  precision.dat <- y
+
+  R <- import.variable(x,variable=variable)
+  ID <- R$ID
+  VAR <- R$AREA
+  DOF <- R$DOF
 
   alpha <- 1-level
 
-  for(i in 1:length(object))
+  for(i in 1:length(effect.dat))
   {
-    # extract estimate information
-    CI <- summary(object[[i]],level=level,level.UD=level.UD,units=FALSE)
-    DOF <- CI$DOF
-    CI <- CI$CI
+    # extract effect information
+    if(class(effect.dat[[i]])[1]=="list")
+    {
+      # could be in non-SI units
+      CI <- effect.dat[[i]]$CI
+      CI <- t( (VAR[i]/CI[,2]) * t(CI) )
+    }
+    else
+    { CI <- summary(effect.dat[[i]],level=level,level.UD=level.UD,units=FALSE)$CI }
+
     NAMES <- rownames(CI)
-    ROW <- grepl(estimate,NAMES)
+    ROW <- grepl(effect,NAMES)
     CI <- CI[ROW,]
-    object[[i]] <- CI
+    effect.dat[[i]] <- CI
 
     if(precision=="n")
-    { data[[i]] <- nrow(data[[i]]) }
-    else if(precision=="N")
-    {
-      if(estimate=="area")
-      { data[[i]] <- DOF['area'] }
-      else if(estimate %in% c("speed","velocity"))
-      { data[[i]] <- DOF['speed'] }
-      else if(estimate %in% c("diffusion","position"))
-      { data[[i]] <- DOF['diffusion'] }
-    }
+    { precision.dat[[i]] <- nrow(precision.dat[[i]]) }
+    else if(precision=="dof")
+    { precision.dat[[i]] <- DOF[i] }
     else if(precision=="t")
     {
-      if(estimate %in% c("area","position","diffusion"))
-      { data[[i]] <- last(data[[i]]$t) - first(data[[i]]$t) }
-      else if(estimate %in% c("speed","velocity"))
-      { data[[i]] <- stats::quantile(diff(data[[i]]$t),probs=c(alpha/2,0.5,1-alpha/2)) }
+      if(effect %in% c("area","tauposition","diffusion"))
+      { precision.dat[[i]] <- last(precision.dat[[i]]$t) - first(precision.dat[[i]]$t) }
+      else if(effect %in% c("speed","tauvelocity"))
+      { precision.dat[[i]] <- stats::quantile(diff(precision.dat[[i]]$t),probs=c(alpha/2,0.5,1-alpha/2)) }
     }
   }
 
   # some individuals may be missing model features
-  GOOD <- sapply(object,length) > 0
-  object <- object[GOOD]
-  data <- data[GOOD]
+  GOOD <- sapply(effect.dat,length) > 0
+  effect.dat <- effect.dat[GOOD]
+  precision.dat <- precision.dat[GOOD]
 
-  data <- sapply(data,identity)
-  object <- sapply(object,identity) # [est,ind]
+  precision.dat <- sapply(precision.dat,identity)
+  effect.dat <- sapply(effect.dat,identity) # [est,ind]
 
-  if(estimate=="area")
+  if(effect=="area")
   {
     xlab <- paste0("Area")
-    UNITS <- unit(object,"area")
+    UNITS <- unit(effect.dat,"area")
   }
-  else if(estimate=="speed")
+  else if(effect=="speed")
   {
     xlab <- "Speed"
-    UNITS <- unit(object,"speed")
+    UNITS <- unit(effect.dat,"speed")
   }
-  else if(estimate=="diffusion")
+  else if(effect=="diffusion")
   {
     xlab <- "Diffusion Rate"
-    UNITS <- unit(object,"diffusion")
+    UNITS <- unit(effect.dat,"diffusion")
   }
-  else if(estimate=="position")
+  else if(effect=="tauposition")
   {
     xlab <- "\u03C4[position]"
-    UNITS <- unit(object,"time")
+    UNITS <- unit(effect.dat,"time")
   }
-  else if(estimate=="velocity")
+  else if(effect=="tauvelocity")
   {
     xlab <- "\u03C4[velocity]"
-    UNITS <- unit(object,"time")
+    UNITS <- unit(effect.dat,"time")
   }
   xlab <- paste0(xlab," (",UNITS$name,")")
-  object <- object/UNITS$scale
+  effect.dat <- effect.dat/UNITS$scale
 
   if(precision=="n")
   { ylab <- "Sample Size" }
-  else if(precision=="N")
+  else if(precision=="dof")
   { ylab <- "Effective Sample Size" }
   else if(precision=="t")
   {
-    if(estimate %in% c("area","position","diffusion"))
+    if(effect %in% c("area","tauposition","diffusion"))
     {
       ylab <- "Sampling Period"
-      UNITS <- unit(data,"time")
+      UNITS <- unit(precision.dat,"time")
     }
-    else if(estimate %in% c("speed","velocity"))
+    else if(effect %in% c("speed","tauvelocity"))
     {
       precision <- "f"
       ylab <- "Sampling Frequency"
-      data <- 1/data[3:1,]
-      UNITS <- unit(data,"frequency")
+      precision.dat <- 1/precision.dat[3:1,]
+      UNITS <- unit(precision.dat,"frequency")
     }
-    data <- data/UNITS$scale
+    precision.dat <- precision.dat/UNITS$scale
     ylab <- paste0(ylab," (",UNITS$name,")")
   }
 
-  x <- object
-  y <- data
+  x <- effect.dat
+  y <- precision.dat
 
   xlim <- range(x[x>0 | x<Inf])
   ylim <- range(y)
@@ -117,8 +135,8 @@ funnel <- function(data,object,estimate="area",precision="t",level=0.95,level.UD
     suppressWarnings( graphics::arrows(x[1,SUB],y[SUB],x[3,SUB],y[SUB],length=0.05,angle=90,code=3,...) )
   }
 
-  x <- object[2,]
-  y <- data
+  x <- effect.dat[2,]
+  y <- precision.dat
   if(length(dim(y)))
   {
     SUB <- y[3,]-y[1,] > .Machine$double.eps # still does not avoid annoying warning

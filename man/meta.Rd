@@ -1,5 +1,6 @@
 \name{meta}
 \alias{meta}
+\alias{funnel}
 \encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Meta-analysis of movement-model parameters}
@@ -9,11 +10,15 @@
 meta(x,variable="area",level=0.95,level.UD=0.95,method="MLE",IC="AICc",boot=FALSE,
      error=0.01,debias=TRUE,verbose=FALSE,units=TRUE,plot=TRUE,sort=FALSE,mean=TRUE,
      col="black",...)
+
+funnel(x,y,variable="area",precision="t",level=0.95,level.UD=0.95,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{A named list of \code{ctmm} movement-model objects, \code{UD} objects, or \code{UD} \code{summary} output, constituting a sampled population, or a named list of such lists, with each constituting a sampled population.}
-  \item{variable}{Variable of interest. Can be \code{"area"}, \code{"diffusion"}, \code{"speed"}, \code{"tau position"}, or \code{"tau velocity"}.}
+  \item{y}{An optional named list of \code{telemetry} objects for the funnel-plot \code{precision} variable.}
+  \item{variable}{Biological ``effect'' variable of interest. Can be \code{"area"}, \code{"diffusion"}, \code{"speed"}, \code{"tau position"}, or \code{"tau velocity"}.}
+  \item{precision}{Precision variable of interest. Can be \code{"t"} for sampling time period or time interval, \code{"n"} for nominal sample size, \code{"N"} or \code{"DOF"} for effective sample size.}
   \item{level}{Confidence level for parameter estimates.}
   \item{level.UD}{Coverage level for home-range estimates. E.g., 50\% core home range.}
 %  \item{level.pop}{Coverage level for the population of individuals.}
@@ -28,7 +33,7 @@ meta(x,variable="area",level=0.95,level.UD=0.95,method="MLE",IC="AICc",boot=FALS
   \item{sort}{Sort individuals by their point estimates in forest plot.}
   \item{mean}{Include population mean estimate in forest plot.}
   \item{col}{Color(s) for individual labels and error bars.}
-  \item{...}{Further arguments passed to \code{plot}.}
+  \item{...}{Further arguments passed to \code{plot} or \code{meta}.}
 }
 
 \details{
@@ -90,6 +95,9 @@ plot(AKDES,col.DF=COL,col.level=COL,col.grid=NA,level=NA)
 
 # meta-analysis of buffalo home-range areas
 meta(AKDES,col=c(COL,'black'),sort=TRUE)
+
+# funnel plot to check for sampling bias
+funnel(AKDES,buffalo)
 }}
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the
