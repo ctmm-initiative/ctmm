@@ -1,4 +1,5 @@
 ** PRIORITY
+* Log() ctmm fit object variables for Vickie
 * update all one-pass mean/var calculations to d=x-mu, mu=mu+d/i, s=...
 * export sundial
 * plot.rsf method

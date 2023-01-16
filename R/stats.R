@@ -104,6 +104,14 @@ chisq.ci <- function(MLE,VAR=NULL,level=0.95,alpha=1-level,DOF=2*MLE^2/VAR,robus
   if(is.nan(DOF) || is.na(DOF)) { DOF <- 0 } # NaN comes from infinite variance divsion
   if(is.na(MLE)) { MLE <- Inf }
 
+  if(is.na(level))
+  {
+    VAR <- 2*MLE^2/DOF
+    CI <- c(DOF,MLE,VAR)
+    names(CI) <- c("DOF","est","VAR")
+    return(CI)
+  }
+
   if(DOF==Inf)
   { CI <- c(1,1,1)*MLE }
   else if(DOF==0)
@@ -486,6 +494,13 @@ tnorm.hdr <- function(mu=0,VAR=1,lower=0,upper=Inf,level=0.95)
 # inverse Gaussian CIs
 IG.ci <- function(mu,VAR,k=VAR/mu^3,level=0.95,precision=1/2)
 {
+  if(is.na(level))
+  {
+    CI <- c(2*mu^2/VAR,mu,VAR)
+    names(CI) <- c("DOF","est","VAR")
+    return(CI)
+  }
+
   if(k==Inf)
   { CI <- c(0,mu,Inf) }
   else if(k>0)

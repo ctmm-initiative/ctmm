@@ -49,6 +49,8 @@ get.loglike <- function(data)
 # FIT MODEL WITH LIKELIHOOD FUNCTION (convenience wrapper to optim)
 ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),trace=FALSE)
 {
+  # check.class(data)
+
   loglike.fn <- get.loglike(data)
 
   if(!is.null(control$message)) { message <- control$message }
@@ -625,7 +627,8 @@ ic.ctmm <- function(CTMM,n)
 ###################
 ctmm.guess <- function(data,CTMM=ctmm(),variogram=NULL,name="GUESS",interactive=TRUE)
 {
-  if(class(data)[1]=="list") { stop("ctmm.guess needs to be run individually.") }
+  check.class(data)
+
   # use intended axes
   if(is.null(variogram)) { variogram = variogram(data,axes=CTMM$axes) }
   else { CTMM$axes <- attr(variogram,"info")$axes }

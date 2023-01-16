@@ -24,6 +24,8 @@ subset.variogram <- function(x,...)
 # variogram funcion wrapper
 variogram <- function(data,dt=NULL,fast=TRUE,res=1,CI="Markov",error=FALSE,axes=c("x","y"),precision=1/8,trace=TRUE)
 {
+  check.class(data)
+
   CI <- match.arg(CI,c("IID","Markov","Gauss"))
   #if(CI=="Gauss" && fast) { stop("Gaussian CIs not supported by fast method.") }
 

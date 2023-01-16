@@ -1258,6 +1258,25 @@ summary.telemetry <- function(object,...)
 #methods::setMethod("summary",signature(object="telemetry"), function(object,...) summary.telemetry(object,...))
 
 
+check.class <- function(data,target=c("telemetry","data.frame"))
+{
+  CLASS <- class(data)[1]
+  if(CLASS %nin% target)
+  {
+    if(CLASS=="list")
+    {
+      CLASS.1 <- class(data[[1]])[1]
+      if(CLASS.1  %in% target)
+      {
+        n <- length(data)
+        stop("Argument is a list of ",n," objects, and not a single class ",target[1]," object")
+      }
+    }
+
+    stop("Argument is of class ",CLASS,", and not class ",target[1])
+  }
+}
+
 ##############
 # BUFFALO DATA
 ##############
