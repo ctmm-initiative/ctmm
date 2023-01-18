@@ -1,4 +1,4 @@
-ctmm 1.1.1 (2022-12-29)
+ctmm 1.1.1 (2023-01-17)
 ================
 
   * new function funnel() for funnel plots
@@ -8,6 +8,8 @@ ctmm 1.1.1 (2022-12-29)
   * new argument 'sqrt' in distance()
   
   * new argument 'dt.hot' in as.telemetry()
+  
+  * new argument 'variable' in Log()
   
   * distance() can now take location arguments
 

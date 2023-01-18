@@ -2,8 +2,10 @@
 # log-transformed parameters
 # debias includes bias correction for chi^2 to log(chi^2)
 # matrix casts location covariance, diffusion rate, velocity covariance all as distinct matrices for above bias correction
-log.ctmm <- function(CTMM,debias=FALSE)
+log.ctmm <- function(CTMM,debias=FALSE,...)
 {
+  if(class(CTMM)[1]=="list") { return(log.ctmms(CTMM,debias=debias,...)) }
+
   SIGMA <- c("major","minor","angle")
   isotropic <- CTMM$isotropic
   axes <- CTMM$axes
