@@ -2,7 +2,7 @@
 \alias{rsf.fit}
 \encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{Fit integrated resource selection functions (iRSFs) with autocorrelation-adjusted weighted likelihood [IN DEVELOPMENT]}
+\title{Fit integrated resource selection functions (iRSFs) with autocorrelation-adjusted weighted likelihood}
 \description{This function fits integrated resource selection functions with autocorrelation-adjusted weights on the RSF likelihood function, importance sampling, and iterative numerical convergence.
 This function is in development and is subject to change.
 }
@@ -56,7 +56,9 @@ Upon import via \code{\link[raster]{raster}}, categorical variables may need to 
 
 %\section{Warnings}{}
 
-%\references{}
+\references{
+J. M. Alston, C. H. Fleming, R. Kays, J. P. Streicher, C. T. Downs, T. Ramesh, B. Reineking, & J. M. Calabrese, ``Mitigating pseudoreplication and bias in resource selection functions with autocorrelation-informed weighting'', Methods in Ecology and Evolution (2023) \doi{10.1111/2041-210X.14025}.
+}
 
 \author{ C. H. Fleming and B. Reineking }
 

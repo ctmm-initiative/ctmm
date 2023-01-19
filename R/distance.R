@@ -76,8 +76,10 @@ EuclideanD <- function(CTMM)
 distance <- function(object,method="Mahalanobis",sqrt=FALSE,level=0.95,debias=TRUE,...)
 {
   method <- match.arg(method,c("Bhattacharyya","Mahalanobis","Euclidean","Encounter"))
+  object <- name.list(object)
   n <- length(object)
   D <- array(NA_real_,c(n,n,3))
+  DOF <- array(NA_real_,c(n,n))
 
   # convert everything to ctmm centroids
   for(i in 1:n)
@@ -101,11 +103,35 @@ distance <- function(object,method="Mahalanobis",sqrt=FALSE,level=0.95,debias=TR
   for(i in 1:(n-1))
   {
     D[i,i,] <- c(0,0,0) # diagonal entries
+    DOF[i,i] <- Inf
     for(j in (i+1):n) # off-diagonal entries
-    { D[i,j,] <- D[j,i,] <- overlap.ctmm(object[c(i,j)],level=level,debias=debias,method=method,distance=TRUE,sqrt=sqrt,...) }
+    {
+      STUFF <- overlap.ctmm(object[c(i,j)],level=FALSE,debias=debias,method=method,distance=TRUE,sqrt=sqrt,...)
+      MLE <- STUFF$MLE
+      BIAS <- STUFF$BIAS
+      VAR <- STUFF$VAR
+
+      if(debias) { MLE <- MLE/BIAS }
+      dof <- 2*MLE^2/VAR
+      CI <- chisq.ci(MLE,DOF=dof,alpha=1-level)
+
+      if(sqrt) # sqrt and debias
+      {
+        CI <- sqrt(CI)
+        if(debias) { CI <- CI/chi.bias(max(dof,1)) }
+      }
+
+      D[i,j,] <- D[j,i,] <- CI
+      DOF[i,j] <- DOF[j,i] <- dof
+    }
   }
   D[n,n,] <- c(0,0,0) # diagonal entries
+  DOF[n,n] <- Inf
 
   dimnames(D) <- list(names(object),names(object),NAMES.CI)
-  return(D)
+  dimnames(DOF) <- list(names(object),names(object))
+
+  R <- list(DOF=DOF,CI=D)
+  class(R) <- "distance"
+  return(R)
 }

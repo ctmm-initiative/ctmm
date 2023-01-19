@@ -51,7 +51,12 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='mle',bo
 
   # this is MVU for both chi^2 and IG
   # this is 1st order debiased in between
-  inverse.mean <- function(mu,Vm2) { 1/mu * max(1-debias*Vm2,0) }
+  inverse.mean <- function(mu,Vm2,MIN=2)
+  {
+    dof <- 2/Vm2
+    dof <- max(dof,MIN)
+    1/mu * (1-debias*2/dof)
+  }
   # Vm2 = VAR[mu]/mu^2
 
   ################
@@ -206,8 +211,8 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='mle',bo
 
       # inverse-mean area
       CI[2,] <- 1/CI[1,] # not used
-      CI[2,2] <- CI[2,2] * dof/max(dof-debias,0) # inverse-chi^2 mean bias correction
-      CI.VAR[2] <- 2*CI[2,2]^2/max(dof-3*debias,0)
+      CI[2,2] <- CI[2,2] * dof/max(dof-debias,1) # inverse-chi^2 mean bias correction
+      CI.VAR[2] <- 2*CI[2,2]^2/max(dof-3*debias,1)
 
       # CoV^2 (RVAR)
       CI[3,] <- c(0,0,Inf)
@@ -588,6 +593,12 @@ import.variable <- function(x,variable="area",level.UD=0.95,chi=FALSE)
         DOF[i] <- x[[i]]$DOF[1,2]
         AREA[i] <- -log(x[[i]]$CI[1,2,'est'])
       }
+      if(CLASS=="distance")
+      {
+        variable <- "distance"
+        DOF[i] <- x[[i]]$DOF[1,2]
+        AREA[i] <- x[[i]]$CI[1,2,'est']
+      }
       if(CLASS=="speed" || variable=="speed")
       {
         variable <- "speed"
@@ -642,6 +653,8 @@ meta.uni <- function(x,variable="area",level=0.95,level.UD=0.95,level.pop=0.95,m
   { variable <- "speed" }
   else if(CLASS=="overlap")
   { variable <- "overlap" }
+  else if(CLASS=="distance")
+  { variable <- "distance" }
 
   if(SUBPOP)
   {
@@ -705,7 +718,7 @@ meta.uni <- function(x,variable="area",level=0.95,level.UD=0.95,level.pop=0.95,m
     VAR.UNITS <- "time"
     VAR.NAME <- "Velocity timescale"
   }
-  else if(variable=="overlap")
+  else if(variable %in% c("overlap","distance"))
   {
     VAR.UNITS <- "dissimilarity"
     VAR.NAME <- "Distance"
@@ -784,6 +797,8 @@ meta.uni <- function(x,variable="area",level=0.95,level.UD=0.95,level.pop=0.95,m
     DEN <- sapply(RESULTS,function(R){R$CI[2,2]})
     DVAR <- sapply(RESULTS,function(R){R$VAR[2]})
 
+    dof <- pmax(2*NUM^2/NVAR,1)
+
     CI <- array(1,c(N,N,3))
     PV <- array(1,c(N,N))
     dimnames(CI) <- list(paste0(ID,"/"),paste0("/",ID),NAMES.CI)
@@ -793,7 +808,7 @@ meta.uni <- function(x,variable="area",level=0.95,level.UD=0.95,level.pop=0.95,m
       for(j in (1:N)[-i]) # diagonal == 1/1
       {
         CI[i,j,] <- F.CI(NUM[i],NVAR[i],DEN[j],DVAR[j],level=level)
-        PV[i,j] <- stats::pf(NUM[i]/NUM[j],2*NUM[i]^2/NVAR[i],2*NUM[j]^2/NVAR[j],lower.tail=NUM[i]<NUM[j])
+        PV[i,j] <- stats::pf(NUM[i]/NUM[j],dof[i],dof[j],lower.tail=NUM[i]<NUM[j])
       }
     }
 

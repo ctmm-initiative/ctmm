@@ -1,4 +1,4 @@
-ctmm 1.1.1 (2023-01-17)
+ctmm 1.1.1 (2023-01-19)
 ================
 
   * new function funnel() for funnel plots
@@ -20,6 +20,8 @@ ctmm 1.1.1 (2023-01-17)
   * convergence issue fixed in mean.ctmm()
   
   * overlap() and meta() can now extract object names
+  
+  * meta() stability improvements for tiny denominator DOF estimates
 
 ctmm 1.1.0 (2022-11-03)
 ================
