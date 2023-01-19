@@ -22,6 +22,8 @@ ctmm 1.1.1 (2023-01-19)
   * overlap() and meta() can now extract object names
   
   * meta() stability improvements for tiny denominator DOF estimates
+  
+  * as.telemetry() UTM import updated to new PROJ specification
 
 ctmm 1.1.0 (2022-11-03)
 ================
