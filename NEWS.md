@@ -17,6 +17,8 @@ ctmm 1.1.1 (2023-01-19)
 
   * bugfix in suitability()
   
+  * bugfix in distance() method="Euclidean", debias=TRUE
+  
   * convergence issue fixed in mean.ctmm()
   
   * overlap() and meta() can now extract object names

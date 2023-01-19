@@ -139,7 +139,7 @@ overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,method="Bhattach
 
   # inverse Wishart expectation value pre-factor
   BIAS <- n0/(n0-DIM-1)
-  if(method=="Euclidean") { BIAS <- 0 } # don't include this term
+  if(method=="Euclidean") { BIAS <- 0 } # don't include first term
   # BIAS <- clamped.bias(n0,DIM)
   # mean terms
   BIAS <- sum(diag((BIAS*outer(mu) + COV.mu) %*% PDsolve(sigma)))
@@ -168,6 +168,7 @@ overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,method="Bhattach
   # relative bias instead of absolute bias
   BIAS <- BIAS/MLE
   # would subtract off estimate to get absolute bias
+  if(distance) { BIAS <- 1 + BIAS } # didn't include first term
 
   # error corrections
   BIAS <- as.numeric(BIAS)

@@ -585,7 +585,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   NAMES$error <- c("eobs.horizontal.accuracy.estimate","eobs.horizontal.accuracy.estimate.m","eobs.horizontal.accuracy",
                    "gps.horizontal.accuracy.estimate","gps.horizontal.accuracy.estimate.m","gps.horizontal.accuracy",
                    "horizontal.accuracy.estimate","horizontal.accuracy.estimate.m","horizontal.accuracy",
-                   "error.m","3D.error.m","HEPE","EPE","EHPE",
+                   "error","error.m","3D.error.m","location.error","location.error.m","HEPE","EPE","EHPE",
                    "\u8AA4\u5DEE","\u8AA4\u5DEE.m","\u8AA4\u5DEE\uFF08m\uFF09")
   NAMES$HDOP <- c("GPS.HDOP","HDOP","Horizontal.DOP","GPS.Horizontal.Dilution","Horizontal.Dilution","Hor.Dil","Hor.DOP","HPE")
   NAMES$DOP <- c("GPS.DOP","DOP","GPS.Dilution","Dilution","Dil")
