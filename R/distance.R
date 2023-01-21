@@ -112,6 +112,7 @@ distance <- function(object,method="Mahalanobis",sqrt=FALSE,level=0.95,debias=TR
       VAR <- STUFF$VAR
 
       if(debias) { MLE <- MLE/BIAS }
+
       dof <- 2*MLE^2/VAR
       CI <- chisq.ci(MLE,DOF=dof,alpha=1-level)
 
@@ -119,6 +120,9 @@ distance <- function(object,method="Mahalanobis",sqrt=FALSE,level=0.95,debias=TR
       {
         CI <- sqrt(CI)
         if(debias) { CI <- CI/chi.bias(max(dof,1)) }
+        VAR <- chi.var(dof,CI[2])
+        # effective chi^2 dof (not chi dof)
+        dof <- 2*CI[2]^2/VAR
       }
 
       D[i,j,] <- D[j,i,] <- CI

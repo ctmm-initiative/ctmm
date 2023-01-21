@@ -181,6 +181,7 @@ overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,method="Bhattach
 
     DOF <- 2*MLE^2/VAR
     CI <- chisq.ci(MLE,DOF=DOF,alpha=1-level)
+
     if(distance) # return distance
     {
       if(sqrt) # sqrt and debias
