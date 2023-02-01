@@ -7,6 +7,11 @@ svf.test <- function(x,y,test="F",level=0.95)
     y <- z # ctmm
   }
 
+  if(class(x)[1]=="telemetry")
+  { x <- variogram(x) }
+
+  AXES <- length(y$axes)
+
   if(class(x)[1]=="variogram" && class(y)[1]=="ctmm")
   {
     # # expected location error contribution
@@ -25,6 +30,7 @@ svf.test <- function(x,y,test="F",level=0.95)
 
   Fstat <- x$SVF/y$SVF
   Fstat <- pmin( stats::pf(Fstat,x$DOF,y$DOF,lower.tail=TRUE) , stats::pf(Fstat,x$DOF,y$DOF,lower.tail=FALSE) )
+  Fstat <- pmax( Fstat, x$DOF<2*AXES ) # don't consider missing data in variogram
   R <- which.min(Fstat)
   Fstat <- Fstat[R]
   if(x$SVF[R]>y$SVF[R])
