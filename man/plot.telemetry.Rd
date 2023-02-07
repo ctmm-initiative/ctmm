@@ -42,10 +42,10 @@ plot(x,y,...)
   \item{velocity}{Plot velocity vectors if present in the data.}
   \item{DF}{Plot the maximum likelihood probability density function \code{"PDF"} or cumulative distribution function \code{"CDF"}.}
   \item{col.DF}{Color option for the density function. Can be an array.}
-  \item{col.grid}{Color option for the maximum likelihood \code{akde} bandwidth grid.}
+  \item{col.grid}{Color option for the maximum likelihood \code{akde} bandwidth grid. \code{col.grid=NA} will disable the plotting of the bandwidth grid.}
   \item{labels}{Labels for UD contours. Can be an array or list of arrays.}
   \item{convex}{Plot convex coverage-area contours if \code{TRUE}. By default, the highest density region (HDR) contours are plotted.}
-  \item{level}{ Confidence levels placed on the contour estimates themselves. I.e., the above 50\% core home-range area can be estimated with 95\% confidence via \code{level=0.95}. }
+  \item{level}{ Confidence levels placed on the contour estimates themselves. I.e., the above 50\% core home-range area can be estimated with 95\% confidence via \code{level=0.95}. \code{level=NA} will disable the plotting of confidence intervals.}
   \item{level.UD}{Coverage level of Gaussian \code{ctmm} model or \code{UD} estimate contours to be displayed. I.e., \code{level.UD=0.50} can yield the 50\% core home range within the rendered contours.}
   \item{col.level}{Color option for home-range contours. Can be an array.}
   \item{lwd.level}{Line widths of \code{UD} contours.}

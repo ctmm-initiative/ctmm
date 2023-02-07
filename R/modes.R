@@ -169,10 +169,12 @@ modes.UD <- function(object,...)
 #
 ridges.UD <- function(object,...)
 {
+  # if(all(c('grad','hess') %nin% names(object))) { stop("Please run akde() with grad=TRUE") }
+
   PDF <- object$PDF
   PDF <- log(PDF) # log transform
-  COST <- array(Inf,dim(PDF))
-  POINT <- array(FALSE,dim(PDF))
+  # COST <- array(Inf,dim(PDF))
+  POINT <- array(0,dim(PDF))
   dx <- object$dr['x']
   dy <- object$dr['y']
   dx2 <- dx^2
@@ -180,41 +182,115 @@ ridges.UD <- function(object,...)
   dr2 <- dx^2+dy^2
   dxdydr2 <- dx*dy/dr2
 
-  for(i in 2:(nrow(PDF)-1))
+  ROWS <- 2:(nrow(PDF)-1)
+  # ROWS <- 1:nrow(PDF)
+  for(i in ROWS)
   {
-    for(j in 2:(ncol(PDF)-1))
+    COLS <- 2:(ncol(PDF)-1)
+    # COLS <- 1:ncol(PDF)
+    for(j in COLS)
     {
       SUB <- PDF[i+(-1):1,j+(-1):1]
-      if(all(SUB>-Inf)) # non-zero density (under logarithm)
+      TEST <- all(SUB>-Inf)
+      # TEST <- PDF[i,j]>0
+      if(TEST) # non-zero density (under logarithm)
       {
-        DIFF <- DiffGrid(SUB,dx,dy,dx2,dy2,dr2,dxdydr2)
-        GRAD <- DIFF$GRAD # 1/p D p # under log
-        HESS <- DIFF$HESS # 1/p DD p - 1/p^2 Dp Dp # under log
-        HESS <- HESS + (GRAD %o% GRAD) # logarithm correction
-        EIGEN <- eigen(-HESS)
-        if(EIGEN$values[1]>=0)
-        {
-          COST[i,j] <- (GRAD %*% EIGEN$vectors[,1])^2 / EIGEN$values[1]
+        # GRAD <- object$grad[i,j,]
+        # HESS <- object$hess[i,j,,]
 
-          # solve for ridge points
+        DIFF <- DiffGrid(SUB,dx,dy,dx2,dy2,dr2,dxdydr2)
+        GRAD <- DIFF$GRAD # 1/p D.p # from log
+        HESS <- DIFF$HESS # 1/p D.D.p - 1/p^2 D.p D.p # from log
+        HESS <- HESS + (GRAD %o% GRAD) # logarithm correction # now 1/p D.D.p
+
+        EIGEN <- eigen(HESS)
+        if(EIGEN$values[2]<0) # most negative eigenvalue is negative # a ridge exists somewhere
+        {
+          # COST[i,j] <- (GRAD %*% EIGEN$vectors[,2])^2 / EIGEN$values[2]
+          # if(EIGEN$values[2]>0) { COST[i,j] <- COST[i,j] + EIGEN$values[1]/EIGEN$values[2] }
+
+          # ridge constraint
           # (GRAD + HESS %*% DL ) %*% EIGEN$vectors[,1] == 0
-          # climbing directly up to the ridge
-          # DL == dl * EIGEN$vectors[,1]
-          # GRAD %*% EIGEN$vectors[,1] + (EIGEN$vectors[,1] %*% HESS %*% EIGEN$vectors[,1])*dl == 0
-          # GRAD %*% EIGEN$vectors[,1] + EIGEN$values[1]*dl == 0
-          dr <- -c(GRAD %*% EIGEN$vectors[,1])/EIGEN$values[1]
-          dr <- dr * EIGEN$vectors[,1]
-          # is this point within the pixel?
-          if(dr[1] > -dx/2 && dr[1] < dx/2 && dr[2] > -dy/2 && dr[2] < dy/2)
-          { POINT[i,j] <- TRUE }
-        }
+
+          # 1. Lagrangian (minimal distance)
+          # L == 1/2 * DL %*% DL - lambda * (GRAD + HESS %*% DL ) %*% EIGEN$vectors[,2]
+          # 0 == DL - lambda * HESS %*% EIGEN$vectors[,2]
+          # 0 == DL - lambda * EIGEN$values[2] * EIGEN$vectors[,2]
+          # DL == lambda * EIGEN$values[2] * EIGEN$vectors[,2]
+
+          # 2. climbing directly up to the ridge
+          # DL == dl * EIGEN$vectors[,2]
+          # GRAD %*% EIGEN$vectors[,2] + dl*(EIGEN$vectors[,2] %*% HESS %*% EIGEN$vectors[,2]) == 0
+          # GRAD %*% EIGEN$vectors[,2] + EIGEN$values[2]*dl == 0
+
+          dr <- -c(GRAD %*% EIGEN$vectors[,2])/EIGEN$values[2]
+          dr <- dr * EIGEN$vectors[,2]
+
+          # pixel displacement
+          dij <- dr/c(dx,dy)
+          ip <- i+dij[1]
+          jp <- j+dij[2]
+
+          # is point in an adjacent pixel or this pixel
+          if(max(abs(dij))<=2)
+          {
+            # point is in this pixel
+            if(max(abs(dij))<=1)
+            {
+              POINT <- dither(ip,jp,POINT,1)
+
+              # what pixels are next?
+              u <- EIGEN$vectors[,1] # bi-direction of ridge
+              u <- u/c(dx,dy) # now in units of pixels
+              u <- u/sqrt(sum(u^2)) # one pixel length
+
+              POINT <- dither(ip+u[1],jp+u[2],POINT,1/2)
+              POINT <- dither(ip-u[1],jp-u[2],POINT,1/2)
+            } # point is in this pixel
+            else # point is in adjacent pixel
+            { POINT <- dither(ip,jp,POINT,1/8) }
+          } # point is in nearby pixel
+        } # end ridge exists
       } # end if non-zero density
     } # end col loop
   } # end row loop
 
-  CTMM <- object@CTMM
-  DOF <- DOF.mean(CTMM)
-  COST <- DOF * COST # now like grad^2/std.err^2 ~ F
+  # CTMM <- object@CTMM
+  # DOF <- DOF.mean(CTMM)
+  # COST <- object$PDF * COST # cancel 1/p term
+  # COST <- DOF* COST # now like grad^2/std.err^2 ~ F
 
+  POINT <- POINT/(1+2/2+6/8)
+  POINT[POINT>1] <- 1
   return(POINT)
+}
+
+dither <- function(i,j,M,dM=1)
+{
+  I <- unique( c(floor(i),ceiling(i)) )
+  J <- unique( c(floor(j),ceiling(j)) )
+
+  I <- I[0<I & I<nrow(M)]
+  J <- J[0<J & J<ncol(M)]
+
+  dM <- array(dM,c(length(I),length(J)))
+
+  if(!length(dM)) { return(M) }
+
+  if(length(I)>1)
+  {
+    w <- abs(i-I[1])
+    dM[1,] <- w*dM[1,]
+    dM[2,] <- (1-w)*dM[2,]
+  }
+
+  if(length(J)>1)
+  {
+    w <- abs(j-J[1])
+    dM[,1] <- w*dM[,1]
+    dM[,2] <- (1-w)*dM[,2]
+  }
+
+  M[I,J] <- M[I,J] + dM
+  return(M)
 }

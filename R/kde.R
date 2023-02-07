@@ -46,6 +46,8 @@ pkde <- function(data,UD,kernel="individual",weights=FALSE,ref="Gaussian",...)
 # (C) Kevin Winner & C.H. Fleming (2016)
 akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utilization",debias=TRUE,weights=FALSE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
 {
+  grad <- FALSE
+
   if(variable!="utilization")
   { stop("variable=",variable," not yet supported by akde(). See npr() or revisitation().") }
 
@@ -218,7 +220,7 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utiliz
     EXT <- extent(EXT,level=1-error)[,axes] # Gaussian extent (includes uncertainty)
     GRID <- kde.grid(data[[i]],H=KDE[[i]]$H,axes=axes,alpha=error,res=res,dr=dr,grid=grid,EXT.min=EXT) # individual grid
 
-    KDE[[i]] <- c(KDE[[i]],kde(data[[i]],H=KDE[[i]]$H,axes=axes,CTMM=CTMM0[[i]],SP=SP,SP.in=SP.in,RASTER=R,bias=DEBIAS[[i]],W=KDE[[i]]$weights,alpha=error,dr=dr,grid=GRID))
+    KDE[[i]] <- c(KDE[[i]],kde(data[[i]],H=KDE[[i]]$H,axes=axes,CTMM=CTMM0[[i]],SP=SP,SP.in=SP.in,RASTER=R,bias=DEBIAS[[i]],W=KDE[[i]]$weights,alpha=error,dr=dr,grid=GRID,grad=grad))
 
     if(!is.null(UD))
     {
@@ -269,7 +271,7 @@ prepare.H <- function(H,n,axes=c('x','y'))
 # construct my own KDE objects
 # was using ks-package but it has some bugs
 # alpha is the error goal in my total probability
-kde <- function(data,H,axes=c("x","y"),CTMM=list(),SP=NULL,SP.in=TRUE,RASTER=list(),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr=NULL,grid=NULL,variable=NA,normalize=TRUE,trace=FALSE)
+kde <- function(data,H,axes=c("x","y"),CTMM=list(),SP=NULL,SP.in=TRUE,RASTER=list(),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr=NULL,grid=NULL,variable=NA,normalize=TRUE,trace=FALSE,grad=FALSE)
 {
   if(!is.na(variable))
   {
@@ -376,6 +378,12 @@ kde <- function(data,H,axes=c("x","y"),CTMM=list(),SP=NULL,SP.in=TRUE,RASTER=lis
   PMF <- array(0,sapply(R,length))
   # Nadaraya-Watson numerator (for regressions)
   if(!is.na(variable)) { NUM <- PMF }
+  # gradient information
+  if(grad)
+  {
+    GRAD <- array(0,c(dim(PMF),2))
+    HESS <- array(0,c(dim(PMF),2,2))
+  }
 
   if(trace) { pb <- utils::txtProgressBar(style=3) } # time loops
   for(i in 1:n)
@@ -429,7 +437,9 @@ kde <- function(data,H,axes=c("x","y"),CTMM=list(),SP=NULL,SP.in=TRUE,RASTER=lis
         } # end non-stationary suitability calculation
       } # end suitability modulus
 
-      dPMF <- pnorm2(R[[1]][SUB[[1]]]-r[i,1],R[[2]][SUB[[2]]]-r[i,2],H[i,,],dr,alpha)
+      X <- R[[1]][SUB[[1]]]-r[i,1]
+      Y <- R[[2]][SUB[[2]]]-r[i,2]
+      dPMF <- pnorm2(X,Y,H[i,,],dr,alpha)
 
       # apply suitability and re-normalize
       if(length(RASTER))
@@ -442,8 +452,33 @@ kde <- function(data,H,axes=c("x","y"),CTMM=list(),SP=NULL,SP.in=TRUE,RASTER=lis
       dPMF <- W[i]*dPMF
 
       PMF[SUB[[1]],SUB[[2]]] <- PMF[SUB[[1]],SUB[[2]]] + dPMF
+
       if(!is.na(variable))
       { NUM[SUB[[1]],SUB[[2]]] <- NUM[SUB[[1]],SUB[[2]]] + data[[VARIABLE]][i]*dPMF }
+
+      if(grad)
+      {
+        iH <- PDsolve(H[i,,])
+        DIM <- c(length(X),length(Y))
+        G <- array(0,c(DIM,2))
+        G[,,1] <- array(X,DIM)
+        G[,,2] <- t( array(Y,rev(DIM)) )
+        G <- G %.% iH
+
+        dG <- G
+        dG[,,1] <- dPMF * dG[,,1]
+        dG[,,2] <- dPMF * dG[,,2]
+
+        GRAD[SUB[[1]],SUB[[2]],] <- GRAD[SUB[[1]],SUB[[2]],] - dG
+
+        GG <- array(G,c(DIM,2,2))
+        GG[,,1,1] <- dPMF * G[,,1] * G[,,1]
+        GG[,,1,2] <- dPMF * G[,,1] * G[,,2]
+        GG[,,2,1] <- dPMF * G[,,2] * G[,,1]
+        GG[,,2,2] <- dPMF * G[,,2] * G[,,2]
+
+        HESS[SUB[[1]],SUB[[2]],,] <- HESS[SUB[[1]],SUB[[2]],,] - (dPMF %o% iH) + GG
+      }
     }
     else if(length(SUB)==3) # 3D
     { PMF[SUB[[1]],SUB[[2]],SUB[[3]]] <- PMF[SUB[[1]],SUB[[2]],SUB[[3]]] + W[i]*pnorm3(R[[1]][SUB[[1]]]-r[i,1],R[[2]][SUB[[2]]]-r[i,2],R[[3]][SUB[[3]]]-r[i,3],H[i,,],dr,alpha) }
@@ -489,6 +524,7 @@ kde <- function(data,H,axes=c("x","y"),CTMM=list(),SP=NULL,SP.in=TRUE,RASTER=lis
   { CDF <- pmf2cdf(PMF) }
 
   result <- list(PDF=PMF/dV,CDF=CDF,axes=axes,r=R,dr=dr)
+  if(grad) { result$grad <- GRAD; result$hess <- HESS }
   if(trace) { close(pb) }
   return(result)
 }

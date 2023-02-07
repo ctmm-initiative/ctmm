@@ -23,7 +23,7 @@ including the, Bhattacharyya distance, Mahalanobis distance, and Euclidean dista
 
 %\details{}
 
-\value{A list with tables \code{DOF}, containing the effective samples sizes of the estimates, and \code{CI}, containing the confidence intervals of the distance estimates. A value of \code{0} implies that the two distributions have the same mean location, while larger values imply that the two distributions are farther apart. The square Euclidean distance has units of square meters. The square Mahalanobis and Bhattacharyya distances are unitless.
+\value{A list with tables \code{DOF}, containing the effective samples sizes of the estimates, and \code{CI}, containing the confidence intervals of the distance estimates. A value of \code{0} implies that the two distributions have the same mean location, while larger values imply that the two distributions are farther apart. The (square) Euclidean distance has units of square meters, if \code{sqrt=FALSE}. The square Mahalanobis and Bhattacharyya distances are unitless. For the Euclidean distance, only the centroids are compared.
 }
 
 %% ~put references to the literature/web site here ~
