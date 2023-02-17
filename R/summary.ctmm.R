@@ -40,7 +40,6 @@ confint.ctmm <- function(model,alpha=0.05,UNICODE=FALSE)
       PAR <- POV[P,P] / AREA^2
       # dArea/dpar
       J[P,P] <- 1
-      J <- quad2lin(J,diag=TRUE)
     }
     else
     {
@@ -52,8 +51,13 @@ confint.ctmm <- function(model,alpha=0.05,UNICODE=FALSE)
       PAR <- c(J0 %*% POV[P,P] %*% J0)/AREA^2
       # Jacobian for VAR[Area]
       J[P,P] <- J0
-      J <- quad2lin(J,diag=TRUE)
     }
+    variance <- diag(POV)>0
+    names(variance) <- rownames(POV)
+    SUB <- names(variance)[variance]
+    J <- J[SUB,SUB]
+    J <- quad2lin(J,diag=TRUE)
+
     # VAR[PAR|POV] + VAR[PAR|Area]
     VAR <- tr(J %*% COV.POV %*% t(J))/AREA^4 + (-2*PAR/AREA)^2*VAR
     PAR <- chisq.ci(PAR,VAR=VAR,alpha=alpha)
@@ -105,9 +109,10 @@ confint.ctmm <- function(model,alpha=0.05,UNICODE=FALSE)
       PAR <- diag( J0 %*% POV[NAME,NAME] %*% t(J0) )/TAU^2
       J <- J.zero(POV)
       J[NAME,NAME] <- J0
+      J <- J[SUB,SUB]
       J <- quad2lin(J,diag=TRUE)
       VAR <- diag( J %*% COV.POV %*% t(J) )
-      names(VAR) <- model$features
+      names(VAR) <- SUB
       VAR <- VAR[NAME]/TAU^4 + (-2*PAR/TAU)^2*VAR.TAU
     }
 
@@ -158,6 +163,7 @@ confint.ctmm <- function(model,alpha=0.05,UNICODE=FALSE)
 
       J <- J.zero(POV)
       J["circle","circle"] <- J0
+      J <- J[SUB,SUB]
       J <- quad2lin(J,diag=TRUE)
       VAR <- tr(J %*% COV.POV %*% t(J))/f^4 + (-2*PAR/circle)^2*COV["circle","circle"]
 
@@ -269,6 +275,8 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
   {
     COV <- object$COV
     POV <- object$POV
+    variance <- diag(POV)>0 # which variances are estimated
+    names(variance) <- rownames(POV)
     COV.POV <- object$COV.POV
   }
   else # fill in with infinite covariance
@@ -351,7 +359,10 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
       PAR <- c(J0 %*% POV %*% J0)/ms^2
 
       J0 <- rbind(J0,array(0,length(J0)-1:0))
-      J <- quad2lin(J0,diag=TRUE)
+      rownames(J0) <- colnames(J0)
+      SUB <- names(variance)[variance]
+      J <- J0[SUB,SUB]
+      J <- quad2lin(J,diag=TRUE)
       VAR <- tr(J %*% COV.POV %*% t(J))/ms^4 + (-2*PAR/ms)^2*var.ms
 
       # CoV^2 of MS[speed]
@@ -429,6 +440,8 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
       PAR <- c(J0 %*% POV %*% J0)/D^2
 
       J0 <- rbind(J0,array(0,length(J0)-1:0))
+      rownames(J0) <- colnames(J0)
+      J0 <- J0[SUB,SUB]
       J <- quad2lin(J0,diag=TRUE)
       VAR <- tr(J %*% COV.POV %*% t(J))/D^4 + (-2*PAR/D)^2*STUFF$VAR
 
@@ -479,7 +492,7 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
     NAME <- paste0("1/",P)
     SCALE <- 1
 
-    if(!is.null(POV))
+    if(!is.null(POV) && POV[P,P]>0)
     {
       Q <- paste0(P,"-",P)
       PAR <- chisq.ci(POV[P,P],VAR=COV.POV[Q,Q],alpha=alpha)

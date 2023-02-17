@@ -25,20 +25,30 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,diagonal=FALSE,isotropic=F
   else
   { weights <- weights/mean(weights) }
 
-  # do we give variance to each dimension
-  VARS <- array(VARS,DIM)
-  ZEROV <- !VARS
-
-  # do we give variance to each dimension
-  MEANS <- array(MEANS,DIM)
-  ZEROM <- !MEANS
-
+  # median variances - for considering bad estimates as non-observations for numerical stability in log-like
+  MVAR <- array(Inf,DIM)
+  for(i in 1:DIM) { MVAR[i] <- stats::median(SIGMA[,i,i]) }
+  # maximum observable variance for numerically relevant weight in log-like
+  MVAR <- MVAR / .Machine$double.eps
   # observations
   OBS <- array(TRUE,c(N,DIM))
-  for(i in 1:N) { OBS[i,] <- diag(cbind(SIGMA[i,,]))<Inf }
-
+  for(i in 1:N) { OBS[i,] <- diag(cbind(SIGMA[i,,])) < MVAR }
   # zero out Inf-VAR observations, in case of extreme point estimates
   MU[!OBS] <- 0
+
+  # do we give variance to each dimension
+  VARS <- array(VARS,DIM)
+  # do we give a mean to each dimension
+  MEANS <- array(MEANS,DIM)
+
+  NOBS <- colSums(OBS)
+  SUB <- NOBS<=1 # can't calculate variance for these
+  if(any(SUB)) { VARS[SUB] <- FALSE }
+  SUB <- NOBS==0 # can't calculate mean for these
+  if(any(SUB)) { MEANS[SUB] <- FALSE }
+
+  ZEROV <- !VARS
+  ZEROM <- !MEANS
 
   tol <- .Machine$double.eps^precision
   REML <- debias
@@ -66,6 +76,10 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,diagonal=FALSE,isotropic=F
   { sigma <- diag( diag(sigma) , DIM ) }
 
   # non-zero unique sigma parameters
+  UP <- upper.tri(sigma,diag=FALSE)
+  UP[ZEROV,] <- FALSE
+  UP[,ZEROV] <- FALSE
+
   DUP <- upper.tri(sigma,diag=TRUE)
   DUP[ZEROV,] <- FALSE
   DUP[,ZEROV] <- FALSE
@@ -73,23 +87,11 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,diagonal=FALSE,isotropic=F
   INF <- list(loglike=-Inf,mu=mu,COV.mu=sigma,sigma=sigma,sigma.old=sigma)
 
   # negative log-likelihood
-  CONSTRAIN <- TRUE
+  CONSTRAIN <- TRUE # constrain likelihood to positive definite
+  COR <- TRUE # use correlations rather than covariances
   nloglike <- function(par,REML=debias,verbose=FALSE)
   {
-    if(isotropic)
-    { sigma <- diag(par,DIM) }
-    else if(diagonal)
-    {
-      sigma <- diag(0,DIM)
-      diag(sigma)[VARS] <- par
-    }
-    else
-    {
-      sigma <- array(0,c(DIM,DIM))
-      sigma[DUP] <- par
-      sigma <- t(sigma)
-      sigma[DUP] <- par
-    }
+    sigma <- par2sigma(par)
 
     # check for bad sigma matrices
     if(any(VARS))
@@ -121,11 +123,13 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,diagonal=FALSE,isotropic=F
     }
 
     # estimate mu exactly | sigma
-    P <- array(0,c(N,DIM,DIM))
+    S <- P <- array(0,c(N,DIM,DIM))
     mu <- P.mu <- 0
     for(i in 1:N)
     {
-      P[i,,] <- PDsolve(sigma + SIGMA[i,,],force=TRUE)
+      S[i,,] <- sigma + SIGMA[i,,]
+      P[i,,] <- PDsolve(S[i,,],force=TRUE)
+      P[i,,] <- PDclamp(P[i,,])
       P.mu <- P.mu + weights[i]*P[i,,]
       mu <- mu + weights[i]*c(P[i,,] %*% MU[i,])
     }
@@ -143,7 +147,7 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,diagonal=FALSE,isotropic=F
     {
       D <- mu - MU[i,]
       # set aside infinite uncertainty measurements
-      loglike <- loglike + weights[i]/2*( log(abs(det(cbind(P[i,OBS[i,],OBS[i,]])))) - c(D %*% P[i,,] %*% D) )
+      loglike <- loglike - weights[i]/2*( PDlogdet(cbind(S[i,OBS[i,],OBS[i,]]),force=TRUE) + max(c(D %*% P[i,,] %*% D),0) )
 
       # gradient with respect to sigma, under sum and trace
       if(verbose)
@@ -183,9 +187,52 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,diagonal=FALSE,isotropic=F
     else if(diagonal)
     { par <- diag(sigma)[VARS] }
     else
-    { par <- sigma[DUP] }
+    {
+      if(COR)
+      {
+        D <- diag(sigma)
+        d <- sqrt(D)
+        d[d<=.Machine$double.eps] <- 1
+        d <- d %o% d
+        sigma <- sigma/d
+        diag(sigma) <- D
+      }
+
+      par <- sigma[DUP]
+    }
 
     return(par)
+  }
+
+  # construct sigma matrix from parameters
+  par2sigma <- function(par)
+  {
+    if(isotropic)
+    { sigma <- diag(par,DIM) }
+    else if(diagonal)
+    {
+      sigma <- diag(0,DIM)
+      diag(sigma)[VARS] <- par
+    }
+    else
+    {
+      sigma <- array(0,c(DIM,DIM))
+      sigma[DUP] <- par
+      sigma <- t(sigma)
+      sigma[DUP] <- par
+
+      if(COR)
+      {
+        D <- diag(sigma)
+        d <- sqrt(D)
+        d[d<=.Machine$double.eps] <- 1
+        d <- d %o% d
+        sigma <- sigma*d
+        diag(sigma) <- D
+      }
+    }
+
+    return(sigma)
   }
 
   ##############
@@ -259,42 +306,88 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,diagonal=FALSE,isotropic=F
   sigma <- SOL$sigma
   par <- sigma2par( SOL$sigma )
 
-  if(isotropic)
-  {
-    # in case sigma is zero
-    MIN <- mean(diag(COV.mu))
-    parscale <- pmax(par,MIN)
-    lower <- 0
-  }
-  else if(diagonal)
-  {
-    # in case sigma is zero
-    MIN <- diag(COV.mu)[VARS]
-    parscale <- pmax(par,MIN)
-    lower <- 0
-  }
-  else
-  {
-    parscale <- sqrt( diag(sigma) )
-    parscale <- parscale %o% parscale
-    parscale <- parscale[DUP]
+  parscale <- par
+  lower <- 0
+  upper <- Inf
 
-    # in case sigma is zero
-    MIN <- sqrt( abs( diag(COV.mu) ) )
-    MIN <- MIN %o% MIN
-    MIN <- MIN[DUP]
+  set.parscale <- function(known=FALSE)
+  {
+    parscale <<- par
+    MIN <- 0
 
-    parscale <- pmax(parscale,MIN)
+    if(isotropic)
+    {
+      # in case sigma is zero
+      if(!known) { MIN <- mean(diag(COV.mu)) }
+      lower <<- 0
+      upper <<- Inf
+    }
+    else if(diagonal)
+    {
+      # in case sigma is zero
+      if(!known) { MIN <- diag(COV.mu)[VARS] }
+      lower <<- 0
+      upper <<- Inf
+    }
+    else
+    {
+      if(COR)
+      {
+        parscale <<- sigma
+        parscale[] <<- 1
 
-    lower <- array(-Inf,dim(sigma))
-    diag(lower) <- 0
-    lower <- lower[DUP]
+        lower <<- array(-1,dim(sigma))
+        upper <<- array(+1,dim(sigma))
+      }
+      else
+      {
+        parscale <<- sqrt( diag(sigma) )
+        parscale <<- parscale %o% parscale
+
+        lower <<- array(-Inf,dim(sigma))
+        upper <<- array(+Inf,dim(sigma))
+      }
+
+      diag(parscale) <<- diag(sigma)
+      parscale <<- parscale[DUP]
+
+      diag(lower) <<- 0
+      lower <<- lower[DUP]
+
+      diag(upper) <<- Inf
+      upper <<- upper[DUP]
+
+      if(!known)
+      {
+        # in case sigma is zero
+        if(COR)
+        {
+          MIN <- COV.mu
+          MIN[] <- 1
+        }
+        else
+        {
+          MIN <- sqrt( abs( diag(COV.mu) ) )
+          MIN <- MIN %o% MIN
+        }
+
+        diag(MIN) <- diag(COV.mu)
+        MIN <- MIN[DUP]
+      } # end unknown sigma
+    } # end unstructured sigma
+
+    MIN <- pmax(MIN,1)
+    parscale <<- pmax(parscale,MIN)
   }
+  set.parscale()
 
   # not sure if the iterative solution always works in constrained problems
   # if(any(ZEROV) || any(ZEROM))
   if(any(VARS))
   {
+    # liberal parscale
+    COR <- TRUE
+    CONSTRAIN <- TRUE
     SOL <- optimizer(par,nloglike,parscale=parscale,lower=lower,upper=Inf)
     par <- SOL$par
     loglike <- -SOL$value
@@ -308,7 +401,10 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,diagonal=FALSE,isotropic=F
     par <- sigma2par(sigma)
 
     # uncertainty estimates
+    COR <- FALSE
     CONSTRAIN <- FALSE # numderiv doesn't deal well with boundaries
+    par <- sigma2par(sigma)
+    set.parscale(TRUE) # more accurate parscale for numderiv
     DIFF <- genD(par,nloglike,parscale=parscale,lower=lower,upper=Inf)
     COV.sigma <- cov.loglike(DIFF$hessian,DIFF$gradient)
   }
@@ -386,5 +482,8 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,diagonal=FALSE,isotropic=F
     dimnames(COV.sigma) <- list(NAMES2,NAMES2)
   }
 
-  return(list(mu=mu,sigma=sigma,COV.mu=COV.mu,COV.sigma=COV.sigma,loglike=loglike,AIC=AIC,AICc=AICc,BIC=BIC,isotropic=isotropic))
+  R <- list(mu=mu,sigma=sigma,COV.mu=COV.mu,COV.sigma=COV.sigma,loglike=loglike,AIC=AIC,AICc=AICc,BIC=BIC,isotropic=isotropic)
+  R$VARS <- VARS # need to pass this if variance was turned off due to lack of data
+  R$MEANS <- MEANS
+  return(R)
 }

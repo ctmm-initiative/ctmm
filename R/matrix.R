@@ -336,6 +336,52 @@ PDsolve <- function(M,sym=TRUE,force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
 }
 
 
+PDlogdet <- function(M,sym=TRUE,force=FALSE,tol=.Machine$double.eps,...)
+{
+  DIM <- dim(M)
+  if(is.null(DIM))
+  {
+    M <- as.matrix(M)
+    DIM <- dim(M)
+  }
+  if(DIM[1]==0)
+  {
+    M <- clamp(M,0,Inf)
+    if(force && M<=0) { M <- tol }
+    M <- log(M)
+    return(M)
+  }
+
+  # check for Inf & invert those to 0 (and vice versa)
+  INF <- diag(M)==Inf
+  ZERO <- diag(M)<=0 & sym
+  if(any(INF) || any(ZERO))
+  {
+    SIGN <- sum(INF) - sum(ZERO)
+    if(SIGN!=0) { return(SIGN*Inf) }
+
+    # regular log.det of remaining dimensions
+    REM <- !(INF|ZERO)
+    if(any(REM))
+    { return( PDlogdet(M[REM,REM,drop=FALSE],force=force,sym=sym) ) }
+    else
+    { return(0) }
+  }
+
+  # symmetrize
+  if(sym) { M <- He(M) }
+
+  M <- eigen(M,only.values=TRUE)$values
+  M <- clamp(M,0,Inf)
+
+  if(force && any(M<=0)) { M[M<=0] <- tol }
+
+  M <- sum(log(M))
+
+  return(M)
+}
+
+
 isqrtm <- function(M,force=FALSE,pseudo=FALSE)
 {
   # TODO

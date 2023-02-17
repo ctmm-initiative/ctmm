@@ -357,9 +357,9 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
   DEBUG <- FALSE # can be overridden in control
   PMAP <- TRUE # periodic parameters are mapped locally: (-period/2,+period/2) -> (-Inf,Inf) during search steps
   # check complains about visible bindings
-  fnscale <- parscale <- maxit <- precision <- trace <- cores <- hessian <- covariance <- NULL
+  fnscale <- parscale <- rescale <- maxit <- precision <- trace <- cores <- hessian <- covariance <- NULL
   # fix default control arguments
-  default <- list(fnscale=1,parscale=pmin(abs(par),abs(par-lower),abs(upper-par)),maxit=100,trace=FALSE,precision=NULL,cores=1,hessian=NULL,covariance=NULL,stages=NULL)
+  default <- list(fnscale=1,parscale=pmin(abs(par),abs(par-lower),abs(upper-par)),maxit=100,trace=FALSE,precision=NULL,cores=1,hessian=NULL,covariance=NULL,stages=NULL,rescale=FALSE)
   control <- replace(default,names(control),control)
   # check does not like attach
   NAMES <- names(control)
@@ -611,12 +611,12 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
     }
 
     ## shift back near origin to prevent overflow
-    rescale <- reset(par*parscale)/parscale
-    if(sqrt(sum((rescale-par)^2))>DIM*.Machine$double.eps)
+    RESCALE <- reset(par*parscale)/parscale
+    if(sqrt(sum((RESCALE-par)^2))>DIM*.Machine$double.eps)
     {
       # rescale parameters
-      TEMP <- rescale
-      rescale <- nant(TEMP/par,1)
+      TEMP <- RESCALE
+      RESCALE <- nant(TEMP/par,1)
       par <- par.target <- par.old <- TEMP
       # reset gradients
       CG.RESET <- TRUE
@@ -1242,6 +1242,15 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
   RETURN$covariance <- t(t(covariance*parscale)*parscale)
   RETURN$lower <- lower*parscale
   RETURN$upper <- upper*parscale
+
+  # initial parscale was bad [UNFINISHED]
+  if(rescale && ERROR>TOL.GOAL && max(abs(log2(par)))>1)
+  {
+    control$parscale <- RETURN$par
+    control$hessian <- RETURN$hessian
+    control$covariance <- RETURN$covariance
+    RETURN <- mc.optim(RETURN$par,fn=fn,lower=lower,upper=upper,period=period,reset=reset,control=control,...)
+  }
 
   return(RETURN)
 }

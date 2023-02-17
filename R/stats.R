@@ -25,8 +25,13 @@ cov.loglike <- function(hess,grad=rep(0,sqrt(length(hess))),tol=.Machine$double.
 
   W <- V %o% V
 
-  grad <- grad/V
-  hess <- hess/W
+  grad <- nant(grad/V,1)
+  hess <- nant(hess/W,1)
+
+  # clamp off-diagonal
+  MAX <- sqrt(abs(diag(hess)))
+  MAX <- MAX %o% MAX
+  hess[] <- clamp(hess,-MAX,MAX)
 
   EIGEN <- eigen(hess)
   values <- EIGEN$values

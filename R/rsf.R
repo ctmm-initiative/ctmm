@@ -1,5 +1,6 @@
-rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,reference="auto",level.UD=0.99,isotropic=TRUE,debias=TRUE,smooth=TRUE,standardize=TRUE,integrator="MonteCarlo",error=0.01,max.mem="1 Gb",interpolate=TRUE,trace=TRUE,...)
+rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="auto",level.UD=0.99,isotropic=TRUE,debias=TRUE,smooth=TRUE,standardize=TRUE,integrator="MonteCarlo",error=0.01,max.mem="1 Gb",interpolate=TRUE,trace=TRUE,...)
 {
+  beta <- NULL
   STATIONARY <- TRUE
   CTMM <- UD@CTMM
   axes <- CTMM$axes
@@ -419,9 +420,10 @@ rsf.fit <- function(data,UD,beta=NULL,R=list(),formula=NULL,integrated=TRUE,refe
     VARS <- paste0(VARS[NAS],collapse=",")
 
     IND <- rowSums(is.na(DATA))
+    IND <- which(IND>0)
     HEAD <- head(IND)
     if(length(HEAD)<length(IND))
-    { HEAD <- paste0(HEAD,",...",collapse=",") }
+    { HEAD <- paste0(c(HEAD,"..."),collapse=",") }
     else
     { HEAD <- paste0(HEAD,collapse=",") }
 

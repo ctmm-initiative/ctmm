@@ -95,12 +95,14 @@ log.ctmm <- function(CTMM,debias=FALSE,...)
 
 #####################
 # inverse transformation of above
-exp.ctmm <- function(CTMM,debias=FALSE)
+exp.ctmm <- function(CTMM,debias=FALSE,variance=TRUE)
 {
   SIGMA <- c("major","minor","angle")
   isotropic <- CTMM$isotropic
   axes <- CTMM$axes
   features <- CTMM$features
+  variance <- array(variance,length(features))
+  names(variance) <- features
   if("par" %in% names(CTMM))
   { par <- CTMM$par }
   else
@@ -254,10 +256,17 @@ exp.ctmm <- function(CTMM,debias=FALSE)
   JP[PARS,] <- JP[PARS,,drop=FALSE] * par[PARS]
 
   # finally transform COV.POV
-  JP <- quad2lin(JP)
-  NAMES <- dimnames(COV.POV)
-  COV.POV <- JP %*% COV.POV %*% t(JP)
-  dimnames(COV.POV) <- NAMES
+  if(any(variance))
+  {
+    SUB <- features[variance]
+    JP <- JP[SUB,SUB]
+    JP <- quad2lin(JP)
+    NAMES <- dimnames(COV.POV)
+    COV.POV <- JP %*% COV.POV %*% t(JP)
+    dimnames(COV.POV) <- NAMES
+  }
+  else
+  { COV.POV <- NULL }
 
   CTMM$sigma <- sigma
   CTMM$COV <- COV
@@ -442,6 +451,7 @@ mean.features <- function(x,debias=TRUE,isotropic=FALSE,variance=TRUE,diagonal=F
   if(isotropic) { variance[c('minor','angle')] <- FALSE }
 
   R <- meta.normal(MU,SIGMA,MEANS=MEANS,VARS=variance,diagonal=diagonal,debias=debias,weights=weights)
+  variance <- R$VARS # some variances can be turned off because of lack of data
   R$isotropic <- isotropic
   R$axes <- axes
   names(R)[ which(names(R)=="mu") ] <- "par" # population mean of features
@@ -486,7 +496,7 @@ mean.features <- function(x,debias=TRUE,isotropic=FALSE,variance=TRUE,diagonal=F
 
   # reverse log transformation
   # R <- set.parameters(R,par,linear.cov=TRUE)
-  R <- exp.ctmm(R,debias=debias)
+  R <- exp.ctmm(R,debias=debias,variance=variance)
 
   return(R)
 }
@@ -568,11 +578,15 @@ mean.ctmm <- function(x,weights=NULL,sample=TRUE,debias=TRUE,IC="AICc",...)
     ICS <- sapply(MM,function(m){m[[IC]]})
     names(ICS) <- names(MM)
     i <- which.min(ICS)
-    if(i<=2) { isotropic["mu"] <- FALSE }
-    if(i==1)
+    MIN <- names(ICS)[i]
+    if(i<=2)
+    { isotropic["mu"] <- FALSE }
+    if(grepl("Dirac",MIN))
     {
-      MM[[i]]$POV.mu <- 0 * MM[[i+1]]$POV.mu
-      MM[[i]]$COV.POV.mu <- 0 * MM[[i+1]]$COV.POV.mu
+      MM[[i]]$POV.mu <- MM[[i+1]]$POV.mu
+      MM[[i]]$POV.mu[] <- 0
+      MM[[i]]$COV.POV.mu <- MM[[i+1]]$COV.POV.mu
+      MM[[i]]$COV.POV.mu[] <- 0
     }
     MM <- MM[[i]]
     isotropic['mu'] <- MM$isotropic
@@ -618,10 +632,14 @@ mean.ctmm <- function(x,weights=NULL,sample=TRUE,debias=TRUE,IC="AICc",...)
     ICS <- sapply(FM,function(m){m[[IC]]})
     names(ICS) <- names(FM)
     i <- which.min(ICS)
-    if(i<=2)
+    MIN <- names(ICS)[i]
+    if(grepl("Dirac",MIN))
     {
-      FM[[i]]$POV.sigma <- 0 * FM[[i+2]]$POV.sigma
-      FM[[i]]$COV.POV.sigma <- 0 * FM[[i+2]]$COV.POV.sigma
+      if(!ISO) { j <- i+2 } else { j <- i+1 }
+      FM[[i]]$POV.sigma <- FM[[j]]$POV.sigma
+      FM[[i]]$POV.sigma[] <- 0
+      FM[[i]]$COV.POV.sigma <- FM[[j]]$COV.POV.sigma
+      FM[[i]]$COV.POV.sigma[] <- 0
     }
     FM <- FM[[i]]
     isotropic['sigma'] <- FM$isotropic

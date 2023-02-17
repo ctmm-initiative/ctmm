@@ -15,7 +15,7 @@
 \title{Projection}
 \description{Functions to manipulate the coordinate reference system (CRS) of ctmm objects}
 
-\usage{%projection(x,...)
+\usage{
 \S4method{projection}{telemetry}(x,asText=TRUE)
 
 \S4method{projection}{ctmm}(x,asText=TRUE)
@@ -32,7 +32,7 @@
 
 \S3method{median}{telemetry}(x,na.rm=FALSE,...)
 
-compass(loc=NULL,cex=3,...) % fix this
+compass(loc=NULL,cex=3,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
