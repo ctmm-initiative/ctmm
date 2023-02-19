@@ -209,17 +209,25 @@ rates <- function(object,debias=TRUE,level=0.95,normalize=TRUE,self=TRUE,...)
   units <- FALSE
 
   R <- overlap(object,debias=debias,level=level,method="Rate",...)
-  R <- R$CI
+  R$CI <- nant(R$CI,0)
+  R$DOF <- nant(R$DOF,0)
 
   if(normalize)
   {
-    M <- 1/diag(R[,,'est']) # TODO !!! REMOVE MEAN BIAS CORRECTION
-    M <- mean(M) # TODO !!! REPLACE THIS WITH META-MEAN
-    R <- R*M
+    # calculate mean self-rate
+    s <- diag(R$CI[,,'est'])
+    dof <- diag(R$DOF)
+    s <- meta.chisq(s,dof)$CI["mean","est"]
+
+    R$CI <- R$CI/s
   }
 
   # fix diagonals # self encounter rate
-  if(self) { diag(R[,,1]) <- diag(R[,,2]) <- diag(R[,,3]) <- Inf }
+  if(self)
+  {
+    diag(R$CI[,,1]) <- diag(R$CI[,,2]) <- diag(R$CI[,,3]) <- Inf
+    diag(R$DOF) <- Inf
+  }
 
   return(R)
 }

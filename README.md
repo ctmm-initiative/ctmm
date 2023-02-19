@@ -9,6 +9,7 @@ ctmm is an R package for analyzing animal tracking data as a continuous-time sto
 * [Google group](https://groups.google.com/g/ctmm-user)
 * [GitHub project](https://github.com/ctmm-initiative/ctmm)
 * [GitHub reference](https://ctmm-initiative.github.io/ctmm/)
+* [AniMove lectures](https://streaming.uni-konstanz.de/talks-und-events/2022/animove-2022/animove-2022-09-16/)
 
 Installation
 ============

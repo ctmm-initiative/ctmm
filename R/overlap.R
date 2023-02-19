@@ -240,17 +240,42 @@ overlap.UD <- function(object,level=0.95,debias=TRUE,method="Bhattacharyya",...)
     CI <- overlap.ctmm(CTMM,method=method,level=FALSE)
 
     # Bhattacharyya distances
-    D <- -log(OVER)
+    if(OVER>0) { D <- -log(OVER) }
+    else { D <- CI$MLE }
 
-    # relative debias
-    if(debias){ D <- D/CI$BIAS }
+    if(method=="Rate") # D can be negative
+    {
+      if(debias)
+      {
+        BIAS <- D * CI$BIAS
+        BIAS <- BIAS - D
+        D <- D - BIAS
+        D <- nant(D,Inf) # Inf - Inf
+        OVER <- exp(-D)
+      }
 
-    # calculate new distance^2 with KDE point estimate
-    DOF <- 2*D^2/CI$VAR
-    CI <- chisq.ci(D,DOF=DOF,alpha=1-level)
+      VAR <- CI$VAR
+      # CI <- norm.ci(D,VAR=VAR,alpha=1-level)
+      # CI <- exp(-rev(CI))
 
-    # transform from (square) distance to overlap measure
-    CI <- exp(-rev(CI))
+      VAR <- VAR*OVER^2 # VAR[D] -> VAR[OVER]
+      DOF <- 2*OVER^2/VAR
+
+      # if(CI[3]<Inf) { CI <- chisq.ci(OVER,DOF=DOF,alpha=1-level) }
+      CI <- chisq.ci(OVER,DOF=DOF,alpha=1-level)
+    }
+    else # normalized overlap # can't be negative
+    {
+      # relative debias
+      if(debias){ D <- D/CI$BIAS }
+
+      # calculate new distance^2 with KDE point estimate
+      DOF <- 2*D^2/CI$VAR
+      CI <- chisq.ci(D,DOF=DOF,alpha=1-level)
+
+      # transform from (square) distance to overlap measure
+      CI <- exp(-rev(CI))
+    }
   }
   else
   {
