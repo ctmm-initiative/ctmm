@@ -351,11 +351,12 @@ kde <- function(data,H,axes=c("x","y"),CTMM=list(),SP=NULL,SP.in=TRUE,RASTER=lis
     RSP <- raster::raster(RSP,xmn=xmn,xmx=xmx,ymn=ymn,ymx=ymx,crs=proj)
 
     # rasterize SP -> RSP
-    RSP <- raster::rasterize(SP,RSP,background=0)
+    RSP <- raster::rasterize(SP,RSP,background=NA)
     RSP <- raster::as.matrix(RSP)
     RSP <- t(RSP)[,dim(RSP)[1]:1]
+    RSP <- !is.na(RSP)
 
-    if(!SP.in) { RSP <- 1-RSP }
+    if(!SP.in) { RSP <- !RSP }
 
     # incorporate into RASTER
     if(length(RASTER))

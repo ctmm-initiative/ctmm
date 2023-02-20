@@ -1152,18 +1152,8 @@ R.extract <- function(xy,proj,R,X,Y,Z=NULL,PROJ,dX,dY,dZ=NULL)
 }
 
 # Evaluate raster on new spatial grid
-R.grid <- function(r,proj,R)
+R.grid <- function(r,proj,R,interpolate='bilinear')
 {
-  R <- R.prepare(R)
-  PROJ <- R$PROJ
-  X <- R$X
-  Y <- R$Y
-  Z <- R$Z
-  dX <- R$dX
-  dY <- R$dY
-  dZ <- R$dZ
-  R <- R$R
-
   DIM <- c(length(r$x),length(r$y))
   xy <- array(0,c(DIM,2))
   xy[,,1] <- r$x
@@ -1171,21 +1161,27 @@ R.grid <- function(r,proj,R)
   xy[,,2] <- r$y
   xy <- aperm(xy,c(2,1,3))
   dim(xy) <- c(prod(DIM),2)
-
-  # xy <- array(0,c(prod(DIM),2))
-  # for(i in 1:DIM[1]) { for(j in 1:DIM[2]) { xy[i+(j-1)*DIM[1],] <- c(r$x[i],r$y[j]) } }
   colnames(xy) <- c('x','y')
 
-  if(length(dim(R))==2)
+  PROJ <- projection(R)
+  xy <- project(xy,from=proj,to=PROJ)
+
+  if(dim(R)[3]==1)
   {
-    G <- R.extract(xy,proj=proj,R=R,X=X,Y=Y,PROJ=PROJ,dX=dX,dY=dY)
-    G <- array(G,DIM)
+    G <- raster::extract(R,xy,method=interpolate)
+    dim(G) <- DIM
+    # G <- R.extract(xy,proj=proj,R=R,X=X,Y=Y,PROJ=PROJ,dX=dX,dY=dY)
+    # G <- array(G,DIM)
   }
-  else if(length(dim(R))==3)
+  else
   {
-    G <- array(0,c(DIM,length(Z)))
-    for(i in 1:length(Z))
-    { G[,,i] <- R.extract(xy,proj,R=R[,,i],X=X,Y=Y,PROJ=PROJ,dX=dX,dY=dY) }
+    G <- array(NA,dim(xy))
+    for(i in 1:dim(R)[3])
+    {
+      G[,i] <- raster::extract(R[,,i],xy,method=interpolate)
+      # G[,,i] <- R.extract(xy,proj,R=R[,,i],X=X,Y=Y,PROJ=PROJ,dX=dX,dY=dY)
+    }
+    dim(G) <- c(DIM,dim(R)[3])
   }
 
   return(G)

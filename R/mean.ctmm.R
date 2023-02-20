@@ -452,6 +452,7 @@ mean.features <- function(x,debias=TRUE,isotropic=FALSE,variance=TRUE,diagonal=F
 
   R <- meta.normal(MU,SIGMA,MEANS=MEANS,VARS=variance,diagonal=diagonal,debias=debias,weights=weights)
   variance <- R$VARS # some variances can be turned off because of lack of data
+  names(variance) <- FEATURES
   R$isotropic <- isotropic
   R$axes <- axes
   names(R)[ which(names(R)=="mu") ] <- "par" # population mean of features
@@ -477,7 +478,9 @@ mean.features <- function(x,debias=TRUE,isotropic=FALSE,variance=TRUE,diagonal=F
   # information for fitting that we no longer use
   if(isotropic && "minor" %in% FEATURES)
   {
-    FEATURES <- FEATURES[FEATURES %nin% c('minor','angle')]
+    SUB <- FEATURES %nin% c('minor','angle')
+    variance <- variance[SUB]
+    FEATURES <- FEATURES[SUB]
     R$par <- R$par[FEATURES]
     # R$par <- NULL
     R$COV <- R$COV[FEATURES,FEATURES]
