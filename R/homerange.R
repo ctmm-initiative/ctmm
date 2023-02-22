@@ -113,6 +113,8 @@ agde <- function(CTMM,R=list(),variable="utilization",error=0.001,res=100,grid=N
 
 suitability <- function(CTMM,R=list(),grid=NULL,...)
 {
+  if(is.null(grid)) { stop("Please provide a grid argument, such as a UD or raster object.") }
+
   grid <- format.grid(grid=grid,axes=CTMM$axes)
   x <- grid$r$x
   y <- grid$r$y

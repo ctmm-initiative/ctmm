@@ -1,5 +1,5 @@
 ** PRIORITY
-* optimizer parscale check at end
+* rsf.fit Riemann integrator can be to coarse
 * units="unit string"
 * Exp format other than area
 * update all one-pass mean/var calculations to d=x-mu, mu=mu+d/i, s=...

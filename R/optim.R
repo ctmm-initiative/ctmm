@@ -544,7 +544,9 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
     # single parameter scale for each axis
     # SCL <- sqrt(abs(diag(SCL)))
     # equivalent calculation to the above, but avoids matrix-matrix multiplication
-    SCL <- sqrt(abs(c(DIR^2 %*% SCL^2)))
+    # SCL <- sqrt(abs(c(DIR^2 %*% SCL^2))) # can overflow
+    SCL <- diag(SCL,nrow=length(SCL))
+    SCL <- diag( t(DIR) %*% SCL %*% DIR )
     # sample initial points around the center for numerical differentiation
     STEP <- SCL*STEP[STAGE]
     par.step <- t(STEP*t(DIR))

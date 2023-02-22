@@ -260,7 +260,16 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="aut
     }
 
     if(CONSISTENT) # extract pixel areas for integration
-    { dA <- raster::area(R[[1]]) } # TODO generalize this for projected covariates
+    {
+      dA <- raster::area(R[[1]])
+      # raster outputs km^2 sometimes and m^2 others? WTF?
+      if(grepl("longlat",projection(R[[1]]))) { dA <- dA * 1000^2 }
+
+      TEST <- raster::cellStats(dA,'min') / sqrt(det.covm(CTMM$sigma))
+      if(TEST>1) # HR^2
+      { warning("Raster resolution is ",round(TEST),"\u00D7 coarser than the home-range size.") }
+
+    } # TODO generalize this for projected covariates
     else # choose minimum resolution for integration grid
     {
       dx <- min(UD$dr['x'],dX)
@@ -437,7 +446,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="aut
   nloglike <- function(beta,zero=0,verbose=FALSE)
   {
     SAMP <- SATA[,,TERMS,drop=FALSE] %.% beta # [track,time]
-    SHIFT <- mean(SAMP,na.rm=TRUE)
+    SHIFT <- max(SAMP,na.rm=TRUE)
     SAMP <- SAMP - SHIFT
     SAMP <- exp(SAMP) # + exp(SHIFT)
     SAMP[] <- nant(SAMP,0) # treat NA as inaccessible region

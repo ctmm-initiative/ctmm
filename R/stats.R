@@ -80,6 +80,7 @@ cov.loglike <- function(hess,grad=rep(0,sqrt(length(hess))),tol=.Machine$double.
       values[i] <- 1/(2*grad[i])^2
     }
   }
+  values <- nant(values,0)
 
   COV <- array(0,dim(hess))
   values <- nant(values,Inf) # worst case NaN fix
