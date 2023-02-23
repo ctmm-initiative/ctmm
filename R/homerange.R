@@ -111,7 +111,7 @@ agde <- function(CTMM,R=list(),variable="utilization",error=0.001,res=100,grid=N
 }
 
 
-suitability <- function(CTMM,R=list(),grid=NULL,...)
+suitability <- function(CTMM,R=list(),grid=NULL,log=FALSE,...)
 {
   if(is.null(grid)) { stop("Please provide a grid argument, such as a UD or raster object.") }
 
@@ -125,7 +125,7 @@ suitability <- function(CTMM,R=list(),grid=NULL,...)
   # calculate RASTERs on spatial grid
   R <- lapply(R,function(S){R.grid(r=grid$r,proj=proj,S)})
 
-  R <- R.suit(R,CTMM)
+  R <- R.suit(R,CTMM,log=log)
   R <- list(x=x,y=y,z=R)
   proj <- sp::CRS(proj)
   R <- raster::raster(R,crs=proj)

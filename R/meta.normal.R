@@ -5,6 +5,9 @@
 # MEANS Boolean denotes whether or not there is a non-zero mean
 meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,diagonal=FALSE,isotropic=FALSE,debias=TRUE,weights=NULL,precision=1/2)
 {
+  tol <- .Machine$double.eps^precision
+  REML <- debias
+
   if(length(dim(MU))<2)
   {
     NAMES <- "x"
@@ -25,23 +28,32 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,diagonal=FALSE,isotropic=F
   else
   { weights <- weights/mean(weights) }
 
-  # median variances - for considering bad estimates as non-observations for numerical stability in log-like
-  MVAR <- array(Inf,DIM)
-  for(i in 1:DIM) { MVAR[i] <- stats::median(SIGMA[,i,i]) }
-  # maximum observable variance for numerically relevant weight in log-like
-  MVAR <- MVAR / .Machine$double.eps
-  # observations
-  OBS <- array(TRUE,c(N,DIM))
-  for(i in 1:N) { OBS[i,] <- diag(cbind(SIGMA[i,,])) < MVAR }
-  # zero out Inf-VAR observations, in case of extreme point estimates
-  MU[!OBS] <- 0
-
   # do we give variance to each dimension
   VARS <- array(VARS,DIM)
   # do we give a mean to each dimension
   MEANS <- array(MEANS,DIM)
 
-  NOBS <- colSums(OBS)
+  SCALE <- apply(MU,2,stats::mad)
+  if(isotropic) { SCALE[] <- stats::median(SCALE) }
+  ZERO <- SCALE<.Machine$double.eps
+  if(any(ZERO)) # do not divide by zero or near zero
+  {
+    if(any(!ZERO))
+    { SCALE[ZERO] <- min(SCALE[!ZERO]) } # do some rescaling... assuming axes are similar
+    else
+    { SCALE[ZERO] <- 1 } # do no rescaling
+  }
+  SCALE2 <- SCALE^2
+
+  # observations
+  OBS <- array(TRUE,c(N,DIM))
+  for(i in 1:N) { OBS[i,] <- diag(cbind(SIGMA[i,,])) < SCALE2/.Machine$double.eps }
+  # zero out Inf-VAR observations, in case of extreme point estimates
+  MU[!OBS] <- 0
+  # zero out Inf-VAR correlations, in case of extreme point estimates
+  for(i in 1:N) { for(j in which(!OBS[i,])) { SIGMA[i,j,-j] <- SIGMA[i,-j,j] <- 0 } }
+
+  NOBS <- colSums(OBS) # number of observations per parameter
   SUB <- NOBS<=1 # can't calculate variance for these
   if(any(SUB)) { VARS[SUB] <- FALSE }
   SUB <- NOBS==0 # can't calculate mean for these
@@ -50,30 +62,29 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,diagonal=FALSE,isotropic=F
   ZEROV <- !VARS
   ZEROM <- !MEANS
 
-  tol <- .Machine$double.eps^precision
-  REML <- debias
-
   ####################
-  # robust initial guesses in case of outliers
-  # mu <- colMeans(weights*MU)
-  WU <- weights*MU
-  mu <- apply(WU,2,stats::median)
-  if(any(ZEROM)) { mu[ZEROM] <- 0 }
+  # robust rescaling in case of outliers with ill-conditioned COV matrices
+  SHIFT <- apply(MU,2,stats::median)
+  if(any(ZEROM)) { SHIFT[ZEROM] <- 0 }
+  # apply shift
+  MU <- t( t(MU) - SHIFT )
+  # initial guess of mu
+  mu <- SHIFT
+  mu[] <- 0
 
-  # sigma <- 0
-  # for(i in 1:N) { sigma <- sigma + weights[i]*outer(MU[i,]-mu) }
-  # sigma <- sigma/max(N-REML,1)
-  # sigma <- PDclamp(sigma,lower=.Machine$double.eps,upper=1/.Machine$double.eps)
-  sigma <- apply(WU,2,stats::mad)
-  sigma <- pmax(sigma,1)  # stable fallback in case MAD is zero
-  sigma <- diag(sigma,nrow=length(sigma))
+  # apply scale
+  MU <- t( t(MU)/SCALE )
+  SIGMA <- aperm(SIGMA,c(2,3,1)) # [x,y,id]
+  SIGMA <- SIGMA/SCALE
+  SIGMA <- aperm(SIGMA,c(2,3,1)) # [y,id,x]
+  SIGMA <- SIGMA/SCALE
+  SIGMA <- aperm(SIGMA,c(2,3,1)) # [id,x,y]
+  # initial guess of sigma
+  sigma <- diag(1,nrow=length(mu))
+
   COV.mu <- sigma/N
   if(any(ZEROV)) { sigma[ZEROV,] <- sigma[,ZEROV] <- 0 }
   if(any(ZEROM)) { COV.mu[ZEROM,] <- COV.mu[,ZEROM] <- 0 }
-  if(isotropic)
-  { sigma <- diag( mean(diag(sigma)), DIM ) }
-  else if(diagonal)
-  { sigma <- diag( diag(sigma) , DIM ) }
 
   # non-zero unique sigma parameters
   UP <- upper.tri(sigma,diag=FALSE)
@@ -89,8 +100,9 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,diagonal=FALSE,isotropic=F
   # negative log-likelihood
   CONSTRAIN <- TRUE # constrain likelihood to positive definite
   COR <- TRUE # use correlations rather than covariances
-  nloglike <- function(par,REML=debias,verbose=FALSE)
+  nloglike <- function(par,REML=debias,verbose=FALSE,zero=0)
   {
+    zero <- -zero # now log-likelihood
     sigma <- par2sigma(par)
 
     # check for bad sigma matrices
@@ -140,14 +152,16 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,diagonal=FALSE,isotropic=F
     # if(any(ZEROM)) { mu[ZEROM] <- 0 } # should be okay
 
     # sum up log-likelihood
-    loglike <- REML/2*log(abs(det(COV.mu[MEANS,MEANS,drop=FALSE]))) - DIM*(N-REML)/2*log(2*pi)
+    loglike <- REML/2*log(abs(det(COV.mu[MEANS,MEANS,drop=FALSE]))) # - DIM*(N-REML)/2*log(2*pi)
+    zero <- zero + DIM*(N-REML)/2*log(2*pi)
+    zero <- 2*zero # for 1/2 below
     RHS <- 0
     LHS <- P.mu
     for(i in 1:N)
     {
       D <- mu - MU[i,]
       # set aside infinite uncertainty measurements
-      loglike <- loglike - weights[i]/2*( PDlogdet(cbind(S[i,OBS[i,],OBS[i,]]),force=TRUE) + max(c(D %*% P[i,,] %*% D),0) )
+      loglike <- loglike - weights[i]/2*( PDlogdet(cbind(S[i,OBS[i,],OBS[i,]]),force=TRUE) + max(c(D %*% P[i,,] %*% D),0) + zero )
 
       # gradient with respect to sigma, under sum and trace
       if(verbose)
@@ -420,6 +434,23 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,diagonal=FALSE,isotropic=F
   }
 
   loglike <- -nloglike(par,REML=FALSE) # non-REML for AIC/BIC
+
+  # rescale
+  loglike <- loglike - log(prod(SCALE))
+  mu <- mu*SCALE + SHIFT
+  sigma <- t(sigma*SCALE)*SCALE
+  COV.mu <- t(COV.mu*SCALE)*SCALE
+  if(any(VARS))
+  {
+    SCALE <- SCALE %o% SCALE
+    if(isotropic)
+    { SCALE <- SCALE[1] }
+    else if(diagonal)
+    { SCALE <- diag(SCALE) }
+    else
+    { SCALE <- SCALE[DUP] }
+    COV.sigma <- t(COV.sigma*SCALE)*SCALE
+  }
 
   # AIC
   n <- N

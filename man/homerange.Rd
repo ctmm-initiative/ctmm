@@ -11,7 +11,7 @@ Estimates the range distributions and suitability from \code{telemetry} data and
 \usage{
 homerange(data,CTMM,method="AKDE",...)
 
-suitability(CTMM,R=list(),grid=NULL,...)
+suitability(CTMM,R=list(),grid=NULL,log=FALSE,...)
 
 agde(CTMM,R=list(),variable="utilization",error=0.001,res=100,grid=NULL,...)
 }
@@ -23,6 +23,7 @@ agde(CTMM,R=list(),variable="utilization",error=0.001,res=100,grid=NULL,...)
   \item{...}{Arguments passed to the method call or \code{\link{bandwidth}}.}
   \item{R}{A named list of raster covariates if \code{CTMM} contains an RSF model}
   \item{grid}{Grid specification via \code{raster}, \code{UD}, or list of arguments (See \code{\link{akde}} for details).}
+  \item{log}{Calculate the log(suitability).}
   \item{variable}{Not yet supported.}
   \item{error}{Target probability error.}
   \item{res}{Number of grid points along each axis, relative to the location covariance.}

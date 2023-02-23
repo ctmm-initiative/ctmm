@@ -1,4 +1,4 @@
-ctmm 1.1.1 (2023-02-18)
+ctmm 1.1.1 (2023-02-23)
 ================
 * new function funnel() for funnel plots
 * new population covariance models and improved model selection in mean.ctmm()
@@ -13,7 +13,7 @@ ctmm 1.1.1 (2023-02-18)
 * overlap() and meta() can now extract object names
 * meta() stability improvements for tiny denominator DOF estimates
 * as.telemetry() UTM import updated to new PROJ specification
-* mean.ctmm() stability improvements for insignificant individual estimates
+* mean.ctmm() numerical stability improvements for insignificant individual estimates
 
 ctmm 1.1.0 (2022-11-03)
 ================

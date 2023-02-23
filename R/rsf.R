@@ -1197,7 +1197,7 @@ R.grid <- function(r,proj,R,interpolate='bilinear')
 }
 
 # evaluate habitat suitability raster(s)
-R.suit <- function(R,CTMM,data=NULL)
+R.suit <- function(R,CTMM,data=NULL,log=FALSE)
 {
   DIM <- dim(R[[1]])
   beta <- CTMM$beta
@@ -1235,7 +1235,7 @@ R.suit <- function(R,CTMM,data=NULL)
     }
     S <- rowSums(S)
     S <- array(S,DIM)
-    S <- exp(S)
+    if(!log) { S <- exp(S) }
   } # end beta
 
   if(length(offset))
