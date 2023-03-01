@@ -418,6 +418,7 @@ chi.var <- function(DOF,M1=1)
 {
   R <- 2*pi/DOF/beta(DOF/2,1/2)^2
   VAR <- (1/R-1)*M1^2
+  VAR <- nant(VAR,Inf)
   return(VAR)
 }
 

@@ -15,16 +15,16 @@
 \description{Functions to import MoveBank csv files, \code{data.frame}, and \code{Move} objects, coerce them into \code{telemetry} objects, summarize them, and combine data from multiple tracking devices.}
 
 \usage{
-as.telemetry(object,timeformat="",timezone="UTC",projection=NULL,datum=NULL,dt.hot=NA,
+as.telemetry(object,timeformat="",timezone="UTC",projection=NULL,datum="WGS84",dt.hot=NA,
              timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
 
-\S3method{as.telemetry}{character}(object,timeformat="",timezone="UTC",projection=NULL,datum=NULL,dt.hot=NA,
+\S3method{as.telemetry}{character}(object,timeformat="",timezone="UTC",projection=NULL,datum="WGS84",dt.hot=NA,
              timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
 
-\S3method{as.telemetry}{data.frame}(object,timeformat="",timezone="UTC",projection=NULL,datum=NULL,dt.hot=NA,
+\S3method{as.telemetry}{data.frame}(object,timeformat="",timezone="UTC",projection=NULL,datum="WGS84",dt.hot=NA,
              timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
 
-\S3method{as.telemetry}{Move}(object,timeformat="",timezone="UTC",projection=NULL,datum=NULL,dt.hot=NA,
+\S3method{as.telemetry}{Move}(object,timeformat="",timezone="UTC",projection=NULL,datum="WGS84",dt.hot=NA,
              timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
 
 \S3method{summary}{telemetry}(object,...)
@@ -45,7 +45,7 @@ tbind(...)
   \item{timeformat}{Format argument for \code{\link{strptime}}, corresponding to the input data. Alternatively \code{timeformat="auto"} will attempt to infer the timestamp format with \code{\link[parsedate]{parse_date}}.}
   \item{timezone}{Timezone argument for \code{\link{strptime}}, corresponding to the input data.}
   \item{projection}{Optional PROJ projection argument to be fed to \code{\link[sp]{spTransform}}, for the \bold{output} telemetry object.}
-  \item{datum}{Optional PROJ projection argument to specify the \bold{input} longitude-latitude datum. The default is WGS84.}
+  \item{datum}{Optional argument to specify the \bold{input} longitude-latitude or UTM datum. The default is WGS84.}
   \item{dt.hot}{Time-interval threshold at which GPS location fixes can be considered as ``hot'' and location estimate precisions may be smaller (regardless of DOP value) for assigning \code{"hot"} and \code{"cold"} location classes.}
   \item{timeout}{GPS location fix timeout value (seconds) for assigning a \code{"timed-out"} location class.}
   %\item{class.2D}{Assign location classes \code{"2D"} and \code{"3D"} to fixes with \code{3} and \code{>3} satellites.}
@@ -80,7 +80,9 @@ Multiple deployments on a single individual can be merged afterwards, using \cod
 
 \author{C. H. Fleming, X. Dong, B. Kranstauber, G. Péron, and K. Safi.}
 
-%\note{}
+\note{
+Prior to v1.1.1, \code{datum} was required to be a full PROJ string, but starting with v1.1.1 \code{datum} is just taken to be the PROJ datum argument.
+}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 

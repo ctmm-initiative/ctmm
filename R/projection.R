@@ -36,9 +36,18 @@ project <- function(x,from=DATUM,to=DATUM)
 {
   if(to==from) { return(x) }
 
-  x <- sp::SpatialPoints(x,proj4string=sp::CRS(from))
-  x <- sp::spTransform(x,sp::CRS(to))
-  x <- sp::coordinates(x)
+  # x <- sp::SpatialPoints(x,proj4string=sp::CRS(from))
+  # x <- sp::spTransform(x,sp::CRS(to))
+  # x <- sp::coordinates(x)
+
+  x <- data.frame(x) # super annoying
+  from <- sf::st_crs(from)
+  to <- sf::st_crs(to)
+
+  x <- sf::st_as_sf(x,coords=1:2,crs=from)
+  x <- sf::st_transform(x,crs=to)
+  x <- sf::st_coordinates(x)
+
   return(x)
 }
 

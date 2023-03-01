@@ -1,10 +1,11 @@
-ctmm 1.1.1 (2023-02-23)
+ctmm 1.1.1 (2023-03-01)
 ================
 * new function funnel() for funnel plots
 * new population covariance models and improved model selection in mean.ctmm()
 * new argument 'sqrt' in distance()
 * new argument 'dt.hot' in as.telemetry()
 * new argument 'variable' in Log()
+* as.telemetry() datum argument now works on UTM import, and is no longer to a be a complete PROJ string
 * distance() can now take location arguments
 * extrapolation disabled in suitability()
 * bugfix in suitability()

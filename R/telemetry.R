@@ -298,11 +298,11 @@ set.name <- function(x,NAMES=NULL,drop=TRUE)
 
 #######################
 # Generic import function
-as.telemetry <- function(object,timeformat="",timezone="UTC",projection=NULL,datum=NULL,dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...) UseMethod("as.telemetry")
+as.telemetry <- function(object,timeformat="",timezone="UTC",projection=NULL,datum="WGS84",dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...) UseMethod("as.telemetry")
 
 
 # MoveStack object
-as.telemetry.MoveStack <- function(object,timeformat="",timezone="UTC",projection=NULL,datum=NULL,dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
+as.telemetry.MoveStack <- function(object,timeformat="",timezone="UTC",projection=NULL,datum="WGS84",dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
 {
   # get individual names
   NAMES <- move::trackId(object)
@@ -328,7 +328,7 @@ as.telemetry.MoveStack <- function(object,timeformat="",timezone="UTC",projectio
 
 
 # Move object
-as.telemetry.Move <- function(object,timeformat="",timezone="UTC",projection=NULL,datum=NULL,dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
+as.telemetry.Move <- function(object,timeformat="",timezone="UTC",projection=NULL,datum="WGS84",dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
 {
   # preserve Move object projection if possible
   if(is.null(projection) && !raster::isLonLat(object)) { projection <- raster::projection(object) }
@@ -341,7 +341,7 @@ as.telemetry.Move <- function(object,timeformat="",timezone="UTC",projection=NUL
 
 
 # convert Move object back to MoveBank CSV
-Move2CSV <- function(object,timeformat="",timezone="UTC",projection=NULL,datum=NULL,...)
+Move2CSV <- function(object,timeformat="",timezone="UTC",projection=NULL,datum="WGS84",...)
 {
   DATA <- data.frame(timestamp=move::timestamps(object))
 
@@ -379,6 +379,25 @@ Move2CSV <- function(object,timeformat="",timezone="UTC",projection=NULL,datum=N
   return(DATA)
 }
 
+
+# sf object (C) jfsmenezes & CHF [UNFINISHED]
+as.telemetry.sf = function(object,timeformat="",timezone="UTC",projection=NULL,datum="WGS84",dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
+{
+  if(sf::st_geometry_type(object,by_geometry=FALSE)!="POINT")
+  { stop("only point features supported at the moment") }
+
+  coords <- sf::st_coordinates(object)
+
+  # PROJ4 is no longer supported
+  from <- sf::st_crs(object)$proj4string
+
+  # preserve object projection if not long-lat
+
+  # re-project long-lat if necessary
+
+  object <- sf::st_drop_geometry(object)
+  as.telemetry(object,timeformat=timeformat,timezone=timezone,projection=projection,dt.hot=dt.hot,timeout=timeout,na.rm=na.rm,mark.rm=mark.rm,keep=keep,drop=drop)
+}
 
 # make names canonical
 canonical.name <- function(NAME,UNIQUE=TRUE)
@@ -516,7 +535,7 @@ merge.class <- function(class1,class2)
 
 
 # read in a MoveBank object file
-as.telemetry.character <- function(object,timeformat="",timezone="UTC",projection=NULL,datum=NULL,dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
+as.telemetry.character <- function(object,timeformat="",timezone="UTC",projection=NULL,datum="WGS84",dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
 {
   # read with 3 methods: fread, temp_unzip, read.csv, fall back to next if have error.
   # fread error message is lost, we can use print(e) for debugging.
@@ -565,7 +584,7 @@ asPOSIXct <- function(x,timeformat="",timezone="UTC",...)
 
 
 # this assumes a MoveBank data.frame
-as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projection=NULL,datum=NULL,dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
+as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projection=NULL,datum="WGS84",dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
 {
   NAMES <- list()
   NAMES$timestamp <- c('timestamp','timestamp.of.fix','Acquisition.Time',
@@ -598,6 +617,12 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   NAMES$z <- c("height.above.ellipsoid","height.above.elipsoid","height.above.ellipsoid.m","height.above.elipsoid.m","height.above.msl","height.above.mean.sea.level","height.raw","height","height.m","barometric.height","altimeter","altimeter.m","Argos.altitude","GPS.Altitude","MSL_altitude_m","altitude","altitude.m","Alt","barometric.depth","depth","elevation","elevation.m","elev")
   NAMES$v <- c("ground.speed",'speed.over.ground','speed.over.ground.m.s',"speed","GPS.speed")
   NAMES$heading <- c("heading","heading.degree","heading.degrees","GPS.heading","Course","direction","direction.deg")
+
+  if(grepl("+datum=",datum,fixed=TRUE))
+  {
+    datum <- strsplit(datum,'+datum=',fixed=TRUE)[[1]][2]
+    datum <- strsplit(datum,' +',fixed=TRUE)[[1]][1]
+  }
 
   # get rid of tibble classes # they don't extend data.frame objects quite right
   if(class(object)[1] == "grouped_df")
@@ -693,15 +718,22 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
       }
 
       # missing hemisphere / latitude
-      if(any(grepl("^[0-9]*$",zone)))
-      { message('UTM zone missing lattitude bands; assuming UTM hemisphere="north". Alternatively, format zone column "# +south".') }
+      # if(any(grepl("^[0-9]*$",zone)))
+      # { message('UTM zone missing lattitude bands; assuming UTM hemisphere="north". Alternatively, format zone column "# +south".') }
 
-      zone <- paste0("+proj=utm +zone=",zone)
-
-      # convert to long-lat
+      zone <- paste0("+proj=utm +zone=",zone," +datum=",datum)
+      zone <- factor(zone)
+      for(z in levels(zone))
+      {
+        SUB <- zone==z
+        XY[SUB,] <- project(XY[SUB,,drop=FALSE],from=z)
+      }
       colnames(XY) <- c("x","y")
-      XY <- sapply(1:nrow(XY),function(i){rgdal::project(XY[i,,drop=FALSE],zone[i],inv=TRUE)})
-      XY <- t(XY)
+
+      # # convert to long-lat
+      # colnames(XY) <- c("x","y")
+      # XY <- sapply(1:nrow(XY),function(i){rgdal::project(XY[i,,drop=FALSE],zone[i],inv=TRUE)})
+      # XY <- t(XY)
 
       # work with long-lat as if imported directly
       DATA$longitude <- XY[,1]
@@ -712,13 +744,15 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
 
     rm(zone,XY)
   } # end UTM
-  else if(!is.null(datum)) # convert from input datum to default DATUM
+  else if(datum!="WGS84") # convert from input datum to default DATUM
   {
     ROWS <- is.na(DATA$longitude) | is.na(DATA$latitude)
     ROWS <- !ROWS
 
+    FROM <- paste0("+proj=longlat +datum=",datum)
+
     XY <- DATA[ROWS,c('longitude','latitude')]
-    XY <- project(XY,from=datum)
+    XY <- project(XY,from=FROM)
     DATA[ROWS,c('longitude','latitude')] <- XY
 
     rm(ROWS,XY)

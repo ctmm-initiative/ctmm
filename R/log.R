@@ -4,7 +4,13 @@ Log <- function(x,variable="area",debias=TRUE,...)
   x <- listify(x)
   NAMES <- names(x)
   x <- log.list(x,variable=variable,debias=debias,...)
-  names(x$log) <- names(x$VAR.log) <- NAMES
+
+  x <- data.frame(log=x$log,VAR.log=x$VAR.log)
+  rownames(x) <- NAMES
+
+  INF <- x$VAR.log==Inf
+  x$log[INF] <- 0
+
   return(x)
 }
 
@@ -88,6 +94,7 @@ Exp <- function(est,VAR.est=0,VAR=0,VAR.VAR=0,variable="area",debias=TRUE,level=
   if(debias)
   {
     BIAS <- digamma(DOF/2) - log(DOF/2)
+    BIAS <- nant(BIAS,0)
     if(variable=="speed") { BIAS <- BIAS/2 }
     est <- est + BIAS
   }
