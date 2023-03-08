@@ -1,5 +1,6 @@
 \name{rsf.fit}
 \alias{rsf.fit}
+\alias{rsf.select}
 \alias{sdm.fit}
 \encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
@@ -10,6 +11,8 @@
 rsf.fit(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="auto",
         level.UD=0.99,isotropic=TRUE,debias=TRUE,smooth=TRUE,standardize=TRUE,
         integrator="MonteCarlo",error=0.01,max.mem="1 Gb",interpolate=TRUE,trace=TRUE,...)
+
+rsf.select(data,UD,R=list(),formula=NULL,verbose=FALSE,IC="AICc",trace=TRUE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -30,7 +33,9 @@ rsf.fit(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="auto",
   \item{max.mem}{Maximum amount of memory to allocate for availability sampling.}
   \item{interpolate}{Whether or not to interpolate raster values during extraction.}
   \item{trace}{Report progress on convergence (see Details).}
-  \item{...}{Arguments passed to \code{optimizer}.}
+  \item{verbose}{Returns all candidate models if \code{TRUE}. Otherwise, only the \code{IC}-best model is returned.}
+  \item{IC}{Model selection criterion. Can be AIC, AICc, or BIC.}
+  \item{...}{Arguments passed to \code{rsf.fit} or \code{\link{optimizer}}.}
 }
 
 \details{

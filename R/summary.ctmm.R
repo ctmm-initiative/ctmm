@@ -16,6 +16,7 @@ confint.ctmm <- function(model,alpha=0.05,UNICODE=FALSE)
   POV <- model[["POV"]]
   COV.POV <- model[["COV.POV"]]
   VARS <- dimnames(COV)[[1]]
+  PVARS <- diag(POV)
 
   par <- NULL
   NAMES <- NULL
@@ -28,7 +29,7 @@ confint.ctmm <- function(model,alpha=0.05,UNICODE=FALSE)
   AREA <- chisq.ci(AREA,DOF=DOF,alpha=alpha)
   par <- rbind(par,AREA)
 
-  if(!is.null(POV))
+  if(sum(PVARS[c('major','minor')],na.rm=TRUE)>0)
   {
     J <- J.zero(POV)
 
@@ -52,10 +53,6 @@ confint.ctmm <- function(model,alpha=0.05,UNICODE=FALSE)
       # Jacobian for VAR[Area]
       J[P,P] <- J0
     }
-    variance <- diag(POV)>0
-    names(variance) <- rownames(POV)
-    SUB <- names(variance)[variance]
-    J <- J[SUB,SUB]
     J <- quad2lin(J,diag=TRUE)
 
     # VAR[PAR|POV] + VAR[PAR|Area]
@@ -109,10 +106,9 @@ confint.ctmm <- function(model,alpha=0.05,UNICODE=FALSE)
       PAR <- diag( J0 %*% POV[NAME,NAME] %*% t(J0) )/TAU^2
       J <- J.zero(POV)
       J[NAME,NAME] <- J0
-      J <- J[SUB,SUB]
       J <- quad2lin(J,diag=TRUE)
       VAR <- diag( J %*% COV.POV %*% t(J) )
-      names(VAR) <- SUB
+      names(VAR) <- rownames(COV)
       VAR <- VAR[NAME]/TAU^4 + (-2*PAR/TAU)^2*VAR.TAU
     }
 
@@ -121,7 +117,7 @@ confint.ctmm <- function(model,alpha=0.05,UNICODE=FALSE)
       par <- rbind(par,ci.tau(TAU[k],VAR.TAU[k],alpha=alpha))
       NAMES <- c(NAMES,LABEL[k])
 
-      if(!is.null(POV))
+      if(sum(PVARS[NAME[k]],na.rm=TRUE)>0)
       {
         par <- rbind(par,sqrt(chisq.ci(PAR[k],VAR[k],alpha=alpha)))
         NAMES <- c(NAMES,paste0("CoV[",LABEL[k],"]"))
@@ -155,7 +151,7 @@ confint.ctmm <- function(model,alpha=0.05,UNICODE=FALSE)
     par <- rbind(par,CI)
     NAMES <- c(NAMES,"circle")
 
-    if(!is.null(POV))
+    if(sum(PVARS['circle'],na.rm=TRUE)>0)
     {
       f <- 2*pi/circle
       J0 <- -2*pi/circle^2
@@ -163,7 +159,6 @@ confint.ctmm <- function(model,alpha=0.05,UNICODE=FALSE)
 
       J <- J.zero(POV)
       J["circle","circle"] <- J0
-      J <- J[SUB,SUB]
       J <- quad2lin(J,diag=TRUE)
       VAR <- tr(J %*% COV.POV %*% t(J))/f^4 + (-2*PAR/circle)^2*COV["circle","circle"]
 
@@ -275,8 +270,7 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
   {
     COV <- object$COV
     POV <- object$POV
-    variance <- diag(POV)>0 # which variances are estimated
-    names(variance) <- rownames(POV)
+    PVARS <- diag(POV)
     COV.POV <- object$COV.POV
   }
   else # fill in with infinite covariance
@@ -287,6 +281,7 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
     dimnames(COV) <- list(P,P)
     object$COV <- COV
     POV <- NULL
+    PVARS <- NULL
   }
   P <- nrow(COV)
 
@@ -353,15 +348,12 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
     par <- rbind(par,rms)
     rownames(par)[nrow(par)] <- "speed"
 
-    if(!is.null(POV))
+    if(sum(PVARS[c('major','minor','tau','tau velocity')],na.rm=TRUE)>0)
     {
       J0 <- STUFF$J
       PAR <- c(J0 %*% POV %*% J0)/ms^2
 
-      J0 <- rbind(J0,array(0,length(J0)-1:0))
-      rownames(J0) <- colnames(J0)
-      SUB <- names(variance)[variance]
-      J <- J0[SUB,SUB]
+      J <- rbind(J0,array(0,length(J0)-1:0))
       J <- quad2lin(J,diag=TRUE)
       VAR <- tr(J %*% COV.POV %*% t(J))/ms^4 + (-2*PAR/ms)^2*var.ms
 
@@ -433,7 +425,7 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
     par <- rbind(par,D)
     rownames(par)[nrow(par)] <- "diffusion"
 
-    if(!is.null(POV))
+    if(sum(PVARS[c('major','minor','tau','tau position')],na.rm=TRUE)>0)
     {
       D <- D[2]
       J0 <- STUFF$J
@@ -441,7 +433,6 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
 
       J0 <- rbind(J0,array(0,length(J0)-1:0))
       rownames(J0) <- colnames(J0)
-      J0 <- J0[SUB,SUB]
       J <- quad2lin(J0,diag=TRUE)
       VAR <- tr(J %*% COV.POV %*% t(J))/D^4 + (-2*PAR/D)^2*STUFF$VAR
 
@@ -492,7 +483,7 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
     NAME <- paste0("1/",P)
     SCALE <- 1
 
-    if(!is.null(POV) && POV[P,P]>0)
+    if(sum(PVARS[P],na.rm=TRUE)>0)
     {
       Q <- paste0(P,"-",P)
       PAR <- chisq.ci(POV[P,P],VAR=COV.POV[Q,Q],alpha=alpha)

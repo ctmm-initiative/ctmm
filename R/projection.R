@@ -48,6 +48,8 @@ project <- function(x,from=DATUM,to=DATUM)
   x <- sf::st_transform(x,crs=to)
   x <- sf::st_coordinates(x)
 
+  colnames(x) <- c('x','y')
+
   return(x)
 }
 

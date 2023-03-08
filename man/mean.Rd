@@ -7,7 +7,7 @@
 \description{
 These functions calculate population averages of continuous-time movement models and utilization distributions.}
 \usage{
-\S3method{mean}{ctmm}(x,weights=NULL,sample=TRUE,debias=TRUE,IC="AICc",...)
+\S3method{mean}{ctmm}(x,weights=NULL,sample=TRUE,debias=TRUE,IC="AICc",trace=TRUE,...)
 
 \S3method{mean}{UD}(x,weights=NULL,sample=TRUE,...)
 }
@@ -18,6 +18,7 @@ These functions calculate population averages of continuous-time movement models
   \item{sample}{\code{x} represents a sample of a larger population if \code{TRUE}, or the entire statistical population if \code{FALSE}.}
   \item{debias}{Include \eqn{\log-\chi^2} and REML bias corrections.}
   \item{IC}{Model selection criterion for the anisotropy of the distribution of mean locations and covariance matrices.}
+  \item{trace}{Report location and autocovariance model selection results.}
   \item{...}{Additional arguments for future use.}
 }
 

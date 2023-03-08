@@ -335,7 +335,12 @@ kde <- function(data,H,axes=c("x","y"),CTMM=list(),SP=NULL,SP.in=TRUE,RASTER=lis
   if(length(SP))
   {
     proj <- CTMM@info$projection
-    SP <- sp::spTransform(SP,proj)
+    # this is inaccurate
+    # SP <- sp::spTransform(SP,proj)
+    if(!any(grepl('sf',class(SP)))) { SP <- sf::st_as_sf(SP) }
+    SP <- sf::st_transform(SP,crs=sf::st_crs(proj))
+    # sf methods are slow
+    SP <- sf::as_Spatial(SP)
 
     # create raster template
     dx <- grid$dr[1]

@@ -35,7 +35,7 @@ speed.ctmm <- function(object,data=NULL,t=NULL,level=0.95,robust=FALSE,units=TRU
   # analytically solvable cases
   if(!robust && is.null(data) && object$mean=="stationary" && (!prior || fast))
   {
-    if(object$isotropic) # chi_2 : circular velocity distribution
+    if(object$isotropic[1]) # chi_2 : circular velocity distribution
     {
       CI <- summary(object,level=level,units=FALSE)
       DOF <- CI$DOF['speed']

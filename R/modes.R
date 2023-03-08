@@ -237,18 +237,18 @@ ridges.UD <- function(object,...)
             # point is in this pixel
             if(max(abs(dij))<=1)
             {
-              POINT <- dither(ip,jp,POINT,1)
+              POINT <- anti.alias(ip,jp,POINT,1)
 
               # what pixels are next?
               u <- EIGEN$vectors[,1] # bi-direction of ridge
               u <- u/c(dx,dy) # now in units of pixels
               u <- u/sqrt(sum(u^2)) # one pixel length
 
-              POINT <- dither(ip+u[1],jp+u[2],POINT,1/2)
-              POINT <- dither(ip-u[1],jp-u[2],POINT,1/2)
+              POINT <- anti.alias(ip+u[1],jp+u[2],POINT,1/2)
+              POINT <- anti.alias(ip-u[1],jp-u[2],POINT,1/2)
             } # point is in this pixel
             else # point is in adjacent pixel
-            { POINT <- dither(ip,jp,POINT,1/8) }
+            { POINT <- anti.alias(ip,jp,POINT,1/8) }
           } # point is in nearby pixel
         } # end ridge exists
       } # end if non-zero density
@@ -265,7 +265,7 @@ ridges.UD <- function(object,...)
   return(POINT)
 }
 
-dither <- function(i,j,M,dM=1)
+anti.alias <- function(i,j,M,dM=1)
 {
   I <- unique( c(floor(i),ceiling(i)) )
   J <- unique( c(floor(j),ceiling(j)) )

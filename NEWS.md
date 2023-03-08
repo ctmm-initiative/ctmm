@@ -1,11 +1,13 @@
-ctmm 1.1.1 (2023-03-01)
+ctmm 1.1.1 (2023-03-08)
 ================
+* new function rsf.select()
 * new function funnel() for funnel plots
 * new population covariance models and improved model selection in mean.ctmm()
 * new argument 'sqrt' in distance()
 * new argument 'dt.hot' in as.telemetry()
 * new argument 'variable' in Log()
 * as.telemetry() datum argument now works on UTM import, and is no longer to a be a complete PROJ string
+* as.telemetry(), plot.telemetry(), rsf.fit() updated from sp to sf transforms
 * distance() can now take location arguments
 * extrapolation disabled in suitability()
 * bugfix in suitability()
@@ -14,7 +16,7 @@ ctmm 1.1.1 (2023-03-01)
 * overlap() and meta() can now extract object names
 * meta() stability improvements for tiny denominator DOF estimates
 * as.telemetry() UTM import updated to new PROJ specification
-* mean.ctmm() numerical stability improvements for insignificant individual estimates
+* mean.ctmm() numerical stability improvements and covariance selection
 
 ctmm 1.1.0 (2022-11-03)
 ================

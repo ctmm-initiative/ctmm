@@ -499,11 +499,12 @@ plot.SP <- function(SP=NULL,border.SP=TRUE,col.SP=NA,PROJ=NULL,...)
     PROJ <- paste0(PROJ[1],"units=km",PROJ[2])
   }
 
-  if(class(SP)[1]=="SpatialPolygonsDataFrame")
-  {
-    SP <- sp::spTransform(SP,CRSobj=PROJ)
-    sp::plot(SP,col=col.SP,border=border.SP,add=TRUE)
-  }
+  # spTransform is bad
+  if(!any(grepl('sf',class(SP)))) { SP <- sf::st_as_sf(SP) }
+  SP <- sf::st_transform(SP,crs=sf::st_crs(PROJ))
+  SP <- sf::as_Spatial(SP)
+
+  sp::plot(SP,col=col.SP,border=border.SP,add=TRUE)
 }
 
 

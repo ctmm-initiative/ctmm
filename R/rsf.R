@@ -1,6 +1,5 @@
 rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="auto",level.UD=0.99,isotropic=TRUE,debias=TRUE,smooth=TRUE,standardize=TRUE,integrator="MonteCarlo",error=0.01,max.mem="1 Gb",interpolate=TRUE,trace=TRUE,...)
 {
-  beta <- NULL
   STATIONARY <- TRUE
   CTMM <- UD@CTMM
   axes <- CTMM$axes
@@ -18,12 +17,22 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="aut
   {
     if(class(level.UD)[1]=="numeric")
     {
+      # level.UD <- as.sf(UD,level.UD=level.UD)
       level.UD <- SpatialPolygonsDataFrame.UD(UD,level.UD=level.UD)
       # subset to point estimate contour
       level.UD <- level.UD@polygons[[2]]
     }
-    else # project polygon to data's
-    { level.UD <- sp::spTransform(level.UD,sp::CRS(projection(data))) }
+    else
+    {
+      # project polygon to data's (spTransform is bad)
+      if(!any(grepl('sf',class(level.UD)))) { level.UD <- sf::st_as_sf(level.UD) }
+      level.UD <- sf::st_transform(level.UD,sf::st_crs(projection(data)))
+
+      # sf sampling below is too slow, so now have to convert back to sp!
+      level.UD <- sf::as_Spatial(level.UD)@polygons[[1]]
+    }
+    # AREA <- as.numeric(sf::st_area(level.UD))
+    # level.UD should now be class Polygons in projection of data
     AREA <- level.UD@area
   }
   else if(isotropic && !CTMM$isotropic) # until rsf.select() is coded
@@ -84,7 +93,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="aut
   }
   else
   {
-    RSCALE <- rep(1,length(R))
+    RSCALE <- array(1,length(R))
     names(RSCALE) <- names(R)
   }
 
@@ -195,7 +204,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="aut
   # I would like to save with raw raster objects to save memory
   # but raster::getValuesBlock is strangely slow
   # and rescaling is good for numerics
-  PROJ <- ""
+  PROJ <- projection(data) # to write over
   X <- Y <- Z <- Z.ind <- list()
   dX <- dY <- dZ <- Xo <- Yo <- Zo <- rep(NA,length(R))
   for(i in 1 %:% length(R))
@@ -276,6 +285,8 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="aut
       dy <- min(UD$dr['y'],dY)
     }
   }
+  else if(!length(R))
+  { CONSISTENT <- TRUE }
 
   # setup integrated spatial covariates
   if(!integrated)
@@ -333,23 +344,15 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="aut
   }
 
   # initial estimates
-  BETA <- rep(0,length(TERMS))
-  names(BETA) <- TERMS
-  if(!is.null(beta))
+  beta <- array(0,length(TERMS))
+  names(beta) <- TERMS
+  if(!is.null(CTMM$beta))
   {
-    if(class(beta)[1]=="ctmm") { beta <- beta$beta }
+    COPY <- TERMS[TERMS %in% names(CTMM$beta)]
+    beta[COPY] <- CTMM$beta[COPY]
 
-    if(is.null(names(beta))) # integrated terms default to 0
-    { BETA <- pad(beta,length(TERMS)) }
-    else # use relevant initial estimates
-    {
-      beta <- beta[names(beta) %in% TERMS]
-      BETA[names(beta)] <- beta
-    }
+    if(standardize) { beta <- beta * RSCALE }
   }
-  beta <- BETA
-  names(BETA) <- TERMS
-  # beta <- beta * SCALE
 
   # store raster covariates
   for(i in 1%:%length(RVARS))
@@ -542,11 +545,13 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="aut
       }
       else
       {
+        ## sf::st_sample is waaaay toooo slooooow
+        # SIM <- sf::st_sample(level.UD,size=N*nrow(data),type="random",exact=TRUE)
+        # SIM <- sf::st_transform(SIM,sf::st_crs(DATUM))
+        # SIM <- sf::st_coordinates(SIM)
         SIM <- sp::spsample(level.UD,n=N*nrow(data),type="random")
-        # sp::spsample drops projection information and throws annoying warning when trying to fix
-        suppressWarnings( sp::proj4string(SIM) <- sp::CRS(projection(data)) )
-        SIM <- sp::spTransform(SIM,sp::CRS(DATUM))
         SIM <- SIM@coords
+        SIM <- project(SIM,from=projection(data),to=DATUM)
         colnames(SIM) <- GEO
       }
 
@@ -566,6 +571,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="aut
         else # only sample within available area
         { AVAIL <- level.UD@Polygons[[1]]@coords }
         colnames(AVAIL) <- c('x','y')
+
         # switch to raster projection
         AVAIL <- project(AVAIL,from=projection(CTMM),to=PROJ[1])
 

@@ -36,7 +36,7 @@ pseudonymize <- function(data,center=c(0,0),datum="WGS84",origin="1111-11-11 11:
   for(i in 1:length(data))
   {
     xy <- get.telemetry(data[[i]])
-    xy <- rgdal::project(xy,proj,inv=TRUE)
+    xy <- project(xy,from=proj,to="+proj=longlat +datum=WGS84")
     data[[i]]$longitude <- xy[,1]
     data[[i]]$latitude <- xy[,2]
     attr(data[[i]],"info")$projection <- proj

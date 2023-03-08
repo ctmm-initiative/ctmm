@@ -1,4 +1,5 @@
 ** PRIORITY
+* suitability: evaluate -> stats::model.matrix(formula,data=DATA)
 * rsf.fit Riemann integrator can be to coarse
 * units="unit string"
 * Exp format other than area
