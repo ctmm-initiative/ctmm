@@ -22,8 +22,7 @@ RateD <- function(CTMM)
   sigma <- (CTMM1$sigma + CTMM2$sigma)/2
   mu <- CTMM1$mu[1,] - CTMM2$mu[1,]
 
-  D <- as.numeric(mu %*% PDsolve(sigma) %*% mu)/4 + log(det(sigma))/2
-  # modulo log(2*pi*2^dim)
+  D <- as.numeric(mu %*% PDsolve(sigma) %*% mu)/4 + log(det(sigma))/2 + nrow(sigma)/2*log(4*pi)
 
   return(D)
 }

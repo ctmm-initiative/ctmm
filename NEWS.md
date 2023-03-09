@@ -12,6 +12,7 @@ ctmm 1.1.1 (2023-03-08)
 * extrapolation disabled in suitability()
 * bugfix in suitability()
 * bugfix in distance() method="Euclidean", debias=TRUE
+* bugfix in rates() debias=TRUE
 * convergence issue fixed in mean.ctmm()
 * overlap() and meta() can now extract object names
 * meta() stability improvements for tiny denominator DOF estimates

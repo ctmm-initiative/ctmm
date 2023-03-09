@@ -60,34 +60,25 @@ grid.intersection <- function(UD)
 
   dr <- sapply(UD,function(ud){ud$dr}) # (axes,individuals)
   if(any(diff(dr[1,])!=0 | diff(dr[2,])!=0)) { stop("Inconsistent grid resolutions.") }
-  dr <- UD[[1]]$dr
+  dr <- dr[,1]
 
-  # are all grids the same?
-  TEST <- TRUE
-  for(i in 1:(n-1)) { TEST <- TEST && identical(r[[i]],r[[i+1]]) }
+  x.min <- max( sapply(r,function(R){first(R$x)}) )
+  x.max <- min( sapply(r,function(R){last(R$x)}) )
 
-  if(!TEST) # some grids are different
+  y.min <- max( sapply(r,function(R){first(R$y)}) )
+  y.max <- min( sapply(r,function(R){last(R$y)}) )
+
+  # R <- list()
+  # if(x.min<=x.max) { R$x <- seq(x.min,x.max,length.out=1+round((x.max-x.min)/dr['x'])) } # by fails with numerical error
+  # if(y.min<=y.max) { R$y <- seq(y.min,y.max,length.out=1+round((y.max-y.min)/dr['y'])) } # by fails with numerical error
+
+  SUB <- list()
+  for(i in 1:n)
   {
-    x.min <- max( sapply(r,function(R){first(R$x)}) )
-    x.max <- min( sapply(r,function(R){last(R$x)}) )
-
-    y.min <- max( sapply(r,function(R){first(R$y)}) )
-    y.max <- min( sapply(r,function(R){last(R$y)}) )
-
-    R <- list()
-    if(x.min<=x.max) { R$x <- seq(x.min,x.max,length.out=1+round((x.max-x.min)/dr['x'])) } # by fails with numerical error
-    if(y.min<=y.max) { R$y <- seq(y.min,y.max,length.out=1+round((y.max-y.min)/dr['y'])) } # by fails with numerical error
-
-    SUB <- list()
-    for(i in 1:n)
-    {
-      SUB[[i]] <- list()
-      SUB[[i]]$x <- (r[[i]]$x-x.min)/dr['x'] >= -tol & (x.max-r[[i]]$x)/dr['x'] >= -tol # careful with round-off error
-      SUB[[i]]$y <- (r[[i]]$y-y.min)/dr['y'] >= -tol & (y.max-r[[i]]$y)/dr['y'] >= -tol # careful with round-off error
-    }
+    SUB[[i]] <- list()
+    SUB[[i]]$x <- (r[[i]]$x-x.min)/dr['x'] >= -tol & (x.max-r[[i]]$x)/dr['x'] >= -tol # careful with round-off error
+    SUB[[i]]$y <- (r[[i]]$y-y.min)/dr['y'] >= -tol & (y.max-r[[i]]$y)/dr['y'] >= -tol # careful with round-off error
   }
-  else
-  { SUB <- lapply(1:n,function(i){list(x=TRUE,y=TRUE)}) }
 
   return(SUB)
 }

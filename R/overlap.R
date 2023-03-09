@@ -148,25 +148,24 @@ overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,method="Bhattach
     BIAS <- BIAS/8
     # AMGM covariance terms
     BIAS <- BIAS + max( ElogW(sigma,n0)/2 - ElogW(CTMM1$sigma,n1)/4 - ElogW(CTMM2$sigma,n2)/4 , 0)
-    # this is actually the expectation value?
+    # this is actually the expectation value
   }
   else if(method=="Encounter")
   {
     BIAS <- BIAS/4
     # AMGM covariance terms
     BIAS <- BIAS + max( ElogW(sigma,n0)/2 - ElogW(CTMM1$sigma,n1)/4 - ElogW(CTMM2$sigma,n2)/4 , 0)
-    # this is actually the expectation value?
+    # this is actually the expectation value
   }
   else if(method=="Rate")
   {
     BIAS <- BIAS/4
     # covariance terms
-    BIAS <- BIAS + max( ElogW(sigma,n0)/2 , 0)
-    # this is actually the expectation value?
+    BIAS <- BIAS + max( ElogW(sigma,n0)/2 , ElogW(CTMM1$sigma,n1)/4 + ElogW(CTMM2$sigma,n2)/4 ) + nrow(sigma)/2*log(4*pi)
   }
 
   # relative bias instead of absolute bias
-  BIAS <- BIAS/MLE
+  if(method!="Rate") { BIAS <- BIAS/MLE }
   # would subtract off estimate to get absolute bias
   if(distance) { BIAS <- 1 + BIAS } # didn't include first term
 
@@ -177,26 +176,39 @@ overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,method="Bhattach
 
   if(level)
   {
-    if(debias) { MLE <- MLE/BIAS }
-
-    DOF <- 2*MLE^2/VAR
-    CI <- chisq.ci(MLE,DOF=DOF,alpha=1-level)
-
-    if(distance) # return distance
+    if(method!="Rate")
     {
-      if(sqrt) # sqrt and debias
+      if(debias) { MLE <- MLE/BIAS }
+
+      DOF <- 2*MLE^2/VAR
+      CI <- chisq.ci(MLE,DOF=DOF,alpha=1-level)
+
+      if(distance) # return distance
       {
-        CI <- sqrt(CI)
-        if(debias) { CI <- CI/chi.bias(max(DOF,1)) }
+        if(sqrt) # sqrt and debias
+        {
+          CI <- sqrt(CI)
+          if(debias) { CI <- CI/chi.bias(max(DOF,1)) }
+        }
+
+        return(CI)
       }
 
-      return(CI)
+      # transform from (square) distance to overlap measure
+      CI <- exp(-rev(CI))
+    }
+    else # method=="Rate"
+    {
+      if(debias) { MLE <- MLE - (BIAS-MLE) }
+
+      MLE <- exp(-MLE) # this is more chi^2
+      VAR <- MLE^2 * VAR
+
+      DOF <- 2*MLE^2/VAR
+      CI <- chisq.ci(MLE,DOF=DOF,alpha=1-level)
     }
 
-    # transform from (square) distance to overlap measure
-    CI <- exp(-rev(CI))
     names(CI) <- NAMES.CI
-
     R <- list(DOF=DOF,CI=CI)
     return(R)
   }
@@ -245,11 +257,10 @@ overlap.UD <- function(object,level=0.95,debias=TRUE,method="Bhattacharyya",...)
 
     if(method=="Rate") # D can be negative
     {
+      # additive bias
       if(debias)
       {
-        BIAS <- D * CI$BIAS
-        BIAS <- BIAS - D
-        D <- D - BIAS
+        D <- D - (CI$BIAS-D)
         D <- nant(D,Inf) # Inf - Inf
         OVER <- exp(-D)
       }
