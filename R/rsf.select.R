@@ -8,11 +8,17 @@ rsf.select <- function(data,UD,R=list(),formula=NULL,verbose=FALSE,IC="AICc",tra
     { TERMS <- RVARS }
     else
     {
+      VARS <- all.vars(formula)
+      DVARS <- VARS[ VARS %nin% RVARS ]
+
+      for(D in DVARS) { data[[D]] <- as.numeric(data[[D]]) } # model.matrix will rename otherwise
+
       # this doesn't work with poly(), etc.
       # TERMS <- attr(stats::terms(formula),"term.labels")
       # dummy data for model parameter names
-      DATA <- data.frame(data)[1:2,]
-      for(r in names(R)) { DATA[[r]] <- 0 }
+      DATA <- data.frame(data)
+      DATA[RVARS] <- as.list(rep(0,length(RVARS)))
+      DATA[['rr']] <- 0
       TERMS <- colnames(stats::model.matrix(formula,data=DATA))
       TERMS <- TERMS[TERMS!="(Intercept)"]
     }

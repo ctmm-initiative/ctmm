@@ -132,6 +132,8 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="aut
     VARS <- all.vars(formula)
     DVARS <- VARS[ VARS %nin% RVARS ]
 
+    for(D in DVARS) { data[[D]] <- as.numeric(data[[D]]) } # model.matrix will rename otherwise
+
     # this doesn't work with poly(), etc.
     # TERMS <- attr(stats::terms(formula),"term.labels")
     # dummy data for model parameter names
@@ -167,10 +169,13 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="aut
     {
       # term <- gsub(":","*",term) # multiplication
       # term <- gsub("I(","(",term) # function evaluations # don't think this is necessary
+      NAS <- which(apply(envir,1,function(r){any(is.na(r[VARS]))}))
+      envir[NAS,VARS] <- 0
       envir <- data.frame(envir) # matrices can't be environments, but data.frames can't matrix multiply...
       if(!STATIONARY) { envir <- cbind(envir,data) }
       # RET <- eval(parse(text=term),envir=envir)
-      RET <- stats::model.matrix(formula,envir)[,term]
+      RET <- stats::model.matrix(formula,envir)[,term,drop=FALSE] # skips NAs ???
+      RET[NAS,] <- NA
       if(offset) { RET <- apply(RET,1,prod) }
     }
     else # [space,time,var] loop over runs
@@ -185,16 +190,16 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="aut
       }
       else # !STATIONARY
       {
-        RET <- sapply(1:dim(envir)[1],function(i)
+        RET <- vapply(1:dim(envir)[1],function(i)
                 {
                   ENVIR <- envir[i,,]; # [time,var]
                   dim(ENVIR) <- dim(envir)[-1];
                   colnames(ENVIR) <- VARS
                   ENVIR <- cbind(ENVIR,data); # [time,vars]
                   evaluate(term,ENVIR)
-                }) # [time,space,terms]
-        dim(RET) <- c(nrow(data),dim(envir)[1],length(term))
-        RET <- aperm(RET,c(2,1,3)) # [space,time,terms]
+                },array(0,c(nrow(data),length(term)))) # [time,terms,space]
+        dim(RET) <- c(nrow(data),length(term),dim(envir)[1])
+        RET <- aperm(RET,c(3,1,2)) # [space,time,terms]
       }
     }
     return(RET)
@@ -275,8 +280,8 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="aut
       if(grepl("longlat",projection(R[[1]]))) { dA <- dA * 1000^2 }
 
       TEST <- raster::cellStats(dA,'min') / sqrt(det.covm(CTMM$sigma))
-      if(TEST>1) # HR^2
-      { warning("Raster resolution is ",round(TEST),"\u00D7 coarser than the home-range size.") }
+      if(TEST>0.1) # HR^2
+      { warning("Raster resolution is ",round(TEST),"\u00D7 coarse compared to home-range size.") }
 
     } # TODO generalize this for projected covariates
     else # choose minimum resolution for integration grid

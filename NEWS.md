@@ -1,4 +1,4 @@
-ctmm 1.1.1 (2023-03-09)
+ctmm 1.1.1 (2023-03-10)
 ================
 * new function rsf.select()
 * new function funnel() for funnel plots
