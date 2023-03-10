@@ -480,7 +480,7 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",...)
     S <- paste("diag(\u03A3)",ms)
     VARS <- array(TRUE,DIM)
     names(VARS) <- FEATURES
-    if(m=="isotropic") { VARS[c('minor','angle')] <- FALSE }
+    # if(m=="isotropic") { VARS[c('minor','angle')] <- FALSE }
     VARS <- diag(VARS,DIM)
     if(trace) { message("Fitting autocovariance model ",S) }
     OLD[[S]] <- meta.normal(MU,SIGMA,debias=debias,weights=weights,VARS=VARS,MEANS=MEANS[[m]],...)
@@ -494,9 +494,15 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",...)
       try <- which(VARS)
       TRYS <- array(VARS,c(DIM,length(try)))
       TRYS <- t(TRYS) # [off->on,all]
-      for(i in 1:length(try)) { TRYS[i,try[i]] <- FALSE }
+      colnames(TRYS) <- FEATURES
+      for(i in 1:nrow(TRYS)) { TRYS[i,try[i]] <- FALSE }
+      if("minor" %in% FEATURES)
+      {
+        TRYS[,"minor"] <- TRYS[,"angle"] <- TRYS[,"minor"] & TRYS[,"angle"]
+        TRYS <- unique(TRYS)
+      }
       # models that we will try by turning one term on
-      NAMES <- sapply(1:length(try),function(i){paste0(FEATURES[TRYS[i,]],collapse=",")})
+      NAMES <- sapply(1:nrow(TRYS),function(i){paste0(FEATURES[TRYS[i,]],collapse=",")})
       NAMES <- paste0("[",NAMES,"]")
 
       # fit all

@@ -93,7 +93,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="aut
   }
   else
   {
-    RSCALE <- array(1,length(R))
+    RSCALE <- rep(1,length(R))
     names(RSCALE) <- names(R)
   }
 
@@ -344,14 +344,14 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="aut
   }
 
   # initial estimates
-  beta <- array(0,length(TERMS))
+  beta <- numeric(length(TERMS))
   names(beta) <- TERMS
-  if(!is.null(CTMM$beta))
+  if(length(CTMM$beta))
   {
     COPY <- TERMS[TERMS %in% names(CTMM$beta)]
     beta[COPY] <- CTMM$beta[COPY]
 
-    if(standardize) { beta <- beta * RSCALE }
+    if(standardize) { beta[RVARS] <- beta[RVARS] * RSCALE }
   }
 
   # store raster covariates
@@ -406,8 +406,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="aut
       DATA[,'rr'] <- -( DATA[,'x']^2 + DATA[,'y']^2 )/2
 
       # initial guess
-      if(integrator!="MonteCarlo")
-      { beta['rr'] <- 1 }
+      if(integrator!="MonteCarlo") { beta['rr'] <- 1 }
     }
     else # beta is correction to standardized solve(sigma)
     {

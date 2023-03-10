@@ -208,8 +208,8 @@ line.boxer <- function(dp,p0=dp[,1],lower=-Inf,upper=Inf,period=F,period.max=1/2
 QuadSolve <- function(P0,P1,P2,DIR,F0,F1,F2)
 {
   # convert back to displacements
-  P1 <- P1 - P0
-  P2 <- P2 - P0
+  P1 <- P1 - c(P0)
+  P2 <- P2 - c(P0)
   # signed magnitudes of displacement vectors
   # P1, P2, DIR columns will always be parallel
   DIR <- cbind(DIR)
