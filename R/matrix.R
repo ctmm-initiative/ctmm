@@ -255,6 +255,7 @@ PDfunc <-function(M,func=function(m){1/m},sym=TRUE,force=FALSE,pseudo=FALSE,tol=
 # Positive definite solver
 PDsolve <- function(M,sym=TRUE,force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
 {
+  NAMES <- rev( dimnames(M) ) # dimnames for inverse matrix
   DIM <- dim(M)
   if(is.null(DIM))
   {
@@ -282,12 +283,19 @@ PDsolve <- function(M,sym=TRUE,force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
     REM <- !(INF|ZERO)
     if(any(REM)) { M[REM,REM] <- PDsolve(M[REM,REM,drop=FALSE],force=force,pseudo=pseudo,sym=sym) }
 
+    dimnames(M) <- NAMES
     return(M)
   }
 
   if(!force && !pseudo)
   {
-    if(DIM[1]==1) { return(matrix(1/M,c(1,1))) }
+    if(DIM[1]==1)
+    {
+      M <- matrix(1/M,c(1,1))
+
+      dimnames(M) <- NAMES
+      return(M)
+    }
     if(DIM[1]==2)
     {
       DET <- M[1,1]*M[2,2]-M[1,2]*M[2,1]
@@ -295,7 +303,10 @@ PDsolve <- function(M,sym=TRUE,force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
       SWP <- M[1,1] ; M[1,1] <- M[2,2] ; M[2,2] <- SWP
       M[1,2] <- -M[1,2]
       M[2,1] <- -M[2,1]
-      return( M/DET )
+      M <- M/DET
+
+      dimnames(M) <- NAMES
+      return(M)
     }
   }
 
@@ -332,6 +343,7 @@ PDsolve <- function(M,sym=TRUE,force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
   # symmetrize
   if(sym) { M <- He(M) }
 
+  dimnames(M) <- NAMES
   return(M)
 }
 

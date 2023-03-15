@@ -135,6 +135,30 @@ color <- function(object,by="time",col.fn=NULL,alpha=1,dt=NULL,cores=1,...)
 }
 
 
+simplify.color <- function(object)
+{
+  if(class(object)[1]=="list")
+  {
+    NAMES <- names(object)
+    for(i in 1:length(object))
+    {
+      col <- object[[i]]
+      col <- grDevices::col2rgb(col,alpha=TRUE)
+      # opacity weighted average
+      w <- col['alpha',]
+      w <- w/sum(w)
+      col <- col[1:3,] %*% w
+      col <- grDevices::rgb(red=col[1],green=col[2],blue=col[3],maxColorValue=255)
+      object[[i]] <- col
+    }
+    object <- unlist(object)
+    names(object) <- NAMES
+  }
+
+  return(object)
+}
+
+
 # multiply alpha
 malpha <- function(col,alpha=1)
 {

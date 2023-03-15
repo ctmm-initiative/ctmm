@@ -164,7 +164,21 @@ get.mle <- function(FIT)
 ###############
 # keep removing uncertain parameters until AIC stops improving
 ctmm.select <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position",trace=FALSE,cores=1,...)
-{ ctmm.iterate(data,CTMM,verbose=verbose,level=level,IC=IC,MSPE=MSPE,trace=trace,cores=cores,recurse=FALSE,TRYS=NULL,...) }
+{
+  M <- ctmm.iterate(data,CTMM,verbose=TRUE,level=level,IC=IC,MSPE=MSPE,trace=trace,cores=cores,recurse=FALSE,TRYS=NULL,...)
+
+  for(i in 1:length(M))
+  {
+    if(grepl('anisotropic',names(M)[i]))
+    {
+      ISO <- gsub(" anisotropic","",names(M)[i],fixed=TRUE)
+      if(ISO %in% names(M)) { M[[i]]$ISO <- M[[ISO]] }
+    }
+  }
+
+  if(verbose) { return(M) }
+  else { return(M[[1]]) }
+}
 
 ## internal function being called recursively by ctmm.select
 # recurse: FALSE is outer-most call, TRUE are inner calls
@@ -559,7 +573,8 @@ name.ctmm <- function(CTMM,whole=TRUE)
   { if(tau[1]<Inf) { NAME <- "OU" } else { NAME <- "BM" } }
   else if(length(tau)==0)
   {
-    if(CTMM$sigma@par['major'] || "major" %in% FEATURES)
+    POS <- "sigma" %in% names(CTMM) && CTMM$sigma@par['major']<=0
+    if(POS || "major" %in% FEATURES || "sigma" %nin% names(CTMM))
     { NAME <- "IID" }
     else
     { NAME <- "inactive" }
@@ -567,7 +582,7 @@ name.ctmm <- function(CTMM,whole=TRUE)
 
   # isotropy
   isotropic <- CTMM$isotropic
-  if(length(CTMM$axes)>1)
+  if(length(CTMM$axes)>1 && !is.null(isotropic))
   {
     if(all(!isotropic))
     { NAME <- c(NAME,"anisotropic") }

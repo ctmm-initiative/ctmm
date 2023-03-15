@@ -145,7 +145,7 @@ export(lasso,marquee,cleave)
 export(encounter,rates)
 
 # RSF functions
-export(rsf.fit,rsf.select)
+export(rsf.fit,rsf.select,sdm.fit,sdm.select,sdm.integrate)
 
 # revisitation
 export(revisitation)

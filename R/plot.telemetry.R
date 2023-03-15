@@ -210,6 +210,10 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,col.bg='white',
   # PLOT SHAPEFILES
   if(!is.null(SP)) { plot.SP(SP=SP,border.SP=border.SP,col.SP=col.SP,PROJ=ctmm::projection(x),...) }
 
+  # unlist annotation colors
+  col.level <- simplify.color(col.level)
+  col.DF <- simplify.color(col.DF)
+
   #########################
   # PLOT GAUSSIAN CONTOURS AND DENSITY
   if(!is.null(CTMM))

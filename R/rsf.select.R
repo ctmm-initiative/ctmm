@@ -1,10 +1,33 @@
 rsf.select <- function(data,UD,R=list(),formula=NULL,verbose=FALSE,IC="AICc",trace=TRUE,...)
 {
+  CTMM <- UD@CTMM
+  isotropic <- CTMM$isotropic
+  SISO <- ifelse(isotropic,"isotropic","anisotropic")
+  M <- list() # list of candidate models
+  if(!isotropic)
+  {
+    if("ISO" %in% names(CTMM))
+    { ISO <- CTMM$ISO }
+    else
+    {
+      ISO <- simplify.ctmm(CTMM,'minor')
+      if(trace) { message("Fitting isotropic autocorrelation model.") }
+      ISO <- ctmm.fit(data,ISO,trace=max(trace-1,0))
+    }
+    UD@CTMM <- ISO
+    UD$DOF.area <- DOF.area(ISO)
+    M <- rsf.select(data,UD,R=R,formula=formula,verbose=verbose,IC=IC,trace=trace,...)
+    return(M)
+
+    UD@CTMM <- CTMM
+  }
+
   if(length(R))
   {
     RVARS <- names(R)
+    FORMULA <- !is.null(formula)
 
-    if(is.null(formula))
+    if(!FORMULA)
     { TERMS <- RVARS }
     else
     {
@@ -16,18 +39,24 @@ rsf.select <- function(data,UD,R=list(),formula=NULL,verbose=FALSE,IC="AICc",tra
       # this doesn't work with poly(), etc.
       # TERMS <- attr(stats::terms(formula),"term.labels")
       # dummy data for model parameter names
-      DATA <- data.frame(data)
+      DATA <- data.frame(data)[1:2,]
       DATA[RVARS] <- as.list(rep(0,length(RVARS)))
-      DATA[['rr']] <- 0
       TERMS <- colnames(stats::model.matrix(formula,data=DATA))
       TERMS <- TERMS[TERMS!="(Intercept)"]
     }
   }
   DIM <- length(TERMS)
 
-  M <- list()
   ON <- array(FALSE,DIM)
   names(ON) <- TERMS
+
+  ########################
+  # fit without covariates first
+  NAME <- paste(SISO,"~ 0")
+  if(trace) { message("Fitting RSF model ",NAME) }
+  M[[NAME]] <- rsf.fit(data,UD,R=R,formula=~0,trace=max(trace-1,0),...)
+  # re-use estimates for next fit
+  UD@CTMM <- M[[NAME]]
 
   ################
   # build up phase
@@ -39,17 +68,20 @@ rsf.select <- function(data,UD,R=list(),formula=NULL,verbose=FALSE,IC="AICc",tra
     TRYS <- t(TRYS) # [off->on,all]
     for(i in 1:length(try)) { TRYS[i,try[i]] <- TRUE }
     # models that we will try by turning one term on
-    NAMES <- sapply(1:length(try),function(i){paste("~",paste(TERMS[TRYS[i,]],collapse="+"))})
+    FORM <- sapply(1:length(try),function(i){paste("~",paste(TERMS[TRYS[i,]],collapse="+"))})
+    NAMES <- paste(SISO,FORM)
+    FORM <- lapply(FORM,stats::as.formula)
     # don't try the same model twice
-    NAMES <- NAMES[NAMES %nin% names(M)]
+    SUB <- NAMES %nin% names(M)
+    NAMES <- NAMES[SUB]
+    FORM <- FORM[SUB]
 
     # fit all
     NEW <- list()
     for(i in 1%:%length(NAMES))
     {
-      formula <- stats::as.formula(NAMES[i])
       if(trace) { message("Fitting RSF model ",NAMES[i]) }
-      NEW[[NAMES[i]]] <- rsf.fit(data,UD,R=R,formula=formula,trace=trace-1,...)
+      NEW[[NAMES[i]]] <- rsf.fit(data,UD,R=R,formula=FORM[[i]],trace=max(trace-1,0),...)
     }
     M <- c(M,NEW)
 
@@ -59,7 +91,8 @@ rsf.select <- function(data,UD,R=list(),formula=NULL,verbose=FALSE,IC="AICc",tra
     beta <- NEW[[i]]$beta
     ON <- TERMS %in% names(beta)
     # copy for initial guess in fitting
-    UD@CTMM$beta <- beta
+    # UD@CTMM$beta <- beta
+    UD@CTMM <- NEW[[i]]
   }
 
   ###################
@@ -72,21 +105,21 @@ rsf.select <- function(data,UD,R=list(),formula=NULL,verbose=FALSE,IC="AICc",tra
     TRYS <- t(TRYS) # [off->on,all]
     for(i in 1:length(try)) { TRYS[i,try[i]] <- FALSE }
     # models that we will try by turning one term on
-    NAMES <- sapply(1:length(try),function(i){paste("~",paste(TERMS[TRYS[i,]],collapse="+"))})
-    NAMES[NAMES=="~ "] <- "~ 0" # make a valid formula string
+    FORM <- sapply(1:length(try),function(i){paste("~",paste(TERMS[TRYS[i,]],collapse="+"))})
+    FORM[FORM=="~ "] <- "~ 0" # make a valid formula string
+    NAMES <- paste(SISO,FORM)
+    FORM <- lapply(FORM,stats::as.formula)
     # don't try the same model twice
-    NEW.NAMES <- NAMES[NAMES %nin% names(M)]
+    SUB <- NAMES %nin% names(M)
+    NEW.NAMES <- NAMES[SUB]
+    FORM <- FORM[SUB]
 
     # fit all
     NEW <- list()
     for(i in 1%:%length(NEW.NAMES))
     {
-      if(NEW.NAMES[i]=="~ 0") # no terms left
-      { formula <- ~ 0 }
-      else
-      { formula <- stats::as.formula(NEW.NAMES[i]) }
       if(trace) { message("Fitting RSF model ",NEW.NAMES[i]) }
-      NEW[[NEW.NAMES[i]]] <- rsf.fit(data,UD,R=R,formula=formula,trace=trace-1,...)
+      NEW[[NEW.NAMES[i]]] <- rsf.fit(data,UD,R=R,formula=FORM[[i]],trace=max(trace-1,0),...)
     }
     M <- c(M,NEW)
 
@@ -97,7 +130,8 @@ rsf.select <- function(data,UD,R=list(),formula=NULL,verbose=FALSE,IC="AICc",tra
     beta <- NEW[[i]]$beta
     ON <- TERMS %in% names(beta)
     # copy for initial guess in fitting
-    UD@CTMM$beta <- beta
+    # UD@CTMM$beta <- beta
+    UD@CTMM <- NEW[[i]]
   }
 
   ICS <- sapply(M,function(m){m[[IC]]})

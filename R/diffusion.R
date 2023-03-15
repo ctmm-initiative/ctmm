@@ -180,7 +180,10 @@ diffusion <- function(CTMM,level=0.95,finish=TRUE)
   D <- sigma * D
 
   if(!is.null(COV))
-  { VAR <- c(D.grad %*% COV %*% D.grad) }
+  {
+    VAR <- c(D.grad %*% COV %*% D.grad)
+    VAR <- nant(VAR,Inf)
+  }
   else
   { VAR <- Inf }
 

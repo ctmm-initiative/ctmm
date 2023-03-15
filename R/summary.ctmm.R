@@ -21,47 +21,50 @@ confint.ctmm <- function(model,alpha=0.05,UNICODE=FALSE)
   par <- NULL
   NAMES <- NULL
 
-  # standard area uncertainty: chi-square
-  NAMES <- c(NAMES,"area")
-  AREA <- area.covm(model$sigma)
-  DOF <- 2*DOF.area(model)
-  VAR <- 2*AREA^2/DOF
-  AREA <- chisq.ci(AREA,DOF=DOF,alpha=alpha)
-  par <- rbind(par,AREA)
-
-  if(sum(PVARS[c('major','minor')],na.rm=TRUE)>0)
+  if("sigma" %in% names(model))
   {
-    J <- J.zero(POV)
+    # standard area uncertainty: chi-square
+    NAMES <- c(NAMES,"area")
+    AREA <- area.covm(model$sigma)
+    DOF <- 2*DOF.area(model)
+    VAR <- 2*AREA^2/DOF
+    AREA <- chisq.ci(AREA,DOF=DOF,alpha=alpha)
+    par <- rbind(par,AREA)
 
-    if(isotropic[1])
+    if(sum(PVARS[c('major','minor')],na.rm=TRUE)>0)
     {
-      P <- 'major'
-      AREA <- sigma@par[P]
-      # CoV^2
-      PAR <- POV[P,P] / AREA^2
-      # dArea/dpar
-      J[P,P] <- 1
-    }
-    else
-    {
-      P <- c('major','minor')
-      AREA <- sqrt(prod(sigma@par[P]))
-      # dArea/dpar
-      J0 <- 1/2 * AREA / sigma@par[P]
-      # CoV^2
-      PAR <- c(J0 %*% POV[P,P] %*% J0)/AREA^2
-      # Jacobian for VAR[Area]
-      J[P,P] <- J0
-    }
-    J <- quad2lin(J,diag=TRUE)
+      J <- J.zero(POV)
 
-    # VAR[PAR|POV] + VAR[PAR|Area]
-    VAR <- tr(J %*% COV.POV %*% t(J))/AREA^4 + (-2*PAR/AREA)^2*VAR
-    PAR <- chisq.ci(PAR,VAR=VAR,alpha=alpha)
-    PAR <- sqrt(PAR)
+      if(isotropic[1])
+      {
+        P <- 'major'
+        AREA <- sigma@par[P]
+        # CoV^2
+        PAR <- POV[P,P] / AREA^2
+        # dArea/dpar
+        J[P,P] <- 1
+      }
+      else
+      {
+        P <- c('major','minor')
+        AREA <- sqrt(prod(sigma@par[P]))
+        # dArea/dpar
+        J0 <- 1/2 * AREA / sigma@par[P]
+        # CoV^2
+        PAR <- c(J0 %*% POV[P,P] %*% J0)/AREA^2
+        # Jacobian for VAR[Area]
+        J[P,P] <- J0
+      }
+      J <- quad2lin(J,diag=TRUE)
 
-    NAMES <- c(NAMES,"CoV[area]")
-    par <- rbind(par,PAR)
+      # VAR[PAR|POV] + VAR[PAR|Area]
+      VAR <- tr(J %*% COV.POV %*% t(J))/AREA^4 + (-2*PAR/AREA)^2*VAR
+      PAR <- chisq.ci(PAR,VAR=VAR,alpha=alpha)
+      PAR <- sqrt(PAR)
+
+      NAMES <- c(NAMES,"CoV[area]")
+      par <- rbind(par,PAR)
+    }
   }
 
   # timescale uncertainty: can hit 0 and Inf
@@ -295,18 +298,21 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
   ### AREA
   par <- confint.ctmm(object,alpha=alpha,UNICODE=TRUE)
   # where to store unit information
-  K <- nrow(par)
+  K <- max(nrow(par),0)
   name <- rep("",K)
   scale <- rep(1,K)
   names(name) <- names(scale) <- rownames(par)
 
-  # standard area to home-range area
-  par["area",] <- -2*log(alpha.UD)*pi*par[1,]
+  if("area" %in% rownames(par))
+  {
+    # standard area to home-range area
+    par["area",] <- -2*log(alpha.UD)*pi*par[1,]
 
-  # pretty area units   # do we convert units
-  unit.list <- unit.par(par["area",],"area",SI=!units)
-  name["area"] <- unit.list$name
-  scale["area"] <- unit.list$scale
+    # pretty area units   # do we convert units
+    unit.list <- unit.par(par["area",],"area",SI=!units)
+    name["area"] <- unit.list$name
+    scale["area"] <- unit.list$scale
+  }
 
   # pretty time units
   I <- !grepl("CoV",rownames(par),fixed=TRUE)
@@ -537,6 +543,8 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
 #DOF of area
 DOF.area <- function(CTMM)
 {
+  if("sigma" %nin% names(CTMM)) { return(0) }
+
   sigma <- CTMM$sigma@par
   AREA <- area.covm(CTMM$sigma)
 
@@ -573,7 +581,7 @@ DOF.var <- function(CTMM)
 #########
 DOF.mean <- function(CTMM)
 {
-  if(!CTMM$range || "COV.mu" %nin% names(CTMM)) { return(0) }
+  if(!CTMM$range || "COV.mu" %nin% names(CTMM) || "mu" %nin% names(CTMM)) { return(0) }
 
   sigma <- CTMM$sigma
   COV <- CTMM$COV.mu

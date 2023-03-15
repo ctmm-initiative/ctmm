@@ -1,14 +1,17 @@
-ctmm 1.1.1 (2023-03-10)
+ctmm 1.1.1 (2023-03-15)
 ================
 * new function rsf.select()
+* new functions sdm.fit(), sdm.select()
 * new function funnel() for funnel plots
 * new population covariance models and improved model selection in mean.ctmm()
 * new argument 'sqrt' in distance()
 * new argument 'dt.hot' in as.telemetry()
 * new argument 'variable' in Log()
+* as.telemetry() now supports GBIF format data
 * as.telemetry() datum argument now works on UTM import, and is no longer to a be a complete PROJ string
 * as.telemetry(), plot.telemetry(), rsf.fit() updated from sp to sf transforms
 * distance() can now take location arguments
+* plot.telemetry() col.DF & col.level arguments can now be color() lists
 * extrapolation disabled in suitability()
 * bugfix in suitability()
 * bugfix in distance() method="Euclidean", debias=TRUE

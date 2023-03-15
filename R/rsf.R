@@ -1,7 +1,8 @@
-rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="auto",level.UD=0.99,isotropic=TRUE,debias=TRUE,smooth=TRUE,standardize=TRUE,integrator="MonteCarlo",error=0.01,max.mem="1 Gb",interpolate=TRUE,trace=TRUE,...)
+rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,reference="auto",debias=TRUE,smooth=TRUE,standardize=TRUE,integrator="MonteCarlo",error=0.01,max.mem="1 Gb",interpolate=TRUE,trace=TRUE,...)
 {
   STATIONARY <- TRUE
   CTMM <- UD@CTMM
+  isotropic <- CTMM$isotropic
   axes <- CTMM$axes
   GEO <- c('longitude','latitude')
   max.mem <- ustring(max.mem)
@@ -35,17 +36,26 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="aut
     # level.UD should now be class Polygons in projection of data
     AREA <- level.UD@area
   }
-  else if(isotropic && !CTMM$isotropic) # until rsf.select() is coded
-  {
-    message('RSF code is isotropic for the moment.')
-    CTMM <- simplify.ctmm(CTMM,'minor')
-    CTMM <- ctmm.fit(data,CTMM,trace=trace)
-  }
 
   # smooth the data, but don't drop
   if(smooth && any(CTMM$error>0))
   { data[,c(axes,GEO)] <- predict(data,CTMM=CTMM,t=data$t,complete=TRUE)[,c(axes,GEO)] }
   n <- nrow(data)
+
+  if(!CTMM$isotropic)
+  {
+    if("ISO" %in% names(CTMM))
+    { ISO <- CTMM$ISO }
+    else
+    {
+      ISO <- simplify.ctmm(CTMM,'minor')
+      if(trace) { message("Fitting isotropic autocorrelation model.") }
+      ISO <- ctmm.fit(data,ISO,trace=max(trace-1,0))
+    }
+    CTMM <- ISO
+    UD@CTMM <- ISO
+    UD$DOF.area <- DOF.area(ISO)
+  }
 
   # for simulation - uncorrelated, error-less
   IID <- CTMM
@@ -84,17 +94,6 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="aut
     data <- STUFF$data
     R <- STUFF$R
     formula <- STUFF$formula
-  }
-
-  if(!is.null(formula) && standardize)
-  {
-    message("Users are responsible for standardizing rasters when formula argument is supplied.")
-    standardize <- FALSE
-  }
-  else
-  {
-    RSCALE <- rep(1,length(R))
-    names(RSCALE) <- names(R)
   }
 
   # how to sample rasters
@@ -139,7 +138,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="aut
     # dummy data for model parameter names
     DATA <- data.frame(data)
     DATA[RVARS] <- as.list(rep(0,length(RVARS)))
-    DATA[['rr']] <- 0
+    # DATA[['rr']] <- 0 # why was this here?
     TERMS <- colnames(stats::model.matrix(formula,data=DATA))
     TERMS <- TERMS[TERMS!="(Intercept)"]
 
@@ -151,6 +150,17 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="aut
     if(attr(stats::terms(formula),"response")[1]>0) { stop("Response variable not yet supported.") }
   }
   environment(formula) <- NULL
+
+  if(length(DVARS)+length(CVARS)>0 && standardize)
+  {
+    message("Users are responsible for standardizing rasters when interactions are supplied.")
+    standardize <- FALSE
+  }
+  else
+  {
+    RSCALE <- rep(1,length(R))
+    names(RSCALE) <- names(R)
+  }
 
   VARS <- c(RVARS,CVARS) # vars that need to be recorded per location
   if(length(DVARS)) { STATIONARY <- FALSE }
@@ -206,12 +216,14 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="aut
   }
 
   ## prepare raster data ##
-  # I would like to save with raw raster objects to save memory
-  # but raster::getValuesBlock is strangely slow
-  # and rescaling is good for numerics
-  PROJ <- projection(data) # to write over
-  X <- Y <- Z <- Z.ind <- list()
-  dX <- dY <- dZ <- Xo <- Yo <- Zo <- rep(NA,length(R))
+  # will write over the assigned values
+  PROJ <- projection(data)
+  X <- list(UD$r$x)
+  Y <- list(UD$r$y)
+  Z <- Z.ind <- list()
+  dX <- UD$dr['x']
+  dY <- UD$dr['y']
+  dZ <- Xo <- Yo <- Zo <- rep(NA,length(R))
   for(i in 1 %:% length(R))
   {
     PROJ[i] <- raster::projection(R[[i]])
@@ -259,7 +271,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="aut
       Z.ind[[i]] <- (data$t - Z[[i]][1])/dZ[i] + 1
     } # end XYZ
   } # end R loop
-  if(length(X)) { names(X) <- names(Y) <- names(dX) <- names(dY) <- names(Xo) <- names(Yo) <- RVARS[1:length(X)] }
+  if(length(R)) { names(X) <- names(Y) <- names(dX) <- names(dY) <- names(Xo) <- names(Yo) <- RVARS[1:length(X)] }
   if(length(Z)) { names(Z) <- names(dZ) <- names(Z.ind) <- RVARS[1:length(Z)] }
 
   # check for compatible raster grids
@@ -281,7 +293,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="aut
 
       TEST <- raster::cellStats(dA,'min') / sqrt(det.covm(CTMM$sigma))
       if(TEST>0.1) # HR^2
-      { warning("Raster resolution is ",round(TEST),"\u00D7 coarse compared to home-range size.") }
+      { warning("Raster resolution is ",round(TEST,digits=1),"\u00D7 coarse compared to home-range size.") }
 
     } # TODO generalize this for projected covariates
     else # choose minimum resolution for integration grid
@@ -321,6 +333,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="aut
       NSPA <- NSPA + 3
       SCALE <- c(SCALE,std[1]^2,std[2]^2,prod(std))
       theta <- CTMM$sigma@par['angle']
+      ROT <- rotate(theta) # rotate theta from left and -theta from right
     }
 
     names(SCALE) <- SVARS
@@ -348,6 +361,9 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="aut
     { lower[c('xx','yy')] <- LOV }
   }
 
+  # might not use all rasters
+  if(standardize) { RSCALE <- RSCALE[RSCALE %in% TERMS] }
+
   # initial estimates
   beta <- numeric(length(TERMS))
   names(beta) <- TERMS
@@ -356,7 +372,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="aut
     COPY <- TERMS[TERMS %in% names(CTMM$beta)]
     beta[COPY] <- CTMM$beta[COPY]
 
-    if(standardize) { beta[RVARS] <- beta[RVARS] * RSCALE }
+    if(standardize) { beta <- beta * RSCALE }
   }
 
   # store raster covariates
@@ -398,8 +414,8 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="aut
     DATA[,'x'] <- data$x - mu['x']
     DATA[,'y'] <- data$y - mu['y']
 
-    # rotate to major-minor axes
-    if(!isotropic) { DATA[,axes] <- rotate.vec(DATA[,axes],-theta) }
+    # rotate -theta to major-minor axes
+    if(!isotropic) { DATA[,axes] <- DATA[,axes] %*% ROT }
 
     # standardize
     DATA[,'x'] <- DATA[,'x']/std['x']
@@ -615,8 +631,10 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="aut
         SIM <- SIM[SUB,] # in CTMM projection
         xy <- xy[SUB,] # in raster projection
 
-        # this is for unprojected rasters !!!! incomplete otherwise
-        dA <- raster::extract(dA,xy,method="bilinear")
+        if(length(R))
+        { dA <- raster::extract(dA,xy,method="bilinear") }
+        else
+        { dA <- array(prod(UD$dr),nrow(xy)) }
 
         N <- nrow(xy)
       }
@@ -656,10 +674,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="aut
 
       DIM <- dim(R[[i]])
       if(DIM[3]==1)
-      {
-        SATA[SUB,,r] <- raster::extract(R[[i]],xy,method=interpolate[i])
-        #SATA[SUB,,r] <- bint(R[[r]],t(xy))
-      }
+      { SATA[SUB,,r] <- raster::extract(R[[i]],xy,method=interpolate[i]) }
       else
       {
         XY <- xy
@@ -679,9 +694,8 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="aut
       SATA[SUB,,'x'] <- SIM[,'x'] - mu['x']
       SATA[SUB,,'y'] <- SIM[,'y'] - mu['y']
 
-      # rotate
-      if(!isotropic)
-      { SATA[SUB,,axes] <- rotate.vec(SATA[SUB,axes],-theta) }
+      # rotate -theta
+      if(!isotropic) { SATA[SUB,,axes] <- SATA[SUB,,axes] %.% ROT }
 
       # standardize
       SATA[SUB,,'x'] <- SATA[SUB,,'x']/std['x']
@@ -689,9 +703,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="aut
 
       # variance/covariance terms
       if(isotropic)
-      {
-        SATA[SUB,,'rr'] <- -( SATA[SUB,,'x']^2 + SATA[SUB,,'y']^2 )/2
-      }
+      { SATA[SUB,,'rr'] <- -( SATA[SUB,,'x']^2 + SATA[SUB,,'y']^2 )/2 }
       else
       {
         SATA[SUB,,'xx'] <- -SATA[SUB,,'x']^2/2
@@ -827,7 +839,8 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="aut
 
         beta[c('xx','yy','xy')] <- covm(sigma)@par # (major,minor,angle)
 
-        beta[axes] <- c(sigma %*% beta[axes]) + c(CTMM$mu)
+        # rotate +theta
+        beta[axes] <- c(ROT %*% sigma %*% beta[axes]) + c(CTMM$mu)
       }
 
       return(beta)
@@ -907,7 +920,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,reference="aut
   }
 
   # unstandardize
-  if(standardize)
+  if(standardize && length(RSCALE))
   {
     beta <- beta/RSCALE
     COV[RVARS,] <- COV[RVARS,,drop=FALSE] / RSCALE

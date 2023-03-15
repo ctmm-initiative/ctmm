@@ -592,12 +592,13 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
                        'Acquisition.Start.Time','start.timestamp',
                        'Time.GMT','GMT.Time','Local.Time','time',"\u6642\u523B",
                        'Date.GMT','Date','Date.Local',"\u65E5\u4ED8",
-                       't','t_dat','use_date')
+                       't','t_dat','use_date',"event.Date")
   NAMES$id <- c("animal.ID","individual.local.identifier","local.identifier","individual.ID","Name","ID","ID.Names","Animal","Full.ID",
                 "tag.local.identifier","tag.ID","band.number","band.num","device.info.serial","Device.ID","collar.id","Logger","Logger.ID",
                 "Deployment","deployment.ID","track.ID")
-  NAMES$long <- c("location.longitude","location.long","Longitude","longitude.WGS84","Longitude.deg","long","lon","lng","GPS.Longitude","\u7D4C\u5EA6")
-  NAMES$lat <- c("location.latitude","location.lat","Latitude","latitude.WGS84","Latitude.deg","latt","lat","GPS.Latitude","\u7DEF\u5EA6")
+  NAMES$taxa <- c("verbatim.Scientific.Name")
+  NAMES$long <- c("location.longitude","location.long","Longitude","longitude.WGS84","Longitude.deg","long","lon","lng","GPS.Longitude","\u7D4C\u5EA6","decimal.Longitude")
+  NAMES$lat <- c("location.latitude","location.lat","Latitude","latitude.WGS84","Latitude.deg","latt","lat","GPS.Latitude","\u7DEF\u5EA6","decimal.Latitude")
   NAMES$zone <- c("GPS.UTM.zone","UTM.zone","zone")
   NAMES$east <- c("GPS.UTM.Easting","GPS.UTM.East","GPS.UTM.x","UTM.Easting","UTM.East","UTM.E","UTM.x","Easting","East","x")
   NAMES$north <- c("GPS.UTM.Northing","GPS.UTM.North","GPS.UTM.y","UTM.Northing","UTM.North","UTM.N","UTM.y","Northing","North","y")
@@ -605,12 +606,12 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
                    "gps.horizontal.accuracy.estimate","gps.horizontal.accuracy.estimate.m","gps.horizontal.accuracy",
                    "horizontal.accuracy.estimate","horizontal.accuracy.estimate.m","horizontal.accuracy",
                    "error","error.m","3D.error.m","location.error","location.error.m","HEPE","EPE","EHPE",
-                   "\u8AA4\u5DEE","\u8AA4\u5DEE.m","\u8AA4\u5DEE\uFF08m\uFF09")
-  NAMES$HDOP <- c("GPS.HDOP","HDOP","Horizontal.DOP","GPS.Horizontal.Dilution","Horizontal.Dilution","Hor.Dil","Hor.DOP","HPE")
+                   "\u8AA4\u5DEE","\u8AA4\u5DEE.m","\u8AA4\u5DEE\uFF08m\uFF09","coordinate.Uncertainty.In.Meters")
+  NAMES$HDOP <- c("GPS.HDOP","HDOP","Horizontal.DOP","GPS.Horizontal.Dilution","Horizontal.Dilution","Hor.Dil","Hor.DOP","HPE","coordinate.Precision")
   NAMES$DOP <- c("GPS.DOP","DOP","GPS.Dilution","Dilution","Dil")
   NAMES$PDOP <- c("GPS.PDOP","PDOP","Position.DOP","GPS.Position.Dilution","Position.Dilution","Pos.Dil","Pos.DOP")
   NAMES$GDOP <- c("GPS.GDOP","GDOP","Geometric.DOP","GPS.Geometric.Dilution","Geometric.Dilution","Geo.Dil","Geo.DOP")
-  NAMES$VDOP <- c("GPS.VDOP","VDOP","Vertical.DOP","GPS.Vertical.Dilusion","Vertical.Dilution","Ver.Dil","Ver.DOP")
+  NAMES$VDOP <- c("GPS.VDOP","VDOP","Vertical.DOP","GPS.Vertical.Dilusion","Vertical.Dilution","Ver.Dil","Ver.DOP","elevation.Accuracy","depth.Accuracy")
   NAMES$nsat <- c("GPS.satellite.count","satellite.count","Sat.Count","Number.of.Sats","Num.Sats","Nr.Sat","NSat","NSats","Sat.Num","satellites.used","Satellites","Sats","SVs.in.use") # Counts? Messages?
   NAMES$FIX <- c("GPS.fix.type","GPS.fix.type.raw","fix.type","type.of.fix","e.obs.type.of.fix","Fix.Attempt","GPS.Fix.Attempt","Telonics.Fix.Attempt","Fix.Status","sensor.type","Fix","eobs.type.of.fix","2D/3D","X3.equals.3dfix.2.equals.2dfix","Nav","Validated","VALID")
   NAMES$TTF <- c("GPS.time.to.fix","time.to.fix","time.to.GPS.fix","time.to.GPS.fix.s","GPS.TTF","TTF","GPS.fix.time","fix.time","time.to.get.fix","used.time.to.get.fix","e.obs.used.time.to.get.fix","Duration","GPS.navigation.time","navigation.time","Time.On","Searching.Time")
@@ -675,10 +676,18 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
 
   COL <- NAMES$id
   COL <- pull.column(object,COL,as.factor)
+  OCCURRENCE <- FALSE # default assumption
   if(length(COL)==0)
   {
-    warning("No MoveBank identification found. Assuming data corresponds to one indiviudal.")
-    COL <- factor(rep('unknown',nrow(object)))
+    COL <- NAMES$taxa
+    COL <- pull.column(object,COL,as.factor)
+    if(length(COL))
+    { OCCURRENCE <- TRUE }
+    else
+    {
+      warning("No MoveBank or GBIF identification found. Assuming data corresponds to one indiviudal.")
+      COL <- factor(rep('unknown',nrow(object)))
+    }
   }
   DATA$id <- COL
 
@@ -1069,7 +1078,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     telist[[i]]$id <- NULL
 
     # clean through duplicates, sort times, etc..
-    telist[[i]] <- telemetry.clean(telist[[i]],id=id[i])
+    telist[[i]] <- telemetry.clean(telist[[i]],id=id[i],OCCURRENCE=OCCURRENCE)
 
     # can only check for hot/cold class after sorting times
     if(!is.na(dt.hot))
@@ -1196,44 +1205,58 @@ rm.incomplete <- function(DF,COL)
 
 #################
 # clean up data
-telemetry.clean <- function(data,id)
+telemetry.clean <- function(data,id,OCCURRENCE=FALSE)
 {
   # test for out of order (or out of reverse order)
   if(nrow(data)>1)
   {
     DIFF <- diff(data$t) # all positive if in forward order
     DIFF <- DIFF * DIFF[DIFF!=0][1] # reverse order becomes all positive too
-    DIFF <- length(DIFF) && all(DIFF>0) # all in order
-    if(!DIFF) { warning("Times might be out of order or duplicated in ",id,". Make sure that timeformat and timezone are correctly specified.") }
+    if(!OCCURRENCE) # tracking data shouldn't have repeating times
+    {
+      DIFF <- length(DIFF) && all(DIFF>0)
+      if(!DIFF) { warning("Times might be out of order or duplicated in ",id,". Make sure that timeformat and timezone are correctly specified.") }
+    }
+    else # occurrence data can have repeating times, but they should still be in order
+    {
+      DIFF <- length(DIFF) && all(DIFF>=0)
+      if(!DIFF) { warning("Times might be out of order in ",id,". Make sure that timeformat and timezone are correctly specified.") }
+    }
   }
 
   # sort in time
   ORDER <- sort.list(data$t,na.last=NA,method="quick")
   data <- data[ORDER,]
 
-  # remove duplicate observations
-  ORDER <- length(data$t)
-  data <- unique(data)
-  if(ORDER != length(data$t)) { warning("Duplicate data in ",id," removed.") }
+  if(!OCCURRENCE)
+  {
+    # remove duplicate observations
+    ORDER <- length(data$t)
+    data <- unique(data)
+    if(ORDER != length(data$t)) { warning("Duplicate data in ",id," removed.") }
 
-  # exit with warning on duplicate times
-  if(anyDuplicated(data$t)) { warning("Duplicate times in ",id,". Data cannot be fit without an error model.") }
+    # exit with warning on duplicate times
+    if(anyDuplicated(data$t)) { warning("Duplicate times in ",id,". Data cannot be fit without an error model.") }
+  }
 
   # remove old level information
   data <- droplevels(data)
 
-  dt <- diff(data$t)
-  # v <- sqrt(diff(data$x)^2+diff(data$y)^2)/dt
-  # v <- max(v)
-  # message("Maximum speed of ",format(v,digits=3)," m/s observed in ",id)
-  dt <- min(dt,Inf)
-  if(dt<Inf)
+  if(!OCCURRENCE)
   {
-    units <- unit(dt,dimension='time')
-    message("Minimum sampling interval of ",format(dt/units$scale,digits=3)," ",units$name," in ",id)
+    dt <- diff(data$t)
+    # v <- sqrt(diff(data$x)^2+diff(data$y)^2)/dt
+    # v <- max(v)
+    # message("Maximum speed of ",format(v,digits=3)," m/s observed in ",id)
+    dt <- min(dt,Inf)
+    if(dt<Inf)
+    {
+      units <- unit(dt,dimension='time')
+      message("Minimum sampling interval of ",format(dt/units$scale,digits=3)," ",units$name," in ",id)
+    }
+    else
+    { message("Minimum sampling interval of NA in ",id) }
   }
-  else
-  { message("Minimum sampling interval of NA in ",id) }
 
   return(data)
 }
