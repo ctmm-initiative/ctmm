@@ -422,7 +422,7 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=NULL,dt=NULL,PC="Mar
 # calculate bandwidth and weights the sample of a population
 bandwidth.pop <- function(data,UD,kernel="individual",weights=FALSE,ref="Gaussian",precision=1/2,...)
 {
-  kernel <- match.arg(kernel,c("population","individual"))
+  kernel <- match.arg(kernel,c("individual","population"))
   ref <- match.arg(ref,c("Gaussian","AKDE"))
 
   CTMM <- lapply(UD,function(ud){ud@CTMM})
@@ -474,7 +474,7 @@ bandwidth.pop <- function(data,UD,kernel="individual",weights=FALSE,ref="Gaussia
 
   if(ref=="AKDE")
   {
-    Q.R <- rates(UD,normalize=FALSE,self=FALSE)[,,'est'] / rates(CTMM,normalize=FALSE,self=FALSE)[,,'est']
+    Q.R <- rates(UD,normalize=FALSE,self=FALSE)$CI[,,'est'] / rates(CTMM,normalize=FALSE,self=FALSE)$CI[,,'est']
     Q.R <- stats::cov2cor(Q.R)
 
     # MEAN.UD <- mean(UD)
@@ -487,20 +487,24 @@ bandwidth.pop <- function(data,UD,kernel="individual",weights=FALSE,ref="Gaussia
   {
     if(h==0) { return(Inf) }
     H <- h^2
-    H.M <- H*MEAN$sigma
+    H.M <- H*getDataPart(MEAN$sigma)
 
     # QUAD
     Q <- matrix(0,length(data),length(data))
 
-    # QUAD diagonal (slowest term - more optimized)
+    # QUAD diagonal (slowest term - optimize the most)
     for(i in 1:length(data))
     {
       if(kernel=="individual")
       { DEN <- 1/( sqrt(DET[i])*2*(S[[i]]+H) ) }
       else if(kernel=="population")
       {
-        DEN <- S[[i]] # copy data structure
-        DEN[] <- vapply(c(S[[i]]),function(s){det2(s*CTMM[[i]]$sigma + H.M)},1)
+
+        DEN <- c(getDataPart(CTMM[[i]]$sigma)) %o% S[[i]] + c(H.M)
+        dim(DEN) <- c(dim(H.M),length(S[[i]]))
+        DEN <- DEN[1,1,]*DEN[2,2,]-DEN[1,2,]*DEN[2,1,]
+        # DEN <- S[[i]] # copy data structure
+        # DEN[] <- vapply(c(S[[i]]),function(s){det2(s*CTMM[[i]]$sigma + H.M)},1)
         DEN <- 1/(2*sqrt(DEN))
       }
 
@@ -519,9 +523,9 @@ bandwidth.pop <- function(data,UD,kernel="individual",weights=FALSE,ref="Gaussia
         MU <- c( CTMM[[i]]$mu - CTMM[[j]]$mu )
 
         if(kernel=="individual")
-        { SIG <- (1+H)*(CTMM[[i]]$sigma + CTMM[[j]]$sigma) }
+        { SIG <- (1+H)*(getDataPart(CTMM[[i]]$sigma) + getDataPart(CTMM[[j]]$sigma)) }
         else if(kernel=="population")
-        { SIG <- CTMM[[i]]$sigma + CTMM[[j]]$sigma + 2*H.M }
+        { SIG <- getDataPart(CTMM[[i]]$sigma) + getDataPart(CTMM[[j]]$sigma) + 2*H.M }
 
         Q[i,j] <- Q[j,i] <- exp(-(MU %*% PDsolve(SIG) %*% MU)/2) / sqrt(det(SIG))
       }
@@ -535,9 +539,9 @@ bandwidth.pop <- function(data,UD,kernel="individual",weights=FALSE,ref="Gaussia
       MU <- c( CTMM[[i]]$mu - MEAN$mu )
 
       if(kernel=="individual")
-      { SIG <- MEAN$sigma + (1+H)*CTMM[[i]]$sigma }
+      { SIG <- getDataPart(MEAN$sigma) + (1+H)*getDataPart(CTMM[[i]]$sigma) }
       else if(kernel=="population")
-      { SIG <- MEAN$sigma + CTMM[[i]]$sigma + H.M }
+      { SIG <- getDataPart(MEAN$sigma) + getDataPart(CTMM[[i]]$sigma) + H.M }
 
       L[i] <- exp(-(MU %*% PDsolve(SIG) %*% MU)/2) / sqrt(det(SIG))
     }

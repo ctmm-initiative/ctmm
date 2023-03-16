@@ -150,6 +150,8 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utiliz
     i <- 1 # one population
     # weights and bandwidth
     KDE[[i]] <- bandwidth.pop(data,UD,weights=weights,...)
+    kernel <- list(...)$kernel
+    if(is.null(kernel)) { kernel <- "individual" }
 
     DOF <- DOF.area(KDE[[i]]$CTMM)
     if(DOF<error)
@@ -166,11 +168,14 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utiliz
     # bandwidth [d,d,n]
     H <- KDE[[i]]$h^2
 
-    # assemble bandwidth
+    # assemble bandwidths
     KDE[[i]]$H <- list()
     for(j in 1:n)
     {
-      KDE[[i]]$H[[j]] <- prepare.H(H*CTMM[[j]]$sigma,nrow(data[[j]]))
+      if(kernel=="individual")
+      { KDE[[i]]$H[[j]] <- prepare.H(H*CTMM[[j]]$sigma,nrow(data[[j]])) }
+      else if(kernel=="population")
+      { KDE[[i]]$H[[j]] <- prepare.H(H*KDE[[i]]$CTMM$sigma,nrow(data[[j]])) }
       DIM <- dim(KDE[[i]]$H[[j]])
       dim(KDE[[i]]$H[[j]]) <- c(DIM[1],AXES^2)
     }
