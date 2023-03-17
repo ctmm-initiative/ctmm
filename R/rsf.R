@@ -362,7 +362,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
   }
 
   # might not use all rasters
-  if(standardize) { RSCALE <- RSCALE[RSCALE %in% TERMS] }
+  if(standardize) { RSCALE <- RSCALE[names(RSCALE) %in% TERMS] }
 
   # initial estimates
   beta <- numeric(length(TERMS))
@@ -372,7 +372,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
     COPY <- TERMS[TERMS %in% names(CTMM$beta)]
     beta[COPY] <- CTMM$beta[COPY]
 
-    if(standardize) { beta <- beta * RSCALE }
+    if(standardize) { beta[names(RSCALE)] <- beta[names(RSCALE)] * RSCALE }
   }
 
   # store raster covariates
@@ -923,6 +923,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
   if(standardize && length(RSCALE))
   {
     beta <- beta/RSCALE
+    RVARS <- names(RSCALE)
     COV[RVARS,] <- COV[RVARS,,drop=FALSE] / RSCALE
     COV[,RVARS] <- t( t(COV[,RVARS,drop=FALSE]) / RSCALE )
   }
