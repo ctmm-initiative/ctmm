@@ -1,6 +1,7 @@
 \name{sdm.fit}
 \alias{sdm.fit}
 \alias{sdm.select}
+\alias{sdm.integrate}
 \encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Fit species distribution models (SDMs) [IN DEVELOPMENT]}

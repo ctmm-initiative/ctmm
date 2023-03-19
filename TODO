@@ -1,4 +1,5 @@
 ** PRIORITY
+* select model-average if same k?
 * pkde() check kernel argument
 * rsf.fit ~=0 exact weighted Gaussian fit (SP? NA?)
 * rsf.select standardize

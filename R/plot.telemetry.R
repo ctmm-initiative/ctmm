@@ -330,7 +330,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,col.bg='white',
           }
           else
           {
-            B2 <- vapply(1:(dim(ERROR)[1]),function(i){ eigen(ERROR[i,,],only.values=TRUE)$values },numeric(2)) # (big/small,n)
+            B2 <- vapply(1:(dim(ERROR)[1]),function(i){ eigen(ERROR[i,,])$values },numeric(2)) # (big/small,n)
             A2 <- clamp(B2[1,],0,Inf)
             B2 <- clamp(B2[2,],0,A2)
           }

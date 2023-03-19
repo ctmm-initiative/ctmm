@@ -20,7 +20,7 @@ speed.ctmm <- function(object,data=NULL,t=NULL,level=0.95,robust=FALSE,units=TRU
 
   if(prior && fast)
   {
-    TEST <- try(any(eigen(object$COV,only.values=TRUE)$values<=.Machine$double.eps),silent=TRUE)
+    TEST <- try(any(eigen(object$COV)$values<=.Machine$double.eps),silent=TRUE)
     TEST <- class(TEST)[1]!="logical" || TEST
     if(TEST)
     {

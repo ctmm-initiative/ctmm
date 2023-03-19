@@ -409,7 +409,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
   if(!is.null(covariance))
   {
     covariance <- t(t(covariance/parscale)/parscale)
-    TEST <- eigen(covariance,only.values=TRUE)$values
+    TEST <- eigen(covariance)$values
     TEST <- any(TEST<=TOL[1]) || any(TEST>=1/TOL[1]) || min(TEST)/max(TEST)<=TOL[1]
     if(TEST) { covariance <- NULL }
   }
@@ -417,7 +417,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
   if(!is.null(hessian))
   {
     hessian <- t(t(hessian*parscale)*parscale)
-    TEST <- 1/eigen(hessian,only.values=TRUE)$values
+    TEST <- 1/eigen(hessian)$values
     TEST <- any(TEST<=TOL[1]) || any(TEST>=1/TOL[1]) || min(TEST)/max(TEST)<=TOL[1]
     if(TEST) { hessian <- NULL }
   }

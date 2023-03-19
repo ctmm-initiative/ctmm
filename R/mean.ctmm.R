@@ -467,28 +467,109 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",...)
     MEANS[["anisotropic"]][c('minor','angle')] <- FALSE
   }
 
+  NAME.ZERO <- "Dirac-\u03B4(\u03A3)"
+  NAME.ALL <- "diag(\u03A3)"
+  make.names <- function(TRYS)
+  {
+    NAMES <- sapply(1:nrow(TRYS),function(i){paste0(FEATURES[TRYS[i,]],collapse=",")})
+    for(i in 1:length(NAMES))
+    {
+      if(all(!TRYS[i,])) # Dirac-delta
+      { NAMES[i] <- NAME.ZERO }
+      else if(DIM==1 && TRYS[i,1]) # full matrix
+      { NAMES[i] <- "\u03A3" }
+      else if(all(TRYS[i,])) # full diagonal
+      { NAMES[i] <- NAME.ALL }
+      else if(!grepl(",",NAMES[i])) # part diagonal, but all correlations
+      { NAMES[i] <- paste0("\u03A3[",NAMES[i],"]") }
+      else # part diagonal, no correlations
+      { NAMES[i] <- paste0("diag(\u03A3)[",NAMES[i],"]") }
+    }
+
+    return(NAMES)
+  }
+
   FM <- list()
   for(m in names(MEANS))
   {
     ms <- paste0(m,"-\u03C3")
+    VAR.MAX <- colSums(!INF)>1 | !MEANS[[m]]
     OLD <- list()
 
-    S <- paste("Dirac-\u03B4(\u03A3)",ms)
-    if(trace) { message("Fitting autocovariance model ",S) }
+    ##########
+    ## build up variance phase
+    ## no variance
+    S <- NAME.ZERO
+    if(trace) { message("Fitting autocovariance model ",S," ",ms) }
     OLD[[S]] <- meta.normal(MU,SIGMA,debias=debias,weights=weights,VARS=FALSE,MEANS=MEANS[[m]],...)
 
-    S <- paste("diag(\u03A3)",ms)
-    VARS <- array(TRUE,DIM)
-    names(VARS) <- FEATURES
-    # if(m=="isotropic") { VARS[c('minor','angle')] <- FALSE }
-    VARS <- diag(VARS,DIM)
-    if(trace) { message("Fitting autocovariance model ",S) }
-    OLD[[S]] <- meta.normal(MU,SIGMA,debias=debias,weights=weights,VARS=VARS,MEANS=MEANS[[m]],...)
-    VARS <- diag(OLD[[S]]$VARS)
-    GUESS <- OLD[[S]]
+    ## add variances one by one
+    VARS <- array(FALSE,DIM)
+    GUESS <- OLD[[1]]
+    while(any(!VARS))
+    {
+      # which terms are presently off
+      try <- which(!VARS)
+      TRYS <- array(VARS,c(DIM,length(try)))
+      TRYS <- t(TRYS) # [off->on,all]
+      colnames(TRYS) <- FEATURES
+      for(i in 1:nrow(TRYS))
+      {
+        TRYS[i,try[i]] <- TRUE
+        TRYS[i,] <- TRYS[i,] & VAR.MAX
+      }
+      if("minor" %in% FEATURES) { TRYS[,"minor"] <- TRYS[,"angle"] <- TRYS[,"minor"] | TRYS[,"angle"] }
+      TRYS <- unique(TRYS)
 
-    # pair down unsupported variances
-    while(any(VARS))
+      # models that we will try by turning one term on
+      NAMES <- make.names(TRYS)
+      # don't try what's been done
+      SUB <- NAMES %nin% names(OLD)
+      SUB <- which(SUB)
+
+      if(!length(SUB)) { break } # no new models to fit
+
+      TRYS <- TRYS[SUB,,drop=FALSE]
+      NAMES <- NAMES[SUB]
+
+      # fit all
+      NEW <- list()
+      for(i in 1%:%length(NAMES))
+      {
+        S <- NAMES[i]
+        if(trace) { message("Fitting autocovariance model ",S," ",ms) }
+        VARS <- diag(TRYS[i,],length(FEATURES))
+        NEW[[S]] <- meta.normal(MU,SIGMA,debias=debias,weights=weights,VARS=VARS,MEANS=MEANS[[m]],GUESS=GUESS,...)
+      }
+
+      ICS <- sapply(NEW,function(m){m[[IC]]})
+      BEST <- which.min(ICS)
+      BEST <- NEW[[BEST]]
+      GUESS <- BEST
+      VARS <- diag(BEST$VARS)
+
+      OLD <- c(OLD,NEW)
+
+      if(BEST[[IC]]==Inf) { break }
+    } # finish build up variances
+
+    ###########
+    ## pair down variance phase
+    # start with all variances or best (if IC==Inf)
+    if(NAME.ALL %in% names(OLD))
+    { BEST <- OLD[[NAME.ALL]] }
+    else # limited data cannot support all variances
+    {
+      ICS <- sapply(OLD,function(m){m[[IC]]})
+      BEST <- which.min(ICS)
+      BEST <- OLD[[BEST]]
+    }
+    GUESS <- BEST
+    VARS <- diag(BEST$VARS)
+
+    ##############
+    # pair down variances phase
+    while(sum(VARS)>1)
     {
       # which terms are presently off
       try <- which(VARS)
@@ -501,48 +582,58 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",...)
         TRYS[,"minor"] <- TRYS[,"angle"] <- TRYS[,"minor"] & TRYS[,"angle"]
         TRYS <- unique(TRYS)
       }
-      # models that we will try by turning one term on
-      NAMES <- sapply(1:nrow(TRYS),function(i){paste0(FEATURES[TRYS[i,]],collapse=",")})
-      NAMES <- paste0("[",NAMES,"]")
+      # models that we will try by turning one term off
+      NAMES <- make.names(TRYS)
+      # paired down models that we haven't attempted yet
+      NEW.NAMES <- NAMES[NAMES %nin% names(OLD)]
 
       # fit all
       NEW <- list()
-      for(i in 1%:%length(NAMES))
+      for(i in 1%:%length(NEW.NAMES))
       {
-        S <- paste0("diag(\u03A3)",NAMES[i]," ",ms)
-        if(trace) { message("Fitting autocovariance model ",S) }
+        S <- NEW.NAMES[i]
+        if(trace) { message("Fitting autocovariance model ",S," ",ms) }
         VARS <- diag(TRYS[i,],length(FEATURES))
         NEW[[S]] <- meta.normal(MU,SIGMA,debias=debias,weights=weights,VARS=VARS,MEANS=MEANS[[m]],GUESS=GUESS,...)
       }
 
-      # didn't progress this round, will break
-      BREAK <- min(sapply(OLD,function(m){m[[IC]]})) < min(sapply(NEW,function(m){m[[IC]]}))
-
       OLD <- c(OLD,NEW)
-      ICS <- sapply(OLD,function(m){m[[IC]]})
+      NEW <- OLD[NAMES] # also consider models that we've already fitted (with the right number of parameters)
+
+      ICS <- sapply(NEW,function(m){m[[IC]]})
       BEST <- which.min(ICS)
-      BEST <- OLD[[BEST]]
+      BEST <- NEW[[BEST]]
       GUESS <- BEST
       VARS <- diag(BEST$VARS)
+    } # finish pair down variances
 
-      if(BREAK) { break }
-    }
+    # take best variance model
+    ICS <- sapply(OLD,function(m){m[[IC]]})
+    BEST <- which.min(ICS)
+    BEST <- OLD[[BEST]]
+    GUESS <- BEST
+    VARS <- diag(BEST$VARS)
 
     # now see if correlations are supported
-    i <- sum(VARS)
-    if((N-1)*i >= i*(i+1)/2)
+    V <- sum(VARS)
+    if(V>1 && sum(!INF)-sum(MEANS[[m]]) >= V*(V+1)/2)
     {
-      if(i<DIM)
+      if(V<DIM)
       {
         S <- paste0(FEATURES[VARS],collapse=",")
-        S <- paste0("\u03A3[",S,"] ",ms)
+        S <- paste0("\u03A3[",S,"]")
       }
       else
-      { S <- paste("\u03A3",ms) }
-      if(trace) { message("Fitting autocovariance model ",S) }
-      OLD[[S]] <- meta.normal(MU,SIGMA,debias=debias,weights=weights,VARS=VARS,MEANS=MEANS[[m]],GUESS=GUESS,...)
+      { S <- "\u03A3" }
+
+      if(S %nin% names(OLD))
+      {
+        if(trace) { message("Fitting autocovariance model ",S," ",ms) }
+        OLD[[S]] <- meta.normal(MU,SIGMA,debias=debias,weights=weights,VARS=VARS,MEANS=MEANS[[m]],GUESS=GUESS,...)
+      }
     } # end correlation fit
 
+    names(OLD) <- paste(names(OLD),ms)
     FM <- c(FM,OLD)
   } # for(m in names(MEANS))
 

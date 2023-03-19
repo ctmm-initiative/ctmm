@@ -354,7 +354,7 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
     par <- rbind(par,rms)
     rownames(par)[nrow(par)] <- "speed"
 
-    if(sum(PVARS[c('major','minor','tau','tau velocity')],na.rm=TRUE)>0)
+    if(sum(PVARS[c('major','minor','tau','tau position','tau velocity')],na.rm=TRUE)>0)
     {
       J0 <- STUFF$J
       PAR <- c(J0 %*% POV %*% J0)/ms^2
@@ -583,14 +583,23 @@ DOF.mean <- function(CTMM)
 {
   if(!CTMM$range || "COV.mu" %nin% names(CTMM) || "mu" %nin% names(CTMM)) { return(0) }
 
-  sigma <- CTMM$sigma
   COV <- CTMM$COV.mu
-
   if(length(dim(COV))==4) { COV <- COV[,1,1,] } # take only stationary mean COV
 
-  sigma <- sqrtm.covm(sigma)
-  # symmetric under trace and det
+  if("POV.mu" %nin% names(CTMM))
+  {
+    sigma <- CTMM$sigma
+    sigma <- sqrtm.covm(sigma)
+  }
+  else
+  {
+    sigma <- CTMM$POV.mu
+    sigma <- sqrtm(sigma)
+  }
+
   if(any(is.na(COV))) { return(0) }
+
+  # symmetric under trace and det
   DOF <- sigma %*% PDsolve(COV) %*% sigma
   DOF <- mean(diag(DOF))
 

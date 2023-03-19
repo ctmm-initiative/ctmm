@@ -230,10 +230,10 @@ PDfunc <-function(M,func=function(m){1/m},sym=TRUE,force=FALSE,pseudo=FALSE,tol=
   # MIN <- last(M)
   # if(MIN<0) { tol <- max(tol,2*abs(MIN)) }
 
-  FORCE <- (M < tol) -> PSEUDO
+  PSEUDO <- (M < tol)
   # PSEUDO <- (abs(M) < tol) # why abs(M)?
 
-  if(any(FORCE) && force) { M[FORCE] <- tol }
+  if(force) { M <- eigen.extrapolate(M) }
   if(any(PSEUDO) && pseudo) { M[PSEUDO] <- 0 }
   M <- func(M)
   if(any(PSEUDO) && pseudo) { M[PSEUDO] <- 0 }
@@ -359,7 +359,7 @@ PDlogdet <- function(M,sym=TRUE,force=FALSE,tol=.Machine$double.eps,...)
   if(DIM[1]==0)
   {
     M <- clamp(M,0,Inf)
-    if(force && M<=0) { M <- tol }
+    if(force) { M <- eigen.extrapolate(M) }
     M <- log(M)
     return(M)
   }
@@ -383,10 +383,10 @@ PDlogdet <- function(M,sym=TRUE,force=FALSE,tol=.Machine$double.eps,...)
   # symmetrize
   if(sym) { M <- He(M) }
 
-  M <- eigen(M,only.values=TRUE)$values
+  M <- eigen(M)$values
   M <- clamp(M,0,Inf)
 
-  if(force && any(M<=0)) { M[M<=0] <- tol }
+  if(force) { M <- eigen.extrapolate(M) }
 
   M <- sum(log(M))
 
@@ -491,7 +491,7 @@ unnant <- function(M)
 # condition number
 conditionNumber <- function(M)
 {
-  M <- try(eigen(M,only.values=TRUE)$values)
+  M <- try(eigen(M)$values)
   if(class(M)[1]=="numeric")
   {
     M <- last(M)/M[1]
@@ -553,7 +553,7 @@ mat.min <- function(M)
   if(any(is.na(M)) || any(abs(M)==Inf) || any(diag(M)==0)) { return(0) }
   diag(M) <- abs(diag(M))
   M <- stats::cov2cor(M)
-  M <- eigen(M,only.values=TRUE)$values
+  M <- eigen(M)$values
   M <- last(M)
   return(M)
 }
@@ -590,4 +590,23 @@ ext.mat <- function(...,MAX=TRUE)
 
   MATS <- Reduce("+",MATS)
   return(MATS)
+}
+
+
+eigen.extrapolate <- function(M)
+{
+  if(all(M>0)) { return(M) }
+
+  LOG <- log(M[M>0]/M[1])
+  LOG <- diff(LOG)
+  if(length(LOG))
+  { LOG <- last(LOG) }
+  else
+  { LOG <- log(.Machine$double.eps) }
+
+  BAD <- sum(M<=0)
+  LAST <- last(M[M>0])
+  M[M<=0] <- LAST * exp(LOG*1:BAD)
+
+  return(M)
 }

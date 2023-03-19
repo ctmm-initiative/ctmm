@@ -258,7 +258,7 @@ abs.bivar <- function(mu,Sigma,return.VAR=FALSE)
   mu2 <- sum(mu^2)
   mu <- sqrt(mu2)
 
-  sigma <- eigen(Sigma,only.values=TRUE)$values
+  sigma <- eigen(Sigma)$values
 
   Barg <- mu2/(4*sigma0)
   if(Barg >= BESSEL_LIMIT)

@@ -138,11 +138,13 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,GUESS=NULL
   INF <- list(loglike=-Inf,mu=mu,COV.mu=sigma,sigma=sigma,sigma.old=sigma)
   if(!is.null(GUESS))
   {
+    SUB <- MEANS & GUESS$mu!=0
     GUESS$mu <- (GUESS$mu-SHIFT)/SCALE
-    GUESS$sigma <- t(GUESS$sigma/SCALE)/SCALE
+    INF$mu[SUB] <- GUESS$mu[SUB]
 
-    INF$mu[MEANS] <- GUESS$mu[MEANS]
-    INF$sigma[VARS] <- GUESS$sigma[VARS]
+    SUB <- VARS & GUESS$sigma!=0
+    GUESS$sigma <- t(GUESS$sigma/SCALE)/SCALE
+    INF$sigma[SUB] <- GUESS$sigma[SUB]
     sigma <- INF$sigma
 
     INF$sigma.old <- INF$sigma
@@ -437,6 +439,7 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,GUESS=NULL
   # AIC
   n <- N
   q <- DIM
+  qn <- sum(OBS)
   qk <- sum(MEANS)
   if(isotropic)
   { nu <- max(VARS) }
@@ -445,7 +448,7 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,GUESS=NULL
   K <- qk + nu
 
   AIC <- 2*K - 2*loglike
-  AICc <- (q*n-qk)/max(q*n-K-nu,0)*2*K - 2*loglike
+  AICc <- (qn-qk)/max(qn-K-nu,0)*2*K - 2*loglike
   AICc <- nant(AICc,Inf)
   BIC <- K*log(N) - 2*loglike
 

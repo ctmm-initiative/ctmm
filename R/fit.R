@@ -146,7 +146,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
   COV.init <- CTMM$COV
   # make sure we can start from previous failed fit
   if(any(is.nan(COV.init) | COV.init==Inf)) { COV.init <- NULL }
-  if(!is.null(COV.init)) { TEST <- eigen(COV.init,only.values=TRUE)$values } else { TEST <- FALSE }
+  if(!is.null(COV.init)) { TEST <- eigen(COV.init)$values } else { TEST <- FALSE }
   if(any(TEST<=.Machine$double.eps | TEST==Inf)) { COV.init <- NULL }
   # erase previous fitting info if present
   CTMM$COV <- NULL

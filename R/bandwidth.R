@@ -487,7 +487,7 @@ bandwidth.pop <- function(data,UD,kernel="individual",weights=FALSE,ref="Gaussia
   {
     if(h==0) { return(Inf) }
     H <- h^2
-    H.M <- H*getDataPart(MEAN$sigma)
+    H.M <- H*methods::getDataPart(MEAN$sigma)
 
     # QUAD
     Q <- matrix(0,length(data),length(data))
@@ -500,7 +500,7 @@ bandwidth.pop <- function(data,UD,kernel="individual",weights=FALSE,ref="Gaussia
       else if(kernel=="population")
       {
 
-        DEN <- c(getDataPart(CTMM[[i]]$sigma)) %o% S[[i]] + c(H.M)
+        DEN <- c(methods::getDataPart(CTMM[[i]]$sigma)) %o% S[[i]] + c(H.M)
         dim(DEN) <- c(dim(H.M),length(S[[i]]))
         DEN <- DEN[1,1,]*DEN[2,2,]-DEN[1,2,]*DEN[2,1,]
         # DEN <- S[[i]] # copy data structure
@@ -523,9 +523,9 @@ bandwidth.pop <- function(data,UD,kernel="individual",weights=FALSE,ref="Gaussia
         MU <- c( CTMM[[i]]$mu - CTMM[[j]]$mu )
 
         if(kernel=="individual")
-        { SIG <- (1+H)*(getDataPart(CTMM[[i]]$sigma) + getDataPart(CTMM[[j]]$sigma)) }
+        { SIG <- (1+H)*(methods::getDataPart(CTMM[[i]]$sigma) + methods::getDataPart(CTMM[[j]]$sigma)) }
         else if(kernel=="population")
-        { SIG <- getDataPart(CTMM[[i]]$sigma) + getDataPart(CTMM[[j]]$sigma) + 2*H.M }
+        { SIG <- methods::getDataPart(CTMM[[i]]$sigma) + methods::getDataPart(CTMM[[j]]$sigma) + 2*H.M }
 
         Q[i,j] <- Q[j,i] <- exp(-(MU %*% PDsolve(SIG) %*% MU)/2) / sqrt(det(SIG))
       }
@@ -539,9 +539,9 @@ bandwidth.pop <- function(data,UD,kernel="individual",weights=FALSE,ref="Gaussia
       MU <- c( CTMM[[i]]$mu - MEAN$mu )
 
       if(kernel=="individual")
-      { SIG <- getDataPart(MEAN$sigma) + (1+H)*getDataPart(CTMM[[i]]$sigma) }
+      { SIG <- methods::getDataPart(MEAN$sigma) + (1+H)*methods::getDataPart(CTMM[[i]]$sigma) }
       else if(kernel=="population")
-      { SIG <- getDataPart(MEAN$sigma) + getDataPart(CTMM[[i]]$sigma) + H.M }
+      { SIG <- methods::getDataPart(MEAN$sigma) + methods::getDataPart(CTMM[[i]]$sigma) + H.M }
 
       L[i] <- exp(-(MU %*% PDsolve(SIG) %*% MU)/2) / sqrt(det(SIG))
     }
