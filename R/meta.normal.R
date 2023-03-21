@@ -191,21 +191,30 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,GUESS=NULL
     } # end bad sigma check
 
     # estimate mu exactly | sigma
-    S <- P <- array(0,c(N,DIM,DIM))
-    mu <- P.mu <- 0
+    S <- P <- P.inf <- array(0,c(N,DIM,DIM))
+    mu <- mu.inf <- P.mu <- P.mu.inf <- 0
     for(i in 1:N)
     {
       S[i,,] <- sigma + SIGMA[i,,]
-      P[i,,] <- PDsolve(S[i,,],force=TRUE)
-      P[i,,] <- PDclamp(P[i,,])
-      P.mu <- P.mu + weights[i]*P[i,,]
-      mu <- mu + weights[i]*c(P[i,,] %*% MU[i,])
+      P[i,,] <- PDsolve(S[i,,],force=TRUE) # finite and infinite weights
     }
-    COV.mu <- array(0,c(DIM,DIM))
+    P.inf <- P==Inf # infinite weights
+    P[P.inf] <- 0 # all finite weights now
+    for(i in 1:N)
+    {
+      mu <- mu + weights[i]*c(P[i,,] %*% MU[i,])
+      mu.inf <- mu.inf + weights[i]*(diag(P.inf[i,,]) * MU[i,])
+      P.mu <- P.mu + weights[i]*P[i,,]
+      P.mu.inf <- P.mu.inf + weights[i]*diag(P.inf[i,,])
+    }
+    COV.mu <- COV.mu.inf <- array(0,c(DIM,DIM))
     COV.mu[MEANS,MEANS] <- PDsolve(P.mu[MEANS,MEANS],force=TRUE)
-    # COV.mu[MEANS,MEANS] <- cov.loglike(P.mu[MEANS,MEANS])
     mu <- c(COV.mu %*% mu)
-    # if(any(ZEROM)) { mu[ZEROM] <- 0 } # should be okay
+    # now handle infinite weight part
+    SUB <- P.mu.inf>0
+    mu[SUB] <- mu.inf[SUB]/P.mu.inf[SUB]
+    # now put infinity back for likelihood
+    P[P.inf] <- Inf
 
     # sum up log-likelihood
     loglike <- -REML/2*PDlogdet(P.mu[MEANS,MEANS]) # - DIM*(N-REML)/2*log(2*pi)
