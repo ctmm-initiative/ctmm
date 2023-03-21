@@ -503,13 +503,14 @@ bandwidth.pop <- function(data,UD,kernel="individual",weights=FALSE,ref="Gaussia
         DEN <- c(methods::getDataPart(CTMM[[i]]$sigma)) %o% S[[i]] + c(H.M)
         dim(DEN) <- c(dim(H.M),length(S[[i]]))
         DEN <- DEN[1,1,]*DEN[2,2,]-DEN[1,2,]*DEN[2,1,]
-        # DEN <- S[[i]] # copy data structure
-        # DEN[] <- vapply(c(S[[i]]),function(s){det2(s*CTMM[[i]]$sigma + H.M)},1)
         DEN <- 1/(2*sqrt(DEN))
       }
 
       if(!is.null(dim(S[[i]])))
-      { Q[i,i] <- UD[[i]]$weights %*% DEN %*% UD[[i]]$weights }
+      {
+        dim(DEN) <- dim(S[[i]])
+        Q[i,i] <- UD[[i]]$weights %*% DEN %*% UD[[i]]$weights
+      }
       else
       { Q[i,i] <- sum(DOF[[i]] * DEN) }
     }
