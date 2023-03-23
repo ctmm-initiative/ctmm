@@ -37,7 +37,7 @@ ctmm.select(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position",trace=FALS
   \item{verbose}{Return additional information. See "Value" below.}
   \item{method}{Fitting method to use: \code{"ML"}, \code{"HREML"}, \code{"pREML"}, \code{"pHREML"}, or \code{"REML"}. See "Description" below.}
   \item{COV}{Estimate the autocorrelation parameter covariance matrix.}
-  \item{control}{An optional argument list for the optimizer.}
+  \item{control}{An optional argument list for \code{\link{optimizer}}.}
   \item{trace}{Report progress updates. Can be among \code{0:2} with increasing detail.}
   \item{level}{Attempt to simplify a model if a feature's non-existence falls within this level of confidence interval.}
   \item{IC}{Information criterion used for selection. Can be \code{"AICc"}, \code{"AIC"}, \code{"BIC"}, \code{"LOOCV"}, \code{"HSCV"}, or none (\code{NA}). AICc is approximate.}
@@ -135,7 +135,7 @@ This is no longer feasible with current versions of \code{ctmm}, as the number o
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
-\seealso{ \code{\link{ctmm.boot}}, \code{\link{ctmm.guess}}, \code{\link{optim}}, \code{\link{summary.ctmm}}, \code{\link{variogram.fit}}. }
+\seealso{ \code{\link{ctmm.boot}}, \code{\link{ctmm.guess}}, \code{\link{optimizer}}, \code{\link{summary.ctmm}}, \code{\link{variogram.fit}}. }
 
 \examples{\donttest{
 # Load package and data

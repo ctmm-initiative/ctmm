@@ -54,8 +54,11 @@ log.ctmm <- function(CTMM,debias=FALSE,...)
   SUB <- features[features %in% c(FEAT.ALL,"angle") & VAR[features]<Inf]
   if(debias && length(SUB))
   {
-    COR <- stats::cov2cor(COV)
-    COR <- nant(COR,0)
+    COR <- diag(1,nrow(COV))
+    dimnames(COR) <- dimnames(COV)
+    GOOD <- VAR>.Machine$double.eps
+    COR[GOOD,GOOD] <- stats::cov2cor(COV[GOOD,GOOD])
+    # COR <- nant(COR,0)
 
     # diagonalize and log-chi^2 debias relevant parameter estimates
     EIGEN <- eigen(COV[SUB,SUB])
@@ -145,7 +148,10 @@ exp.ctmm <- function(CTMM,debias=FALSE,variance=TRUE)
     ################
     ### diagonalize and log-chi^2 debias COV
     VAR <- diag(COV)
-    COR <- stats::cov2cor(COV)
+    COR <- diag(1,nrow(COV))
+    dimnames(COR) <- dimnames(COV)
+    GOOD <- VAR>.Machine$double.eps
+    COR[GOOD,GOOD] <- stats::cov2cor(COV[GOOD,GOOD])
 
     EIGEN <- COV[SUB,SUB]
     EIGEN <- eigen(EIGEN)

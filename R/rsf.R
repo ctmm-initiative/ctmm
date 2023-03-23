@@ -37,11 +37,6 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
     AREA <- level.UD@area
   }
 
-  # smooth the data, but don't drop
-  if(smooth && any(CTMM$error>0))
-  { data[,c(axes,GEO)] <- predict(data,CTMM=CTMM,t=data$t,complete=TRUE)[,c(axes,GEO)] }
-  n <- nrow(data)
-
   if(!CTMM$isotropic)
   {
     if("ISO" %in% names(CTMM))
@@ -56,6 +51,11 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
     UD@CTMM <- ISO
     UD$DOF.area <- DOF.area(ISO)
   }
+
+  # smooth the data, but don't drop
+  if(smooth && any(CTMM$error>0))
+  { data[,c(axes,GEO)] <- predict(data,CTMM=CTMM,t=data$t,complete=TRUE)[,c(axes,GEO)] }
+  n <- nrow(data)
 
   # for simulation - uncorrelated, error-less
   IID <- CTMM
