@@ -6,10 +6,12 @@
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Estimate the proximity of two individuals}
 \description{
-Given a pair of \code{telemetry} objects and \code{ctmm} movement models, predict their location differences at shared times and estimate their mean-square distance.
+Given a pair of \code{telemetry} objects and \code{ctmm} movement models, predict their location differences or midpoints at shared times and estimate their distances.
 }
 \usage{
 difference(data,CTMM,t=NULL,...)
+
+midpoint(data,CTMM,t=NULL,...)
 
 distances(data,CTMM,t=NULL,level=0.95,...)
 
@@ -25,10 +27,10 @@ proximity(data,CTMM,GUESS=ctmm(error=TRUE),debias=TRUE,level=0.95,...)
   \item{debias}{Include inverse-\eqn{\chi^2} bias corrections.}
   \item{...}{Options passed to \code{\link{ctmm.select}}.}
 }
-\details{The \code{difference} function predicts the location difference vectors, \eqn{(x_A-x_B,y_A-y_B)}, for a pair of individuals, \eqn{\{A,B\}}, at overlapping times. The \code{distances} function further estimates the instantaneous distances between individuals. The \code{proximity} function fits an autocorrelation model to the output of \code{difference}, and then compares the mean-square distance between the individuals to what you would expect if the two individuals were moving independently.
+\details{The \code{difference} function predicts the location difference vectors, \eqn{(x_A-x_B,y_A-y_B)}, for a pair of individuals, \eqn{\{A,B\}}, at overlapping times. The \code{midpoint} function predicts the location midpoints, \eqn{(x_A+x_B,y_A+y_B)/2}, for a pair of individuals. The \code{distances} function further estimates the instantaneous distances between individuals. The \code{proximity} function fits an autocorrelation model to the output of \code{difference}, and then compares the mean-square distance between the individuals to what you would expect if the two individuals were moving independently.
 }
 
-\value{\code{difference} outputs a \code{telemetry} object of the location differences with prediction covariances. \code{distances} outputs a \code{data.frame} of distance estimates with confidence intervals. \code{proximity} outputs a ratio estimate with confidence intervals, where values \code{<1} indiciate that the two individuals are closer on average than expected for independent movement, \code{1} is consistent with independent movement, and values \code{>1} indicate that the individuals are farther from each other on average than expected for independent movement. Therefore, if the CIs contain 1, then the distance is insignificant with a p-value threshold of \code{1-level} (two-sided) or half that for a one-sided test.}
+\value{\code{difference} and \code{midpoint} output \code{telemetry} objects of the location differences and midpoints with prediction covariances. \code{distances} outputs a \code{data.frame} of distance estimates with confidence intervals. \code{proximity} outputs a ratio estimate with confidence intervals, where values \code{<1} indiciate that the two individuals are closer on average than expected for independent movement, \code{1} is consistent with independent movement, and values \code{>1} indicate that the individuals are farther from each other on average than expected for independent movement. Therefore, if the CIs contain 1, then the distance is insignificant with a p-value threshold of \code{1-level} (two-sided) or half that for a one-sided test.}
 
 %\references{}
 

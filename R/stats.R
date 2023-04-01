@@ -417,8 +417,9 @@ chi.dof <- function(M1,M2,precision=1/2)
 chi.var <- function(DOF,M1=1)
 {
   R <- 2*pi/DOF/beta(DOF/2,1/2)^2
+  R <- nant(R,1/(1+DOF))
   VAR <- (1/R-1)*M1^2
-  VAR <- nant(VAR,Inf)
+  VAR <- nant(VAR,1/DOF)
   return(VAR)
 }
 

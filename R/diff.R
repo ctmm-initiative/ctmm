@@ -1,11 +1,14 @@
 # location difference vector
 # data is a list of two telemetry objects
 # CTMM is a list of two ctmm fit objects corresponding to data
-difference <- function(data,CTMM,t=NULL,...)
+difference <- function(data,CTMM,t=NULL,...) { combine(data,CTMM,t=t,method="diff",...) }
+midpoint <- function(data,CTMM,t=NULL,...) { combine(data,CTMM,t=t,method="mean",...) }
+
+combine <- function(data,CTMM,t=NULL,method="diff",...)
 {
   check.projections(data)
   INFO <- mean.info(data)
-  INFO$identity <- paste0(data[[1]]@info$identity,'-',data[[2]]@info$identity)
+  INFO$identity <- paste0(method,"(",data[[1]]@info$identity,",",data[[2]]@info$identity,")")
 
   if(is.null(t))
   {
@@ -34,7 +37,13 @@ difference <- function(data,CTMM,t=NULL,...)
   data[[2]] <- predict(data[[2]],CTMM[[2]],t=t)
 
   axes <- CTMM[[1]]$axes
-  for(z in axes) { data[[1]][[z]] <- data[[1]][[z]] - data[[2]][[z]] }
+  for(z in axes)
+  {
+    if(method=="diff")
+    { data[[1]][[z]] <- data[[1]][[z]] - data[[2]][[z]] }
+    else if(method=="mean")
+    { data[[1]][[z]] <- data[[1]][[z]] + data[[2]][[z]] }
+  }
 
   VAR <- DOP.LIST$horizontal$VAR
   COV <- DOP.LIST$horizontal$COV
@@ -74,6 +83,13 @@ difference <- function(data,CTMM,t=NULL,...)
     COLS <- c('t',axes,VAR,COV)
   }
   data <- data.frame(data[[1]][,COLS])
+
+  if(method=="mean")
+  {
+    data[,axes] <- data[,axes]/2
+    data[,VAR] <- data[,VAR]/4
+    if(all(COV %in% COLS)) { data[,COV] <- data[,COV]/4 }
+  }
 
   # make this a telemetry object
   data <- new.telemetry(data,info=INFO)

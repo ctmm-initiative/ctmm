@@ -3,6 +3,7 @@ ctmm 1.1.1 (2023-04-01)
 * new function rsf.select()
 * new functions sdm.fit(), sdm.select()
 * new function funnel() for funnel plots
+* new function midpoint()
 * new population covariance models and improved model selection in mean.ctmm()
 * new argument 'sqrt' in distance()
 * new argument 'dt.hot' in as.telemetry()

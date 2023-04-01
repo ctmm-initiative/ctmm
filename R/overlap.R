@@ -99,7 +99,7 @@ overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,method="Bhattach
   MLE <- c(STUFF$MLE)
   VAR <- c(STUFF$COV)
   # this quantity is roughly chi-square
-  DOF <- 2*MLE^2/VAR
+  DOF <- nant(2*MLE^2/VAR,1/VAR)
 
   # approximate debiasing, correct for IID, equal covariance, REML
   ########################
@@ -139,7 +139,7 @@ overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,method="Bhattach
   ElogW <- function(s,n) { log(det(s)) + mpsigamma(n/2,dim=DIM) - DIM*log(n/2) }
 
   # inverse Wishart expectation value pre-factor
-  BIAS <- n0/(n0-DIM-1)
+  BIAS <- nant(n0/(n0-DIM-1),1)
   if(method=="Euclidean") { BIAS <- 0 } # don't include first term
   # BIAS <- clamped.bias(n0,DIM)
   # mean terms

@@ -152,7 +152,7 @@ export(revisitation)
 export(npr)
 
 # difference vector
-export(difference,proximity,distances)
+export(difference,midpoint,proximity,distances)
 
 # pretty units and significant figures
 export(sigfig,dimfig)
