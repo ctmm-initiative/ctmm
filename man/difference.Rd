@@ -1,5 +1,6 @@
 \name{difference}
 \alias{difference}
+\alias{midpoint}
 \alias{proximity}
 \alias{distances}
 \encoding{UTF-8}
