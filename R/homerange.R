@@ -28,8 +28,15 @@ homerange <- function(data=NULL,CTMM=NULL,method="AKDE",...)
 }
 
 
-agde <- function(CTMM,R=list(),variable="utilization",error=0.001,res=100,grid=NULL,...)
+agde <- function(data=NULL,CTMM=NULL,R=list(),variable="utilization",error=0.001,res=100,grid=NULL,...)
 {
+  if(class(data)[1]=="ctmm")
+  {
+    TEMP <- CTMM
+    CTMM <- data
+    data <- TEMP
+  }
+
   axes <- CTMM$axes
   grid <- format.grid(grid,axes=axes)
 
@@ -108,27 +115,5 @@ agde <- function(CTMM,R=list(),variable="utilization",error=0.001,res=100,grid=N
   }
 
   return(pdf)
-}
-
-
-suitability <- function(CTMM,R=list(),grid=NULL,log=FALSE,...)
-{
-  if(is.null(grid)) { stop("Please provide a grid argument, such as a UD or raster object.") }
-
-  grid <- format.grid(grid=grid,axes=CTMM$axes)
-  x <- grid$r$x
-  y <- grid$r$y
-
-  R <- expand.factors(R,CTMM$formula,fixed=TRUE)$R
-
-  proj <- CTMM@info$projection
-  # calculate RASTERs on spatial grid
-  R <- lapply(R,function(S){R.grid(r=grid$r,proj=proj,S)})
-
-  R <- R.suit(R,CTMM,log=log)
-  R <- list(x=x,y=y,z=R)
-  proj <- sp::CRS(proj)
-  R <- raster::raster(R,crs=proj)
-  return(R)
 }
 

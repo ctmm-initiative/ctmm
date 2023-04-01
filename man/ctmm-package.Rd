@@ -22,7 +22,7 @@ Noonan & Fleming et al (2019) <doi:10.1186/s40462-019-0177-1>,
 Fleming et al (2020) <doi:10.1101/2020.06.12.130195>,
 Noonan et al (2021) <doi:10.1111/2041-210X.13597>,
 Fleming et al (2022) <doi:10.1111/2041-210X.13815>,
-and Silva et al (2022) <doi:10.1111/2041-210X.13786>,
+Silva et al (2022) <doi:10.1111/2041-210X.13786>,
 and
 Alston & Fleming et al (2023) <doi:10.1111/2041-210X.14025>.
 }
@@ -31,7 +31,7 @@ Alston & Fleming et al (2023) <doi:10.1111/2041-210X.14025>.
 Package: \tab ctmm\cr
 Type: \tab Package\cr
 Version: \tab 1.1.1 \cr
-Date: \tab 2022-03-22 \cr
+Date: \tab 2022-03-31 \cr
 License: \tab GPL-3 \cr
 }
 

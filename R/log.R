@@ -111,7 +111,7 @@ Exp <- function(est,VAR.est=0,VAR=0,VAR.VAR=0,variable="area",debias=TRUE,level=
 exp.log <- function(est,VAR.est=0,VAR=0,VAR.VAR=0,...)
 {
   mu <- exp(est + VAR/2)
-  grad <- c(1,1/2) %o% mu
+  # grad <- c(1,1/2) %o% mu
   VAR.mu <- (mu)^2*VAR.est + (mu/2)^2*VAR.VAR
 
   R <- list(mu=mu,VAR=VAR.mu)

@@ -1,4 +1,4 @@
-ctmm 1.1.1 (2023-03-22)
+ctmm 1.1.1 (2023-03-31)
 ================
 * new function rsf.select()
 * new functions sdm.fit(), sdm.select()
@@ -12,7 +12,9 @@ ctmm 1.1.1 (2023-03-22)
 * as.telemetry(), plot.telemetry(), rsf.fit() updated from sp to sf transforms
 * distance() can now take location arguments
 * plot.telemetry() col.DF & col.level arguments can now be color() lists
-* extrapolation disabled in suitability()
+* suitability() now produces a raster stack corresponding to the CIs
+* suitability() on population RSFs now outputs the population suitability
+* suitability() extrapolation disabled
 * bugfix in suitability()
 * bugfix in distance() method="Euclidean", debias=TRUE
 * bugfix in rates() debias=TRUE

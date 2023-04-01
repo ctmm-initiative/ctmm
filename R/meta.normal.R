@@ -482,3 +482,11 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,GUESS=NULL
   # R$HESS <- HESS
   return(R)
 }
+
+
+cross.terms <- function(TERMS,unique=TRUE)
+{
+  TERMS <- outer(TERMS,TERMS,function(x,y){paste0(x,"-",y)})
+  if(unique) { TERMS <- TERMS[upper.tri(TERMS,diag=TRUE)] }
+  return(TERMS)
+}

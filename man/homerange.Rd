@@ -1,7 +1,7 @@
 \name{homerange}
 \alias{homerange}
-\alias{suitability}
 \alias{agde}
+\alias{suitability}
 \encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Calculate a range distribution estimate}
@@ -11,9 +11,10 @@ Estimates the range distributions and suitability from \code{telemetry} data and
 \usage{
 homerange(data,CTMM,method="AKDE",...)
 
-suitability(CTMM,R=list(),grid=NULL,log=FALSE,...)
+agde(data=NULL,CTMM=NULL,R=list(),variable="utilization",error=0.001,res=100,grid=NULL,
+     ...)
 
-agde(CTMM,R=list(),variable="utilization",error=0.001,res=100,grid=NULL,...)
+suitability(data=NULL,CTMM=NULL,R=list(),level=0.95,grid=NULL,log=FALSE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -22,20 +23,21 @@ agde(CTMM,R=list(),variable="utilization",error=0.001,res=100,grid=NULL,...)
   \item{method}{Which range distribution method to use. Can be "AKDE" or "AGDE".}
   \item{...}{Arguments passed to the method call or \code{\link{bandwidth}}.}
   \item{R}{A named list of raster covariates if \code{CTMM} contains an RSF model}
-  \item{grid}{Grid specification via \code{raster}, \code{UD}, or list of arguments (See \code{\link{akde}} for details).}
-  \item{log}{Calculate the log(suitability).}
   \item{variable}{Not yet supported.}
   \item{error}{Target probability error.}
   \item{res}{Number of grid points along each axis, relative to the location covariance.}
+  \item{grid}{Grid specification via \code{raster}, \code{UD}, or list of arguments (See \code{\link{akde}} for details).}
+  \item{level}{Confidence level for output confidence intervals.}
+  \item{log}{Calculate the log(suitability).}
 }
 
 \details{\code{homerange} is a wrapper function that calls either \code{\link{akde}} or \code{agde}. Please consult \code{\link{akde}} for further details on \code{method="AKDE"}.
 
-\code{suitability} calculates a suitability raster from an \code{\link{rsf.fit}} object.
+\code{suitability} calculates a suitability raster from an \code{\link{rsf.fit}} object. Population RSF fit objects calculated from \code{\link{mean}} will produce a suitability estimate of the population.
 
 \code{agde} calculates autocorrelated Gaussian and RSF home-range areas.}
 
-\value{\code{homerange} and \code{agde} return a \code{UD} object. \code{suitability} returns a \code{\link{raster}} object.}
+\value{\code{homerange} and \code{agde} return a \code{UD} object. \code{suitability} returns a \code{\link[raster]{brick}} object.}
 
 %\references{
 %C. H. Fleming and W. F. Fagan and T. Mueller and K. A. Olson and P. Leimgruber and J. M. Calabrese (2015).

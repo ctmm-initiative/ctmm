@@ -144,8 +144,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
 
     CVARS <- TERMS[ TERMS %nin% VARS ] # terms that are not simple variables
 
-    OFFSET <- stats::terms(formula)
-    OFFSET <- attr(OFFSET,"variables")[ attr(OFFSET,"offset") ]
+    OFFSET <- get.offset(formula)
 
     if(attr(stats::terms(formula),"response")[1]>0) { stop("Response variable not yet supported.") }
   }
@@ -173,20 +172,28 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
   }
 
   # evaluate term on data.frame
+  # term can be multiple\
+  # offset does not work with model.matrix code
   evaluate <- function(term,envir,offset=FALSE)
   {
     if(length(dim(envir))==2) # (term,DATA[time,var])
     {
-      # term <- gsub(":","*",term) # multiplication
-      # term <- gsub("I(","(",term) # function evaluations # don't think this is necessary
       NAS <- which(apply(envir,1,function(r){any(is.na(r[VARS]))}))
       envir[NAS,VARS] <- 0
       envir <- data.frame(envir) # matrices can't be environments, but data.frames can't matrix multiply...
       if(!STATIONARY) { envir <- cbind(envir,data) }
-      # RET <- eval(parse(text=term),envir=envir)
-      RET <- stats::model.matrix(formula,envir)[,term,drop=FALSE] # skips NAs ???
-      RET[NAS,] <- NA
-      if(offset) { RET <- apply(RET,1,prod) }
+      if(offset)
+      {
+        RET <- stats::model.frame(formula,envir)
+        RET <- stats::model.offset(RET)
+        RET[NAS] <- 0
+      }
+      else
+      {
+        # NAs will be dropped silently here
+        RET <- stats::model.matrix(formula,envir)[,term,drop=FALSE]
+        RET[NAS,] <- NA
+      }
     }
     else # [space,time,var] loop over runs
     {
@@ -999,6 +1006,18 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
 }
 
 
+get.offset <- function(formula)
+{
+  OFFSET <- stats::terms(formula)
+  OFF <- attr(OFFSET,"offset")
+  if(is.null(OFF)) { return(OFF) }
+  OFFSET <- attr(OFFSET,"variables")[ 1 + OFF ]
+  OFFSET <- sub("offset(","",OFFSET)
+  OFFSET <- substr(OFFSET,1,nchar(OFFSET)-1)
+  return(OFFSET)
+}
+
+
 # expand raster factors into
 expand.factors <- function(R,formula,reference="auto",data=NULL,DVARS=NULL,fixed=FALSE)
 {
@@ -1218,77 +1237,6 @@ R.grid <- function(r,proj,R,interpolate='bilinear')
   }
 
   return(G)
-}
-
-# evaluate habitat suitability raster(s)
-R.suit <- function(R,CTMM,data=NULL,log=FALSE)
-{
-  DIM <- dim(R[[1]])
-  beta <- CTMM$beta
-
-  offset <- stats::terms(CTMM$formula)
-  offset <- attr(offset,"variables")[ attr(offset,"offset") ]
-
-  PREP <- FALSE
-  S <- 1
-
-  if(length(beta))
-  {
-    BETA <- names(beta)
-
-    PREP <- !all(BETA %in% names(R))
-    if(!PREP)
-    {
-      # these will never be raster stacks
-      S <- vapply(BETA,function(B){beta[B]*R[[B]]},R[[1]])
-      dim(S) <- c(prod(DIM),length(beta))
-    }
-    else # formula required
-    {
-      R <- lapply(R,c)
-      R <- data.frame(R)
-      # need to copy over data if time varying formula
-      if(!is.null(data)) { for(COL in names(data)) { R[[COL]] <- data[[COL]] } }
-
-      n <- length(beta)
-
-      # fix formula multiplication
-      for(i in 1:n) { BETA[i] <- gsub(":","*",BETA[i]) }
-
-      S <- sapply(1:n,function(i){beta[i]*eval(parse(text=BETA[i]),envir=R)})
-    }
-    S <- rowSums(S)
-    S <- array(S,DIM)
-    if(!log) { S <- exp(S) }
-  } # end beta
-
-  if(length(offset))
-  {
-    if(all(offset %in% names(R)))
-    { for(off in offset) { S <- S * R[[off]] } }
-    else # formula required
-    {
-      # didn't prepare data before
-      if(!PREP)
-      {
-        R <- lapply(R,c)
-        R <- data.frame(R)
-        # need to copy over data if time varying formula
-        if(!is.null(data)) { for(COL in names(data)) { R[[COL]] <- data[[COL]] } }
-      }
-
-      # fix formula multiplication
-      for(i in 1:length(offset)) { offset[i] <- gsub(":","*",offset[i]) }
-
-      O <- sapply(1:length(offset),function(i){eval(parse(text=offset[i]),envir=R)})
-      O <- apply(O,1,prod)
-      O <- array(O,DIM)
-
-      S <- O*S
-    }
-  } # end offset
-
-  return(S)
 }
 
 

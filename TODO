@@ -1,18 +1,11 @@
 ** PRIORITY
-* suitability averaging (weighted by uncertainty)
 * select model-average if same k?
-* pkde() check kernel argument
 * rsf.fit ~=0 exact weighted Gaussian fit (SP? NA?)
-* rsf.select standardize
-* rsf.select !isotropic
-* suitability: evaluate -> stats::model.matrix(formula,data=DATA) R.suit()
-* suitability: non-stationary terms
-* suitability: propagate uncertainties
 * rsf.fit: categorical modifiers
+** optimize integrator="Riemann" for categorical modifiers -> categorical integrals
 * rsf.fit: Riemann integrator can be to coarse
 * units="unit string"
-* Exp format other than area
-* update all one-pass mean/var calculations to d=x-mu, mu=mu+d/i, s=...
+* update all one-pass mean/var calculations to numerically stable d=x-mu, mu=mu+d/i, s=...
 * export sundial
 * plot.rsf method
 * plot.overlap method
