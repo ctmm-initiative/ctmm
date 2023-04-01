@@ -127,6 +127,7 @@ overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,method="Bhattach
 
   # using mean variance - additive & rotationally invariant
   n0 <- 4 * s0^2 / (s1^2/n1 + s2^2/n2)
+  n0 <- nant(n0,0)
   n0 <- clamp(n0,2,Inf)
 
   # clamp the DOF not to diverge <=DIM+1
@@ -165,7 +166,7 @@ overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,method="Bhattach
   }
 
   # relative bias instead of absolute bias
-  if(method!="Rate") { BIAS <- BIAS/MLE }
+  if(method!="Rate") { BIAS <- nant(BIAS/MLE,MLE) }
   # would subtract off estimate to get absolute bias
   if(distance) { BIAS <- 1 + BIAS } # didn't include first term
 

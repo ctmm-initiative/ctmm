@@ -110,7 +110,7 @@ distance <- function(object,method="Mahalanobis",sqrt=FALSE,level=0.95,debias=TR
       BIAS <- STUFF$BIAS
       VAR <- STUFF$VAR
 
-      if(debias) { MLE <- MLE/BIAS }
+      if(debias) { MLE <- nant(MLE/BIAS,MLE) }
 
       dof <- 2*MLE^2/VAR
       CI <- chisq.ci(MLE,DOF=dof,alpha=1-level)
