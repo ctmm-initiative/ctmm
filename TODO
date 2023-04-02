@@ -1,5 +1,4 @@
 ** PRIORITY
-* select model-average if same k?
 * rsf.fit ~=0 exact weighted Gaussian fit (SP? NA?)
 * rsf.fit: categorical modifiers
 ** optimize integrator="Riemann" for categorical modifiers -> categorical integrals

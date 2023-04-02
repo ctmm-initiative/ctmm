@@ -283,7 +283,7 @@ exp.ctmm <- function(CTMM,debias=FALSE,variance=TRUE)
   return(CTMM)
 }
 
-# M %*% X %*% t(M) -> L %*% X[TRI]
+# M %*% S %*% t(M) -> L %*% S[TRI]
 quad2lin <- function(M,diag=FALSE)
 {
   M <- rbind(M)
@@ -475,24 +475,37 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",...)
 
   NAME.ZERO <- "Dirac-\u03B4(\u03A3)"
   NAME.ALL <- "diag(\u03A3)"
-  make.names <- function(TRYS)
+  make.names <- function(TRYS,OFF=FALSE)
   {
+    TRYS <- rbind(TRYS)
     NAMES <- sapply(1:nrow(TRYS),function(i){paste0(FEATURES[TRYS[i,]],collapse=",")})
     for(i in 1:length(NAMES))
     {
       if(all(!TRYS[i,])) # Dirac-delta
       { NAMES[i] <- NAME.ZERO }
-      else if(DIM==1 && TRYS[i,1]) # full matrix
+      else if((DIM==1 && TRYS[i,1]) || (OFF && all(TRYS[i,]))) # full matrix
       { NAMES[i] <- "\u03A3" }
       else if(all(TRYS[i,])) # full diagonal
       { NAMES[i] <- NAME.ALL }
       else if(!grepl(",",NAMES[i])) # part diagonal, but all correlations
+      { NAMES[i] <- paste0("\u03A3[",NAMES[i],"]") }
+      else if(OFF) # part diagonal, correlations
       { NAMES[i] <- paste0("\u03A3[",NAMES[i],"]") }
       else # part diagonal, no correlations
       { NAMES[i] <- paste0("diag(\u03A3)[",NAMES[i],"]") }
     }
 
     return(NAMES)
+  }
+
+  # number of variance-covariance parameters modeled
+  num.pars <- function(FIT,mean=FALSE)
+  {
+    V <- FIT$VARS
+    V <- V[upper.tri(V,diag=TRUE)]
+    V <- sum(V)
+    if(mean) { V <- V + sum(FIT$MEANS) }
+    return(V)
   }
 
   FM <- list()
@@ -591,7 +604,9 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",...)
       # models that we will try by turning one term off
       NAMES <- make.names(TRYS)
       # paired down models that we haven't attempted yet
-      NEW.NAMES <- NAMES[NAMES %nin% names(OLD)]
+      SUB <- NAMES %nin% names(OLD)
+      NEW.NAMES <- NAMES[SUB]
+      TRYS <- TRYS[SUB,,drop=FALSE]
 
       # fit all
       NEW <- list()
@@ -615,56 +630,54 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",...)
 
     # take best variance model
     ICS <- sapply(OLD,function(m){m[[IC]]})
-    BEST <- which.min(ICS)
-    BEST <- OLD[[BEST]]
-    GUESS <- BEST
-    VARS <- diag(BEST$VARS)
+    I <- which.min(ICS)
+    BEST <- OLD[[I]]
+    NP <- num.pars(BEST,mean=TRUE)
+    NV <- num.pars(BEST,mean=FALSE)
 
     # now see if correlations are supported
-    V <- sum(VARS)
-    if(V>1 && sum(!INF)-sum(MEANS[[m]]) >= V*(V+1)/2)
+    if(NV>1 && sum(!INF)>=NP)
     {
-      if(V<DIM)
+      for(i in 1:length(BEST))
       {
-        S <- paste0(FEATURES[VARS],collapse=",")
-        S <- paste0("\u03A3[",S,"]")
-      }
-      else
-      { S <- "\u03A3" }
-
-      if(S %nin% names(OLD))
-      {
-        if(trace) { message("Fitting autocovariance model ",S," ",ms) }
-        OLD[[S]] <- meta.normal(MU,SIGMA,debias=debias,weights=weights,VARS=VARS,MEANS=MEANS[[m]],GUESS=GUESS,...)
-      }
+        GUESS <- BEST
+        VARS <- diag(BEST$VARS)
+        S <- make.names(VARS,OFF=TRUE)
+        if(S %nin% names(OLD))
+        {
+          if(trace) { message("Fitting autocovariance model ",S," ",ms) }
+          OLD[[S]] <- meta.normal(MU,SIGMA,debias=debias,weights=weights,VARS=VARS,MEANS=MEANS[[m]],GUESS=GUESS,...)
+        }
+      } # end BEST loop
     } # end correlation fit
 
     names(OLD) <- paste(names(OLD),ms)
     FM <- c(FM,OLD)
+    rm(OLD)
   } # for(m in names(MEANS))
 
   ICS <- sapply(FM,function(m){m[[IC]]})
   names(ICS) <- names(FM)
-  NAME <- which.min(ICS)
-  NAME <- names(ICS)[NAME]
-  R <- FM[[NAME]]
-  R$name <- NAME
-  R$isotropic <- !grepl("anisotropic",R$name)
-  VARS <- diag(R$VARS)
+  I <- sort(ICS,index.return=TRUE)$ix
+  ICS <- ICS[I]
+  ICS <- ICS - ICS[1]
+  I <- I[1]
 
   if(trace)
   {
     # report model selection
-    i <- sort(ICS,index.return=TRUE)$ix
-    ICS <- ICS[i] # sorted
-    ICS <- ICS - ICS[1] # start at zero
     ICS <- data.frame(ICS)
     colnames(ICS) <- paste0("\u0394",IC)
     message("* Model selection for autocovariance distribution.")
     print(ICS)
   }
 
+  R <- FM[[I]]
+  R$name <- names(FM)[I]
+  R$isotropic <- !grepl("anisotropic",R$name)
   R$axes <- axes
+  VARS <- diag(R$VARS)
+
   names(R)[ which(names(R)=="mu") ] <- "par" # population mean of features
   names(R)[ which(names(R)=="COV.mu") ] <- "COV" # uncertainty in population mean
   names(R)[ which(names(R)=="sigma") ] <- "POV" # population dispersion of features (under log)
@@ -749,13 +762,14 @@ mean.mu <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",...)
   S <- "Dirac-\u03B4(\u03BC)"
   if(trace) { message("Fitting location-mean model ",S) }
   MM[[S]] <- meta.normal(MU,SIGMA,VARS=FALSE,isotropic=TRUE,debias=debias,weights=weights,...)
+  GUESS <- MM[[S]]
 
   # symmetric mean distribution
   if(2*N >= 2+1)
   {
     S <- "isotropic-\u03BC"
     if(trace) { message("Fitting location-mean model ",S) }
-    MM[[S]] <- meta.normal(MU,SIGMA,isotropic=TRUE,debias=debias,weights=weights,...)
+    MM[[S]] <- meta.normal(MU,SIGMA,isotropic=TRUE,debias=debias,weights=weights,GUESS=GUESS,...)
     GUESS <- MM[[S]]
 
     # general distribution

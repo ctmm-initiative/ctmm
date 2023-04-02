@@ -429,7 +429,7 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,GUESS=NULL
   loglike <- -nloglike(par,REML=FALSE) # non-REML for AIC/BIC
 
   # rescale
-  loglike <- loglike - log(prod(SCALE))
+  loglike <- loglike - N*DIM*log(prod(SCALE))
   mu <- SCALE*mu + SHIFT
   sigma <- t(sigma*SCALE)*SCALE
   COV.mu <- t(COV.mu*SCALE)*SCALE
