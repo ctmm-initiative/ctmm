@@ -144,10 +144,12 @@ In this case, the blue curve is the true model, while the (black) empirical vari
 ### Irregular Sampling Schedules
 
 Random gaps in the data are acceptable and fully accounted for in both variogram estimation and model fitting.
-However, if under any condition the sampling rate changes during data collection, then you will have to account for that in the variogram with the `dt` argument. In the following example, the collar was programmed to cycle between 1, 5, 25 hour sampling intervals
+However, if under any condition the sampling rate changes during data collection, then you will have to account for that in the variogram with the `dt` argument. In the following example, the collars were programmed to cycle between 1, 5, and 25-hour sampling intervals.
 
 ```{r, fig.show='hold'}
 data("gazelle")
+dt.plot(gazelle)
+title("Sampling Intervals")
 SVF3 <- variogram(gazelle[[18]])
 plot(SVF3,fraction=0.85,level=level)
 title("Default method")

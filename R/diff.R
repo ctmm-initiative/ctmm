@@ -2,9 +2,9 @@
 # data is a list of two telemetry objects
 # CTMM is a list of two ctmm fit objects corresponding to data
 difference <- function(data,CTMM,t=NULL,...) { combine(data,CTMM,t=t,method="diff",...) }
-midpoint <- function(data,CTMM,t=NULL,...) { combine(data,CTMM,t=t,method="mean",...) }
+midpoint <- function(data,CTMM,t=NULL,complete=FALSE,...) { combine(data,CTMM,t=t,complete=complete,method="mean",...) }
 
-combine <- function(data,CTMM,t=NULL,method="diff",...)
+combine <- function(data,CTMM,t=NULL,complete=FALSE,method="diff",...)
 {
   check.projections(data)
   INFO <- mean.info(data)
@@ -113,6 +113,8 @@ combine <- function(data,CTMM,t=NULL,method="diff",...)
 
   rownames(data@UERE$UERE) <- "all"
   rownames(data@UERE$DOF) <- "all"
+
+  if(complete) { data <- pseudonymize(data,tz=INFO$timezone,proj=INFO$projection,origin=EPOCH) }
 
   return(data)
 }

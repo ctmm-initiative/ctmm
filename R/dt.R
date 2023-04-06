@@ -15,7 +15,7 @@ dt.plot <- function(data,...)
   col <- grDevices::rgb(1,1,1,0)
   x <- c(1,length(dt))
   y <- c(dt[1],last(dt))
-  plot(x,y,log='y',yaxt='n',ylab='Time Intervals',xlab='Sorted Index',col=col)
+  plot(x,y,log='y',yaxt='n',ylab='Time Intervals',xlab='Sorted Index',col=col,...)
   # title("Time Intervals")
 
   TIME <- c('sec','min','hour','day','month','year')
