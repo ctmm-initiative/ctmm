@@ -1,4 +1,4 @@
-ctmm 1.1.1 (2023-04-06)
+ctmm 1.1.1 (2023-04-09)
 ================
 * new function rsf.select()
 * new functions sdm.fit(), sdm.select()

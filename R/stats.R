@@ -427,9 +427,21 @@ chi.var <- function(DOF,M1=1)
 # 1 is no bias
 chi.bias <- function(DOF)
 {
-  BIAS <- sqrt(2/DOF)*exp(lgamma((DOF+1)/2)-lgamma(DOF/2))
+  fn <- function(DOF) { sqrt(2/DOF)*exp(lgamma((DOF+1)/2)-lgamma(DOF/2)) }
+  # Laurent expansion
+  coef <- c(1, -(1/4), 1/32, 5/128, -(21/2048), -(399/8192), 869/65536, 39325/262144, -(334477/8388608), -(28717403/33554432), 59697183/268435456)
+  pn <- Vectorize( function(DOF) { series(1/DOF,coef) } )
+  # switch over
+  MAX <- 45
+
+  BIAS <- rep(1,length(DOF))
+  SUB <- DOF<MAX
+  if(any(SUB)) { BIAS[SUB] <- fn(DOF[SUB]) }
+  SUB <- DOF>=MAX
+  if(any(SUB)) { BIAS[SUB] <- pn(DOF[SUB]) }
+
   BIAS <- ifelse(DOF==0,0,BIAS)
-  BIAS <- ifelse(DOF==Inf,1,BIAS)
+  # BIAS <- ifelse(DOF==Inf,1,BIAS)
   return(BIAS)
 }
 
