@@ -28,24 +28,46 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,GUESS=NULL
 
   # do we give a mean to each dimension
   MEANS <- array(MEANS,DIM)
+  names(MEANS) <- NAMES
   # do we give a variance to each dimension after J-transformation
   if(length(VARS)==1) { VARS <- array(VARS,DIM) }
   if(length(dim(VARS))<2) { VARS <- outer(VARS,FUN="&") }
   if(isotropic) { VARS <- diag(diag(VARS)) }
+  dimnames(VARS) <- list(NAMES,NAMES)
 
-  SCALE <- apply(MU,2,stats::mad)
+  # finite observations
+  OBS <- array(TRUE,c(N,DIM))
+  for(i in 1:N) { OBS[i,] <- diag(cbind(SIGMA[i,,])) < Inf }
+  # natural scales of the data
+  SHIFT <- rep(0,DIM)
+  SCALE <- rep(1,DIM)
+  for(i in 1:DIM)
+  {
+    TEMP <- MU[OBS[,i],i]
+    if(is.null(TEMP))
+    {
+      SHIFT[i] <- 0
+      SCALE[i] <- 1
+    }
+    else
+    {
+      SHIFT[i] <- stats::median(TEMP)
+      SCALE[i] <- stats::mad(TEMP)
+    }
+  }
+  SHIFT[!MEANS] <- 0
   if(isotropic) { SCALE[] <- stats::median(SCALE) }
+
   ZERO <- SCALE<.Machine$double.eps
   if(any(ZERO)) # do not divide by zero or near zero
   {
     if(any(!ZERO))
-    { SCALE[ZERO] <- min(SCALE[!ZERO]) } # do some rescaling... assuming axes are similar
+    { SCALE[ZERO] <- min(SCALE[!ZERO]) } # some rescaling... assuming axes are similar
     else
-    { SCALE[ZERO] <- 1 } # do no rescaling
+    { SCALE[ZERO] <- 1 } # no rescaling
   }
 
-  # observations
-  OBS <- array(TRUE,c(N,DIM))
+  # well-conditioned observations
   for(i in 1:N) { OBS[i,] <- diag(cbind(SIGMA[i,,])) < SCALE^2/.Machine$double.eps }
   # zero out Inf-VAR observations, in case of extreme point estimates
   MU[!OBS] <- 0
@@ -61,10 +83,8 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,GUESS=NULL
 
   ####################
   # robust rescaling in case of outliers with ill-conditioned COV matrices
-  SHIFT <- apply(MU,2,stats::median)
-  if(any(!MEANS)) { SHIFT[!MEANS] <- 0 }
-  # apply shift
   MU <- t( t(MU) - SHIFT )
+  MU[!OBS] <- 0
   # initial guess of mu
   mu <- array(0,DIM)
 
@@ -136,23 +156,6 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,GUESS=NULL
   }
 
   INF <- list(loglike=-Inf,mu=mu,COV.mu=sigma,sigma=sigma,sigma.old=sigma)
-  if(!is.null(GUESS))
-  {
-    SUB <- MEANS & GUESS$mu!=0
-    GUESS$mu <- (GUESS$mu-SHIFT)/SCALE
-    INF$mu[SUB] <- GUESS$mu[SUB]
-
-    SUB <- VARS & GUESS$sigma!=0
-    GUESS$sigma <- t(GUESS$sigma/SCALE)/SCALE
-    INF$sigma[SUB] <- GUESS$sigma[SUB]
-    sigma <- INF$sigma
-
-    INF$sigma.old <- INF$sigma
-    INF$COV.mu <- INF$sigma/N
-    if(any(!MEANS)) { INF$COV.mu[!MEANS,] <- INF$COV.mu[,!MEANS] <- 0 }
-  }
-
-  par <- sigma2par(sigma)
 
   # negative log-likelihood
   CONSTRAIN <- TRUE # constrain likelihood to positive definite
@@ -256,23 +259,21 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,GUESS=NULL
     return(R)
   }
 
-  ##############
-  # zero sigma solution
+  par <- sigma2par(sigma)
+  SOL <- nloglike(par,verbose=TRUE)
   ZSOL <- nloglike(0,verbose=TRUE)
+  # starting point from previous model
+  if(!is.null(GUESS))
+  {
+    # GUESS$mu <- (GUESS$mu-SHIFT)/SCALE
+    GUESS$sigma <- t(GUESS$sigma/SCALE)/SCALE
+    GUESS$par <- sigma2par(sigma)
 
-  #############
-  # non zero sigma iterative solution
-  if(any(VARS))
-  {
-    ERROR <- Inf
-    SOL <- INF
-  }
-  else
-  {
-    ERROR <- 0
-    SOL <- ZSOL
+    GSOL <- nloglike(GUESS$par,verbose=TRUE)
+    if(GSOL$loglike>SOL$loglike) { SOL <- GSOL }
   }
 
+  ERROR <- Inf
   count <- 0
   count.0 <- 0
   while(ERROR>tol && count<100)

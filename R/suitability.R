@@ -99,7 +99,7 @@ R.suit <- function(R,CTMM,data=NULL,log=FALSE,VAR=FALSE)
       COV.POV <- 0
     }
   }
-  R <- R %*% beta[TERMS]
+  R <- c(R %*% beta[TERMS])
 
   if(!log)
   {
