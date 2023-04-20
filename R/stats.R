@@ -416,10 +416,30 @@ chi.dof <- function(M1,M2,precision=1/2)
 # variance of chi variable, given dof
 chi.var <- function(DOF,M1=1)
 {
-  R <- 2*pi/DOF/beta(DOF/2,1/2)^2
-  R <- nant(R,1/(1+DOF))
+  R <- DOF
+
+  fn <- function(DOF){ 2*pi/DOF/beta(DOF/2,1/2)^2 }
+
+  # Laurent expansion (large DOF)
+  MAX <- 26 # switch over point in numerical accuracy
+  coef <- c( 1, -(1/2), 1/8, 1/16, -(5/128), -(23/256), 53/1024, 593/2048, -(5165/32768), -(110123/65536), 231743/262144 )
+  pn <- Vectorize( function(DOF) { series(1/DOF,coef) } )
+  SUB <- DOF>=MAX
+  if(any(SUB)) { R[SUB] <- pn(DOF[SUB]) }
+
+  # Taylor expansion (small DOF)
+  MIN <- 0.000002
+  coef <- c(0, 1/2, -log(2), pi^2/24 + log(2)^2) * pi # further terms require gsl::zeta()
+  pn <- Vectorize( function(DOF) { series(DOF,coef) } )
+  SUB <- DOF<=MIN
+  if(any(SUB)) { R[SUB] <- pn(DOF[SUB]) }
+
+  SUB <- DOF>MIN & DOF<MAX
+  if(any(SUB)) { R[SUB] <- fn(DOF[SUB]) }
+
   VAR <- (1/R-1)*M1^2
-  VAR <- nant(VAR,1/DOF)
+  # VAR <- nant(VAR,1/DOF)
+
   return(VAR)
 }
 

@@ -1,6 +1,7 @@
 ** PRIORITY
+* ridge estimation: calculate all derivatives, search & interpolate
 * rsf.fit ~=0 exact weighted Gaussian fit (SP? NA?)
-* rsf.fit: categorical modifiers
+* rsf.fit: categorical modifiers -> categorical normalizations
 ** optimize integrator="Riemann" for categorical modifiers -> categorical integrals
 * rsf.fit: Riemann integrator can be to coarse
 * units="unit string"

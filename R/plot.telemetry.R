@@ -12,9 +12,13 @@ methods::setMethod("zoom",signature(x="telemetry"), function(x,fraction=1,...) z
 methods::setMethod("zoom",signature(x="UD"), function(x,fraction=1,...) zoom.telemetry(x,fraction=fraction,...))
 
 ##############
-new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,R=NULL,col.bg="white",col.R="green",legend=FALSE,level.UD=0.95,level=0.95,units=TRUE,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,ext=NULL,...)
+new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,R=NULL,col.bg="white",col.R="green",legend=FALSE,level.UD=0.95,level=0.95,units=TRUE,fraction=1,add=FALSE,xlim=NULL,ylim=NULL,ext=NULL,cex=NULL,...)
 {
   RESIDUALS <- !is.null(data) && !is.null(attr(data[[1]],"info")$residual)
+
+  if(is.null(cex)) { cex <- graphics::par('cex') }
+  if(class(cex)[1]=='list') { cex <- sapply(cex,stats::median) }
+  cex <- stats::median(cex)
 
   dist <- list()
   dist$name <- "meters"
@@ -106,7 +110,7 @@ new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,R=NULL,col.bg="white",col.R="gr
     ext <- ext/dist$scale
 
     # empty base layer plot
-    plot(ext, xlab=xlab, ylab=ylab, col=grDevices::rgb(1,1,1,0), asp=1, ...)
+    plot(ext, xlab=xlab, ylab=ylab, col=grDevices::rgb(1,1,1,0), asp=1, cex=cex, ...)
 
     # plot background color
     lim <- graphics::par('usr')
@@ -199,7 +203,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,col.bg='white',
     CTMM <- list(ctmm(sigma=1,mu=c(0,0)))
   }
 
-  dist <- new.plot(data=x,CTMM=CTMM,UD=UD,col.bg=col.bg,R=R,col.R=col.R,legend=legend,level.UD=level.UD,level=level,units=units,fraction=fraction,add=add,xlim=xlim,ylim=ylim,ext=ext,...)
+  dist <- new.plot(data=x,CTMM=CTMM,UD=UD,col.bg=col.bg,R=R,col.R=col.R,legend=legend,level.UD=level.UD,level=level,units=units,fraction=fraction,add=add,xlim=xlim,ylim=ylim,ext=ext,cex=cex,...)
 
   # plot cm per unit of distance plotted (m or km)
   cmpkm <- 2.54*mean(graphics::par("fin")*diff(graphics::par("plt"))[-2]/diff(graphics::par("usr"))[-2])

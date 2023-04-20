@@ -72,6 +72,9 @@ variogram.guess <- function(variogram,CTMM=ctmm())
 ######################################################################
 variogram.fit <- function(variogram,CTMM=ctmm(),name="GUESS",fraction=0.5,interactive=TRUE,...)
 {
+  CLASS <- class(variogram)[1]
+  if(CLASS %nin% c('variogram','data.frame')) { stop("variogram is class ",CLASS) }
+
   # R CHECK CRAN BUG BYPASS
   z <- NULL
   sigma <- NULL

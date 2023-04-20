@@ -503,7 +503,7 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
   if(length(BETA))
   {
     R$beta <- beta
-    R$formula <- as.formula(paste("~",paste(names(beta),collapse=" + ")))
+    R$formula <- stats::as.formula(paste("~",paste(names(beta),collapse=" + ")))
   }
 
   # reverse log transformation

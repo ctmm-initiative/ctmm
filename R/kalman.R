@@ -182,7 +182,11 @@ langevin <- function(dt,CTMM,DIM=1)
 nant <- function(x,to)
 {
   NAN <- is.na(x) # TRUE for NaN and NA
-  if(any(NAN)) { x[NAN] <- to }
+  if(any(NAN))
+  {
+    to <- array(to,length(x))
+    x[NAN] <- to[NAN]
+  }
   return(x)
 }
 
