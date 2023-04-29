@@ -46,8 +46,6 @@ pkde <- function(data,UD,kernel="individual",weights=FALSE,ref="Gaussian",...)
 # (C) Kevin Winner & C.H. Fleming (2016)
 akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utilization",debias=TRUE,weights=FALSE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
 {
-  grad <- FALSE
-
   if(variable!="utilization")
   { stop("variable=",variable," not yet supported by akde(). See npr() or revisitation().") }
 
@@ -225,7 +223,7 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utiliz
     EXT <- extent(EXT,level=1-error)[,axes] # Gaussian extent (includes uncertainty)
     GRID <- kde.grid(data[[i]],H=KDE[[i]]$H,axes=axes,alpha=error,res=res,dr=dr,grid=grid,EXT.min=EXT) # individual grid
 
-    KDE[[i]] <- c(KDE[[i]],kde(data[[i]],H=KDE[[i]]$H,axes=axes,CTMM=CTMM0[[i]],SP=SP,SP.in=SP.in,RASTER=R,bias=DEBIAS[[i]],W=KDE[[i]]$weights,alpha=error,dr=dr,grid=GRID,grad=grad))
+    KDE[[i]] <- c(KDE[[i]],kde(data[[i]],H=KDE[[i]]$H,axes=axes,CTMM=CTMM0[[i]],SP=SP,SP.in=SP.in,RASTER=R,bias=DEBIAS[[i]],W=KDE[[i]]$weights,alpha=error,dr=dr,grid=GRID,...))
 
     if(!is.null(UD))
     {
@@ -276,7 +274,7 @@ prepare.H <- function(H,n,axes=c('x','y'))
 # construct my own KDE objects
 # was using ks-package but it has some bugs
 # alpha is the error goal in my total probability
-kde <- function(data,H,axes=c("x","y"),CTMM=list(),SP=NULL,SP.in=TRUE,RASTER=list(),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr=NULL,grid=NULL,variable=NA,normalize=TRUE,trace=FALSE,grad=FALSE)
+kde <- function(data,H,axes=c("x","y"),CTMM=list(),SP=NULL,SP.in=TRUE,RASTER=list(),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr=NULL,grid=NULL,variable=NA,normalize=TRUE,trace=FALSE,grad=FALSE,trunc=TRUE)
 {
   if(!is.na(variable))
   {
@@ -396,21 +394,26 @@ kde <- function(data,H,axes=c("x","y"),CTMM=list(),SP=NULL,SP.in=TRUE,RASTER=lis
     HESS <- array(0,c(dim(PMF),2,2))
   }
 
+  SUB <- lapply(1:length(dim(PMF)),function(d){1:dim(PMF)[d]})
+
   if(trace) { pb <- utils::txtProgressBar(style=3) } # time loops
   for(i in 1:n)
   {
-    # sub-grid lower/upper bound indices
-    i1 <- floor((r[i,]-dH[i,]-R0)/dr) + 1
-    i2 <- ceiling((r[i,]+dH[i,]-R0)/dr) + 1
+    if(trunc)
+    {
+      # sub-grid lower/upper bound indices
+      i1 <- floor((r[i,]-dH[i,]-R0)/dr) + 1
+      i2 <- ceiling((r[i,]+dH[i,]-R0)/dr) + 1
 
-    # constrain to within grid
-    i1 <- pmax(i1,1)
-    i2 <- pmin(i2,dim(PMF))
+      # constrain to within grid
+      i1 <- pmax(i1,1)
+      i2 <- pmin(i2,dim(PMF))
 
-    CHECK <- i2>=i1
-    if(any(!CHECK)) { stop("Grid incompatible with data.") }
+      CHECK <- i2>=i1
+      if(any(!CHECK)) { stop("Grid incompatible with data.") }
 
-    SUB <- lapply(1:length(i1),function(d){ i1[d]:i2[d] })
+      SUB <- lapply(1:length(i1),function(d){ i1[d]:i2[d] })
+    }
 
     # I can't figure out how to do these cases in one line
     if(length(SUB)==1) # 1D

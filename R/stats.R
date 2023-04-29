@@ -1,6 +1,8 @@
 # generalized covariance from negative-log-likelihood derivatives
-cov.loglike <- function(hess,grad=rep(0,sqrt(length(hess))),tol=.Machine$double.eps)
+cov.loglike <- function(hess,grad=rep(0,sqrt(length(hess))),tol=.Machine$double.eps,WARN=TRUE)
 {
+  EXCLUDE <- c("ctmm.boot","cv.like","ctmm.select")
+
   # in case of bad derivatives, use worst-case numbers
   grad <- nant(grad,Inf)
   hess <- nant(hess,0)
@@ -37,21 +39,24 @@ cov.loglike <- function(hess,grad=rep(0,sqrt(length(hess))),tol=.Machine$double.
   values <- EIGEN$values
   if(any(values<=0))
   {
-    # shouldn't need to warn if using ctmm.select
-    WARN <- TRUE
-    N <- sys.nframe()
-    if(N>=2)
+    # shouldn't need to warn if using ctmm.select, but do if using ctmm.fit directly
+    if(WARN)
     {
-      for(i in 2:N)
+      N <- sys.nframe()
+      if(N>=2)
       {
-        CALL <- deparse(sys.call(-i))[1]
-        CALL <- grepl("ctmm.select",CALL) || grepl("cv.like",CALL) || grepl("ctmm.boot",CALL) || grepl("mean.mu",CALL) || grepl("mean.features",CALL)
-        if(CALL)
+        for(i in 2:N)
         {
-          WARN <- FALSE
-          break
-        }
-      }
+          CALL <- deparse(sys.call(-i))[1]
+          CALL <- sapply(EXCLUDE,function(E){grepl(E,CALL,fixed=TRUE)})
+          CALL <- any(CALL)
+          if(CALL)
+          {
+            WARN <- FALSE
+            break
+          }
+        } # 2:N
+      } # N >= 2
     }
     # warn if weren't using ctmm.select
     if(WARN) { warning("MLE is near a boundary or optimizer failed.") }

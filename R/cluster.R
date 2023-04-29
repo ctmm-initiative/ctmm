@@ -70,7 +70,9 @@ cluster.area <- function(x,level=0.95,level.UD=0.95,IC="BIC",debias=TRUE,units=T
 
     xlab <- paste0(100*level.UD,"% Area (",UNITS$name,")")
     # base layer plot
-    plot(range(AREA),c(1,N+2),col=grDevices::rgb(1,1,1,0),xlab=xlab,ylab=NA,yaxt="n",...)
+    RANGE <- range(AREA)
+    RANGE[2] <- min(RANGE[2],10*max(AREA[1,3],AREA[N+2,3]))
+    plot(RANGE,c(1,N+2),col=grDevices::rgb(1,1,1,0),xlab=xlab,ylab=NA,yaxt="n",...)
 
     for(i in 2:(N+1)) { graphics::axis(2,at=IND[i],labels=ID[i],las=2,col.axis=COL[i],lwd=0) }
     graphics::axis(2,at=IND[N+2],labels=ID[N+2],las=2,font=2,col.axis=COL[N+2],lwd=0)
@@ -210,8 +212,10 @@ cluster.chisq <- function(s,dof,level=0.95,IC="BIC",debias=TRUE,precision=1/2,..
   L$gauss$COST <- function(par,zero=0) { nloglike(S1=par[1],K1=par[2],zero=zero) }
   L$gauss$GUESS <- function()
   {
-    mu <- mean(s[SUB])
-    k <- mean(1/s[SUB]) - 1/mu # VAR/mu^3
+    w <- 1-exp(-dof[SUB]) # turn off tiny dof
+    w <- w/sum(w)
+    mu <- sum(w*s[SUB])
+    k <- sum(w/s[SUB]) - 1/mu # VAR/mu^3
     c(mu,k)
   }
   L$gauss$FIT <- function(par=NULL)

@@ -234,7 +234,7 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
 
   S <- make.names(MEANS,VARS)
   if(trace) { message("Fitting covariance model ",S) }
-  OLD[[S]] <- meta.normal(MU,SIGMA,debias=debias,weights=weights,VARS=diag(VARS,DIM),MEANS=MEANS,...)
+  OLD[[S]] <- meta.normal(MU,SIGMA,debias=debias,weights=weights,VARS=diag(VARS,DIM),MEANS=MEANS,WARN=FALSE,...)
 
   ## add terms one by one
   GUESS <- OLD[[1]]
@@ -269,7 +269,7 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
       {
         S <- NAMES[i]
         if(trace) { message("Fitting covariance model ",S) }
-        NEW[[S]] <- meta.normal(MU,SIGMA,debias=debias,weights=weights,VARS=diag(TRYS[i,],DIM),MEANS=MEANS,GUESS=GUESS,...)
+        NEW[[S]] <- meta.normal(MU,SIGMA,debias=debias,weights=weights,VARS=diag(TRYS[i,],DIM),MEANS=MEANS,GUESS=GUESS,WARN=FALSE,...)
       }
     }
 
@@ -300,7 +300,7 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
       {
         S <- NAMES[i]
         if(trace) { message("Fitting covariance model ",S) }
-        NEW[[S]] <- meta.normal(MU,SIGMA,debias=debias,weights=weights,VARS=diag(VARS,DIM),MEANS=TRYS[i,],GUESS=GUESS,...)
+        NEW[[S]] <- meta.normal(MU,SIGMA,debias=debias,weights=weights,VARS=diag(VARS,DIM),MEANS=TRYS[i,],GUESS=GUESS,WARN=FALSE,...)
       }
     }
 
@@ -367,7 +367,7 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
       {
         S <- NEW.NAMES[i]
         if(trace) { message("Fitting covariance model ",S) }
-        NEW[[S]] <- meta.normal(MU,SIGMA,debias=debias,weights=weights,VARS=diag(TRYS[i,],DIM),MEANS=MEANS,GUESS=GUESS,...)
+        NEW[[S]] <- meta.normal(MU,SIGMA,debias=debias,weights=weights,VARS=diag(TRYS[i,],DIM),MEANS=MEANS,GUESS=GUESS,WARN=FALSE,...)
       }
     }
 
@@ -395,7 +395,7 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
       {
         S <- NEW.NAMES[i]
         if(trace) { message("Fitting covariance model ",S) }
-        NEW[[S]] <- meta.normal(MU,SIGMA,debias=debias,weights=weights,VARS=diag(VARS,DIM),MEANS=TRYS[i,],GUESS=GUESS,...)
+        NEW[[S]] <- meta.normal(MU,SIGMA,debias=debias,weights=weights,VARS=diag(VARS,DIM),MEANS=TRYS[i,],GUESS=GUESS,WARN=FALSE,...)
       }
     }
 
@@ -430,7 +430,7 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
     if(S %nin% names(OLD))
     {
       if(trace) { message("Fitting covariance model ",S) }
-      OLD[[S]] <- meta.normal(MU,SIGMA,debias=debias,weights=weights,VARS=VARS,MEANS=MEANS,GUESS=GUESS,...)
+      OLD[[S]] <- meta.normal(MU,SIGMA,debias=debias,weights=weights,VARS=VARS,MEANS=MEANS,GUESS=GUESS,WARN=FALSE,...)
     }
   } # end correlation fit
 
@@ -547,7 +547,7 @@ mean.mu <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",...)
   # no variance in mean location
   S <- "Dirac-\u03B4(\u03BC)"
   if(trace) { message("Fitting location-mean model ",S) }
-  MM[[S]] <- meta.normal(MU,SIGMA,VARS=FALSE,isotropic=TRUE,debias=debias,weights=weights,...)
+  MM[[S]] <- meta.normal(MU,SIGMA,VARS=FALSE,isotropic=TRUE,debias=debias,weights=weights,WARN=FALSE,...)
   GUESS <- MM[[S]]
 
   # symmetric mean distribution
@@ -555,7 +555,7 @@ mean.mu <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",...)
   {
     S <- "isotropic-\u03BC"
     if(trace) { message("Fitting location-mean model ",S) }
-    MM[[S]] <- meta.normal(MU,SIGMA,isotropic=TRUE,debias=debias,weights=weights,GUESS=GUESS,...)
+    MM[[S]] <- meta.normal(MU,SIGMA,isotropic=TRUE,debias=debias,weights=weights,GUESS=GUESS,WARN=FALSE,...)
     GUESS <- MM[[S]]
 
     # general distribution
@@ -563,7 +563,7 @@ mean.mu <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",...)
     {
       S <- "anisotropic-\u03BC"
       if(trace) { message("Fitting location-mean model ",S) }
-      MM[[S]] <- meta.normal(MU,SIGMA,debias=debias,weights=weights,GUESS=GUESS,...)
+      MM[[S]] <- meta.normal(MU,SIGMA,debias=debias,weights=weights,GUESS=GUESS,WARN=FALSE,...)
     }
   }
 

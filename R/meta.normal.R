@@ -1,7 +1,7 @@
 # population-level parameter estimates for normally distributed parameters and parameter uncertainties
 # MEANS Boolean denotes whether or not there is a non-zero mean
 # VARS Boolean denotes whether or not there is natural variance-covariance
-meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,GUESS=NULL,debias=TRUE,weights=NULL,precision=1/2)
+meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,GUESS=NULL,debias=TRUE,weights=NULL,precision=1/2,WARN=TRUE,...)
 {
   tol <- .Machine$double.eps^precision
   REML <- debias
@@ -421,7 +421,7 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,GUESS=NULL
     par <- sigma2par(sigma)
     set.parscale(TRUE) # more accurate parscale for numderiv
     DIFF <- genD(par,nloglike,parscale=parscale,lower=lower,upper=Inf)
-    COV.sigma <- cov.loglike(DIFF$hessian,DIFF$gradient)
+    COV.sigma <- cov.loglike(DIFF$hessian,DIFF$gradient,WARN=WARN)
     # HESS <- DIFF$hessian - outer(DIFF$gradient) # Hessian penalized by non-zero gradient
   }
   else

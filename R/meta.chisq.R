@@ -128,7 +128,8 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='mle',bo
     if(complete)
     {
       NAME[1] <- "Dirac-\u03B4"
-      mu <- sum(dof*s)/sum(dof) # exact solution
+      w <- dof/sum(dof)
+      mu <- sum(w*s) # exact solution
       mu <- nant(mu,mean(s)) # if any dof==Inf
       PAR[1,1] <- mu
       LL[1] <- -nloglike(mu)
@@ -138,8 +139,10 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='mle',bo
     NAME[2] <- "inverse-Gaussian"
     if(complete && n>=2) # par==NULL
     {
-      mu <- mean(s)
-      k <- mean(1/s) - 1/mu
+      w <- 1-exp(-dof) # turn off low dof from mean
+      w <- w/sum(w)
+      mu <- sum(w*s)
+      k <- sum(w/s) - 1/mu
       par <- c(mu,k)
     }
     if((complete && n>=2) || length(par)==2)
@@ -225,7 +228,7 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='mle',bo
     else if(IND==2) # inverse-Gaussian model
     {
       STUFF <- genD(par,nloglike,lower=c(0,0),order=2)
-      COV <- cov.loglike(STUFF$hessian,STUFF$gradient)
+      COV <- cov.loglike(STUFF$hessian,STUFF$gradient,WARN=is.na(IC))
 
       if(debias) # Bessel's correction to point estimate of k=1/lambda and COV
       {
@@ -745,7 +748,9 @@ meta.uni <- function(x,variable="area",level=0.95,level.UD=0.95,level.pop=0.95,m
     if(length(UNITS$name)) { xlab <- paste0(xlab," (",UNITS$name,")") }
     if(variable=="area") { xlab <- paste0(100*level.UD,"% ",xlab) }
     # base layer plot
-    plot(range(PLOT),c(1,N+mean),col=grDevices::rgb(1,1,1,0),xlab=xlab,ylab=NA,yaxt="n",...)
+    RANGE <- range(PLOT[PLOT<Inf])
+    RANGE[2] <- min(RANGE[2],10*PLOT[3,N+1])
+    plot(RANGE,c(1,N+mean),col=grDevices::rgb(1,1,1,0),xlab=xlab,ylab=NA,yaxt="n",...)
 
     # 2nd attempt to fix long labels # still not working, but better than nothing
     CEX.AXIS <- graphics::par("cex.axis")

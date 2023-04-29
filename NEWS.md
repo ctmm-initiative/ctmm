@@ -1,4 +1,4 @@
-ctmm 1.1.1 (2023-04-19)
+ctmm 1.1.1 (2023-04-28)
 ================
 * new function rsf.select()
 * new functions sdm.fit(), sdm.select()
@@ -22,7 +22,7 @@ ctmm 1.1.1 (2023-04-19)
 * bugfix in summary() of population mean location DOF
 * convergence issue fixed in mean.ctmm()
 * overlap() and meta() can now extract object names
-* meta() stability improvements for tiny denominator DOF estimates
+* meta() stability improvements for tiny DOF estimates
 * as.telemetry() UTM import updated to new PROJ specification
 * mean.ctmm() improved numerical stability and covariance selection
 
