@@ -40,6 +40,8 @@ lag.DOF <- function(data,dt=NULL,weights=NULL,lag=NULL,FLOOR=NULL,p=NULL)
 #lag.DOF is an unsupported option for end users
 bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=NULL,dt=NULL,PC="Markov",error=0.01,precision=1/2,verbose=FALSE,trace=FALSE,dt.plot=TRUE,...)
 {
+  DIM <- length(CTMM$axes) + length(VMM$axes)
+
   # temporary solution
   if(class(CTMM)[1]=="list" && class(CTMM[[1]])[1]=="UD")
   { return(bandwidth.pop(data,CTMM,precision=precision)) }
@@ -47,31 +49,44 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=NULL,dt=NULL,PC="Mar
   PC <- match.arg(PC,c("Markov","circulant","IID","direct"))
   trace2 <- ifelse(trace,trace-1,FALSE)
 
-  if(length(CTMM$tau)==0 || all(CTMM$tau==0)) { weights <- FALSE }
+  if(length(CTMM$tau)==0 || all(CTMM$tau==0) && length(weights)==1) { weights <- FALSE }
 
   n <- length(data$t)
 
   sigma <- methods::getDataPart(CTMM$sigma)
   if(!is.null(VMM)) { sigmaz <- methods::getDataPart(VMM$sigma) }
 
-  if(weights)
-  { WEIGHTS <- TRUE }
-  else
+  if(length(weights)==1) # boolean ( optimize or not )
   {
-    WEIGHTS <- FALSE
-    weights <- rep(1/n,n)
+    WEIGHTS <- WEIGHTS.OPT <- weights
+    if(!weights) { weights <- rep(1/n,n) }
+  }
+  else # fixed weights ( but do not optimize )
+  {
+    WEIGHTS <- TRUE
+    WEIGHTS.OPT <- FALSE
+    weights <- weights / sum(weights)
   }
 
   if(is.null(CTMM$tau)) # IID bandwidth optimization (faster algorithm)
   {
-    if(is.null(VMM))
+    if(!WEIGHTS)
     {
-      MISE <- function(h) { 1/n/(2*h^2) + (n-1)/n/(2+2*h^2) - 2/(2+h^2) + 1/2 }
+      w2d <- 1/n
+      w2o <- (n-1)/n
     }
-    else # assuming this would also be IID if horizontal is
+    else
     {
-      MISE <- function(h) { 1/n/(2*h^2)^(3/2) + (n-1)/n/(2+2*h^2)^(3/2) - 2/(2+h^2)^(3/2) + 1/2^(3/2) }
+      w2d <- sum(weights^2)
+      w2o <- 1 - w2d
     }
+
+    if(DIM==1)
+    { MISE <- function(h) { w2d/sqrt(2*h^2) + w2o/sqrt(2+2*h^2) - 2/sqrt(2+h^2) + 1/sqrt(2) } }
+    else if(DIM==2)
+    { MISE <- function(h) { w2d/(2*h^2) + w2o/(2+2*h^2) - 2/(2+h^2) + 1/(2) } }
+    else if(DIM==3) # assuming this would also be IID if horizontal is
+    { MISE <- function(h) { w2d/(2*h^2)^(3/2) + w2o/(2+2*h^2)^(3/2) - 2/(2+h^2)^(3/2) + 1/2^(3/2) } }
   }
   else # autocorrelated bandwidth optimization (slower, more general algorithm)
   {
@@ -92,7 +107,7 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=NULL,dt=NULL,PC="Mar
 
     if(is.null(fast))
     {
-      N <- (last(data$t)-data$t[1])/dt
+      N <- ceiling( (last(data$t)-data$t[1])/dt )
       if(n^3 <= N*log(N,2) || n <= 1000)
       {
         fast <- FALSE
@@ -120,19 +135,14 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=NULL,dt=NULL,PC="Mar
       }
     }
 
-    if(!WEIGHTS) # class(weights)[1]=='numeric' || class(weights)[1]=='integer' ||  # fixed weight lag information
+    if(!WEIGHTS.OPT) # fixed weight lag information
     {
-      # if(class(weights)[1]=='numeric' || class(weights)[1]=='integer') # fixed weights
-      # { weights <- weights/sum(weights) }
-      # else # uniform weights
-      # { weights <- rep(1/n,n) }
-
       # for fixed weights we can calculate the pair number straight up
       DOF <- lag.DOF(data,dt=dt,weights=weights)
       lag <- DOF$lag
       DOF <- DOF$DOF
     }
-    else if(WEIGHTS & fast) # grid information for FFTs
+    else if(fast) # grid information for FFTs
     {
       DOF <- NULL
       lag <- pregridder(data$t,dt=dt)
@@ -140,7 +150,7 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=NULL,dt=NULL,PC="Mar
       p <- lag$p
       lag <- lag$lag
     }
-    else if(WEIGHTS & !fast) # exact lag matrix
+    else if(!fast) # exact lag matrix
     {
       DOF <- NULL
       p <- NULL
@@ -152,7 +162,7 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=NULL,dt=NULL,PC="Mar
     { stop("bandwidth weights argument misspecified.") }
 
     # standardized SVF
-    CTMM$sigma <- covm(diag(1,2))
+    CTMM$sigma <- covm(diag(1,length(CTMM$axes)),axes=CTMM$axes)
     svf <- svf.func(CTMM,moment=FALSE)$svf
     g <- Vectorize(svf)
 
@@ -188,12 +198,14 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=NULL,dt=NULL,PC="Mar
       MISE <- function(h)
       {
         if(any(h<=0)) { return(Inf) }
-        if(is.null(VMM)) # 2D
-        { sum(DOF/(G+h^2))/2 - 2/(2+h^2) + 1/2 }
-        else # 3D
+        if(DIM==1)
+        { sum(DOF/sqrt(G+h^2))/sqrt(2) - 2/sqrt(2+h^2) + 1/sqrt(2) }
+        else if(DIM==2)
+        { sum(DOF/(G+h^2))/2 - 2/(2+h^2) + 1/(2) }
+        else if(DIM==3)
         { sum(DOF/(G+h[1]^2)/sqrt(GZ+h[2]^2))/2^(3/2) - 2/(2+h[1]^2)/sqrt(2+h[2]^2) + 1/2^(3/2) }
       }
-    }
+    } # end fixed weights
     else if(is.null(DOF)) # solve for weights
     {
       MISE <- function(h)
@@ -201,9 +213,11 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=NULL,dt=NULL,PC="Mar
         if(any(h<=0)) { return(Inf) }
 
         # MISE matrix (local copy)
-        if(is.null(VMM)) #2D
+        if(DIM==1)
+        { 1/sqrt(G+h^2)/sqrt(2) }
+        else if(DIM==2) #2D
         { G <- 1/(G+h^2)/2 }
-        else # 3D
+        else if(DIM==3) # 3D
         { G <- (1/2^(3/2))/(G+h[1]^2)/sqrt(GZ+h[2]^2) }
 
         # finish approximate inverse matrix
@@ -223,12 +237,17 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=NULL,dt=NULL,PC="Mar
         if(PC=="Markov")
         {
           MARKOV <- list()
-          if(is.null(VMM)) # 2D
+          if(DIM==1)
+          {
+            MARKOV$ERROR <- sqrt(1/2)/sqrt(1+h^2) # asymptote of G, effective white-noise process
+            MARKOV$VAR <- sqrt(1/2)/sqrt(0+h^2) - MARKOV$ERROR # variance of effective OU process
+          }
+          else if(DIM==2) # 2D
           {
             MARKOV$ERROR <- (1/2)/(1+h^2) # asymptote of G, effective white-noise process
             MARKOV$VAR <- (1/2)/(0+h^2) - MARKOV$ERROR # variance of effective OU process
           }
-          else # 3D
+          else if(DIM==3) # 3D
           {
             MARKOV$ERROR <- (1/2^(3/2))/(1+h[1]^2)/sqrt(1+h[2]^2) # asymptote of G, effective white-noise process
             MARKOV$VAR <- (1/2^(3/2))/(0+h[1]^2)/sqrt(1+h[2]^2) - MARKOV$ERROR # variance of effective OU process
@@ -250,9 +269,11 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=NULL,dt=NULL,PC="Mar
         SOLVE <- PQP.solve(G,FLOOR=FLOOR,p=p,lag=lag,error=error,PC=PC,IG=IG,MARKOV=MARKOV)
         weights <<- SOLVE$P
         if(trace){ message(SOLVE$CHANGES," feasibility assessments @ ",round(SOLVE$STEPS/SOLVE$CHANGES,digits=1)," conjugate gradient steps/assessment") }
-        if(is.null(VMM)) # 2D
+        if(DIM==1)
+        { return( SOLVE$MISE - 2/sqrt(2+h^2) + 1/sqrt(2) ) }
+        else if(DIM==2) # 2D
         { return( SOLVE$MISE - 2/(2+h^2) + 1/2 ) }
-        else # 3D
+        else if(DIM==3) # 3D
         { return( SOLVE$MISE - 2/(2+h[1]^2)/sqrt(2+h[2]^2) + 1/2^(3/2) ) }
 
         # else # ODL QUADPROG CODE
@@ -275,10 +296,13 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=NULL,dt=NULL,PC="Mar
   control <- list(precision=precision/2,trace=trace2)
   # reduce precision relative to QP solver
 
+  # silverman's rule of thumb
+  h <- (4/(DIM+2)/n)^(1/(DIM+4))
+
   if(is.null(VMM) || is.null(CTMM$tau)) # 2D or 1 bandwidth parameter
   {
     # bounds for h
-    hlim <- c(1/n^(1/6)/2,sqrt(2))
+    hlim <- c(h/2,sqrt(2))
     # hlim[1] is half Silverman's rule of thumb. difference must be asymptotically small.
     # hlim[2] is the exact solution when n=1
 
@@ -316,7 +340,6 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=NULL,dt=NULL,PC="Mar
     #!! could do an IID evaluation here for minimum h !!#
     #!! could do an n=1 evaluation here for maximum h !!#
 
-    h <- 4/5/n^(1/7) # Use Silverman's rule of thumb as initial guess
     MISE <- optimizer(c(h,h),MISE,lower=c(0,0),control=control)
     h <- MISE$par
     MISE <- MISE$value
@@ -333,15 +356,17 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=NULL,dt=NULL,PC="Mar
 
   H <- h^2
 
-  if(is.null(VMM))
+  if(DIM<=2)
   {
-    DOF.H <- ( 1/(2*H)^2 - 1/(2+2*H)^2 ) / ( 1/(2+H)^2 - 1/(2+2*H)^2 )
+    if(DIM==1)
+    { DOF.H <- ( 1/(2*H)^1.5 - 1/(2+2*H)^1.5 ) / ( 1/(2+H)^1.5 - 1/(2+2*H)^1.5 ) }
+    else if(DIM==2)
+    { DOF.H <- ( 1/(2*H)^2 - 1/(2+2*H)^2 ) / ( 1/(2+H)^2 - 1/(2+2*H)^2 ) }
 
     H <- H*sigma
-
     axes <- CTMM$axes
   }
-  else
+  else if(DIM==3)
   {
     # numerator
     DOF.H <- ( 1/(2*H[1])^2/sqrt(2*H[2]) + 1/(2*H[1])/(2*H[2])^(3/2) - 1/(2+2*H[1])^2/sqrt(2+2*H[2]) - 1/(2+2*H[1])/(2+2*H[2])^(3/2) )
@@ -363,9 +388,9 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=NULL,dt=NULL,PC="Mar
 
   if(verbose)
   {
-    h <- c(h[1],h)
+    if(DIM>1) { h <- c(h[1],h) }
     CTMM$sigma <- covm(sigma,axes=CTMM$axes,isotropic=CTMM$isotropic)
-    DOF.area <- rep(DOF.area(CTMM),2)
+    DOF.area <- rep(DOF.area(CTMM),length(CTMM$axes))
 
     if(!is.null(VMM))
     {
@@ -388,7 +413,8 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=NULL,dt=NULL,PC="Mar
         DOF <- DOF$DOF
       }
 
-      STUFF <- akde.bias(CTMM,H=H[1:2,1:2],lag=lag,DOF=DOF,weights=weights)
+      D <- length(CTMM$axes)
+      STUFF <- akde.bias(CTMM,H=H[1:D,1:D],lag=lag,DOF=DOF,weights=weights)
       COV <- STUFF$COV
       bias <- STUFF$bias
 
@@ -426,7 +452,7 @@ bandwidth.pop <- function(data,UD,kernel="individual",weights=FALSE,ref="Gaussia
   ref <- match.arg(ref,c("Gaussian","AKDE"))
 
   CTMM <- lapply(UD,function(ud){ud@CTMM})
-  MEAN <- mean(CTMM)
+  MEAN <- mean(CTMM,...)
   MEAN <- mean.pop(MEAN)
   axes <- MEAN$axes
   n <- length(data)

@@ -156,8 +156,17 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
   # evaluate mean function and error matrices for this data once upfront
   CTMM <- ctmm.prepare(data,CTMM,tau=FALSE,calibrate=FALSE) # don't muck with taus, don't calibrate
   TYPE <- DOP.match(axes)
-  UERE.DOF <- attr(data,"UERE")$DOF[,TYPE]
-  names(UERE.DOF) <- rownames(attr(data,"UERE")$DOF)
+  if(TYPE!="unknown")
+  {
+    UERE.DOF <- attr(data,"UERE")$DOF[,TYPE]
+    names(UERE.DOF) <- rownames(attr(data,"UERE")$DOF)
+  }
+  else
+  {
+    UERE.DOF <- 0
+    names(UERE.DOF) <- "all"
+  }
+
   UERE.FIT <- CTMM$error>0 & !is.na(UERE.DOF) & UERE.DOF<Inf # will we be fitting any error parameters?
   UERE.FIX <- CTMM$error>0 & (is.na(UERE.DOF) | UERE.DOF==Inf) # are there any fixed error parameters?
   UERE.PAR <- names(UERE.FIT)[UERE.FIT>0] # names of fitted UERE parameters
@@ -165,7 +174,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
   if(any(!UERE.FIT)) { CTMM$error[!UERE.FIT] <- as.logical(CTMM$error[!UERE.FIT]) }
 
   # don't try to fit error class parameters absent from data
-  if(any(CTMM$error>0) && "class" %in% names(data))
+  if(any(CTMM$error>0) && "class" %in% names(data) && TYPE!="unknown")
   {
     LEVELS <- levels(data$class)
     UERE.DOF <- UERE.DOF[LEVELS]
@@ -174,6 +183,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
     UERE.PAR <- UERE.PAR[UERE.PAR %in% LEVELS]
     CTMM$error <- CTMM$error[LEVELS]
   }
+
   # make sure to include calibration in log-likelihood even if error==FALSE
   CTMM$errors <- any(CTMM$error>0)
 

@@ -1,6 +1,5 @@
 ** PRIORITY
-* cluster: w = 1-exp(-dof)
-* cluster: plot range finite
+* uere<- warning message when location classes do not intersect
 * ridge estimation: calculate all derivatives, search & interpolate
 * rsf.fit ~=0 exact weighted Gaussian fit (SP? NA?)
 * rsf.fit: categorical modifiers -> categorical normalizations

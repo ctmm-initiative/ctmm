@@ -31,7 +31,7 @@ pkde(data,UD,kernel="individual",weights=FALSE,ref="Gaussian",...)
   \item{error}{Target probability error.}
   \item{res}{Number of grid points along each axis, relative to the bandwidth.}
   \item{grid}{Optional grid specification via \code{raster}, \code{UD}, or list of arguments (See `Details' below).}
-  \item{...}{Arguments passed to \code{\link{bandwidth}} and \code{akde}.}
+  \item{...}{Arguments passed to \code{akde}, \code{\link{bandwidth}}, and \code{\link{mean.ctmm}}.}
   \item{UD}{A list of individual \code{UD} objects corresponding to \code{data}.}
   \item{kernel}{Bandwidths are proportional to the individual covariances if \code{kernel="individual"} or to the population covariance if \code{kernel="population"}.}
   \item{ref}{Include non-Gaussian overlap corrections if \code{ref="AKDE"} and \code{weights=TRUE}.}

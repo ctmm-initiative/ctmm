@@ -27,3 +27,21 @@ ipsigamma <- function(x,deriv=0,precision=1/2)
 # inverse trigamma
 itrigamma <- function(x,precision=1/2)
 { ipsigamma(x,deriv=1,precision=precision) }
+
+
+# shifted Legendre polynomials
+legendre <- function(n,x)
+{
+  if(n==0)
+  { 1 }
+  else if(n==1)
+  { 2*x - 1 }
+  else if(n==2)
+  { 6*x^2 - 6*x + 1 }
+  else if(n==3)
+  { 20*x^3 - 30*x^2 + 12*x - 1 }
+  else if(n==4)
+  { 70*x^4 - 140*x^3 + 90*x^2 - 20*x + 1 }
+  else if(n==5)
+  { 252*x^5 - 630*x^4 + 560*x^3 - 210*x^2 + 30*x - 1 }
+}

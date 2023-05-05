@@ -84,7 +84,14 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utiliz
   AXES <- length(axes)
 
   n <- length(data)
-  weights <- array(weights,n)
+  if(class(weights)[1]!="list")
+  {
+    # assume numerical or boolean / by individual or by time
+    if(length(weights)==1 || length(weights)==n) # by individual
+    { weights <- as.list(array(weights,n)) }
+    else # by time
+    { weights <- list(weights) }
+  }
 
   # loop over individuals for bandwidth optimization
   CTMM0 <- VMM0 <- list()
@@ -121,7 +128,7 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utiliz
       }
 
       # calculate individual optimal bandwidth and some other information
-      if(is.null(UD)) { KDE[[i]] <- bandwidth(data=data[[i]],CTMM=CTMM[[i]],VMM=VMM[[i]],weights=weights[i],verbose=TRUE,error=error,...) }
+      if(is.null(UD)) { KDE[[i]] <- bandwidth(data=data[[i]],CTMM=CTMM[[i]],VMM=VMM[[i]],weights=weights[[i]],verbose=TRUE,error=error,...) }
     }
     else if(class(CTMM)[1]=="bandwidth") # bandwidth information was precalculated
     {
@@ -220,7 +227,7 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utiliz
     { EXT <- CTMM[[i]] }
     else
     { EXT <- list(horizontal=CTMM[[i]],vertical=VMM[[i]]) }
-    EXT <- extent(EXT,level=1-error)[,axes] # Gaussian extent (includes uncertainty)
+    EXT <- extent(EXT,level=1-error)[,axes,drop=FALSE] # Gaussian extent (includes uncertainty)
     GRID <- kde.grid(data[[i]],H=KDE[[i]]$H,axes=axes,alpha=error,res=res,dr=dr,grid=grid,EXT.min=EXT) # individual grid
 
     KDE[[i]] <- c(KDE[[i]],kde(data[[i]],H=KDE[[i]]$H,axes=axes,CTMM=CTMM0[[i]],SP=SP,SP.in=SP.in,RASTER=R,bias=DEBIAS[[i]],W=KDE[[i]]$weights,alpha=error,dr=dr,grid=GRID,...))
@@ -274,8 +281,10 @@ prepare.H <- function(H,n,axes=c('x','y'))
 # construct my own KDE objects
 # was using ks-package but it has some bugs
 # alpha is the error goal in my total probability
-kde <- function(data,H,axes=c("x","y"),CTMM=list(),SP=NULL,SP.in=TRUE,RASTER=list(),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr=NULL,grid=NULL,variable=NA,normalize=TRUE,trace=FALSE,grad=FALSE,trunc=TRUE)
+kde <- function(data,H,axes=c("x","y"),CTMM=list(),SP=NULL,SP.in=TRUE,RASTER=list(),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr=NULL,grid=NULL,variable=NA,normalize=TRUE,trace=FALSE,grad=FALSE,trunc=TRUE,...)
 {
+  DIM <- length(axes)
+
   if(!is.na(variable))
   {
     if(variable %in% c("revisitation"))
@@ -416,9 +425,9 @@ kde <- function(data,H,axes=c("x","y"),CTMM=list(),SP=NULL,SP.in=TRUE,RASTER=lis
     }
 
     # I can't figure out how to do these cases in one line
-    if(length(SUB)==1) # 1D
+    if(DIM==1) # 1D
     { PMF[SUB[[1]]] <- PMF[SUB[[1]]] + W[i]*pnorm1(R[[1]][SUB[[1]]]-r[i,1],H[i,,],dr,alpha) }
-    else if(length(SUB)==2) # 2D
+    else if(DIM==2) # 2D
     {
       # extract suitability sub-grid
       if(length(RASTER))
@@ -494,7 +503,7 @@ kde <- function(data,H,axes=c("x","y"),CTMM=list(),SP=NULL,SP.in=TRUE,RASTER=lis
         HESS[SUB[[1]],SUB[[2]],,] <- HESS[SUB[[1]],SUB[[2]],,] - (dPMF %o% iH) + GG
       }
     }
-    else if(length(SUB)==3) # 3D
+    else if(DIM==3) # 3D
     { PMF[SUB[[1]],SUB[[2]],SUB[[3]]] <- PMF[SUB[[1]],SUB[[2]],SUB[[3]]] + W[i]*pnorm3(R[[1]][SUB[[1]]]-r[i,1],R[[2]][SUB[[2]]]-r[i,2],R[[3]][SUB[[3]]]-r[i,3],H[i,,],dr,alpha) }
 
     if(trace) { utils::setTxtProgressBar(pb,i/n) }
@@ -505,14 +514,14 @@ kde <- function(data,H,axes=c("x","y"),CTMM=list(),SP=NULL,SP.in=TRUE,RASTER=lis
 
   if(sum(bias)) # debias area/volume
   {
-    if(length(dr)==2) # AREA debias
+    if(DIM<=2) # AREA or WIDTH debias
     {
-      # debias the area
+      # debias the area (2D) or width (1D)
       PMF <- debias.volume(PMF,bias=min(bias))
       CDF <- PMF$CDF
       PMF <- PMF$PMF
     }
-    else if(length(dr)==3) # VOLUME debias
+    else if(DIM==3) # VOLUME debias
     {
       # I'm assuming z-bias is smallest
       vbias <- min(bias)
@@ -818,13 +827,22 @@ pnorm2 <- function(X,Y,sigma,dr,alpha=0.001)
 # This function is not ready for Kriging
 pnorm3 <- function(X,Y,Z,sigma,dr,alpha=0.001)
 {
+  # !!! EXPAND INTO DIFFERENT RESOLUTION INTEGRATORS
+
   cdf <- prod(dr) * Gauss3(X,Y,Z,sigma)
 
   return(cdf)
 }
 
 # UNFINISHED
-pnorm1 <- function(X,sigma,dr,alpha=0.001) { 0 }
+pnorm1 <- function(X,sigma,dr,alpha=0.001)
+{
+  # !!! EXPAND INTO DIFFERENT RESOLUTION INTEGRATORS
+
+  cdf <- dr * Gauss1(X,sigma)
+
+  return(cdf)
+}
 
 
 #################
@@ -861,7 +879,7 @@ NewtonCotes <- function(X,Y,sigma,W,dx=mean(diff(X)),dy=mean(diff(Y)))
 
 
 #####################
-# gaussian pdf
+# 2D Gaussian pdf
 Gauss <- function(X,Y,sigma=NULL,sigma.inv=solve(sigma),sigma.GM=sqrt(det(sigma)))
 {
   cdf <- outer(X^2*sigma.inv[1,1],Y^2*sigma.inv[2,2],"+")/2
@@ -872,15 +890,21 @@ Gauss <- function(X,Y,sigma=NULL,sigma.inv=solve(sigma),sigma.GM=sqrt(det(sigma)
 
 
 #####################
-# gaussian pdf
+# 3D Gaussian pdf
 # assumes uncorrelated z-axis
 Gauss3 <- function(X,Y,Z,sigma=NULL,sigma.inv=solve(sigma[1:2,1:2]),sigma.GM=sqrt(det(sigma[1:2,1:2])))
 {
   cdf <- Gauss(X,Y,sigma=sigma[1:2,1:2],sigma.inv=sigma.inv,sigma.GM=sigma.GM)
-  cdf <- cdf %o% (exp(-Z^2/(2*sigma[3,3]))/sqrt(2*pi*sigma[3,3]))
+  cdf <- cdf %o% Gauss1(Z,sigma[3,3])
 
   return(cdf)
 }
+
+
+#####################
+# 1D Gaussian pdf
+Gauss1 <- function(X,sigma=NULL)
+{ exp(-X^2/(2*sigma))/sqrt(2*pi*sigma) }
 
 
 #####################

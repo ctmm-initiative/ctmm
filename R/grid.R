@@ -163,12 +163,14 @@ format.grid <- function(grid,axes=c('x','y'))
 # non-grid arguments are merely suggestions
 kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=NULL,dr=NULL,EXT=NULL,EXT.min=NULL,grid=NULL)
 {
+  DIM <- length(axes)
   H <- prepare.H(H,n=length(data$t),axes=axes) # (times,dim,dim)
 
   # how far to extend range from data as to ensure alpha significance in total probability
-  z <- qmvnorm(1-alpha,length(axes))
+  z <- qmvnorm(1-alpha,DIM)
 
   dH <- z * apply(H,1,function(h){sqrt(diag(h))}) # (dim,times)
+  dim(dH) <- c(DIM,nrow(data))
   dH <- t(dH) # (times,dim)
 
   if(!is.null(grid$r)) ### grid fully pre-specified ###
@@ -205,7 +207,7 @@ kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=NULL,dr=NULL,EXT=NUL
     res <- round(dEXT/dr) # extent could be slightly off --- assuming mostly correct
 
     # preserve dr
-    R <- lapply(1:length(axes),function(i){seq(EXT[1,i],EXT[2,i],length.out=1+res[i])})
+    R <- lapply(1:DIM,function(i){seq(EXT[1,i],EXT[2,i],length.out=1+res[i])})
   }
   else if(!is.null(grid$extent)) ### grid extent specified, but not resolution ###
   {
@@ -228,12 +230,12 @@ kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=NULL,dr=NULL,EXT=NUL
       EXT[2,] <- EXT[2,] - dr/2
     }
 
-    R <- lapply(1:length(axes),function(i){seq(EXT[1,i],EXT[2,i],length.out=1+res[i])})
+    R <- lapply(1:DIM,function(i){seq(EXT[1,i],EXT[2,i],length.out=1+res[i])})
   } ### end grid extent specified ###
   else if(!is.null(grid$dr)) ### grid resolution specified, but not extent ###
   {
     dr <- grid$dr
-    dr <- array(dr,length(axes))
+    dr <- array(dr,DIM)
 
     R <- get.telemetry(data,axes) # (times,dim)
     # minimum extent
@@ -259,7 +261,7 @@ kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=NULL,dr=NULL,EXT=NUL
     }
 
     # add one cell buffer on all sides for occurrence with zero-error IID models
-    R <- lapply(1:length(axes),function(i){seq(EXT[1,i]-dr[i],EXT[2,i]+dr[i],length.out=1+res[i]+2)})
+    R <- lapply(1:DIM,function(i){seq(EXT[1,i]-dr[i],EXT[2,i]+dr[i],length.out=1+res[i]+2)})
   } ### end grid resolution specified ###
   else ### grid not specified at all ###
   {
@@ -268,7 +270,7 @@ kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=NULL,dr=NULL,EXT=NUL
 
     if(is.null(EXT)) { EXT <- rbind( apply(R-dH,2,min) , apply(R+dH,2,max) ) } # (ext,dim) }
     colnames(EXT) <- axes
-    if(!is.null(EXT.min)) { EXT <- as.matrix(extent(list(EXT,EXT.min),level=1))[,axes] }
+    if(!is.null(EXT.min)) { EXT <- as.matrix(extent(list(EXT,EXT.min),level=1))[,axes,drop=FALSE] }
     dEXT <- EXT[2,]-EXT[1,]
 
     # grid center
@@ -281,7 +283,7 @@ kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=NULL,dr=NULL,EXT=NUL
 
     # grid locations
     # add one cell buffer on all sides for occurrence with zero-error IID models
-    R <- lapply(1:length(axes),function(i){ seq(EXT[1,i]-dr[i],EXT[2,i]+dr[i],length.out=1+res[i]+2) } ) # (grid,dim)
+    R <- lapply(1:DIM,function(i){ seq(EXT[1,i]-dr[i],EXT[2,i]+dr[i],length.out=1+res[i]+2) } ) # (grid,dim)
   } ### end not grid specification at all ###
   ### END SPECIFY GRID ###
 

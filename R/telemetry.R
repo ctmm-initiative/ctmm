@@ -592,7 +592,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
                        'Acquisition.Start.Time','start.timestamp',
                        'Time.GMT','GMT.Time','Local.Time','time',"\u6642\u523B",
                        'Date.GMT','Date','Date.Local',"\u65E5\u4ED8",
-                       't','t_dat','use_date',"event.Date")
+                       't','t_dat','use_date',"event.Date","observation.Date")
   NAMES$id <- c("animal.ID","individual.local.identifier","local.identifier","individual.ID","Name","ID","ID.Names","Animal","Full.ID",
                 "tag.local.identifier","tag.ID","band.number","band.num","device.info.serial","Device.ID","collar.id","Logger","Logger.ID",
                 "Deployment","deployment.ID","track.ID")

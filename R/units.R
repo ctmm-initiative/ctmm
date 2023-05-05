@@ -258,17 +258,22 @@ unit.telemetry <- function(data,length=1,time=1,axes=c('x','y'))
   convert('dark.time',time)
   convert('sundial.rate',1/time)
 
-  convert(DOP.LIST$horizontal$axes,length)
-  convert(DOP.LIST$vertical$axes,length)
-  convert(DOP.LIST$speed$axes,length/time)
+  if(any(axes %in% c('x','y','z')))
+  {
+    convert(DOP.LIST$horizontal$axes,length)
+    convert(DOP.LIST$vertical$axes,length)
+    convert(DOP.LIST$speed$axes,length/time)
 
-  convert(DOP.LIST$horizontal$VAR,length^2)
-  convert(DOP.LIST$horizontal$COV,length^2)
+    convert(DOP.LIST$horizontal$VAR,length^2)
+    convert(DOP.LIST$horizontal$COV,length^2)
 
-  convert(DOP.LIST$vertical$VAR,length^2)
+    convert(DOP.LIST$vertical$VAR,length^2)
 
-  convert(DOP.LIST$speed$VAR,(length/time)^2)
-  convert(DOP.LIST$speed$COV,(length/time)^2)
+    convert(DOP.LIST$speed$VAR,(length/time)^2)
+    convert(DOP.LIST$speed$COV,(length/time)^2)
+  }
+  else
+  { for(axis in axes) { convert(axis,length) } }
 
   # calibration constants
   attr(data,"UERE")$UERE <- attr(data,"UERE")$UERE/length # don't logicals get divided this way?

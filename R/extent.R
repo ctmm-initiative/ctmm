@@ -31,7 +31,7 @@ extent.list <- function(x,...)
     NIN <- COLS %nin% colnames(RANGE[[i]])
     if(any(NIN)) { RANGE[[i]][,COLS[NIN]] <- NA }
     # sort columns
-    RANGE[[i]] <- RANGE[[i]][,COLS]
+    RANGE[[i]] <- RANGE[[i]][,COLS,drop=FALSE]
   }
 
   # concatenate ranges
@@ -53,10 +53,9 @@ extent.telemetry <- function(x,level=1,...)
   probs <- c(alpha,1-alpha)
   RANGE <- data.frame(row.names=c('min','max'))
 
-  COLS <- c('x','y','z','t','longitude','latitude','timestamp')
-  for(COL in COLS)
+  for(COL in colnames(x))
   {
-    if(COL %in% colnames(x))
+    if(class(x[[COL]])[1]=="numeric")
     {
       if(COL=="longitude") # use circular statistics
       { RANGE[[COL]] <- quantile.longitude(x[[COL]],probs=probs,na.rm=TRUE) }

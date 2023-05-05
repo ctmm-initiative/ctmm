@@ -175,11 +175,12 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
   #   { J["omega",c("tau position","omega")] <- c(1,-1) }
   # }
 
-  tJ <- t(J)
-  MU <- MU %*% tJ
-
   # missing data / infinite uncertainties
   INF <- t(apply(SIGMA,1,function(M){diag(M)==Inf})) # [ind,par]
+
+  tJ <- t(J)
+  MU[INF] <- 0 # zero out infinite uncertainties (point estimates could be infinite after log transform)
+  MU <- MU %*% tJ
 
   SIGMA <- SIGMA %.% tJ
   for(i in 1:nrow(SIGMA)) { for(j in 1:ncol(SIGMA)) { if(INF[i,j]) { SIGMA[i,j,] <- SIGMA[i,,j] <- 0; SIGMA[i,j,j] <- Inf } } }

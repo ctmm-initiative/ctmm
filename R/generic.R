@@ -5,6 +5,12 @@ match.arg <- function(arg,choices,...)
   else { return(base::match.arg(arg,choices,...)) }
 }
 
+# sort arguments by class
+sort.arg <- function(arg,sig)
+{
+
+}
+
 
 # does this thing exist and, if so, is it true
 is.good <- function(x) { !is.null(x) & !is.na(x) & x }

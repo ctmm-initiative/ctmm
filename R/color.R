@@ -4,6 +4,11 @@ annotate <- function(object,by="all",cores=1,...)
   if(class(object)[1]=="list") { return(plapply(object,annotate,cores=cores,fast=FALSE)) }
   # else one at a time below
 
+  if(class(by)[1]=="list")
+  {
+    # for the future
+  }
+
   #
   if(class(by)[1]=="data.frame")
   {

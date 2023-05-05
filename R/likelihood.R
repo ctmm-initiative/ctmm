@@ -128,9 +128,17 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   ELLIPSE <- attr(error,"ellipse") # do we need error ellipses?
   # are we fitting the error?, then the above is not yet normalized
   TYPE <- DOP.match(CTMM$axes)
-  UERE.RMS <- attr(data,"UERE")$UERE[,TYPE]
-  UERE.DOF <- attr(data,"UERE")$DOF[,TYPE]
-  names(UERE.DOF) <- names(UERE.RMS) <- rownames(attr(data,"UERE")$DOF) # R drops dimnames
+  if(TYPE!="unknown")
+  {
+    UERE.RMS <- attr(data,"UERE")$UERE[,TYPE]
+    UERE.DOF <- attr(data,"UERE")$DOF[,TYPE]
+    names(UERE.DOF) <- names(UERE.RMS) <- rownames(attr(data,"UERE")$DOF) # R drops dimnames
+  }
+  else
+  {
+    UERE.RMS <- UERE.DOF <- 0
+    names(UERE.RMS) <- names(UERE.DOF) <- "all"
+  }
 
   # only a subset of levels are in the data
   if(!is.null(names(CTMM$error)) && "class" %in% names(data))
@@ -467,7 +475,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     if(profile && PROFILE) { CTMM$sigma <- M.sigma }
     else { CTMM$sigma <- sigma }
 
-    CTMM$UERE <- attr(data,"UERE")$UERE[,TYPE]
+    if(TYPE!="unknown") { CTMM$UERE <- attr(data,"UERE")$UERE[,TYPE] }
 
     CTMM <- ctmm.repair(CTMM,K=K)
 

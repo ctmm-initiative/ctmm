@@ -14,6 +14,7 @@ bandwidth(data,CTMM,VMM=NULL,weights=FALSE,fast=NULL,dt=NULL,PC="Markov",error=0
   \item{CTMM}{A \code{ctmm} movement model as from the output of \code{ctmm.fit}.}
   \item{VMM}{An optional vertical \code{ctmm} object for 3D bandwidth calculation.}
 %  \item{UD}{A list of \code{UD} objects for calculating population weights and bandwidth [IN DEVELOPMENT].}
+%  \item{h}{Fixed bandwidth value.}
   \item{weights}{By default, the weights are taken to be uniform, whereas \code{weights=TRUE} will optimize the weights.}
   \item{fast}{Use FFT algorithms for weight optimization. \code{fast=NULL} will attempt to intelligently decide between the fast and exact algorithms based on computational complexity.}
   \item{dt}{Optional lag bin width for the FFT algorithm.}
@@ -23,7 +24,7 @@ bandwidth(data,CTMM,VMM=NULL,weights=FALSE,fast=NULL,dt=NULL,PC="Markov",error=0
   \item{verbose}{ Optionally return the optimal \code{weights}, effective sample size \code{DOF.H}, and other information along with the bandwidth matrix \code{H}.}
   \item{trace}{Produce tracing information on the progress of weight optimization.}
   \item{dt.plot}{Execute a diagnostic \code{\link{dt.plot}} with a red line at \code{dt}, if \code{weights=TRUE}.}
-  \item{...}{Additional arguments not currently used.}
+  \item{...}{Arguments passed to \code{\link{mean.ctmm}}.}
 }
 \details{
 The \code{weights=TRUE} argument can be used to correct temporal sampling bias caused by autocorrelation.

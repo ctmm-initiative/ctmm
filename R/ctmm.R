@@ -240,8 +240,17 @@ ctmm.prepare <- function(data,CTMM,precompute=TRUE,tau=TRUE,DIM=length(CTMM$axes
 
   # error parameters
   TYPE <- DOP.match(axes)
-  UERE <- attr(data,"UERE")$UERE[,TYPE]
-  names(UERE) <- rownames(attr(data,"UERE")$UERE)
+  if(TYPE!="unknown")
+  {
+    UERE <- attr(data,"UERE")$UERE[,TYPE]
+    names(UERE) <- rownames(attr(data,"UERE")$UERE)
+  }
+  else
+  {
+    UERE <- 0
+    names(UERE) <- "all"
+  }
+
   if(is.null(names(CTMM$error))) # fix manually specified error parameters
   {
     if(identical(CTMM$error,TRUE)) # lazy set fix
