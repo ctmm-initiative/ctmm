@@ -45,7 +45,7 @@ Instead of specifying a number of ``available'' points to sample and having an u
 
 When \code{trace=TRUE}, a number of convergence estimates are reported, including the standard deviation of the numerical error of the log-likelihood, SD[\eqn{\log(\ell)}], the most recent log-likelihood update, d\eqn{\log(\ell)}, and the most recent (relative) parameter estimate updates d\eqn{\hat{\beta}/}SD[\eqn{\hat{\beta}}].
 
-The \code{formula} object determines \eqn{\log(\lambda)} and can reference static rasters in \code{R}, time-dependent raster stacks in \code{R} [NOT TESTED], and time-dependent effect modifiers in the columns of \code{data}, such as provided by \code{\link{annotate}}.
+The \code{formula} object determines the covariate dependence of \eqn{\log(\lambda)} in the Poisson point process likelihood \eqn{L(\lambda)=\frac{\lambda(x,y)}{\iint \lambda(x',y') \, dx' dy'}}, and can reference static rasters in \code{R}, time-dependent raster stacks in \code{R} [NOT TESTED], and time-dependent effect modifiers in the columns of \code{data}, such as provided by \code{\link{annotate}}.
 Any \code{offset} terms are applied under a log transformation (or multiplicatively to \eqn{\lambda}), and can be used to enforce hard boundaries,
 where \code{offset(raster)=TRUE} denotes accesible points and \code{offset(raster)=FALSE} denotes inaccessible points [NOT TESTED].
 Intercept terms are ignored, as they generally do not make sense for individual Poisson point process models.
@@ -71,7 +71,7 @@ AIC and BIC values for \code{integrated=FALSE} models do not include any penalty
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
-\seealso{ \code{\link{ctmm.fit}}, \code{\link{optimizer}}, \code{\link{summary.ctmm}}. }
+\seealso{ \code{\link{ctmm.fit}}, \code{\link{intensity}}, \code{\link{optimizer}}, \code{\link{summary.ctmm}}. }
 
 %\examples{}
 

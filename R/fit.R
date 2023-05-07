@@ -541,22 +541,33 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
 #################
 ic.ctmm <- function(CTMM,n)
 {
-  NAMES <- CTMM$features
   axes <- CTMM$axes
   range <- CTMM$range
-  k.mean <- nrow(CTMM$mu)
+  k.mean <- length(CTMM$mu)
   method <- CTMM$method
 
-  nu <- length(NAMES)
   # all parameters
   q <- length(axes)
-  if(!range)
+  if(is.null(CTMM$formula)) # autocorrelation model
   {
-    k.mean <- k.mean - 1
-    n <- n - 1
+    NAMES <- CTMM$features
+    nu <- length(NAMES)
+
+    if(!range)
+    {
+      k.mean <- k.mean - q
+      n <- n - 1
+    }
+    if(!length(k.mean)) { k.mean <- 0 } # failed fit (bad data or bad parameters)
   }
-  if(!length(k.mean)) { k.mean <- 0 } # failed fit (bad data or bad parameters)
-  k <- nu + q*k.mean
+  else # RSF model
+  {
+    k.beta <- length(all.vars(CTMM$formula)) # linear terms
+    nu.beta <- length(CTMM$beta) - k.beta # quadratic terms (and more)
+    k.mean <- 2 + k.beta
+    nu <- 1 + nu.beta
+  }
+  k <- nu + k.mean
 
   CTMM$AIC <- 2*k - 2*CTMM$loglike
   CTMM$BIC <- log(n)*k - 2*CTMM$loglike
@@ -565,9 +576,9 @@ ic.ctmm <- function(CTMM,n)
   if(method=='ML')
   { CTMM$AICc <- -2*CTMM$loglike + q*n * 2*k/(q*n-k-nu) }
   else if(method=='pREML')
-  { CTMM$AICc <- -2*CTMM$loglike + (q*n)^2/(q*n+q*k.mean) * 2*k/(q*n-k-nu) }
+  { CTMM$AICc <- -2*CTMM$loglike + (q*n)^2/(q*n+k.mean) * 2*k/(q*n-k-nu) }
   else if(method %in% c('pHREML','HREML','REML'))
-  { CTMM$AICc <- -2*CTMM$loglike + (q*n-q*k.mean) * 2*k/(q*n-k-nu) }
+  { CTMM$AICc <- -2*CTMM$loglike + (q*n-k.mean) * 2*k/(q*n-k-nu) }
 
   # fix divergence
   if(q*n<=k+nu) { CTMM$AICc <- Inf }

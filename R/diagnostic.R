@@ -1,5 +1,6 @@
-diagnostic <- function(data,UD,RSF,R=list(),variable=NULL,level=0.95,smooth=TRUE,interpolate=TRUE,...)
+intensity <- function(data,UD,RSF,R=list(),variable=NULL,level=0.95,ticks=TRUE,smooth=TRUE,interpolate=TRUE,...)
 {
+  # rlim=NULL
   # how to sample rasters
   interpolate <- rep(interpolate,length(R))
   interpolate <- ifelse(interpolate,"bilinear","simple")
@@ -21,20 +22,11 @@ diagnostic <- function(data,UD,RSF,R=list(),variable=NULL,level=0.95,smooth=TRUE
     {
       for(r in RVARS)
       {
-        diagnostic(data,UD=UD,RSF=RSF,R=R,variable=r,level=level,smooth=smooth,interpolate=interpolate,...)
+        intensity(data,UD=UD,RSF=RSF,R=R,variable=r,level=level,smooth=smooth,interpolate=interpolate,...)
         return()
       }
     }
   }
-
-  # rlim=FALSE
-  # if(length(rlim)==1)
-  # {
-  #   if(rlim)
-  #   { rlim <- raster::cellStats() }
-  #   else
-  #   { rlim <- c(-Inf,Inf) }
-  # }
 
   weights <- UD$weights
 
@@ -73,8 +65,8 @@ diagnostic <- function(data,UD,RSF,R=list(),variable=NULL,level=0.95,smooth=TRUE
   p <- exp(log.p)
 
   axes <- variable
-  weights <- weights * p
-  weights <- weights / sum(weights)
+  w <- weights * p
+  w <- w / sum(w)
   error <- 0.001
   res <- 10
   n <- UD$DOF.H[1]
@@ -90,17 +82,56 @@ diagnostic <- function(data,UD,RSF,R=list(),variable=NULL,level=0.95,smooth=TRUE
   # find bias for same h
   bias <- 1 - 1/n + h^2
   # integral K^2
-  R <- 1/sqrt(4*pi)
+  RK2 <- 1/sqrt(4*pi)
   RFIT <- ctmm.fit(data,ctmm(axes=axes))
   H <- h^2 * methods::getDataPart(RFIT$sigma)
   EXT <- extent(RFIT,level=1-error)[,axes,drop=FALSE] # Gaussian extent (includes uncertainty)
   dr <- c(sqrt(H)/res)
-  grid <- format.grid(NULL,axes=axes)
+  # if(!is.null(rlim))
+  # {
+  #   # fix dr to fit in rlim
+  #   RANGE <- diff(rlim)
+  #   dr <- RANGE/ceiling(RANGE/dr)
+  #   # format extent to include margin
+  #   rlim <- cbind(rlim)
+  #   colnames(rlim) <- variable
+  #   rownames(rlim) <- c('min','max')
+  #   grid <- list(extent=rlim)
+  # }
+  # else
+  { grid <- NULL }
+  grid <- format.grid(grid,axes=axes)
   grid <- kde.grid(data,H=H,axes=axes,alpha=error,res=res,dr=dr,grid=grid,EXT.min=EXT)
-  KDE <- kde(data,H=H,axes=axes,CTMM=RFIT,bias=bias,W=weights,alpha=error,dr=dr,grid=grid,...)
+  KDE <- kde(data,H=H,axes=axes,CTMM=RFIT,bias=bias,W=w,alpha=error,dr=dr,grid=grid,...)
 
   alpha <- 1 - level
   z <- stats::qnorm(1-alpha/2)
+
+  VARS <- names(RSF$beta)
+  VARS <- VARS[VARS %in% RM] # only vars to condition on
+  R <- data[[variable]]
+  if(length(VARS))
+  {
+    IND <- sort(R,index.return=TRUE)$ix
+    R <- R[IND]
+    MODEL <- MODEL[IND,]
+    weights <- weights[IND]
+
+    for(V in VARS)
+    {
+      # derived from normalization and MLE
+      AVE <- c(weights %*% MODEL[,V])
+      MODEL[,V] <- MODEL[,V] - AVE
+    }
+
+    EST <- c(MODEL[,VARS,drop=FALSE] %*% RSF$beta[VARS])
+    VAR <- sapply(1:nrow(MODEL),function(i){ MODEL[i,VARS,drop=FALSE] %*% RSF$COV[VARS,VARS,drop=FALSE] %*% t(MODEL[i,VARS,drop=FALSE]) })
+    SE <- z*sqrt(VAR)
+
+    # location of minimum uncertainty
+    MIN <- which.min(SE)
+    EST <- EST - EST[MIN]
+  }
 
   RANGE <- range(data[[variable]])
   r <- KDE$r[[1]]
@@ -109,41 +140,32 @@ diagnostic <- function(data,UD,RSF,R=list(),variable=NULL,level=0.95,smooth=TRUE
   r <- r[SUB]
   PDF <- KDE$PDF[SUB]
   log.PDF <- log(PDF)
-  ZERO <- stats::approx(r,log.PDF,RANGE[1],rule=2)$y
+  # matches below for linear model
+  if(length(VARS))
+  { ZERO <- stats::approx(r,log.PDF,R[MIN],rule=2,ties=mean)$y }
+  else
+  {
+    MIN <- which.max(PDF) # min PDF uncertainty
+    ZERO <- log.PDF[MIN]
+  }
   log.PDF <- log.PDF - ZERO
-  VAR.log.PDF <- c(R/(n*sqrt(H))) / PDF
+  VAR.log.PDF <- c(RK2/(n*sqrt(H))) / PDF
   SE.log.PDF <- z * sqrt(VAR.log.PDF)
 
-  plot(range(r),range(log.PDF-SE.log.PDF,log.PDF+SE.log.PDF),xlab=variable,ylab="log(\u03BB)",col=grDevices::rgb(1,1,1,0))
+  lRANGE <- range(log.PDF-SE.log.PDF,log.PDF+SE.log.PDF)
+  if(length(VARS)) { lRANGE <- range(lRANGE,c(EST-SE,EST+SE)) }
+  ylab <- paste0("log(\u03BB)")
+  plot(RANGE,lRANGE,xlab=variable,ylab=ylab,col=grDevices::rgb(1,1,1,0))
+
   graphics::points(r,log.PDF,type='l',lwd=2)
   graphics::polygon(c(r,rev(r)),c(log.PDF-SE.log.PDF,rev(log.PDF+SE.log.PDF)),border=NA,col=malpha('black',0.25))
 
-  VARS <- names(RSF$beta)
-  VARS <- VARS[VARS %in% RM] # only vars to condition on
   if(length(VARS))
   {
-    r <- data[[variable]]
-    IND <- sort(r,index.return=TRUE)$ix
-    r <- r[IND]
-    MODEL <- MODEL[IND,]
-
-    # # minimize CI width via normalization
-    # MID <- mean(RANGE)
-    # for(V in VARS)
-    # {
-    #   AVE <- stats::approx(r,MODEL[,V],ties=mean)$y
-    #   MODEL[,V] <- MODEL[,V] - AVE
-    # }
-
-    EST <- MODEL[,VARS,drop=FALSE] %*% RSF$beta[VARS]
-    VAR <- sapply(1:nrow(MODEL),function(i){ MODEL[i,VARS,drop=FALSE] %*% RSF$COV[VARS,VARS,drop=FALSE] %*% t(MODEL[i,VARS,drop=FALSE]) })
-    SE <- z*sqrt(VAR)
-
-    # start at zero
-    ZERO <- stats::approx(r,EST,RANGE[1],rule=2,ties=mean)$y
-    EST <- EST - ZERO # make this exact with model matrix and subtract before VAR calculation !!!!!!!!!!!!!!!!!
-
-    graphics::points(r,EST,col='red',type='l',lwd=2)
-    graphics::polygon(c(r,rev(r)),c(EST-SE,rev(EST+SE)),border=NA,col=malpha('red',0.25))
+    graphics::points(R,EST,col='red',type='l',lwd=2)
+    graphics::polygon(c(R,rev(R)),c(EST-SE,rev(EST+SE)),border=NA,col=malpha('red',0.25))
   }
+
+  # ticks at top corresponding to sampled resource values?
+  if(ticks) { graphics::axis(side=3,at=R,labels=FALSE,col=malpha('black',0.5)) }
 }

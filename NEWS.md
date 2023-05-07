@@ -1,6 +1,6 @@
-ctmm 1.1.1 (2023-05-04)
+ctmm 1.1.1 (2023-05-06)
 ================
-* new function rsf.select()
+* new functions rsf.select(), intensity()
 * new functions sdm.fit(), sdm.select()
 * new function funnel() for funnel plots
 * new function midpoint()
@@ -20,11 +20,12 @@ ctmm 1.1.1 (2023-05-04)
 * bugfix in distance() method="Euclidean", debias=TRUE
 * bugfix in rates() debias=TRUE
 * bugfix in summary() of population mean location DOF
-* overlap() and meta() can now extract object names
-* meta() stability improvements for tiny DOF estimates
 * as.telemetry() UTM import updated to new PROJ specification
 * mean.ctmm() improved convergence, numerical stability, and covariance selection
+* meta() stability improvements for tiny DOF estimates
+* overlap() and meta() can now extract object names
 * pkde(...) -> akde(...) -> bandwidth(...) -> mean(...) arguments now passed
+* rsf.fit() AICc formula improved
 
 ctmm 1.1.0 (2022-11-03)
 ================

@@ -185,7 +185,7 @@ kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=NULL,dr=NULL,EXT=NUL
   else if(!is.null(grid$dr) && !is.null(grid$extent)) ### grid fully pre-specified... with possible conflicts ###
   {
     # raster extents include pixel margins
-    MARGIN <- class(grid$extent)[1]=="Extent"
+    MARGIN <- class(grid$extent)[1]=="Extent" || DIM==1
 
     dr <- grid$dr
     EXT <- as.matrix(grid$extent)
@@ -212,7 +212,7 @@ kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=NULL,dr=NULL,EXT=NUL
   else if(!is.null(grid$extent)) ### grid extent specified, but not resolution ###
   {
     # raster extents include pixel margins
-    MARGIN <- class(grid$extent)[1]=="Extent"
+    MARGIN <- class(grid$extent)[1]=="Extent" || DIM==1
 
     # align.to.origin doesn't make sense without dr specified
     EXT <- as.matrix(grid$extent)

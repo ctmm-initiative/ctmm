@@ -1,7 +1,7 @@
 ** PRIORITY
+* rsf.fit ~=0 exact weighted Gaussian fit (!SP && !NA)
+* population averaging of non-stationary mean functions
 * uere<- warning message when location classes do not intersect
-* ridge estimation: calculate all derivatives, search & interpolate
-* rsf.fit ~=0 exact weighted Gaussian fit (SP? NA?)
 * rsf.fit: categorical modifiers -> categorical normalizations
 ** optimize integrator="Riemann" for categorical modifiers -> categorical integrals
 * rsf.fit: Riemann integrator can be to coarse
@@ -17,7 +17,7 @@
 * update R.suit to use matrix.model
 * shift normalize suitability()
 * proximity with multiple individuals
-* user rater::project() in agde, akde, ...
+* user raster::project() in agde, akde, ...
 * predict() individual from population ctmm
 * posterior model predictions
 * pkde weights choice, bandwidth choice, RSF choice - wouldn't be necessary with posterior model predictions
