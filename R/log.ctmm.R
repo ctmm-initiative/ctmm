@@ -57,7 +57,7 @@ log.ctmm <- function(CTMM,debias=FALSE,...)
     COR <- diag(1,nrow(COV))
     dimnames(COR) <- dimnames(COV)
     GOOD <- VAR>.Machine$double.eps
-    COR[GOOD,GOOD] <- stats::cov2cor(COV[GOOD,GOOD])
+    if(any(GOOD)) { COR[GOOD,GOOD] <- stats::cov2cor(COV[GOOD,GOOD,drop=FALSE]) }
     # COR <- nant(COR,0)
 
     # diagonalize and log-chi^2 debias relevant parameter estimates
@@ -151,7 +151,7 @@ exp.ctmm <- function(CTMM,debias=FALSE,variance=TRUE)
     COR <- diag(1,nrow(COV))
     dimnames(COR) <- dimnames(COV)
     GOOD <- VAR>.Machine$double.eps
-    COR[GOOD,GOOD] <- stats::cov2cor(COV[GOOD,GOOD])
+    if(any(GOOD)) { COR[GOOD,GOOD] <- stats::cov2cor(COV[GOOD,GOOD,drop=FALSE]) }
 
     EIGEN <- COV[SUB,SUB]
     EIGEN <- eigen(EIGEN)

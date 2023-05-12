@@ -65,7 +65,7 @@ intensity <- function(data,UD,RSF,R=list(),variable=NULL,level=0.95,ticks=TRUE,s
   p <- exp(log.p)
 
   axes <- variable
-  w <- weights * p
+  w <- weights * p # WHY??????????
   w <- w / sum(w)
   error <- 0.001
   res <- 10
@@ -149,7 +149,7 @@ intensity <- function(data,UD,RSF,R=list(),variable=NULL,level=0.95,ticks=TRUE,s
     ZERO <- log.PDF[MIN]
   }
   log.PDF <- log.PDF - ZERO
-  VAR.log.PDF <- c(RK2/(n*sqrt(H))) / PDF
+  VAR.log.PDF <- c(RK2/n/sqrt(H)) / PDF
   SE.log.PDF <- z * sqrt(VAR.log.PDF)
 
   lRANGE <- range(log.PDF-SE.log.PDF,log.PDF+SE.log.PDF)
