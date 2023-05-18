@@ -2,7 +2,7 @@
 \alias{intensity}
 \encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{Compare empirical and theoretical intensity (resource-selection) functions}
+\title{Compare empirical and theoretical intensity (resource-selection) functions [IN DEVELOPMENT]}
 \description{This function plots the empirical and theoretical intensity functions with respect to a covariate of interest.}
 \usage{
 intensity(data,UD,RSF,R=list(),variable=NULL,level=0.95,ticks=TRUE,smooth=TRUE,

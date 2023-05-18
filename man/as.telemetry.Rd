@@ -58,7 +58,7 @@ tbind(...)
   \item{n}{Number of rows to return, if positive, or number of rows to omit, if negative.}
 }
 
-\details{For data that have not been corralled throuh Mobebank, timestamps either need to be provided in a POSIX format (see the output of \code{Sys.time()}) or supplied with a \code{timeformat} argument for interpretation (see \code{\link{strptime}}). Alternatively, you can try your luck with \code{timeformat="auto"}, and \code{\link[parsedate]{parse_date}} will attempt to infer the format.
+\details{For data that have not been corralled throuh Movebank, timestamps either need to be provided in a POSIX format (see the output of \code{Sys.time()}) or supplied with a \code{timeformat} argument for interpretation (see \code{\link{strptime}}). Alternatively, you can try your luck with \code{timeformat="auto"}, and \code{\link[parsedate]{parse_date}} will attempt to infer the format.
 
 If no projection argument is specified, a two-point equidistant projection is calculated that should be good for most range resident and migratory species.
 Global migrations that are not along one geodesic (locally straight line) will probably suffer distortion.

@@ -125,7 +125,7 @@ R.suit <- function(R,CTMM,data=NULL,log=FALSE,VAR=FALSE)
   }
 
   dim(R) <- DIM
-  dim(COV) <- DIM
+  if(VAR) { dim(COV) <- DIM }
 
   if(VAR) { return(list(R=R,VAR=COV)) }
   else { return(R) }

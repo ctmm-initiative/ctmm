@@ -1,7 +1,9 @@
 ** PRIORITY
+* variogram.fit error on wrong class
+* uere<- warning message when location classes do not intersect
+* as.telemetry example
 * rsf.fit ~=0 exact weighted Gaussian fit (!SP && !NA)
 * population averaging of non-stationary mean functions
-* uere<- warning message when location classes do not intersect
 * rsf.fit: categorical modifiers -> categorical normalizations
 ** optimize integrator="Riemann" for categorical modifiers -> categorical integrals
 * rsf.fit: Riemann integrator can be to coarse

@@ -669,6 +669,7 @@ variogram.ci <- function(t=NULL,dt=NULL,SVF=NULL)
 mean.variogram <- function(x,...)
 {
   x <- c(x,list(...))
+  UERE <- ubind(x)
   IDS <- length(x)
 
   # assemble observed lag range
@@ -722,7 +723,7 @@ mean.variogram <- function(x,...)
   # # correct name if not calibrated
   # if(ERR %in% names(x[[1]])) { rename(variogram,"MSE",ERR) }
 
-  variogram <- new.variogram(variogram,info=mean.info(x))
+  variogram <- new.variogram(variogram,info=mean.info(x),UERE=UERE)
   return(variogram)
 }
 #methods::setMethod("mean",signature(x="variogram"), function(x,...) mean.variogram(x,...))

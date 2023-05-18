@@ -68,7 +68,7 @@ uere <- function(data)
   if(class(data)[1]=="list" && length(data)==1)
   { data <- data[[1]] }
 
-  if(class(data)[1]=="telemetry")
+  if(class(data)[1] %in% c("telemetry","variogram"))
   {
     UERE <- attr(data,"UERE")
     return(UERE)

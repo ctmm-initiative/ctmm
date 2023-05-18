@@ -41,6 +41,103 @@ tbind <- function(...)
   if(is.null(names(x)))
   { names(x) <- sapply(1:length(x),function(i){paste(attr(x[[i]],'info')$identity,i)}) }
 
+  UERE <- ubind(x)
+
+  n <- sapply(x,nrow)
+  n <- c(0,cumsum(n))
+
+  COLS <- lapply(x,names)
+  COLS <- do.call(c,COLS)
+  COLS <- unique(COLS)
+
+  # somehow R does not have built-in functionality to rbind data.frames with extra/missing columns...
+  y <- data.frame(stringsAsFactors=FALSE)
+  for(col in COLS)
+  {
+    for(i in 1:length(x))
+    {
+      r1 <- 1 + n[i]
+      r2 <- n[i+1]
+      if(col %in% names(x[[i]]))
+      {
+        if(col=="class") # factor
+        { y[r1:r2,col] <- as.character(x[[i]][[col]]) }
+        else
+        { y[r1:r2,col] <- x[[i]][[col]] }
+      }
+      else
+      { y[r1:r2,col] <- NA }
+    }
+  }
+  rm(x)
+
+  # make sure class and UERE are in the same order
+  if("class" %in% names(y))
+  {
+    CLASS <- unique(y$class)
+    CLASS <- sort(CLASS) # sort levels
+    y$class <- factor(y$class,levels=CLASS)
+
+    UERE$UERE <- UERE$UERE[CLASS,,drop=FALSE]
+    UERE$DOF <- UERE$DOF[CLASS,,drop=FALSE]
+  }
+
+  # handle missing error information
+  for(i in 2:length(DOP.LIST))
+  {
+    # missing DOP <- 1
+    if(DOP.LIST[[i]]$DOP %in% COLS)
+    {
+      NAS <- is.na(y[[DOP.LIST[[i]]$DOP]])
+      if(any(NAS)) { y[[DOP.LIST[[i]]$DOP]][NAS] <- 1 }
+    }
+
+    # missing variance <- infinite
+    if(DOP.LIST[[i]]$VAR %in% COLS)
+    {
+      NAS <- is.na(y[[DOP.LIST[[i]]$VAR]])
+      if(any(NAS)) { y[[DOP.LIST[[i]]$VAR]][NAS] <- Inf }
+    }
+
+    # missing error ellipse <- error circle
+    if(DOP.LIST[[i]]$COV[1] %in% COLS)
+    {
+      NAS <- is.na(y[[DOP.LIST[[i]]$COV[1]]])
+      if(any(NAS))
+      {
+        y[[DOP.LIST[[i]]$COV[1]]][NAS] <- y[[DOP.LIST[[i]]$VAR]][NAS] # COV.x.x
+        y[[DOP.LIST[[i]]$COV[2]]][NAS] <- 0 # COV.x.y
+        y[[DOP.LIST[[i]]$COV[3]]][NAS] <- y[[DOP.LIST[[i]]$VAR]][NAS] # COV.x.y
+
+        if(DOP.LIST[[i]]$COV.geo[1] %in% COLS)
+        {
+          y[[DOP.LIST[[i]]$COV.geo[1]]][NAS] <- y[[DOP.LIST[[i]]$VAR]][NAS] # COV.major
+          y[[DOP.LIST[[i]]$COV.geo[2]]][NAS] <- y[[DOP.LIST[[i]]$VAR]][NAS] # COV.minor
+          y[[DOP.LIST[[i]]$COV.geo[3]]][NAS] <- 0 # COV.angle
+        }
+      }
+    }
+  }
+
+  # sort times
+  IND <- sort(y$t,index.return=TRUE)$ix
+  y <- y[IND,]
+
+  y <- new.telemetry(y,info=info,UERE=UERE)
+
+  # inconsistent projections
+  if(PROJS>1)
+  {
+    warning("Re-projecting due to inconsistent projections.")
+    projection(y) <- median(y,k=2)
+  }
+
+  return(y)
+}
+
+# bind UERE calibrations
+ubind <- function(x)
+{
   UERE <- uere(x) # initial UERE information
   if(class(UERE)[1]=="list") # non-unique calibration information
   {
@@ -137,112 +234,7 @@ tbind <- function(...)
     } # end UERE merger
   } # end UERE list
 
-  n <- sapply(x,nrow)
-  n <- c(0,cumsum(n))
-
-  COLS <- lapply(x,names)
-  COLS <- do.call(c,COLS)
-  COLS <- unique(COLS)
-
-  # somehow R does not have built-in functionality to rbind data.frames with extra/missing columns...
-  y <- data.frame(stringsAsFactors=FALSE)
-  for(col in COLS)
-  {
-    for(i in 1:length(x))
-    {
-      r1 <- 1 + n[i]
-      r2 <- n[i+1]
-      if(col %in% names(x[[i]]))
-      {
-        if(col=="class") # factor
-        { y[r1:r2,col] <- as.character(x[[i]][[col]]) }
-        else
-        { y[r1:r2,col] <- x[[i]][[col]] }
-      }
-      else
-      { y[r1:r2,col] <- NA }
-    }
-  }
-  rm(x)
-
-  # make sure class and UERE are in the same order
-  if("class" %in% names(y))
-  {
-    CLASS <- unique(y$class)
-    CLASS <- sort(CLASS) # sort levels
-    y$class <- factor(y$class,levels=CLASS)
-
-    UERE$UERE <- UERE$UERE[CLASS,,drop=FALSE]
-    UERE$DOF <- UERE$DOF[CLASS,,drop=FALSE]
-  }
-
-  # handle missing error information
-  for(i in 2:length(DOP.LIST))
-  {
-    # missing DOP <- 1
-    if(DOP.LIST[[i]]$DOP %in% COLS)
-    {
-      NAS <- is.na(y[[DOP.LIST[[i]]$DOP]])
-      if(any(NAS)) { y[[DOP.LIST[[i]]$DOP]][NAS] <- 1 }
-    }
-
-    # missing variance <- infinite
-    if(DOP.LIST[[i]]$VAR %in% COLS)
-    {
-      NAS <- is.na(y[[DOP.LIST[[i]]$VAR]])
-      if(any(NAS)) { y[[DOP.LIST[[i]]$VAR]][NAS] <- Inf }
-    }
-
-    # missing error ellipse <- error circle
-    if(DOP.LIST[[i]]$COV[1] %in% COLS)
-    {
-      NAS <- is.na(y[[DOP.LIST[[i]]$COV[1]]])
-      if(any(NAS))
-      {
-        y[[DOP.LIST[[i]]$COV[1]]][NAS] <- y[[DOP.LIST[[i]]$VAR]][NAS] # COV.x.x
-        y[[DOP.LIST[[i]]$COV[2]]][NAS] <- 0 # COV.x.y
-        y[[DOP.LIST[[i]]$COV[3]]][NAS] <- y[[DOP.LIST[[i]]$VAR]][NAS] # COV.x.y
-
-        if(DOP.LIST[[i]]$COV.geo[1] %in% COLS)
-        {
-          y[[DOP.LIST[[i]]$COV.geo[1]]][NAS] <- y[[DOP.LIST[[i]]$VAR]][NAS] # COV.major
-          y[[DOP.LIST[[i]]$COV.geo[2]]][NAS] <- y[[DOP.LIST[[i]]$VAR]][NAS] # COV.minor
-          y[[DOP.LIST[[i]]$COV.geo[3]]][NAS] <- 0 # COV.angle
-        }
-      }
-    }
-  }
-
-  # sort times
-  IND <- sort(y$t,index.return=TRUE)$ix
-  y <- y[IND,]
-
-  y <- new.telemetry(y,info=info,UERE=UERE)
-
-  # inconsistent projections
-  if(PROJS>1)
-  {
-    warning("Re-projecting due to inconsistent projections.")
-    projection(y) <- median(y,k=2)
-  }
-
-  return(y)
-}
-
-# bind UERE calibrations - NOT FINISHED
-ubind <- function(x)
-{
-  if(class(x)[1]=="UERE") { return(x) }
-
-  for(i in 1:length(x))
-  {
-    CLASS <- rownames(x[[i]]$DOF)
-    y <- data.frame(t=1:length(CLASS),class=as.factor(CLASS))
-    x[[i]] <- new.telemetry(y,info=list(),UERE=x[[i]])
-  }
-  x <- tbind(x)
-  x <- x@UERE
-  return(x)
+  return(UERE)
 }
 
 
