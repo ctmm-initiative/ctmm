@@ -176,34 +176,70 @@ langevin <- function(dt,CTMM,DIM=1)
 }
 
 
-########################
-# 0/0 -> NaN -> to
-# fixes a priori known limits
-nant <- function(x,to)
+Langevin <- function(t,dt=c(Inf,diff(t)),CTMM,DIM=1)
 {
-  NAN <- is.na(x) # TRUE for NaN and NA
-  if(any(NAN))
+  n <- length(dt)
+  tau <- CTMM$tau
+  K <- max(1,length(tau))  # dimension of hidden state per spatial dimension
+
+  # propagation information
+  Green <- array(diag(K*DIM),c(K*DIM,K*DIM,n))
+  Green <- aperm(Green,c(3,1,2)) # [n,K*DIM,K*DIM]
+  Sigma <- array(0,c(n,K*DIM,K*DIM))
+
+  dynamics <- CTMM$dynamics
+  # default stationary process
+  if(is.null(dynamics) || dynamics==FALSE || dynamics=="stationary")
   {
-    to <- array(to,length(x))
-    x[NAN] <- to[NAN]
+    for(i in 1:n)
+    {
+      # does the time lag change values? Then update the propagators.
+      if(i==1 || dt[i] != dt[i-1])
+      { LANGEVIN <- langevin(dt=dt[i],CTMM=CTMM,DIM=DIM) }
+
+      Green[i,,] <- LANGEVIN$Green # (K*DIM,K*DIM)
+      Sigma[i,,] <- LANGEVIN$Sigma # (K*DIM,K*DIM)
+    }
   }
-  return(x)
+  else if(dynamics=="change.point")
+  {
+    CP <- CTMM[[dynamics]] # change points
+    CS <- names(CP) # states (up to that time from previous)
+    CP <- c(CP,Inf)
+    j <- 1
+    for(i in 1:n)
+    {
+      while(t[i]>CP[j]) # does this time increment cross a change point?
+      {
+        DT <- CP[j] - max(t[i-1],ifelse(j==1,-Inf,CP[j-1])) # time until change
+        LANGEVIN <- langevin(dt=DT,CTMM=CTMM[[CS[j]]],DIM=DIM)
+        Green[i,,] <- LANGEVIN$Green %*% Green[i,,]
+        Sigma[i,,] <- (LANGEVIN$Green %*% Sigma[i,,] %*% t(LANGEVIN$Green)) + LANGEVIN$Sigma
+        dt[i] <- dt[i] - DT
+        j <- j + 1
+      }
+
+      if(i>1 && CP[j]>t[i-1]) # did we cross a change point?
+      {
+        LANGEVIN <- langevin(dt=dt[i],CTMM=CTMM[[CS[j]]],DIM=DIM)
+        Green[i,,] <- LANGEVIN$Green %*% Green[i,,]
+        Sigma[i,,] <- (LANGEVIN$Green %*% Sigma[i,,] %*% t(LANGEVIN$Green)) + LANGEVIN$Sigma
+      }
+      else # we did not cross a change point
+      {
+        # do we need a fresh calculation?
+        if(i==1 || dt[i] != dt[i-1]) { LANGEVIN <- langevin(dt=dt[i],CTMM=CTMM,DIM=DIM) }
+
+        Green[i,,] <- LANGEVIN$Green # (K*DIM,K*DIM)
+        Sigma[i,,] <- LANGEVIN$Sigma # (K*DIM,K*DIM)
+      }
+    } # end for i in 1:n
+  } # end change.point dynamics
+
+  R <- list(Green=Green,Sigma=Sigma)
+  return(R)
 }
 
-# fix for infite PD matrix
-# useful after nant(x,Inf)
-inft <- function(x,to=0)
-{
-  INF <- diag(x)==Inf
-  if(any(INF))
-  {
-    # force positive definite
-    x[INF,] <- x[,INF] <- 0
-    # restore infinite variance
-    diag(x)[INF] <- Inf
-  }
-  return(x)
-}
 
 #############################################################
 # Internal Kalman filter/smoother for multiple derivatives, dimensions, trends
@@ -218,7 +254,7 @@ inft <- function(x,to=0)
 # # FALSE: don't assume or return computed glob
 # # +1: store a computed glob in the environment
 # # -1: use a computed glob from the environment
-kalman <- function(z,u,dt,CTMM,error=NULL,DIM=1,smooth=FALSE,sample=FALSE,residual=FALSE,precompute=FALSE)
+kalman <- function(z,u,t=NULL,dt=c(Inf,diff(t)),CTMM,error=NULL,DIM=1,smooth=FALSE,sample=FALSE,residual=FALSE,precompute=FALSE)
 {
   # STUFF THAT CAN BE PRECOMPUTED IF DOING MULTIPLE SIMULATIONS
   if(precompute>=0)
@@ -264,20 +300,10 @@ kalman <- function(z,u,dt,CTMM,error=NULL,DIM=1,smooth=FALSE,sample=FALSE,residu
     zRes <- z ; rm(z)
     sRes <- array(0,c(n,OBS*DIM,OBS*DIM))
 
-    # propagation information
-    Green <- array(0,c(n,K*DIM,K*DIM))
-    Sigma <- array(0,c(n,K*DIM,K*DIM))
-
     # Propagators from Langevin equation
-    for(i in 1:n)
-    {
-      # does the time lag change values? Then update the propagators.
-      if(i==1 || dt[i] != dt[i-1])
-      { Langevin <- langevin(dt=dt[i],CTMM=CTMM,DIM=DIM) }
-
-      Green[i,,] <- Langevin$Green # (K*DIM,K*DIM)
-      Sigma[i,,] <- Langevin$Sigma # (K*DIM,K*DIM)
-    }
+    LANGEVIN <- Langevin(t=t,dt=dt,CTMM=CTMM,DIM=DIM)
+    Green <- LANGEVIN$Green
+    Sigma <- LANGEVIN$Sigma
 
     # first zForcast is properly zeroed
     sFor[1,,] <- Sigma[1,,] # (K*DIM,K*DIM)

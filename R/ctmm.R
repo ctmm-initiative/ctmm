@@ -66,8 +66,14 @@ ctmm <- function(tau=NULL,omega=FALSE,isotropic=FALSE,range=TRUE,circle=FALSE,er
     colnames(List$mu) <- axes
   }
 
-  # default time-link
+  # default (output) axes link
+  if(is.null(List$link)) { List$link <- "identity" }
+
+  # default (input) time-link
   if(is.null(List$timelink)) { List$timelink <- "identity" }
+
+  # default dynamics model
+  if(is.null(List$dynamics)) { List$dynamics <- "stationary" }
 
   # FIX THIS
   #if(!is.null(List$COV.mu)) { dimnames(List$COV.mu) <- list(axes,axes) }
@@ -92,9 +98,26 @@ ctmm.ctmm <- function(CTMM)
 }
 
 
+# dynamical states
+get.states <- function(CTMM)
+{
+  S <- CTMM$dynamics
+  if(length(S))
+  {
+    S <- CTMM[[S]]
+    S <- names(S)
+    S <- unique(S)
+  }
+  return(S)
+}
+
+
 # compute all tau/omega related quantities that we need
 get.taus <- function(CTMM,zeroes=FALSE,simplify=FALSE)
 {
+  STATES <- get.states(CTMM)
+  for(S in STATES) { CTMM[[S]] <- get.taus(CTMM,zeroes=zeroes,simplify=simplify) }
+
   CTMM$tau <- sort(CTMM$tau,decreasing=TRUE)
   if(simplify) { CTMM$tau <- CTMM$tau[CTMM$tau>0] }
   K <- if(zeroes) { length(CTMM$tau) } else { continuity(CTMM) }

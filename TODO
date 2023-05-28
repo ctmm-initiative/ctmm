@@ -1,4 +1,13 @@
 ** PRIORITY
+* uere()<- documentation RMS standard deviation note
+* change default mean.OD/mean.UD to weight by sampling period (as an option)
+* time change point model
+** state model preps
+** mean function for state dynamics models
+** change.point.guess check for repeated states
+** likelihood wrapper for state dynamics models
+** get, set parameters for state dynamics models
+** selection: mean, speed, diffusion, ...
 * variogram.fit error on wrong class
 * uere<- warning message when location classes do not intersect
 * as.telemetry example

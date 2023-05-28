@@ -138,6 +138,35 @@ na.replace <- function(x,rep)
   return(x)
 }
 
+########################
+# 0/0 -> NaN -> to
+# fixes a priori known limits
+nant <- function(x,to)
+{
+  NAN <- is.na(x) # TRUE for NaN and NA
+  if(any(NAN))
+  {
+    to <- array(to,length(x))
+    x[NAN] <- to[NAN]
+  }
+  return(x)
+}
+
+# fix for infite PD matrix
+# useful after nant(x,Inf)
+inft <- function(x,to=0)
+{
+  INF <- diag(x)==Inf
+  if(any(INF))
+  {
+    # force positive definite
+    x[INF,] <- x[,INF] <- 0
+    # restore infinite variance
+    diag(x)[INF] <- Inf
+  }
+  return(x)
+}
+
 
 # parity tests
 is.even <- Vectorize(function(x) {x %% 2 == 0})

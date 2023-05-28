@@ -135,11 +135,11 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
     if(!ISO && x[[i]]$isotropic)
     {
       MU[i,'minor'] <- MU[i,'major']
-      # perfectly correlated observation
-      SIGMA[i,P,P] <- matrix(SIGMA[i,'major','major'],2,2)
-      # copy over other correlations as well
-      SIGMA[i,'minor',NFEAT] <- SIGMA[i,'major',NFEAT]
-      SIGMA[i,NFEAT,'minor'] <- SIGMA[i,NFEAT,'major']
+      # # perfectly correlated observation
+      # SIGMA[i,P,P] <- matrix(SIGMA[i,'major','major'],2,2)
+      # # copy over other correlations as well
+      # SIGMA[i,'minor',NFEAT] <- SIGMA[i,'major',NFEAT]
+      # SIGMA[i,NFEAT,'minor'] <- SIGMA[i,NFEAT,'major']
     }
   } # for(i in 1:N)
 
@@ -152,13 +152,21 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
   {
     J["major",c("major","minor")] <- c(1/2,1/2) # average variance
     J["minor",c("major","minor")] <- c(1,-1) # difference / eccentricity
+
+    if("tau" %in% FEATURES)
+    { J["tau",c("major","minor","tau")] <- c(1/2,1/2,-1) } # D
+
+    if("tau position" %in% FEATURES)
+    { J["tau position",c("major","minor","tau position")] <- c(1/2,1/2,-1) } # D
   }
+  else
+  {
+    if("tau" %in% FEATURES)
+    { J["tau",c("major","tau")] <- c(1,-1) } # D
 
-  if("tau" %in% FEATURES)
-  { J["tau",c("major","tau")] <- c(1,-1) } # D
-
-  if("tau position" %in% FEATURES)
-  { J["tau position",c("major","tau position")] <- c(1,-1) } # D
+    if("tau position" %in% FEATURES)
+    { J["tau position",c("major","tau position")] <- c(1,-1) } # D
+  }
 
   # if("tau velocity" %in% FEATURES)
   # { J["tau velocity",c("major","tau position","tau velocity")] <- c(1,-1,-1) } # MSV correlates with D

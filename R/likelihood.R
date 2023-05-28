@@ -116,12 +116,6 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   # REML variance debias factor # ML constant
   VAR.MULT <- N/DOF
 
-  # pre-centering the data reduces later numerical error across models (tested)
-  # mu.center <- colMeans(z)
-  # z <- t( t(z) - mu.center )
-  # add mu.center back to the mean value after kalman filter / mean profiling
-  # pre-standardizing the data would also help
-
   # get the error information
   error <- CTMM$error.mat # note for fitted errors, this is error matrix @ UERE=1 (CTMM$error)
   class <- CTMM$class.mat
@@ -310,11 +304,11 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
 
     # major axis likelihood
     CTMM$sigma <- SIGMA[1]
-    KALMAN1 <- kalman(cbind(z[,1]),u,dt=dt,CTMM=CTMM,error=error[,1,1,drop=FALSE]) # errors are relative to PRO.VAR if PROFILE
+    KALMAN1 <- kalman(cbind(z[,1]),u,t=t,dt=dt,CTMM=CTMM,error=error[,1,1,drop=FALSE]) # errors are relative to PRO.VAR if PROFILE
 
     # minor axis likelihood
     CTMM$sigma <- SIGMA[2]
-    KALMAN2 <- kalman(cbind(z[,2]),u,dt=dt,CTMM=CTMM,error=error[,2,2,drop=FALSE]) # errors are relative to PRO.VAR if PROFILE
+    KALMAN2 <- kalman(cbind(z[,2]),u,t=t,dt=dt,CTMM=CTMM,error=error[,2,2,drop=FALSE]) # errors are relative to PRO.VAR if PROFILE
 
     mu <- cbind(KALMAN1$mu,KALMAN2$mu)
 
@@ -340,7 +334,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
 
     if(DIM==1) { error <- error[,1,1,drop=FALSE] } # isotropic && UERE redundant error information
 
-    KALMAN <- kalman(z,u,dt=dt,CTMM=CTMM,error=error,DIM=DIM)
+    KALMAN <- kalman(z,u,t=t,dt=dt,CTMM=CTMM,error=error,DIM=DIM)
 
     mu <- KALMAN$mu
 

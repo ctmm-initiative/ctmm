@@ -133,10 +133,10 @@ smoother <- function(data,CTMM,precompute=FALSE,sample=FALSE,residual=FALSE,...)
   {
     # major axis likelihood
     CTMM$sigma <- SIGMA[1]
-    KALMAN1 <- kalman(z[,1,drop=FALSE],u=NULL,dt=dt,CTMM=CTMM,error=error[,1,1,drop=FALSE],precompute=precompute,sample=sample,residual=residual,...)
+    KALMAN1 <- kalman(z[,1,drop=FALSE],u=NULL,t=t,dt=dt,CTMM=CTMM,error=error[,1,1,drop=FALSE],precompute=precompute,sample=sample,residual=residual,...)
     # minor axis likelihood
     CTMM$sigma <- SIGMA[2]
-    KALMAN2 <- kalman(z[,2,drop=FALSE],u=NULL,dt=dt,CTMM=CTMM,error=error[,2,2,drop=FALSE],precompute=precompute,sample=sample,residual=residual,...)
+    KALMAN2 <- kalman(z[,2,drop=FALSE],u=NULL,t=t,dt=dt,CTMM=CTMM,error=error[,2,2,drop=FALSE],precompute=precompute,sample=sample,residual=residual,...)
 
     if(residual) { return(cbind(KALMAN1,KALMAN2)) }
 
@@ -166,7 +166,7 @@ smoother <- function(data,CTMM,precompute=FALSE,sample=FALSE,residual=FALSE,...)
       error <- error[,1,1,drop=FALSE] # isotropic && UERE redundant error information
     }
 
-    KALMAN <- kalman(z,u=NULL,dt=dt,CTMM=CTMM,error=error,DIM=DIM,precompute=precompute,sample=sample,residual=residual,...)
+    KALMAN <- kalman(z,u=NULL,t=t,dt=dt,CTMM=CTMM,error=error,DIM=DIM,precompute=precompute,sample=sample,residual=residual,...)
     # point estimates will be correct but eccentricity is missing from variances
 
     if(residual) { return(KALMAN) }
