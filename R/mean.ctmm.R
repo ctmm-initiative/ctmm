@@ -135,11 +135,11 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
     if(!ISO && x[[i]]$isotropic)
     {
       MU[i,'minor'] <- MU[i,'major']
-      # # perfectly correlated observation
-      # SIGMA[i,P,P] <- matrix(SIGMA[i,'major','major'],2,2)
-      # # copy over other correlations as well
-      # SIGMA[i,'minor',NFEAT] <- SIGMA[i,'major',NFEAT]
-      # SIGMA[i,NFEAT,'minor'] <- SIGMA[i,NFEAT,'major']
+      # perfectly correlated observation
+      SIGMA[i,P,P] <- matrix(SIGMA[i,'major','major'],2,2)
+      # copy over other correlations as well
+      SIGMA[i,'minor',NFEAT] <- SIGMA[i,'major',NFEAT]
+      SIGMA[i,NFEAT,'minor'] <- SIGMA[i,NFEAT,'major']
     }
   } # for(i in 1:N)
 
@@ -195,6 +195,20 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
   SIGMA <- aperm(SIGMA,c(1,3,2))
   SIGMA <- SIGMA %.% tJ
   for(i in 1:nrow(SIGMA)) { for(j in 1:ncol(SIGMA)) { if(INF[i,j]) { SIGMA[i,j,] <- SIGMA[i,,j] <- 0; SIGMA[i,j,j] <- Inf } } }
+  dimnames(SIGMA) <- list(NULL,FEATURES,FEATURES)
+
+  # can't make this infinite before or will mess up above calculations
+  P <- c("minor","angle")
+  for(i in 1:length(x))
+  {
+    if(!ISO && x[[i]]$isotropic)
+    {
+      INF[i,P] <- TRUE
+      SIGMA[i,P,] <- 0
+      SIGMA[i,,P] <- 0
+      SIGMA[i,P,P] <- diag(Inf,2)
+    }
+  }
 
   # number of estimated features (amount of data)
   DIM <- length(FEATURES)
