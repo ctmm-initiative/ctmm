@@ -1,4 +1,5 @@
 ** PRIORITY
+* intensity() needs kernel regression for interactions
 * uere()<- documentation RMS standard deviation note
 * change default mean.OD/mean.UD to weight by sampling period (as an option)
 * time change point model

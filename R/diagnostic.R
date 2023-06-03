@@ -1,4 +1,4 @@
-intensity <- function(data,UD,RSF,R=list(),variable=NULL,level=0.95,ticks=TRUE,smooth=TRUE,interpolate=TRUE,...)
+intensity <- function(data,UD,RSF,R=list(),variable=NULL,empirical=FALSE,level=0.95,ticks=TRUE,smooth=TRUE,interpolate=TRUE,...)
 {
   # rlim=NULL
   # how to sample rasters
@@ -107,8 +107,6 @@ intensity <- function(data,UD,RSF,R=list(),variable=NULL,level=0.95,ticks=TRUE,s
   alpha <- 1 - level
   z <- stats::qnorm(1-alpha/2)
 
-  VARS <- names(RSF$beta)
-  VARS <- VARS[VARS %in% RM] # only vars to condition on
   R <- data[[variable]]
   if(length(VARS))
   {
@@ -141,9 +139,9 @@ intensity <- function(data,UD,RSF,R=list(),variable=NULL,level=0.95,ticks=TRUE,s
   PDF <- KDE$PDF[SUB]
   log.PDF <- log(PDF)
   # matches below for linear model
-  if(length(VARS))
-  { ZERO <- stats::approx(r,log.PDF,R[MIN],rule=2,ties=mean)$y }
-  else
+  if(length(VARS)) { ZERO <- stats::approx(r,log.PDF,R[MIN],rule=2,ties=mean)$y }
+  # the above can fail with no PDF support at R[MIN]
+  if(!length(VARS) || is.na(ZERO))
   {
     MIN <- which.max(PDF) # min PDF uncertainty
     ZERO <- log.PDF[MIN]
@@ -152,13 +150,26 @@ intensity <- function(data,UD,RSF,R=list(),variable=NULL,level=0.95,ticks=TRUE,s
   VAR.log.PDF <- c(RK2/n/sqrt(H)) / PDF
   SE.log.PDF <- z * sqrt(VAR.log.PDF)
 
-  lRANGE <- range(log.PDF-SE.log.PDF,log.PDF+SE.log.PDF)
-  if(length(VARS)) { lRANGE <- range(lRANGE,c(EST-SE,EST+SE)) }
+  lRANGE <- NULL
+  if(empirical)
+  {
+    lRANGE <- c(pmax(log.PDF-SE.log.PDF,ifelse(log.PDF<0,2*log.PDF,-log.PDF)),pmin(log.PDF+SE.log.PDF,ifelse(log.PDF>0,2*log.PDF,-log.PDF)))
+    lRANGE <- lRANGE[abs(lRANGE)<Inf]
+    lRANGE <- range(lRANGE,na.rm=TRUE)
+  }
+  if(length(VARS))
+  {
+    lRANGE <- range(lRANGE,pmin(EST-SE,ifelse(EST<0,2*EST,-EST)),pmin(EST+SE,ifelse(EST>0,2*EST,-EST)))
+    lRANGE <- range(lRANGE,na.rm=TRUE)
+  }
   ylab <- paste0("log(\u03BB)")
   plot(RANGE,lRANGE,xlab=variable,ylab=ylab,col=grDevices::rgb(1,1,1,0))
 
-  graphics::points(r,log.PDF,type='l',lwd=2)
-  graphics::polygon(c(r,rev(r)),c(log.PDF-SE.log.PDF,rev(log.PDF+SE.log.PDF)),border=NA,col=malpha('black',0.25))
+  if(empirical)
+  {
+    graphics::points(r,log.PDF,type='l',lwd=2)
+    graphics::polygon(c(r,rev(r)),c(log.PDF-SE.log.PDF,rev(log.PDF+SE.log.PDF)),border=NA,col=malpha('black',0.25))
+  }
 
   if(length(VARS))
   {

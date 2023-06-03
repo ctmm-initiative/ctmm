@@ -5,7 +5,7 @@
 \title{Compare empirical and theoretical intensity (resource-selection) functions [IN DEVELOPMENT]}
 \description{This function plots the empirical and theoretical intensity functions with respect to a covariate of interest.}
 \usage{
-intensity(data,UD,RSF,R=list(),variable=NULL,level=0.95,ticks=TRUE,smooth=TRUE,
+intensity(data,UD,RSF,R=list(),variable=NULL,empirical=FALSE,level=0.95,ticks=TRUE,smooth=TRUE,
           interpolate=TRUE,...)
 }
 %- maybe also 'usage' for other objects documented here.
@@ -16,6 +16,7 @@ intensity(data,UD,RSF,R=list(),variable=NULL,level=0.95,ticks=TRUE,smooth=TRUE,
   \item{RSF}{An iRSF model-fit object from \code{rsf.fit} or \code{rsf.select}.}
   \item{R}{A named list of rasters or time-varying raster stacks [NOT TESTED] to fit Poisson regression coefficients to (under a log link).}
   \item{variable}{Variable of interest from \code{names(R)}.}
+  \item{empirical}{Plot an empirical estimate of \eqn{\log\lambda} [IN DEVELOPMENT].}
   \item{level}{Confidence level for intensity function estimates.}
   \item{ticks}{Demark used resource values atop the plot.}
   \item{smooth}{Apply location-error smoothing to the tracking data before regression.}

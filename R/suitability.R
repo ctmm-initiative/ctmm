@@ -27,15 +27,28 @@ suitability <- function(data=NULL,CTMM=NULL,R=list(),level=0.95,grid=NULL,log=FA
   alpha <- 1-level
   z <- stats::qnorm(1-alpha/2)
 
-  # details in lognorm.ci()
-  VAR <- log(1 + VAR/R^2)
-  log.R <- log(R) - VAR/2
+  if(!log)
+  {
+    # details in lognorm.ci()
+    VAR <- log(1 + VAR/R^2)
+    log.R <- log(R) - VAR/2
+  }
+
   STD <- z * sqrt(VAR)
   rm(VAR)
+
   R <- array(R,c(dim(R),3))
-  R[,,1] <- exp(log.R - STD)
-  R[,,3] <- exp(log.R + STD)
-  rm(log.R)
+  if(!log)
+  {
+    R[,,1] <- exp(log.R - STD)
+    R[,,3] <- exp(log.R + STD)
+    rm(log.R)
+  }
+  else
+  {
+    R[,,1] <- R[,,2] - STD
+    R[,,3] <- R[,,2] + STD
+  }
 
   proj <- sp::CRS(proj)
   R <- lapply(1:3,function(i){raster::raster(list(x=x,y=y,z=R[,,i]),crs=proj)})
@@ -72,6 +85,9 @@ R.suit <- function(R,CTMM,data=NULL,log=FALSE,VAR=FALSE)
 
   for(D in DVARS) { R[[D]] <- as.numeric(data[[D]])[1] } # model.matrix will rename otherwise; only use first data row
 
+  # working subset that model.matrix will return (NA will be skipped)
+  SUB <- apply(R,1,function(x){!any(is.na(x))})
+  # model.matrix - NA have been skipped
   R <- stats::model.matrix(formula,data=R)
 
   TERMS <- colnames(R)
@@ -118,15 +134,32 @@ R.suit <- function(R,CTMM,data=NULL,log=FALSE,VAR=FALSE)
       if(VAR) { COV <- OFFSET * COV }
     }
   }
-  else if(OFFSET)
+  else if(length(OFFSET))
   {
     R <- R + log(OFFSET)
     if(VAR) { COV <- OFFSET * COV }
   }
 
-  dim(R) <- DIM
-  if(VAR) { dim(COV) <- DIM }
+  # NA default
+  if(log)
+  { FULL <- array(-Inf,DIM) }
+  else
+  { FULL <- array(0,DIM) }
 
-  if(VAR) { return(list(R=R,VAR=COV)) }
-  else { return(R) }
+  # copy over non-NA values
+  FULL[SUB] <- R
+  R <- FULL
+
+  if(VAR)
+  {
+    # NA default
+    FULL <- array(0,DIM)
+
+    FULL[SUB] <- COV
+    COV <- FULL
+
+    return(list(R=R,VAR=COV))
+  }
+  else
+  { return(R) }
 }

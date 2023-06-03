@@ -259,7 +259,7 @@ prepare.H <- function(H,n,axes=c('x','y'))
 
   # one variance given - promote to matrix first - then passes to later stage
   if(length(H)==1)
-  { H <- H*diag(d) }
+  { H <- c(H)*diag(d) }
   else if(is.null(dim(H))) # array of variances given
   {
     H <- sapply(H,function(h) h * diag(d),simplify='array') # [d,d,n]
