@@ -204,14 +204,13 @@ Langevin <- function(t,dt=c(Inf,diff(t)),CTMM,DIM=1)
   else if(dynamics=="change.point")
   {
     CP <- CTMM[[dynamics]] # change points
-    CS <- names(CP) # states (up to that time from previous)
-    CP <- c(CP,Inf)
+    CS <- levels(CP$state) # states
     j <- 1
     for(i in 1:n)
     {
-      while(t[i]>CP[j]) # does this time increment cross a change point?
+      while(t[i]>CP$stop[j]) # does this time increment cross a change point?
       {
-        DT <- CP[j] - max(t[i-1],ifelse(j==1,-Inf,CP[j-1])) # time until change
+        DT <- CP$stop[j] - max(t[i-1],CP$start[j]) # time until change
         LANGEVIN <- langevin(dt=DT,CTMM=CTMM[[CS[j]]],DIM=DIM)
         Green[i,,] <- LANGEVIN$Green %*% Green[i,,]
         Sigma[i,,] <- (LANGEVIN$Green %*% Sigma[i,,] %*% t(LANGEVIN$Green)) + LANGEVIN$Sigma

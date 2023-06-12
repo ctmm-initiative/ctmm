@@ -1,4 +1,5 @@
 ** PRIORITY
+* Log kintetic energy output
 * intensity() needs kernel regression for interactions
 * uere()<- documentation RMS standard deviation note
 * change default mean.OD/mean.UD to weight by sampling period (as an option)
@@ -9,6 +10,7 @@
 ** likelihood wrapper for state dynamics models
 ** get, set parameters for state dynamics models
 ** selection: mean, speed, diffusion, ...
+** mean.svf is a function of mixture weights
 * variogram.fit error on wrong class
 * uere<- warning message when location classes do not intersect
 * as.telemetry example

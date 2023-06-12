@@ -479,28 +479,55 @@ periodic <- new.drift(periodic.drift,
 ##################################
 # change-point mean functions
 ##################################
+# change.point slot is a data.frame with columns: start, stop, state
 
-change.point.is.stationary <- function(CTMM) { sum(apply(CTMM$change.point.mu,2,sum)>0) }
-# CTMM$change.point.mu : [output,input]
+change.point.is.stationary <- function(CTMM)
+{
+  CP <- CTMM$change.point.mu # change points
+  if(is.null(CP)) { CP <- CTMM$change.point } # default
+  nlevels(CP$state)==1
+}
+
 
 # periodic mean/drift function
-change.point.drift <- function(t,CTMM)
+change.point.drift <- function(t,CTMM,velocity=FALSE)
 {
-  D <- CTMM$change.point.mu # [output,input]
-  CP <- CTMM$change.point # CP times
-  S <- get.states(CTMM) #
+  CP <- CTMM$change.point.mu # change points
+  if(is.null(CP)) { CP <- CTMM$change.point } # default
 
-  harmonic <- CTMM$harmonic
-  period <- CTMM$period
-
-  # constant term
-  U <- stationary.drift(t,CTMM)
-
-  omega <- periodic.omega(CTMM)
-  if(length(omega))
+  COL <- 0
+  NAMES <- NULL
+  for(s in levels(CP$state))
   {
-    omega <- t %o% omega
-    U <- cbind( U , cos(omega) , sin(omega) )
+    M <- CTMM[[s]]
+    N <- nrow(M$mu)
+    COL <- COL + N
+    NAMES <- c(NAMES,paste0(s,".",1:N) )
+  }
+
+  U <- array(0,c(length(t),COL))
+  colnames(U) <- NAMES
+
+  # get drift function for each contributing state
+  i1 <- i2 <- 1
+  for(j in 1:nrow(CP))
+  {
+    while(t[i2+1]<CP$stop[j]) { i2 <- i2+1 }
+    SUB <- i1:i2
+
+    s <- as.character(CP$state[j])
+    M <- CTMM[[s]]
+
+    NAME <- paste0(s,".",1:nrow(M$mu)) # mu column names
+
+    D <- get(M$mean)
+
+    if(!velocity)
+    { U[SUB,NAME] <- D$drift(t[SUB],M) }
+    else
+    { U[SUB,NAME] <- D$velocity(t[SUB],M) }
+
+    i1 <- i2 <- i2+1
   }
 
   return(U)
@@ -508,35 +535,34 @@ change.point.drift <- function(t,CTMM)
 
 # periodic velocity mean
 change.point.velocity <- function(t,CTMM)
-{
-  harmonic <- CTMM$harmonic
-  period <- CTMM$period
-
-  # constant term
-  U <- stationary.velocity(t,CTMM)
-
-  omega <- periodic.omega(CTMM)
-  if(length(omega))
-  {
-    theta <- omega %o% t # backwards for multiplication by first dimension
-    U <- cbind( U , -t(omega*sin(theta)) , t(omega*cos(theta)) )
-  }
-
-  return(U)
-}
+{ change.point.drift(t=t,CTMM=CTMM,velocity=TRUE) }
 
 # guess parameters
 change.point.init <- function(data,CTMM)
 {
-  # default period of 1 day
-  if(is.null(CTMM$period)) { CTMM$period <- 1 %#% "day" }
+  CP <- CTMM$change.point.mu # change points
+  if(is.null(CP)) { CP <- CTMM$change.point } # default
 
-  # default harmonics is none
-  if(is.null(CTMM$harmonic)) { CTMM$harmonic <- numeric(length(CTMM$period)) }
+  # get times for each state
+  SUBS <- list()
+  i1 <- i2 <- 1
+  for(j in 1:nrow(CP))
+  {
+    while(t[i2+1]<CP$stop[j]) { i2 <- i2+1 }
+    SUB <- i1:i2
 
-  if(is.null(CTMM$mu)) { CTMM <- drift.init(data,CTMM) }
+    s <- as.character(CP$state[j])
+    SUBS[[s]] <- c(SUBS[[2]],SUB)
 
-  # !!! maybe run generic drift here
+    i1 <- i2 <- i2+1
+  }
+
+  for(s in levels(CP$state))
+  {
+    SUB <- data[SUBS[[s]],]
+    M <- CTMM[[s]]
+    CTMM[[s]] <- get(M$mean)$init(SUB,M)
+  }
 
   return(CTMM)
 }
@@ -544,28 +570,47 @@ change.point.init <- function(data,CTMM)
 # how do we rescale time
 change.point.scale <- function(CTMM,time)
 {
-  CTMM$period <- CTMM$period / time
+  CP <- CTMM$change.point.mu # change points
+  if(is.null(CP)) { CP <- CTMM$change.point } # default
+
+  for(s in levels(CP$state))
+  {
+    M <- CTMM[[s]]
+    CTMM[[s]] <- get(M$mean)$scale(M,time)
+  }
 
   return(CTMM)
 }
 
 # SVF of mean function
-change.point.svf <- function(CTMM)
+change.point.svf <- function(CTMM,speed=FALSE)
 {
-  if(all(CTMM$harmonic==0)) { return( stationary.svf(CTMM) ) }
+  CP <- CTMM$change.point.mu # change points
+  if(is.null(CP)) { CP <- CTMM$change.point } # default
 
-  STUFF <- periodic.stuff(CTMM)
-  omega <- STUFF$omega
-  A <- STUFF$A
-  COV <- STUFF$COV
-
-  EST <- function(t) { sum( 1/4 * A^2 * (1-cos(omega*t) )) }
-
-  VAR <- function(t)
+  # get mixture weights (for approximate SVF)
+  W <- array(0,nlevels(CP$state))
+  names(W) <- levels(CP$state)
+  for(i in 1:nrow(CP))
   {
-    grad <- 1/2 * A * (1-cos(omega*t))
-    return(c(grad %*% COV %*% grad))
+    s <- as.character(CP$state[i])
+    W[s] <- W[s] + CP$stop[i]-CP$start[i]
   }
+  W <- W/sum(W)
+
+  FNS <- list()
+  for(s in levels(CP$state))
+  {
+    M <- CTMM[[s]]
+
+    if(!speed)
+    { FNS[[s]] <- get(M$mean)$svf(M) }
+    else
+    { FNS[[s]] <- get(M$mean)$speed(M) }
+  }
+
+  EST <- function(t) { rowSums( sapply(levels(CP$state),function(s){W[s]*FNS[[s]]$EST(t)}) ) }
+  VAR <- function(t) { rowSums( sapply(levels(CP$state),function(s){W[s]^2*FNS[[s]]$VAR(t)}) ) }
 
   return(list(EST=EST,VAR=VAR))
 }
@@ -574,49 +619,54 @@ change.point.svf <- function(CTMM)
 # name of mean function
 change.point.name <- function(CTMM)
 {
-  NAME <- CTMM$harmonic
-  NAME <- paste(NAME,collapse=" ")
-  NAME <- paste("harmonic",NAME)
+  CP <- CTMM$change.point.mu # change points
+  if(is.null(CP)) { CP <- CTMM$change.point } # default
+
+  NAME <- NULL
+  for(s in levels(CP$state))
+  {
+    M <- CTMM[[s]]
+    N <- get(M$mean)$name(M)
+    if(length(N)) { NAME <- paste0(NAME,N,sep="-") }
+  }
+
   return(NAME)
 }
 
 # calculate deterministic mean square speed and its variance
 change.point.speed <- function(CTMM)
-{
-  if(all(CTMM$harmonic==0)) { return(stationary.speed(CTMM)) }
-
-  STUFF <- periodic.stuff(CTMM)
-  omega <- STUFF$omega
-  A <- STUFF$A
-  COV <- STUFF$COV
-
-  if(is.null(omega)) { return( stationary.speed(CTMM) ) }
-
-  EST <- sum(omega^2*A^2)/2
-  grad <- omega^2*A
-  VAR <- c(grad %*% COV %*% grad)
-
-  return(list(EST=EST,VAR=VAR))
-}
+{ change.point.svf(CTMM,speed=TRUE) }
 
 # UU and VV terms
 change.point.energy <- function(CTMM)
 {
-  if(all(CTMM$harmonic==0)) { return(stationary.energy(CTMM)) }
-  omega <- periodic.omega(CTMM)
-  K <- length(omega)
-  if(is.null(omega)) { return( stationary.speed(CTMM) ) }
+  CP <- CTMM$change.point.mu # change points
+  if(is.null(CP)) { CP <- CTMM$change.point } # default
 
-  # potential energy (modulo amplitudes)
-  # <1>==1
-  # <sin^2>==<cos^2>==1/2
-  UU <- c(1,rep(1/2,2*K))
-  UU <- diag(UU)
+  uu <- vv <- list()
+  for(s in levels(CP$state))
+  {
+    M <- CTMM[[s]]
+    STUFF <- get(M$mean)$energy(M)
+    uu[[s]] <- STUFF$UU
+    vv[[s]] <- STUFF$VV
+  }
 
-  # kinetic energy(modulo amplitudes)
-  VV <- omega^2/2
-  VV <- c(0,VV,VV)
-  VV <- diag(VV)
+  # make a giant block-diagonal matrix
+  DIM <- sapply(uu,nrow)
+  DIM <- sum(DIM)
+  UU <- VV <- array(0,c(DIM,DIM))
+
+  # fill matrix
+  offset <- 0
+  for(i in 1:length(UU))
+  {
+    DIM <- 1:nrow(uu[[i]])
+    DIM <- c(DIM,DIM)
+    UU[offset+DIM] <- uu[[i]]
+    VV[offset+DIM] <- vv[[i]]
+    offset <- offset + nrow(uu[[i]])
+  }
 
   return(list(UU=UU,VV=VV))
 }
@@ -625,6 +675,11 @@ change.point.energy <- function(CTMM)
 # calculate rotational indices
 change.point.summary <- function(CTMM,level,level.UD)
 {
+  #
+  #
+  #
+
+
   alpha <- 1-level
   SUM <- NULL
 

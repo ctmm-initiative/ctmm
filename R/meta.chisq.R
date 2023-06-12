@@ -559,6 +559,15 @@ import.variable <- function(x,variable="area",level.UD=0.95,chi=FALSE)
         AREA[i] <- STUFF$CI[2]
         DOF[i] <- STUFF$DOF * 2 # 2D
       }
+      else if(variable=="kinetic")
+      {
+        STUFF <- summary(x[[i]],units=FALSE)
+        DOF[i] <- STUFF$DOF['speed'] * 2 # 2D
+        if(DOF[i]>0)
+        { AREA[i] <- STUFF$CI['speed (meters/second)','est']^2 }
+        else
+        { AREA[i] <- Inf }
+      }
       else if(variable=="tauposition")
       {
         E <- x[[i]]$tau[1]

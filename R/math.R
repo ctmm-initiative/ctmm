@@ -1,3 +1,6 @@
+EulerGamma <- 0.57721566490153286061
+Zeta3 <- 1.2020569031595942854
+
 # inverse psigamma function
 ipsigamma <- function(x,deriv=0,precision=1/2)
 {

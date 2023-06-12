@@ -185,6 +185,7 @@ ridges2.UD <- function(object,level.UD=0.95,precision=1/8,...)
   rm(VOTE)
 
   ## connect ridge points from top to bottom ##
+  # TODO !!! enforce minimum connection length - or make new branch !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   LINE <- list()
   for(i in 1:nrow(RIDGE))
   {

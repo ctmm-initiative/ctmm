@@ -204,7 +204,7 @@ encounter.ctmm <- function(CTMM,include=NULL,exclude=NULL,debias=FALSE,...)
 
 
 # relative encounter rates
-rates <- function(object,debias=TRUE,level=0.95,normalize=TRUE,self=TRUE,...)
+rates <- function(object,debias=FALSE,level=0.95,normalize=TRUE,self=TRUE,...)
 {
   units <- FALSE
 

@@ -30,8 +30,7 @@ log.ctmms <- function(x,variable="area",debias=TRUE,level.UD=0.95,...)
   {
     y$VAR.log <- trigamma(x$DOF/2)
 
-    BIAS <- digamma(x$DOF/2) - log(x$DOF/2)
-    BIAS <- nant(BIAS,0)
+    BIAS <- log.chi2.bias(x$DOF)
     y$log <- y$log - BIAS
   }
 

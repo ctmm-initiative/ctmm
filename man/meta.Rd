@@ -15,9 +15,9 @@ funnel(x,y,variable="area",precision="t",level=0.95,level.UD=0.95,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{x}{A named list of \code{ctmm} movement-model objects, \code{UD} objects, or \code{UD} \code{summary} output, constituting a sampled population, or a named list of such lists, with each constituting a sampled population.}
+  \item{x}{A named list of \code{ctmm} movement-model objects, \code{UD} objects, \code{UD} \code{summary} output, \code{\link{speed}} output, or 2\eqn{\times}2 \code{\link{overlap}} objects constituting a sampled population, or a named list of such lists, with each constituting a sampled population.}
   \item{y}{An optional named list of \code{telemetry} objects for the funnel-plot \code{precision} variable.}
-  \item{variable}{Biological ``effect'' variable of interest. Can be \code{"area"}, \code{"diffusion"}, \code{"speed"}, \code{"tau position"}, or \code{"tau velocity"}.}
+  \item{variable}{Biological ``effect'' variable of interest for \code{ctmm} object arguments. Can be \code{"area"}, \code{"diffusion"}, \code{"speed"}, \code{"tau position"}, or \code{"tau velocity"}.}
   \item{precision}{Precision variable of interest. Can be \code{"t"} for sampling time period or time interval, \code{"n"} for nominal sample size, \code{"N"} or \code{"DOF"} for effective sample size.}
   \item{level}{Confidence level for parameter estimates.}
   \item{level.UD}{Coverage level for home-range estimates. E.g., 50\% core home range.}

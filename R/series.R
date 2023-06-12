@@ -1,9 +1,8 @@
 series <- function(x,coef)
 {
   n <- length(coef)
-  x <- c(1,x^(1:(n-1)))
-  x <- coef*x
-  x <- sum(x)
+  x <- sapply(0:(n-1),function(i){x^i}) # [x,pow]
+  x <- c( x %*% coef )
   return(x)
 }
 
@@ -92,4 +91,27 @@ BesselK <- function(x,nu,expon.scaled=FALSE,log=FALSE)
 
   if(!log) { y <- exp(y) }
   return(y)
+}
+
+
+# bias of log(chi^2)
+log.chi2.bias <- function(n)
+{
+  b <- n
+  n1 <- 0.000003
+  n2 <- 40
+
+  SUB <- n==0
+  if(any(SUB)) { b[SUB] <- -Inf }
+
+  SUB <- n>0 & n<=n1
+  if(any(SUB)) { b[SUB] <-  -2/n[SUB] - log(n[SUB]/2) - EulerGamma + pi^2/12*n[SUB] }
+
+  SUB <- n>n1 & n<n2
+  if(any(SUB)) { b[SUB] <- digamma(n[SUB]/2) - log(n[SUB]/2) }
+
+  SUB <- n>=n2
+  if(any(SUB)) { b[SUB] <- series(1/n[SUB],c(0, -1, -(1/3), 0, 2/15, 0, -(16/63), 0, 16/15, 0, -(256/33))) }
+
+  return(b)
 }

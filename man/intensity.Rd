@@ -5,8 +5,8 @@
 \title{Compare empirical and theoretical intensity (resource-selection) functions [IN DEVELOPMENT]}
 \description{This function plots the empirical and theoretical intensity functions with respect to a covariate of interest.}
 \usage{
-intensity(data,UD,RSF,R=list(),variable=NULL,empirical=FALSE,level=0.95,ticks=TRUE,smooth=TRUE,
-          interpolate=TRUE,...)
+intensity(data,UD,RSF,R=list(),variable=NULL,empirical=FALSE,level=0.95,ticks=TRUE,
+          smooth=TRUE,interpolate=TRUE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

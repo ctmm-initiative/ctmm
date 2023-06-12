@@ -148,10 +148,10 @@ change.point.guess <- function(data,n=1,axes=c('x','y'),...)
 }
 
 
-change.point.loglike <- function(data,CTCM,verbose=FALSE,...)
+change.point.loglike <- function(data,CTMM,verbose=FALSE,...)
 {
   # partition data
-  times <- CTCM@par
+  times <- CTMM$change.point
   # lower bound indices
   ind <- integer(length(times))
   i <- 1
@@ -165,17 +165,17 @@ change.point.loglike <- function(data,CTCM,verbose=FALSE,...)
   }
   # add in blank times at change points
 
-  for(i in 1:length(CTCM))
+  for(i in 1:length(CTMM))
   {
-    CTCM[[i]] <- ctmm.loglike(data,CTCM[[i]],verbose=TRUE,...)
-    if(i<length(CTCM)) { CTCM[[i+1]]$prior <- CTCM[[i]]$posterior }
+    CTMM[[i]] <- ctmm.loglike(data,CTMM[[i]],verbose=TRUE,...)
+    if(i<length(CTMM)) { CTMM[[i+1]]$prior <- CTMM[[i]]$posterior }
   }
 
   if(verbose==FALSE)
   {
-    CTCM <- sapply(CTCM,function(M){M$loglike})
-    CTCM <- sum(CTCM)
+    CTMM <- sapply(CTMM,function(M){M$loglike})
+    CTMM <- sum(CTMM)
   }
 
-  return(CTCM)
+  return(CTMM)
 }

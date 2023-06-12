@@ -73,9 +73,8 @@ log.ctmm <- function(CTMM,debias=FALSE,...)
     # transform to diagonalized basis with VARs in log numerator
     par[SUB] <- t(EIGEN$vectors) %*% par[SUB] # diagonalize parameters
     DOF <- 2/EIGEN$values # log-chi^2 VAR-DOF relation
-    BIAS <- digamma(DOF/2)-log(DOF/2) # negative bias for log(chi^2) variates
-    BIAS <- nant(BIAS,0)
-    BIAS <- pmax(BIAS,digamma(1/2)-log(1/2)) # clamp to 1 DOF
+    BIAS <- log.chi2.bias(DOF) # negative bias for log(chi^2) variates
+    BIAS <- pmax(BIAS,log.chi2.bias(1)) # clamp to 1 DOF
     par[SUB] <- par[SUB] - BIAS # E[log(chi^2)] bias correction
     par[SUB] <- c(EIGEN$vectors %*% par[SUB]) # transform back (still under logarithm)
 
@@ -139,9 +138,8 @@ exp.ctmm <- function(CTMM,debias=FALSE,variance=TRUE)
 
     # log-gamma variance (better than delta method)
     DOF <- 2*itrigamma(EIGEN$values)
-    BIAS <- digamma(DOF/2)-log(DOF/2) # negative bias for log(chi^2) variates
-    BIAS <- nant(BIAS,0)
-    BIAS <- pmax(BIAS,digamma(1/2)-log(1/2)) # clamp to 1 DOF
+    BIAS <- log.chi2.bias(DOF) # negative bias for log(chi^2) variates
+    BIAS <- pmax(BIAS,log.chi2.bias(1)) # clamp to 1 DOF
     par[SUB] <- par[SUB] + BIAS # E[log-chi^2] bias correction
     par[SUB] <- c(EIGEN$vectors %*% par[SUB]) # transform back (still under logarithm)
 
