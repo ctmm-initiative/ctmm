@@ -12,6 +12,27 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE.F
   # identify and name autocovariance parameters
   NAMES <- NULL
 
+  states <- get.states(CTMM)
+  if(length(states))
+  {
+    R <- list()
+    for(s in states)
+    { R[[s]] <- id.parameters(CTMM[[s]],profile=profile,linear=linear,linear.cov=linear.cov,UERE.FIT=UERE.FIT,dt=dt,dz=dz,STRUCT=STRUCT) }
+
+    NAMES <- list()
+    parscale <- lower <- upper <- period <- NULL
+    for(s in states)
+    {
+      NAMES[[s]] <- R[[s]]$NAMES
+      parscale <- c(parscale,R[[s]]$parscale)
+      lower <- c(lower,R[[s]]$lower)
+      upper <- c(upper,R[[s]]$upper)
+      period <- c(period,R[[s]]$period)
+    }
+
+    return(list(NAMES=NAMES,parscale=parscale,lower=lower,upper=upper,period=period))
+  }
+
   if(STRUCT$sigma@par['major'] || length(STRUCT$tau))
   {
     sigma <- attr(CTMM$sigma,"par")
@@ -191,6 +212,14 @@ get.parameters <- function(CTMM,NAMES,profile=FALSE,linear.cov=FALSE)
 {
   par <- numeric(length(NAMES))
   names(par) <- NAMES
+  states <- get.states(CTMM)
+  if(length(states))
+  {
+    par <- list()
+    for(s in states) { par[[s]] <- get.parameters(CTMM[[s]],NAMES[[s]],profile=profile,linear.cov=linear.cov) }
+    names(par) <- states
+    return(par)
+  }
 
   # can't loop this easily because R collapses NULL values
   getter <- function(NAME,VALUE=CTMM[[NAME]])
@@ -275,6 +304,13 @@ profiled.var <- function(CTMM,sigma=CTMM$sigma,UERE.RMS=CTMM$error,DT=1,AVE=FALS
 # clean up parameter arrays
 clean.parameters <- function(par,profile=FALSE,linear.cov=FALSE,timelink="identity")
 {
+  # multiple states
+  if(class(par)[1]=='list')
+  {
+    par <- lapply(par,function(p){clean.parameters(p,profile=profile,linear.cov=linear.cov,timelink=timelink)})
+    return(par)
+  }
+
   NAMES <- names(par)
 
   for(P in POSITIVE.PARAMETERS) { if(P %in% NAMES) { par[P] <- clamp(par[P],0,Inf) } }
@@ -347,6 +383,9 @@ clean.parameters <- function(par,profile=FALSE,linear.cov=FALSE,timelink="identi
 # write autocovariance parameter array into a CTMM object
 set.parameters <- function(CTMM,par,profile=FALSE,linear.cov=FALSE)
 {
+  #!!!!!!!!!!!!!!!!
+
+
   NAMES <- names(par)
   AXES <- length(CTMM$axes)
 
@@ -447,4 +486,16 @@ copy.parameters <- function(x,value,par=value$features,destructive=TRUE)
   }
 
   return(x)
+}
+
+
+get.states <- function(CTMM)
+{
+  dynamics <- CTMM$dynamics
+  if(is.null(dynamics) || dynamics=="stationary")
+  { states <- NULL }
+  else if(dynamics=="change.point")
+  { states <- levels(CTMM[[dynamics]]$state) }
+
+  return(states)
 }

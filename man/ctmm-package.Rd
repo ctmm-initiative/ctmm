@@ -31,7 +31,7 @@ Alston & Fleming et al (2023) <doi:10.1111/2041-210X.14025>.
 Package: \tab ctmm\cr
 Type: \tab Package\cr
 Version: \tab 1.1.1 \cr
-Date: \tab 2023-06-12 \cr
+Date: \tab 2023-06-28 \cr
 License: \tab GPL-3 \cr
 }
 
@@ -71,7 +71,7 @@ C. H. Fleming, W. F. Fagan, T. Mueller, K. A. Olson, P. Leimgruber, J. M. Calabr
 ``Rigorous home-range estimation with movement data: A new autocorrelated kernel-density estimator'',
 Ecology 96:5 1182-1188 (2015) \doi{10.1890/14-2010.1}.
 
-J. M. Calabrese, C. H. Fleming,
+J. M. Calabrese, C. H. Fleming, E. Gurarie,
 ``ctmm: an R package for analyzing animal relocation data as a continuous-time stochastic process'',
 Methods in Ecology and Evolution 7:9 1124-1132 (2016) \doi{10.1111/2041-210X.12559}.
 

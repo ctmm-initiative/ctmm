@@ -204,7 +204,7 @@ Langevin <- function(t,dt=c(Inf,diff(t)),CTMM,DIM=1)
   else if(dynamics=="change.point")
   {
     CP <- CTMM[[dynamics]] # change points
-    CS <- levels(CP$state) # states
+    CS <- get.states(CTMM) # states
     j <- 1
     for(i in 1:n)
     {
@@ -218,7 +218,7 @@ Langevin <- function(t,dt=c(Inf,diff(t)),CTMM,DIM=1)
         j <- j + 1
       }
 
-      if(i>1 && CP[j]>t[i-1]) # did we cross a change point?
+      if(i>1 && CP$start[j]>t[i-1]) # did we cross a change point?
       {
         LANGEVIN <- langevin(dt=dt[i],CTMM=CTMM[[CS[j]]],DIM=DIM)
         Green[i,,] <- LANGEVIN$Green %*% Green[i,,]

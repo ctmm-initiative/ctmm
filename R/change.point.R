@@ -139,6 +139,7 @@ change.point.guess <- function(data,n=1,axes=c('x','y'),...)
   }
   t <- data$t[CP]
   names(GUESS) <- names(t) <- paste0("state.",1:length(t))
+  GUESS$commute <- ctmm.commute(GUESS)
 
   GUESS$axes <- axes
   GUESS$dynamics <- "change.point"
@@ -147,35 +148,39 @@ change.point.guess <- function(data,n=1,axes=c('x','y'),...)
   return(GUESS)
 }
 
-
-change.point.loglike <- function(data,CTMM,verbose=FALSE,...)
+ctmm.commute <- function(M)
 {
-  # partition data
-  times <- CTMM$change.point
-  # lower bound indices
-  ind <- integer(length(times))
-  i <- 1
-  for(j in 1:nrow(data))
-  {
-    if(data$t[j] > times[i])
-    {
-      ind[i] <- j-1
-      i <- i+1
-    }
-  }
-  # add in blank times at change points
+  COM <- sapply(M,M$sigma@par['angle'])
+  COM <- abs(diff(COM)) > .Machine$double.eps
+  !any(COM)
+}
 
-  for(i in 1:length(CTMM))
+change.point.set <- function(CTMM)
+{
+  states <- levels(CTMM$change.points$state)
+  axes <- CTMM$axes
+
+  get.max <- function(x,ext=identity,norm=max)
   {
-    CTMM[[i]] <- ctmm.loglike(data,CTMM[[i]],verbose=TRUE,...)
-    if(i<length(CTMM)) { CTMM[[i+1]]$prior <- CTMM[[i]]$posterior }
+    x <- lapply(states,function(s){CTMM[[s]][[x]]})
+    K <- sapply(x,length)
+    x <- x[K==max(K)]
+    x <- sapply(x,ext) # [tau,ind]
+    if(length(dim(x))==3)
+    { x <- apply(x,1:2,norm) } # not sure about this margins here !!!!!!!!!
+    else if(length(dim(x))==2)
+    { x <- apply(x,1,norm) }
+    else
+    { x <- max(x) }
+    return(x)
   }
 
-  if(verbose==FALSE)
-  {
-    CTMM <- sapply(CTMM,function(M){M$loglike})
-    CTMM <- sum(CTMM)
-  }
+  isotropic <- as.logical( get.max('isotropic',norm=all) )
+
+  CTMM$tau <- get.max('tau')
+  CTMM$omega <- get.max('omega')
+  CTMM$circle <- get.max('circle')
+  CTMM$sigma <- covm( diag(diag(get.max('sigma')),length(axes)), axes=axes,isotropic=isotropic)
 
   return(CTMM)
 }

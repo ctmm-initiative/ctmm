@@ -675,170 +675,42 @@ change.point.energy <- function(CTMM)
 # calculate rotational indices
 change.point.summary <- function(CTMM,level,level.UD)
 {
-  #
-  #
-  #
+  CP <- CTMM$change.point.mu # change points
+  if(is.null(CP)) { CP <- CTMM$change.point } # default
 
-
-  alpha <- 1-level
-  SUM <- NULL
-
-  if(all(CTMM$harmonic==0)) { return(SUM) }
-
-  STUFF <- periodic.stuff(CTMM)
-  omega <- STUFF$omega
-  A <- STUFF$A
-  COV <- STUFF$COV
-
-  # ROTATIONAL VARIANCE INDEX
-  ROT <- sum(A^2)/2 # sine and cosine average 1/2
-  RAN <- var.covm(CTMM$sigma)
-  MLE <- ROT/(ROT+RAN)
-
-  GRAD <- A
-  COV.ROT <- c(GRAD %*% COV %*% GRAD)
-
-  if(CTMM$isotropic) { PARS <- c('major','major') } else { PARS <- c('major','minor') }
-  COV.RAN <- CTMM$COV[PARS,PARS]
-  GRAD <- c(1,1)
-  COV.RAN <- c(GRAD %*% COV.RAN %*% GRAD)
-
-  GRAD <- c(RAN,-ROT)/(ROT+RAN)^2
-  VAR <- sum(GRAD^2 * c(COV.ROT,COV.RAN))
-
-  CI <- ci.tau(MLE,VAR,alpha=alpha,min=0,max=1)
-  CI <- 100*sqrt(rbind(CI))
-  rownames(CI) <- "rotation/deviation %"
-
-  SUM <- rbind(SUM,CI)
-
-  # ROTATIONAL SPEED INDEX
-  # CIs are too big to be useful
-  if(length(CTMM$tau)>1 && CTMM$tau[2])
+  CI <- NULL
+  for(s in levels(CP$state))
   {
-    CTMM <- get.taus(CTMM)
-
-    ROT <- sum((omega*A)^2)/2 # sine and cosine average 1/2
-
-    GRAD <- omega^2*A
-    COV.ROT <- c(GRAD %*% COV %*% GRAD)
-
-    STUFF <- rand.speed(CTMM)
-    RAN <- STUFF$MLE
-    COV.RAN <- STUFF$COV
-
-    MLE <- ROT/(ROT+RAN)
-    GRAD <- c(RAN,-ROT)/(ROT+RAN)^2
-    VAR <- sum(GRAD^2 * c(COV.ROT,COV.RAN))
-
-    CI <- ci.tau(MLE,VAR,alpha=alpha,min=0,max=1)
-    CI <- 100*sqrt(rbind(CI))
-    rownames(CI) <- "rotation/speed %"
-
-    SUM <- rbind(SUM,CI)
+    M <- CTMM[[s]]
+    CI <- rbind(CI, get(M$mean)$summary(M,level,level.UD) )
   }
 
-  return(SUM)
+  return(CI)
 }
 
 # increase number of harmonics in model
-change.point.drift.complexify <- function(CTMM)
+change.point.drift.complexify <- function(CTMM,simplify=FALSE)
 {
-  period <- CTMM$period
-  harmonic <- CTMM$harmonic
+  CP <- CTMM$change.point.mu # change points
+  if(is.null(CP)) { CP <- CTMM$change.point } # default
 
   GUESS <- list()
-
-  # dt <- stats::median(diff(data$t))
-  # P <- attr(CTMM$mean,"par")$P
-  # # max harmonics for Nyquist frequency
-  # kmax <- P/(2*dt)
-
-  for(i in 1:length(period))
+  for(s in levels(CP$state))
   {
-    GUESS[[length(GUESS)+1]] <- CTMM
-    GUESS[[length(GUESS)]]$harmonic[i] <- harmonic[i] + 1
+    M <- CTMM[[s]]
+    if(!simplify)
+    { GUESS <- c(GUESS, get(M$mean)$complexify(M) ) }
+    else
+    { GUESS <- c(GUESS, get(M$mean)$simplify(M) ) }
   }
 
+  if(!length(GUESS)) { GUESS <- NULL }
   return(GUESS)
 }
 
 # reduce number of harmonics in model
 change.point.drift.simplify <- function(CTMM)
-{
-  period <- CTMM$period
-  harmonic <- CTMM$harmonic
-
-  GUESS <- list()
-
-  for(i in 1:length(period))
-  {
-    if(harmonic[i]>0)
-    {
-      GUESS[[length(GUESS)+1]] <- CTMM
-      GUESS[[length(GUESS)]]$harmonic[i] <- harmonic[i] - 1
-    }
-  }
-
-  return(GUESS)
-}
-
-# list of non-zero frequencies of model
-change.point.omega <- function(CTMM)
-{
-  harmonic <- CTMM$harmonic
-  period <- CTMM$period
-
-  omega <- NULL
-  for(i in 1:length(harmonic))
-  {
-    if(harmonic[i] > 0)
-    {
-      w <- (2*pi/period[i]) * (1:harmonic[i])
-      omega <- c( omega , w )
-    }
-  }
-
-  return(omega)
-}
-
-# useful info from periodic mean function parameters
-change.point.stuff <- function(CTMM)
-{
-  harmonic <- CTMM$harmonic
-  period <- CTMM$period
-  omega <- periodic.omega(CTMM)
-
-  # amplitudes and covariance
-  A <- CTMM$mu
-  COV <- CTMM$COV.mu
-
-  # total number of harmonics
-  k <- length(omega)
-
-  # default uncertainty of none
-  if(is.null(COV)) { COV <- 0 }
-  # default structure
-  COV <- array(COV,c(2,2*k+1,2*k+1,2))
-
-  # delete stationary coefficients
-  A <- A[-1,,drop=FALSE]
-  COV <- COV[,-1,,,drop=FALSE]
-  COV <- COV[,,-1,,drop=FALSE]
-
-  # structure omega like A
-  omega <- c(omega,omega)
-  omega <- cbind(omega,omega)
-  # this is now (2k)*2
-
-  # flatten block-vectors and block-matrices
-  A <- array(A,(2*k)*2)
-  omega <- array(omega,(2*k)*2)
-  COV <- aperm(COV,c(2,1,3,4))
-  COV <- array(COV,c((2*k)*2,(2*k)*2))
-
-  return(list(A=A,COV=COV,omega=omega))
-}
+{ change.point.drift.complexify(CTMM,simplify=TRUE) }
 
 # combine this all together for convenience
 change.point <- new.drift(change.point.drift,

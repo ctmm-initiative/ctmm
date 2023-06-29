@@ -291,6 +291,14 @@ axes2var <- function(CTMM,MEAN=TRUE)
   PAR <- c('major','minor','angle')
   COV <- CTMM$COV
 
+  if(any(c('minor','angle') %nin% rownames(COV)))
+  {
+    NAMES <- rownames(COV)
+    NAMES[NAMES=='major'] <- 'variance'
+    dimnames(COV) <- list(NAMES,NAMES)
+    return(COV)
+  }
+
   OLD <- rownames(COV)
   OTHER <- OLD[OLD %nin% PAR]
 

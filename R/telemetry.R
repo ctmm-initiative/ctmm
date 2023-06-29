@@ -599,6 +599,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
                    "horizontal.accuracy.estimate","horizontal.accuracy.estimate.m","horizontal.accuracy",
                    "error","error.m","3D.error.m","location.error","location.error.m","HEPE","EPE","EHPE",
                    "\u8AA4\u5DEE","\u8AA4\u5DEE.m","\u8AA4\u5DEE\uFF08m\uFF09","coordinate.Uncertainty.In.Meters")
+  NAMES$Telonics <- c("Horizontal.Error","GPS.Horizontal.Error","Telonics.Horizontal.Error")
   NAMES$HDOP <- c("GPS.HDOP","HDOP","Horizontal.DOP","GPS.Horizontal.Dilution","Horizontal.Dilution","Hor.Dil","Hor.DOP","HPE","coordinate.Precision")
   NAMES$DOP <- c("GPS.DOP","DOP","GPS.Dilution","Dilution","Dil")
   NAMES$PDOP <- c("GPS.PDOP","PDOP","Position.DOP","GPS.Position.Dilution","Position.Dilution","Pos.Dil","Pos.DOP")
@@ -610,6 +611,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   NAMES$z <- c("height.above.ellipsoid","height.above.elipsoid","height.above.ellipsoid.m","height.above.elipsoid.m","height.above.msl","height.above.mean.sea.level","height.raw","height","height.m","barometric.height","altimeter","altimeter.m","Argos.altitude","GPS.Altitude","MSL_altitude_m","altitude","altitude.m","Alt","barometric.depth","depth","elevation","elevation.m","elev")
   NAMES$v <- c("ground.speed",'speed.over.ground','speed.over.ground.m.s',"speed","GPS.speed")
   NAMES$heading <- c("heading","heading.degree","heading.degrees","GPS.heading","Course","direction","direction.deg")
+  NAMES$outliers <- c("manually.marked.outlier","algorithm.marked.outlier","import.marked.outlier","marked.outlier","outlier")
 
   if(grepl("+datum=",datum,fixed=TRUE))
   {
@@ -634,8 +636,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   # names(object) <- tolower(names(object))
 
   # marked outliers
-  COL <- c("manually.marked.outlier","algorithm.marked.outlier","import.marked.outlier","marked.outlier","outlier")
-  COL <- pull.column(object,COL,as.logical)
+  COL <- pull.column(object,NAMES$outliers,as.logical)
   if(length(COL))
   {
     if(mark.rm)
@@ -901,6 +902,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
   try.dop(NAMES$DOP,"HDOP values not found. Using ambiguous DOP.")
   try.dop(NAMES$PDOP,"HDOP values not found. Using PDOP.")
   try.dop(NAMES$GDOP,"HDOP values not found. Using GDOP.")
+  try.dop(NAMES$Telonics,"HDOP values not found. Using Telonics error estimates.",UERE=1)
   try.dop(NAMES$nsat,"HDOP values not found. Approximating via # satellites.",FN=function(x){(12-2)/(x-2)})
 
   # GPS-ARGOS hybrid data clean-up
@@ -927,8 +929,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
 
   ###########
   # Telonics Gen4 GPS errors
-  COL <- c("Horizontal.Error","GPS.Horizontal.Error","Telonics.Horizontal.Error")
-  COL <- pull.column(object,COL)
+  COL <- pull.column(object,NAMES$Telonics)
   TELONICS <- length(COL)
 
   # detect if Telonics by location classes
