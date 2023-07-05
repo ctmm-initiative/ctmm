@@ -387,6 +387,7 @@ chi.dof <- function(M1,M2,precision=1/2)
 
   # solve for chi^2 DOF consistent with M1 & M2
   R <- M1^2/M2 # == 2*pi/DOF / Beta(DOF/2,1/2)^2 # 0 <= R <= 1
+  if(M1==0 && M2==0) { R <- 1 }
   if(1-R <= 0) { return(Inf) } # purely deterministic
   if(R <= 0) { return(0) }
 

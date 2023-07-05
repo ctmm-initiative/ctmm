@@ -261,7 +261,7 @@ abs.bivar <- function(mu,Sigma,return.VAR=FALSE)
   sigma <- eigen(Sigma)$values
 
   Barg <- mu2/(4*sigma0)
-  if(Barg >= BESSEL_LIMIT)
+  if(sigma0==0 || Barg >= BESSEL_LIMIT)
   { M1 <- mu }
   else
   {
