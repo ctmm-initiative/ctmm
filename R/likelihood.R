@@ -63,6 +63,7 @@ sigma.apply <- function(CTMM,fn=identity,states=get.states(CTMM))
   return(CTMM)
 }
 
+
 ####################################
 # log likelihood function
 ####################################

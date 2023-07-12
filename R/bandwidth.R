@@ -457,14 +457,15 @@ bandwidth.pop <- function(data,UD,kernel="individual",weights=FALSE,ref="Gaussia
   axes <- MEAN$axes
   n <- length(data)
 
+  W.OPT <- all(weights==TRUE) # optimize weights
+  w <- unlist(weights)
   if(all(weights==FALSE)) # uniform (across individuals) weights
   { w <- rep(1/n,n) }
-  else # individual weights
+  else if(!W.OPT) # individual weights
   {
-    w <- rep(weights,n)
+    w <- array(weights,n)
     w <- w/sum(w)
   }
-  W.OPT <- all(weights==TRUE) # optimize weights
 
   # prepare semi-variance lag matrix/vector
   S <- list() # semi-variance
