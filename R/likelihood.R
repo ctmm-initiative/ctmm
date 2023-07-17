@@ -67,7 +67,7 @@ sigma.apply <- function(CTMM,fn=identity,states=get.states(CTMM))
 ####################################
 # log likelihood function
 ####################################
-ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose=FALSE)
+ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose=FALSE,compute=TRUE,...)
 {
   # fail state - bad parameters or bad data
   if(verbose)
@@ -209,7 +209,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
 
   ### 2D or 1D Kalman filters necessary?
   if(commute && !circle && !isotropic && any(CTMM$error>0) && !ELLIPSE && !ECC.EXT) # can run 2x1D Kalman filters
-  { DIM <- 1/2 }
+  { DIM <- 1.5 }
   else if(!commute || ELLIPSE || (circle && !isotropic && any(CTMM$error>0)) || (ECC.EXT && AXES>1)) # full 2D filter necessary
   { DIM <- 2 }
   else # can run 1x1D Kalman filter
@@ -363,8 +363,16 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     if(ZERO<=.Machine$double.eps^AXES) { return(FAIL) }
   }
 
+  if(!compute) # return information on Kalman filter and parameters
+  {
+    R <- list()
+    R$DIM <- DIM
+    R$pars <- id.parameters(CTMM,UERE.FIT=UERE.FIT)$NAMES # numerically fitted parameters
+    return(R)
+  }
+
   #### RUN KALMAN FILTERS ###
-  if(DIM==1/2) ### 2 separate 1D Kalman filters instead of 1 2D Kalman filter ###
+  if(DIM==1.5) ### 2 separate 1D Kalman filters instead of 1 2D Kalman filter ###
   {
     SIGMA <- eigenvalues.covm(K.sigma) # (relative to PRO.VAR)
 

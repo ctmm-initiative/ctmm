@@ -393,7 +393,7 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, units=TRUE, fraction=0.5, c
     # make sure plot looks nice and appropriate for data resolution
     if(length(lag) < 100) { type <- "p" } else { type <- "l" }
 
-    graphics::points(lag, SVF, type=type, col=col[[i]])
+    graphics::points(lag, SVF, type=type, col=col[[i]],...)
 
     for(j in 1:length(alpha))
     {
@@ -406,7 +406,7 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, units=TRUE, fraction=0.5, c
         SVF.lower <- SVF * LOW
         SVF.upper <- SVF * HIGH
 
-        if(RESIDUAL) { graphics::abline(h=1,col="red") }
+        if(RESIDUAL) { graphics::abline(h=1,col="red",...) }
       }
       else # Fisher CIs for autocorrelation
       {
@@ -422,19 +422,19 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, units=TRUE, fraction=0.5, c
         SVF.lower <- tanh(stats::qnorm(alpha[j]/2,mean=FISH,sd=SD,lower.tail=TRUE))
         SVF.upper <- tanh(stats::qnorm(alpha[j]/2,mean=FISH,sd=SD,lower.tail=FALSE))
 
-        if(RESIDUAL) { graphics::abline(h=c(-1,0,1)/sqrt(DOF[1])*stats::qnorm(1-alpha[j]/2),col="red",lty=c(2,1,2)) }
+        if(RESIDUAL) { graphics::abline(h=c(-1,0,1)/sqrt(DOF[1])*stats::qnorm(1-alpha[j]/2),col="red",lty=c(2,1,2),...) }
       }
 
-      graphics::polygon(c(lag,rev(lag)),c(SVF.lower,rev(SVF.upper)),col=malpha(col[[i]],alpha=0.1),border=NA)
+      graphics::polygon(c(lag,rev(lag)),c(SVF.lower,rev(SVF.upper)),col=malpha(col[[i]],alpha=0.1),border=NA,...)
     }
 
     # PLOT CORRESPONDING MODEL
     # if(i<=m) { plot.svf(lag,CTMM[[i]],error=MSE,alpha=alpha,type=type,col=col.CTMM[[i]]) }
-    if(i<=m) { plot.svf(lag,CTMM[[i]],alpha=alpha,type=type,col=col.CTMM[[i]]) }
+    if(i<=m) { plot.svf(lag,CTMM[[i]],alpha=alpha,type=type,col=col.CTMM[[i]],...) }
   }
   # PLOT LEFTOVER MODELS USING THE LAST DATA
   # if(n<m) { for(i in n:m) { plot.svf(lag,CTMM[[i]],error=MSE,alpha=alpha,type=type,col=col.CTMM[[i]]) } }
-  if(n<m) { for(i in n:m) { plot.svf(lag,CTMM[[i]],alpha=alpha,type=type,col=col.CTMM[[i]]) } }
+  if(n<m) { for(i in n:m) { plot.svf(lag,CTMM[[i]],alpha=alpha,type=type,col=col.CTMM[[i]],...) } }
 
   # no projection for variograms
   assign("projection",NULL,pos=plot.env)

@@ -1,4 +1,4 @@
-ctmm 1.1.1 (2023-07-12)
+ctmm 1.1.1 (2023-07-16)
 ================
 * new functions rsf.select(), intensity()
 * new functions sdm.fit(), sdm.select()
@@ -8,6 +8,7 @@ ctmm 1.1.1 (2023-07-12)
 * new argument 'sqrt' in distance()
 * new argument 'dt.hot' in as.telemetry()
 * new argument 'variable' in Log()
+* new argument 'compute' in ctmm.loglike()
 * as.telemetry() now supports GBIF format data
 * as.telemetry() datum argument now works on UTM import, and is no longer to a be a complete PROJ string
 * as.telemetry(), plot.telemetry(), rsf.fit() updated from sp to sf transforms
