@@ -89,10 +89,11 @@ rsf.select <- function(data,UD,R=list(),formula=NULL,verbose=FALSE,IC="AICc",tra
     ICS <- sapply(NEW,function(m){m[[IC]]})
     i <- which.min(ICS)
     beta <- NEW[[i]]$beta
-    ON <- TERMS %in% names(beta)
-    # copy for initial guess in fitting
-    # UD@CTMM$beta <- beta
-    UD@CTMM <- NEW[[i]]
+    ON <- TERMS %in% names(beta) | sapply(TERMS,function(t){any(startsWith(names(beta),paste0(t,".")))})
+    # copy for initial guess in fitting speed
+    # UD@CTMM <- NEW[[i]] # this can distort sigma
+    UD@CTMM$beta <- NEW[[i]]$beta
+    UD@CTMM$features <- NEW[[i]]$features
   }
 
   ###################
@@ -128,7 +129,7 @@ rsf.select <- function(data,UD,R=list(),formula=NULL,verbose=FALSE,IC="AICc",tra
     ICS <- sapply(NEW,function(m){m[[IC]]})
     i <- which.min(ICS)
     beta <- NEW[[i]]$beta
-    ON <- TERMS %in% names(beta)
+    ON <- TERMS %in% names(beta) | sapply(TERMS,function(t){any(startsWith(names(beta),paste0(t,".")))})
     # copy for initial guess in fitting
     # UD@CTMM$beta <- beta
     UD@CTMM <- NEW[[i]]

@@ -1,7 +1,8 @@
-ctmm 1.1.1 (2023-07-16)
+ctmm 1.1.1 (2023-07-25)
 ================
 * new functions rsf.select(), intensity()
 * new functions sdm.fit(), sdm.select()
+* new function writeVector(), depreciating function writeShapefile()
 * new function funnel() for funnel plots
 * new function midpoint()
 * new population covariance models and improved model selection in mean.ctmm()

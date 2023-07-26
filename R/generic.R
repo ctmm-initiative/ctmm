@@ -123,11 +123,16 @@ summary.list <- function(object,...)
 }
 
 # forwarding function for list of a particular datatype
-writeShapefile.list <- function(object,folder,file=NULL,...)
+writeVector.list <- function(x,filename,...)
 {
-  CLASS <- class(object[[1]])[1]
-  utils::getS3method("writeShapefile",CLASS)(object,folder,file=file,...)
+  CLASS <- class(x[[1]])[1]
+  if(missing(filename))
+  { methods::getMethod("writeVector",methods::signature(x=CLASS,filename="missing"))(x,filename=filename,...) }
+  else
+  { methods::getMethod("writeVector",methods::signature(x=CLASS,filename="character"))(x,filename=filename,...) }
 }
+methods::setMethod("writeVector",methods::signature(x="list",filename="character"), function(x,filename,...) writeVector.list(x,filename,...) )
+methods::setMethod("writeVector",methods::signature(x="list",filename="missing"), function(x,filename,...) writeVector.list(x,filename,...) )
 
 
 # replace NA elements

@@ -183,7 +183,11 @@ plot.outlie <- function(x,level=0.95,units=TRUE,axes=c('d','v'),xlim=NULL,ylim=N
   ylab <- get(paste0(axes[2],".lab"))
 
   if(is.null(xlim))
-  { xlim <- range(x) }
+  {
+    xlim <- x
+    xlim[3,] <- pmin(x[3,],x[,2]*2)
+    xlim <- range(xlim)
+  }
   else
   {
     SCALE <- get(paste0(axes[1],".scale"))
@@ -191,7 +195,11 @@ plot.outlie <- function(x,level=0.95,units=TRUE,axes=c('d','v'),xlim=NULL,ylim=N
   }
 
   if(is.null(ylim))
-  { ylim <- range(y) }
+  {
+    ylim <- y
+    ylim[3,] <- pmin(y[3,],y[2,]*2)
+    ylim <- range(ylim)
+  }
   else
   {
     SCALE <- get(paste0(axes[2],".scale"))

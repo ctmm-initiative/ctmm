@@ -252,8 +252,8 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
       Y[[i]] <- raster::yFromRow(R[[i]],1:DIM[1])
 
       # resolution
-      dX[i] <- stats::median(diff(X[[i]]))
-      dY[i] <- stats::median(diff(Y[[i]]))
+      dX[i] <- abs( stats::median( diff(X[[i]]) ) )
+      dY[i] <- abs( stats::median( diff(Y[[i]]) ) )
 
       # origin
       Xo[i] <- X[[i]][1] %% dX[i]
@@ -371,9 +371,16 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
   # might not use all rasters
   if(standardize) { RSCALE <- RSCALE[names(RSCALE) %in% TERMS] }
 
+  # minimal assignment
+  beta.null <- numeric(length(TERMS))
+  names(beta.null) <- TERMS
+  if(isotropic)
+  { beta.null['rr'] <- 1 }
+  else
+  { beta.null[c('xx','yy')] <- c(1,1) }
+
   # initial estimates
-  beta <- numeric(length(TERMS))
-  names(beta) <- TERMS
+  beta <- beta.null
   if(length(CTMM$beta))
   {
     COPY <- TERMS[TERMS %in% names(CTMM$beta)]
@@ -430,24 +437,12 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
 
     # variance/covariance terms (relative to pilot estimate)
     if(isotropic) # beta is correction to standardized 1/sigma
-    {
-      DATA[,'rr'] <- -( DATA[,'x']^2 + DATA[,'y']^2 )/2
-
-      # initial guess
-      if(integrator!="MonteCarlo") { beta['rr'] <- 1 }
-    }
+    { DATA[,'rr'] <- -( DATA[,'x']^2 + DATA[,'y']^2 )/2 }
     else # beta is correction to standardized solve(sigma)
     {
       DATA[,'xx'] <- -DATA[,'x']^2 /2
       DATA[,'yy'] <- -DATA[,'y']^2 /2
       DATA[,'xy'] <- -DATA[,'x']*DATA[,'y']
-
-      # initial guess
-      if(integrator!="MonteCarlo")
-      {
-        beta['xx'] <- 1
-        beta['yy'] <- 1
-      }
     }
   } # end if(integrated)
 
@@ -476,7 +471,13 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
   nloglike <- function(beta,zero=0,verbose=FALSE)
   {
     SAMP <- SATA[,,TERMS,drop=FALSE] %.% beta # [track,time]
+
+    # SHIFT <- stats::median(SAMP,na.rm=TRUE)
+    # SHIFT <- nant(SHIFT,0)
+
     SHIFT <- max(SAMP,na.rm=TRUE)
+    if(abs(SHIFT)==Inf) { SHIFT <- 0 }
+
     SAMP <- SAMP - SHIFT
     SAMP <- exp(SAMP) # + exp(SHIFT)
     SAMP[] <- nant(SAMP,0) # treat NA as inaccessible region
@@ -737,10 +738,19 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
     else # STATIONARY ONLY FOR NOW !!!!!!!!!
     { if(trace) { message("Maximizing likelihood @ n=",N) } }
 
+    NLL <- nloglike(beta)
+
+    # fix bad prior model
+    if(any(beta!=beta.null))
+    {
+      if(nloglike(beta.null)<=NLL)
+      { beta <- beta.null }
+    }
+
     # fix bad early runs
     if(any(beta!=beta.init))
     {
-      if(nloglike(beta.init)<=nloglike(beta))
+      if(nloglike(beta.init)<=NLL)
       { beta <- beta.init }
     }
 

@@ -1,4 +1,6 @@
 ** PRIORITY
+* EPSG interpreter for projection warnings/errors
+* pkde error on individual object arguments
 * Log kintetic energy output
 * intensity() needs kernel regression for interactions
 * uere()<- documentation RMS standard deviation note
