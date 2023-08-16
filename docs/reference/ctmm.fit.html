@@ -18,7 +18,7 @@ The fitting functions wrap around optim and ctmm.loglike to fit continuous-time 
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.0</span>
       </span>
     </div>
 
@@ -77,7 +77,7 @@ The fitting functions wrap around <code>optim</code> and <code>ctmm.loglike</cod
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">ctmm</span><span class="op">(</span>tau<span class="op">=</span><span class="cn">NULL</span>,omega<span class="op">=</span><span class="cn">FALSE</span>,isotropic<span class="op">=</span><span class="cn">FALSE</span>,range<span class="op">=</span><span class="cn">TRUE</span>,circle<span class="op">=</span><span class="cn">FALSE</span>,error<span class="op">=</span><span class="cn">FALSE</span>,</span>
 <span>     axes<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>,<span class="st">"y"</span><span class="op">)</span>,<span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">ctmm.loglike</span><span class="op">(</span><span class="va">data</span>,<span class="va">CTMM</span>,REML<span class="op">=</span><span class="cn">FALSE</span>,profile<span class="op">=</span><span class="cn">TRUE</span>,zero<span class="op">=</span><span class="fl">0</span>,verbose<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="fu">ctmm.loglike</span><span class="op">(</span><span class="va">data</span>,<span class="va">CTMM</span>,REML<span class="op">=</span><span class="cn">FALSE</span>,profile<span class="op">=</span><span class="cn">TRUE</span>,zero<span class="op">=</span><span class="fl">0</span>,verbose<span class="op">=</span><span class="cn">FALSE</span>,compute<span class="op">=</span><span class="cn">TRUE</span>,<span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">ctmm.fit</span><span class="op">(</span><span class="va">data</span>,CTMM<span class="op">=</span><span class="fu">ctmm</span><span class="op">(</span><span class="op">)</span>,method<span class="op">=</span><span class="st">"pHREML"</span>,COV<span class="op">=</span><span class="cn">TRUE</span>,control<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,trace<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span></span>
@@ -126,6 +126,9 @@ The fitting functions wrap around <code>optim</code> and <code>ctmm.loglike</cod
   <dt>verbose</dt>
 <dd><p>Return additional information. See "Value" below.</p></dd>
 
+  <dt>compute</dt>
+<dd><p>Only return computational information if <code>FALSE</code>.</p></dd>
+
   <dt>method</dt>
 <dd><p>Fitting method to use: <code>"ML"</code>, <code>"HREML"</code>, <code>"pREML"</code>, <code>"pHREML"</code>, or <code>"REML"</code>. See "Description" below.</p></dd>
 
@@ -133,7 +136,7 @@ The fitting functions wrap around <code>optim</code> and <code>ctmm.loglike</cod
 <dd><p>Estimate the autocorrelation parameter covariance matrix.</p></dd>
 
   <dt>control</dt>
-<dd><p>An optional argument list for the optimizer.</p></dd>
+<dd><p>An optional argument list for <code><a href="optimizer.html">optimizer</a></code>.</p></dd>
 
   <dt>trace</dt>
 <dd><p>Report progress updates. Can be among <code>0:2</code> with increasing detail.</p></dd>
@@ -250,7 +253,7 @@ This is no longer feasible with current versions of <code>ctmm</code>, as the nu
     </div>
     <div id="see-also">
     <h2>See also</h2>
-    <div class="dont-index"><p><code><a href="ctmm.boot.html">ctmm.boot</a></code>, <code><a href="variogram.fit.html">ctmm.guess</a></code>, <code><a href="https://rdrr.io/r/stats/optim.html" class="external-link">optim</a></code>, <code><a href="summary.ctmm.html">summary.ctmm</a></code>, <code><a href="variogram.fit.html">variogram.fit</a></code>.</p></div>
+    <div class="dont-index"><p><code><a href="ctmm.boot.html">ctmm.boot</a></code>, <code><a href="variogram.fit.html">ctmm.guess</a></code>, <code><a href="optimizer.html">optimizer</a></code>, <code><a href="summary.ctmm.html">summary.ctmm</a></code>, <code><a href="variogram.fit.html">variogram.fit</a></code>.</p></div>
     </div>
 
     <div id="ref-examples">
@@ -272,13 +275,13 @@ This is no longer feasible with current versions of <code>ctmm</code>, as the nu
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $DOF</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       mean       area  diffusion      speed </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   10.73354   18.13597  902.23375 3445.13306 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   10.73354   18.13600  902.23377 3445.13306 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $CI</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                          low        est       high</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> area (square kilometers)          239.647378 403.458804 609.241207</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> τ[position] (days)                  4.438956   7.505367  12.690041</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> τ[velocity] (minutes)              39.607116  42.069009  44.683928</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> area (square kilometers)          239.647399 403.458639 609.240768</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> τ[position] (days)                  4.438956   7.505364  12.690029</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> τ[velocity] (minutes)              39.607116  42.069009  44.683929</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> speed (kilometers/day)             13.820458  14.055146  14.289780</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> diffusion (square kilometers/day)   5.284545   5.647059   6.021428</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -297,7 +300,7 @@ This is no longer feasible with current versions of <code>ctmm</code>, as the nu
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

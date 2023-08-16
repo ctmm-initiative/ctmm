@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.0</span>
       </span>
     </div>
 
@@ -108,7 +108,7 @@
 <code>by="sun"</code> colors according to the sine of the sun's altitude, which is proportional to solar flux during daylight hours.
 <code>by="moon"</code> colors according to the illuminated fraction of the moon.
 <code>by="season"</code> colors according to the length of the day, and therefore corresponds to the local season.
-<code>by="tropic"</code> currently colors according to the calender day, but will eventually be upgraded to tropical-year cycle.</p>
+<code>by="tropic"</code> currently colors according to the calender day, but will eventually be upgraded to tropical-year cycle. The default <code>col.fn</code> argument runs from blue to red with increasing time, sunlight, moonlight, or day length.</p>
 <p><code>by="individual"</code> assigns colors to minimize the maximum combined spatial and color overlap.
 Finding the best color assignment is an \(NP\)-hard problem that is here approximated in \(O(N^3)\) time with a custom greedy algorithm.</p>
 <p>Other named columns in the <code>telemetry</code> object can also be used with <code>color</code>, by specifying the column name with <code>by</code>.</p>
@@ -175,7 +175,7 @@ Finding the best color assignment is an \(NP\)-hard problem that is here approxi
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

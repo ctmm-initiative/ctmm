@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.0</span>
       </span>
     </div>
 
@@ -72,7 +72,7 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">Log</span><span class="op">(</span><span class="va">x</span>,debias<span class="op">=</span><span class="cn">TRUE</span>,<span class="va">...</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">Log</span><span class="op">(</span><span class="va">x</span>,variable<span class="op">=</span><span class="st">"area"</span>,debias<span class="op">=</span><span class="cn">TRUE</span>,<span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">Exp</span><span class="op">(</span><span class="va">est</span>,VAR.est<span class="op">=</span><span class="fl">0</span>,VAR<span class="op">=</span><span class="fl">0</span>,VAR.VAR<span class="op">=</span><span class="fl">0</span>,variable<span class="op">=</span><span class="st">"area"</span>,debias<span class="op">=</span><span class="cn">TRUE</span>,level<span class="op">=</span><span class="fl">0.95</span>,units<span class="op">=</span><span class="cn">TRUE</span>,<span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -81,6 +81,9 @@
     <h2>Arguments</h2>
     <dl><dt>x</dt>
 <dd><p>A list of <code>UD</code> objects, <code>UD</code> <code>summary</code> objects, or <code>speed</code> objects.</p></dd>
+
+  <dt>variable</dt>
+<dd><p>Can be <code>"area"</code>, <code>"diffusion"</code>, <code>"speed"</code>, <code>"tau position"</code>, or <code>"tau velocity"</code>.</p></dd>
 
   <dt>debias</dt>
 <dd><p>Apply \(\log\chi^2\) and \(\log\chi\) bias corrections if <code>TRUE</code>.</p></dd>
@@ -99,9 +102,6 @@
 
   <dt>VAR.VAR</dt>
 <dd><p>Uncertainty in the log-paramter variance estimate (square standard error).</p></dd>
-
-  <dt>variable</dt>
-<dd><p>Variable being back-transformed. Can be <code>"area"</code> or <code>"speed"</code>.</p></dd>
 
   <dt>level</dt>
 <dd><p>Confidence level for parameter estimates.</p></dd>
@@ -158,14 +158,13 @@
 <span class="r-in"><span><span class="va">LOG</span> <span class="op">&lt;-</span> <span class="fu">Log</span><span class="op">(</span><span class="va">AREAS</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">LOG</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $log</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Cilla     Gabs    Mvubu   Pepper    Queen     Toni </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 19.77354 20.15902 19.74900 20.47721 19.90336 19.65385 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $VAR.log</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      Cilla       Gabs      Mvubu     Pepper      Queen       Toni </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 0.05668719 0.26196354 0.07487244 0.06594913 0.11312048 0.05784762 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             log    VAR.log</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Cilla  19.77354 0.05668718</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gabs   20.15897 0.26190762</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Mvubu  19.74900 0.07487247</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Pepper 20.47721 0.06594913</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Queen  19.90336 0.11312026</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Toni   19.65384 0.05784632</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
@@ -181,7 +180,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

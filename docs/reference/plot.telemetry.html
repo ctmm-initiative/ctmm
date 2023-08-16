@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.0</span>
       </span>
     </div>
 
@@ -139,7 +139,7 @@
 <dd><p>Color option for the density function. Can be an array.</p></dd>
 
   <dt>col.grid</dt>
-<dd><p>Color option for the maximum likelihood <code>akde</code> bandwidth grid.</p></dd>
+<dd><p>Color option for the maximum likelihood <code>akde</code> bandwidth grid. <code>col.grid=NA</code> will disable the plotting of the bandwidth grid.</p></dd>
 
   <dt>labels</dt>
 <dd><p>Labels for UD contours. Can be an array or list of arrays.</p></dd>
@@ -148,7 +148,7 @@
 <dd><p>Plot convex coverage-area contours if <code>TRUE</code>. By default, the highest density region (HDR) contours are plotted.</p></dd>
 
   <dt>level</dt>
-<dd><p>Confidence levels placed on the contour estimates themselves. I.e., the above 50% core home-range area can be estimated with 95% confidence via <code>level=0.95</code>.</p></dd>
+<dd><p>Confidence levels placed on the contour estimates themselves. I.e., the above 50% core home-range area can be estimated with 95% confidence via <code>level=0.95</code>. <code>level=NA</code> will disable the plotting of confidence intervals.</p></dd>
 
   <dt>level.UD</dt>
 <dd><p>Coverage level of Gaussian <code>ctmm</code> model or <code>UD</code> estimate contours to be displayed. I.e., <code>level.UD=0.50</code> can yield the 50% core home range within the rendered contours.</p></dd>
@@ -253,7 +253,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

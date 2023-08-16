@@ -108,13 +108,14 @@ intensity <- function(data,UD,RSF,R=list(),variable=NULL,empirical=FALSE,level=0
   z <- stats::qnorm(1-alpha/2)
 
   R <- data[[variable]]
-  if(length(VARS))
+  if(length(variable))
   {
     IND <- sort(R,index.return=TRUE)$ix
     R <- R[IND]
     MODEL <- MODEL[IND,]
     weights <- weights[IND]
 
+    VARS <- names(RSF$beta)
     for(V in VARS)
     {
       # derived from normalization and MLE
@@ -139,9 +140,9 @@ intensity <- function(data,UD,RSF,R=list(),variable=NULL,empirical=FALSE,level=0
   PDF <- KDE$PDF[SUB]
   log.PDF <- log(PDF)
   # matches below for linear model
-  if(length(VARS)) { ZERO <- stats::approx(r,log.PDF,R[MIN],rule=2,ties=mean)$y }
+  if(length(variable)) { ZERO <- stats::approx(r,log.PDF,R[MIN],rule=2,ties=mean)$y }
   # the above can fail with no PDF support at R[MIN]
-  if(!length(VARS) || is.na(ZERO))
+  if(!length(variable) || is.na(ZERO))
   {
     MIN <- which.max(PDF) # min PDF uncertainty
     ZERO <- log.PDF[MIN]
@@ -157,7 +158,7 @@ intensity <- function(data,UD,RSF,R=list(),variable=NULL,empirical=FALSE,level=0
     lRANGE <- lRANGE[abs(lRANGE)<Inf]
     lRANGE <- range(lRANGE,na.rm=TRUE)
   }
-  if(length(VARS))
+  if(length(variable))
   {
     lRANGE <- range(lRANGE,pmin(EST-SE,ifelse(EST<0,2*EST,-EST)),pmin(EST+SE,ifelse(EST>0,2*EST,-EST)))
     lRANGE <- range(lRANGE,na.rm=TRUE)
@@ -171,7 +172,7 @@ intensity <- function(data,UD,RSF,R=list(),variable=NULL,empirical=FALSE,level=0
     graphics::polygon(c(r,rev(r)),c(log.PDF-SE.log.PDF,rev(log.PDF+SE.log.PDF)),border=NA,col=malpha('black',0.25))
   }
 
-  if(length(VARS))
+  if(length(variable))
   {
     graphics::points(R,EST,col='red',type='l',lwd=2)
     graphics::polygon(c(R,rev(R)),c(EST-SE,rev(EST+SE)),border=NA,col=malpha('red',0.25))

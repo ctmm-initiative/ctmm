@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.0</span>
       </span>
     </div>
 
@@ -73,7 +73,7 @@
 
     <div id="ref-usage">
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for ctmm</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">x</span>,weights<span class="op">=</span><span class="cn">NULL</span>,sample<span class="op">=</span><span class="cn">TRUE</span>,debias<span class="op">=</span><span class="cn">TRUE</span>,IC<span class="op">=</span><span class="st">"AICc"</span>,<span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">x</span>,weights<span class="op">=</span><span class="cn">NULL</span>,sample<span class="op">=</span><span class="cn">TRUE</span>,debias<span class="op">=</span><span class="cn">TRUE</span>,IC<span class="op">=</span><span class="st">"AICc"</span>,trace<span class="op">=</span><span class="cn">TRUE</span>,<span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for UD</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">x</span>,weights<span class="op">=</span><span class="cn">NULL</span>,sample<span class="op">=</span><span class="cn">TRUE</span>,<span class="va">...</span><span class="op">)</span></span></code></pre></div>
@@ -95,6 +95,9 @@
 
   <dt>IC</dt>
 <dd><p>Model selection criterion for the anisotropy of the distribution of mean locations and covariance matrices.</p></dd>
+
+  <dt>trace</dt>
+<dd><p>Report location and autocovariance model selection results.</p></dd>
 
   <dt>...</dt>
 <dd><p>Additional arguments for future use.</p></dd>
@@ -140,7 +143,7 @@ Location-error estimates are not correctly averaged yet.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

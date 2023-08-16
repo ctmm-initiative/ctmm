@@ -1,7 +1,11 @@
 ** PRIORITY
+* meta with tau instead of tau[position] will error out
+* clip raster before rsf.fit calculation
+* composite resolutions in gridding
+* rsf.fit argument to drop NA locations
 * EPSG interpreter for projection warnings/errors
 * pkde error on individual object arguments
-* Log kintetic energy output
+* plot.overlap from ctmmweb
 * intensity() needs kernel regression for interactions
 * uere()<- documentation RMS standard deviation note
 * change default mean.OD/mean.UD to weight by sampling period (as an option)

@@ -1,4 +1,4 @@
-ctmm 1.1.1 (2023-07-25)
+ctmm 1.2.0 (2023-08-16)
 ================
 * new functions rsf.select(), intensity()
 * new functions sdm.fit(), sdm.select()
@@ -25,7 +25,7 @@ ctmm 1.1.1 (2023-07-25)
 * bugfix in distances() for 0/0
 * as.telemetry() UTM import updated to new PROJ specification
 * mean.ctmm() improved convergence, numerical stability, and covariance selection
-* meta() stability improvements for tiny DOF estimates
+* meta() stability improvements for tiny DOF estimates, and OUf support
 * overlap() and meta() can now extract object names
 * pkde(...) -> akde(...) -> bandwidth(...) -> mean(...) arguments now passed
 * rsf.fit() AICc formula improved

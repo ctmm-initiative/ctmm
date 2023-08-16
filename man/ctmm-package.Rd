@@ -30,8 +30,8 @@ Alston & Fleming et al (2023) <doi:10.1111/2041-210X.14025>.
 \tabular{ll}{
 Package: \tab ctmm\cr
 Type: \tab Package\cr
-Version: \tab 1.1.1 \cr
-Date: \tab 2023-07-25 \cr
+Version: \tab 1.2.0 \cr
+Date: \tab 2023-08-16\cr
 License: \tab GPL-3 \cr
 }
 

@@ -44,7 +44,7 @@ tbind(...)
   \item{object}{A MoveBank CSV filename, MoveBank \code{data.frame} object, or \code{Move} object to coerce, or a \code{telemetry} object to summarize.}
   \item{timeformat}{Format argument for \code{\link{strptime}}, corresponding to the input data. Alternatively \code{timeformat="auto"} will attempt to infer the timestamp format with \code{\link[parsedate]{parse_date}}.}
   \item{timezone}{Timezone argument for \code{\link{strptime}}, corresponding to the input data.}
-  \item{projection}{Optional PROJ projection argument to be fed to \code{\link[sp]{spTransform}}, for the \bold{output} telemetry object.}
+  \item{projection}{Optional PROJ projection argument for the \bold{output} telemetry object.}
   \item{datum}{Optional argument to specify the \bold{input} longitude-latitude or UTM datum. The default is WGS84.}
   \item{dt.hot}{Time-interval threshold at which GPS location fixes can be considered as ``hot'' and location estimate precisions may be smaller (regardless of DOP value) for assigning \code{"hot"} and \code{"cold"} location classes.}
   \item{timeout}{GPS location fix timeout value (seconds) for assigning a \code{"timed-out"} location class.}

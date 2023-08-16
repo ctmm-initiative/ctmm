@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.0</span>
       </span>
     </div>
 
@@ -146,19 +146,13 @@ and <code>CI</code> is a table with rows corresponding to the sub-population mea
 <span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># calculate AKDES on a consistent grid</span></span></span>
-<span class="r-in"><span><span class="va">AKDES</span> <span class="op">&lt;-</span> <span class="fu"><a href="akde.html">akde</a></span><span class="op">(</span><span class="va">buffalo</span>,<span class="va">FITS</span>,trace<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">AKDES</span> <span class="op">&lt;-</span> <span class="fu"><a href="akde.html">akde</a></span><span class="op">(</span><span class="va">buffalo</span>,<span class="va">FITS</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Default grid size of 3 minutes chosen for bandwidth(...,fast=TRUE).</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Bandwidth optimization complete.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Default grid size of 2 minutes chosen for bandwidth(...,fast=TRUE).</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Bandwidth optimization complete.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Default grid size of 2 minutes chosen for bandwidth(...,fast=TRUE).</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Bandwidth optimization complete.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Default grid size of 3 minutes chosen for bandwidth(...,fast=TRUE).</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Bandwidth optimization complete.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Default grid size of 2 minutes chosen for bandwidth(...,fast=TRUE).</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Bandwidth optimization complete.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Default grid size of 5 minutes chosen for bandwidth(...,fast=TRUE).</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Bandwidth optimization complete.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># color to be spatially distinct</span></span></span>
 <span class="r-in"><span><span class="va">COL</span> <span class="op">&lt;-</span> <span class="fu"><a href="color.html">color</a></span><span class="op">(</span><span class="va">AKDES</span>,by<span class="op">=</span><span class="st">'individual'</span><span class="op">)</span></span></span>
@@ -171,12 +165,12 @@ and <code>CI</code> is a table with rows corresponding to the sub-population mea
 <span class="r-in"><span><span class="fu">cluster</span><span class="op">(</span><span class="va">AKDES</span>,sort<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                      ΔBIC</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Dirac-δ                                         0.0000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> inverse-Gaussian                                0.9591238</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Dirac-δ + Dirac-δ                               1.3582662</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> inverse-Gaussian(CoV) + inverse-Gaussian(CoV)   3.1500256</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Dirac-δ + inverse-Gaussian                      3.1500256</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> inverse-Gaussian + Dirac-δ                      3.1500256</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> inverse-Gaussian(CoV₁) + inverse-Gaussian(CoV₂) 4.9417851</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> inverse-Gaussian                                0.9591303</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Dirac-δ + Dirac-δ                               1.3582751</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> inverse-Gaussian(CoV) + inverse-Gaussian(CoV)   3.1500346</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Dirac-δ + inverse-Gaussian                      3.1500346</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> inverse-Gaussian + Dirac-δ                      3.1500346</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> inverse-Gaussian(CoV₁) + inverse-Gaussian(CoV₂) 4.9417941</span>
 <span class="r-plt img"><img src="cluster-2.png" alt="" width="700" height="433"></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $P</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Cilla   Gabs  Mvubu Pepper  Queen   Toni </span>
@@ -184,9 +178,9 @@ and <code>CI</code> is a table with rows corresponding to the sub-population mea
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $CI</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>               low      est     high</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> μ₁ (km²) 357.6297 451.6813 556.5466</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> μ₁ (km²) 357.6297 451.6813 556.5465</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> CoV₁       0.0000   0.0000      Inf</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> μ₂ (km²) 357.6297 451.6813 556.5466</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> μ₂ (km²) 357.6297 451.6813 556.5465</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> CoV₂       0.0000   0.0000      Inf</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> P₁         0.0000   1.0000   1.0000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> P₂         0.0000   0.0000   1.0000</span>
@@ -207,7 +201,7 @@ and <code>CI</code> is a table with rows corresponding to the sub-population mea
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

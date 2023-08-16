@@ -801,7 +801,7 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
 
   ##################################
   # ARGOS error ellipse/circle (newer ARGOS data >2011)
-  COL <- "Argos.orientation"
+  COL <- c("Argos.orientation","Error.ellipse.orientation")
   COL <- pull.column(object,COL)
   if(length(COL))
   {
@@ -809,11 +809,11 @@ as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projecti
     DATA$HDOP <- pull.column(object,"Argos.GDOP")
 
     # according to ARGOS, the following can be missing on <4 message data... but it seems present regardless
-    DATA$COV.major <- pull.column(object,"Argos.semi.major")^2/2
-    DATA$COV.minor <- pull.column(object,"Argos.semi.minor")^2/2
+    DATA$COV.major <- pull.column(object,c("Argos.semi.major","Error.semi-major.axis"))^2/2
+    DATA$COV.minor <- pull.column(object,c("Argos.semi.minor","Error.semi-minor.axis"))^2/2
 
     if(DOP.LIST$horizontal$VAR %in% names(object))
-    { DATA[[DOP.LIST$horizontal$VAR]] <- pull.column(object,"Argos.error.radius")^2/2 }
+    { DATA[[DOP.LIST$horizontal$VAR]] <- pull.column(object,c("Argos.error.radius","Error.radius"))^2/2 }
     else
     { DATA[[DOP.LIST$horizontal$VAR]] <- (DATA$COV.minor + DATA$COV.major)/2 }
 

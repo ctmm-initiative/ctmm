@@ -49,6 +49,8 @@ title("simulation")
 
 ## ---- fig.show='hold'---------------------------------------------------------
 data("gazelle")
+dt.plot(gazelle)
+title("Sampling Intervals")
 SVF3 <- variogram(gazelle[[18]])
 plot(SVF3,fraction=0.85,level=level)
 title("Default method")

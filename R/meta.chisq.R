@@ -579,7 +579,9 @@ import.variable <- function(x,variable="area",level.UD=0.95,chi=FALSE)
         else
         {
           AREA[i] <- E
-          DOF[i] <- 2*E^2/x[[i]]$COV["tau position","tau position"]
+          P <- c("tau position","tau")
+          P <- P[ P %in% rownames(x[[i]]$COV) ]
+          DOF[i] <- 2*E^2/x[[i]]$COV[P,P]
         }
       }
       else if(variable=="tauvelocity")
@@ -593,7 +595,9 @@ import.variable <- function(x,variable="area",level.UD=0.95,chi=FALSE)
         else
         {
           AREA[i] <- E
-          DOF[i] <- 2*E^2/x[[i]]$COV["tau velocity","tau velocity"]
+          P <- c("tau velocity","tau")
+          P <- P[ P %in% rownames(x[[i]]$COV) ]
+          DOF[i] <- 2*E^2/x[[i]]$COV[P,P]
         }
       }
     }

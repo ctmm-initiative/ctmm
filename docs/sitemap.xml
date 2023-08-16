@@ -94,6 +94,9 @@
     <loc>/reference/index.html</loc>
   </url>
   <url>
+    <loc>/reference/intensity.html</loc>
+  </url>
+  <url>
     <loc>/reference/jaguar.html</loc>
   </url>
   <url>
@@ -143,6 +146,9 @@
   </url>
   <url>
     <loc>/reference/revisitation.html</loc>
+  </url>
+  <url>
+    <loc>/reference/sdm.fit.html</loc>
   </url>
   <url>
     <loc>/reference/select.html</loc>

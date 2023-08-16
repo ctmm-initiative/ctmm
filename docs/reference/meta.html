@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.0</span>
       </span>
     </div>
 
@@ -74,16 +74,24 @@
     <div id="ref-usage">
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">meta</span><span class="op">(</span><span class="va">x</span>,variable<span class="op">=</span><span class="st">"area"</span>,level<span class="op">=</span><span class="fl">0.95</span>,level.UD<span class="op">=</span><span class="fl">0.95</span>,method<span class="op">=</span><span class="st">"MLE"</span>,IC<span class="op">=</span><span class="st">"AICc"</span>,boot<span class="op">=</span><span class="cn">FALSE</span>,</span>
 <span>     error<span class="op">=</span><span class="fl">0.01</span>,debias<span class="op">=</span><span class="cn">TRUE</span>,verbose<span class="op">=</span><span class="cn">FALSE</span>,units<span class="op">=</span><span class="cn">TRUE</span>,plot<span class="op">=</span><span class="cn">TRUE</span>,sort<span class="op">=</span><span class="cn">FALSE</span>,mean<span class="op">=</span><span class="cn">TRUE</span>,</span>
-<span>     col<span class="op">=</span><span class="st">"black"</span>,<span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span>     col<span class="op">=</span><span class="st">"black"</span>,<span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">funnel</span><span class="op">(</span><span class="va">x</span>,<span class="va">y</span>,variable<span class="op">=</span><span class="st">"area"</span>,precision<span class="op">=</span><span class="st">"t"</span>,level<span class="op">=</span><span class="fl">0.95</span>,level.UD<span class="op">=</span><span class="fl">0.95</span>,<span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>x</dt>
-<dd><p>A named list of <code>ctmm</code> movement-model objects, <code>UD</code> objects, or <code>UD</code> <code>summary</code> output, constituting a sampled population, or a named list of such lists, with each constituting a sampled population.</p></dd>
+<dd><p>A named list of <code>ctmm</code> movement-model objects, <code>UD</code> objects, <code>UD</code> <code>summary</code> output, <code><a href="speed.html">speed</a></code> output, or 2\(\times\)2 <code><a href="overlap.html">overlap</a></code> objects constituting a sampled population, or a named list of such lists, with each constituting a sampled population.</p></dd>
+
+  <dt>y</dt>
+<dd><p>An optional named list of <code>telemetry</code> objects for the funnel-plot <code>precision</code> variable.</p></dd>
 
   <dt>variable</dt>
-<dd><p>Variable of interest. Can be <code>"area"</code>, <code>"diffusion"</code>, <code>"speed"</code>, <code>"tau position"</code>, or <code>"tau velocity"</code>.</p></dd>
+<dd><p>Biological ``effect'' variable of interest for <code>ctmm</code> object arguments. Can be <code>"area"</code>, <code>"diffusion"</code>, <code>"speed"</code>, <code>"tau position"</code>, or <code>"tau velocity"</code>.</p></dd>
+
+  <dt>precision</dt>
+<dd><p>Precision variable of interest. Can be <code>"t"</code> for sampling time period or time interval, <code>"n"</code> for nominal sample size, <code>"N"</code> or <code>"DOF"</code> for effective sample size.</p></dd>
 
   <dt>level</dt>
 <dd><p>Confidence level for parameter estimates.</p></dd>
@@ -126,15 +134,16 @@
 <dd><p>Color(s) for individual labels and error bars.</p></dd>
 
   <dt>...</dt>
-<dd><p>Further arguments passed to <code>plot</code>.</p></dd>
+<dd><p>Further arguments passed to <code>plot</code> or <code>meta</code>.</p></dd>
 
 </dl></div>
     <div id="details">
     <h2>Details</h2>
-    <p><code>meta</code> employs a custom \(\chi^2-IG\) hierarchical model to calculate debiased population mean estimates of positive scale parameters,
+    <p><code>meta</code> employs a custom \(\chi^2\)-IG hierarchical model to calculate debiased population mean estimates of positive scale parameters,
 including home-range areas, diffusion rates, mean speeds, and autocorrelation timescales.
-Population coefficient of variation (CoV) estimates are also provided.
-More details are provided in Fleming et al (2022).</p>
+Model selection is performed between the \(\chi^2\)-IG population model (with population mean and variance) and the Dirac-\(\delta\) population model (population mean only).
+Population ``coefficient of variation'' (CoV) estimates are also provided.
+Further details are given in Fleming et al (2022).</p>
     </div>
     <div id="value">
     <h2>Value</h2>
@@ -147,7 +156,7 @@ More details are provided in Fleming et al (2022).</p>
     <h2>References</h2>
     <p>C. H. Fleming, I. Deznabi, S. Alavi, M. C. Crofoot, B. T. Hirsch, E. P. Medici, M. J. Noonan, R. Kays, W. F. Fagan, D. Sheldon, J. M. Calabrese,
 ``Population-level inference for home-range areas'',
-Methods in Ecology and Evolution (2022) <a href="https://doi.org/10.1111/2041-210X.13815" class="external-link">doi:10.1111/2041-210X.13815</a>
+Methods in Ecology and Evolution 13:5 1027--1041 (2022) <a href="https://doi.org/10.1111/2041-210X.13815" class="external-link">doi:10.1111/2041-210X.13815</a>
 .</p>
     </div>
     <div id="author">
@@ -201,12 +210,16 @@ Methods in Ecology and Evolution (2022) <a href="https://doi.org/10.1111/2041-21
 <span class="r-in"><span><span class="fu">meta</span><span class="op">(</span><span class="va">AKDES</span>,col<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">COL</span>,<span class="st">'black'</span><span class="op">)</span>,sort<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                     ΔAICc</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Dirac-δ          0.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> inverse-Gaussian 3.834023</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> inverse-Gaussian 3.834028</span>
 <span class="r-plt img"><img src="meta-2.png" alt="" width="700" height="433"></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                  low      est     high</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> mean (km²)  357.6295 451.6812 556.5465</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> CoV² (RVAR)   0.0000   0.0000      Inf</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> CoV  (RSTD)   0.0000   0.0000      Inf</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  low      est    high</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> mean (km²)  357.6297 451.6815 556.547</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> CoV² (RVAR)   0.0000   0.0000     Inf</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> CoV  (RSTD)   0.0000   0.0000     Inf</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># funnel plot to check for sampling bias</span></span></span>
+<span class="r-in"><span><span class="fu">funnel</span><span class="op">(</span><span class="va">AKDES</span>,<span class="va">buffalo</span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="meta-3.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
@@ -222,7 +235,7 @@ Methods in Ecology and Evolution (2022) <a href="https://doi.org/10.1111/2041-21
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

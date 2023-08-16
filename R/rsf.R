@@ -148,7 +148,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
 
     if(attr(stats::terms(formula),"response")[1]>0) { stop("Response variable not yet supported.") }
   }
-  environment(formula) <- NULL
+  environment(formula) <- globalenv()
 
   if(length(DVARS)+length(CVARS)>0 && standardize)
   {
@@ -202,7 +202,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
         DIM <- dim(envir)
         dim(envir) <- c(DIM[1]*DIM[2],DIM[3])
         colnames(envir) <- VARS
-        RET <- evaluate(term,envir)
+        RET <- evaluate(term,envir,offset=offset)
         dim(RET) <- c(DIM[1:2],length(term))
       }
       else # !STATIONARY
@@ -213,7 +213,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
                   dim(ENVIR) <- dim(envir)[-1];
                   colnames(ENVIR) <- VARS
                   ENVIR <- cbind(ENVIR,data); # [time,vars]
-                  evaluate(term,ENVIR)
+                  evaluate(term,ENVIR,offset=offset)
                 },array(0,c(nrow(data),length(term)))) # [time,terms,space]
         dim(RET) <- c(nrow(data),length(term),dim(envir)[1])
         RET <- aperm(RET,c(3,1,2)) # [space,time,terms]
@@ -234,8 +234,10 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
   for(i in 1 %:% length(R))
   {
     PROJ[i] <- raster::projection(R[[i]])
+    RANGE <- raster::cellStats(R[[i]],'range',na.rm=TRUE)
 
-    if(standardize)
+    # don't standardize logical variables
+    if(standardize && abs(RANGE[[1]]-0)>.Machine$double.eps && abs(RANGE[[2]]-1)>.Machine$double.eps)
     {
       # # raster::median is not defined correctly
       # R[[i]] <- R[[i]] - raster::median(R[[i]],na.rm=TRUE)
@@ -288,7 +290,9 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
 
     if(length(R)>1)
     {
-      if(max(abs(c(diff(dX)/mid(dX),diff(dY)/mid(dY),diff(Xo)/mid(Xo),diff(Yo)/mid(Yo))))>.Machine$double.eps) # check for consistent resolution, origin
+      TEST <- c(diff(dX)/mid(dX),diff(dY)/mid(dY),diff(Xo)/mid(dX),diff(Yo)/mid(dY))
+      # TEST <- nant(TEST,0)
+      if(max(abs(TEST))>.Machine$double.eps) # check for consistent resolution, origin
       { CONSISTENT <- FALSE }
     }
 
@@ -484,8 +488,9 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
 
     if(length(OFFSET))
     {
-      ONE <- rep(TRUE,nrow(SATA))
+      # ONE <- rep(TRUE,nrow(SATA))
       ONE <- evaluate(OFFSET,SATA,offset=TRUE)
+      dim(ONE) <- dim(ONE)[1:2]
       SAMP <- ONE * SAMP
     }
 
@@ -1016,14 +1021,17 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
 }
 
 
-get.offset <- function(formula)
+get.offset <- function(formula,variable=TRUE)
 {
   OFFSET <- stats::terms(formula)
   OFF <- attr(OFFSET,"offset")
   if(is.null(OFF)) { return(OFF) }
-  OFFSET <- attr(OFFSET,"variables")[ 1 + OFF ]
-  OFFSET <- sub("offset(","",OFFSET)
-  OFFSET <- substr(OFFSET,1,nchar(OFFSET)-1)
+  OFFSET <- rownames(attr(OFFSET,"factors"))[OFF]
+  if(variable)
+  {
+    OFFSET <- sub("offset(","",OFFSET,fixed=TRUE)
+    OFFSET <- substr(OFFSET,1,nchar(OFFSET)-1)
+  }
   return(OFFSET)
 }
 
@@ -1149,7 +1157,7 @@ expand.factors <- function(R,formula,reference="auto",data=NULL,DVARS=NULL,fixed
     }
   } # end telemetry expansion
 
-  environment(formula) <- NULL
+  if(!is.null(formula)){ environment(formula) <- globalenv() }
   RETURN <- list(data=data,R=R,formula=formula)
 }
 

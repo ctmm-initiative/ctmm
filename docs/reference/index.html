@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.0</span>
       </span>
     </div>
 
@@ -70,9 +70,9 @@
           <p class="section-desc"></p>
         </th>
       </tr></tbody><tbody><tr><td>
-          <p><code><a href="RSF.fit.html">rsf.fit()</a></code> </p>
+          <p><code><a href="RSF.fit.html">rsf.fit()</a></code> <code><a href="RSF.fit.html">rsf.select()</a></code> </p>
         </td>
-        <td><p>Fit integrated resource selection functions (iRSFs) with autocorrelation-adjusted weighted likelihood [IN DEVELOPMENT]</p></td>
+        <td><p>Fit integrated resource selection functions (iRSFs) with autocorrelation-adjusted weighted likelihood</p></td>
       </tr><tr><td>
           <p><code><a href="akde.html">akde()</a></code> <code><a href="akde.html">pkde()</a></code> </p>
         </td>
@@ -118,13 +118,13 @@
         </td>
         <td><p>Specify, fit, and select continuous-time movement models</p></td>
       </tr><tr><td>
-          <p><code><a href="difference.html">difference()</a></code> <code><a href="difference.html">distances()</a></code> <code><a href="difference.html">proximity()</a></code> </p>
+          <p><code><a href="difference.html">difference()</a></code> <code><a href="difference.html">midpoint()</a></code> <code><a href="difference.html">distances()</a></code> <code><a href="difference.html">proximity()</a></code> </p>
         </td>
         <td><p>Estimate the proximity of two individuals</p></td>
       </tr><tr><td>
           <p><code><a href="distance.html">distance()</a></code> </p>
         </td>
-        <td><p>Calculate the square distance between two stationary distributions</p></td>
+        <td><p>Calculate the square distance between two distributions or location estimates</p></td>
       </tr><tr><td>
           <p><code><a href="dt.plot.html">dt.plot()</a></code> </p>
         </td>
@@ -138,7 +138,7 @@
         </td>
         <td><p>Encounter statistics</p></td>
       </tr><tr><td>
-          <p><code><a href="export.html">as.sf()</a></code> <code><a href="export.html">SpatialPoints.telemetry()</a></code> <code><a href="export.html">SpatialPointsDataFrame.telemetry()</a></code> <code><a href="export.html">SpatialPolygonsDataFrame.telemetry()</a></code> <code><a href="export.html">SpatialPolygonsDataFrame.UD()</a></code> <code><a href="export.html">raster(<i>&lt;UD&gt;</i>)</a></code> <code><a href="export.html">writeShapefile()</a></code> <code><a href="export.html">writeRaster(<i>&lt;UD&gt;</i>,<i>&lt;character&gt;</i>)</a></code> </p>
+          <p><code><a href="export.html">as.sf()</a></code> <code><a href="export.html">raster(<i>&lt;UD&gt;</i>)</a></code> <code><a href="export.html">SpatialPoints.telemetry()</a></code> <code><a href="export.html">SpatialPointsDataFrame.telemetry()</a></code> <code><a href="export.html">SpatialPolygonsDataFrame.telemetry()</a></code> <code><a href="export.html">SpatialPolygonsDataFrame.UD()</a></code> <code><a href="export.html">writeRaster(<i>&lt;UD&gt;</i>,<i>&lt;character&gt;</i>)</a></code> <code><a href="export.html">writeVector(<i>&lt;list&gt;</i>,<i>&lt;character&gt;</i>)</a></code> <code><a href="export.html">writeVector(<i>&lt;list&gt;</i>,<i>&lt;missing&gt;</i>)</a></code> <code><a href="export.html">writeVector(<i>&lt;telemetry&gt;</i>,<i>&lt;character&gt;</i>)</a></code> <code><a href="export.html">writeVector(<i>&lt;telemetry&gt;</i>,<i>&lt;missing&gt;</i>)</a></code> <code><a href="export.html">writeVector(<i>&lt;UD&gt;</i>,<i>&lt;character&gt;</i>)</a></code> <code><a href="export.html">writeVector(<i>&lt;UD&gt;</i>,<i>&lt;missing&gt;</i>)</a></code> </p>
         </td>
         <td><p>Export ctmm data formats</p></td>
       </tr><tr><td>
@@ -150,9 +150,13 @@
         </td>
         <td><p>Mongolian gazelle GPS dataset from the Mongolia's Eastern Steppe.</p></td>
       </tr><tr><td>
-          <p><code><a href="homerange.html">homerange()</a></code> <code><a href="homerange.html">suitability()</a></code> <code><a href="homerange.html">agde()</a></code> </p>
+          <p><code><a href="homerange.html">homerange()</a></code> <code><a href="homerange.html">agde()</a></code> <code><a href="homerange.html">suitability()</a></code> </p>
         </td>
         <td><p>Calculate a range distribution estimate</p></td>
+      </tr><tr><td>
+          <p><code><a href="intensity.html">intensity()</a></code> </p>
+        </td>
+        <td><p>Compare empirical and theoretical intensity (resource-selection) functions [IN DEVELOPMENT]</p></td>
       </tr><tr><td>
           <p><code><a href="jaguar.html">jaguar</a></code> </p>
         </td>
@@ -170,7 +174,7 @@
         </td>
         <td><p>Compute a number-weighted average of variogram objects</p></td>
       </tr><tr><td>
-          <p><code><a href="meta.html">meta()</a></code> </p>
+          <p><code><a href="meta.html">meta()</a></code> <code><a href="meta.html">funnel()</a></code> </p>
         </td>
         <td><p>Meta-analysis of movement-model parameters</p></td>
       </tr><tr><td>
@@ -221,6 +225,10 @@
           <p><code><a href="revisitation.html">revisitation()</a></code> </p>
         </td>
         <td><p>Calculate an revisitation distribution estimate</p></td>
+      </tr><tr><td>
+          <p><code><a href="sdm.fit.html">sdm.fit()</a></code> <code><a href="sdm.fit.html">sdm.select()</a></code> <code><a href="sdm.fit.html">sdm.integrate()</a></code> </p>
+        </td>
+        <td><p>Fit species distribution models (SDMs) [IN DEVELOPMENT]</p></td>
       </tr><tr><td>
           <p><code><a href="select.html">lasso()</a></code> <code><a href="select.html">marquee()</a></code> <code><a href="select.html">cleave()</a></code> </p>
         </td>
@@ -286,7 +294,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

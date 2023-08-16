@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.0</span>
       </span>
     </div>
 
@@ -90,7 +90,7 @@
       <h1 data-toc-skip>Autocorrelated Kernel Density Estimation</h1>
                         <h4 data-toc-skip class="author">Christen H. Fleming and Justin M. Calabrese</h4>
             
-            <h4 data-toc-skip class="date">2022-11-03</h4>
+            <h4 data-toc-skip class="date">2023-07-31</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/ctmm-initiative/ctmm/blob/HEAD/vignettes/akde.Rmd" class="external-link"><code>vignettes/akde.Rmd</code></a></small>
       <div class="hidden name"><code>akde.Rmd</code></div>
@@ -101,26 +101,35 @@
     
 <p>In this vignette we walk through autocorrelated kernel density estimation. We will assume that you have already estimated a good <code>ctmm</code> movement model for your data. For demonstration purposes we will be working from the results of the “Variograms and Model Selection” vignette (see <code><a href="../articles/variogram.html">vignette("variogram")</a></code>). Here we will use the buffalo “Pepper” instead of “Cilla”, because Pepper has a GPS collar malfunction that can be mitigated with optimal weighting.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ctmm-initiative/ctmm" class="external-link">ctmm</a></span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">buffalo</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ctmm-initiative/ctmm" class="external-link">ctmm</a></span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## The legacy packages maptools, rgdal, and rgeos, underpinning the sp package,</span></span>
+<span><span class="co">## which was just loaded, will retire in October 2023.</span></span>
+<span><span class="co">## Please refer to R-spatial evolution reports for details, especially</span></span>
+<span><span class="co">## https://r-spatial.org/r/2023/05/15/evolution4.html.</span></span>
+<span><span class="co">## It may be desirable to make the sf package available;</span></span>
+<span><span class="co">## package maintainers should consider adding sf to Suggests:.</span></span>
+<span><span class="co">## The sp package is now running under evolution status 2</span></span>
+<span><span class="co">##      (status 2 uses the sf package in place of rgdal)</span></span></code></pre>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">buffalo</span><span class="op">)</span></span>
 <span><span class="va">Pepper</span> <span class="op">&lt;-</span> <span class="va">buffalo</span><span class="op">$</span><span class="va">Pepper</span></span>
 <span><span class="va">M.IID</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span><span class="op">(</span><span class="va">Pepper</span><span class="op">)</span> <span class="co"># no autocorrelation timescales</span></span>
 <span><span class="va">GUESS</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/variogram.fit.html">ctmm.guess</a></span><span class="op">(</span><span class="va">Pepper</span>,interactive<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span> <span class="co"># automated model guess</span></span>
 <span><span class="va">M.OUF</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ctmm.fit.html">ctmm.fit</a></span><span class="op">(</span><span class="va">Pepper</span>,<span class="va">GUESS</span><span class="op">)</span> <span class="co"># in general, use ctmm.select instead</span></span></code></pre></div>
 <p><code>M.IID</code> is the innapropriate, IID model, which will result in a conventional kernel-density estimate, while <code>M.OUF</code> is the superior, continuous-velocity OUF model. Note that you want the best model for each individual, even if that differs by individual. Different movement behaviors and sampling schedules will reveal different autocorrelation structures in the data.</p>
 <p>Now we can calculate a uniformly weighted <code>akde</code> object for each model.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">KDE</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/akde.html">akde</a></span><span class="op">(</span><span class="va">Pepper</span>,<span class="va">M.IID</span><span class="op">)</span> <span class="co"># KDE</span></span>
 <span><span class="va">AKDE</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/akde.html">akde</a></span><span class="op">(</span><span class="va">Pepper</span>,<span class="va">M.OUF</span><span class="op">)</span> <span class="co"># AKDE</span></span></code></pre></div>
 <pre><code><span><span class="co">## Default grid size of 3 minutes chosen for bandwidth(...,fast=TRUE).</span></span></code></pre>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">wAKDE</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/akde.html">akde</a></span><span class="op">(</span><span class="va">Pepper</span>,<span class="va">M.OUF</span>,weights<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="co"># weighted AKDE</span></span></code></pre></div>
 <pre><code><span><span class="co">## Default grid size of 3 minutes chosen for bandwidth(...,fast=TRUE).</span></span></code></pre>
 <p><img src="akde_files/figure-html/unnamed-chunk-2-1.png" width="700"></p>
 <p>However, Pepper’s sampling schedule is anything but uniform.</p>
 <p>Keeping in mind that Pepper’s home-range crossing timescale is two weeks, we have several algorithms for calculating optimal weights here. The exact algorithm is the easiest to implement, but it can be prohibitively slow on larger datasets (10k-100k). On the other hand, the fast algorithm can scale to extremely large datasets, but requires an appropriate discrete-time grid <code>dt</code> argument, which should be a divisor of the most frequent sampling intervals that can approximate the smallest sampling intervals. The default will try to intelligently choose among these methods, and the above plot depicts the selected <code>dt</code> in red. Large volumes of data (&gt;100k) collected over a long period of time with finely sampled bursts (period/interval <span class="math inline">\(\gg\)</span> millions) will not work well with either of the default algorithms. In this case, the user needs to thin their data if optimal weights are required. There is no significant home-range information lost by doing so in such extreme cases.</p>
 <p>Now let us plot the results.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># calculate one extent for all UDs</span></span>
 <span><span class="va">EXT</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/extent.html">extent</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">KDE</span>,<span class="va">AKDE</span>,<span class="va">wAKDE</span><span class="op">)</span>,level<span class="op">=</span><span class="fl">0.95</span><span class="op">)</span></span>
 <span></span>
@@ -138,7 +147,7 @@
 <p>The optimal bandwidth determines the “resolution” of the kernel density estimate. By default we plot grid lines with dimensions matching the standard deviations of the individual kernels. This gives a rough guideline as to what spatial details are and are not important in the density estimate. One can see that the IID KDE<sub>C</sub> estimate fits tightly to the data and reports many significant details in the buffalo’s home range. The autocorrelated estimates predict future space use more accurately, based on the diffusion model, and yield a more honest account of their uncertainties.</p>
 <p>In the case of Pepper, the GPS collar malfunctioned during data collection and the sampling interval mysteriously changed from 1 hour (yellow) to 2 hours (red). This irregularity makes Pepper a good candidate for optimally weighted AKDE (<code>weights=TRUE</code>). The optimally weighted estimate features smaller error, finer resolution, and mitigation of sampling bias. You can see that the uniformly weighted estimates place excessive emphasis on the oversampled data (yellow).</p>
 <p>Finally, we can compare the area estimates and effective sample sizes.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">KDE</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## $DOF</span></span>
 <span><span class="co">##      area bandwidth </span></span>
@@ -150,7 +159,7 @@
 <span><span class="co">## </span></span>
 <span><span class="co">## attr(,"class")</span></span>
 <span><span class="co">## [1] "area"</span></span></code></pre>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">wAKDE</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## $DOF</span></span>
 <span><span class="co">##      area bandwidth </span></span>
@@ -158,7 +167,7 @@
 <span><span class="co">## </span></span>
 <span><span class="co">## $CI</span></span>
 <span><span class="co">##                               low      est     high</span></span>
-<span><span class="co">## area (square kilometers) 432.2447 761.4925 1182.435</span></span>
+<span><span class="co">## area (square kilometers) 432.2447 761.4926 1182.435</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## attr(,"class")</span></span>
 <span><span class="co">## [1] "area"</span></span></code></pre>
@@ -179,7 +188,7 @@
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>

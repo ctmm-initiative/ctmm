@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.0</span>
       </span>
     </div>
 
@@ -72,20 +72,20 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">as.telemetry</span><span class="op">(</span><span class="va">object</span>,timeformat<span class="op">=</span><span class="st">""</span>,timezone<span class="op">=</span><span class="st">"UTC"</span>,projection<span class="op">=</span><span class="cn">NULL</span>,datum<span class="op">=</span><span class="cn">NULL</span>,timeout<span class="op">=</span><span class="cn">Inf</span>,</span>
-<span>             na.rm<span class="op">=</span><span class="st">"row"</span>,mark.rm<span class="op">=</span><span class="cn">FALSE</span>,keep<span class="op">=</span><span class="cn">FALSE</span>,drop<span class="op">=</span><span class="cn">TRUE</span>,<span class="va">...</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">as.telemetry</span><span class="op">(</span><span class="va">object</span>,timeformat<span class="op">=</span><span class="st">""</span>,timezone<span class="op">=</span><span class="st">"UTC"</span>,projection<span class="op">=</span><span class="cn">NULL</span>,datum<span class="op">=</span><span class="st">"WGS84"</span>,dt.hot<span class="op">=</span><span class="cn">NA</span>,</span>
+<span>             timeout<span class="op">=</span><span class="cn">Inf</span>,na.rm<span class="op">=</span><span class="st">"row"</span>,mark.rm<span class="op">=</span><span class="cn">FALSE</span>,keep<span class="op">=</span><span class="cn">FALSE</span>,drop<span class="op">=</span><span class="cn">TRUE</span>,<span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for character</span></span>
-<span><span class="fu">as.telemetry</span><span class="op">(</span><span class="va">object</span>,timeformat<span class="op">=</span><span class="st">""</span>,timezone<span class="op">=</span><span class="st">"UTC"</span>,projection<span class="op">=</span><span class="cn">NULL</span>,datum<span class="op">=</span><span class="cn">NULL</span>,timeout<span class="op">=</span><span class="cn">Inf</span>,</span>
-<span>             na.rm<span class="op">=</span><span class="st">"row"</span>,mark.rm<span class="op">=</span><span class="cn">FALSE</span>,keep<span class="op">=</span><span class="cn">FALSE</span>,drop<span class="op">=</span><span class="cn">TRUE</span>,<span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu">as.telemetry</span><span class="op">(</span><span class="va">object</span>,timeformat<span class="op">=</span><span class="st">""</span>,timezone<span class="op">=</span><span class="st">"UTC"</span>,projection<span class="op">=</span><span class="cn">NULL</span>,datum<span class="op">=</span><span class="st">"WGS84"</span>,dt.hot<span class="op">=</span><span class="cn">NA</span>,</span>
+<span>             timeout<span class="op">=</span><span class="cn">Inf</span>,na.rm<span class="op">=</span><span class="st">"row"</span>,mark.rm<span class="op">=</span><span class="cn">FALSE</span>,keep<span class="op">=</span><span class="cn">FALSE</span>,drop<span class="op">=</span><span class="cn">TRUE</span>,<span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for data.frame</span></span>
-<span><span class="fu">as.telemetry</span><span class="op">(</span><span class="va">object</span>,timeformat<span class="op">=</span><span class="st">""</span>,timezone<span class="op">=</span><span class="st">"UTC"</span>,projection<span class="op">=</span><span class="cn">NULL</span>,datum<span class="op">=</span><span class="cn">NULL</span>,timeout<span class="op">=</span><span class="cn">Inf</span>,</span>
-<span>             na.rm<span class="op">=</span><span class="st">"row"</span>,mark.rm<span class="op">=</span><span class="cn">FALSE</span>,keep<span class="op">=</span><span class="cn">FALSE</span>,drop<span class="op">=</span><span class="cn">TRUE</span>,<span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu">as.telemetry</span><span class="op">(</span><span class="va">object</span>,timeformat<span class="op">=</span><span class="st">""</span>,timezone<span class="op">=</span><span class="st">"UTC"</span>,projection<span class="op">=</span><span class="cn">NULL</span>,datum<span class="op">=</span><span class="st">"WGS84"</span>,dt.hot<span class="op">=</span><span class="cn">NA</span>,</span>
+<span>             timeout<span class="op">=</span><span class="cn">Inf</span>,na.rm<span class="op">=</span><span class="st">"row"</span>,mark.rm<span class="op">=</span><span class="cn">FALSE</span>,keep<span class="op">=</span><span class="cn">FALSE</span>,drop<span class="op">=</span><span class="cn">TRUE</span>,<span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for Move</span></span>
-<span><span class="fu">as.telemetry</span><span class="op">(</span><span class="va">object</span>,timeformat<span class="op">=</span><span class="st">""</span>,timezone<span class="op">=</span><span class="st">"UTC"</span>,projection<span class="op">=</span><span class="cn">NULL</span>,datum<span class="op">=</span><span class="cn">NULL</span>,timeout<span class="op">=</span><span class="cn">Inf</span>,</span>
-<span>             na.rm<span class="op">=</span><span class="st">"row"</span>,mark.rm<span class="op">=</span><span class="cn">FALSE</span>,keep<span class="op">=</span><span class="cn">FALSE</span>,drop<span class="op">=</span><span class="cn">TRUE</span>,<span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu">as.telemetry</span><span class="op">(</span><span class="va">object</span>,timeformat<span class="op">=</span><span class="st">""</span>,timezone<span class="op">=</span><span class="st">"UTC"</span>,projection<span class="op">=</span><span class="cn">NULL</span>,datum<span class="op">=</span><span class="st">"WGS84"</span>,dt.hot<span class="op">=</span><span class="cn">NA</span>,</span>
+<span>             timeout<span class="op">=</span><span class="cn">Inf</span>,na.rm<span class="op">=</span><span class="st">"row"</span>,mark.rm<span class="op">=</span><span class="cn">FALSE</span>,keep<span class="op">=</span><span class="cn">FALSE</span>,drop<span class="op">=</span><span class="cn">TRUE</span>,<span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for telemetry</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">object</span>,<span class="va">...</span><span class="op">)</span></span>
@@ -115,10 +115,13 @@
 <dd><p>Timezone argument for <code><a href="https://rdrr.io/r/base/strptime.html" class="external-link">strptime</a></code>, corresponding to the input data.</p></dd>
 
   <dt>projection</dt>
-<dd><p>Optional PROJ.4 projection argument to be fed to <code><a href="https://rdrr.io/pkg/sp/man/spTransform.html" class="external-link">spTransform</a></code>, for the <b>output</b> telemetry object.</p></dd>
+<dd><p>Optional PROJ projection argument to be fed to <code><a href="https://rdrr.io/pkg/sp/man/spTransform.html" class="external-link">spTransform</a></code>, for the <b>output</b> telemetry object.</p></dd>
 
   <dt>datum</dt>
-<dd><p>Optional PROJ.4 projection argument to specify the <b>input</b> longitude-latitude datum. The default is WGS84.</p></dd>
+<dd><p>Optional argument to specify the <b>input</b> longitude-latitude or UTM datum. The default is WGS84.</p></dd>
+
+  <dt>dt.hot</dt>
+<dd><p>Time-interval threshold at which GPS location fixes can be considered as ``hot'' and location estimate precisions may be smaller (regardless of DOP value) for assigning <code>"hot"</code> and <code>"cold"</code> location classes.</p></dd>
 
   <dt>timeout</dt>
 <dd><p>GPS location fix timeout value (seconds) for assigning a <code>"timed-out"</code> location class.</p></dd>
@@ -148,7 +151,7 @@
 </dl></div>
     <div id="details">
     <h2>Details</h2>
-    <p>For data that have not been corralled throuh Mobebank, timestamps either need to be provided in a POSIX format (see the output of <code><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time()</a></code>) or supplied with a <code>timeformat</code> argument for interpretation (see <code><a href="https://rdrr.io/r/base/strptime.html" class="external-link">strptime</a></code>). Alternatively, you can try your luck with <code>timeformat="auto"</code>, and <code><a href="https://rdrr.io/pkg/parsedate/man/parse_date.html" class="external-link">parse_date</a></code> will attempt to infer the format.</p>
+    <p>For data that have not been corralled throuh Movebank, timestamps either need to be provided in a POSIX format (see the output of <code><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time()</a></code>) or supplied with a <code>timeformat</code> argument for interpretation (see <code><a href="https://rdrr.io/r/base/strptime.html" class="external-link">strptime</a></code>). Alternatively, you can try your luck with <code>timeformat="auto"</code>, and <code><a href="https://rdrr.io/pkg/parsedate/man/parse_date.html" class="external-link">parse_date</a></code> will attempt to infer the format.</p>
 <p>If no projection argument is specified, a two-point equidistant projection is calculated that should be good for most range resident and migratory species.
 Global migrations that are not along one geodesic (locally straight line) will probably suffer distortion.</p>
 <p><code>as.telemetry()</code> assumes <a href="https://www.movebank.org/node/2381" class="external-link">Movebank naming conventions</a>.
@@ -168,6 +171,10 @@ Multiple deployments on a single individual can be merged afterwards, using <cod
     <h2>Author</h2>
     <p>C. H. Fleming, X. Dong, B. Kranstauber, G. Péron, and K. Safi.</p>
     </div>
+    <div id="note">
+    <h2>Note</h2>
+    <p>Prior to v1.1.1, <code>datum</code> was required to be a full PROJ string, but starting with v1.1.1 <code>datum</code> is just taken to be the PROJ datum argument.</p>
+    </div>
     <div id="see-also">
     <h2>See also</h2>
     <div class="dont-index"><p><code><a href="plot.telemetry.html">plot.telemetry</a></code>, <code><a href="export.html">SpatialPoints.telemetry</a></code>, <code><a href="uere.html">uere</a></code>.</p></div>
@@ -185,7 +192,7 @@ Multiple deployments on a single individual can be merged afterwards, using <cod
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

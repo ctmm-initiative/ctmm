@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.0</span>
       </span>
     </div>
 
@@ -67,478 +67,510 @@
     </div>
 
     <div class="section level2">
-<h2 class="page-header" data-toc-text="1.1.0" id="ctmm-110-2022-11-03">ctmm 1.1.0 (2022-11-03)<a class="anchor" aria-label="anchor" href="#ctmm-110-2022-11-03"></a></h2>
-<ul><li><p>new function pkde() for population kernel density estimates</p></li>
-<li><p>new functions difference(), distances(), proximity() for estimating distances between individuals</p></li>
-<li><p>new functions Log(), Exp() to log transform parameter estimates and their uncertainties for meta-analytic regression</p></li>
-<li><p>new functions dimfig(), sigfig() to represent quantities with concise units and significant digits</p></li>
-<li><p>new argument ‘sample’ in mean()</p></li>
-<li><p>new argument ‘interpolate’ in rsf.fit()</p></li>
-<li><p>new arguments ‘xlim’, ‘ylim’ to plot.outlie()</p></li>
-<li><p>numerical stability improvements in rsf.fit optimization and hessian calculations</p></li>
-<li><p>numerical convergence improvements in location error fitting</p></li>
-<li><p>numerical convergence improvements in AKDE weight optimization</p></li>
-<li><p>plot.telemetry can now subset and reproject rasters</p></li>
-<li><p>bugfix in sp::polygon derived areas (used since v1.0.0 for summary, plot, meta)</p></li>
-<li><p>bugfix in agde, suitability, RSF-akde when reprojecting onto the same raster</p></li>
-<li><p>bugfix in mean() when averaging isotropic and anisotropic models together</p></li>
-<li><p>bugfix in speeds() without telemetry object</p></li>
-<li><p>bugfix in cluster() with 0/0 bias correction error</p></li>
-<li><p>bugfix in occurrence() with multiple error classes</p></li>
-<li><p>bugfix in chi dof computation</p></li>
-<li><p>bugfix in outlie() for error ellipses</p></li>
-<li><p>summary() now works on mean.ctmm() outputs from different input model structures (OUF &amp; OUO)</p></li>
-<li><p>fixed log-chi^2 bias correction in mean.ctmm()</p></li>
+<h2 class="page-header" data-toc-text="1.2.0" id="ctmm-120-2023-07-31">ctmm 1.2.0 (2023-07-31)<a class="anchor" aria-label="anchor" href="#ctmm-120-2023-07-31"></a></h2>
+<ul><li>new functions rsf.select(), intensity()</li>
+<li>new functions sdm.fit(), sdm.select()</li>
+<li>new function writeVector(), depreciating function writeShapefile()</li>
+<li>new function funnel() for funnel plots</li>
+<li>new function midpoint()</li>
+<li>new population covariance models and improved model selection in mean.ctmm()</li>
+<li>new argument ‘sqrt’ in distance()</li>
+<li>new argument ‘dt.hot’ in as.telemetry()</li>
+<li>new argument ‘variable’ in Log()</li>
+<li>new argument ‘compute’ in ctmm.loglike()</li>
+<li>as.telemetry() now supports GBIF format data</li>
+<li>as.telemetry() datum argument now works on UTM import, and is no longer to a be a complete PROJ string</li>
+<li>as.telemetry(), plot.telemetry(), rsf.fit() updated from sp to sf transforms</li>
+<li>distance() can now take location arguments</li>
+<li>plot.telemetry() col.DF &amp; col.level arguments can now be color() lists</li>
+<li>suitability() now produces a raster stack corresponding to the CIs</li>
+<li>suitability() on population RSFs now outputs the population suitability</li>
+<li>suitability() extrapolation disabled</li>
+<li>bugfix in suitability()</li>
+<li>bugfix in distance() method=“Euclidean”, debias=TRUE</li>
+<li>bugfix in rates() debias=TRUE</li>
+<li>bugfix in summary() of population mean location DOF</li>
+<li>bugfix in distances() for 0/0</li>
+<li>as.telemetry() UTM import updated to new PROJ specification</li>
+<li>mean.ctmm() improved convergence, numerical stability, and covariance selection</li>
+<li>meta() stability improvements for tiny DOF estimates</li>
+<li>overlap() and meta() can now extract object names</li>
+<li>pkde(…) -&gt; akde(…) -&gt; bandwidth(…) -&gt; mean(…) arguments now passed</li>
+<li>rsf.fit() AICc formula improved</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="1.1.0" id="ctmm-110-2022-11-03">ctmm 1.1.0 (2022-11-03)<small>2022-11-04</small><a class="anchor" aria-label="anchor" href="#ctmm-110-2022-11-03"></a></h2>
+<ul><li>new function pkde() for population kernel density estimates</li>
+<li>new functions difference(), distances(), proximity() for estimating distances between individuals</li>
+<li>new functions Log(), Exp() to log transform parameter estimates and their uncertainties for meta-analytic regression</li>
+<li>new functions dimfig(), sigfig() to represent quantities with concise units and significant digits</li>
+<li>new argument ‘sample’ in mean()</li>
+<li>new argument ‘interpolate’ in rsf.fit()</li>
+<li>new arguments ‘xlim’, ‘ylim’ to plot.outlie()</li>
+<li>numerical stability improvements in rsf.fit optimization and hessian calculations</li>
+<li>numerical convergence improvements in location error fitting</li>
+<li>numerical convergence improvements in AKDE weight optimization</li>
+<li>plot.telemetry() can now subset and reproject rasters</li>
+<li>bugfix in sp::polygon derived areas (used since v1.0.0 for summary, plot, meta)</li>
+<li>bugfix in agde(), suitability(), akde() when reprojecting onto the same raster</li>
+<li>bugfix in mean() when averaging isotropic and anisotropic models together</li>
+<li>bugfix in speeds() without telemetry object</li>
+<li>bugfix in cluster() with 0/0 bias correction error</li>
+<li>bugfix in occurrence() with multiple error classes</li>
+<li>bugfix in chi dof computation</li>
+<li>bugfix in outlie() for error ellipses</li>
+<li>summary() now works on mean.ctmm() outputs from different input model structures (OUF &amp; OUO)</li>
+<li>fixed log-chi^2 bias correction in mean.ctmm()</li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="1.0.0" id="ctmm-100-2022-07-07">ctmm 1.0.0 (2022-07-07)<small>2022-07-12</small><a class="anchor" aria-label="anchor" href="#ctmm-100-2022-07-07"></a></h2>
-<ul><li><p>new function rsf.fit() to fit integrated resource selection functions (iRSFs) with autocorrelation-adjusted weighted likelihood</p></li>
-<li><p>new function mean.ctmm() to calculate population average movement models</p></li>
-<li><p>new function revisitation() to calculate the distribution of revisitations</p></li>
-<li><p>new function npr() to calculate non-parametric spatial regressions</p></li>
-<li><p>new function agde() to calculate autocorrelated Gaussian distribution estimates, with RSF support</p></li>
-<li><p>new function suitability() to calculate suitability rasters from RSF fit objects</p></li>
-<li><p>new function rates() to calculate relative encounter rates</p></li>
-<li><p>new function dt.plot() to inspect sampling intervals</p></li>
-<li><p>akde() and occurrence() now support RSF-informed kernels and boundary-respecting kernels</p></li>
-<li><p>summary.ctmm() now outputs diffusion rate estimates</p></li>
-<li><p>new argument variable for meta() to estimate population diffusion rates, mean speeds, and autocorrelation timescales</p></li>
-<li><p>new arguments R and SP in plot.telemetry() and plot.UD() for plotting raster and shapefile base layers</p></li>
-<li><p>new option method=“Encounter” in overlap()</p></li>
-<li><p>mean.UD() now propagates uncertainties</p></li>
-<li><p>mean.UD() now functions on occurrence distributions</p></li>
-<li><p>new convex argument to UD summary(), plot(), and export functions</p></li>
-<li><p>plot() and raster() now work on 3D UDs</p></li>
-<li><p>plot.outlie() now works on lists of outlie objects</p></li>
-<li><p>speed() output now includes DOF estimate for use with meta()</p></li>
-<li><p>tbind() now works correctly with different projections and calibrations</p></li>
-<li><p>%#% unit conversion operator can now interpret products and ratios</p></li>
-<li><p>summary() timescale confidence intervals are now gamma/inverse-gamma more inline with meta()</p></li>
-<li><p>progress bar added to optimizer() when trace=1</p></li>
-<li><p>bugfix in IID area CIs</p></li>
-<li><p>bugfix in ctmm.loglike() when fitting multiple error classes, where some are zero</p></li>
-<li><p>bugfix in ctmm.boot() when bias estimate exceeds variance parameter</p></li>
-<li><p>bugfixes in 3D akde()</p></li>
-<li><p>bugfix in time gridding code when dt is coarse</p></li>
-<li><p>bugfix in SpatialPoints.telemetry for single individuals</p></li>
+<ul><li>new function rsf.fit() to fit integrated resource selection functions (iRSFs) with autocorrelation-adjusted weighted likelihood</li>
+<li>new function mean.ctmm() to calculate population average movement models</li>
+<li>new function revisitation() to calculate the distribution of revisitations</li>
+<li>new function npr() to calculate non-parametric spatial regressions</li>
+<li>new function agde() to calculate autocorrelated Gaussian distribution estimates, with RSF support</li>
+<li>new function suitability() to calculate suitability rasters from RSF fit objects</li>
+<li>new function rates() to calculate relative encounter rates</li>
+<li>new function dt.plot() to inspect sampling intervals</li>
+<li>akde() and occurrence() now support RSF-informed kernels and boundary-respecting kernels</li>
+<li>summary.ctmm() now outputs diffusion rate estimates</li>
+<li>new argument variable for meta() to estimate population diffusion rates, mean speeds, and autocorrelation timescales</li>
+<li>new arguments R and SP in plot.telemetry() and plot.UD() for plotting raster and shapefile base layers</li>
+<li>new option method=“Encounter” in overlap()</li>
+<li>mean.UD() now propagates uncertainties</li>
+<li>mean.UD() now functions on occurrence distributions</li>
+<li>new convex argument to UD summary(), plot(), and export functions</li>
+<li>plot() and raster() now work on 3D UDs</li>
+<li>plot.outlie() now works on lists of outlie objects</li>
+<li>speed() output now includes DOF estimate for use with meta()</li>
+<li>tbind() now works correctly with different projections and calibrations</li>
+<li>%#% unit conversion operator can now interpret products and ratios</li>
+<li>summary() timescale confidence intervals are now gamma/inverse-gamma more inline with meta()</li>
+<li>progress bar added to optimizer() when trace=1</li>
+<li>bugfix in IID area CIs</li>
+<li>bugfix in ctmm.loglike() when fitting multiple error classes, where some are zero</li>
+<li>bugfix in ctmm.boot() when bias estimate exceeds variance parameter</li>
+<li>bugfixes in 3D akde()</li>
+<li>bugfix in time gridding code when dt is coarse</li>
+<li>bugfix in SpatialPoints.telemetry for single individuals</li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.6.1" id="ctmm-061-2021-07-26">ctmm 0.6.1 (2021-07-26)<small>2021-07-28</small><a class="anchor" aria-label="anchor" href="#ctmm-061-2021-07-26"></a></h2>
-<ul><li><p>ctmm.fit() can now fit multiple UERE parameters and update uncertain calibration parameter estimates</p></li>
-<li><p>new function cluster()</p></li>
-<li><p>new function video()</p></li>
-<li><p>new function as.sf()</p></li>
-<li><p>new function tbind()</p></li>
-<li><p>new argument VMM in simulate(), predict()</p></li>
-<li><p>new argument timeformat=“auto” in as.telemetry()</p></li>
-<li><p>new argument verbose in meta()</p></li>
-<li><p>uere()&lt;- can now assign posterior/updated error estimates from ctmm model objects</p></li>
-<li><p>bugfix in ctmm.loglike() for circle!=0 and REML</p></li>
-<li><p>bugfixes in optimzer()</p></li>
-<li><p>bugfix in ctmm.fit() for 1D processes</p></li>
-<li><p>bugfix in variogram.fit() for 1D processes</p></li>
-<li><p>bugfixes in simulate(), predict for 1D processes</p></li>
-<li><p>bugfix in ctmm.fit() with zero variance models</p></li>
-<li><p>bugfix in meta() colors when sort=TRUE</p></li>
-<li><p>bugfixes in ctmm.guess(), ctmm.fit(), speed() for tiny amounts of data</p></li>
-<li><p>bugfixes in occurrence(), Kalman smoother for IOU process</p></li>
-<li><p>ctmm.select() now stores IC and MSPE information for summary()</p></li>
-<li><p>extent objects now include missing columns</p></li>
-<li><p>extent object longitudes can now cross the international date line</p></li>
+<ul><li>ctmm.fit() can now fit multiple UERE parameters and update uncertain calibration parameter estimates</li>
+<li>new function cluster()</li>
+<li>new function video()</li>
+<li>new function as.sf()</li>
+<li>new function tbind()</li>
+<li>new argument VMM in simulate(), predict()</li>
+<li>new argument timeformat=“auto” in as.telemetry()</li>
+<li>new argument verbose in meta()</li>
+<li>uere()&lt;- can now assign posterior/updated error estimates from ctmm model objects</li>
+<li>bugfix in ctmm.loglike() for circle!=0 and REML</li>
+<li>bugfixes in optimzer()</li>
+<li>bugfix in ctmm.fit() for 1D processes</li>
+<li>bugfix in variogram.fit() for 1D processes</li>
+<li>bugfixes in simulate(), predict for 1D processes</li>
+<li>bugfix in ctmm.fit() with zero variance models</li>
+<li>bugfix in meta() colors when sort=TRUE</li>
+<li>bugfixes in ctmm.guess(), ctmm.fit(), speed() for tiny amounts of data</li>
+<li>bugfixes in occurrence(), Kalman smoother for IOU process</li>
+<li>ctmm.select() now stores IC and MSPE information for summary()</li>
+<li>extent objects now include missing columns</li>
+<li>extent object longitudes can now cross the international date line</li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.6.0" id="ctmm-060-2021-01-08">ctmm 0.6.0 (2021-01-08)<small>2021-01-10</small><a class="anchor" aria-label="anchor" href="#ctmm-060-2021-01-08"></a></h2>
-<ul><li><p>new function meta() for meta-analysis of home-range areas</p></li>
-<li><p>new function encounter() for the conditional distribution of encounters (CDE)</p></li>
-<li><p>new function distance() to calculate square Bhattacharyya, Mahalanobis, and Euclidean distances</p></li>
-<li><p>new function compass() to plot a north-pointing compass</p></li>
-<li><p>new argument ‘t’ in speed()</p></li>
-<li><p>new argument ‘axes’ in outlie()</p></li>
-<li><p>as.telemetry() now accepts most tibble objects</p></li>
-<li><p>akde() on multiple individuals is now more memory efficient</p></li>
-<li><p>bugfix in ctmm.fit() for IOU model</p></li>
-<li><p>bugfix in occurrence() with repeated timestamps</p></li>
-<li><p>bugfix in summary.ctmm() rowname droped for single parameter CIs</p></li>
-<li><p>bugfix in outlie() with list input</p></li>
-<li><p>bugfixes in plot.outlie with zero error</p></li>
-<li><p>bugfix in variogram() with res&gt;1 and CI=“Gauss”</p></li>
-<li><p>bugfix in ctmm.select() if stepping OU-&gt;OUf-&gt;OUF</p></li>
-<li><p>bugfix in as.telemetry() for Move objects with empty idData slot</p></li>
-<li><p>bugfix in as.telemetry(), median() when importing single location estimate</p></li>
-<li><p>bugfix in plot.telemery() with add=TRUE and non-SI units</p></li>
-<li><p>bugfix in speed() for ctmm objects (no data), where CIs were incorrect</p></li>
-<li><p>bugfix in median() with &gt;=50% repeating observations</p></li>
-<li><p>bugfix in summary() for periodic models with tau[velocity]==0</p></li>
-<li><p>bugfix in occurrence() for PDclamp() error</p></li>
-<li><p>bugfix in ctmm.select() giving incorrect model names when run indirectly</p></li>
-<li><p>bugfix in occurrence() with IID autocorrelation model</p></li>
-<li><p>workaround in export functions where sp objects change timezones</p></li>
-<li><p>workaround in as.telemetry() when Move idData() names are dropped</p></li>
-<li><p>workaround in plot.UD() when image() has alpha overflow</p></li>
-<li><p>improvements to akde(), occurrence() grid argument when incomplete</p></li>
-<li><p>improvements to overlap() Wishart approximation in bias correction</p></li>
-<li><p>improvements to cleave()</p></li>
+<ul><li>new function meta() for meta-analysis of home-range areas</li>
+<li>new function encounter() for the conditional distribution of encounters (CDE)</li>
+<li>new function distance() to calculate square Bhattacharyya, Mahalanobis, and Euclidean distances</li>
+<li>new function compass() to plot a north-pointing compass</li>
+<li>new argument ‘t’ in speed()</li>
+<li>new argument ‘axes’ in outlie()</li>
+<li>as.telemetry() now accepts most tibble objects</li>
+<li>akde() on multiple individuals is now more memory efficient</li>
+<li>bugfix in ctmm.fit() for IOU model</li>
+<li>bugfix in occurrence() with repeated timestamps</li>
+<li>bugfix in summary.ctmm() rowname droped for single parameter CIs</li>
+<li>bugfix in outlie() with list input</li>
+<li>bugfixes in plot.outlie with zero error</li>
+<li>bugfix in variogram() with res&gt;1 and CI=“Gauss”</li>
+<li>bugfix in ctmm.select() if stepping OU-&gt;OUf-&gt;OUF</li>
+<li>bugfix in as.telemetry() for Move objects with empty idData slot</li>
+<li>bugfix in as.telemetry(), median() when importing single location estimate</li>
+<li>bugfix in plot.telemery() with add=TRUE and non-SI units</li>
+<li>bugfix in speed() for ctmm objects (no data), where CIs were incorrect</li>
+<li>bugfix in median() with &gt;=50% repeating observations</li>
+<li>bugfix in summary() for periodic models with tau[velocity]==0</li>
+<li>bugfix in occurrence() for PDclamp() error</li>
+<li>bugfix in ctmm.select() giving incorrect model names when run indirectly</li>
+<li>bugfix in occurrence() with IID autocorrelation model</li>
+<li>workaround in export functions where sp objects change timezones</li>
+<li>workaround in as.telemetry() when Move idData() names are dropped</li>
+<li>workaround in plot.UD() when image() has alpha overflow</li>
+<li>improvements to akde(), occurrence() grid argument when incomplete</li>
+<li>improvements to overlap() Wishart approximation in bias correction</li>
+<li>improvements to cleave()</li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.5.10" id="ctmm-0510-2020-05-04">ctmm 0.5.10 (2020-05-04)<small>2020-05-07</small><a class="anchor" aria-label="anchor" href="#ctmm-0510-2020-05-04"></a></h2>
-<ul><li><p>as.telemetry() location class code improved</p></li>
-<li><p>as.telemetry() message for marked outliers</p></li>
-<li><p>jaguar data in sync with ctmmweb</p></li>
+<ul><li>as.telemetry() location class code improved</li>
+<li>as.telemetry() message for marked outliers</li>
+<li>jaguar data in sync with ctmmweb</li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.5.9" id="ctmm-059-2020-03-23">ctmm 0.5.9 (2020-03-23)<small>2020-03-23</small><a class="anchor" aria-label="anchor" href="#ctmm-059-2020-03-23"></a></h2>
-<ul><li><p>new argument CI=“Gauss” in variogram()</p></li>
-<li><p>new argument weights in mean.UD()</p></li>
-<li><p>new argument datum in as.telemetry() – input and ouput datums can now differ</p></li>
-<li><p>new data ‘jaguar’</p></li>
-<li><p>bugfix in ctmm.select() for infinte loop</p></li>
-<li><p>improvements in ctmm.select, ctmm.loglike for collapsing variance/error estimates</p></li>
-<li><p>rewrite of optimizer’s line search to be more exact &amp; reliable</p></li>
-<li><p>improvements in optimizer for degenerate likelihood surfaces</p></li>
-<li><p>improvements in optimization for bad covariance estimates—fit object structure changed</p></li>
-<li><p>bugfix in uere.fit with multiple location classes in different orders</p></li>
-<li><p>bugfix in speed when fast=FALSE and sampled models lose features</p></li>
-<li><p>bugfix in IID pREML CIs</p></li>
-<li><p>bugfix in ctmm.guess with large errors causing eigen() to fail</p></li>
-<li><p>bugfix in optimizer expansion search step size not increasing</p></li>
-<li><p>bugfix in as.telemetry() – MoveStack objects are given a common projection if not projected</p></li>
+<ul><li>new argument CI=“Gauss” in variogram()</li>
+<li>new argument weights in mean.UD()</li>
+<li>new argument datum in as.telemetry() – input and ouput datums can now differ</li>
+<li>new data ‘jaguar’</li>
+<li>bugfix in ctmm.select() for infinte loop</li>
+<li>improvements in ctmm.select, ctmm.loglike for collapsing variance/error estimates</li>
+<li>rewrite of optimizer’s line search to be more exact &amp; reliable</li>
+<li>improvements in optimizer for degenerate likelihood surfaces</li>
+<li>improvements in optimization for bad covariance estimates—fit object structure changed</li>
+<li>bugfix in uere.fit with multiple location classes in different orders</li>
+<li>bugfix in speed when fast=FALSE and sampled models lose features</li>
+<li>bugfix in IID pREML CIs</li>
+<li>bugfix in ctmm.guess with large errors causing eigen() to fail</li>
+<li>bugfix in optimizer expansion search step size not increasing</li>
+<li>bugfix in as.telemetry() – MoveStack objects are given a common projection if not projected</li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.5.8" id="ctmm-058-2019-12-09">ctmm 0.5.8 (2019-12-09)<small>2019-12-11</small><a class="anchor" aria-label="anchor" href="#ctmm-058-2019-12-09"></a></h2>
-<ul><li><p>improvements to ctmm.select() stepwise selection, especially with error and/or circulation</p></li>
-<li><p>improvements to ctmm.fit() for nearly linear home ranges</p></li>
-<li><p>improvements to %#% operator – units of speed supported</p></li>
-<li><p>bugfix in ctmm.loglike() for BM/IOU models with error</p></li>
-<li><p>new argument units in plot.outlie()</p></li>
-<li><p>new options(time.units=‘mean’) and options(time.units=‘calendar’) for %#% operator and display units</p></li>
-<li><p>ctmm.select() no longer warns when model features are not supported (ctmm.fit does)</p></li>
-<li><p>compatibility fix for R version 4</p></li>
+<ul><li>improvements to ctmm.select() stepwise selection, especially with error and/or circulation</li>
+<li>improvements to ctmm.fit() for nearly linear home ranges</li>
+<li>improvements to %#% operator – units of speed supported</li>
+<li>bugfix in ctmm.loglike() for BM/IOU models with error</li>
+<li>new argument units in plot.outlie()</li>
+<li>new options(time.units=‘mean’) and options(time.units=‘calendar’) for %#% operator and display units</li>
+<li>ctmm.select() no longer warns when model features are not supported (ctmm.fit does)</li>
+<li>compatibility fix for R version 4</li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.5.7" id="ctmm-057-2019-10-06">ctmm 0.5.7 (2019-10-06)<small>2019-10-07</small><a class="anchor" aria-label="anchor" href="#ctmm-057-2019-10-06"></a></h2>
-<ul><li><p>new function optimizer()</p></li>
-<li><p>new function SpatialPolygonsDataFrame.telemetry() for location estimate error circles/ellipses</p></li>
-<li><p>‘pNewton’ now the default optimization method</p></li>
-<li><p>‘pHREML’ now the default estimator &amp; all CI names updated</p></li>
-<li><p>grid argument now supported in akde and occurrence methods</p></li>
-<li><p>outlie() output now includes CIs with plot method</p></li>
-<li><p>error-adjusted variogram implemented when fast=FALSE</p></li>
-<li><p>LOOCV now supported in ctmm.select(), summary()</p></li>
-<li><p>new buffer argument in occurrence()</p></li>
-<li><p>head(), tail() methods for telemetry objects</p></li>
-<li><p>str() method for ctmm objects</p></li>
-<li><p>new data object ‘pelican’</p></li>
-<li><p>SpatialPointsDataFrame now includes timestamp</p></li>
-<li><p>uere(data) &lt;- numeric now overrides all location classes</p></li>
-<li><p>improved support for ARGOS-GPS hybrid data</p></li>
-<li><p>missing DOP values now correctly treated as separate location class</p></li>
-<li><p>bugfix in conditional simulations with dt argument</p></li>
-<li><p>bugfix in plot.UD gridlines</p></li>
-<li><p>bugfix in as.telemetry timeout argument when datasets lack timed-out values</p></li>
-<li><p>stability fixes in ctmm.fit() for BM/IOU models</p></li>
-<li><p>further stability enhancements in ctmm.loglike() and optimizer</p></li>
-<li><p>bugfix in simultaneously fit RMS UERE CIs</p></li>
-<li><p>AICc formulas fixed for tiny n</p></li>
-<li><p>reduced Z^2 now exactly normalized in UERE objects</p></li>
-<li><p>minor enhancements to cleave() function</p></li>
-<li><p>as.telemetry() no longer automatically calibrates e-obs errors (inconsistent with newer devices)</p></li>
-<li><p>as.telemetry() no longer complains on reverse-time-ordered files</p></li>
+<ul><li>new function optimizer()</li>
+<li>new function SpatialPolygonsDataFrame.telemetry() for location estimate error circles/ellipses</li>
+<li>‘pNewton’ now the default optimization method</li>
+<li>‘pHREML’ now the default estimator &amp; all CI names updated</li>
+<li>grid argument now supported in akde and occurrence methods</li>
+<li>outlie() output now includes CIs with plot method</li>
+<li>error-adjusted variogram implemented when fast=FALSE</li>
+<li>LOOCV now supported in ctmm.select(), summary()</li>
+<li>new buffer argument in occurrence()</li>
+<li>head(), tail() methods for telemetry objects</li>
+<li>str() method for ctmm objects</li>
+<li>new data object ‘pelican’</li>
+<li>SpatialPointsDataFrame now includes timestamp</li>
+<li>uere(data) &lt;- numeric now overrides all location classes</li>
+<li>improved support for ARGOS-GPS hybrid data</li>
+<li>missing DOP values now correctly treated as separate location class</li>
+<li>bugfix in conditional simulations with dt argument</li>
+<li>bugfix in plot.UD gridlines</li>
+<li>bugfix in as.telemetry timeout argument when datasets lack timed-out values</li>
+<li>stability fixes in ctmm.fit() for BM/IOU models</li>
+<li>further stability enhancements in ctmm.loglike() and optimizer</li>
+<li>bugfix in simultaneously fit RMS UERE CIs</li>
+<li>AICc formulas fixed for tiny n</li>
+<li>reduced Z^2 now exactly normalized in UERE objects</li>
+<li>minor enhancements to cleave() function</li>
+<li>as.telemetry() no longer automatically calibrates e-obs errors (inconsistent with newer devices)</li>
+<li>as.telemetry() no longer complains on reverse-time-ordered files</li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.5.6" id="ctmm-056-2019-05-14">ctmm 0.5.6 (2019-05-14)<small>2019-05-15</small><a class="anchor" aria-label="anchor" href="#ctmm-056-2019-05-14"></a></h2>
-<ul><li><p>new functions lasso, marquee, and cleave</p></li>
-<li><p>new functions annotate and color</p></li>
-<li><p>summary can now compare joint UERE objects to lists of individualized UERE objects</p></li>
-<li><p>support for UTM locations in as.telemetry</p></li>
-<li><p>support for GPS-ARGOS hybrid data in as.telemetry &amp; uere.fit</p></li>
-<li><p>new plot option ext for extent objects</p></li>
-<li><p>increased numerical precision in ctmm.loglike for 0 &lt; dt &lt;&lt; tau, including the limit OU/OUF -&gt; BM/OU</p></li>
-<li><p>BM/IOU model likelihoods are now exact limits of OU/OUF likelihoods modulo a constant</p></li>
-<li><p>covariance matrices can now take arbitrary eccentricty and scale</p></li>
-<li><p>ctmm.boot new argument iterate=FALSE and bugfixes for iterate=TRUE</p></li>
-<li><p>ctmm.boot now debiases the covariance matrix directly (linearly)</p></li>
-<li><p>occurrence default dt.max &amp; cor.min arguments now tighter</p></li>
-<li><p>periodogram functionality restored for one-dimensional data</p></li>
-<li><p>bugfix in IID ctmm.fit with elliptical errors</p></li>
-<li><p>bugfix in occurrence when projection origin is far from the mean location</p></li>
-<li><p>bugfix in akde.list where location errors were not smoothed</p></li>
-<li><p>bugfix in ctmm.guess/variogram.fit for BM/IOU models</p></li>
-<li><p>bugfix in speed for IOU models</p></li>
-<li><p>e-obs calibration cross checked and fixed</p></li>
-<li><p>ctmm.loglike now returns -Inf when movement and error variance are zero</p></li>
-<li><p>stability improvements to base R optimizer usage</p></li>
-<li><p>bugfix in mark.rm argument of as.telemetry</p></li>
-<li><p>cores option added to ctmm.select</p></li>
-<li><p>only physical cores now counted by cores arguments</p></li>
-<li><p>cores option now used in Windows when appropriate</p></li>
-<li><p>improvements to speed, speeds, ctmm.select for short tracks of data</p></li>
+<ul><li>new functions lasso, marquee, and cleave</li>
+<li>new functions annotate and color</li>
+<li>summary can now compare joint UERE objects to lists of individualized UERE objects</li>
+<li>support for UTM locations in as.telemetry</li>
+<li>support for GPS-ARGOS hybrid data in as.telemetry &amp; uere.fit</li>
+<li>new plot option ext for extent objects</li>
+<li>increased numerical precision in ctmm.loglike for 0 &lt; dt &lt;&lt; tau, including the limit OU/OUF -&gt; BM/OU</li>
+<li>BM/IOU model likelihoods are now exact limits of OU/OUF likelihoods modulo a constant</li>
+<li>covariance matrices can now take arbitrary eccentricty and scale</li>
+<li>ctmm.boot new argument iterate=FALSE and bugfixes for iterate=TRUE</li>
+<li>ctmm.boot now debiases the covariance matrix directly (linearly)</li>
+<li>occurrence default dt.max &amp; cor.min arguments now tighter</li>
+<li>periodogram functionality restored for one-dimensional data</li>
+<li>bugfix in IID ctmm.fit with elliptical errors</li>
+<li>bugfix in occurrence when projection origin is far from the mean location</li>
+<li>bugfix in akde.list where location errors were not smoothed</li>
+<li>bugfix in ctmm.guess/variogram.fit for BM/IOU models</li>
+<li>bugfix in speed for IOU models</li>
+<li>e-obs calibration cross checked and fixed</li>
+<li>ctmm.loglike now returns -Inf when movement and error variance are zero</li>
+<li>stability improvements to base R optimizer usage</li>
+<li>bugfix in mark.rm argument of as.telemetry</li>
+<li>cores option added to ctmm.select</li>
+<li>only physical cores now counted by cores arguments</li>
+<li>cores option now used in Windows when appropriate</li>
+<li>improvements to speed, speeds, ctmm.select for short tracks of data</li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.5.5" id="ctmm-055-2019-02-11">ctmm 0.5.5 (2019-02-11)<small>2019-02-11</small><a class="anchor" aria-label="anchor" href="#ctmm-055-2019-02-11"></a></h2>
-<ul><li><p>bugfix in summary where timescale CIs were always (0,Inf)</p></li>
-<li><p>ctmm.select default now level=1</p></li>
-<li><p>summary on UERE lists now works with more than one axis</p></li>
-<li><p>R dependency increased to &gt;=3.5 for parallel functions</p></li>
+<ul><li>bugfix in summary where timescale CIs were always (0,Inf)</li>
+<li>ctmm.select default now level=1</li>
+<li>summary on UERE lists now works with more than one axis</li>
+<li>R dependency increased to &gt;=3.5 for parallel functions</li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.5.4" id="ctmm-054-2019-02-07">ctmm 0.5.4 (2019-02-07)<small>2019-02-08</small><a class="anchor" aria-label="anchor" href="#ctmm-054-2019-02-07"></a></h2>
-<ul><li><p>bugfix in ctmm.select where OU was not considered over the new OUO/OUf models introduced in v0.5.3</p></li>
-<li><p>bugfix in ctmm.boot for heteroskedastic errors</p></li>
-<li><p>multiplicative option depreciated from ctmm.boot</p></li>
+<ul><li>bugfix in ctmm.select where OU was not considered over the new OUO/OUf models introduced in v0.5.3</li>
+<li>bugfix in ctmm.boot for heteroskedastic errors</li>
+<li>multiplicative option depreciated from ctmm.boot</li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.5.3" id="ctmm-053-2019-01-29">ctmm 0.5.3 (2019-01-29)<small>2019-01-31</small><a class="anchor" aria-label="anchor" href="#ctmm-053-2019-01-29"></a></h2>
-<ul><li><p>oscillatory (and critically damped) OUO/OUf models now supported, starting with omega option of ctmm()</p></li>
-<li><p>summary() now works on lists of UERE objects for error model selection</p></li>
-<li><p>MSPE slots &amp; arguments restructured and fully utilized in both summary and ctmm.select</p></li>
-<li><p>new method speeds() for estimating instantaneous speeds</p></li>
-<li><p>speed() more efficient on very coarse data, slightly improved CIs</p></li>
-<li><p>new complete argument in simulate() and predict() to calculate timestamps and geographic coordinates</p></li>
-<li><p>now avoiding fastPOSIXct timezone and epoch issues in as.telemetry</p></li>
-<li><p>outlie() now works on lists of telemetry objects</p></li>
-<li><p>bugfixes in overlap() CIs</p></li>
-<li><p>overlap() now robust to bad model fits</p></li>
-<li><p>new as.telemetry() argument mark.rm to delete marked outliers</p></li>
-<li><p>bugfix in predict() &amp; occurrence() where eccentricity was dropped from covariances</p></li>
-<li><p>projection information in Move &amp; MoveStack objects now preserved if possible</p></li>
-<li><p>identities preserved with newer MoveStack objects</p></li>
-<li><p>ctmm.boot() better handles parameter estimation near boundaries</p></li>
-<li><p>e-obs data with missing error/speed/altitude now importing correctly in as.telemetry</p></li>
-<li><p>correlogram plots now cap estimates to appropriate range</p></li>
-<li><p>beta optimizer now more aggressive in searching along boundaries</p></li>
-<li><p>bugfix in ctmm.fit with duplicate timestamps and IID processes without error</p></li>
-<li><p>bugfix in ctmm.select with pREML &amp; error</p></li>
-<li><p>summary() on telemetry lists no longer fails on length-1 timeseries</p></li>
-<li><p>years updated to tropical years and calendar days updated to stellar days</p></li>
+<ul><li>oscillatory (and critically damped) OUO/OUf models now supported, starting with omega option of ctmm()</li>
+<li>summary() now works on lists of UERE objects for error model selection</li>
+<li>MSPE slots &amp; arguments restructured and fully utilized in both summary and ctmm.select</li>
+<li>new method speeds() for estimating instantaneous speeds</li>
+<li>speed() more efficient on very coarse data, slightly improved CIs</li>
+<li>new complete argument in simulate() and predict() to calculate timestamps and geographic coordinates</li>
+<li>now avoiding fastPOSIXct timezone and epoch issues in as.telemetry</li>
+<li>outlie() now works on lists of telemetry objects</li>
+<li>bugfixes in overlap() CIs</li>
+<li>overlap() now robust to bad model fits</li>
+<li>new as.telemetry() argument mark.rm to delete marked outliers</li>
+<li>bugfix in predict() &amp; occurrence() where eccentricity was dropped from covariances</li>
+<li>projection information in Move &amp; MoveStack objects now preserved if possible</li>
+<li>identities preserved with newer MoveStack objects</li>
+<li>ctmm.boot() better handles parameter estimation near boundaries</li>
+<li>e-obs data with missing error/speed/altitude now importing correctly in as.telemetry</li>
+<li>correlogram plots now cap estimates to appropriate range</li>
+<li>beta optimizer now more aggressive in searching along boundaries</li>
+<li>bugfix in ctmm.fit with duplicate timestamps and IID processes without error</li>
+<li>bugfix in ctmm.select with pREML &amp; error</li>
+<li>summary() on telemetry lists no longer fails on length-1 timeseries</li>
+<li>years updated to tropical years and calendar days updated to stellar days</li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.5.2" id="ctmm-052-2018-09-10">ctmm 0.5.2 (2018-09-10)<small>2018-09-10</small><a class="anchor" aria-label="anchor" href="#ctmm-052-2018-09-10"></a></h2>
-<ul><li><p>location classes (multiple UEREs) now supported by uere.fit() and uere()&lt;-</p></li>
-<li><p>uere() forked into separate uere() and uere.fit() methods</p></li>
-<li><p>AICc slot included in UERE objects for error model selection</p></li>
-<li><p>overlap() telemetry and CTMM arguments depreciated</p></li>
-<li><p>fixed bug in as.telemetry() when importing ARGOS error ellipses</p></li>
-<li><p>e-obs error calibration updated</p></li>
-<li><p>numerical stability increased in ctmm.fit when distance scales are extreme</p></li>
+<ul><li>location classes (multiple UEREs) now supported by uere.fit() and uere()&lt;-</li>
+<li>uere() forked into separate uere() and uere.fit() methods</li>
+<li>AICc slot included in UERE objects for error model selection</li>
+<li>overlap() telemetry and CTMM arguments depreciated</li>
+<li>fixed bug in as.telemetry() when importing ARGOS error ellipses</li>
+<li>e-obs error calibration updated</li>
+<li>numerical stability increased in ctmm.fit when distance scales are extreme</li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.5.1" id="ctmm-051-2018-08-06">ctmm 0.5.1 (2018-08-06)<small>2018-08-07</small><a class="anchor" aria-label="anchor" href="#ctmm-051-2018-08-06"></a></h2>
-<ul><li><p>Units of measurement down to microns and microseconds now supported</p></li>
-<li><p>ctmm.select() now builds up autocovariance features stepwise to help with fit convergence</p></li>
-<li><p>residuals() can now be calculated from (calibrated) calibration data—diagnostic argument removed from uere()</p></li>
-<li><p>summary.ctmm() now returns DOF[speed] information on individuals</p></li>
-<li><p>MSPE of ctmm objects was previously w.r.t. in-sample times and is now time averaged</p></li>
-<li><p>summary.list.ctmm() now returns MSPE when useful</p></li>
-<li><p>new speed() argument robust for coarse data</p></li>
-<li><p>options multiplicative &amp; robust added to ctmm.boot to help with parameters near boundaries</p></li>
-<li><p>E-OBS errors adjusted by empirical results of Scott LaPoint’s calibration data</p></li>
-<li><p>Telonics Gen4 errors estimates imported with results of Patricia Medici’s calibration data — Quick Fixes not yet fully supported</p></li>
-<li><p>fixed critical bug in speed()</p></li>
-<li><p>fixed bug in as.telemetry with projection argument</p></li>
-<li><p>fixed bugs in ctmm.loglike when !isotropic &amp;&amp; error &amp;&amp; circle</p></li>
-<li><p>fixed bug in emulate when fast=FALSE and error=TRUE</p></li>
-<li><p>fixed bug in new variogram error calculations (v0.5.0) used for plotting</p></li>
-<li><p>simultaneously fitted UERE’s from ctmm slot “error” can now be assigned to data for plotting</p></li>
+<ul><li>Units of measurement down to microns and microseconds now supported</li>
+<li>ctmm.select() now builds up autocovariance features stepwise to help with fit convergence</li>
+<li>residuals() can now be calculated from (calibrated) calibration data—diagnostic argument removed from uere()</li>
+<li>summary.ctmm() now returns DOF[speed] information on individuals</li>
+<li>MSPE of ctmm objects was previously w.r.t. in-sample times and is now time averaged</li>
+<li>summary.list.ctmm() now returns MSPE when useful</li>
+<li>new speed() argument robust for coarse data</li>
+<li>options multiplicative &amp; robust added to ctmm.boot to help with parameters near boundaries</li>
+<li>E-OBS errors adjusted by empirical results of Scott LaPoint’s calibration data</li>
+<li>Telonics Gen4 errors estimates imported with results of Patricia Medici’s calibration data — Quick Fixes not yet fully supported</li>
+<li>fixed critical bug in speed()</li>
+<li>fixed bug in as.telemetry with projection argument</li>
+<li>fixed bugs in ctmm.loglike when !isotropic &amp;&amp; error &amp;&amp; circle</li>
+<li>fixed bug in emulate when fast=FALSE and error=TRUE</li>
+<li>fixed bug in new variogram error calculations (v0.5.0) used for plotting</li>
+<li>simultaneously fitted UERE’s from ctmm slot “error” can now be assigned to data for plotting</li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.5.0" id="ctmm-050-2018-05-15">ctmm 0.5.0 (2018-05-15)<small>2018-05-16</small><a class="anchor" aria-label="anchor" href="#ctmm-050-2018-05-15"></a></h2>
-<ul><li><p>Extensive re-write of the Kalman filter &amp; smoother, now supporting an arbitrary number of spatial dimensions, necessary for ARGOS error ellipse support. (Previously, all multi-dimensional problems were transformed into multiple one-dimensional problems.) Many new models will be supported going forward, based on the v0.5.0 code.</p></li>
-<li><p>telemetry error vignette “error”</p></li>
-<li><p>ARGOS error ellipse support in ctmm.fit() and simulate()</p></li>
-<li><p>plotted variogram errors now estimated from HDOP and no longer assumed to be homoskedastic</p></li>
-<li><p>as.telemetry() default projections now use robust ellipsoidal statistics</p></li>
-<li><p>new median.telemetry() method for help with projecting data</p></li>
-<li><p>(anisotropic &amp; circulation &amp; error) models now exact with 2D Kalman filter &amp; smoother</p></li>
-<li><p>simulate() &amp; predict() velocities now correct with mean=“periodic”</p></li>
-<li><p>units argument in speed()</p></li>
-<li><p>REML and related methods fixed from 0.4.X 1/2 bug</p></li>
-<li><p>ctmm.loglike COV[mu] bugfix for circular error &amp; elliptical movement</p></li>
-<li><p>summary() rotation % bugfix with circle=TRUE</p></li>
-<li><p>parameter boundary bugfix in ctmm.fit() and ctmm.loglike()</p></li>
-<li><p>fixed bandwidth() bug when weights=TRUE on IID process</p></li>
-<li><p>variogram.fit() manipulate more appropriate with calibrated errors</p></li>
-<li><p>fixed bug in plot.variogram for isotropic model fits</p></li>
-<li><p>fixed bug in ctmm.fit with fitted errors and any(diff(t)==0)</p></li>
-<li><p>fixed bug in plot.variogram() from stats::qchisq() with k&lt;&lt;1</p></li>
+<ul><li>Extensive re-write of the Kalman filter &amp; smoother, now supporting an arbitrary number of spatial dimensions, necessary for ARGOS error ellipse support. (Previously, all multi-dimensional problems were transformed into multiple one-dimensional problems.) Many new models will be supported going forward, based on the v0.5.0 code.</li>
+<li>telemetry error vignette “error”</li>
+<li>ARGOS error ellipse support in ctmm.fit() and simulate()</li>
+<li>plotted variogram errors now estimated from HDOP and no longer assumed to be homoskedastic</li>
+<li>as.telemetry() default projections now use robust ellipsoidal statistics</li>
+<li>new median.telemetry() method for help with projecting data</li>
+<li>(anisotropic &amp; circulation &amp; error) models now exact with 2D Kalman filter &amp; smoother</li>
+<li>simulate() &amp; predict() velocities now correct with mean=“periodic”</li>
+<li>units argument in speed()</li>
+<li>REML and related methods fixed from 0.4.X 1/2 bug</li>
+<li>ctmm.loglike COV[mu] bugfix for circular error &amp; elliptical movement</li>
+<li>summary() rotation % bugfix with circle=TRUE</li>
+<li>parameter boundary bugfix in ctmm.fit() and ctmm.loglike()</li>
+<li>fixed bandwidth() bug when weights=TRUE on IID process</li>
+<li>variogram.fit() manipulate more appropriate with calibrated errors</li>
+<li>fixed bug in plot.variogram for isotropic model fits</li>
+<li>fixed bug in ctmm.fit with fitted errors and any(diff(t)==0)</li>
+<li>fixed bug in plot.variogram() from stats::qchisq() with k&lt;&lt;1</li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.4.2" id="ctmm-042-2018-02-12">ctmm 0.4.2 (2018-02-12)<a class="anchor" aria-label="anchor" href="#ctmm-042-2018-02-12"></a></h2>
-<ul><li><p>new speed() method</p></li>
-<li><p>new ctmm.boot() method</p></li>
-<li><p>new outlie() method</p></li>
-<li><p>new export functionality for telemetry class</p></li>
-<li><p>overlap debias=TRUE option (approximate)</p></li>
-<li><p>pHREML, pREML, HREML ctmm.fit methods implemented and documented</p></li>
-<li><p>IID pREML &amp; REML AICc values implemented</p></li>
-<li><p>MSPE values implemented</p></li>
-<li><p>new uere()&lt;- assignment method</p></li>
-<li><p>velocity esimtates now included in predict() [fitting one model to multiple behaviors can result in wildly optimistic confidence intervals]</p></li>
-<li><p>velocities now included in simulate()</p></li>
-<li><p>simulate precompute option</p></li>
-<li><p>as.telemetry drop=TRUE option</p></li>
-<li><p>as.telemetry will no longer drop individuals with missing data columns</p></li>
-<li><p>as.telemetry will try to approximate DOP values</p></li>
-<li><p>as.telemetry imports velocity vectors</p></li>
-<li><p>as.telemetry default projection orientation now robust with GmedianCOV</p></li>
-<li><p>plot.UD resolution grid less obnoxious, NA/FALSE contour label option</p></li>
-<li><p>plot.telemetry error=0:3 options for data with recorded error circles/ellipses</p></li>
-<li><p>plot.telemetry velocity=TRUE option for data with recorded velocities</p></li>
-<li><p>plot.variogram bugfixes with telemetry errors</p></li>
-<li><p>fixed AIC bug in new parameterization code (0.4.0-0.4.1) where isotropic=TRUE model would never be selected</p></li>
-<li><p>fixed rare endless loop in akde/bandwidth with weights=TRUE</p></li>
-<li><p>outlier removed from buffalo$Cilla</p></li>
+<ul><li>new speed() method</li>
+<li>new ctmm.boot() method</li>
+<li>new outlie() method</li>
+<li>new export functionality for telemetry class</li>
+<li>overlap debias=TRUE option (approximate)</li>
+<li>pHREML, pREML, HREML ctmm.fit methods implemented and documented</li>
+<li>IID pREML &amp; REML AICc values implemented</li>
+<li>MSPE values implemented</li>
+<li>new uere()&lt;- assignment method</li>
+<li>velocity esimtates now included in predict() [fitting one model to multiple behaviors can result in wildly optimistic confidence intervals]</li>
+<li>velocities now included in simulate()</li>
+<li>simulate precompute option</li>
+<li>as.telemetry drop=TRUE option</li>
+<li>as.telemetry will no longer drop individuals with missing data columns</li>
+<li>as.telemetry will try to approximate DOP values</li>
+<li>as.telemetry imports velocity vectors</li>
+<li>as.telemetry default projection orientation now robust with GmedianCOV</li>
+<li>plot.UD resolution grid less obnoxious, NA/FALSE contour label option</li>
+<li>plot.telemetry error=0:3 options for data with recorded error circles/ellipses</li>
+<li>plot.telemetry velocity=TRUE option for data with recorded velocities</li>
+<li>plot.variogram bugfixes with telemetry errors</li>
+<li>fixed AIC bug in new parameterization code (0.4.0-0.4.1) where isotropic=TRUE model would never be selected</li>
+<li>fixed rare endless loop in akde/bandwidth with weights=TRUE</li>
+<li>outlier removed from buffalo$Cilla</li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.4.1" id="ctmm-041-2017-08-30">ctmm 0.4.1 (2017-08-30)<small>2017-08-30</small><a class="anchor" aria-label="anchor" href="#ctmm-041-2017-08-30"></a></h2>
 <ul><li>projection method for ctmm objects</li></ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.4.0" id="ctmm-040-2017-08-29">ctmm 0.4.0 (2017-08-29)<small>2017-08-29</small><a class="anchor" aria-label="anchor" href="#ctmm-040-2017-08-29"></a></h2>
-<ul><li><p>periodigram vignette</p></li>
-<li><p>new utility function %#% for unit conversions</p></li>
-<li><p>new model-fit sampling function “emulate”</p></li>
-<li><p>summary now works on lists of telemetry objects</p></li>
-<li><p>new extent method for variogram objects</p></li>
-<li><p>bugfixes in plot.variogram with fit UERE, tau==0</p></li>
-<li><p>bugfixes with ctmm.fit/select/summary near boundaries</p></li>
-<li><p>resetting Polak–Ribiere formula in weighted AKDE conjugate gradient routine</p></li>
-<li><p>read.table fallback in as.telmetry</p></li>
-<li><p>R 3.4 compatibility fixes</p></li>
-<li><p>various improvements to plot.variogram</p></li>
-<li><p>plot.UD &amp; export can now accept multiple level.UD values</p></li>
-<li><p>increased numerical precision in ctmm.loglike</p></li>
-<li><p>SI speeds &amp; diffusion fixed with units=FALSE</p></li>
+<ul><li>periodigram vignette</li>
+<li>new utility function %#% for unit conversions</li>
+<li>new model-fit sampling function “emulate”</li>
+<li>summary now works on lists of telemetry objects</li>
+<li>new extent method for variogram objects</li>
+<li>bugfixes in plot.variogram with fit UERE, tau==0</li>
+<li>bugfixes with ctmm.fit/select/summary near boundaries</li>
+<li>resetting Polak–Ribiere formula in weighted AKDE conjugate gradient routine</li>
+<li>read.table fallback in as.telmetry</li>
+<li>R 3.4 compatibility fixes</li>
+<li>various improvements to plot.variogram</li>
+<li>plot.UD &amp; export can now accept multiple level.UD values</li>
+<li>increased numerical precision in ctmm.loglike</li>
+<li>SI speeds &amp; diffusion fixed with units=FALSE</li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.3.6" id="ctmm-036-2017-04-23">ctmm 0.3.6 (2017-04-23)<small>2017-04-24</small><a class="anchor" aria-label="anchor" href="#ctmm-036-2017-04-23"></a></h2>
-<ul><li><p>AICc formulas updated from univariate to multivariate</p></li>
-<li><p>ctmm.select more aggressive on small sample sizes where AICc &gt;&gt; AIC</p></li>
-<li><p>new residuals and correlogram functions</p></li>
-<li><p>ctmm.fit now has unified options controling optimization &amp; differentiation</p></li>
-<li><p>ctmm.fit Hessian and pREML calculations 2x faster</p></li>
-<li><p>new writeRaster method for UD objects</p></li>
-<li><p>better UD plot boxes with new extent methods</p></li>
-<li><p>variogram fast=TRUE less biased for irregular data with new res&gt;1 option</p></li>
-<li><p>variogram fast=FALSE more robust to irregularity</p></li>
-<li><p>akde() can now handle duplicate times (with an error model)</p></li>
-<li><p>plot.variogram bugfix for fixed error models [still not quite correct]</p></li>
-<li><p>Column name preferences in as.telemetry</p></li>
-<li><p>as.telemetry faster with fread &amp; fastPOSIXct</p></li>
-<li><p>new trace option for ctmm.fit</p></li>
-<li><p>new labels option for plot.UD</p></li>
-<li><p>more robust CIs for pREML, REML</p></li>
-<li><p>chi-square CIs (area, semi-variance, etc.) more robust when DOF&lt;1</p></li>
+<ul><li>AICc formulas updated from univariate to multivariate</li>
+<li>ctmm.select more aggressive on small sample sizes where AICc &gt;&gt; AIC</li>
+<li>new residuals and correlogram functions</li>
+<li>ctmm.fit now has unified options controling optimization &amp; differentiation</li>
+<li>ctmm.fit Hessian and pREML calculations 2x faster</li>
+<li>new writeRaster method for UD objects</li>
+<li>better UD plot boxes with new extent methods</li>
+<li>variogram fast=TRUE less biased for irregular data with new res&gt;1 option</li>
+<li>variogram fast=FALSE more robust to irregularity</li>
+<li>akde() can now handle duplicate times (with an error model)</li>
+<li>plot.variogram bugfix for fixed error models [still not quite correct]</li>
+<li>Column name preferences in as.telemetry</li>
+<li>as.telemetry faster with fread &amp; fastPOSIXct</li>
+<li>new trace option for ctmm.fit</li>
+<li>new labels option for plot.UD</li>
+<li>more robust CIs for pREML, REML</li>
+<li>chi-square CIs (area, semi-variance, etc.) more robust when DOF&lt;1</li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.3.5" id="ctmm-035-2017-02-01">ctmm 0.3.5 (2017-02-01)<small>2017-02-03</small><a class="anchor" aria-label="anchor" href="#ctmm-035-2017-02-01"></a></h2>
-<ul><li><p>added a FAQ page to the documentation help(“ctmm-FAQ”)</p></li>
-<li><p>bugfix in occurrence method for BM &amp; IOU models</p></li>
-<li><p>unit conversion can now be disabled in summary with units=FALSE argument</p></li>
-<li><p>added trace option to ctmm.select &amp; bandwidth/akde</p></li>
-<li><p>improved telemetry error support in summary.ctmm and plot.variogram</p></li>
-<li><p>as.telemetry more robust to alternative column label capitalizations</p></li>
-<li><p>ctmm.loglike &amp; ctmm.fit more robust when tau_velocity ~ tau_position</p></li>
-<li><p>Kalman filter &amp; smoother upgraded to Joseph form covariance updates</p></li>
+<ul><li>added a FAQ page to the documentation help(“ctmm-FAQ”)</li>
+<li>bugfix in occurrence method for BM &amp; IOU models</li>
+<li>unit conversion can now be disabled in summary with units=FALSE argument</li>
+<li>added trace option to ctmm.select &amp; bandwidth/akde</li>
+<li>improved telemetry error support in summary.ctmm and plot.variogram</li>
+<li>as.telemetry more robust to alternative column label capitalizations</li>
+<li>ctmm.loglike &amp; ctmm.fit more robust when tau_velocity ~ tau_position</li>
+<li>Kalman filter &amp; smoother upgraded to Joseph form covariance updates</li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.3.4" id="ctmm-034-2016-11-28">ctmm 0.3.4 (2016-11-28)<small>2016-11-30</small><a class="anchor" aria-label="anchor" href="#ctmm-034-2016-11-28"></a></h2>
-<ul><li><p>weighted AKDE implemented, fast option, covered in vignette</p></li>
-<li><p>overlap arguments &amp; ouput changed/generalized</p></li>
-<li><p>method akde.bandwidth renamed to bandwidth inline with S3 standards</p></li>
-<li><p>predict now returns covariance estimates</p></li>
-<li><p>occurrence distributions now exportable</p></li>
-<li><p>AKDE overlap bugfixes</p></li>
-<li><p>summary.ctmm now returns correct RMS speed</p></li>
-<li><p>bugfix for eccentricity errors</p></li>
-<li><p>variogram CIs fixed for odd dimensions</p></li>
-<li><p>variogram.fit can now accept OU models</p></li>
-<li><p>periodogram rare index bugfix</p></li>
-<li><p>fixed missing lag in dt-argumented variogram</p></li>
-<li><p>as.telemetry column identification more robust</p></li>
-<li><p>as.telemetry defined for MoveStack objects</p></li>
+<ul><li>weighted AKDE implemented, fast option, covered in vignette</li>
+<li>overlap arguments &amp; ouput changed/generalized</li>
+<li>method akde.bandwidth renamed to bandwidth inline with S3 standards</li>
+<li>predict now returns covariance estimates</li>
+<li>occurrence distributions now exportable</li>
+<li>AKDE overlap bugfixes</li>
+<li>summary.ctmm now returns correct RMS speed</li>
+<li>bugfix for eccentricity errors</li>
+<li>variogram CIs fixed for odd dimensions</li>
+<li>variogram.fit can now accept OU models</li>
+<li>periodogram rare index bugfix</li>
+<li>fixed missing lag in dt-argumented variogram</li>
+<li>as.telemetry column identification more robust</li>
+<li>as.telemetry defined for MoveStack objects</li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.3.3" id="ctmm-033-2016-09-05">ctmm 0.3.3 (2016-09-05)<small>2016-09-06</small><a class="anchor" aria-label="anchor" href="#ctmm-033-2016-09-05"></a></h2>
-<ul><li><p>improved import of ‘move’ objects</p></li>
-<li><p>preliminary 3D AKDE support, debiased</p></li>
-<li><p>new method predict for ctmm objects</p></li>
-<li><p>akde now supports smoothing errors</p></li>
-<li><p>variogram.fit and plot.variogram now support telemetry error</p></li>
-<li><p>UERE fitting now possible simultaneous with tracking data</p></li>
-<li><p>tag.local.identifier now used as backup to individual.local.identifier in as.telemetry</p></li>
-<li><p>multiple bug fixes in uere</p></li>
-<li><p>res.space fixed in occurrence</p></li>
+<ul><li>improved import of ‘move’ objects</li>
+<li>preliminary 3D AKDE support, debiased</li>
+<li>new method predict for ctmm objects</li>
+<li>akde now supports smoothing errors</li>
+<li>variogram.fit and plot.variogram now support telemetry error</li>
+<li>UERE fitting now possible simultaneous with tracking data</li>
+<li>tag.local.identifier now used as backup to individual.local.identifier in as.telemetry</li>
+<li>multiple bug fixes in uere</li>
+<li>res.space fixed in occurrence</li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.3.2" id="ctmm-032-2016-05-12">ctmm 0.3.2 (2016-05-12)<small>2016-05-14</small><a class="anchor" aria-label="anchor" href="#ctmm-032-2016-05-12"></a></h2>
-<ul><li><p>new function overlap for stationary Gaussian distributions and KDEs</p></li>
-<li><p>new function uere calculates UERE from calibration data</p></li>
-<li><p>akde debias argument removes most bias from area estimtes, now default</p></li>
-<li><p>akde CIs further improved</p></li>
-<li><p>variogram, periodogram generalized to arbitrary dimensions</p></li>
-<li><p>periodic mean function option for ctmm, ctmm.fit, ctmm.select, plot.variogram, summary (not yet documented)</p></li>
-<li><p>new method residuals for ctmm objects</p></li>
-<li><p>ctmm.select now only considers likely model modifications</p></li>
-<li><p>DOFs now returned in summary</p></li>
-<li><p>new methods [.telemetry, [.variogram, [.periodogram, subset.periodogram</p></li>
-<li><p>methods for zoom, raster, writeShapefile now properly assigned to generics</p></li>
-<li><p>new plot.periodogram option max</p></li>
-<li><p>new periodogram option res.time (with Lagrange interpolation). Old option res renamed to res.freq.</p></li>
-<li><p>akde res argument is now relative to the bandwidth</p></li>
-<li><p>occurrence res.space argument is now relative to the average diffusion</p></li>
-<li><p>plot.telemetry with data error now uses level.UD for error radius instead of one standard deviation</p></li>
-<li><p>gridding function for fast=TRUE variogram and periodogram now always fast</p></li>
-<li><p>bad location removed from buffalo “Pepper”</p></li>
+<ul><li>new function overlap for stationary Gaussian distributions and KDEs</li>
+<li>new function uere calculates UERE from calibration data</li>
+<li>akde debias argument removes most bias from area estimtes, now default</li>
+<li>akde CIs further improved</li>
+<li>variogram, periodogram generalized to arbitrary dimensions</li>
+<li>periodic mean function option for ctmm, ctmm.fit, ctmm.select, plot.variogram, summary (not yet documented)</li>
+<li>new method residuals for ctmm objects</li>
+<li>ctmm.select now only considers likely model modifications</li>
+<li>DOFs now returned in summary</li>
+<li>new methods [.telemetry, [.variogram, [.periodogram, subset.periodogram</li>
+<li>methods for zoom, raster, writeShapefile now properly assigned to generics</li>
+<li>new plot.periodogram option max</li>
+<li>new periodogram option res.time (with Lagrange interpolation). Old option res renamed to res.freq.</li>
+<li>akde res argument is now relative to the bandwidth</li>
+<li>occurrence res.space argument is now relative to the average diffusion</li>
+<li>plot.telemetry with data error now uses level.UD for error radius instead of one standard deviation</li>
+<li>gridding function for fast=TRUE variogram and periodogram now always fast</li>
+<li>bad location removed from buffalo “Pepper”</li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.3.1" id="ctmm-031-2016-02-23">ctmm 0.3.1 (2016-02-23)<small>2016-02-24</small><a class="anchor" aria-label="anchor" href="#ctmm-031-2016-02-23"></a></h2>
-<ul><li><p>variogram.fit now stores global variables of any name</p></li>
-<li><p>variogram.fit sliders now use pretty units</p></li>
-<li><p>variogram.fit range argument depreciated in favor of a more general CTMM prototype argument</p></li>
-<li><p>akde UD CIs significantly improved for high quality datasets</p></li>
-<li><p>akde bugfix: subscript out of bounds</p></li>
-<li><p>circulatory model introduced via circle ctmm argument</p></li>
-<li><p>oscillatory CPF model introduced via CPF ctmm argument</p></li>
-<li><p>as.telemetry now imports GPS.HDOP columns with a UERE argument</p></li>
-<li><p>summary now works on arbitrary lists of ctmm objects</p></li>
-<li><p>ctmm.fit now tries to make sense of ML parameters that lie on boundaries</p></li>
-<li><p>occurrence() now works when some timesteps are tiny</p></li>
+<ul><li>variogram.fit now stores global variables of any name</li>
+<li>variogram.fit sliders now use pretty units</li>
+<li>variogram.fit range argument depreciated in favor of a more general CTMM prototype argument</li>
+<li>akde UD CIs significantly improved for high quality datasets</li>
+<li>akde bugfix: subscript out of bounds</li>
+<li>circulatory model introduced via circle ctmm argument</li>
+<li>oscillatory CPF model introduced via CPF ctmm argument</li>
+<li>as.telemetry now imports GPS.HDOP columns with a UERE argument</li>
+<li>summary now works on arbitrary lists of ctmm objects</li>
+<li>ctmm.fit now tries to make sense of ML parameters that lie on boundaries</li>
+<li>occurrence() now works when some timesteps are tiny</li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.3.0" id="ctmm-030-2015-11-26">ctmm 0.3.0 (2015-11-26)<small>2015-11-28</small><a class="anchor" aria-label="anchor" href="#ctmm-030-2015-11-26"></a></h2>
-<ul><li><p>new function “occurrence” to estimate occurrence distributions</p></li>
-<li><p>“akde” &amp; “occurrence” class objects generalized to “UD” class</p></li>
-<li><p>alpha &amp; alpha.HR arguments simplified and generalized to level &amp; level.UD</p></li>
-<li><p>AKDE= and <em>.HR= arguments generalized to UD= and </em>.UD=</p></li>
-<li><p>new basic telemetry error functionality in ctmm, ctmm.fit</p></li>
-<li><p>new function ctmm.select</p></li>
-<li><p>new methods subset.telemetry and subset.variogram</p></li>
-<li><p>fixed a bug in the uncertainty report of uncorrelated processes</p></li>
-<li><p>ctmm.fit is now much faster by specifying a reasonable parscale for optim</p></li>
-<li><p>ctmm.fit now has a backup for when Brent fails</p></li>
+<ul><li>new function “occurrence” to estimate occurrence distributions</li>
+<li>“akde” &amp; “occurrence” class objects generalized to “UD” class</li>
+<li>alpha &amp; alpha.HR arguments simplified and generalized to level &amp; level.UD</li>
+<li>AKDE= and <em>.HR= arguments generalized to UD= and </em>.UD=</li>
+<li>new basic telemetry error functionality in ctmm, ctmm.fit</li>
+<li>new function ctmm.select</li>
+<li>new methods subset.telemetry and subset.variogram</li>
+<li>fixed a bug in the uncertainty report of uncorrelated processes</li>
+<li>ctmm.fit is now much faster by specifying a reasonable parscale for optim</li>
+<li>ctmm.fit now has a backup for when Brent fails</li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.2.9" id="ctmm-029-2015-10-13">ctmm 0.2.9 (2015-10-13)<small>2015-10-14</small><a class="anchor" aria-label="anchor" href="#ctmm-029-2015-10-13"></a></h2>
-<ul><li><p>fixed a rare condition in ctmm.fit where solve would fail on correlated errors</p></li>
-<li><p>multiscale variogram and mean variogram example in vignette</p></li>
-<li><p>new data example Mongolian gazelle</p></li>
-<li><p>new fast option for periodogram</p></li>
-<li><p>improvements in plot.periodogram</p></li>
-<li><p>bugfix in as.telemetry for numeric indentifiers</p></li>
-<li><p>bugfix in dt array option of variogram</p></li>
-<li><p>new resolution option and better estimation algorithms in akde</p></li>
-<li><p>alpha, alpha.HR, res arguments made consistent across all functions</p></li>
+<ul><li>fixed a rare condition in ctmm.fit where solve would fail on correlated errors</li>
+<li>multiscale variogram and mean variogram example in vignette</li>
+<li>new data example Mongolian gazelle</li>
+<li>new fast option for periodogram</li>
+<li>improvements in plot.periodogram</li>
+<li>bugfix in as.telemetry for numeric indentifiers</li>
+<li>bugfix in dt array option of variogram</li>
+<li>new resolution option and better estimation algorithms in akde</li>
+<li>alpha, alpha.HR, res arguments made consistent across all functions</li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.2.8" id="ctmm-028-2015-08-25">ctmm 0.2.8 (2015-08-25)<small>2015-08-26</small><a class="anchor" aria-label="anchor" href="#ctmm-028-2015-08-25"></a></h2>
-<ul><li><p>efficiency gains in as.telemetry with multiple animals</p></li>
-<li><p>bugfix in plot.telemetry for multiple Gaussian PDFs</p></li>
-<li><p>bugfix in variogram for rare condition when fast=TRUE</p></li>
+<ul><li>efficiency gains in as.telemetry with multiple animals</li>
+<li>bugfix in plot.telemetry for multiple Gaussian PDFs</li>
+<li>bugfix in variogram for rare condition when fast=TRUE</li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.2.7" id="ctmm-027-2015-07-27">ctmm 0.2.7 (2015-07-27)<small>2015-07-31</small><a class="anchor" aria-label="anchor" href="#ctmm-027-2015-07-27"></a></h2>
-<ul><li><p>CRAN check compliance achieved.</p></li>
-<li><p>all methods (plot, mean, summary, simulate) can and must be run without class extensions</p></li>
-<li><p>argument names no longer clash with function names and are more explicit about their object class</p></li>
+<ul><li>CRAN check compliance achieved.</li>
+<li>all methods (plot, mean, summary, simulate) can and must be run without class extensions</li>
+<li>argument names no longer clash with function names and are more explicit about their object class</li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.2.6" id="ctmm-026-2015-07-17">ctmm 0.2.6 (2015-07-17)<a class="anchor" aria-label="anchor" href="#ctmm-026-2015-07-17"></a></h2>
@@ -548,43 +580,43 @@
 <ul><li>IOU bug fixes in ctmm.fit and plot.variogram</li></ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.2.4" id="ctmm-024-2015-06-28">ctmm 0.2.4 (2015-06-28)<a class="anchor" aria-label="anchor" href="#ctmm-024-2015-06-28"></a></h2>
-<ul><li><p>cleaned up and labeled tau parameter arrays</p></li>
-<li><p>implemented Workaround for when subset demotes S4 objects to S3 objects</p></li>
-<li><p>plot.telemetry now enforces asp=1 even with xlim/ylim arguments</p></li>
+<ul><li>cleaned up and labeled tau parameter arrays</li>
+<li>implemented Workaround for when subset demotes S4 objects to S3 objects</li>
+<li>plot.telemetry now enforces asp=1 even with xlim/ylim arguments</li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.2.3" id="ctmm-023-2015-06-19">ctmm 0.2.3 (2015-06-19)<a class="anchor" aria-label="anchor" href="#ctmm-023-2015-06-19"></a></h2>
-<ul><li><p>new function summary.telemetry</p></li>
-<li><p>bugfix in as.telemetry for data$t</p></li>
-<li><p>bugfix in ctmm.loglike for some cases with numeric underflow</p></li>
-<li><p>periodogram and plot.periodogram can now check for spurious periodicities</p></li>
-<li><p>minimal support for BM and IOU motion</p></li>
+<ul><li>new function summary.telemetry</li>
+<li>bugfix in as.telemetry for data$t</li>
+<li>bugfix in ctmm.loglike for some cases with numeric underflow</li>
+<li>periodogram and plot.periodogram can now check for spurious periodicities</li>
+<li>minimal support for BM and IOU motion</li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.2.2" id="ctmm-022-2015-05-21">ctmm 0.2.2 (2015-05-21)<a class="anchor" aria-label="anchor" href="#ctmm-022-2015-05-21"></a></h2>
 <ul><li>new functions periodogram, plot.periodogram</li></ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.2.1" id="ctmm-021-2015-05-08">ctmm 0.2.1 (2015-05-08)<a class="anchor" aria-label="anchor" href="#ctmm-021-2015-05-08"></a></h2>
-<ul><li><p>new function SpatialPoints.telemetry returns SpatialPoints object from telemetry data</p></li>
-<li><p>new function SpatialPolygonsDataFrame.akde returns akde home-range contour SpatialPolygons objects from akde object</p></li>
-<li><p>new function writeShapefile.akde writes akde home-range contours to ESRI shapefile</p></li>
-<li><p>new function raster.akde returns akde pdf raster object</p></li>
-<li><p>new function summary.akde returns HR area of AKDE</p></li>
-<li><p>fixed bad CI in plot.telemetry model option</p></li>
-<li><p>as.telemetry now takes a timezone argument for as.POSIXct and defaults to UTC</p></li>
-<li><p>telemetry, ctmm, and akde objects now have idenification and projection information slotted, with consistent naming throughout</p></li>
+<ul><li>new function SpatialPoints.telemetry returns SpatialPoints object from telemetry data</li>
+<li>new function SpatialPolygonsDataFrame.akde returns akde home-range contour SpatialPolygons objects from akde object</li>
+<li>new function writeShapefile.akde writes akde home-range contours to ESRI shapefile</li>
+<li>new function raster.akde returns akde pdf raster object</li>
+<li>new function summary.akde returns HR area of AKDE</li>
+<li>fixed bad CI in plot.telemetry model option</li>
+<li>as.telemetry now takes a timezone argument for as.POSIXct and defaults to UTC</li>
+<li>telemetry, ctmm, and akde objects now have idenification and projection information slotted, with consistent naming throughout</li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.2.0" id="ctmm-020-2015-04-27">ctmm 0.2.0 (2015-04-27)<a class="anchor" aria-label="anchor" href="#ctmm-020-2015-04-27"></a></h2>
-<ul><li><p>vignettes “variogram” and “akde”</p></li>
-<li><p>new function as.telemetry imports MoveBank formatted csv data and returns telemetry objects</p></li>
-<li><p>new function variogram.zoom plots a variogram with zoom slider</p></li>
-<li><p>variogram.fit and variogram.zoom default to a logarithmic-scale zoom slider, which requires much less fiddling</p></li>
-<li><p>plot.variogram now takes multiple variogram, model, and color options</p></li>
-<li><p>plot.telemetry now takes multiple data, model, akde, and color options</p></li>
-<li><p>plot.telemetry can now make probability density plots for both Gaussian model and akde data</p></li>
-<li><p>ctmm.fit no longer screws up results with initial sigma guesstimates. ML parameter estimates now match closely with published Mathematica results. CIs are improved.</p></li>
-<li><p>ks-package was producing incorrect home-range contours and has been replaced with custom code. ML home ranges now match published Mathematica results. CIs should be improved.</p></li>
+<ul><li>vignettes “variogram” and “akde”</li>
+<li>new function as.telemetry imports MoveBank formatted csv data and returns telemetry objects</li>
+<li>new function variogram.zoom plots a variogram with zoom slider</li>
+<li>variogram.fit and variogram.zoom default to a logarithmic-scale zoom slider, which requires much less fiddling</li>
+<li>plot.variogram now takes multiple variogram, model, and color options</li>
+<li>plot.telemetry now takes multiple data, model, akde, and color options</li>
+<li>plot.telemetry can now make probability density plots for both Gaussian model and akde data</li>
+<li>ctmm.fit no longer screws up results with initial sigma guesstimates. ML parameter estimates now match closely with published Mathematica results. CIs are improved.</li>
+<li>ks-package was producing incorrect home-range contours and has been replaced with custom code. ML home ranges now match published Mathematica results. CIs should be improved.</li>
 </ul></div>
   </div>
 
@@ -600,7 +632,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

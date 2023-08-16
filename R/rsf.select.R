@@ -28,7 +28,10 @@ rsf.select <- function(data,UD,R=list(),formula=NULL,verbose=FALSE,IC="AICc",tra
     FORMULA <- !is.null(formula)
 
     if(!FORMULA)
-    { TERMS <- RVARS }
+    {
+      TERMS <- RVARS
+      OFFSET <- NULL
+    }
     else
     {
       VARS <- all.vars(formula)
@@ -43,6 +46,8 @@ rsf.select <- function(data,UD,R=list(),formula=NULL,verbose=FALSE,IC="AICc",tra
       DATA[RVARS] <- as.list(rep(0,length(RVARS)))
       TERMS <- colnames(stats::model.matrix(formula,data=DATA))
       TERMS <- TERMS[TERMS!="(Intercept)"]
+
+      OFFSET <- get.offset(formula,variable=FALSE)
     }
   }
   DIM <- length(TERMS)
@@ -50,11 +55,20 @@ rsf.select <- function(data,UD,R=list(),formula=NULL,verbose=FALSE,IC="AICc",tra
   ON <- array(FALSE,DIM)
   names(ON) <- TERMS
 
+  terms2formula <- function(terms,offset=NULL)
+  {
+    terms <- c(terms,offset)
+    paste("~",paste(terms,collapse="+"))
+  }
+
   ########################
   # fit without covariates first
-  NAME <- paste(SISO,"~ 0")
+  FORM <- terms2formula(NULL,OFFSET)
+  FORM[FORM=="~ "] <- "~ 0" # make a valid formula string
+  NAME <- paste(SISO,FORM)
   if(trace) { message("Fitting RSF model ",NAME) }
-  M[[NAME]] <- rsf.fit(data,UD,R=R,formula=~0,trace=max(trace-1,0),...)
+  FORM <- stats::as.formula(FORM)
+  M[[NAME]] <- rsf.fit(data,UD,R=R,formula=FORM,trace=max(trace-1,0),...)
   # re-use estimates for next fit
   UD@CTMM <- M[[NAME]]
 
@@ -68,7 +82,7 @@ rsf.select <- function(data,UD,R=list(),formula=NULL,verbose=FALSE,IC="AICc",tra
     TRYS <- t(TRYS) # [off->on,all]
     for(i in 1:length(try)) { TRYS[i,try[i]] <- TRUE }
     # models that we will try by turning one term on
-    FORM <- sapply(1:length(try),function(i){paste("~",paste(TERMS[TRYS[i,]],collapse="+"))})
+    FORM <- sapply(1:length(try),function(i){terms2formula(TERMS[TRYS[i,]],OFFSET)})
     NAMES <- paste(SISO,FORM)
     FORM <- lapply(FORM,stats::as.formula)
     # don't try the same model twice
@@ -106,7 +120,7 @@ rsf.select <- function(data,UD,R=list(),formula=NULL,verbose=FALSE,IC="AICc",tra
     TRYS <- t(TRYS) # [off->on,all]
     for(i in 1:length(try)) { TRYS[i,try[i]] <- FALSE }
     # models that we will try by turning one term on
-    FORM <- sapply(1:length(try),function(i){paste("~",paste(TERMS[TRYS[i,]],collapse="+"))})
+    FORM <- sapply(1:length(try),function(i){terms2formula(TERMS[TRYS[i,]],OFFSET)})
     FORM[FORM=="~ "] <- "~ 0" # make a valid formula string
     NAMES <- paste(SISO,FORM)
     FORM <- lapply(FORM,stats::as.formula)

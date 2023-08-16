@@ -25,7 +25,7 @@ rsf.select(data,UD,R=list(),formula=NULL,verbose=FALSE,IC="AICc",trace=TRUE,...)
   \item{reference}{When expanding categorical predictors into indicator variables, \code{reference="auto"} will choose the most common predictor to be the reference category. Otherwise, the reference category can be specified by this argument.}
   \item{debias}{Apply a post-hoc bias correction to the spatial constraint parameters, and apply bias corrections to the numerical log-likelihood estimates.}
   \item{smooth}{Apply location-error smoothing to the tracking data before regression.}
-  \item{standardize}{For numerical stability, predictors are \emph{internally} standardized, if \code{rescale=TRUE} and no \code{formula} is specified. (The final outputs are not standardized.) \bold{Otherwise, users are responsible for standardizing their predictors.}}
+  \item{standardize}{For numerical stability, predictors are \emph{internally} standardized, if \code{standardize=TRUE} and no \code{formula} is specified. (The final outputs are not standardized.) \bold{Otherwise, users are responsible for standardizing their predictors.}}
   \item{integrator}{Numerical integrator used for likelihood evaluation. Can be \code{"MonteCarlo"} or \code{"Riemann"} (IN TESTING).}
   \item{error}{Relative numerical error threshold for the parameter estimates and log-likelihood.}
   \item{max.mem}{Maximum amount of memory to allocate for availability sampling.}

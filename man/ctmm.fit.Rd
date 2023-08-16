@@ -39,7 +39,7 @@ ctmm.select(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position",trace=FALS
   \item{method}{Fitting method to use: \code{"ML"}, \code{"HREML"}, \code{"pREML"}, \code{"pHREML"}, or \code{"REML"}. See "Description" below.}
   \item{COV}{Estimate the autocorrelation parameter covariance matrix.}
   \item{control}{An optional argument list for \code{\link{optimizer}}.}
-  \item{trace}{Report progress updates. Can be among \code{0:2} with increasing detail.}
+  \item{trace}{Report progress updates. Can be among \code{0:3} with increasing detail.}
   \item{level}{Attempt to simplify a model if a feature's non-existence falls within this level of confidence interval.}
   \item{IC}{Information criterion used for selection. Can be \code{"AICc"}, \code{"AIC"}, \code{"BIC"}, \code{"LOOCV"}, \code{"HSCV"}, or none (\code{NA}). AICc is approximate.}
   \item{MSPE}{Reject non-stationary features that increase the mean square predictive error of \code{"position"}, \code{"velocity"}, or not (\code{NA}).}

@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.0</span>
       </span>
     </div>
 
@@ -74,6 +74,9 @@
     <div id="ref-usage">
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">as.sf</span><span class="op">(</span><span class="va">x</span>,error<span class="op">=</span><span class="cn">FALSE</span>,<span class="va">...</span><span class="op">)</span></span>
 <span></span>
+<span><span class="co"># S4 method for UD</span></span>
+<span><span class="fu">raster</span><span class="op">(</span><span class="va">x</span>,DF<span class="op">=</span><span class="st">"CDF"</span>,<span class="va">...</span><span class="op">)</span></span>
+<span></span>
 <span><span class="co">## method for class 'telemetry'</span></span>
 <span><span class="fu">SpatialPoints.telemetry</span><span class="op">(</span><span class="va">object</span>,<span class="va">...</span><span class="op">)</span></span>
 <span></span>
@@ -86,19 +89,28 @@
 <span><span class="co">## method for class 'UD'</span></span>
 <span><span class="fu">SpatialPolygonsDataFrame.UD</span><span class="op">(</span><span class="va">object</span>,convex<span class="op">=</span><span class="cn">FALSE</span>,level.UD<span class="op">=</span><span class="fl">0.95</span>,level<span class="op">=</span><span class="fl">0.95</span>,<span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># S4 method for UD</span></span>
-<span><span class="fu">raster</span><span class="op">(</span><span class="va">x</span>,DF<span class="op">=</span><span class="st">"CDF"</span>,<span class="va">...</span><span class="op">)</span></span>
+<span><span class="co"># S4 method for UD,character</span></span>
+<span><span class="fu">writeRaster</span><span class="op">(</span><span class="va">x</span>,<span class="va">filename</span>,<span class="va">format</span>,DF<span class="op">=</span><span class="st">"CDF"</span>,<span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">writeShapefile</span><span class="op">(</span><span class="va">object</span>,<span class="va">folder</span>,file<span class="op">=</span><span class="cn">NULL</span>,<span class="va">...</span><span class="op">)</span></span>
+<span><span class="co"># S4 method for list,character</span></span>
+<span><span class="fu">writeVector</span><span class="op">(</span><span class="va">x</span>,<span class="va">filename</span>,<span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># S3 method for telemetry</span></span>
-<span><span class="fu">writeShapefile</span><span class="op">(</span><span class="va">object</span>,<span class="va">folder</span>,file<span class="op">=</span><span class="cn">NULL</span>,error<span class="op">=</span><span class="cn">TRUE</span>,level.UD<span class="op">=</span><span class="fl">0.95</span>,<span class="va">...</span><span class="op">)</span></span>
+<span><span class="co"># S4 method for list,missing</span></span>
+<span><span class="fu">writeVector</span><span class="op">(</span><span class="va">x</span>,<span class="va">filename</span>,<span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># S3 method for UD</span></span>
-<span><span class="fu">writeShapefile</span><span class="op">(</span><span class="va">object</span>,<span class="va">folder</span>,file<span class="op">=</span><span class="cn">NULL</span>,convex<span class="op">=</span><span class="cn">FALSE</span>,level.UD<span class="op">=</span><span class="fl">0.95</span>,level<span class="op">=</span><span class="fl">0.95</span>,<span class="va">...</span><span class="op">)</span></span>
+<span><span class="co"># S4 method for telemetry,character</span></span>
+<span><span class="fu">writeVector</span><span class="op">(</span><span class="va">x</span>,<span class="va">filename</span>,filetype<span class="op">=</span><span class="st">"ESRI Shapefile"</span>,error<span class="op">=</span><span class="cn">TRUE</span>,level.UD<span class="op">=</span><span class="fl">0.95</span>,<span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S4 method for telemetry,missing</span></span>
+<span><span class="fu">writeVector</span><span class="op">(</span><span class="va">x</span>,<span class="va">filename</span>,filetype<span class="op">=</span><span class="st">"ESRI Shapefile"</span>,error<span class="op">=</span><span class="cn">TRUE</span>,level.UD<span class="op">=</span><span class="fl">0.95</span>,<span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S4 method for UD,character</span></span>
-<span><span class="fu">writeRaster</span><span class="op">(</span><span class="va">x</span>,<span class="va">filename</span>,<span class="va">format</span>,DF<span class="op">=</span><span class="st">"CDF"</span>,<span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">writeVector</span><span class="op">(</span><span class="va">x</span>,<span class="va">filename</span>,filetype<span class="op">=</span><span class="st">"ESRI Shapefile"</span>,convex<span class="op">=</span><span class="cn">FALSE</span>,level.UD<span class="op">=</span><span class="fl">0.95</span>,level<span class="op">=</span><span class="fl">0.95</span>,</span>
+<span>            <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S4 method for UD,missing</span></span>
+<span><span class="fu">writeVector</span><span class="op">(</span><span class="va">x</span>,<span class="va">filename</span>,filetype<span class="op">=</span><span class="st">"ESRI Shapefile"</span>,convex<span class="op">=</span><span class="cn">FALSE</span>,level.UD<span class="op">=</span><span class="fl">0.95</span>,level<span class="op">=</span><span class="fl">0.95</span>,</span>
+<span>            <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -124,36 +136,36 @@
   <dt>DF</dt>
 <dd><p>Rasterize the probability density function <code>"PDF"</code>, probability mass function <code>"PMF"</code>, or cumulative distribution function <code>"CDF"</code>.</p></dd>
 
-  <dt>folder</dt>
-<dd><p>Character name of folder for shapefile.</p></dd>
-
-  <dt>file</dt>
-<dd><p>Character name of files for shapefile.</p></dd>
-
   <dt>filename</dt>
-<dd><p>Character name of file for raster file.</p></dd>
+<dd><p>Character name of file for raster or vector file.</p></dd>
 
   <dt>format</dt>
-<dd><p>Character format, if not inferred from <code>filename</code> extension (see <code><a href="https://rdrr.io/pkg/terra/man/writeRaster.html" class="external-link">writeRaster</a></code>).</p></dd>
+<dd><p>Output file type (see <code><a href="https://rdrr.io/pkg/raster/man/writeFormats.html" class="external-link">writeFormats</a></code>). If this argument is not provided, it is inferred it from the filename extension. If that fails, the default <code>'raster'</code> format is used, which can be changed using <code><a href="https://rdrr.io/pkg/raster/man/rasterOptions.html" class="external-link">rasterOptions</a></code>.</p></dd>
+
+  <dt>filetype</dt>
+<dd><p>A file format associated with a GDAL "driver". See <code>gdal(drivers=TRUE)</code> or the <a href="https://gdal.org/drivers/vector/index.html" class="external-link">GDAL docs</a>. If <code>filetype=NULL</code>, the filetype is inferred from the filename extension.</p></dd>
 
   <dt>...</dt>
-<dd><p>Optional arguments passed to <code><a href="https://rdrr.io/pkg/terra/man/writeRaster.html" class="external-link">writeRaster</a></code>, <code><a href="http://rgdal.r-forge.r-project.org/reference/writeOGR.html" class="external-link">writeOGR</a></code>, etc..</p></dd>
+<dd><p>Optional arguments passed to <code><a href="https://rdrr.io/pkg/terra/man/writeRaster.html" class="external-link">writeRaster</a></code>, <code><a href="https://rdrr.io/pkg/terra/man/writeVector.html" class="external-link">writeVector</a></code>, etc..</p></dd>
 
 </dl></div>
     <div id="details">
     <h2>Details</h2>
     <p><code>as.sf</code> exports <code>ctmm</code> objects to the <code>sf</code> format. Arguments to <code>ctmm</code> <code>Spatial</code>* export functions can also be used, such as <code>level.UD</code> and <code>level</code>.</p>
-<p><code>Spatial</code>* functions export <code>ctmm</code> objects to <code>sp</code> formats.</p>
 <p><code>raster</code> exports <code>UD</code> object point-estimates distribution functions (<code>DF</code>) to <code>raster</code> objects.
 <code>DF="PDF"</code> gives the average probability density per cell,
 <code>DF="PMF"</code> gives the total probability per cell,
 and <code>DF="CDF"</code> gives the cumulative probability.</p>
-<p><code>writeShapefile</code> writes a shapefile to disk, with UD polygons corresponding to the low-CI, point-estimate, and high-CI home-range area estimates.</p>
+<p><code>Spatial</code>* functions export <code>ctmm</code> objects to <code>sp</code> formats.</p>
 <p><code>writeRaster</code> writes a raster file to disk, with pixel values corresponding to the distribution function <code>DF</code>.</p>
+<p><code>writeVector</code> writes a shapefile to disk, with UD polygons corresponding to the low-CI, point-estimate, and high-CI home-range area estimates.</p>
     </div>
     <div id="value">
     <h2>Value</h2>
     <p><code>as.sf</code> returns an <code>sf</code> object for the input points or polygons, with individual identity and other information retained.</p>
+
+
+<p><code>raster</code> returns a <code>raster</code> of the point-estimate distribution function <code>DF</code>, given a <code>UD</code> object.</p>
 
 
 <p><code>SpatialPoints.telemetry</code> returns a single <code>spatialPoints</code> object for the <code>x</code>-<code>y</code> locations, without individual identity and other information retained.</p>
@@ -166,9 +178,6 @@ and <code>DF="CDF"</code> gives the cumulative probability.</p>
 
 
 <p><code>SpatialPolygonsDataFrame.UD</code> returns a <code>SpatialPolygonsDataFrame</code> of the low-CI, point-estimate, and high-CI home-range area estimates, in the appropriate order for plotting.</p>
-
-
-<p><code>raster</code> returns a <code>raster</code> of the point-estimate distribution function <code>DF</code>, given a <code>UD</code> object.</p>
     </div>
     <div id="author">
     <h2>Author</h2>
@@ -191,7 +200,7 @@ and <code>DF="CDF"</code> gives the cumulative probability.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ctmm</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.2.0</span>
       </span>
     </div>
 
@@ -74,9 +74,10 @@
     <div id="ref-usage">
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">homerange</span><span class="op">(</span><span class="va">data</span>,<span class="va">CTMM</span>,method<span class="op">=</span><span class="st">"AKDE"</span>,<span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">suitability</span><span class="op">(</span><span class="va">CTMM</span>,R<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,grid<span class="op">=</span><span class="cn">NULL</span>,<span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu">agde</span><span class="op">(</span>data<span class="op">=</span><span class="cn">NULL</span>,CTMM<span class="op">=</span><span class="cn">NULL</span>,R<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,variable<span class="op">=</span><span class="st">"utilization"</span>,error<span class="op">=</span><span class="fl">0.001</span>,res<span class="op">=</span><span class="fl">100</span>,grid<span class="op">=</span><span class="cn">NULL</span>,</span>
+<span>     <span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">agde</span><span class="op">(</span><span class="va">CTMM</span>,R<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,variable<span class="op">=</span><span class="st">"utilization"</span>,error<span class="op">=</span><span class="fl">0.001</span>,res<span class="op">=</span><span class="fl">100</span>,grid<span class="op">=</span><span class="cn">NULL</span>,<span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">suitability</span><span class="op">(</span>data<span class="op">=</span><span class="cn">NULL</span>,CTMM<span class="op">=</span><span class="cn">NULL</span>,R<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,level<span class="op">=</span><span class="fl">0.95</span>,grid<span class="op">=</span><span class="cn">NULL</span>,log<span class="op">=</span><span class="cn">FALSE</span>,<span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -96,9 +97,6 @@
   <dt>R</dt>
 <dd><p>A named list of raster covariates if <code>CTMM</code> contains an RSF model</p></dd>
 
-  <dt>grid</dt>
-<dd><p>Grid specification via <code>raster</code>, <code>UD</code>, or list of arguments (See <code><a href="akde.html">akde</a></code> for details).</p></dd>
-
   <dt>variable</dt>
 <dd><p>Not yet supported.</p></dd>
 
@@ -108,16 +106,25 @@
   <dt>res</dt>
 <dd><p>Number of grid points along each axis, relative to the location covariance.</p></dd>
 
+  <dt>grid</dt>
+<dd><p>Grid specification via <code>raster</code>, <code>UD</code>, or list of arguments (See <code><a href="akde.html">akde</a></code> for details).</p></dd>
+
+  <dt>level</dt>
+<dd><p>Confidence level for output confidence intervals.</p></dd>
+
+  <dt>log</dt>
+<dd><p>Calculate the log(suitability).</p></dd>
+
 </dl></div>
     <div id="details">
     <h2>Details</h2>
     <p><code>homerange</code> is a wrapper function that calls either <code><a href="akde.html">akde</a></code> or <code>agde</code>. Please consult <code><a href="akde.html">akde</a></code> for further details on <code>method="AKDE"</code>.</p>
-<p><code>suitability</code> calculates a suitability raster from an <code><a href="RSF.fit.html">rsf.fit</a></code> object.</p>
+<p><code>suitability</code> calculates a suitability raster from an <code><a href="RSF.fit.html">rsf.fit</a></code> object. Population RSF fit objects calculated from <code><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></code> will produce a suitability estimate of the population.</p>
 <p><code>agde</code> calculates autocorrelated Gaussian and RSF home-range areas.</p>
     </div>
     <div id="value">
     <h2>Value</h2>
-    <p><code>homerange</code> and <code>agde</code> return a <code>UD</code> object. <code>suitability</code> returns a <code>raster</code> object.</p>
+    <p><code>homerange</code> and <code>agde</code> return a <code>UD</code> object. <code>suitability</code> returns a <code><a href="https://rdrr.io/pkg/raster/man/brick.html" class="external-link">brick</a></code> object.</p>
     </div>
     <div id="author">
     <h2>Author</h2>
@@ -140,7 +147,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>
