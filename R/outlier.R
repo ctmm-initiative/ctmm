@@ -185,7 +185,7 @@ plot.outlie <- function(x,level=0.95,units=TRUE,axes=c('d','v'),xlim=NULL,ylim=N
   if(is.null(xlim))
   {
     xlim <- x
-    xlim[3,] <- pmin(x[3,],x[,2]*2)
+    xlim[3,] <- pmin(x[3,],x[2,]*2)
     xlim <- range(xlim)
   }
   else

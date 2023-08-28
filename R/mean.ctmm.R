@@ -619,7 +619,7 @@ mean.mu <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",...)
 
 
 ###########
-mean.ctmm <- function(x,weights=NULL,sample=TRUE,debias=TRUE,IC="AICc",trace=TRUE,...)
+mean.ctmm <- function(x,weights=NULL,sample=TRUE,debias=TRUE,IC="AIC",trace=TRUE,...)
 {
   select <- "all"
 

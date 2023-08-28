@@ -27,6 +27,23 @@ rsf.select <- function(data,UD,R=list(),formula=NULL,verbose=FALSE,IC="AICc",tra
     RVARS <- names(R)
     FORMULA <- !is.null(formula)
 
+    # this doesn't work with poly(), etc.
+    # TERMS <- attr(stats::terms(formula),"term.labels")
+    # dummy data for model parameter names
+    get.terms <- function(formula)
+    {
+      if(class(formula)[1]=="character") { formula <- as.formula(formula) }
+
+      DATA <- data.frame(data)[1:2,]
+      DATA[RVARS] <- as.list(rep(0,length(RVARS)))
+      TERMS <- attr(stats::terms(formula),"variables")[-1]
+      TERMS <- sapply(TERMS,as.character)
+      DATA[TERMS] <- as.list(rep(0,length(TERMS)))
+      TERMS <- colnames(stats::model.matrix(formula,data=DATA))
+      TERMS <- TERMS[TERMS!="(Intercept)"]
+      return(TERMS)
+    }
+
     if(!FORMULA)
     {
       TERMS <- RVARS
@@ -36,17 +53,8 @@ rsf.select <- function(data,UD,R=list(),formula=NULL,verbose=FALSE,IC="AICc",tra
     {
       VARS <- all.vars(formula)
       DVARS <- VARS[ VARS %nin% RVARS ]
-
       for(D in DVARS) { data[[D]] <- as.numeric(data[[D]]) } # model.matrix will rename otherwise
-
-      # this doesn't work with poly(), etc.
-      # TERMS <- attr(stats::terms(formula),"term.labels")
-      # dummy data for model parameter names
-      DATA <- data.frame(data)[1:2,]
-      DATA[RVARS] <- as.list(rep(0,length(RVARS)))
-      TERMS <- colnames(stats::model.matrix(formula,data=DATA))
-      TERMS <- TERMS[TERMS!="(Intercept)"]
-
+      TERMS <- get.terms(formula)
       OFFSET <- get.offset(formula,variable=FALSE)
     }
   }
@@ -102,8 +110,8 @@ rsf.select <- function(data,UD,R=list(),formula=NULL,verbose=FALSE,IC="AICc",tra
     # best RSF parameters so far (going up)
     ICS <- sapply(NEW,function(m){m[[IC]]})
     i <- which.min(ICS)
-    beta <- NEW[[i]]$beta
-    ON <- TERMS %in% names(beta) | sapply(TERMS,function(t){any(startsWith(names(beta),paste0(t,".")))})
+    # beta <- NEW[[i]]$beta
+    ON <- TERMS %in% get.terms(names(NEW)[i]) # | sapply(TERMS,function(t){any(startsWith(names(beta),paste0(t,".")))})
     # copy for initial guess in fitting speed
     # UD@CTMM <- NEW[[i]] # this can distort sigma
     UD@CTMM$beta <- NEW[[i]]$beta
@@ -142,8 +150,8 @@ rsf.select <- function(data,UD,R=list(),formula=NULL,verbose=FALSE,IC="AICc",tra
     NEW <- M[NAMES]
     ICS <- sapply(NEW,function(m){m[[IC]]})
     i <- which.min(ICS)
-    beta <- NEW[[i]]$beta
-    ON <- TERMS %in% names(beta) | sapply(TERMS,function(t){any(startsWith(names(beta),paste0(t,".")))})
+    # beta <- NEW[[i]]$beta
+    ON <- TERMS %in% get.terms(names(NEW)[i]) #| sapply(TERMS,function(t){any(startsWith(names(beta),paste0(t,".")))})
     # copy for initial guess in fitting
     # UD@CTMM$beta <- beta
     UD@CTMM <- NEW[[i]]

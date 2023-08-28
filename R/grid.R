@@ -10,6 +10,47 @@ is.grid.complete <- function(grid)
 }
 
 
+is.consistent <- function(grids)
+{
+  TEST <- logical(length(grids)-1)
+  for(i in 1:(length(TEST)))
+  { TEST[i] <- is.consistent.pair(grids[[i]],grids[[i+1]]) }
+  TEST <- all(TEST)
+  return(TEST)
+}
+
+
+is.consistent.pair <- function(grid1,grid2)
+{
+  dr1 <- grid1$dr
+  dr2 <- grid2$dr
+
+  MAX <- pmax(dr1,dr2)
+  MIN <- pmin(dr1,dr2)
+
+  TEST <- log2(MAX/MIN) # should be an integer
+  TEST <- abs( TEST - round(TEST) )
+  TEST <- any( TEST > .Machine$double.eps )
+  if(TEST) { return(FALSE) }
+
+  r1 <- c(grid1$r$x[1],grid1$r$y[1])
+  r2 <- c(grid2$r$x[1],grid2$r$y[1])
+
+  TEST <- (r1-r2)/MIN
+  TEST <- TEST - round(TEST)
+  TEST <- any( TEST > .Machine$double.eps )
+  return(!TEST)
+}
+
+
+grid.comp <- function(grids)
+{
+  DR <- sapply(grids,function(g){g$dr}) # [2,n]
+  dr <- apply(DR,1,min) # smallest (dx,dy)
+  DR <- t(t(DR)/dr)
+}
+
+
 ###########
 # returns grid information for union
 # assumes origin aligned grids with same resolution

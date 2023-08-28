@@ -7,7 +7,7 @@
 \description{
 These functions calculate population averages of continuous-time movement models and utilization distributions.}
 \usage{
-\S3method{mean}{ctmm}(x,weights=NULL,sample=TRUE,debias=TRUE,IC="AICc",trace=TRUE,...)
+\S3method{mean}{ctmm}(x,weights=NULL,sample=TRUE,debias=TRUE,IC="AIC",trace=TRUE,...)
 
 \S3method{mean}{UD}(x,weights=NULL,sample=TRUE,...)
 }

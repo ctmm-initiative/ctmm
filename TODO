@@ -1,4 +1,5 @@
 ** PRIORITY
+* rsf.select require quadratic model over linear model (require even order polynomial)
 * meta with tau instead of tau[position] will error out
 * clip raster before rsf.fit calculation
 * composite resolutions in gridding
