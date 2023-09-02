@@ -41,7 +41,10 @@ tbind <- function(...)
   if(is.null(names(x)))
   { names(x) <- sapply(1:length(x),function(i){paste(attr(x[[i]],'info')$identity,i)}) }
 
-  UERE <- ubind(x)
+  for(i in 1:length(x)) { if("class" %nin% names(x[[i]])) { x[[i]]$class <- as.factor('all') } }
+
+  x <- ubind(x)
+  UERE <- uere(x)
 
   n <- sapply(x,nrow)
   n <- c(0,cumsum(n))
@@ -234,7 +237,10 @@ ubind <- function(x)
     } # end UERE merger
   } # end UERE list
 
-  return(UERE)
+  uere(x) <- UERE # assign
+  for (i in 1:length(x)) { x[[i]]@UERE <- UERE } # but preserve class order
+
+  return(x)
 }
 
 
@@ -290,11 +296,11 @@ set.name <- function(x,NAMES=NULL,drop=TRUE)
 
 #######################
 # Generic import function
-as.telemetry <- function(object,timeformat="",timezone="UTC",projection=NULL,datum="WGS84",dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...) UseMethod("as.telemetry")
+as.telemetry <- function(object,timeformat="auto",timezone="UTC",projection=NULL,datum="WGS84",dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...) UseMethod("as.telemetry")
 
 
 # MoveStack object
-as.telemetry.MoveStack <- function(object,timeformat="",timezone="UTC",projection=NULL,datum="WGS84",dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
+as.telemetry.MoveStack <- function(object,timeformat="auto",timezone="UTC",projection=NULL,datum="WGS84",dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
 {
   # get individual names
   NAMES <- move::trackId(object)
@@ -320,7 +326,7 @@ as.telemetry.MoveStack <- function(object,timeformat="",timezone="UTC",projectio
 
 
 # Move object
-as.telemetry.Move <- function(object,timeformat="",timezone="UTC",projection=NULL,datum="WGS84",dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
+as.telemetry.Move <- function(object,timeformat="auto",timezone="UTC",projection=NULL,datum="WGS84",dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
 {
   # preserve Move object projection if possible
   if(is.null(projection) && !raster::isLonLat(object)) { projection <- raster::projection(object) }
@@ -333,7 +339,7 @@ as.telemetry.Move <- function(object,timeformat="",timezone="UTC",projection=NUL
 
 
 # convert Move object back to MoveBank CSV
-Move2CSV <- function(object,timeformat="",timezone="UTC",projection=NULL,datum="WGS84",...)
+Move2CSV <- function(object,timeformat="auto",timezone="UTC",projection=NULL,datum="WGS84",...)
 {
   DATA <- data.frame(timestamp=move::timestamps(object))
 
@@ -373,7 +379,7 @@ Move2CSV <- function(object,timeformat="",timezone="UTC",projection=NULL,datum="
 
 
 # sf object (C) jfsmenezes & CHF [UNFINISHED]
-as.telemetry.sf = function(object,timeformat="",timezone="UTC",projection=NULL,datum="WGS84",dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
+as.telemetry.sf = function(object,timeformat="auto",timezone="UTC",projection=NULL,datum="WGS84",dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
 {
   if(sf::st_geometry_type(object,by_geometry=FALSE)!="POINT")
   { stop("only point features supported at the moment") }
@@ -527,7 +533,7 @@ merge.class <- function(class1,class2)
 
 
 # read in a MoveBank object file
-as.telemetry.character <- function(object,timeformat="",timezone="UTC",projection=NULL,datum="WGS84",dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
+as.telemetry.character <- function(object,timeformat="auto",timezone="UTC",projection=NULL,datum="WGS84",dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
 {
   # read with 3 methods: fread, temp_unzip, read.csv, fall back to next if have error.
   # fread error message is lost, we can use print(e) for debugging.
@@ -552,7 +558,7 @@ as.telemetry.character <- function(object,timeformat="",timezone="UTC",projectio
 # fastPOSIXct requires GMT timezone
 # fastPOSIXct only works on times after the 1970 epoch !!!
 # as.POSIXct doesn't accept this argument if empty/NA/NULL ???
-asPOSIXct <- function(x,timeformat="",timezone="UTC",...)
+asPOSIXct <- function(x,timeformat="auto",timezone="UTC",...)
 {
   if(timeformat=="auto")
   {
@@ -576,7 +582,7 @@ asPOSIXct <- function(x,timeformat="",timezone="UTC",...)
 
 
 # this assumes a MoveBank data.frame
-as.telemetry.data.frame <- function(object,timeformat="",timezone="UTC",projection=NULL,datum="WGS84",dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
+as.telemetry.data.frame <- function(object,timeformat="auto",timezone="UTC",projection=NULL,datum="WGS84",dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
 {
   NAMES <- list()
   NAMES$timestamp <- c('timestamp','timestamp.of.fix','Acquisition.Time',

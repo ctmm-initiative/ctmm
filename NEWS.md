@@ -1,4 +1,4 @@
-ctmm 1.2.0 (2023-08-28)
+ctmm 1.2.0 (2023-09-01)
 ================
 * new functions rsf.select(), intensity()
 * new functions sdm.fit(), sdm.select()
@@ -12,12 +12,14 @@ ctmm 1.2.0 (2023-08-28)
 * new argument 'compute' in ctmm.loglike()
 * as.telemetry() now supports GBIF format data
 * as.telemetry() datum argument now works on UTM import, and is no longer to a be a complete PROJ string
+* as.telemetry() timeformat='auto' now default
 * as.telemetry(), plot.telemetry(), rsf.fit() updated from sp to sf transforms
 * distance() can now take location arguments
 * plot.telemetry() col.DF & col.level arguments can now be color() lists
 * suitability() now produces a raster stack corresponding to the CIs
 * suitability() on population RSFs now outputs the population suitability
 * suitability() extrapolation disabled
+* bugfix in tbind for conflicting location classes
 * bugfix in suitability()
 * bugfix in distance() method="Euclidean", debias=TRUE
 * bugfix in rates() debias=TRUE
