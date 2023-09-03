@@ -669,7 +669,8 @@ variogram.ci <- function(t=NULL,dt=NULL,SVF=NULL)
 mean.variogram <- function(x,...)
 {
   x <- c(x,list(...))
-  UERE <- ubind(x)
+  x <- ubind(x)
+  UERE <- uere(x)
   IDS <- length(x)
 
   # assemble observed lag range

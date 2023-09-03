@@ -1,4 +1,4 @@
-ctmm 1.2.0 (2023-09-01)
+ctmm 1.2.0 (2023-09-03)
 ================
 * new functions rsf.select(), intensity()
 * new functions sdm.fit(), sdm.select()
