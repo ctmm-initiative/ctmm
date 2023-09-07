@@ -72,19 +72,19 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">as.telemetry</span><span class="op">(</span><span class="va">object</span>,timeformat<span class="op">=</span><span class="st">""</span>,timezone<span class="op">=</span><span class="st">"UTC"</span>,projection<span class="op">=</span><span class="cn">NULL</span>,datum<span class="op">=</span><span class="st">"WGS84"</span>,dt.hot<span class="op">=</span><span class="cn">NA</span>,</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">as.telemetry</span><span class="op">(</span><span class="va">object</span>,timeformat<span class="op">=</span><span class="st">"auto"</span>,timezone<span class="op">=</span><span class="st">"UTC"</span>,projection<span class="op">=</span><span class="cn">NULL</span>,datum<span class="op">=</span><span class="st">"WGS84"</span>,dt.hot<span class="op">=</span><span class="cn">NA</span>,</span>
 <span>             timeout<span class="op">=</span><span class="cn">Inf</span>,na.rm<span class="op">=</span><span class="st">"row"</span>,mark.rm<span class="op">=</span><span class="cn">FALSE</span>,keep<span class="op">=</span><span class="cn">FALSE</span>,drop<span class="op">=</span><span class="cn">TRUE</span>,<span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for character</span></span>
-<span><span class="fu">as.telemetry</span><span class="op">(</span><span class="va">object</span>,timeformat<span class="op">=</span><span class="st">""</span>,timezone<span class="op">=</span><span class="st">"UTC"</span>,projection<span class="op">=</span><span class="cn">NULL</span>,datum<span class="op">=</span><span class="st">"WGS84"</span>,dt.hot<span class="op">=</span><span class="cn">NA</span>,</span>
+<span><span class="fu">as.telemetry</span><span class="op">(</span><span class="va">object</span>,timeformat<span class="op">=</span><span class="st">"auto"</span>,timezone<span class="op">=</span><span class="st">"UTC"</span>,projection<span class="op">=</span><span class="cn">NULL</span>,datum<span class="op">=</span><span class="st">"WGS84"</span>,dt.hot<span class="op">=</span><span class="cn">NA</span>,</span>
 <span>             timeout<span class="op">=</span><span class="cn">Inf</span>,na.rm<span class="op">=</span><span class="st">"row"</span>,mark.rm<span class="op">=</span><span class="cn">FALSE</span>,keep<span class="op">=</span><span class="cn">FALSE</span>,drop<span class="op">=</span><span class="cn">TRUE</span>,<span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for data.frame</span></span>
-<span><span class="fu">as.telemetry</span><span class="op">(</span><span class="va">object</span>,timeformat<span class="op">=</span><span class="st">""</span>,timezone<span class="op">=</span><span class="st">"UTC"</span>,projection<span class="op">=</span><span class="cn">NULL</span>,datum<span class="op">=</span><span class="st">"WGS84"</span>,dt.hot<span class="op">=</span><span class="cn">NA</span>,</span>
+<span><span class="fu">as.telemetry</span><span class="op">(</span><span class="va">object</span>,timeformat<span class="op">=</span><span class="st">"auto"</span>,timezone<span class="op">=</span><span class="st">"UTC"</span>,projection<span class="op">=</span><span class="cn">NULL</span>,datum<span class="op">=</span><span class="st">"WGS84"</span>,dt.hot<span class="op">=</span><span class="cn">NA</span>,</span>
 <span>             timeout<span class="op">=</span><span class="cn">Inf</span>,na.rm<span class="op">=</span><span class="st">"row"</span>,mark.rm<span class="op">=</span><span class="cn">FALSE</span>,keep<span class="op">=</span><span class="cn">FALSE</span>,drop<span class="op">=</span><span class="cn">TRUE</span>,<span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for Move</span></span>
-<span><span class="fu">as.telemetry</span><span class="op">(</span><span class="va">object</span>,timeformat<span class="op">=</span><span class="st">""</span>,timezone<span class="op">=</span><span class="st">"UTC"</span>,projection<span class="op">=</span><span class="cn">NULL</span>,datum<span class="op">=</span><span class="st">"WGS84"</span>,dt.hot<span class="op">=</span><span class="cn">NA</span>,</span>
+<span><span class="fu">as.telemetry</span><span class="op">(</span><span class="va">object</span>,timeformat<span class="op">=</span><span class="st">"auto"</span>,timezone<span class="op">=</span><span class="st">"UTC"</span>,projection<span class="op">=</span><span class="cn">NULL</span>,datum<span class="op">=</span><span class="st">"WGS84"</span>,dt.hot<span class="op">=</span><span class="cn">NA</span>,</span>
 <span>             timeout<span class="op">=</span><span class="cn">Inf</span>,na.rm<span class="op">=</span><span class="st">"row"</span>,mark.rm<span class="op">=</span><span class="cn">FALSE</span>,keep<span class="op">=</span><span class="cn">FALSE</span>,drop<span class="op">=</span><span class="cn">TRUE</span>,<span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for telemetry</span></span>
@@ -115,7 +115,7 @@
 <dd><p>Timezone argument for <code><a href="https://rdrr.io/r/base/strptime.html" class="external-link">strptime</a></code>, corresponding to the input data.</p></dd>
 
   <dt>projection</dt>
-<dd><p>Optional PROJ projection argument to be fed to <code><a href="https://rdrr.io/pkg/sp/man/spTransform.html" class="external-link">spTransform</a></code>, for the <b>output</b> telemetry object.</p></dd>
+<dd><p>Optional PROJ projection argument for the <b>output</b> telemetry object.</p></dd>
 
   <dt>datum</dt>
 <dd><p>Optional argument to specify the <b>input</b> longitude-latitude or UTM datum. The default is WGS84.</p></dd>

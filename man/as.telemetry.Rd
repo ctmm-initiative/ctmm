@@ -15,17 +15,17 @@
 \description{Functions to import MoveBank csv files, \code{data.frame}, and \code{Move} objects, coerce them into \code{telemetry} objects, summarize them, and combine data from multiple tracking devices.}
 
 \usage{
-as.telemetry(object,timeformat="auto",timezone="UTC",projection=NULL,datum="WGS84",dt.hot=NA,
-             timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
+as.telemetry(object,timeformat="auto",timezone="UTC",projection=NULL,datum="WGS84",
+             dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
 
-\S3method{as.telemetry}{character}(object,timeformat="auto",timezone="UTC",projection=NULL,datum="WGS84",dt.hot=NA,
-             timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
+\S3method{as.telemetry}{character}(object,timeformat="auto",timezone="UTC",projection=NULL,datum="WGS84",
+             dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
 
-\S3method{as.telemetry}{data.frame}(object,timeformat="auto",timezone="UTC",projection=NULL,datum="WGS84",dt.hot=NA,
-             timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
+\S3method{as.telemetry}{data.frame}(object,timeformat="auto",timezone="UTC",projection=NULL,datum="WGS84",
+             dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
 
-\S3method{as.telemetry}{Move}(object,timeformat="auto",timezone="UTC",projection=NULL,datum="WGS84",dt.hot=NA,
-             timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
+\S3method{as.telemetry}{Move}(object,timeformat="auto",timezone="UTC",projection=NULL,datum="WGS84",
+             dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
 
 \S3method{summary}{telemetry}(object,...)
 

@@ -1,4 +1,4 @@
-ctmm 1.2.0 (2023-09-03)
+ctmm 1.2.0 (2023-09-07)
 ================
 * new functions rsf.select(), intensity()
 * new functions sdm.fit(), sdm.select()
@@ -25,6 +25,7 @@ ctmm 1.2.0 (2023-09-03)
 * bugfix in rates() debias=TRUE
 * bugfix in summary() of population mean location DOF
 * bugfix in distances() for 0/0
+* bugfix in UD polygon export for tiny areas
 * as.telemetry() UTM import updated to new PROJ specification
 * mean.ctmm() improved convergence, numerical stability, and covariance selection
 * meta() stability improvements for tiny DOF estimates, and OUf support

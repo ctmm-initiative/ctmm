@@ -32,7 +32,7 @@ rsf.select <- function(data,UD,R=list(),formula=NULL,verbose=FALSE,IC="AICc",tra
     # dummy data for model parameter names
     get.terms <- function(formula)
     {
-      if(class(formula)[1]=="character") { formula <- as.formula(formula) }
+      if(class(formula)[1]=="character") { formula <- stats::as.formula(formula) }
 
       DATA <- data.frame(data)[1:2,]
       DATA[RVARS] <- as.list(rep(0,length(RVARS)))

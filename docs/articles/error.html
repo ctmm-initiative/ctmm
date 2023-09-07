@@ -90,7 +90,7 @@
       <h1 data-toc-skip>Telemetry error</h1>
                         <h4 data-toc-skip class="author">Christen H. Fleming</h4>
             
-            <h4 data-toc-skip class="date">2023-07-31</h4>
+            <h4 data-toc-skip class="date">2023-09-03</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/ctmm-initiative/ctmm/blob/HEAD/vignettes/error.Rmd" class="external-link"><code>vignettes/error.Rmd</code></a></small>
       <div class="hidden name"><code>error.Rmd</code></div>
@@ -200,10 +200,9 @@
 <p>High-speed segments are colored in blue, while distant locations are colored in red. More emphasis is placed on the more extreme locations in the <code>outlie</code> plot. Visually we can see at least one outlier in the wood turtle data. The output of <code>outlie</code> also contains the error-informed speed and distance estimates (in SI units) used to generate the plot.</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.telemetry.html">plot</a></span><span class="op">(</span><span class="va">OUT</span>,units<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## Warning in pmin(x[3, ], x[, 2] * 2): an argument will be fractionally recycled</span></span></code></pre>
 <p><img src="error_files/figure-html/unnamed-chunk-10-1.png" width="700"></p>
 <p>A sustained speed of 0.1 m/s is not biologically implausible for a wood turtle, but this location is highly suspicious, both in terms of speed and lack of proximity. After removing the outlier, we can check the data again.</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">BAD</span> <span class="op">&lt;-</span> <span class="va">OUT</span><span class="op">$</span><span class="va">speed</span><span class="op">&gt;</span><span class="fl">0.08</span> <span class="co"># not appropriate for other species!</span></span>
 <span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="op">!</span><span class="va">BAD</span>,<span class="op">]</span></span>
 <span><span class="fu"><a href="../reference/outlie.html">outlie</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="va">OUT</span></span></code></pre></div>
@@ -228,7 +227,7 @@
 <h4 id="fitting-with-calibrated-data">Fitting with calibrated data<a class="anchor" aria-label="anchor" href="#fitting-with-calibrated-data"></a>
 </h4>
 <p>For calibrated errors, we have to set <code>error=TRUE</code> in the model guess to fit with telemetry error accounted for.</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># automated guesstimate for calibrated data</span></span>
 <span><span class="va">GUESS</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/variogram.fit.html">ctmm.guess</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span>,CTMM<span class="op">=</span><span class="fu"><a href="../reference/ctmm.fit.html">ctmm</a></span><span class="op">(</span>error<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>,interactive<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co"># stepwise fitting # CRAN policy limits us to 2 cores</span></span>
@@ -236,7 +235,7 @@
 <pre><code><span><span class="co">## * Fitting model OUF error</span></span></code></pre>
 <pre><code><span><span class="co">## * Fitting model OUF anisotropic error</span></span></code></pre>
 <pre><code><span><span class="co">## * Fitting model IID anisotropic error</span></span></code></pre>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># if you get errors on your platform, then try cores=1</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">FIT</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## $name</span></span>
@@ -244,26 +243,26 @@
 <span><span class="co">## </span></span>
 <span><span class="co">## $DOF</span></span>
 <span><span class="co">##      mean      area diffusion     speed </span></span>
-<span><span class="co">##  13.90245  23.94090 194.84098   0.00000 </span></span>
+<span><span class="co">##  13.90249  23.94136 194.84110   0.00000 </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $CI</span></span>
 <span><span class="co">##                                       low         est        high</span></span>
-<span><span class="co">## area (hectares)                 13.619555   21.269669   30.597599</span></span>
-<span><span class="co">## τ[position] (days)               3.561601    5.684270    9.072023</span></span>
-<span><span class="co">## diffusion (square meters/day) 4663.860660 5394.806667 6178.183309</span></span>
-<span><span class="co">## error 2D (meters)               18.539462   21.885632   25.225897</span></span>
-<span><span class="co">## error 3D (meters)                6.590224    7.063685    7.536722</span></span></code></pre>
+<span><span class="co">## area (hectares)                 13.619548   21.269558   30.597343</span></span>
+<span><span class="co">## τ[position] (days)               3.561605    5.684252    9.071956</span></span>
+<span><span class="co">## diffusion (square meters/day) 4663.846012 5394.789474 6178.163371</span></span>
+<span><span class="co">## error 2D (meters)               18.539452   21.885615   25.225874</span></span>
+<span><span class="co">## error 3D (meters)                6.590233    7.063696    7.536735</span></span></code></pre>
 <p><code>trace=TRUE</code> allows us to see the models considered. <code>verbose=TRUE</code> would save each model. Since we started with a finite amount of calibration data, the location-error parameter estimates were updated by the tracking data, and we can compare the results here with the previous estimates in <code>summary(UERE)</code>.</p>
 </div>
 <div class="section level4">
 <h4 id="simultaneous-fitting-with-uncalibrated-data">Simultaneous fitting with uncalibrated data<a class="anchor" aria-label="anchor" href="#simultaneous-fitting-with-uncalibrated-data"></a>
 </h4>
 <p>Fitting with unknown errors is a method of last resort. We have to provide an initial guess for <code>error</code>, which will be the device’s RMS UERE. <code>error=10</code> is usually a good guess for GPS data (other than e-obs). Unlike <code>uere.fit</code>, <code>ctmm.fit</code> is not yet coded to use the location classes, as simultaneous fitting is a method of last resort that becomes increasingly dangerous with more location classes.</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># delete UERE information</span></span>
 <span><span class="fu"><a href="../reference/uere.html">uere</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></span></code></pre></div>
 <p>The only difference is that you have to provide an initial guess for the RMS UERE. Otherwise, the steps are the same.</p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># automated guesstimate for uncalibrated data (with 10 meter RMS UERE guess)</span></span>
 <span><span class="va">GUESS</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/variogram.fit.html">ctmm.guess</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span>,CTMM<span class="op">=</span><span class="fu"><a href="../reference/ctmm.fit.html">ctmm</a></span><span class="op">(</span>error<span class="op">=</span><span class="fl">10</span><span class="op">)</span>,interactive<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co"># fit and select models # CRAN policy limits us to 2 cores</span></span>
@@ -271,7 +270,7 @@
 <pre><code><span><span class="co">## * Fitting model OUF error</span></span></code></pre>
 <pre><code><span><span class="co">## * Fitting model OUF anisotropic error</span></span></code></pre>
 <pre><code><span><span class="co">## * Fitting model IID anisotropic error</span></span></code></pre>
-<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># if you get errors on your platform, then try cores=1</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">FIT</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## $name</span></span>
@@ -279,22 +278,22 @@
 <span><span class="co">## </span></span>
 <span><span class="co">## $DOF</span></span>
 <span><span class="co">##      mean      area diffusion     speed </span></span>
-<span><span class="co">##  12.85425  21.90137 140.47109   0.00000 </span></span>
+<span><span class="co">##  12.85422  21.90132 140.47091   0.00000 </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $CI</span></span>
 <span><span class="co">##                                       low         est       high</span></span>
-<span><span class="co">## area (hectares)                 13.034809   20.823760   30.40780</span></span>
-<span><span class="co">## τ[position] (days)               3.734217    6.186506   10.24923</span></span>
-<span><span class="co">## diffusion (square meters/day) 4229.456811 5026.252682 5890.79469</span></span>
-<span><span class="co">## error 2D (meters)                7.750700   10.815846   13.87583</span></span>
-<span><span class="co">## error 3D (meters)                6.940400    8.749039   10.55406</span></span></code></pre>
+<span><span class="co">## area (hectares)                 13.034790   20.823740   30.40778</span></span>
+<span><span class="co">## τ[position] (days)               3.734226    6.186526   10.24927</span></span>
+<span><span class="co">## diffusion (square meters/day) 4229.442173 5026.235870 5890.77557</span></span>
+<span><span class="co">## error 2D (meters)                7.750653   10.815762   13.87571</span></span>
+<span><span class="co">## error 3D (meters)                6.940465    8.749101   10.55412</span></span></code></pre>
 <p>Here, fitting the RMS UERE simultaneously with the movement model produced a largely consistent result. This will not always be the case.</p>
 </div>
 <div class="section level4">
 <h4 id="fitting-with-uncalibrated-data-under-a-prior">Fitting with uncalibrated data under a prior<a class="anchor" aria-label="anchor" href="#fitting-with-uncalibrated-data-under-a-prior"></a>
 </h4>
 <p>An alternative method of last resort is to simply assign a range of credible RMS UERE values to the data. Again, 10-meter error is usually a good guess for 3D GPS data. For e-obs, and other devices that report error in meters, a number on the order of 1 is usually more relevant.</p>
-<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># these data have two location classes: 2D &amp; 3D</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu"><a href="../reference/uere.html">uere</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## , , horizontal</span></span>
@@ -302,7 +301,7 @@
 <span><span class="co">##    low est high</span></span>
 <span><span class="co">## 2D   0   1  Inf</span></span>
 <span><span class="co">## 3D   0   1  Inf</span></span></code></pre>
-<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># assign 20-meter 2D RMS UERE and 10-meter 3D RMS UERE</span></span>
 <span><span class="fu"><a href="../reference/uere.html">uere</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">20</span>,<span class="fl">10</span><span class="op">)</span></span>
 <span><span class="co"># for one location class, the above would likely be unnecessary, but would look like</span></span>
@@ -316,13 +315,13 @@
 <span><span class="co">##    low est high</span></span>
 <span><span class="co">## 2D  20  20   20</span></span>
 <span><span class="co">## 3D  10  10   10</span></span></code></pre>
-<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># this is because the degrees-of-freedom are set to Inf</span></span>
 <span><span class="va">UERE</span><span class="op">$</span><span class="va">DOF</span></span></code></pre></div>
 <pre><code><span><span class="co">##    horizontal</span></span>
 <span><span class="co">## 2D        Inf</span></span>
 <span><span class="co">## 3D        Inf</span></span></code></pre>
-<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># here I set the DOF to a smaller value</span></span>
 <span><span class="va">UERE</span><span class="op">$</span><span class="va">DOF</span><span class="op">[</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">2</span></span>
 <span><span class="co"># which now gives plausible credible intervals</span></span>
@@ -332,7 +331,7 @@
 <span><span class="co">##         low est     high</span></span>
 <span><span class="co">## 2D 6.960018  20 33.38156</span></span>
 <span><span class="co">## 3D 3.480009  10 16.69078</span></span></code></pre>
-<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># assign the prior to the data</span></span>
 <span><span class="fu"><a href="../reference/uere.html">uere</a></span><span class="op">(</span><span class="va">turtle</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">UERE</span></span>
 <span><span class="co"># automated guesstimate for calibrated data</span></span>
@@ -342,7 +341,7 @@
 <pre><code><span><span class="co">## * Fitting model OUF error</span></span></code></pre>
 <pre><code><span><span class="co">## * Fitting model OUF anisotropic error</span></span></code></pre>
 <pre><code><span><span class="co">## * Fitting model IID anisotropic error</span></span></code></pre>
-<div class="sourceCode" id="cb53"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># if you get weird errors on your platform, then try cores=1</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">FIT</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## $name</span></span>
@@ -350,15 +349,15 @@
 <span><span class="co">## </span></span>
 <span><span class="co">## $DOF</span></span>
 <span><span class="co">##      mean      area diffusion     speed </span></span>
-<span><span class="co">##  12.70942  21.64698 143.50532   0.00000 </span></span>
+<span><span class="co">##  12.70937  21.64665 143.50517   0.00000 </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $CI</span></span>
 <span><span class="co">##                                       low         est       high</span></span>
-<span><span class="co">## area (hectares)                 12.966264   20.777977   30.40181</span></span>
-<span><span class="co">## τ[position] (days)               3.773823    6.262938   10.39381</span></span>
-<span><span class="co">## diffusion (square meters/day) 4197.637126 4978.900847 5825.85428</span></span>
-<span><span class="co">## error 2D (meters)                9.462777   12.388739   15.30889</span></span>
-<span><span class="co">## error 3D (meters)                7.186916    8.889054   10.58785</span></span></code></pre>
+<span><span class="co">## area (hectares)                 12.966258   20.778049   30.40200</span></span>
+<span><span class="co">## τ[position] (days)               3.773825    6.262968   10.39390</span></span>
+<span><span class="co">## diffusion (square meters/day) 4197.630753 4978.893767 5825.84647</span></span>
+<span><span class="co">## error 2D (meters)                9.462777   12.388740   15.30889</span></span>
+<span><span class="co">## error 3D (meters)                7.186928    8.889067   10.58786</span></span></code></pre>
 <p>This method is still being developed and so this material is subject to change.</p>
 </div>
 </div>

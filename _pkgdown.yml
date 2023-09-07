@@ -20,6 +20,8 @@ navbar:
       href: articles/akde.html
     - text: Telemetry Error
       href: articles/error.html
+    - text: Encounters and Interactions
+      href: articles/interactions.html
     - text: Periodograms and Periodicities
       href: articles/periodogram.html
   right:

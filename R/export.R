@@ -86,6 +86,21 @@ SpatialPolygonsDataFrame.UD <- function(object,convex=FALSE,level.UD=0.95,level=
     if(length(CL)==0) # nudge sp to make a contour
     { CL <- grDevices::contourLines(UD$r,z=UD$CDF,levels=P[i]*(1+.Machine$double.eps)) }
 
+    if(length(CL)==0) # fallback on the mode
+    {
+      CL <- list()
+      CL$level <- P[i]
+      MODE <- which.min(UD$CDF)
+      MODE <- arrayInd(MODE,dim(UD$CDF))
+      MODE <- c( UD$r$x[ MODE[1,1] ] , UD$r$y[ MODE[1,2] ] )
+      AREA <- summary(UD,level.UD=P[i],units=FALSE)$CI[2]
+      RAD <- sqrt(AREA/pi)
+      RAD <- max(RAD,.Machine$double.eps)
+      CL$x <- MODE[1] + c(1,0,-1,0)*RAD
+      CL$y <- MODE[2] + c(0,1,0,-1)*RAD
+      CL <- list(CL)
+    }
+
     # # sp complains when less than 4 vertices
     # GOOD <- rep(TRUE,length(CL))
     # for(i in 1:length(CL))

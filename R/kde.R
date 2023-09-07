@@ -925,7 +925,7 @@ CI.UD <- function(object,level.UD=0.95,level=0.95,P=FALSE,convex=FALSE)
   interpolate <- function(y,val)
   {
     x <- last(which(y < val))
-    if(is.null(x))
+    if(!length(x))
     { x <- 0 }
     else if(x==length(y))
     { x <- length(y) }

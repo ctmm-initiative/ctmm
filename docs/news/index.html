@@ -67,7 +67,7 @@
     </div>
 
     <div class="section level2">
-<h2 class="page-header" data-toc-text="1.2.0" id="ctmm-120-2023-07-31">ctmm 1.2.0 (2023-07-31)<a class="anchor" aria-label="anchor" href="#ctmm-120-2023-07-31"></a></h2>
+<h2 class="page-header" data-toc-text="1.2.0" id="ctmm-120-2023-09-03">ctmm 1.2.0 (2023-09-03)<a class="anchor" aria-label="anchor" href="#ctmm-120-2023-09-03"></a></h2>
 <ul><li>new functions rsf.select(), intensity()</li>
 <li>new functions sdm.fit(), sdm.select()</li>
 <li>new function writeVector(), depreciating function writeShapefile()</li>
@@ -80,12 +80,14 @@
 <li>new argument ‘compute’ in ctmm.loglike()</li>
 <li>as.telemetry() now supports GBIF format data</li>
 <li>as.telemetry() datum argument now works on UTM import, and is no longer to a be a complete PROJ string</li>
+<li>as.telemetry() timeformat=‘auto’ now default</li>
 <li>as.telemetry(), plot.telemetry(), rsf.fit() updated from sp to sf transforms</li>
 <li>distance() can now take location arguments</li>
 <li>plot.telemetry() col.DF &amp; col.level arguments can now be color() lists</li>
 <li>suitability() now produces a raster stack corresponding to the CIs</li>
 <li>suitability() on population RSFs now outputs the population suitability</li>
 <li>suitability() extrapolation disabled</li>
+<li>bugfix in tbind for conflicting location classes</li>
 <li>bugfix in suitability()</li>
 <li>bugfix in distance() method=“Euclidean”, debias=TRUE</li>
 <li>bugfix in rates() debias=TRUE</li>
@@ -93,7 +95,7 @@
 <li>bugfix in distances() for 0/0</li>
 <li>as.telemetry() UTM import updated to new PROJ specification</li>
 <li>mean.ctmm() improved convergence, numerical stability, and covariance selection</li>
-<li>meta() stability improvements for tiny DOF estimates</li>
+<li>meta() stability improvements for tiny DOF estimates, and OUf support</li>
 <li>overlap() and meta() can now extract object names</li>
 <li>pkde(…) -&gt; akde(…) -&gt; bandwidth(…) -&gt; mean(…) arguments now passed</li>
 <li>rsf.fit() AICc formula improved</li>

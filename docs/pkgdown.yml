@@ -4,7 +4,8 @@ pkgdown_sha: ~
 articles:
   akde: akde.html
   error: error.html
+  interactions: interactions.html
   periodogram: periodogram.html
   variogram: variogram.html
-last_built: 2023-07-31T15:47Z
+last_built: 2023-09-04T01:44Z
 
