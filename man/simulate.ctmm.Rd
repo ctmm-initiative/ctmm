@@ -36,7 +36,7 @@ simulate(object,nsim=1,seed=NULL,...)
   \item{dt}{Timestep to space the prediction or simulation over if \code{data} is specified.}
   \item{res}{Average number of locations to predict or simulate per \code{data} time.}
   \item{complete}{Additionally calculate timestamps and geographic coordinates.}
-  \item{nsim}{Not yet supported.}
+  \item{nsim}{Generates a list of \code{nsim} simulations.}
   \item{seed}{Optional random seed to fix.}
   \item{precompute}{Precalculate matrices of the Kalman filter (see details).}
   \item{...}{Unused options.}

@@ -44,6 +44,9 @@
       <a href="../articles/error.html">Telemetry Error</a>
     </li>
     <li>
+      <a href="../articles/interactions.html">Encounters and Interactions</a>
+    </li>
+    <li>
       <a href="../articles/periodogram.html">Periodograms and Periodicities</a>
     </li>
   </ul></li>
@@ -78,7 +81,7 @@
 <span></span>
 <span><span class="fu">distances</span><span class="op">(</span><span class="va">data</span>,<span class="va">CTMM</span>,t<span class="op">=</span><span class="cn">NULL</span>,level<span class="op">=</span><span class="fl">0.95</span>,<span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">proximity</span><span class="op">(</span><span class="va">data</span>,<span class="va">CTMM</span>,GUESS<span class="op">=</span><span class="fu"><a href="ctmm.fit.html">ctmm</a></span><span class="op">(</span>error<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>,debias<span class="op">=</span><span class="cn">TRUE</span>,level<span class="op">=</span><span class="fl">0.95</span>,<span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">proximity</span><span class="op">(</span><span class="va">data</span>,<span class="va">CTMM</span>,t<span class="op">=</span><span class="cn">NULL</span>,GUESS<span class="op">=</span><span class="fu"><a href="ctmm.fit.html">ctmm</a></span><span class="op">(</span>error<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>,debias<span class="op">=</span><span class="cn">TRUE</span>,level<span class="op">=</span><span class="fl">0.95</span>,<span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -90,7 +93,7 @@
 <dd><p>A <code>list</code> of two <code>ctmm</code> movement-model objects.</p></dd>
 
   <dt>t</dt>
-<dd><p>An optional vector of times over which to predict the location differences.</p></dd>
+<dd><p>An optional vector of times or range of times over which to predict the location differences.</p></dd>
 
   <dt>complete</dt>
 <dd><p>Additionally calculate timestamps and geographic coordinates.</p></dd>
@@ -160,7 +163,7 @@
 <span class="r-in"><span><span class="co"># disabling location error for speed</span></span></span>
 <span class="r-in"><span><span class="fu">proximity</span><span class="op">(</span><span class="va">DATA</span>,<span class="va">FITS</span>,GUESS<span class="op">=</span><span class="fu"><a href="ctmm.fit.html">ctmm</a></span><span class="op">(</span>error<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       low       est      high </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 0.2336485 0.3972440 0.6333086 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 0.2336486 0.3972443 0.6333092 </span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>

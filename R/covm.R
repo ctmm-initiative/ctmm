@@ -228,7 +228,7 @@ squeeze.covm <- function(sigma,smgm=NULL,circle=FALSE)
 
 
 # invert covariance matrix
-solve.covm <- function(sigma,pseudo=FALSE)
+solve_covm <- function(sigma,pseudo=FALSE)
 {
   isotropic <- sigma@isotropic
   axes <- colnames(sigma)
@@ -278,10 +278,10 @@ fn.covm <- function(sigma,fn)
 mpow.covm <- function(sigma,pow) { fn.covm(sigma,function(s){s^pow}) }
 
 # matrix logarithm
-log.covm <- function(sigma,pow) { fn.covm(sigma,log) }
+log_covm <- function(sigma,pow) { fn.covm(sigma,log) }
 
 # matrix exponental
-exp.covm <- function(sigma,pow) { fn.covm(sigma,exp) }
+exp_covm <- function(sigma,pow) { fn.covm(sigma,exp) }
 
 
 ####### calculate variance and variance-covariance from major/minor information
@@ -469,7 +469,7 @@ COV.covm <- function(sigma,n,k=1,REML=TRUE)
 
 
 # return the canonical parameters of a covariance matrix
-pars.covm <- function(COVM)
+pars_covm <- function(COVM)
 {
   if(COVM@isotropic)
   { return(COVM@par[1]) }

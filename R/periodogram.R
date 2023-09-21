@@ -122,7 +122,7 @@ periodogram <- function(data,CTMM=NULL,dt=NULL,res.freq=1,res.time=1,fast=NULL,a
     { stop("Lagrange interpolation failed. Try a different value of res.time.") }
   }
 
-  result <- new.periodogram(result,info=mean.info(data))
+  result <- new.periodogram(result,info=mean_info(data))
   attr(result,"info")$axes <- axes
 
 
@@ -240,7 +240,7 @@ periodogram.slow <- function(data,f=NULL,axes=c("x","y"))
 
 
 # estimate the envelope of an oversampled/oscillatory periodigram
-max.periodogram <- function(LSP,df=stats::median(diff(LSP$f)))
+max_periodogram <- function(LSP,df=stats::median(diff(LSP$f)))
 {
   #P <- log(P)
   dP <- diff(LSP$P)
@@ -278,7 +278,7 @@ plot.periodogram <- function(x,max=FALSE,diagnostic=FALSE,col="black",transparen
   f <- x$f
 
   LSP <- data.frame(f=f,P=log(x$LSP))
-  if(max) { LSP <- max.periodogram(LSP) }
+  if(max) { LSP <- max_periodogram(LSP) }
   # re-scale to max at 0
   LSP$P <- LSP$P - max(LSP$P)
 
@@ -313,7 +313,7 @@ plot.periodogram <- function(x,max=FALSE,diagnostic=FALSE,col="black",transparen
   if(diagnostic)
   {
     LSP <- data.frame(f=f,P=log(x$SSP))
-    if(max) { LSP <- max.periodogram(LSP) }
+    if(max) { LSP <- max_periodogram(LSP) }
     LSP$P <- LSP$P - max(LSP$P)
 
     col <- malpha("red",alpha=((f[1]/f)^transparency))

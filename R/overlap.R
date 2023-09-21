@@ -154,14 +154,14 @@ overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,method="Bhattach
     BIAS <- BIAS + max( ElogW(sigma,n0)/2 - ElogW(CTMM1$sigma,n1)/4 - ElogW(CTMM2$sigma,n2)/4 , 0)
     # this is actually the expectation value
   }
-  else if(method=="Encounter") # encounter-rate overlap measure
+  else if(method=="Encounter") # encounter-probability overlap measure
   {
     BIAS <- BIAS/4
     # AMGM covariance terms
     BIAS <- BIAS + max( ElogW(sigma,n0)/2 - ElogW(CTMM1$sigma,n1)/4 - ElogW(CTMM2$sigma,n2)/4 , 0)
     # this is actually the expectation value
   }
-  else if(method=="Rate") # encounter rate
+  else if(method=="Rate") # encounter probability
   {
     BIAS <- BIAS/4
     # covariance terms

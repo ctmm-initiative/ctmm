@@ -1,5 +1,6 @@
-ctmm 1.2.0 (2023-09-07)
+ctmm 1.2.0 (2023-09-17)
 ================
+* new function names: cde() and encounter() replacing encounter() and rates()
 * new functions rsf.select(), intensity()
 * new functions sdm.fit(), sdm.select()
 * new function writeVector(), depreciating function writeShapefile()
@@ -10,6 +11,7 @@ ctmm 1.2.0 (2023-09-07)
 * new argument 'dt.hot' in as.telemetry()
 * new argument 'variable' in Log()
 * new argument 'compute' in ctmm.loglike()
+* new argument 't' in proximity()
 * as.telemetry() now supports GBIF format data
 * as.telemetry() datum argument now works on UTM import, and is no longer to a be a complete PROJ string
 * as.telemetry() timeformat='auto' now default

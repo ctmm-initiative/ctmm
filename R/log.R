@@ -15,7 +15,7 @@ Log <- function(x,variable="area",debias=TRUE,...)
 }
 
 
-log.ctmms <- function(x,variable="area",debias=TRUE,level.UD=0.95,...)
+log_ctmms <- function(x,variable="area",debias=TRUE,level.UD=0.95,...)
 {
   x <- listify(x)
   x <- import.variable(x,variable=variable,level.UD=level.UD)
@@ -30,7 +30,7 @@ log.ctmms <- function(x,variable="area",debias=TRUE,level.UD=0.95,...)
   {
     y$VAR.log <- trigamma(x$DOF/2)
 
-    BIAS <- log.chi2.bias(x$DOF)
+    BIAS <- log_chi2_bias(x$DOF)
     y$log <- y$log - BIAS
   }
 
@@ -38,21 +38,21 @@ log.ctmms <- function(x,variable="area",debias=TRUE,level.UD=0.95,...)
 }
 
 
-log.area <- function(x,variable="area",debias=TRUE,...)
-{ log.ctmms(x,variable=variable,debias=debias,...) }
+log_area <- function(x,variable="area",debias=TRUE,...)
+{ log_ctmms(x,variable=variable,debias=debias,...) }
 
 
-log.UD <- function(x,variable="area",debias=TRUE,level.UD=0.95,...)
+log_UD <- function(x,variable="area",debias=TRUE,level.UD=0.95,...)
 {
   x <- listify(x)
   x <- lapply(x,function(y){summary(y,level.UD=level.UD,units=FALSE)})
-  x <- log.area(x,debias=debias,...)
+  x <- log_area(x,debias=debias,...)
   return(x)
 }
 
 
 # speed
-log.speed <- function(x,variable="speed",debias=TRUE,...)
+log_speed <- function(x,variable="speed",debias=TRUE,...)
 {
   x <- listify(x)
   x <- import.variable(x,variable="speed",chi=TRUE)
@@ -81,7 +81,7 @@ log.speed <- function(x,variable="speed",debias=TRUE,...)
 Exp <- function(est,VAR.est=0,VAR=0,VAR.VAR=0,variable="area",debias=TRUE,level=0.95,units=TRUE,...)
 {
   # convert from log-chi to log-chi^2
-  R <- exp.log(est=est,VAR.est=VAR.est,VAR=VAR,VAR.VAR=VAR.VAR,...)
+  R <- exp_log(est=est,VAR.est=VAR.est,VAR=VAR,VAR.VAR=VAR.VAR,...)
   est <- R$mu
   VAR <- R$VAR
 
@@ -101,13 +101,13 @@ Exp <- function(est,VAR.est=0,VAR=0,VAR.VAR=0,variable="area",debias=TRUE,level=
   CI <- chisq.ci(est,VAR=VAR,level=level)
 
   # apply units and name
-  CI <- summary.UD.format(CI,DOF/2,units=units)
+  CI <- summary_UD_format(CI,DOF/2,units=units)
 
   return(CI)
 }
 
 
-exp.log <- function(est,VAR.est=0,VAR=0,VAR.VAR=0,...)
+exp_log <- function(est,VAR.est=0,VAR=0,VAR.VAR=0,...)
 {
   mu <- exp(est + VAR/2)
   # grad <- c(1,1/2) %o% mu

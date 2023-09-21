@@ -100,7 +100,7 @@ intensity <- function(data,UD,RSF,R=list(),variable=NULL,empirical=FALSE,level=0
   # }
   # else
   { grid <- NULL }
-  grid <- format.grid(grid,axes=axes)
+  grid <- format_grid(grid,axes=axes)
   grid <- kde.grid(data,H=H,axes=axes,alpha=error,res=res,dr=dr,grid=grid,EXT.min=EXT)
   KDE <- kde(data,H=H,axes=axes,CTMM=RFIT,bias=bias,W=w,alpha=error,dr=dr,grid=grid,...)
 

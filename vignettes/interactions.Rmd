@@ -101,10 +101,10 @@ Visually, we can see that there is a decent amount of overlap between these two 
 OVER$CI["Pepper","Queen",]
 ```
 
-This overlap suggests a reasonably strong potential for these animals to encounter one another, but this then begs the question of where might these two individuals meet? Under the assumption that an encounter were to occur, the CDE provides an answer to this question. this is estimated by applying the `encounter()` function on a list of AKDE home range estimates.
+This overlap suggests a reasonably strong potential for these animals to encounter one another, but this then begs the question of where might these two individuals meet? Under the assumption that an encounter were to occur, the CDE provides an answer to this question. this is estimated by applying the `cde()` function on a list of AKDE home range estimates.
 
 ```{r}
-CDE <- encounter(AKDES[c("Pepper", "Queen")])
+CDE <- cde(AKDES[c("Pepper", "Queen")])
 
 #Visualise the CDE
 plot(buffalo[c("Pepper", "Queen")],
@@ -228,10 +228,10 @@ plot(N ~ enc_rad,
 
 As an additional caveat, if a pair of individuals encounter one another, a single encounter event may persist for some time. Depending on how finely sampled the data may be, there is thus the potential for double counting encounter events (or more). Care should therefore be taken when performing such an analysis.
 
-Another metric of encounter rates is available from the `rates()` function, which estimates the __relative__ encounter rates between individuals.
+Another metric of encounter rates is available from the `encounter()` function, which estimates the __relative__ encounter rates between individuals.
 
 ```{r}
-RATES <- rates(AKDES)
+RATES <- encounter(AKDES)
 ```
 
 This is an overlap class object with all of the same structure as defined above. Looking at the points estimates we can see these relative encounter rates.

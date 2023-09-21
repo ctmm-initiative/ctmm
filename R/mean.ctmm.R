@@ -102,7 +102,7 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
 
   for(i in 1:N)
   {
-    x[[i]] <- log.ctmm(x[[i]],debias=debias)
+    x[[i]] <- log_ctmm(x[[i]],debias=debias)
     features <- names(x[[i]]$par)
 
     if(TAU.EXPAND && "tau" %in% features)
@@ -531,7 +531,7 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
 
   # reverse log transformation
   # R <- set.parameters(R,par,linear.cov=TRUE)
-  R <- exp.ctmm(R,debias=debias,variance=VARS)
+  R <- exp_ctmm(R,debias=debias,variance=VARS)
 
   return(R)
 }
@@ -630,7 +630,7 @@ mean.ctmm <- function(x,weights=NULL,sample=TRUE,debias=TRUE,IC="AIC",trace=TRUE
   # }
 
   n <- length(x)
-  info <- mean.info(x)
+  info <- mean_info(x)
   axes <- x[[1]]$axes
 
   if(is.null(weights))
@@ -730,7 +730,7 @@ mean.ctmm <- function(x,weights=NULL,sample=TRUE,debias=TRUE,IC="AIC",trace=TRUE
 
 
 ## population stationary distribution
-mean.pop <- function(CTMM)
+mean_pop <- function(CTMM)
 {
   # spread (x,y)
   sigma <- CTMM$POV.mu + CTMM$sigma

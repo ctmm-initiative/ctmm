@@ -227,7 +227,7 @@ get.taus <- function(CTMM,zeroes=FALSE,simplify=FALSE)
 
 
 # returns the canonical parameters of a tau vector
-pars.tauv <- function(tau,tauc=tau)
+pars_tauv <- function(tau,tauc=tau)
 {
   if(length(tauc)==0)
   { return(NULL) }

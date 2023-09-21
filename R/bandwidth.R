@@ -453,7 +453,7 @@ bandwidth.pop <- function(data,UD,kernel="individual",weights=FALSE,ref="Gaussia
 
   CTMM <- lapply(UD,function(ud){ud@CTMM})
   MEAN <- mean(CTMM,...)
-  MEAN <- mean.pop(MEAN)
+  MEAN <- mean_pop(MEAN)
   axes <- MEAN$axes
   n <- length(data)
 
@@ -501,11 +501,11 @@ bandwidth.pop <- function(data,UD,kernel="individual",weights=FALSE,ref="Gaussia
 
   if(ref=="AKDE")
   {
-    Q.R <- rates(UD,normalize=FALSE,self=FALSE)$CI[,,'est'] / rates(CTMM,normalize=FALSE,self=FALSE)$CI[,,'est']
+    Q.R <- encounter(UD,normalize=FALSE,self=FALSE)$CI[,,'est'] / encounter(CTMM,normalize=FALSE,self=FALSE)$CI[,,'est']
     Q.R <- stats::cov2cor(Q.R)
 
     # MEAN.UD <- mean(UD)
-    # L.R <- rates(c(list(MEAN.UD),UD),normalize=FALSE,self=FALSE)[,,'est'] / rates(c(list(MEAN),CTMM),normalize=FALSE,self=FALSE)[,,'est']
+    # L.R <- encounter(c(list(MEAN.UD),UD),normalize=FALSE,self=FALSE)[,,'est'] / encounter(c(list(MEAN),CTMM),normalize=FALSE,self=FALSE)[,,'est']
     # L.R <- stats::cov2cor(L.R)
     # L.R <- L.R[1,-1]
   }

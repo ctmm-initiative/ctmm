@@ -539,7 +539,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   if(profile && UNIT==2)
   { RATIO <- 1/VAR.MULT } # simple formula
   else if(UNIT==2) # M.sigma was only updated if profile
-  { RATIO <- mean( diag( cbind(COVM(R.sigma) %*% solve.covm(M.sigma)) ) ) }
+  { RATIO <- mean( diag( cbind(COVM(R.sigma) %*% solve_covm(M.sigma)) ) ) }
   else if(UNIT) # filter already partially standardized via eccentricity
   { RATIO <- mean(diag(cbind(R.sigma))) / PRO.VAR }
   else # couldn't profile anything and didn't # residuals standardized by model in KF

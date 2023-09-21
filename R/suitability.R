@@ -10,7 +10,7 @@ suitability <- function(data=NULL,CTMM=NULL,R=list(),level=0.95,grid=NULL,log=FA
     rm(TEMP)
   }
 
-  grid <- format.grid(grid=grid,axes=CTMM$axes)
+  grid <- format_grid(grid=grid,axes=CTMM$axes)
   x <- grid$r$x
   y <- grid$r$y
 
@@ -121,7 +121,7 @@ R.suit <- function(R,CTMM,data=NULL,log=FALSE,VAR=FALSE)
   {
     if(VAR)
     {
-      R <- exp.log(R,VAR.est=COV,VAR=POV,VAR.VAR=COV.POV)
+      R <- exp_log(R,VAR.est=COV,VAR=POV,VAR.VAR=COV.POV)
       COV <- R$VAR
       R <- R$mu
     }

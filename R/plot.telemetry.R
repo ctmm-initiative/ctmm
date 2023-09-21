@@ -153,7 +153,7 @@ new.plot <- function(data=NULL,CTMM=NULL,UD=NULL,R=NULL,col.bg="white",col.R="gr
 
   # PLOT RASTER / SUITABILITY
   if(!is.null(R))
-  { plot.R(R,col=col.R,legend=legend,projection=projection,scale=scale) }
+  { plot_R(R,col=col.R,legend=legend,projection=projection,scale=scale) }
 
   return(dist)
 }
@@ -212,7 +212,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,col.bg='white',
 
   #########################3
   # PLOT SHAPEFILES
-  if(!is.null(SP)) { plot.SP(SP=SP,border.SP=border.SP,col.SP=col.SP,PROJ=ctmm::projection(x),...) }
+  if(!is.null(SP)) { plot_SP(SP=SP,border.SP=border.SP,col.SP=col.SP,PROJ=ctmm::projection(x),...) }
 
   # unlist annotation colors
   col.level <- simplify.color(col.level)
@@ -233,10 +233,10 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,col.bg='white',
 
       # plot denisty function lazily reusing KDE code
       pdf <- agde(CTMM[[i]],res=500)
-      plot.df(pdf,DF=DF,col=col.DF[[i]],...)
+      plot_df(pdf,DF=DF,col=col.DF[[i]],...)
 
       # plot ML estimate, regular style
-      plot.ctmm(CTMM[[i]],alpha.UD,col=col.level[[i]],lwd=lwd.level,...)
+      plot_ctmm(CTMM[[i]],alpha.UD,col=col.level[[i]],lwd=lwd.level,...)
 
       # plot CIs dashed if present
       if("COV" %in% names(CTMM[[i]]) && !is.na(level))
@@ -249,7 +249,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,col.bg='white',
         for(j in 1:2)
         {
           CTMM[[i]]$sigma <- const[j]*sigma
-          plot.ctmm(CTMM[[i]],alpha.UD,col=malpha(col.level[[i]],0.5),lwd=lwd.level/2,...)
+          plot_ctmm(CTMM[[i]],alpha.UD,col=malpha(col.level[[i]],0.5),lwd=lwd.level/2,...)
         }
       }
     }
@@ -266,10 +266,10 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,col.bg='white',
   #########################
   # PLOT TELEMETRY DATA
 
-  col <- format.par(col,x)
-  pch <- format.par(pch,x)
-  lwd <- format.par(lwd,x)
-  type <- format.par(type,x,all=TRUE)
+  col <- format_par(col,x)
+  pch <- format_par(pch,x)
+  lwd <- format_par(lwd,x)
+  type <- format_par(type,x,all=TRUE)
   error <- rep(error,length(x))
 
   # automagic the plot point size
@@ -278,7 +278,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,col.bg='white',
     p <- sum(sapply(x, function(d) { length(d$t) } ))
     if(p>1000) { cex <- 1000/p } else { cex <- 1 }
   }
-  cex <- format.par(cex,x)
+  cex <- format_par(cex,x)
 
   # standard deviations to plot for circle/ellipse
   z <- sqrt(-2*log(alpha.UD))
@@ -427,7 +427,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,col.bg='white',
 
 
 # format point characteristics for dataset x
-format.par <- function(pchar,x,all=FALSE)
+format_par <- function(pchar,x,all=FALSE)
 {
   if(!is.list(pchar))
   {
@@ -452,7 +452,7 @@ pull <- function(pchar,i)
 
 
 # plot raster layer
-plot.R <- function(R,col="green",legend=FALSE,projection="",scale=1)
+plot_R <- function(R,col="green",legend=FALSE,projection="",scale=1)
 {
   R <- listify(R)
 
@@ -498,7 +498,7 @@ plot.R <- function(R,col="green",legend=FALSE,projection="",scale=1)
 
 
 # plot shapefiles
-plot.SP <- function(SP=NULL,border.SP=TRUE,col.SP=NA,PROJ=NULL,...)
+plot_SP <- function(SP=NULL,border.SP=TRUE,col.SP=NA,PROJ=NULL,...)
 {
   x.scale <- get0('x.scale',plot.env)
   if(x.scale==1000 && grepl("+units=m",PROJ)) # km scale (not meters)
@@ -536,7 +536,7 @@ plot.UD <- function(x,col.bg="white",DF="CDF",col.DF="blue",col.grid="white",lab
   dist <- new.plot(UD=x,R=R,col.bg=col.bg,col.R=col.R,legend=legend,units=units,fraction=fraction,xlim=xlim,ylim=ylim,ext=ext,level.UD=level.UD,level=level,add=add,...)
 
   # PLOT SHAPEFILES
-  if(!is.null(SP)) { plot.SP(SP=SP,border.SP=border.SP,col.SP=col.SP,PROJ=ctmm::projection(x),...) }
+  if(!is.null(SP)) { plot_SP(SP=SP,border.SP=border.SP,col.SP=col.SP,PROJ=ctmm::projection(x),...) }
 
   # contours colour
   if(length(col.level)==length(level.UD) && length(col.level) != length(x))
@@ -574,7 +574,7 @@ plot.UD <- function(x,col.bg="white",DF="CDF",col.DF="blue",col.grid="white",lab
     x[[i]] <- unit.UD(x[[i]],length=dist$scale)
 
     # ML DENSITY PLOTS
-    plot.df(x[[i]],DF=DF,col=col.DF[[i]],...)
+    plot_df(x[[i]],DF=DF,col=col.DF[[i]],...)
   }
 
   if(DF %nin% c("PDF","CDF")) { return(invisible(NULL)) } # NPR
@@ -645,22 +645,22 @@ plot.UD <- function(x,col.bg="white",DF="CDF",col.DF="blue",col.grid="white",lab
     if(!any(is.na(col.level[i,,])) && !any(is.na(level.UD)))
     {
       # make sure that correct style is used for low,ML,high even in absence of lows and highs
-      plot.kde(x[[i]],level=level.UD,labels=labels[i,,2],col=malpha(col.level[i,,2],1),lwd=lwd.level,convex=convex,...)
+      plot_kde(x[[i]],level=level.UD,labels=labels[i,,2],col=malpha(col.level[i,,2],1),lwd=lwd.level,convex=convex,...)
 
       if(!is.na(level) && !is.null(x[[i]]$DOF.area))
       {
         P <- sapply(level.UD, function(l) { CI.UD(x[[i]],l,level,P=TRUE)[-2] } )
-        plot.kde(x[[i]],level=P,labels=c(t(labels[i,,c(1,3)])),col=malpha(c(t(col.level[i,,c(1,3)])),0.5),lwd=lwd.level/2,convex=convex,...)
+        plot_kde(x[[i]],level=P,labels=c(t(labels[i,,c(1,3)])),col=malpha(c(t(col.level[i,,c(1,3)])),0.5),lwd=lwd.level/2,convex=convex,...)
       }
     }
   }
 
 }
-plot.RS <- plot.UD
+plot_RS <- plot.UD
 
 ##################################
 # plot PDF stored as KDE object
-plot.df <- function(kde,DF="CDF",col="blue",...)
+plot_df <- function(kde,DF="CDF",col="blue",...)
 {
   alpha <- grDevices::col2rgb(col,alpha=TRUE)[4,]
   alpha <- max(alpha)
@@ -689,7 +689,7 @@ plot.df <- function(kde,DF="CDF",col="blue",...)
 
 #############################
 # Plot a KDE object's contours
-plot.kde <- function(kde,level=0.95,labels=round(level*100),col="black",convex=FALSE,...)
+plot_kde <- function(kde,level=0.95,labels=round(level*100),col="black",convex=FALSE,...)
 {
   # record current option
   # MAX <- getOption("max.contour.segments")
@@ -718,7 +718,7 @@ plot.kde <- function(kde,level=0.95,labels=round(level*100),col="black",convex=F
 
 ##############################
 # Plot Gaussian ctmm contours
-plot.ctmm <- function(model,alpha=0.05,col="blue",bg=NA,...)
+plot_ctmm <- function(model,alpha=0.05,col="blue",bg=NA,...)
 {
   mu <- model$mu # mean vector
   sigma <- model$sigma # covariance matrix

@@ -7,7 +7,7 @@ midpoint <- function(data,CTMM,t=NULL,complete=FALSE,...) { combine(data,CTMM,t=
 combine <- function(data,CTMM,t=NULL,complete=FALSE,method="diff",...)
 {
   check.projections(data)
-  INFO <- mean.info(data)
+  INFO <- mean_info(data)
   INFO$identity <- paste0(method,"(",data[[1]]@info$identity,",",data[[2]]@info$identity,")")
 
   if(is.null(t))
@@ -15,6 +15,14 @@ combine <- function(data,CTMM,t=NULL,complete=FALSE,method="diff",...)
     # shared time range
     t1 <- max(data[[1]]$t[1],data[[2]]$t[1])
     t2 <- min(last(data[[1]]$t),last(data[[2]]$t))
+
+    t <- c(t1,t2)
+  }
+
+  if(length(t)==2)
+  {
+    t1 <- t[1]
+    t2 <- t[2]
 
     # shared times
     t <- c( data[[1]]$t , data[[2]]$t )
@@ -121,10 +129,10 @@ combine <- function(data,CTMM,t=NULL,complete=FALSE,method="diff",...)
 
 
 # simple correlation test
-proximity <- function(data,CTMM,GUESS=ctmm(error=TRUE),debias=TRUE,level=0.95,...)
+proximity <- function(data,CTMM,t=NULL,GUESS=ctmm(error=TRUE),debias=TRUE,level=0.95,...)
 {
   # difference vector with uncertainties
-  data.diff <- difference(data,CTMM)
+  data.diff <- difference(data,CTMM,t=t,...)
 
   if(!nrow(data.diff))
   {
@@ -174,7 +182,7 @@ distances <- function(data,CTMM,t=NULL,level=0.95,...)
   t <- data$t
 
   # estimate distances
-  DISTS <- abs.data(data)
+  DISTS <- abs_data(data)
   M1 <- DISTS$M1
   M2 <- DISTS$M2
   DOF <- DISTS$DOF

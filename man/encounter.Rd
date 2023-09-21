@@ -1,6 +1,6 @@
 \name{encounter}
 \alias{encounter}
-\alias{rates}
+\alias{cde}
 \encoding{UTF-8}
 %\alias{overlap.ctmm}
 %\alias{overlap.telemetry}
@@ -8,11 +8,11 @@
 
 \title{Encounter statistics}
 
-\description{Functions to calculate \emph{relative} encounter rates and the conditional location distribution of where encounters take place (conditional on said encounters taking place), as described in Noonan et al (2021).}
+\description{Functions to calculate encounter probabilities and the conditional location distribution of where encounters take place (conditional on said encounters taking place), as described in Noonan et al (2021).}
 
-\usage{rates(object,debias=FALSE,level=0.95,normalize=TRUE,self=TRUE,...)
+\usage{encounter(object,debias=FALSE,level=0.95,normalize=FALSE,self=TRUE,...)
 
-encounter(object,include=NULL,exclude=NULL,debias=FALSE,...) }
+cde(object,include=NULL,exclude=NULL,debias=FALSE,...) }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{object}{A \code{list} of aligned \code{UD} objects.}
@@ -26,13 +26,13 @@ encounter(object,include=NULL,exclude=NULL,debias=FALSE,...) }
 }
 
 \details{
-If \code{normalize=FALSE}, the relative encounter rates have units of \eqn{1/m^2} and tend to be very small numbers for very large home-range areas. If \code{normalize=TRUE}, the relative encounter rates are normalized by the average uncorrelated self-encounter rate, which is an arbitrary value that provides a convenient scaling.
+Encounter probabilities are standardized to 1 meter, and must be multiplied by the square encounter radius (in meters), to obtain other values. If \code{normalize=FALSE}, the relative encounter rates have units of \eqn{1/m^2} and tend to be very small numbers for very large home-range areas. If \code{normalize=TRUE}, the relative encounter rates are normalized by the average uncorrelated self-encounter rate, which is an arbitrary value that provides a convenient scaling.
 
 The \code{include} argument is a matrix that indicates which interactions are considered in the calculation.
 By default, \code{include = 1 - diag(length(object))}, which implies that all interactions are considered aside from self-interactions. Alternatively, \code{exclude = 1 - include} can be specified, and is by-default \code{exclude = diag(length(object))}, which implies that only self-encounters are excluded.
 }
 
-\value{\code{rates} produces an array of relative encounter rates with CIs, while \code{encounter} produces a single \code{UD} object.}
+\value{\code{encounter} produces an array of standardized encounter probabilities with CIs, while \code{cde} produces a single \code{UD} object.}
 
 %% ~put references to the literature/web site here ~
 \references{
@@ -41,7 +41,7 @@ M. J. Noonan, R. Martinez-Garcia, G. H. Davis, M. C. Crofoot, R. Kays, B. T. Hir
 
 \author{C. H. Fleming}
 
-%\note{}
+\note{Prior to v1.2.0, \code{encounter()} calculated the CDE and \code{rates()} calculated relative encounter probabilities.}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
@@ -61,8 +61,12 @@ names(FITS) <- names(buffalo[1:2])
 # create aligned UDs
 UDS <- akde(buffalo[1:2],FITS)
 
+# calculate 100-meter encounter probabilities
+P <- encounter(UDS)
+P$CI * 100^2
+
 # calculate CDE
-CDE <- encounter(UDS)
+CDE <- cde(UDS)
 
 # plot data and encounter distribution
 plot(buffalo[1:2],col=c('red','blue'),UD=CDE,col.DF='purple',col.level='purple',col.grid=NA)

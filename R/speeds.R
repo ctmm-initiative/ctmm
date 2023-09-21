@@ -11,8 +11,8 @@ speeds.telemetry <- function(object,CTMM,t=NULL,cycle=Inf,level=0.95,robust=FALS
 
   if(is.null(t)) { t <- data$t }
 
-  if(!prior && fast) { SPEEDS <- speeds.fast(data,CTMM=CTMM,t=t,cycle=cycle,level=level,robust=robust,...) }
-  else { SPEEDS <- speeds.slow(data,CTMM=CTMM,t=t,cycle=cycle,level=level,robust=robust,prior=prior,fast=fast,error=error,cores=cores,trace=trace,...) }
+  if(!prior && fast) { SPEEDS <- speeds_fast(data,CTMM=CTMM,t=t,cycle=cycle,level=level,robust=robust,...) }
+  else { SPEEDS <- speeds_slow(data,CTMM=CTMM,t=t,cycle=cycle,level=level,robust=robust,prior=prior,fast=fast,error=error,cores=cores,trace=trace,...) }
 
   SPEEDS <- as.data.frame(SPEEDS)
   SPEEDS$t <- t
@@ -29,7 +29,7 @@ speeds.ctmm <- function(object,data=NULL,t=NULL,cycle=Inf,level=0.95,robust=FALS
 
 
 # emulate then simulate
-speeds.slow <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,prior=FALSE,fast=TRUE,error=0.01,cores=1,trace=TRUE,...)
+speeds_slow <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,prior=FALSE,fast=TRUE,error=0.01,cores=1,trace=TRUE,...)
 {
   n <- length(t)
 
@@ -196,7 +196,7 @@ speeds.slow <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,prior=FALS
 
 
 ####
-speeds.fast <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,append=FALSE,...)
+speeds_fast <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,append=FALSE,...)
 {
   if(append)
   { n <- nrow(data) }
@@ -219,7 +219,7 @@ speeds.fast <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,append=FAL
     if(!is.null(CTMM)) { data <- predict(CTMM,data=data,t=t,...) }
 
     axes <- c("vx","vy")
-    STUFF <- abs.data(data,axes)
+    STUFF <- abs_data(data,axes)
     v <- STUFF$r
     M1 <- STUFF$M1
     M2 <- STUFF$M2
@@ -251,7 +251,7 @@ speeds.fast <- function(data,CTMM=NULL,t=NULL,level=0.95,robust=FALSE,append=FAL
 # elliptical functions stuff (exact for zero mean)
 # anistotropic + nonzero combination is approximate
 # returns first two moments
-abs.bivar <- function(mu,Sigma,return.VAR=FALSE)
+abs_bivar <- function(mu,Sigma,return.VAR=FALSE)
 {
   sigma0 <- mean(diag(Sigma))
   stdev0 <- sqrt(sigma0)
@@ -288,7 +288,7 @@ abs.bivar <- function(mu,Sigma,return.VAR=FALSE)
 }
 
 
-abs.data <- function(data,axes=c('x','y'))
+abs_data <- function(data,axes=c('x','y'))
 {
   n <- nrow(data)
 
@@ -299,7 +299,7 @@ abs.data <- function(data,axes=c('x','y'))
   M2 <- vapply(1:n,function(i){ sum( v[i,]^2 + diag(VAR[i,,]) ) },numeric(1))
 
   # good approximation to mean speed (delta method fails when velocity estimate is small)
-  M1 <- vapply(1:n,function(i){abs.bivar(v[i,],VAR[i,,])},numeric(1)) # n
+  M1 <- vapply(1:n,function(i){abs_bivar(v[i,],VAR[i,,])},numeric(1)) # n
 
   # variance of square speed # exact?
   # VAR <- 4 * vapply(1:n,function(i){v[i,] %*% VAR[i,,] %*% v[i,]},numeric(1)) # (n)

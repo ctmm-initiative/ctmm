@@ -44,6 +44,9 @@
       <a href="../articles/error.html">Telemetry Error</a>
     </li>
     <li>
+      <a href="../articles/interactions.html">Encounters and Interactions</a>
+    </li>
+    <li>
       <a href="../articles/periodogram.html">Periodograms and Periodicities</a>
     </li>
   </ul></li>
@@ -67,8 +70,9 @@
     </div>
 
     <div class="section level2">
-<h2 class="page-header" data-toc-text="1.2.0" id="ctmm-120-2023-09-03">ctmm 1.2.0 (2023-09-03)<a class="anchor" aria-label="anchor" href="#ctmm-120-2023-09-03"></a></h2>
-<ul><li>new functions rsf.select(), intensity()</li>
+<h2 class="page-header" data-toc-text="1.2.0" id="ctmm-120-2023-09-17">ctmm 1.2.0 (2023-09-17)<a class="anchor" aria-label="anchor" href="#ctmm-120-2023-09-17"></a></h2>
+<ul><li>new function names: cde() and encounter() replacing encounter() and rates()</li>
+<li>new functions rsf.select(), intensity()</li>
 <li>new functions sdm.fit(), sdm.select()</li>
 <li>new function writeVector(), depreciating function writeShapefile()</li>
 <li>new function funnel() for funnel plots</li>
@@ -78,6 +82,7 @@
 <li>new argument ‘dt.hot’ in as.telemetry()</li>
 <li>new argument ‘variable’ in Log()</li>
 <li>new argument ‘compute’ in ctmm.loglike()</li>
+<li>new argument ‘t’ in proximity()</li>
 <li>as.telemetry() now supports GBIF format data</li>
 <li>as.telemetry() datum argument now works on UTM import, and is no longer to a be a complete PROJ string</li>
 <li>as.telemetry() timeformat=‘auto’ now default</li>
@@ -93,6 +98,7 @@
 <li>bugfix in rates() debias=TRUE</li>
 <li>bugfix in summary() of population mean location DOF</li>
 <li>bugfix in distances() for 0/0</li>
+<li>bugfix in UD polygon export for tiny areas</li>
 <li>as.telemetry() UTM import updated to new PROJ specification</li>
 <li>mean.ctmm() improved convergence, numerical stability, and covariance selection</li>
 <li>meta() stability improvements for tiny DOF estimates, and OUf support</li>

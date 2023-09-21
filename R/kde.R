@@ -147,7 +147,7 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utiliz
     }
   } # end loop over individuals
 
-  grid <- format.grid(grid,axes=axes)
+  grid <- format_grid(grid,axes=axes)
   COL <- length(axes)
 
   if(!is.null(UD)) # format population KDE as an individual # then set resolution
@@ -994,12 +994,12 @@ summary.UD <- function(object,convex=FALSE,level=0.95,level.UD=0.95,units=TRUE,.
   if(length(area)==1) { stop("Object is not a range distribution.") }
 
   DOF <- c(object$DOF.area[1],object$DOF.H)
-  R <- summary.UD.format(area,DOF=DOF,units=units)
+  R <- summary_UD_format(area,DOF=DOF,units=units)
   return(R)
 }
 #methods::setMethod("summary",signature(object="UD"), function(object,...) summary.UD(object,...))
 
-summary.UD.format <- function(CI,DOF,units=TRUE)
+summary_UD_format <- function(CI,DOF,units=TRUE)
 {
   # pretty units
   # do we convert base units?

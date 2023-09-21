@@ -16,7 +16,13 @@ export(simulate,predict,median)
 export(writeVector)
 
 export(as.sf,cluster,compass,emulate,funnel,meta,speed,speeds,video)
-export(Log,Exp)
+
+export(Log,Exp) # base R methods are not made to be generic
+#S3method(log,list) # this stuff doesn't work, but CRAN requires it?
+#S3method(log,area)
+#S3method(log,ctmm)
+#S3method(log,speed)
+#S3method(log,UD)
 
 #export(modes,ridges)
 #export(SpatialPoints,SpatialPolygonsDataFrame)
@@ -27,7 +33,6 @@ export(Log,Exp)
 #GENERAL FUNCTIONS
 #S3method(det,numeric)
 #S3method(determinant,numeric) # can't get these to work???
-#S3method(log,list) # this doesn't work
 S3method(mean,list)
 S3method(median,list)
 S3method(plot,list)
@@ -142,7 +147,7 @@ export(annotate,color)
 export(lasso,marquee,cleave)
 
 # ENCOUNTER FUNCTIONS
-export(encounter,rates)
+export(encounter,cde)
 
 # RSF functions
 export(rsf.fit,rsf.select,sdm.fit,sdm.select,sdm.integrate,intensity)

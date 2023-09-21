@@ -1,4 +1,4 @@
-## ----  fig.show="hold"--------------------------------------------------------
+## ----fig.show="hold"----------------------------------------------------------
 library(ctmm)
 data(wolf)
 Gamba <- wolf$Gamba
@@ -7,7 +7,7 @@ plot(Gamba)
 ## -----------------------------------------------------------------------------
 LSP <- periodogram(Gamba,fast=2,res.time=2)
 
-## ----  fig.show="hold"--------------------------------------------------------
+## ----fig.show="hold"----------------------------------------------------------
 plot(LSP,max=TRUE,diagnostic=TRUE,cex=0.5)
 
 ## -----------------------------------------------------------------------------
@@ -45,7 +45,7 @@ SUB <- rownames(summary(FITS,MSPE=NA))[1]
 summary(FITS[[SUB]]) # harmonic 3 0 # selected by IC
 summary(FITS[[1]])   # harmonic 2 0 # selected by IC/MSPE
 
-## ---- fig.show='hold'---------------------------------------------------------
+## ----fig.show='hold'----------------------------------------------------------
 xlim <- c(0,1/2) %#% "month"
 plot(SVF,CTMM=FITS[[SUB]],xlim=xlim)
 title("3 Harmonics")

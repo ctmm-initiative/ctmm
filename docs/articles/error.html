@@ -62,6 +62,9 @@
       <a href="../articles/error.html">Telemetry Error</a>
     </li>
     <li>
+      <a href="../articles/interactions.html">Encounters and Interactions</a>
+    </li>
+    <li>
       <a href="../articles/periodogram.html">Periodograms and Periodicities</a>
     </li>
   </ul>
@@ -90,7 +93,7 @@
       <h1 data-toc-skip>Telemetry error</h1>
                         <h4 data-toc-skip class="author">Christen H. Fleming</h4>
             
-            <h4 data-toc-skip class="date">2023-09-03</h4>
+            <h4 data-toc-skip class="date">2023-09-19</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/ctmm-initiative/ctmm/blob/HEAD/vignettes/error.Rmd" class="external-link"><code>vignettes/error.Rmd</code></a></small>
       <div class="hidden name"><code>error.Rmd</code></div>
@@ -243,15 +246,15 @@
 <span><span class="co">## </span></span>
 <span><span class="co">## $DOF</span></span>
 <span><span class="co">##      mean      area diffusion     speed </span></span>
-<span><span class="co">##  13.90249  23.94136 194.84110   0.00000 </span></span>
+<span><span class="co">##  13.90252  23.94155 194.84072   0.00000 </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $CI</span></span>
 <span><span class="co">##                                       low         est        high</span></span>
-<span><span class="co">## area (hectares)                 13.619548   21.269558   30.597343</span></span>
-<span><span class="co">## τ[position] (days)               3.561605    5.684252    9.071956</span></span>
-<span><span class="co">## diffusion (square meters/day) 4663.846012 5394.789474 6178.163371</span></span>
-<span><span class="co">## error 2D (meters)               18.539452   21.885615   25.225874</span></span>
-<span><span class="co">## error 3D (meters)                6.590233    7.063696    7.536735</span></span></code></pre>
+<span><span class="co">## area (hectares)                 13.619544   21.269510   30.597234</span></span>
+<span><span class="co">## τ[position] (days)               3.561604    5.684240    9.071918</span></span>
+<span><span class="co">## diffusion (square meters/day) 4663.853685 5394.799125 6178.175193</span></span>
+<span><span class="co">## error 2D (meters)               18.539407   21.885545   25.225778</span></span>
+<span><span class="co">## error 3D (meters)                6.590236    7.063699    7.536738</span></span></code></pre>
 <p><code>trace=TRUE</code> allows us to see the models considered. <code>verbose=TRUE</code> would save each model. Since we started with a finite amount of calibration data, the location-error parameter estimates were updated by the tracking data, and we can compare the results here with the previous estimates in <code>summary(UERE)</code>.</p>
 </div>
 <div class="section level4">
@@ -278,15 +281,15 @@
 <span><span class="co">## </span></span>
 <span><span class="co">## $DOF</span></span>
 <span><span class="co">##      mean      area diffusion     speed </span></span>
-<span><span class="co">##  12.85422  21.90132 140.47091   0.00000 </span></span>
+<span><span class="co">##  12.85422  21.90112 140.47104   0.00000 </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $CI</span></span>
 <span><span class="co">##                                       low         est       high</span></span>
-<span><span class="co">## area (hectares)                 13.034790   20.823740   30.40778</span></span>
-<span><span class="co">## τ[position] (days)               3.734226    6.186526   10.24927</span></span>
-<span><span class="co">## diffusion (square meters/day) 4229.442173 5026.235870 5890.77557</span></span>
-<span><span class="co">## error 2D (meters)                7.750653   10.815762   13.87571</span></span>
-<span><span class="co">## error 3D (meters)                6.940465    8.749101   10.55412</span></span></code></pre>
+<span><span class="co">## area (hectares)                 13.034815   20.823830   30.40796</span></span>
+<span><span class="co">## τ[position] (days)               3.734213    6.186523   10.24930</span></span>
+<span><span class="co">## diffusion (square meters/day) 4229.458030 5026.254306 5890.79677</span></span>
+<span><span class="co">## error 2D (meters)                7.750780   10.815976   13.87601</span></span>
+<span><span class="co">## error 3D (meters)                6.940370    8.749010   10.55403</span></span></code></pre>
 <p>Here, fitting the RMS UERE simultaneously with the movement model produced a largely consistent result. This will not always be the case.</p>
 </div>
 <div class="section level4">
@@ -349,15 +352,15 @@
 <span><span class="co">## </span></span>
 <span><span class="co">## $DOF</span></span>
 <span><span class="co">##      mean      area diffusion     speed </span></span>
-<span><span class="co">##  12.70937  21.64665 143.50517   0.00000 </span></span>
+<span><span class="co">##  12.70947  21.64740 143.50521   0.00000 </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $CI</span></span>
 <span><span class="co">##                                       low         est       high</span></span>
-<span><span class="co">## area (hectares)                 12.966258   20.778049   30.40200</span></span>
-<span><span class="co">## τ[position] (days)               3.773825    6.262968   10.39390</span></span>
-<span><span class="co">## diffusion (square meters/day) 4197.630753 4978.893767 5825.84647</span></span>
-<span><span class="co">## error 2D (meters)                9.462777   12.388740   15.30889</span></span>
-<span><span class="co">## error 3D (meters)                7.186928    8.889067   10.58786</span></span></code></pre>
+<span><span class="co">## area (hectares)                 12.966262   20.777867   30.40155</span></span>
+<span><span class="co">## τ[position] (days)               3.773826    6.262912   10.39371</span></span>
+<span><span class="co">## diffusion (square meters/day) 4197.634099 4978.897600 5825.85083</span></span>
+<span><span class="co">## error 2D (meters)                9.462815   12.388806   15.30899</span></span>
+<span><span class="co">## error 3D (meters)                7.186924    8.889062   10.58785</span></span></code></pre>
 <p>This method is still being developed and so this material is subject to change.</p>
 </div>
 </div>

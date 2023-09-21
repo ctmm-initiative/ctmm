@@ -95,7 +95,7 @@ BesselK <- function(x,nu,expon.scaled=FALSE,log=FALSE)
 
 
 # bias of log(chi^2)
-log.chi2.bias <- function(n)
+log_chi2_bias <- function(n)
 {
   b <- n
   n1 <- 0.000003

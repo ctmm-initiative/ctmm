@@ -2,7 +2,7 @@ corridor <- function(data,CTMM,res.space=10,res.time=100,window=1%#%'day',grid=l
 {
   debug <- FALSE
   axes <- CTMM[[1]]$axes
-  info <- mean.info(data)
+  info <- mean_info(data)
   # window <- 1 %#% 'day' # minimum window for greedy search
   n <- length(data)
   W <- list()

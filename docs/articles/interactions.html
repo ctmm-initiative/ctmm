@@ -62,6 +62,9 @@
       <a href="../articles/error.html">Telemetry Error</a>
     </li>
     <li>
+      <a href="../articles/interactions.html">Encounters and Interactions</a>
+    </li>
+    <li>
       <a href="../articles/periodogram.html">Periodograms and Periodicities</a>
     </li>
   </ul>
@@ -90,7 +93,7 @@
       <h1 data-toc-skip>Pairwise interactions</h1>
                         <h4 data-toc-skip class="author">Michael J. Noonan and Christen H. Fleming</h4>
             
-            <h4 data-toc-skip class="date">2023-09-04</h4>
+            <h4 data-toc-skip class="date">2023-09-19</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/ctmm-initiative/ctmm/blob/HEAD/vignettes/interactions.Rmd" class="external-link"><code>vignettes/interactions.Rmd</code></a></small>
       <div class="hidden name"><code>interactions.Rmd</code></div>
@@ -145,80 +148,80 @@
 <pre><code><span><span class="co">## , , low</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">##               Cilla         Gabs        Mvubu       Pepper        Queen</span></span>
-<span><span class="co">## Cilla  1.000000e+00 8.974219e-01 9.510518e-01 7.971057e-10 4.768926e-11</span></span>
-<span><span class="co">## Gabs   8.974219e-01 1.000000e+00 8.543963e-01 9.265025e-10 6.492583e-11</span></span>
-<span><span class="co">## Mvubu  9.510518e-01 8.543963e-01 1.000000e+00 1.208344e-09 7.311931e-11</span></span>
-<span><span class="co">## Pepper 7.971057e-10 9.265025e-10 1.208344e-09 1.000000e+00 3.596741e-01</span></span>
-<span><span class="co">## Queen  4.768926e-11 6.492583e-11 7.311931e-11 3.596741e-01 1.000000e+00</span></span>
-<span><span class="co">## Toni   4.414362e-23 3.458176e-23 2.159891e-22 3.197929e-01 9.371291e-03</span></span>
+<span><span class="co">## Cilla  1.000000e+00 8.974219e-01 9.510518e-01 7.971138e-10 4.769027e-11</span></span>
+<span><span class="co">## Gabs   8.974219e-01 1.000000e+00 8.543964e-01 9.264102e-10 6.491430e-11</span></span>
+<span><span class="co">## Mvubu  9.510518e-01 8.543964e-01 1.000000e+00 1.208349e-09 7.312016e-11</span></span>
+<span><span class="co">## Pepper 7.971138e-10 9.264102e-10 1.208349e-09 1.000000e+00 3.596742e-01</span></span>
+<span><span class="co">## Queen  4.769027e-11 6.491430e-11 7.312016e-11 3.596742e-01 1.000000e+00</span></span>
+<span><span class="co">## Toni   4.414511e-23 3.456152e-23 2.159934e-22 3.197930e-01 9.371314e-03</span></span>
 <span><span class="co">##                Toni</span></span>
-<span><span class="co">## Cilla  4.414362e-23</span></span>
-<span><span class="co">## Gabs   3.458176e-23</span></span>
-<span><span class="co">## Mvubu  2.159891e-22</span></span>
-<span><span class="co">## Pepper 3.197929e-01</span></span>
-<span><span class="co">## Queen  9.371291e-03</span></span>
+<span><span class="co">## Cilla  4.414511e-23</span></span>
+<span><span class="co">## Gabs   3.456152e-23</span></span>
+<span><span class="co">## Mvubu  2.159934e-22</span></span>
+<span><span class="co">## Pepper 3.197930e-01</span></span>
+<span><span class="co">## Queen  9.371314e-03</span></span>
 <span><span class="co">## Toni   1.000000e+00</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## , , est</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">##               Cilla         Gabs        Mvubu       Pepper        Queen</span></span>
-<span><span class="co">## Cilla  1.000000e+00 9.976232e-01 9.974721e-01 8.371450e-07 2.823064e-07</span></span>
-<span><span class="co">## Gabs   9.976232e-01 1.000000e+00 9.914580e-01 5.288317e-06 8.646398e-06</span></span>
-<span><span class="co">## Mvubu  9.974721e-01 9.914580e-01 1.000000e+00 1.275744e-06 4.988955e-07</span></span>
-<span><span class="co">## Pepper 8.371450e-07 5.288317e-06 1.275744e-06 1.000000e+00 6.490220e-01</span></span>
-<span><span class="co">## Queen  2.823064e-07 8.646398e-06 4.988955e-07 6.490220e-01 1.000000e+00</span></span>
-<span><span class="co">## Toni   1.244615e-16 4.770744e-12 1.146499e-15 5.556634e-01 6.540051e-02</span></span>
+<span><span class="co">## Cilla  1.000000e+00 9.976234e-01 9.974721e-01 8.371554e-07 2.823166e-07</span></span>
+<span><span class="co">## Gabs   9.976234e-01 1.000000e+00 9.914584e-01 5.288795e-06 8.648153e-06</span></span>
+<span><span class="co">## Mvubu  9.974721e-01 9.914584e-01 1.000000e+00 1.275752e-06 4.989072e-07</span></span>
+<span><span class="co">## Pepper 8.371554e-07 5.288795e-06 1.275752e-06 1.000000e+00 6.490225e-01</span></span>
+<span><span class="co">## Queen  2.823166e-07 8.648153e-06 4.989072e-07 6.490225e-01 1.000000e+00</span></span>
+<span><span class="co">## Toni   1.244679e-16 4.773284e-12 1.146514e-15 5.556637e-01 6.540082e-02</span></span>
 <span><span class="co">##                Toni</span></span>
-<span><span class="co">## Cilla  1.244615e-16</span></span>
-<span><span class="co">## Gabs   4.770744e-12</span></span>
-<span><span class="co">## Mvubu  1.146499e-15</span></span>
-<span><span class="co">## Pepper 5.556634e-01</span></span>
-<span><span class="co">## Queen  6.540051e-02</span></span>
+<span><span class="co">## Cilla  1.244679e-16</span></span>
+<span><span class="co">## Gabs   4.773284e-12</span></span>
+<span><span class="co">## Mvubu  1.146514e-15</span></span>
+<span><span class="co">## Pepper 5.556637e-01</span></span>
+<span><span class="co">## Queen  6.540082e-02</span></span>
 <span><span class="co">## Toni   1.000000e+00</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## , , high</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">##               Cilla         Gabs        Mvubu       Pepper        Queen</span></span>
-<span><span class="co">## Cilla  1.000000e+00 1.0000000000 1.000000e+00 0.0002191513 0.0002363064</span></span>
-<span><span class="co">## Gabs   1.000000e+00 1.0000000000 1.000000e+00 0.0030139796 0.0192067438</span></span>
-<span><span class="co">## Mvubu  1.000000e+00 1.0000000000 1.000000e+00 0.0003234049 0.0004263377</span></span>
-<span><span class="co">## Pepper 2.191513e-04 0.0030139796 3.234049e-04 1.0000000000 0.9099831533</span></span>
-<span><span class="co">## Queen  2.363064e-04 0.0192067438 4.263377e-04 0.9099831533 1.0000000000</span></span>
-<span><span class="co">## Toni   2.879533e-11 0.0001076209 3.531737e-10 0.8051229513 0.2719401630</span></span>
+<span><span class="co">##               Cilla        Gabs        Mvubu       Pepper        Queen</span></span>
+<span><span class="co">## Cilla  1.000000e+00 1.000000000 1.000000e+00 0.0002191542 0.0002363162</span></span>
+<span><span class="co">## Gabs   1.000000e+00 1.000000000 1.000000e+00 0.0030145139 0.0192125915</span></span>
+<span><span class="co">## Mvubu  1.000000e+00 1.000000000 1.000000e+00 0.0003234070 0.0004263494</span></span>
+<span><span class="co">## Pepper 2.191542e-04 0.003014514 3.234070e-04 1.0000000000 0.9099836997</span></span>
+<span><span class="co">## Queen  2.363162e-04 0.019212592 4.263494e-04 0.9099836997 1.0000000000</span></span>
+<span><span class="co">## Toni   2.879705e-11 0.000107714 3.531767e-10 0.8051233270 0.2719415948</span></span>
 <span><span class="co">##                Toni</span></span>
-<span><span class="co">## Cilla  2.879533e-11</span></span>
-<span><span class="co">## Gabs   1.076209e-04</span></span>
-<span><span class="co">## Mvubu  3.531737e-10</span></span>
-<span><span class="co">## Pepper 8.051230e-01</span></span>
-<span><span class="co">## Queen  2.719402e-01</span></span>
+<span><span class="co">## Cilla  2.879705e-11</span></span>
+<span><span class="co">## Gabs   1.077140e-04</span></span>
+<span><span class="co">## Mvubu  3.531767e-10</span></span>
+<span><span class="co">## Pepper 8.051233e-01</span></span>
+<span><span class="co">## Queen  2.719416e-01</span></span>
 <span><span class="co">## Toni   1.000000e+00</span></span></code></pre>
 <p>Because the Bhattacharyya coefficient is a symmetric measure of overlap (ranging from 0-1), the resulting matrix is also symmetric. If you’re interested in extracting the matrix of the point estimates, they are stored in the <code>est</code> slot of the <code>CI</code> slot.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">OVER</span><span class="op">$</span><span class="va">CI</span><span class="op">[</span>,,<span class="st">"est"</span><span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">##               Cilla         Gabs        Mvubu       Pepper        Queen</span></span>
-<span><span class="co">## Cilla  1.000000e+00 9.976232e-01 9.974721e-01 8.371450e-07 2.823064e-07</span></span>
-<span><span class="co">## Gabs   9.976232e-01 1.000000e+00 9.914580e-01 5.288317e-06 8.646398e-06</span></span>
-<span><span class="co">## Mvubu  9.974721e-01 9.914580e-01 1.000000e+00 1.275744e-06 4.988955e-07</span></span>
-<span><span class="co">## Pepper 8.371450e-07 5.288317e-06 1.275744e-06 1.000000e+00 6.490220e-01</span></span>
-<span><span class="co">## Queen  2.823064e-07 8.646398e-06 4.988955e-07 6.490220e-01 1.000000e+00</span></span>
-<span><span class="co">## Toni   1.244615e-16 4.770744e-12 1.146499e-15 5.556634e-01 6.540051e-02</span></span>
+<span><span class="co">## Cilla  1.000000e+00 9.976234e-01 9.974721e-01 8.371554e-07 2.823166e-07</span></span>
+<span><span class="co">## Gabs   9.976234e-01 1.000000e+00 9.914584e-01 5.288795e-06 8.648153e-06</span></span>
+<span><span class="co">## Mvubu  9.974721e-01 9.914584e-01 1.000000e+00 1.275752e-06 4.989072e-07</span></span>
+<span><span class="co">## Pepper 8.371554e-07 5.288795e-06 1.275752e-06 1.000000e+00 6.490225e-01</span></span>
+<span><span class="co">## Queen  2.823166e-07 8.648153e-06 4.989072e-07 6.490225e-01 1.000000e+00</span></span>
+<span><span class="co">## Toni   1.244679e-16 4.773284e-12 1.146514e-15 5.556637e-01 6.540082e-02</span></span>
 <span><span class="co">##                Toni</span></span>
-<span><span class="co">## Cilla  1.244615e-16</span></span>
-<span><span class="co">## Gabs   4.770744e-12</span></span>
-<span><span class="co">## Mvubu  1.146499e-15</span></span>
-<span><span class="co">## Pepper 5.556634e-01</span></span>
-<span><span class="co">## Queen  6.540051e-02</span></span>
+<span><span class="co">## Cilla  1.244679e-16</span></span>
+<span><span class="co">## Gabs   4.773284e-12</span></span>
+<span><span class="co">## Mvubu  1.146514e-15</span></span>
+<span><span class="co">## Pepper 5.556637e-01</span></span>
+<span><span class="co">## Queen  6.540082e-02</span></span>
 <span><span class="co">## Toni   1.000000e+00</span></span></code></pre>
 <p>Alternatively, if you’re interested in extracting overlap values for specific pairs, they can easily be pulled out of the <code>overlap</code> object either by row/column names, or by their numerical indices.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># pairwise CIs </span></span>
 <span><span class="va">OVER</span><span class="op">$</span><span class="va">CI</span><span class="op">[</span><span class="st">"Pepper"</span>,<span class="st">"Toni"</span>,<span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">##       low       est      high </span></span>
-<span><span class="co">## 0.3197929 0.5556634 0.8051230</span></span></code></pre>
+<span><span class="co">## 0.3197930 0.5556637 0.8051233</span></span></code></pre>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">OVER</span><span class="op">$</span><span class="va">CI</span><span class="op">[</span><span class="st">"Queen"</span>,<span class="st">"Toni"</span>,<span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">##         low         est        high </span></span>
-<span><span class="co">## 0.009371291 0.065400509 0.271940163</span></span></code></pre>
+<span><span class="co">## 0.009371314 0.065400820 0.271941595</span></span></code></pre>
 </div>
 <div class="section level2">
 <h2 id="conditional-distribution-of-encounters-cde">Conditional Distribution of Encounters (CDE)<a class="anchor" aria-label="anchor" href="#conditional-distribution-of-encounters-cde"></a>
@@ -238,10 +241,10 @@
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">OVER</span><span class="op">$</span><span class="va">CI</span><span class="op">[</span><span class="st">"Pepper"</span>,<span class="st">"Queen"</span>,<span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">##       low       est      high </span></span>
-<span><span class="co">## 0.3596741 0.6490220 0.9099832</span></span></code></pre>
-<p>This overlap suggests a reasonably strong potential for these animals to encounter one another, but this then begs the question of where might these two individuals meet? Under the assumption that an encounter were to occur, the CDE provides an answer to this question. this is estimated by applying the <code><a href="../reference/encounter.html">encounter()</a></code> function on a list of AKDE home range estimates.</p>
+<span><span class="co">## 0.3596742 0.6490225 0.9099837</span></span></code></pre>
+<p>This overlap suggests a reasonably strong potential for these animals to encounter one another, but this then begs the question of where might these two individuals meet? Under the assumption that an encounter were to occur, the CDE provides an answer to this question. this is estimated by applying the <code><a href="../reference/encounter.html">cde()</a></code> function on a list of AKDE home range estimates.</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">CDE</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/encounter.html">encounter</a></span><span class="op">(</span><span class="va">AKDES</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Pepper"</span>, <span class="st">"Queen"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">CDE</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/encounter.html">cde</a></span><span class="op">(</span><span class="va">AKDES</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Pepper"</span>, <span class="st">"Queen"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">#Visualise the CDE</span></span>
 <span><span class="fu"><a href="../reference/plot.telemetry.html">plot</a></span><span class="op">(</span><span class="va">buffalo</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Pepper"</span>, <span class="st">"Queen"</span><span class="op">)</span><span class="op">]</span>,</span>
@@ -317,7 +320,7 @@
 <span></span>
 <span><span class="va">PROXIMITY</span></span></code></pre></div>
 <pre><code><span><span class="co">##       low       est      high </span></span>
-<span><span class="co">## 0.2336587 0.3972564 0.6333219</span></span></code></pre>
+<span><span class="co">## 0.2336587 0.3972563 0.6333218</span></span></code></pre>
 <p><code><a href="../reference/difference.html">proximity()</a></code> outputs a ratio estimate with confidence intervals, where values &lt;1 indicate that the two individuals are closer on average than expected for independent movement, 1 is consistent with independent movement, and values &gt;1 indicate that the individuals are farther from each other on average than expected for independent movement. Therefore, if the CIs contain 1, then the distance is insignificant with a p-value threshold of 1-level (two-sided) or half that for a one-sided test.</p>
 </div>
 <div class="section level2">
@@ -352,22 +355,26 @@
 <span>     col <span class="op">=</span> <span class="st">"#5e548e"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="interactions_files/figure-html/unnamed-chunk-19-1.png" width="700"></p>
 <p>As an additional caveat, if a pair of individuals encounter one another, a single encounter event may persist for some time. Depending on how finely sampled the data may be, there is thus the potential for double counting encounter events (or more). Care should therefore be taken when performing such an analysis.</p>
-<p>Another metric of encounter rates is available from the <code><a href="../reference/encounter.html">rates()</a></code> function, which estimates the <strong>relative</strong> encounter rates between individuals.</p>
+<p>Another metric of encounter rates is available from the <code><a href="../reference/encounter.html">encounter()</a></code> function, which estimates the <strong>relative</strong> encounter rates between individuals.</p>
 <div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">RATES</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/encounter.html">rates</a></span><span class="op">(</span><span class="va">AKDES</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">##                     ΔAICc</span></span>
-<span><span class="co">## Dirac-δ          0.000000</span></span>
-<span><span class="co">## inverse-Gaussian 4.666667</span></span></code></pre>
+<code class="sourceCode R"><span><span class="va">RATES</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/encounter.html">encounter</a></span><span class="op">(</span><span class="va">AKDES</span><span class="op">)</span></span></code></pre></div>
 <p>This is an overlap class object with all of the same structure as defined above. Looking at the points estimates we can see these relative encounter rates.</p>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">RATES</span><span class="op">$</span><span class="va">CI</span><span class="op">[</span>,,<span class="st">"est"</span><span class="op">]</span></span></code></pre></div>
-<pre><code><span><span class="co">##            Cilla      Gabs     Mvubu    Pepper       Queen        Toni</span></span>
-<span><span class="co">## Cilla        Inf 0.8700628 1.0452243 0.0000000 0.000000000 0.000000000</span></span>
-<span><span class="co">## Gabs   0.8700628       Inf 0.8395126 0.0000000 0.000000000 0.000000000</span></span>
-<span><span class="co">## Mvubu  1.0452243 0.8395126       Inf 0.0000000 0.000000000 0.000000000</span></span>
-<span><span class="co">## Pepper 0.0000000 0.0000000 0.0000000       Inf 0.280891977 0.179188488</span></span>
-<span><span class="co">## Queen  0.0000000 0.0000000 0.0000000 0.2808920         Inf 0.002636024</span></span>
-<span><span class="co">## Toni   0.0000000 0.0000000 0.0000000 0.1791885 0.002636024         Inf</span></span></code></pre>
+<pre><code><span><span class="co">##               Cilla         Gabs        Mvubu       Pepper        Queen</span></span>
+<span><span class="co">## Cilla           Inf 1.013833e-08 1.217934e-08 0.000000e+00 0.000000e+00</span></span>
+<span><span class="co">## Gabs   1.013833e-08          Inf 9.782347e-09 0.000000e+00 0.000000e+00</span></span>
+<span><span class="co">## Mvubu  1.217934e-08 9.782347e-09          Inf 0.000000e+00 0.000000e+00</span></span>
+<span><span class="co">## Pepper 0.000000e+00 0.000000e+00 0.000000e+00          Inf 3.273059e-09</span></span>
+<span><span class="co">## Queen  0.000000e+00 0.000000e+00 0.000000e+00 3.273059e-09          Inf</span></span>
+<span><span class="co">## Toni   0.000000e+00 0.000000e+00 0.000000e+00 2.087975e-09 3.071601e-11</span></span>
+<span><span class="co">##                Toni</span></span>
+<span><span class="co">## Cilla  0.000000e+00</span></span>
+<span><span class="co">## Gabs   0.000000e+00</span></span>
+<span><span class="co">## Mvubu  0.000000e+00</span></span>
+<span><span class="co">## Pepper 2.087975e-09</span></span>
+<span><span class="co">## Queen  3.071601e-11</span></span>
+<span><span class="co">## Toni            Inf</span></span></code></pre>
 <p>From this matrix we can see that Cilla and Mvubu tend to encounter to one another ca. three times as often at Toni and Pepper. Note: these are unitless measures of encounter rates.</p>
 </div>
   </div>

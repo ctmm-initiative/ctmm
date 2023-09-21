@@ -38,7 +38,7 @@ agde <- function(data=NULL,CTMM=NULL,R=list(),variable="utilization",error=0.001
   }
 
   axes <- CTMM$axes
-  grid <- format.grid(grid,axes=axes)
+  grid <- format_grid(grid,axes=axes)
 
   level.UD <- CTMM$level.UD
   if(is.null(level.UD))

@@ -148,7 +148,7 @@ svf.func <- function(CTMM,moment=FALSE)
 
 
 ##########
-plot.svf <- function(lag,CTMM,alpha=0.05,col="red",type="l",...)
+plot_svf <- function(lag,CTMM,alpha=0.05,col="red",type="l",...)
 {
   # changed from max lag to all lags
   # changed from error=0 or number/logical to error=NULL or array
@@ -429,12 +429,12 @@ plot.variogram <- function(x, CTMM=NULL, level=0.95, units=TRUE, fraction=0.5, c
     }
 
     # PLOT CORRESPONDING MODEL
-    # if(i<=m) { plot.svf(lag,CTMM[[i]],error=MSE,alpha=alpha,type=type,col=col.CTMM[[i]]) }
-    if(i<=m) { plot.svf(lag,CTMM[[i]],alpha=alpha,type=type,col=col.CTMM[[i]],...) }
+    # if(i<=m) { plot_svf(lag,CTMM[[i]],error=MSE,alpha=alpha,type=type,col=col.CTMM[[i]]) }
+    if(i<=m) { plot_svf(lag,CTMM[[i]],alpha=alpha,type=type,col=col.CTMM[[i]],...) }
   }
   # PLOT LEFTOVER MODELS USING THE LAST DATA
-  # if(n<m) { for(i in n:m) { plot.svf(lag,CTMM[[i]],error=MSE,alpha=alpha,type=type,col=col.CTMM[[i]]) } }
-  if(n<m) { for(i in n:m) { plot.svf(lag,CTMM[[i]],alpha=alpha,type=type,col=col.CTMM[[i]],...) } }
+  # if(n<m) { for(i in n:m) { plot_svf(lag,CTMM[[i]],error=MSE,alpha=alpha,type=type,col=col.CTMM[[i]]) } }
+  if(n<m) { for(i in n:m) { plot_svf(lag,CTMM[[i]],alpha=alpha,type=type,col=col.CTMM[[i]],...) } }
 
   # no projection for variograms
   assign("projection",NULL,pos=plot.env)

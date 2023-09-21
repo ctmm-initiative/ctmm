@@ -16,13 +16,13 @@ midpoint(data,CTMM,t=NULL,complete=FALSE,...)
 
 distances(data,CTMM,t=NULL,level=0.95,...)
 
-proximity(data,CTMM,GUESS=ctmm(error=TRUE),debias=TRUE,level=0.95,...)
+proximity(data,CTMM,t=NULL,GUESS=ctmm(error=TRUE),debias=TRUE,level=0.95,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{data}{A \code{list} of two \code{telemetry} objects.}
   \item{CTMM}{A \code{list} of two \code{ctmm} movement-model objects.}
-  \item{t}{An optional vector of times over which to predict the location differences.}
+  \item{t}{An optional vector of times or range of times over which to predict the location differences.}
   \item{complete}{Additionally calculate timestamps and geographic coordinates.}
   \item{level}{Confidence level for the distance/proximity estimate.}
   \item{GUESS}{An optional \code{ctmm} object to specify the candidate model parameters of the location differences.}

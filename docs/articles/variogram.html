@@ -62,6 +62,9 @@
       <a href="../articles/error.html">Telemetry Error</a>
     </li>
     <li>
+      <a href="../articles/interactions.html">Encounters and Interactions</a>
+    </li>
+    <li>
       <a href="../articles/periodogram.html">Periodograms and Periodicities</a>
     </li>
   </ul>
@@ -90,7 +93,7 @@
       <h1 data-toc-skip>Variograms and Model Selection</h1>
                         <h4 data-toc-skip class="author">Christen H. Fleming and Justin M. Calabrese</h4>
             
-            <h4 data-toc-skip class="date">2023-09-04</h4>
+            <h4 data-toc-skip class="date">2023-09-19</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/ctmm-initiative/ctmm/blob/HEAD/vignettes/variogram.Rmd" class="external-link"><code>vignettes/variogram.Rmd</code></a></small>
       <div class="hidden name"><code>variogram.Rmd</code></div>
@@ -292,13 +295,13 @@
 <span><span class="co">## </span></span>
 <span><span class="co">## $DOF</span></span>
 <span><span class="co">##       mean       area  diffusion      speed </span></span>
-<span><span class="co">##   10.73354   18.13599  902.23377 3445.13306 </span></span>
+<span><span class="co">##   10.73354   18.13597  902.23376 3445.13306 </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $CI</span></span>
 <span><span class="co">##                                          low        est       high</span></span>
-<span><span class="co">## area (square kilometers)          239.647421 403.458683 609.240841</span></span>
-<span><span class="co">## τ[position] (days)                  4.438957   7.505364  12.690031</span></span>
-<span><span class="co">## τ[velocity] (minutes)              39.607116  42.069009  44.683929</span></span>
+<span><span class="co">## area (square kilometers)          239.647394 403.458812 609.241202</span></span>
+<span><span class="co">## τ[position] (days)                  4.438956   7.505367  12.690041</span></span>
+<span><span class="co">## τ[velocity] (minutes)              39.607116  42.069009  44.683928</span></span>
 <span><span class="co">## speed (kilometers/day)             13.820458  14.055146  14.289780</span></span>
 <span><span class="co">## diffusion (square kilometers/day)   5.284545   5.647059   6.021428</span></span></code></pre>
 <p>Notice how tiny the (Gaussian) area uncertainty is in IID model <code>M.IID</code>. Let us look into some details of the models.</p>
@@ -306,7 +309,7 @@
 <code class="sourceCode R"><span><span class="va">FITS</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>IID<span class="op">=</span><span class="va">M.IID</span>,OU<span class="op">=</span><span class="va">M.OU</span>,OUF<span class="op">=</span><span class="va">M.OUF</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">FITS</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##         ΔAICc ΔRMSPE (m)   DOF[area]</span></span>
-<span><span class="co">## OUF     0.000   352.8522   18.135995</span></span>
+<span><span class="co">## OUF     0.000   352.8534   18.135968</span></span>
 <span><span class="co">## OU   1565.291   779.5547    8.231787</span></span>
 <span><span class="co">## IID 38112.149     0.0000 3526.000000</span></span></code></pre>
 <p><code>AICc</code> is the (linearly) corrected Akaike information criteria. AIC balances likelihood against model complexity in a way that is good if we want to make optimal predictions. A lower AIC is better. Getting the AIC to go down by 5 is great, while getting the AIC to go down by 10 is awesome. Our AIC is going down by thousands.</p>
@@ -321,9 +324,9 @@
 <span><span class="va">FITZ</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ctmm.fit.html">ctmm.select</a></span><span class="op">(</span><span class="va">Cilla</span>,<span class="va">m.ouf</span>,verbose<span class="op">=</span><span class="cn">TRUE</span>,cores<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">FITZ</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##                     ΔAICc ΔRMSPE (km)  DOF[area]</span></span>
-<span><span class="co">## OUF anisotropic    0.0000    1.776673  18.135956</span></span>
-<span><span class="co">## OUF               67.7508    1.912066  17.912937</span></span>
-<span><span class="co">## OU anisotropic  1565.2907    2.203373   8.231787</span></span>
+<span><span class="co">## OUF anisotropic    0.0000    1.776672  18.135967</span></span>
+<span><span class="co">## OUF               67.7508    1.912063  17.912998</span></span>
+<span><span class="co">## OU anisotropic  1565.2907    2.203373   8.231785</span></span>
 <span><span class="co">## OUf anisotropic 1863.8799    0.000000 345.919726</span></span></code></pre>
 <!--Note that `level=1` is set here for demonstration purposes only, to attempt every nearest model no matter how unlikely it may seem.-->
 <p>The isotropic and anisotropic (<code>isotropic=FALSE</code>) flags correspond to circular and elliptical covariances respectively—an option we did not consider above. <!-- The Ornstein-Uhlenbeck-F (OUF) model is continuous in position and velocity (`M.OUF`),

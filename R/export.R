@@ -175,7 +175,7 @@ methods::setMethod("writeVector",methods::signature(x="UD",filename="missing"), 
 ################
 writeVector.telemetry <- function(x,filename,filetype="ESRI Shapefile",error=TRUE,level.UD=0.95,...)
 {
-  if(missing(filename)) { filename <- mean.info(x)$identity }
+  if(missing(filename)) { filename <- mean_info(x)$identity }
 
   # make one long SPDF
   if(error) { x <- SpatialPolygonsDataFrame.telemetry(x,level.UD=level.UD) }

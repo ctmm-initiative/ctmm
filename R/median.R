@@ -50,7 +50,7 @@ median.telemetry <- function(x,na.rm=FALSE,...)
   {
     if(length(x)>1)
     {
-      id <- mean.info(x)$identity
+      id <- mean_info(x)$identity
       # is there a common projection to preserve
       proj <- sapply(x,projection.telemetry)
       proj <- unlist(proj) # need for multiple NULLs
@@ -83,7 +83,7 @@ median.telemetry <- function(x,na.rm=FALSE,...)
   {
     proj <- projection(x)
 
-    mu <- median.longlat(x,...)
+    mu <- median_longlat(x,...)
     x <- data.frame(longitude=mu[,"longitude"],latitude=mu[,"latitude"])
     x <- new.telemetry(x,info=list(identity=id,projection=proj),UERE=new.UERE())
 
@@ -104,7 +104,7 @@ median.telemetry <- function(x,na.rm=FALSE,...)
 
 
 # ellipsoidal median (k-cluster)
-median.longlat <- function(data,k=1,...)
+median_longlat <- function(data,k=1,...)
 {
   data <- ellipsoid2cartesian(data)
 

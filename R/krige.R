@@ -377,10 +377,49 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,VMM=NULL,t=NULL,dt=N
   info <- attr(object,"info")
   if(!is.null(data)) { info$identity <- glue( attr(data,'info')$identity , info$identity ) }
 
+  # have to do this becaues simulate is an S3 with 3 fixed arguments
+
+  if(class(object)[1] %in% c("data.frame","telemetry"))
+  {
+    TEMP <- data
+    data <- object
+    object <- TEMP
+  }
+
   if(class(nsim)[1] %in% c("data.frame","telemetry"))
   {
+    TEMP <- data
     data <- nsim
-    nsim <- 1
+    nsim <- TEMP
+  }
+
+  if(class(nsim)[1] == "ctmm")
+  {
+    TEMP <- object
+    object <- nsim
+    nsim <- TEMP
+  }
+
+  if(class(seed)[1] %in% c("data.frame","telemetry"))
+  {
+    TEMP <- data
+    data <- seed
+    seed <- TEMP
+  }
+
+  if(class(seed)[1] == "ctmm")
+  {
+    TEMP <- object
+    object <- seed
+    seed <- TEMP
+  }
+
+  if(is.null(nsim)) { nsim <- 1 }
+
+  if(nsim>1)
+  {
+    S <- lapply(1:nsim,function(i){simulate.ctmm(object,seed,data,VMM=VMM,t=t,dt=dt,res=res,complete=complete,precompute=precompute,nsim=1,...)})
+    return(S)
   }
 
   if(is.null(object) && !is.null(VMM)) # 1D
@@ -638,15 +677,7 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,VMM=NULL,t=NULL,dt=N
 
 
 simulate.telemetry <- function(object,nsim=1,seed=NULL,CTMM=NULL,VMM=NULL,t=NULL,dt=NULL,res=1,complete=FALSE,precompute=FALSE,...)
-{
-  if(class(nsim)[1]=="ctmm")
-  {
-    CTMM <- nsim
-    nsim <- 1
-  }
-
-  simulate.ctmm(CTMM,nsim=nsim,seed=seed,data=object,VMM=VMM,t=t,dt=dt,res=res,complete=complete,precompute=precompute,...)
-}
+{ simulate.ctmm(CTMM,nsim=nsim,seed=seed,data=object,VMM=VMM,t=t,dt=dt,res=res,complete=complete,precompute=precompute,...) }
 
 
 ##########################

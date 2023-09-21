@@ -6,10 +6,10 @@ video <- function(x,ext=extent(x),fps=60,dt=NULL,ghost=0,timestamp=FALSE,file="c
   x <- listify(x)
   n <- length(x)
 
-  col <- format.par(col,x)
-  pch <- format.par(pch,x)
-  lwd <- format.par(lwd,x)
-  #type <- format.par(type,x,all=TRUE)
+  col <- format_par(col,x)
+  pch <- format_par(pch,x)
+  lwd <- format_par(lwd,x)
+  #type <- format_par(type,x,all=TRUE)
 
   # automagic the plot point size
   if(is.null(cex))
@@ -17,7 +17,7 @@ video <- function(x,ext=extent(x),fps=60,dt=NULL,ghost=0,timestamp=FALSE,file="c
     p <- sum(sapply(x, function(d) { length(d$t) } ))
     if(p>1000) { cex <- 1000/p } else { cex <- 1 }
   }
-  cex <- format.par(cex,x)
+  cex <- format_par(cex,x)
 
   res <- array(res,2)
 

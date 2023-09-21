@@ -48,7 +48,7 @@ BAD <- OUT$speed>0.08 # not appropriate for other species!
 turtle[[3]] <- turtle[[3]][!BAD,]
 outlie(turtle[[3]]) -> OUT
 
-## ----  fig.show='hold', echo=FALSE--------------------------------------------
+## ----fig.show='hold', echo=FALSE----------------------------------------------
 # Argos type errors
 curve(1+x,0,5,xlab="Short time lag",ylab="Semi-variance",ylim=c(0,6))
 points(c(0,0),c(0,1))

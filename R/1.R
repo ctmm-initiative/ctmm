@@ -58,7 +58,7 @@ AICc <- function(object,...) UseMethod("AICc")
 speed <- function(object,...) UseMethod("speed")
 speeds <- function(object,...) UseMethod("speeds")
 mag <- function(x,...) UseMethod("mag")
-modes <- function(object,...) UseMethod("modes")
+#modes <- function(object,...) UseMethod("modes") # CRAN is annoying: do not declare generics for non-exported functions
 ridges <- function(object,...) UseMethod("ridges")
 
 # internal S3 generic function

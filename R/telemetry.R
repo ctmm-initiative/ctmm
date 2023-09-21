@@ -35,7 +35,7 @@ tbind <- function(...)
   }
 
   PROJS <- length(projection(x))
-  info <- mean.info(x)
+  info <- mean_info(x)
 
   # unique names - just in case
   if(is.null(names(x)))
@@ -379,7 +379,7 @@ Move2CSV <- function(object,timeformat="auto",timezone="UTC",projection=NULL,dat
 
 
 # sf object (C) jfsmenezes & CHF [UNFINISHED]
-as.telemetry.sf = function(object,timeformat="auto",timezone="UTC",projection=NULL,datum="WGS84",dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
+UNFINISHED.as.telemetry.sf = function(object,timeformat="auto",timezone="UTC",projection=NULL,datum="WGS84",dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
 {
   if(sf::st_geometry_type(object,by_geometry=FALSE)!="POINT")
   { stop("only point features supported at the moment") }

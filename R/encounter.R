@@ -1,4 +1,4 @@
-encounter <- function(object,include=NULL,exclude=NULL,debias=FALSE,...)
+cde <- function(object,include=NULL,exclude=NULL,debias=FALSE,...)
 {
   UD <- object
   check.projections(UD)
@@ -13,7 +13,7 @@ encounter <- function(object,include=NULL,exclude=NULL,debias=FALSE,...)
   CTMM <- lapply(UD,function(U){U@CTMM})
 
   # Gaussian approximation
-  STUFF <- encounter.ctmm(CTMM,include=include,exclude=exclude,debias=debias)
+  STUFF <- cde.ctmm(CTMM,include=include,exclude=exclude,debias=debias)
   CTMM <- STUFF$CTMM
   BIAS <- STUFF$BIAS # individual biases
   bias <- STUFF$bias # pairwise biases
@@ -81,7 +81,7 @@ encounter <- function(object,include=NULL,exclude=NULL,debias=FALSE,...)
   object$H <- H
   object$DOF.area <- DOF.area
 
-  info <- mean.info(UD)
+  info <- mean_info(UD)
   object <- new.UD(object,info=info,type='range',variable="encounter",CTMM=CTMM)
 
   return(object)
@@ -89,7 +89,7 @@ encounter <- function(object,include=NULL,exclude=NULL,debias=FALSE,...)
 
 ################
 # Gaussian encounters
-encounter.ctmm <- function(CTMM,include=NULL,exclude=NULL,debias=FALSE,...)
+cde.ctmm <- function(CTMM,include=NULL,exclude=NULL,debias=FALSE,...)
 {
   # check.projections(CTMM)
 
@@ -196,7 +196,7 @@ encounter.ctmm <- function(CTMM,include=NULL,exclude=NULL,debias=FALSE,...)
   NAMES <- names(sigma@par)[1:length(I)] # isotropic
   dimnames(COV) <- list(NAMES,NAMES)
 
-  info <- mean.info(CTMM)
+  info <- mean_info(CTMM)
 
   CTMM <- ctmm(mu=mu,sigma=sigma,COV.mu=COV.mu,COV=COV,axes=axes,isotropic=isotropic,info=info)
   return(list(CTMM=CTMM,BIAS=BIAS,bias=bias))
@@ -204,7 +204,7 @@ encounter.ctmm <- function(CTMM,include=NULL,exclude=NULL,debias=FALSE,...)
 
 
 # relative encounter rates
-rates <- function(object,debias=FALSE,level=0.95,normalize=TRUE,self=TRUE,...)
+encounter <- function(object,debias=FALSE,level=0.95,normalize=FALSE,self=TRUE,...)
 {
   units <- FALSE
 
@@ -228,6 +228,8 @@ rates <- function(object,debias=FALSE,level=0.95,normalize=TRUE,self=TRUE,...)
     diag(R$CI[,,1]) <- diag(R$CI[,,2]) <- diag(R$CI[,,3]) <- Inf
     diag(R$DOF) <- Inf
   }
+
+  R$CI <- R$CI * pi # standardized encounter probability (1-meter)
 
   return(R)
 }

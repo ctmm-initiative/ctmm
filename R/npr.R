@@ -34,7 +34,7 @@ npr <- function(data,UD,variable="speed",normalize=FALSE,debias=TRUE,error=0.001
   data <- predict(CTMM,data=data,t=data$t)
 
   if(variable %in% c("revisitation","speed")) # append a debiased speed column
-  { data <- speeds.fast(data,append=TRUE) }
+  { data <- speeds_fast(data,append=TRUE) }
   else
   {
     data[[variable]] <- VAR

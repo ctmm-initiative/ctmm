@@ -395,7 +395,7 @@ distanceMLE <- function(dr,error,axes=c('x','y'),return.VAR=FALSE)
 {
   if(length(dim(error))==3) # error ellipse
   {
-    dr <- sapply(1:nrow(dr),function(i){ abs.bivar(dr[i,],error[i,,],return.VAR=TRUE) })
+    dr <- sapply(1:nrow(dr),function(i){ abs_bivar(dr[i,],error[i,,],return.VAR=TRUE) })
     dr <- t(dr) #
   }
   else # error circle or interval

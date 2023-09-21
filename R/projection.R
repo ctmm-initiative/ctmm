@@ -88,7 +88,7 @@ setMethod('projection<-', signature(x='list'), `projection<-.list`)
   }
 
   # convert to PROJ4 format if location
-  value <- format.projection(value)
+  value <- format_projection(value)
 
   NAMES <- names(x)
   n <- nrow(x)
@@ -186,7 +186,7 @@ rotate.north <- function(u,heading)
 
 
 # put projection into character format
-format.projection <- function(proj,datum="WGS84")
+format_projection <- function(proj,datum="WGS84")
 {
   if(class(proj)[1]=="CRS")
   { proj <- as.character(proj) }

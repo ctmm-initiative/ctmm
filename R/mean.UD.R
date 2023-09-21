@@ -15,7 +15,7 @@ mean.UD <- function(x,weights=NULL,sample=TRUE,...)
   # population model
   CTMM <- mean.ctmm(CTMM,weights=weights,sample=sample)
   # population stationary distribution
-  if(sample) { CTMM <- mean.pop(CTMM) }
+  if(sample) { CTMM <- mean_pop(CTMM) }
 
   # harmonic mean bandwidth matrix
   H <- 0
@@ -23,7 +23,7 @@ mean.UD <- function(x,weights=NULL,sample=TRUE,...)
   H <- H/WEIGHT
   H <- PDsolve(H)
 
-  info <- mean.info(x)
+  info <- mean_info(x)
   type <- unique(sapply(x,function(y){attr(y,"type")}))
   if(length(type)>1) { stop("Distribution types ",type," differ.") }
   dV <- prod(x[[1]]$dr)

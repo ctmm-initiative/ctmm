@@ -22,7 +22,7 @@ occurrence <- function(data,CTMM,R=list(),SP=NULL,SP.in=TRUE,H=0,variable="utili
 
   axes <- CTMM[[1]]$axes
 
-  grid <- format.grid(grid,axes=axes)
+  grid <- format_grid(grid,axes=axes)
   COL <- length(axes)
 
   KDE <- list()
@@ -136,7 +136,7 @@ currence <- function(data,CTMM,H=0,variable="utilization",res.time=10,res.space=
     data$COV.vx.vx <- state$VCOV[GRID,'vx','vx']
     data$COV.vx.vy <- state$VCOV[GRID,'vx','vy']
     data$COV.vy.vy <- state$VCOV[GRID,'vy','vy']
-    w.grid <- w.grid * speeds.fast(data,append=TRUE)$speed
+    w.grid <- w.grid * speeds_fast(data,append=TRUE)$speed
   }
 
   # some covariances are slightly negative due to roundoff error

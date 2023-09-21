@@ -54,7 +54,7 @@ speed.ctmm <- function(object,data=NULL,t=NULL,level=0.95,robust=FALSE,units=TRU
       fn <- function(p)
       {
         CTMM <- set.parameters(object,p)
-        speed.deterministic(CTMM)
+        speed_deterministic(CTMM)
       }
 
       PAR <- get.parameters(object,NAMES)
@@ -97,7 +97,7 @@ speed.ctmm <- function(object,data=NULL,t=NULL,level=0.95,robust=FALSE,units=TRU
 
     # random speed calculation
     DT <- diff(data$t)
-    spd.fn <- function(i=0) { speed.rand(object,data=data,prior=prior,fast=fast,cor.min=cor.min,dt.max=dt.max,error=error,precompute=precompute,DT=DT,TP=t,DOF=DOF,...) }
+    spd.fn <- function(i=0) { speed_rand(object,data=data,prior=prior,fast=fast,cor.min=cor.min,dt.max=dt.max,error=error,precompute=precompute,DT=DT,TP=t,DOF=DOF,...) }
 
     # setup precompute stuff
     if(prior==FALSE)
@@ -212,7 +212,7 @@ speed.ctmm <- function(object,data=NULL,t=NULL,level=0.95,robust=FALSE,units=TRU
 
 
 # calculate speed of one random trajectory
-speed.rand <- function(CTMM,data=NULL,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,precompute=FALSE,DT=diff(data$t),TP=range(data$t),DOF=Inf,...)
+speed_rand <- function(CTMM,data=NULL,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NULL,error=0.01,precompute=FALSE,DT=diff(data$t),TP=range(data$t),DOF=Inf,...)
 {
   # capture model uncertainty
   if(prior) { CTMM <- emulate(CTMM,data=data,fast=fast,...) }
@@ -225,7 +225,7 @@ speed.rand <- function(CTMM,data=NULL,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NU
   if(is.null(data))
   {
     # analytic result possible here
-    if(CTMM$mean=="stationary") { return(speed.deterministic(CTMM)/chi.bias(DOF)) }
+    if(CTMM$mean=="stationary") { return(speed_deterministic(CTMM)/chi.bias(DOF)) }
     # else do a sufficient length simulation
     t <- seq(0,CTMM$tau[2]/error^2,dt) # this should give O(error) estimation error
     data <- simulate(CTMM,t=t,precompute=precompute)
@@ -276,7 +276,7 @@ speed.rand <- function(CTMM,data=NULL,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NU
 
 
 # only for stationary processes
-speed.deterministic <- function(CTMM,sigma=CTMM$sigma)
+speed_deterministic <- function(CTMM,sigma=CTMM$sigma)
 {
   sigma <- eigenvalues.covm(sigma)
 

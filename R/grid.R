@@ -147,7 +147,7 @@ same.grids <- function(UD)
 
 ##############
 # give grid argument 1canonical formatting - returning list(r,dr,extent)
-format.grid <- function(grid,axes=c('x','y'))
+format_grid <- function(grid,axes=c('x','y'))
 {
   if(is.null(grid)) { grid <- list(axes=axes) }
 

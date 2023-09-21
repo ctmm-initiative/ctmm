@@ -2,9 +2,9 @@
 # log-transformed parameters
 # debias includes bias correction for chi^2 to log(chi^2)
 # matrix casts location covariance, diffusion rate, velocity covariance all as distinct matrices for above bias correction
-log.ctmm <- function(CTMM,debias=FALSE,...)
+log_ctmm <- function(CTMM,debias=FALSE,...)
 {
-  if(class(CTMM)[1]=="list") { return(log.ctmms(CTMM,debias=debias,...)) }
+  if(class(CTMM)[1]=="list") { return(log_ctmms(CTMM,debias=debias,...)) }
 
   SIGMA <- c("major","minor","angle")
   isotropic <- CTMM$isotropic
@@ -22,7 +22,7 @@ log.ctmm <- function(CTMM,debias=FALSE,...)
   COV[PARS,] <- COV[PARS,,drop=FALSE] / par[PARS]
   COV[,PARS] <- t( t(COV[,PARS,drop=FALSE]) / par[PARS] )
 
-  sigma <- log.covm(sigma)
+  sigma <- log_covm(sigma)
 
   # convert log(eigen) to log(xy) in COV
   PARS <- SIGMA[SIGMA %in% features]
@@ -73,8 +73,8 @@ log.ctmm <- function(CTMM,debias=FALSE,...)
     # transform to diagonalized basis with VARs in log numerator
     par[SUB] <- t(EIGEN$vectors) %*% par[SUB] # diagonalize parameters
     DOF <- 2/EIGEN$values # log-chi^2 VAR-DOF relation
-    BIAS <- log.chi2.bias(DOF) # negative bias for log(chi^2) variates
-    BIAS <- pmax(BIAS,log.chi2.bias(1)) # clamp to 1 DOF
+    BIAS <- log_chi2_bias(DOF) # negative bias for log(chi^2) variates
+    BIAS <- pmax(BIAS,log_chi2_bias(1)) # clamp to 1 DOF
     par[SUB] <- par[SUB] - BIAS # E[log(chi^2)] bias correction
     par[SUB] <- c(EIGEN$vectors %*% par[SUB]) # transform back (still under logarithm)
 
@@ -97,7 +97,7 @@ log.ctmm <- function(CTMM,debias=FALSE,...)
 
 #####################
 # inverse transformation of above
-exp.ctmm <- function(CTMM,debias=FALSE,variance=TRUE)
+exp_ctmm <- function(CTMM,debias=FALSE,variance=TRUE)
 {
   SIGMA <- c("major","minor","angle")
   isotropic <- CTMM$isotropic
@@ -138,8 +138,8 @@ exp.ctmm <- function(CTMM,debias=FALSE,variance=TRUE)
 
     # log-gamma variance (better than delta method)
     DOF <- 2*itrigamma(EIGEN$values)
-    BIAS <- log.chi2.bias(DOF) # negative bias for log(chi^2) variates
-    BIAS <- pmax(BIAS,log.chi2.bias(1)) # clamp to 1 DOF
+    BIAS <- log_chi2_bias(DOF) # negative bias for log(chi^2) variates
+    BIAS <- pmax(BIAS,log_chi2_bias(1)) # clamp to 1 DOF
     par[SUB] <- par[SUB] + BIAS # E[log-chi^2] bias correction
     par[SUB] <- c(EIGEN$vectors %*% par[SUB]) # transform back (still under logarithm)
 
@@ -244,7 +244,7 @@ exp.ctmm <- function(CTMM,debias=FALSE,variance=TRUE)
 
   # exp of eigen
   sigma <- covm(sigma,axes=axes,isotropic=isotropic)
-  sigma <- exp.covm(sigma)
+  sigma <- exp_covm(sigma)
 
   # copy over
   par[PARS] <- sigma@par[PARS]
