@@ -28,7 +28,7 @@ outlie(data,plot=TRUE,by='d',...)
 
 \details{If \code{plot=TRUE} in \code{outlie()}, intervals of high speed are highlighted with blue segments, while distant locations are highlighted with red points.
 
-When plotting the \code{outlie} object itself, `core deviation' denotes distances from the median longitude & latitude, while `minimum speed' denotes the minimum speed required to explain the location estimate's displacement as straight-line motion. Both estimates account for telemetry error and condition on as few data points as possible. The speed estimates furthermore account for timestamp truncation and assign each timestep's speed to the most likely offending time, based on its other adjacent speed estimate.
+When plotting the \code{outlie} object itself, `median deviation' denotes distances from the geometric median, while `minimum speed' denotes the minimum speed required to explain the location estimate's displacement as straight-line motion. Both estimates account for telemetry error and condition on as few data points as possible. The speed estimates furthermore account for timestamp truncation and assign each timestep's speed to the most likely offending time, based on its other adjacent speed estimate.
 
 The output \code{outlie} object contains the above noted speed and distance estimates in a \code{data.frame}, with rows corresponding to those of the input \code{telemetry} object.
 }

@@ -212,12 +212,12 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utiliz
     dr <- sapply(1:n,function(i){sqrt(pmin(diag(KDE[[i]]$H),diag(CTMM0[[i]]$sigma)))/res}) # (axes,individuals)
     dim(dr) <- c(COL,n)
   }
-  dr <- apply(dr,1,min)
+  dr <- apply(dr,1,grid$dr.fn) # minimum by default
 
   if(COMPATIBLE) # force grids compatible
   {
     grid$align.to.origin <- TRUE
-    if(is.null(grid$dr)) { grid$dr <- dr }
+    if("dr" %nin% names(grid)) { grid$dr <- dr }
   }
 
   # loop over individuals

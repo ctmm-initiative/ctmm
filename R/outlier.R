@@ -150,7 +150,7 @@ plot.outlie <- function(x,level=0.95,units=TRUE,axes=c('d','v'),xlim=NULL,ylim=N
   UNITS <- unit(d,dimension='length',concise=TRUE,SI=!units)
   d.scale <- UNITS$scale
   d <- d/UNITS$scale
-  d.lab <- paste0("Core deviation (",UNITS$name,")")
+  d.lab <- paste0("Median deviation (",UNITS$name,")")
 
   UNITS <- unit(v,dimension='length',concise=TRUE,SI=!units)
   v.scale <- UNITS$scale
@@ -162,7 +162,7 @@ plot.outlie <- function(x,level=0.95,units=TRUE,axes=c('d','v'),xlim=NULL,ylim=N
     UNITS <- unit(dz,dimension='length',concise=TRUE,SI=!units)
     dz.scale <- UNITS$scale
     dz <- dz/UNITS$scale
-    dz.lab <- paste0("Core vertical deviation (",UNITS$name,")")
+    dz.lab <- paste0("Median vertical deviation (",UNITS$name,")")
 
     UNITS <- unit(vz,dimension='length',concise=TRUE,SI=!units)
     vz.scale <- UNITS$scale

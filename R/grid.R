@@ -194,6 +194,9 @@ format_grid <- function(grid,axes=c('x','y'))
     if(is.null(grid$dr)) { grid$dr <- sapply(r,function(r){mean(diff(r))}) }
   }
 
+  # default resolution for multiple individuals with different resolutions
+  if("dr.fn" %nin% names(grid)) { grid$dr.fn <- min }
+
   return(grid)
 }
 
