@@ -267,7 +267,7 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,GUESS=NULL
   {
     # GUESS$mu <- (GUESS$mu-SHIFT)/SCALE
     GUESS$sigma <- t(GUESS$sigma/SCALE)/SCALE
-    GUESS$par <- sigma2par(sigma)
+    GUESS$par <- sigma2par(GUESS$sigma)
 
     GSOL <- nloglike(GUESS$par,verbose=TRUE)
     if(GSOL$loglike>SOL$loglike) { SOL <- GSOL }

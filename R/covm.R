@@ -348,6 +348,8 @@ axes2var <- function(CTMM,MEAN=TRUE)
 # gradient matrix d sigma / d par from par
 J.sigma.par <- function(par)
 {
+  if(length(dim(par))==2) { par <- par@par }
+
   major <- par["major"]
   minor <- par["minor"]
   theta <- par["angle"]
@@ -396,7 +398,31 @@ sigma.COV <- function(CTMM)
 # gradient matrix d par / d sigma from sigma
 J.par.sigma <- function(sigma)
 {
+  if(length(dim(sigma))==2) { sigma <- sigma[c(1,4,2)] }
   names(sigma) <- c("xx","yy","xy")
+
+  grad <- diag(3)
+  dimnames(grad) <- list(c('major','minor','angle'),c('xx','yy','xy'))
+
+  # these formulas come from Mathematica
+  D <- (sigma['xx']-sigma['yy'])^2 + 4*sigma['xy']^2
+  sqrt.D <- sqrt(D)
+  R1 <- nant( (sigma['xx']-sigma['yy']) / sqrt.D , 0 )
+  R2 <- nant( 4*sigma['xy'] / sqrt.D , 0 )
+
+  grad['major',] <- c(1,1,0)/2 + c(+R1,-R1,+R2)/2
+  grad['minor',] <- c(1,1,0)/2 + c(-R1,+R1,-R2)/2
+  grad['angle',] <- nant( c(-sigma['xy'],sigma['xy'],sigma['xx']-sigma['yy'])/D , 0)
+
+  return(grad)
+
+  # s_xx = major*cos(theta)^2 + minor*sin(theta)^2
+  # s_yy = major*sin(theta)^2 + minor*cos(theta)^2
+  # s_xy = major*cos(theta)*sin(theta) - minor*sin(theta)*cos(theta)
+  #      = (major-minor)*sin(2*theta)/2
+
+  # s_xx + s_yy        = major + minor
+  # s_xx*s_yy - s_xy^2 =
 
   par.fn <- function(s)
   {

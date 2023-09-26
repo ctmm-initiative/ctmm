@@ -221,12 +221,12 @@ kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=NULL,dr=NULL,EXT=NUL
   {
     R <- grid$r
     # UD object will also have dr
-    if(!is.null(grid$dr))
+    if("dr"%in%names(grid))
     { dr <- grid$dr }
     else
     { dr <- sapply(R,function(r){mean(diff(r))}) }
   }
-  else if(!is.null(grid$dr) && !is.null(grid$extent)) ### grid fully pre-specified... with possible conflicts ###
+  else if("dr"%in%names(grid) && !is.null(grid$extent)) ### grid fully pre-specified... with possible conflicts ###
   {
     # raster extents include pixel margins
     MARGIN <- class(grid$extent)[1]=="Extent" || DIM==1
@@ -276,7 +276,7 @@ kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=NULL,dr=NULL,EXT=NUL
 
     R <- lapply(1:DIM,function(i){seq(EXT[1,i],EXT[2,i],length.out=1+res[i])})
   } ### end grid extent specified ###
-  else if(!is.null(grid$dr)) ### grid resolution specified, but not extent ###
+  else if("dr"%in%names(grid)) ### grid resolution specified, but not extent ###
   {
     dr <- grid$dr
     dr <- array(dr,DIM)

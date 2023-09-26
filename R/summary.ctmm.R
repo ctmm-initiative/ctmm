@@ -110,7 +110,8 @@ confint.ctmm <- function(model,alpha=0.05,UNICODE=FALSE)
       J <- J.zero(POV)
       J[NAME,NAME] <- J0
       J <- quad2lin(J,diag=TRUE)
-      VAR <- diag( J %*% COV.POV %*% t(J) )
+      VAR <- rep(0,nrow(COV))
+      if(!is.null(COV.POV)) { VAR <- diag( J %*% COV.POV %*% t(J) ) }
       names(VAR) <- rownames(COV)
       VAR <- VAR[NAME]/TAU^4 + (-2*PAR/TAU)^2*VAR.TAU
     }
@@ -163,7 +164,8 @@ confint.ctmm <- function(model,alpha=0.05,UNICODE=FALSE)
       J <- J.zero(POV)
       J["circle","circle"] <- J0
       J <- quad2lin(J,diag=TRUE)
-      VAR <- tr(J %*% COV.POV %*% t(J))/f^4 + (-2*PAR/circle)^2*COV["circle","circle"]
+      VAR <- (-2*PAR/circle)^2*COV["circle","circle"]
+      if(!is.null(COV.POV)) { VAR <- VAR + tr(J %*% COV.POV %*% t(J))/f^4 }
 
       CI <- sqrt( chisq.ci(PAR,VAR=VAR,alpha=alpha) )
       par <- rbind(par,CI)
@@ -361,7 +363,8 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
 
       J <- rbind(J0,array(0,length(J0)-1:0))
       J <- quad2lin(J,diag=TRUE)
-      VAR <- tr(J %*% COV.POV %*% t(J))/ms^4 + (-2*PAR/ms)^2*var.ms
+      VAR <- (-2*PAR/ms)^2*var.ms
+      if(!is.null(COV.POV)) { VAR <- VAR + tr(J %*% COV.POV %*% t(J))/ms^4 }
 
       # CoV^2 of MS[speed]
       PAR <- chisq.ci(PAR,VAR=VAR,alpha=alpha)
@@ -440,7 +443,8 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
       J0 <- rbind(J0,array(0,length(J0)-1:0))
       rownames(J0) <- colnames(J0)
       J <- quad2lin(J0,diag=TRUE)
-      VAR <- tr(J %*% COV.POV %*% t(J))/D^4 + (-2*PAR/D)^2*STUFF$VAR
+      VAR <- (-2*PAR/D)^2*STUFF$VAR
+      if(!is.null(COV.POV)) { VAR <- VAR + tr(J %*% COV.POV %*% t(J))/D^4 }
 
       # CoV^2
       PAR <- chisq.ci(PAR,VAR=VAR,alpha=alpha)

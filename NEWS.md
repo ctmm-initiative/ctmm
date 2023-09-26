@@ -1,5 +1,10 @@
 ctmm 1.2.1 (2023-09-25)
 ================
+* new grid argument dr.fn in akde(), occurrence(), pkde()
+* improvements DOF[area] calculations in mean() and pkde()
+
+ctmm 1.2.0 (2023-09-22)
+================
 * new function names: cde() and encounter() replacing encounter() and rates()
 * new functions rsf.select(), intensity()
 * new functions sdm.fit(), sdm.select()
@@ -12,7 +17,6 @@ ctmm 1.2.1 (2023-09-25)
 * new argument 'variable' in Log()
 * new argument 'compute' in ctmm.loglike()
 * new argument 't' in proximity()
-* new grid argument dr.fn in akde(), occurrence(), etc.
 * as.telemetry() now supports GBIF format data
 * as.telemetry() datum argument now works on UTM import, and is no longer to a be a complete PROJ string
 * as.telemetry() timeformat='auto' now default

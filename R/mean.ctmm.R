@@ -751,7 +751,7 @@ mean_pop <- function(CTMM)
   else
   {
     P <- c('major','minor','angle')
-    J <- J.sigma.par(CTMM$sigma@par)
+    J <- J.sigma.par(CTMM$sigma)
     COV <- COV + J%*%(CTMM$COV[P,P]+CTMM$POV[P,P])%*%t(J)
   }
 
@@ -766,7 +766,7 @@ mean_pop <- function(CTMM)
   else
   {
     P <- c('major','minor','angle')
-    J <- J.par.sigma(sigma[c(1,4,2)])
+    J <- J.par.sigma(sigma)
     COV <- J %*% COV %*% t(J)
   }
   dimnames(COV) <- list(P,P)
