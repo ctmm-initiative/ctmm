@@ -38,6 +38,7 @@ transition <- function(data,n=3,filename="transition",height=2160,...)
     grDevices::png(FILE,width=width,height=height)
     graphics::par(mar=c(0,0,0,0))
     plot(data,col=col,bty="n",axes=FALSE,xaxt='n',ann=FALSE,yaxt='n',bty="n",lty="blank",...)
+
     grDevices::dev.off()
   }
 

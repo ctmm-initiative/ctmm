@@ -199,7 +199,7 @@ exp_ctmm <- function(CTMM,debias=FALSE,variance=TRUE)
 
       SCALE <- sqrt(EIGEN$values/SCALE)
       SCALE <- nant(SCALE,1)
-      JP[SUB,SUB] <- EIGEN$vectors %*% diag(SCALE) %*% t(EIGEN$vectors)
+      JP[SUB,SUB] <- EIGEN$vectors %*% diag(SCALE,nrow=length(SCALE)) %*% t(EIGEN$vectors)
     }
   }
 

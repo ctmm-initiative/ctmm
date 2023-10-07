@@ -1,7 +1,11 @@
 # population-level parameter estimates for normally distributed parameters and parameter uncertainties
+# MU: response point estimates
+# SIGMA: response uncertainty covariance
 # MEANS Boolean denotes whether or not there is a non-zero mean
 # VARS Boolean denotes whether or not there is natural variance-covariance
-meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,GUESS=NULL,debias=TRUE,weights=NULL,precision=1/2,WARN=TRUE,...)
+# X: predictor point estimates
+# SX: predictor uncertainty variance
+meta.normal <- function(MU,SIGMA,X=FALSE,SX=FALSE,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,GUESS=NULL,debias=TRUE,weights=NULL,precision=1/2,WARN=TRUE,...)
 {
   tol <- .Machine$double.eps^precision
   REML <- debias
@@ -20,6 +24,24 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,GUESS=NULL
     N <- dim(MU)[1]
     DIM <- dim(MU)[2]
   }
+
+  if(any(X))
+  {
+    # are there any gradients to support slope estimation
+    SLOPE <- abs(apply(X,2,diff)) > .Machine$double.eps # [N-1,DIM]
+    SLOPE <- apply(SLOPE,2,any)
+
+    if(any(SLOPE) && length(dim(SX))==2) # promote variance to covariance
+    {
+      TEMP <- SX
+      SX <- vapply(1:nrow(SX),function(i){diag(SX[i],nrow=DIM)},diag(0,nrow=DIM))
+      SX <- aperm(SX,c(3,1,2))
+    }
+  }
+
+  # TODO !!!!!!!!!!!!!
+  # ESTIMATE slope
+  # SELECT slope IN CALLING FUNCTION?
 
   if(is.null(weights))
   { weights <- rep(1,N) }
@@ -96,7 +118,7 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,GUESS=NULL
   SIGMA <- SIGMA/SCALE
   SIGMA <- aperm(SIGMA,c(2,3,1)) # [id,x,y]
   # initial guess of sigma
-  sigma <- diag(diag(VARS))
+  sigma <- diag(diag(VARS),nrow=DIM)
 
   COV.mu <- sigma/N
   if(any(!MEANS)) { COV.mu[!MEANS,] <- COV.mu[,!MEANS] <- 0 }
@@ -195,7 +217,8 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,GUESS=NULL
 
     # estimate mu exactly | sigma
     S <- P <- P.inf <- array(0,c(N,DIM,DIM))
-    mu <- mu.inf <- P.mu <- P.mu.inf <- 0
+    P.mu <- array(0,c(DIM,DIM))
+    mu <- mu.inf <- P.mu.inf <- 0
     for(i in 1:N)
     {
       S[i,,] <- sigma + SIGMA[i,,]
@@ -206,9 +229,10 @@ meta.normal <- function(MU,SIGMA,MEANS=TRUE,VARS=TRUE,isotropic=FALSE,GUESS=NULL
     for(i in 1:N)
     {
       mu <- mu + weights[i]*c(P[i,,] %*% MU[i,])
-      mu.inf <- mu.inf + weights[i]*(diag(P.inf[i,,]) * MU[i,])
+      P.INF <- diag(matrix(P.inf[i,,],DIM,DIM)) # R will drop dimensions here
+      mu.inf <- mu.inf + weights[i]*(P.INF * MU[i,])
       P.mu <- P.mu + weights[i]*P[i,,]
-      P.mu.inf <- P.mu.inf + weights[i]*diag(P.inf[i,,])
+      P.mu.inf <- P.mu.inf + weights[i]*P.INF
     }
     COV.mu <- COV.mu.inf <- array(0,c(DIM,DIM))
     COV.mu[MEANS,MEANS] <- PDsolve(P.mu[MEANS,MEANS],force=TRUE)

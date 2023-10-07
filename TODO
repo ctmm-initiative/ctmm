@@ -1,4 +1,6 @@
 ** PRIORITY
+* make pkde remove ctmms with DOF<<1
+* make ctmm.boot update the original uncertainty estimates rather than overwrite them
 * rsf.select require quadratic model over linear model (require even order polynomial)
 * clip raster before rsf.fit calculation
 * composite resolutions in gridding

@@ -44,7 +44,7 @@ quad2lin <- function(M,diag=FALSE)
 }
 
 #############
-mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",select="all",...)
+mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",select="all",fun.res=FALSE,...)
 {
   if(is.null(weights))
   { weights <- rep(1,length(x)) }
@@ -100,6 +100,22 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
   colnames(MU) <- FEATURES
   dimnames(SIGMA) <- list(NULL,FEATURES,FEATURES)
 
+  if(class(fun.res)[1]=="character")
+  { fun.res <- names(BETA) %in% fun.res }
+  else
+  { fun.res <- array(fun.res,length(BETA)) }
+
+  if(any(fun.res))
+  {
+    names(fun.res) <- BETA
+    X <- array(0,c(N,length(BETA)))
+    colnames(X) <- BETA
+    SX <- array(0,c(N,length(BETA),length(BETA)))
+    dimnames(SX) <- list(NULL,BETA,BETA)
+  }
+  else
+  { X <- SX <- FALSE }
+
   for(i in 1:N)
   {
     x[[i]] <- log_ctmm(x[[i]],debias=debias)
@@ -140,6 +156,13 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
       # copy over other correlations as well
       SIGMA[i,'minor',NFEAT] <- SIGMA[i,'major',NFEAT]
       SIGMA[i,NFEAT,'minor'] <- SIGMA[i,NFEAT,'major']
+    }
+
+    if(any(fun.res) && length(x[[i]]$used.mean))
+    {
+      NAMES <- names(x[[i]]$used.mean)
+      X[i,NAMES] <- x[[i]]$used.mean
+      SX[i,NAMES,NAMES] <- x[[i]]$used.cov
     }
   } # for(i in 1:N)
 
@@ -184,7 +207,9 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
   # }
 
   # missing data / infinite uncertainties
-  INF <- t(apply(SIGMA,1,function(M){diag(M)==Inf})) # [ind,par]
+  INF <- apply(SIGMA,1,function(M){diag(M)==Inf}) # [par,ind]
+  dim(INF) <- dim(SIGMA)[2:1]
+  INF <- t(INF) # [ind,par]
 
   tJ <- t(J)
   MU[INF] <- 0 # zero out infinite uncertainties (point estimates could be infinite after log transform)
@@ -257,7 +282,7 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
 
   S <- make.names(MEANS,VARS)
   if(trace) { message("Fitting covariance model ",S) }
-  OLD[[S]] <- meta.normal(MU,SIGMA,debias=debias,weights=weights,VARS=diag(VARS,DIM),MEANS=MEANS,WARN=FALSE,...)
+  OLD[[S]] <- meta.normal(MU,SIGMA,X=X,SX=SX,debias=debias,weights=weights,VARS=diag(VARS,DIM),MEANS=MEANS,WARN=FALSE,...)
 
   ## add terms one by one
   GUESS <- OLD[[1]]
@@ -292,7 +317,7 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
       {
         S <- NAMES[i]
         if(trace) { message("Fitting covariance model ",S) }
-        NEW[[S]] <- meta.normal(MU,SIGMA,debias=debias,weights=weights,VARS=diag(TRYS[i,],DIM),MEANS=MEANS,GUESS=GUESS,WARN=FALSE,...)
+        NEW[[S]] <- meta.normal(MU,SIGMA,X=X,SX=SX,debias=debias,weights=weights,VARS=diag(TRYS[i,],DIM),MEANS=MEANS,GUESS=GUESS,WARN=FALSE,...)
       }
     }
 
@@ -323,7 +348,7 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
       {
         S <- NAMES[i]
         if(trace) { message("Fitting covariance model ",S) }
-        NEW[[S]] <- meta.normal(MU,SIGMA,debias=debias,weights=weights,VARS=diag(VARS,DIM),MEANS=TRYS[i,],GUESS=GUESS,WARN=FALSE,...)
+        NEW[[S]] <- meta.normal(MU,SIGMA,X=X,SX=SX,debias=debias,weights=weights,VARS=diag(VARS,DIM),MEANS=TRYS[i,],GUESS=GUESS,WARN=FALSE,...)
       }
     }
 
@@ -390,7 +415,7 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
       {
         S <- NEW.NAMES[i]
         if(trace) { message("Fitting covariance model ",S) }
-        NEW[[S]] <- meta.normal(MU,SIGMA,debias=debias,weights=weights,VARS=diag(TRYS[i,],DIM),MEANS=MEANS,GUESS=GUESS,WARN=FALSE,...)
+        NEW[[S]] <- meta.normal(MU,SIGMA,X=X,SX=SX,debias=debias,weights=weights,VARS=diag(TRYS[i,],DIM),MEANS=MEANS,GUESS=GUESS,WARN=FALSE,...)
       }
     }
 
@@ -418,7 +443,7 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
       {
         S <- NEW.NAMES[i]
         if(trace) { message("Fitting covariance model ",S) }
-        NEW[[S]] <- meta.normal(MU,SIGMA,debias=debias,weights=weights,VARS=diag(VARS,DIM),MEANS=TRYS[i,],GUESS=GUESS,WARN=FALSE,...)
+        NEW[[S]] <- meta.normal(MU,SIGMA,X=X,SX=SX,debias=debias,weights=weights,VARS=diag(VARS,DIM),MEANS=TRYS[i,],GUESS=GUESS,WARN=FALSE,...)
       }
     }
 
@@ -453,7 +478,7 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
     if(S %nin% names(OLD))
     {
       if(trace) { message("Fitting covariance model ",S) }
-      OLD[[S]] <- meta.normal(MU,SIGMA,debias=debias,weights=weights,VARS=VARS,MEANS=MEANS,GUESS=GUESS,WARN=FALSE,...)
+      OLD[[S]] <- meta.normal(MU,SIGMA,X=X,SX=SX,debias=debias,weights=weights,VARS=VARS,MEANS=MEANS,GUESS=GUESS,WARN=FALSE,...)
     }
   } # end correlation fit
 
@@ -619,7 +644,7 @@ mean.mu <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",...)
 
 
 ###########
-mean.ctmm <- function(x,weights=NULL,sample=TRUE,debias=TRUE,IC="AIC",trace=TRUE,...)
+mean.ctmm <- function(x,fun.res=FALSE,weights=NULL,sample=TRUE,debias=TRUE,IC="AIC",trace=TRUE,...)
 {
   select <- "all"
 
@@ -649,7 +674,7 @@ mean.ctmm <- function(x,weights=NULL,sample=TRUE,debias=TRUE,IC="AIC",trace=TRUE
     MM <- mean.mu(x,debias=debias,weights=weights,IC=IC,trace=trace,...)
     isotropic['mu'] <- MM$isotropic
 
-    FM <- mean.features(x,debias=debias,weights=weights,select=select,IC=IC,trace=trace,...)
+    FM <- mean.features(x,debias=debias,weights=weights,select=select,IC=IC,trace=trace,fun.res=fun.res,...)
     isotropic['sigma'] <- FM$isotropic
 
     x <- copy(from=FM,to=MM)

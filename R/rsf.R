@@ -158,7 +158,8 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
   else
   {
     RSCALE <- rep(1,length(R))
-    names(RSCALE) <- names(R)
+    RSHIFT <- rep(0,length(R))
+    names(RSCALE) <- names(RSHIFT) <- names(R)
   }
 
   VARS <- c(RVARS,CVARS) # vars that need to be recorded per location
@@ -240,9 +241,10 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
     if(standardize && abs(RANGE[[1]]-0)>.Machine$double.eps && abs(RANGE[[2]]-1)>.Machine$double.eps)
     {
       # # raster::median is not defined correctly
-      # R[[i]] <- R[[i]] - raster::median(R[[i]],na.rm=TRUE)
+      # RSHIFT[i] <- raster::median(R[[i]],na.rm=TRUE)
       # RSCALE[i] <- raster::median(abs(R[[i]]),na.rm=TRUE)
-      R[[i]] <- R[[i]] - raster::cellStats(R[[i]],'mean',na.rm=TRUE)
+      RSHIFT[i] <- raster::cellStats(R[[i]],'mean',na.rm=TRUE)
+      R[[i]] <- R[[i]] - RSHIFT[i]
       RSCALE[i] <- raster::cellStats(R[[i]],'sd',na.rm=TRUE)
       R[[i]] <- R[[i]]/RSCALE[i]
     }
@@ -450,8 +452,10 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
     }
   } # end if(integrated)
 
-  DAVE <- c(w %*% DATA)
-  names(DAVE) <- VARS
+  DAVE <- c(w %*% DATA[,TERMS])
+  DCOV <- vapply(1:length(w),function(i){w[i]*outer(DATA[i,TERMS]-DAVE)},outer(DAVE)) # [TERMS,TERMS,TIMES]
+  DCOV <- apply(DCOV,1:2,sum) / sum(w)
+  names(DAVE) <- TERMS
   NAS <- is.na(DAVE)
   if(any(NAS))
   {
@@ -494,7 +498,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
       SAMP <- ONE * SAMP
     }
 
-    nll <- -c(DAVE[TERMS] %*% beta)
+    nll <- -c(DAVE %*% beta)
 
     if(STATIONARY)
     {
@@ -932,6 +936,9 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
     sigma <- beta[PAR]
     sigma <- covm(sigma,isotropic=isotropic,axes=axes)
     beta <- rm.name(beta,PAR)
+
+    DAVE <- rm.name(DAVE,c(axes,'rr','xx','xy','yy'))
+    DCOV <- rm.name(DCOV,c(axes,'rr','xx','xy','yy'))
   }
   else
   {
@@ -948,6 +955,9 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
     RVARS <- names(RSCALE)
     COV[RVARS,] <- COV[RVARS,,drop=FALSE] / RSCALE
     COV[,RVARS] <- t( t(COV[,RVARS,drop=FALSE]) / RSCALE )
+
+    DAVE <- DAVE * RSCALE + RSHIFT
+    DCOV <- DCOV * outer(RSCALE)
   }
 
   # package results and return
@@ -960,6 +970,8 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
   RSF$integrator <- integrator
   RSF$formula <- formula
   if(!integrated) { RSF$level.UD <- level.UD }
+  RSF$used.mean <- DAVE
+  RSF$used.cov <- DCOV
 
   # copy over autocorrelation information in a reasonable way
   if(integrated)
