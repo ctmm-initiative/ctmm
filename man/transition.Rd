@@ -27,8 +27,8 @@ transition(data,n=3,filename="transition",height=2160,...)
 
 \author{ C. H. Fleming. }
 
-\note{ Currently, there is a black border that needs to be removed, such as with the LaTeX code
-\code{\includegraphics[height=0.9\textheight,trim={3 3 3 3},clip]{transition-1.6.png}}}. }
+\note{ Currently, there is a black border that needs to be removed, such as with the LaTeX code:
+\code{\\includegraphics[height=0.9\\textheight,trim={3 3 3 3},clip]{transition-1.6.png}} }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 

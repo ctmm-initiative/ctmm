@@ -67,6 +67,9 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utiliz
   CTMM <- listify(CTMM)
   VMM <- listify(VMM)
 
+  if(length(data)!=length(CTMM))
+  { stop("length(data)==",length(data),", but length(CTMM)==",length(CTMM)) }
+
   DOF <- sapply(CTMM,DOF.area)
   SUB <- DOF<error
   if(any(SUB))

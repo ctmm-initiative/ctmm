@@ -92,6 +92,7 @@ S3method(`[`,periodogram)
 
 #LIKELIHOOD/MODEL FUNCTIONS
 export(correlogram,ctmm,ctmm.guess,ctmm.fit,ctmm.loglike,ctmm.select,ctmm.boot)
+S3method(plot,ctmm)
 S3method(mean,ctmm)
 S3method(residuals,telemetry)
 S3method(residuals,ctmm)

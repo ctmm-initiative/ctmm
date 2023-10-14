@@ -1,7 +1,10 @@
-ctmm 1.2.1 (2023-09-25)
+ctmm 1.2.1 (2023-10-14)
 ================
+* new plot method: plot.ctmm()
 * new grid argument dr.fn in akde(), occurrence(), pkde()
+* plot() argument 'col.DF' renamed to 'col.UD'
 * improvements DOF[area] calculations in mean() and pkde()
+* bugfix in raster factor expansion with more than one raster factor
 
 ctmm 1.2.0 (2023-09-22)
 ================

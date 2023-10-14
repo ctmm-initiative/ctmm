@@ -1051,15 +1051,17 @@ get.offset <- function(formula,variable=TRUE)
 # expand raster factors into
 expand.factors <- function(R,formula,reference="auto",data=NULL,DVARS=NULL,fixed=FALSE)
 {
-  NAMES <- names(R)
-  for(i in 1%:%length(R))
+  FACT <- sapply(R,raster::is.factor)
+  reference <- array(reference,sum(FACT))
+  names(reference) <- names(R)[FACT]
+
+  for(NAME in names(R))
   {
-    if(raster::is.factor(R[[i]]))
+    if(raster::is.factor(R[[NAME]]))
     {
-      NAME <- NAMES[i]
-      FACT <- R[[i]]
-      R <- R[-i]
-      NAMES <- NAMES[-i]
+      FACT <- R[[NAME]]
+      R <- R[names(R)!=NAME]
+      REF <- reference[NAME]
 
       LEVELS <- raster::levels(FACT)[[1]]$ID # assuming one layer
 
@@ -1069,14 +1071,14 @@ expand.factors <- function(R,formula,reference="auto",data=NULL,DVARS=NULL,fixed
         # I am not good with regexp
         # HEAD <- paste0(NAME,"[")
         HEAD <- paste0(NAME,".")
-        reference <- TERMS[grepl(HEAD,TERMS,fixed=TRUE)][1] # *NAME[#/ref]*
-        reference <- strsplit(reference,HEAD,fixed=TRUE)[[1]][2] # #/ref]*
-        # reference <- strsplit(reference,"/",fixed=TRUE)[[1]][2] # ref]*
-        reference <- strsplit(reference,"_",fixed=TRUE)[[1]][2] # ref]*
-        # reference <- strsplit(reference,"]",fixed=TRUE)[[1]][1] # ref
-        reference <- which(LEVELS==reference)
+        REF <- TERMS[grepl(HEAD,TERMS,fixed=TRUE)][1] # *NAME[#/ref]*
+        REF <- strsplit(REF,HEAD,fixed=TRUE)[[1]][2] # #/ref]*
+        # REF <- strsplit(REF,"/",fixed=TRUE)[[1]][2] # ref]*
+        REF <- strsplit(REF,"_",fixed=TRUE)[[1]][2] # ref]*
+        # REF <- strsplit(REF,"]",fixed=TRUE)[[1]][1] # ref
+        REF <- which(LEVELS==REF)
       }
-      else if(reference=="auto") # fix base layer
+      else if(reference[NAME]=="auto") # fix base layer
       {
         PROJ <- raster::projection(FACT)
         XY <- get.telemetry(data,c("longitude","latitude"))
@@ -1085,19 +1087,21 @@ expand.factors <- function(R,formula,reference="auto",data=NULL,DVARS=NULL,fixed
         XY <- raster::extract(FACT,XY) # don't interpolate
         UNIQUE <- unique(XY) # may be missing some levels
         XY <- tabulate(match(XY,UNIQUE)) # tallies
-        reference <- UNIQUE[which.max(XY)]
-        message(NAME," reference category set to ",reference,".")
+        REF <- UNIQUE[which.max(XY)]
+        message(NAME," reference category set to ",REF,".")
       }
       # else the reference category is specified by `reference`
 
-      REF <- reference[reference %in% LEVELS]
-      DIFF <- LEVELS %nin% reference
+      REF <- REF[REF %in% LEVELS]
+      DIFF <- LEVELS %nin% REF
       FACT <- lapply(LEVELS[DIFF],function(l){FACT==l})
-      # LEVELS <- paste0(NAME,"[",LEVELS,"/",LEVELS[reference],"]")[DIFF]
+      # LEVELS <- paste0(NAME,"[",LEVELS,"/",LEVELS[REF],"]")[DIFF]
       LEVELS <- paste0(NAME,".",LEVELS,"_",REF)[DIFF]
       names(FACT) <- LEVELS
 
+      reference[NAME] <- REF
       R <- c(R,FACT)
+      rm(FACT)
 
       # expand terms
       if(!fixed && !is.null(formula))
@@ -1109,19 +1113,16 @@ expand.factors <- function(R,formula,reference="auto",data=NULL,DVARS=NULL,fixed
         formula <- eval(parse(text=formula))
         formula <- simplify.formula(formula)
       }
-    }
+    } # end if factor
   } # end raster expansion
 
-  NAMES <- DVARS
-  for(i in 1%:%length(DVARS))
+  for(NAME in DVARS)
   {
-    NAME <- NAMES[i]
     if(is.factor(data[[NAME]]))
     {
       FACT <- data[[NAME]]
       KEEP <-
       data <- data[names(data)!=NAME]
-      NAMES <- NAMES[NAMES!=NAME]
 
       LEVELS <- levels(FACT) # assuming one layer
 
