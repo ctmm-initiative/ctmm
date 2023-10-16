@@ -5,7 +5,14 @@ mean.UD <- function(x,weights=NULL,sample=TRUE,...)
   n <- length(x)
   axes <- x[[1]]$axes
 
-  if(is.null(weights)) { weights <- rep(1,length(x)) }
+  if(is.null(weights))
+  {
+    if(x[[1]]@type=="occurrence") # time weighted by default
+    { weights <- sapply(x,function(y){y$W}) }
+    else
+    { weights <- rep(1,length(x)) }
+  }
+
   weights <- weights/max(weights)
   names(weights) <- names(x)
   WEIGHT <- sum(weights)
