@@ -1,7 +1,8 @@
-ctmm 1.2.1 (2023-10-15)
+ctmm 1.2.1 (2023-10-19)
 ================
 * new plot method: plot.ctmm()
 * new grid argument dr.fn in akde(), occurrence(), pkde()
+* new ctmm.boot() argument clamp
 * mean() of occurrence() now time weighted by default
 * plot() argument 'col.DF' renamed to 'col.UD'
 * improvements DOF[area] calculations in mean() and pkde()

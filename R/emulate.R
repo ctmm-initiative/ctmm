@@ -134,7 +134,7 @@ ctmm.reduce <- function(CTMM)
 #####################################
 # multi-estimator parametric bootstrap
 # + concurrent double-bootstrap AICc
-ctmm.boot <- function(data,CTMM,method=CTMM$method,AICc=FALSE,iterate=FALSE,robust=FALSE,error=0.01,cores=1,trace=TRUE,...)
+ctmm.boot <- function(data,CTMM,method=CTMM$method,AICc=FALSE,iterate=FALSE,robust=FALSE,error=0.01,clamp=0.001,cores=1,trace=TRUE,...)
 {
   if("COV" %nin% names(CTMM)) { stop("CTMM needs to be output from ctmm.select or ctmm.fit.") }
 
@@ -148,6 +148,15 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,AICc=FALSE,iterate=FALSE,robu
   POS <- POSITIVE.PARAMETERS
   # included variables that are positive
   POS <- POS[POS %in% NAMES]
+
+  prior <- clamp
+  if(prior)
+  {
+    DOF <- CTMM$COV
+    P <- get.parameters(CTMM,NAMES)
+    if(length(NAMES)>length(POS)) { P[!POS] <- 1 }
+    DOF <- t(DOF/P)/P
+  }
 
   method <- match.arg(method,c('ML','HREML','pREML','pHREML','REML'),several.ok=FALSE)
   cores <- resolveCores(cores,fast=FALSE)
@@ -373,6 +382,20 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,AICc=FALSE,iterate=FALSE,robu
 
   # store simulated AICc
   if(AICc) { CTMM$AICc <- AIC; CTMM$VAR.AICc <- VAR.AIC }
+
+  # crude fix to CIs at small N
+  if(prior)
+  {
+    DOF2 <- CTMM$COV
+    P <- get.parameters(CTMM,NAMES)
+    if(length(NAMES)>length(POS)) { P[!POS] <- 1 }
+    DOF2 <- t(DOF2/P)/P
+
+    R <- clamp*sqrt(N) # <= clamp/error
+
+    DOF <- ( DOF + R*DOF2 )/( 1 + R )
+    CTMM$COV <- t(DOF*P)*P
+  }
 
   if(trace) { close(pb) }
   return(CTMM)

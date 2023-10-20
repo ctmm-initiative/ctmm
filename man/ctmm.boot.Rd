@@ -7,7 +7,7 @@
 }
 \usage{
 ctmm.boot(data,CTMM,method=CTMM$method,AICc=FALSE,iterate=FALSE,robust=FALSE,error=0.01,
-          cores=1,trace=TRUE,...)
+          clamp=0.001,cores=1,trace=TRUE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -19,6 +19,7 @@ ctmm.boot(data,CTMM,method=CTMM$method,AICc=FALSE,iterate=FALSE,robust=FALSE,err
   \item{iterate}{Iteratively solve for the parameters such that the average estimate (of \code{method}) is that of the data, whereas with \code{iterate=FALSE} only the first-order correction is calculated from the initial estimate.}
   \item{robust}{Uses robust estimates of the average and covariation for debiasing. Useful when parameters are near boundaries.}
   \item{error}{Relative standard error target for bootstrap ensemble estimates and nonlinear iterations.}
+  \item{clamp}{Fix the COV/CoV estimate to the initial COV/CoV estimate, until \code{error} \eqn{\ll} \code{clamp}.}
   \item{cores}{Number of simulations to run in parallel. \code{cores=NULL} will use all cores, while \code{cores<0} will reserve \code{abs(cores)}.}
   \item{trace}{Report progress updates. Can be among \code{0:2} with increasing detail.}
   \item{...}{Further arguments passed to \code{\link{ctmm.fit}}.}
@@ -38,7 +39,7 @@ Methods in Ecology and Evolution 10:10, 1679-1689 (2019) \doi{10.1111/2041-210X.
 
 \author{ C. H. Fleming. }
 
-%\note{}
+\note{The bootstrapped COV estimates tend to be far more noisy than the bootstrapped point estimates. \code{clamp} can fix the bootstrapped COV/CoV estimate to the initial COV/CoV estimate until the point estimates obtain higher numerical precision.}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
