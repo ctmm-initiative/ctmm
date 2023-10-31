@@ -215,36 +215,64 @@ clamp <- function(num,min=0,max=1)
 
 
 # PAD VECTOR
-pad <- function(vec,size,padding=0,side="right")
+pad <- function(vec,size=length(vec),diff=size-length(vec),padding=0,side=+1)
 {
   # this is now the pad length instead of total length
-  size <- size - length(vec)
-  padding <- array(padding,size)
+  padding <- array(padding,diff)
 
-  if(side=="right"||side=="r")
+  if(side>0)
   { vec <- c(vec,padding) }
-  else if(side=="left"||side=="l")
+  else if(side<0)
   { vec <- c(padding,vec) }
 
   return(vec)
 }
 
 # row pad for data frames / matrices
-rpad <- function(mat,size,padding=0,side="right")
+rpad <- function(mat,size=nrow(mat),diff=size-nrow(mat),padding=0,side=+1)
 {
   mat <- cbind(mat)
-  size <- size - nrow(mat)
   COL <- ncol(mat)
-  padding <- array(padding,c(size,COL))
+  padding <- array(padding,c(diff,COL))
   colnames(padding) <- colnames(mat)
 
-  if(side=="right"||side=="r")
+  if(side>0)
   { mat <- rbind(mat,padding) }
-  else if(side=="left" || side=="l")
+  else if(side<0)
   { mat <- rbind(padding,mat) }
 
   return(mat)
 }
+
+# pad both sides of a matrix
+mpad <- function(mat,size=max(dim(mat)),diff=size-max(dim(mat)),padding=0,side=+1,padname=NULL,...)
+{
+  DIM <- dim(mat)
+
+  mat <- rpad(mat,size,diff,padding=padding,side=side)
+  mat <- t(mat)
+  mat <- rpad(mat,size,diff,padding=padding,side=side)
+  mat <- t(mat)
+
+  if(!is.null(padname))
+  {
+    if(side<0)
+    { SUB <- 1:diff }
+
+    if(side>0)
+    { SUB <- DIM[1] + 1:diff }
+
+    rownames(mat)[SUB] <- padname
+
+    if(side>0)
+    { SUB <- DIM[2] + 1:diff }
+
+    colnames(mat)[SUB] <- padname
+  }
+
+  return(mat)
+}
+
 
 #remove rows and columns by name
 rm.name <- function(object,name)

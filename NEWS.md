@@ -1,12 +1,16 @@
-ctmm 1.2.1 (2023-10-19)
+ctmm 1.2.1 (2023-10-30)
 ================
 * new plot method: plot.ctmm()
 * new grid argument dr.fn in akde(), occurrence(), pkde()
+* new mean.ctmm() argument formula for functional response estimation
 * new ctmm.boot() argument clamp
 * mean() of occurrence() now time weighted by default
 * plot() argument 'col.DF' renamed to 'col.UD'
 * improvements DOF[area] calculations in mean() and pkde()
+* improvement to optimizer() when initial guess is on a boundary and hessian is bad
 * bugfix in raster factor expansion with more than one raster factor
+* bugfix in mean.ctmm() potential endless loop
+* bugfix in normal meta-analysis REML correction
 
 ctmm 1.2.0 (2023-09-22)
 ================

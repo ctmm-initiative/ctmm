@@ -967,6 +967,13 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
       fn.par <- fn.all[MIN]
 
       END <- (MIN==1 || MIN==length(fn.all))
+      if(END) # did we cross zero without any resolution
+      {
+        TEST <- apply(par.all,1,function(r){abs(diff(sign(r)))})
+        TEST <- apply(TEST,1,sum)
+        if((MIN==1 && TEST[1]) || (MIN==length(fn.all) && TEST[length(fn.all)-1]))
+        { END <- FALSE } # resolve this case better
+      }
 
       if(trace==2) { message(sprintf("%s %s search",format(zero+fn.par,digits=16),LINE.TYPE)) }
       if(trace==3) { message("\tc(",paste0(NAMES,"=",par,collapse=', '),")") }

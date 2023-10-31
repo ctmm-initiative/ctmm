@@ -473,8 +473,22 @@ sqrtm <- function(M,force=FALSE,pseudo=FALSE)
   return(M)
 }
 
+# fix matrices with infinite variances
+fixInf <- function(M)
+{
+  INF <- M==Inf
+  DIAG <- diag(TRUE,nrow(M))
 
-unnant <- function(M)
+  if(any(INF)) { M[INF] <- 0 }
+
+  INF <- INF & DIAG
+  if(any(INF)) { M[INF] <- Inf }
+
+  return(M)
+}
+
+# fix matrices with 0/0 that should have infinite variances
+fixNaN <- function(M)
 {
   NAN <- is.nan(M)
   DIAG <- diag(TRUE,nrow(M))

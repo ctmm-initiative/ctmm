@@ -452,11 +452,13 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
     }
   } # end if(integrated)
 
-  DAVE <- c(w %*% DATA[,TERMS])
+  WDAVE <- c(w %*% DATA[,TERMS])
+  DAVE <- WDAVE / W
   DCOV <- vapply(1:length(w),function(i){w[i]*outer(DATA[i,TERMS]-DAVE)},outer(DAVE)) # [TERMS,TERMS,TIMES]
   DCOV <- apply(DCOV,1:2,sum) / sum(w)
-  names(DAVE) <- TERMS
-  NAS <- is.na(DAVE)
+  dimnames(DCOV) <- list(TERMS,TERMS)
+  names(DAVE) <- names(WDAVE) <- TERMS
+  NAS <- is.na(WDAVE)
   if(any(NAS))
   {
     VARS <- paste0(VARS[NAS],collapse=",")
@@ -498,7 +500,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
       SAMP <- ONE * SAMP
     }
 
-    nll <- -c(DAVE %*% beta)
+    nll <- -c(WDAVE %*% beta)
 
     if(STATIONARY)
     {
