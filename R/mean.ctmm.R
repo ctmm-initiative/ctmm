@@ -213,6 +213,7 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
   INF <- apply(SIGMA,1,function(M){diag(M)==Inf}) # [par,ind]
   dim(INF) <- dim(SIGMA)[2:1]
   INF <- t(INF) # [ind,par]
+  colnames(INF) <- colnames(SIGMA)
 
   tJ <- t(J)
   MU[INF] <- 0 # zero out infinite uncertainties (point estimates could be infinite after log transform)
@@ -611,7 +612,8 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
   names(beta) <- BETA
   R$beta <- beta
 
-  R$formula <- stats::as.formula(paste("~",paste(names(beta),collapse=" + ")))
+  if(length(BETA))
+  { R$formula <- stats::as.formula(paste("~",paste(names(beta),collapse=" + "))) }
 
   R$features <- FEATURES
 

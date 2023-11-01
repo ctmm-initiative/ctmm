@@ -67,7 +67,7 @@ meta.normal <- function(Y,SY=FALSE,X=FALSE,SX=FALSE,DSM=NULL,INT=TRUE,VARS=TRUE,
       SCALE[i] <- stats::mad(TEMP)
 
       if(SCALE[i]<.Machine$double.eps) { SCALE[i] <- sqrt(stats::var(TEMP)) }
-      if(SCALE[i]<.Machine$double.eps) { SCALE[i] <- 1 }
+      if(is.na(SCALE[i]) || SCALE[i]<.Machine$double.eps) { SCALE[i] <- 1 }
     }
   }
   SHIFT[!INT] <- 0 # don't shift if no intercept

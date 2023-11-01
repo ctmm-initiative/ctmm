@@ -1,4 +1,4 @@
-ctmm 1.2.1 (2023-10-30)
+ctmm 1.2.1 (2023-10-31)
 ================
 * new plot method: plot.ctmm()
 * new grid argument dr.fn in akde(), occurrence(), pkde()
