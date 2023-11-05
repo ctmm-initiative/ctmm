@@ -1097,7 +1097,8 @@ expand.factors <- function(R,formula,reference="auto",data=NULL,DVARS=NULL,fixed
       REF <- REF[REF %in% LEVELS]
       DIFF <- LEVELS %nin% REF
       FACT <- lapply(LEVELS[DIFF],function(l){FACT==l})
-      # LEVELS <- paste0(NAME,"[",LEVELS,"/",LEVELS[REF],"]")[DIFF]
+      # I cannot figure out how to use deratify...
+      # FACT <- raster::deratify(FACT) # creates a single layer for each level?
       LEVELS <- paste0(NAME,".",LEVELS,"_",REF)[DIFF]
       names(FACT) <- LEVELS
 

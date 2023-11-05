@@ -36,8 +36,8 @@ rsf.select <- function(data,UD,R=list(),formula=NULL,verbose=FALSE,IC="AICc",tra
 
       DATA <- data.frame(data)[1:2,]
       DATA[RVARS] <- as.list(rep(0,length(RVARS)))
-      TERMS <- attr(stats::terms(formula),"variables")[-1]
-      TERMS <- sapply(TERMS,as.character)
+      TERMS <- attr(stats::terms(formula),"variables") # this format seems to change with R versions
+      TERMS <- sapply(2:length(TERMS),function(i){deparse(TERMS[[i]])})
       DATA[TERMS] <- as.list(rep(0,length(TERMS)))
       TERMS <- colnames(stats::model.matrix(formula,data=DATA))
       TERMS <- TERMS[TERMS!="(Intercept)"]

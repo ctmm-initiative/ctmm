@@ -1,4 +1,4 @@
-ctmm 1.2.1 (2023-10-31)
+ctmm 1.2.1 (2023-11-04)
 ================
 * new plot method: plot.ctmm()
 * new grid argument dr.fn in akde(), occurrence(), pkde()
@@ -8,6 +8,7 @@ ctmm 1.2.1 (2023-10-31)
 * plot() argument 'col.DF' renamed to 'col.UD'
 * improvements DOF[area] calculations in mean() and pkde()
 * improvement to optimizer() when initial guess is on a boundary and hessian is bad
+* bugfix in rsf.select with functions in formulas
 * bugfix in raster factor expansion with more than one raster factor
 * bugfix in mean.ctmm() potential endless loop
 * bugfix in normal meta-analysis REML correction
