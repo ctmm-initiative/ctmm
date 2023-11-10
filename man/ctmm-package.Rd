@@ -31,7 +31,7 @@ Alston & Fleming et al (2023) <doi:10.1111/2041-210X.14025>.
 Package: \tab ctmm\cr
 Type: \tab Package\cr
 Version: \tab 1.2.1 \cr
-Date: \tab 2023-11-04 \cr
+Date: \tab 2023-11-10 \cr
 License: \tab GPL-3 \cr
 }
 
@@ -40,7 +40,6 @@ License: \tab GPL-3 \cr
 \item{ \href{https://movementoflife.si.edu/analytical-tools/}{Movement of Life} }
 \item{ \href{https://CRAN.R-project.org/package=ctmm}{CRAN package} }
 \item{ \href{https://github.com/ctmm-initiative/ctmm}{Github project} }
-\item{ \href{http://www2.physics.umd.edu/~hfleming/}{Source packages} }
 \item{ \href{https://ctmm-initiative.github.io/ctmm/}{Github reference} }
 \item{ \href{https://groups.google.com/g/ctmm-user}{Google group} }
 \item{ \link{ctmm-FAQ} }
@@ -120,6 +119,8 @@ C. H. Fleming, I. Deznabi, S. Alavi, M. C. Crofoot, B. T. Hirsch, E. P. Medici, 
 Methods in Ecology and Evolution 13:5 1027-1041 (2022) \doi{10.1111/2041-210X.13815}.
 
 I. Silva, C. H. Fleming, M. J. Noonan, J. Alston, C. Folta, W. F. Fagan, J. M. Calabrese. ``Autocorrelation-informed home range estimation: A review and practical guide'', Methods in Ecology and Evolution 13:3 534-544 (2022) \doi{10.1111/2041-210X.13786}.
+
+J. M. Alston, C. H. Fleming, R. Kays, J. P. Streicher, C. T. Downs, T. Ramesh, B. Reineking, & J. M. Calabrese, ``Mitigating pseudoreplication and bias in resource selection functions with autocorrelation-informed weighting'', Methods in Ecology and Evolution 14:2  643--654 (2023) \doi{10.1111/2041-210X.14025}.
 }
 
 %~~ Optionally other standard keywords, one per line, from file KEYWORDS in ~~

@@ -388,7 +388,7 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,AICc=FALSE,iterate=FALSE,robu
   {
     DOF2 <- CTMM$COV
     P <- get.parameters(CTMM,NAMES)
-    if(length(NAMES)>length(POS)) { P[!POS] <- 1 }
+    if(length(NAMES)>length(POS)) { P[NAMES %nin% POS] <- 1 } #!!! invalid argument type error
     DOF2 <- t(DOF2/P)/P
 
     R <- clamp*sqrt(N) # <= clamp/error

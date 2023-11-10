@@ -1,15 +1,23 @@
 ctmm: Continuous-Time Movement Modeling
 =======================================
 
-ctmm is an R package for analyzing animal tracking data as a continuous-time stochastic processes. Package features include FFT variogram and Lomb-Scargle periodogram analysis, perturbative REML estimation, Kriging, simulation, and autocorrelated kernel-density home-range estimation. First-time users can start with [the Methods in Ecology and Evolution paper](https://doi.org/10.1111/2041-210X.12559) and then move on to the up-to-date vignettes `vignette('variogram')` and `vignette('akde')`.
+ctmm is an R package for analyzing animal tracking data as a continuous-time stochastic processes. Package features include FFT variogram and Lomb-Scargle periodogram analysis, perturbative REML estimation, Kriging, simulation, and autocorrelated kernel-density home-range estimation.
+
+New user resources:
+
+* [Methods in Ecology and Evolution paper](https://doi.org/10.1111/2041-210X.12559)
+* [GitHub reference](https://ctmm-initiative.github.io/ctmm/)
+  - [Variogram vignette](https://ctmm-initiative.github.io/ctmm/articles/variogram.html)
+  - [AKDE vignette](https://ctmm-initiative.github.io/ctmm/articles/akde.html)
+* [AniMove lectures (2022)](https://streaming.uni-konstanz.de/talks-und-events/2022/animove-2022/animove-2022-09-16/)
+* [ctmmlearn workshop materials](https://github.com/ctmm-initiative/ctmmlearn)
+* [Google group](https://groups.google.com/g/ctmm-user)
+
+More links:
 
 * [The ctmm initiative](https://biology.umd.edu/movement)
 * [Movement of Life](https://movementoflife.si.edu/analytical-tools/)
-* [Beta packages](http://www2.physics.umd.edu/~hfleming/)
-* [Google group](https://groups.google.com/g/ctmm-user)
 * [GitHub project](https://github.com/ctmm-initiative/ctmm)
-* [GitHub reference](https://ctmm-initiative.github.io/ctmm/)
-* [AniMove lectures](https://streaming.uni-konstanz.de/talks-und-events/2022/animove-2022/animove-2022-09-16/)
 
 Installation
 ============
