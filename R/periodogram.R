@@ -38,8 +38,7 @@ periodogram <- function(data,CTMM=NULL,dt=NULL,res.freq=1,res.time=1,fast=NULL,a
     { data[[i]] <- set.telemetry(data[[i]],t(t(data[[i]][,axes,drop=FALSE]) - colMeans(data[[i]][,axes,drop=FALSE])),axes=axes) }
     else # use the better result if provided # this is unfinished
     {
-      drift <- get(CTMM[[i]]$mean)
-      MU <- drift(data[[i]]$t,CTMM[[i]]) %*% CTMM[[i]]$mu
+      MU <- drift.mean(CTMM[[i]],data[[i]]$t) %*% CTMM[[i]]$mu
       data[[i]] <- set.telemetry(data[[i]],as.matrix(data[[i]][,axes,drop=FALSE]) - MU[,axes],axes=axes)
     }
     )

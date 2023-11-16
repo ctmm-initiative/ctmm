@@ -8,8 +8,7 @@ cv.like <- function(data,CTMM,IN,method,...)
   CTMM <- ctmm.fit(data[IN,],CTMM,method=method,COV=FALSE,...)
 
   ## detrend mean, so it isn't modified in ctmm.loglike
-  drift <- get(CTMM$mean)
-  drift <- drift(data$t,CTMM) %*% CTMM$mu
+  drift <- drift.mean(CTMM,data$t) %*% CTMM$mu
   data[,axes] <- get.telemetry(data,axes=axes) - drift
   CTMM$mean <- "zero" # set to mean-zero process
 

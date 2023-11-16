@@ -476,9 +476,8 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,VMM=NULL,t=NULL,dt=N
       # object$error <- TRUE # avoids unit variance algorithm - data contains fixed errors from fill.data
 
       # calculate trend
-      drift <- get(object$mean)
-      velocity <- drift@velocity(data$t,object) %*% object$mu
-      drift <- drift(data$t,object) %*% object$mu
+      velocity <- drift.velocity(object,data$t) %*% object$mu
+      drift <- drift.mean(object,data$t) %*% object$mu
 
       # detrend for simulation - retrend later
       z <- get.telemetry(data,axes=object$axes)
@@ -625,7 +624,7 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,VMM=NULL,t=NULL,dt=N
       colnames(z) <- axes
       if(K>1)
       {
-        v <- (v %*% Lambda) + (get(object$mean)@velocity(t,object) %*% mu)
+        v <- (v %*% Lambda) + (drift.velocity(object,t) %*% mu)
         colnames(v) <- paste0("v",axes)
       }
     } # end if(!is.null(object))
@@ -727,7 +726,7 @@ predict.ctmm <- function(object,data=NULL,VMM=NULL,t=NULL,dt=NULL,res=1,complete
     r <- object$mean.vec %*% mu
     colnames(r) <- axes
 
-    v <- get(object$mean)@velocity(t,object) %*% mu
+    v <- drift.velocity(object,t) %*% mu
     colnames(v) <- paste0("v",axes)
 
     data <- data.frame(r,v)
@@ -766,9 +765,8 @@ predict.ctmm <- function(object,data=NULL,VMM=NULL,t=NULL,dt=NULL,res=1,complete
     # object$error <- TRUE # avoids unit variance algorithm
 
     # calculate trend
-    drift <- get(object$mean)
-    velocity <- drift@velocity(data$t,object) %*% object$mu
-    drift <- drift(data$t,object) %*% object$mu
+    velocity <- drift.velocity(object,data$t) %*% object$mu
+    drift <- drift.mean(object,data$t) %*% object$mu
 
     # detrend for simulation - retrend later
     z <- get.telemetry(data,axes=axes)

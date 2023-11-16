@@ -264,7 +264,6 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
   axes <- object$axes
 
   object <- get.taus(object) # populate with parameter stuff
-  drift <- get(object$mean)
 
   circle <- object$circle
   tau <- object$tau
@@ -336,7 +335,7 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
     var.ms <- STUFF$COV
 
     # include mean
-    MSPEED <- drift@speed(object)
+    MSPEED <- drift.speed(object)
     ms <- ms + MSPEED$EST
     var.ms <- var.ms + MSPEED$VAR
 
@@ -527,7 +526,7 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
   par <- rbind(timelink.summary(object,level=level),par)
 
   # anything else interesting from the mean function
-  par <- rbind(drift@summary(object,level,level.UD),par)
+  par <- rbind(drift.summary(object,level=level,level.UD=level.UD,units=units),par)
 
   colnames(par) <- NAMES.CI
 

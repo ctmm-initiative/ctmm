@@ -407,7 +407,8 @@ kalman <- function(z,u,t=NULL,dt=c(Inf,diff(t)),CTMM,error=NULL,DIM=1,smooth=FAL
       {
         D <- as.matrix(uisRes %*% zRes[,DATA]) # (MEAN,DATA) quadratic terms
         W <- as.matrix(uisRes %*% zRes[,MEAN]) # (MEAN,MEAN)
-        iW <- PDsolve(W) # (MEAN,MEAN)
+        # iW <- PDsolve(W) # (MEAN,MEAN)
+        iW <- PDsolve(W,force=TRUE) # (MEAN,MEAN)
 
         M.MEAN <- MEAN
         M.DATA <- DATA

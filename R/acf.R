@@ -19,8 +19,7 @@ residuals.ctmm <- function(object,data,...)
     axes <- object$axes
 
     # detrend mean
-    drift <- get(object$mean)
-    drift <- drift(data$t,object) %*% object$mu
+    drift <- drift.mean(object,data$t) %*% object$mu
     data[,axes] <- get.telemetry(data,axes=axes) - drift
     rm(drift)
 

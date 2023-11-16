@@ -6,7 +6,7 @@ POSITIVE.PARAMETERS <- c("major","minor","tau position","tau velocity","tau","om
 # if linear==TRUE, only return linear non-problematic parameters
 # if linear.cov==TRUE, use linear covariance parameters for pREML
 # STRUCT determines the model structure incase some estimated parameters in CTMM are zero
-id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE.FIT=NA,dt=0,df=0,dz=0,STRUCT=CTMM)
+id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE.FIT=NA,dt=0,df=0,dz=0,STRUCT=CTMM,fit=FALSE)
 {
   AXES <- length(CTMM$axes)
   # identify and name autocovariance parameters
@@ -44,8 +44,11 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE.F
 
   if(any(UERE.FIT)) { NAMES <- c(NAMES, paste("error",names(UERE.FIT)[UERE.FIT>0]) ) }
 
-  if(!linear) # nonlinear autocorrelation parameters
+  if(!linear) # nonlinear mean and autocovariance parameters
   {
+    DRIFT <- drift.pars(CTMM,all=TRUE,fit=fit)
+    if(length(DRIFT$pars)) { NAMES <- c(NAMES,DRIFT$NAMES) }
+
     TIMELINK <- length(CTMM$timelink.par)
     if(TIMELINK) { NAMES <- c(NAMES,paste0("timelink-",1:TIMELINK)) }
 
@@ -137,6 +140,14 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE.F
 
   if(!linear) # nonlinear autocorrelation parameters
   {
+    if(length(DRIFT$pars))
+    {
+      parscale <- c(parscale,DRIFT$parscale)
+      lower <- c(lower,DRIFT$lower)
+      upper <- c(upper,DRIFT$upper)
+      period <- c(period,rep(FALSE,length(DRIFT$pars)))
+    }
+
     if(TIMELINK)
     {
       TLI <- timelink.parinfo(CTMM)
@@ -247,6 +258,14 @@ get.parameters <- function(CTMM,NAMES,profile=FALSE,linear.cov=FALSE)
 
     PARS <- NAMES[ grepl("error",NAMES) ]
     for(P in PARS) { par[P] <- CTMM$error[ substr(P,nchar("error ?"),nchar(P)) ]^2 }
+  }
+
+  DRIFT <- drift.pars(CTMM)
+  if(length(DRIFT))
+  {
+    DPARS <- names(DRIFT)
+    DPARS <- DPARS[ DPARS %in% NAMES ]
+    par[DPARS] <- DRIFT[DPARS]
   }
 
   timelink <- CTMM$timelink.par
@@ -383,9 +402,6 @@ clean.parameters <- function(par,profile=FALSE,linear.cov=FALSE,timelink="identi
 # write autocovariance parameter array into a CTMM object
 set.parameters <- function(CTMM,par,profile=FALSE,linear.cov=FALSE)
 {
-  #!!!!!!!!!!!!!!!!
-
-
   NAMES <- names(par)
   AXES <- length(CTMM$axes)
 
@@ -426,6 +442,15 @@ set.parameters <- function(CTMM,par,profile=FALSE,linear.cov=FALSE)
     for(P in PARS) { CTMM$error[ substr(P,nchar("error ?"),nchar(P)) ] <- sqrt(par[P]) }
   }
   CTMM$sigma <- covm(sigma,axes=CTMM$axes)
+
+  DRIFT <- drift.pars(CTMM)
+  if(length(DRIFT))
+  {
+    DPARS <- names(DRIFT)
+    DPARS <- DPARS[ DPARS %in% NAMES ]
+    DRIFT[DPARS] <- par[DPARS]
+    CTMM <- drift.assign(CTMM,DRIFT)
+  }
 
   timelink <- par[grepl("timelink",NAMES)]
   if(length(timelink)) { CTMM$timelink.par <- timelink }
@@ -476,6 +501,16 @@ copy.parameters <- function(x,value,par=value$features,destructive=TRUE)
   {
     P <- substr(P,nchar("error ?"),nchar(P))
     x$error[P] <- value$error[P]
+  }
+
+  DRIFT <- drift.pars(value)
+  if(length(DRIFT))
+  {
+    DRIFTO <- drift.pars(x)
+    DPARS <- names(DRIFT)
+    DPARS <- DPARS[ DPARS %in% names(DRIFTO) ]
+    DRIFTO[DPARS] <- DRIFT[DPARS]
+    x <- drift.assign(x,DRIFTO)
   }
 
   # don't think I need this

@@ -356,7 +356,10 @@ PDlogdet <- function(M,sym=TRUE,force=FALSE,tol=.Machine$double.eps,...)
     M <- as.matrix(M)
     DIM <- dim(M)
   }
+
   if(DIM[1]==0)
+  { return(0) } # tr[log([0x0])] == 0
+  else if(DIM[1]==0)
   {
     M <- clamp(M,0,Inf)
     if(force) { M <- eigen.extrapolate(M) }
@@ -620,6 +623,7 @@ eigen.extrapolate <- function(M)
 
   BAD <- sum(M<=0)
   LAST <- last(M[M>0])
+  if(length(LAST)==0) { LAST <- 1 } # no positive values to extrapolate from
   M[M<=0] <- LAST * exp(LOG*1:BAD)
 
   return(M)

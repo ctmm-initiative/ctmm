@@ -1,4 +1,6 @@
 ** PRIORITY
+* periodicity frequency uncertainty propagation
+* export pd.solve()
 * plot(UD,data) doesn't work any more
 * make pkde remove ctmms with DOF<<1
 * make ctmm.boot update the original uncertainty estimates rather than overwrite them

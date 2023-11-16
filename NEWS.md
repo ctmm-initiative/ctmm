@@ -1,10 +1,12 @@
-ctmm 1.2.1 (2023-11-10)
+ctmm 1.2.1 (2023-11-16)
 ================
-* new plot method: plot.ctmm()
-* new grid argument dr.fn in akde(), occurrence(), pkde()
+* periodic mean functions now estimate frequency
+* periodic mean summary now uses beta CIs
 * new mean.ctmm() argument formula for functional response estimation
+* new grid argument dr.fn in akde(), occurrence(), pkde()
 * new ctmm.boot() argument clamp
 * mean() of occurrence() now time weighted by default
+* new plot method: plot.ctmm()
 * plot() argument 'col.DF' renamed to 'col.UD'
 * improvements DOF[area] calculations in mean() and pkde()
 * improvement to optimizer() when initial guess is on a boundary and hessian is bad

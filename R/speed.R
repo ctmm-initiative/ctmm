@@ -234,9 +234,8 @@ speed_rand <- function(CTMM,data=NULL,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NU
   {
     # check for rare cases in sampling disribution where motion is almost but not fractal relative to sampling schedule
     # first check if non-stationary mean is irrelevant
-    drift <- get(CTMM$mean)
     MSV <- sum(diag(CTMM$sigma))/ ifelse(CTMM$range,prod(CTMM$tau),CTMM$tau[2])
-    if(nant(drift@speed(CTMM)$EST/MSV,0)<error^2)
+    if(nant(drift.speed(CTMM)$EST/MSV,0)<error^2)
     {
       # now check if there are many steps per sampled interval
       FRAC <- CTMM$tau[2]/DT

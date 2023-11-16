@@ -79,8 +79,8 @@ ctmm <- function(tau=NULL,omega=FALSE,isotropic=FALSE,range=TRUE,circle=FALSE,er
   #if(!is.null(List$COV.mu)) { dimnames(List$COV.mu) <- list(axes,axes) }
 
   # supply default parameters / check sanity / label dimensions
-  # drift <- get(List$mean)
-  # List <- drift@clean(List)
+  #
+  #
 
   result <- new.ctmm(List,info=info)
 
@@ -241,7 +241,7 @@ pars_tauv <- function(tau,tauc=tau)
 
 
 ###########################
-ctmm.prepare <- function(data,CTMM,precompute=TRUE,tau=TRUE,DIM=length(CTMM$axes),calibrate=FALSE,...)
+ctmm.prepare <- function(data,CTMM,precompute=TRUE,tau=TRUE,DIM=length(CTMM$axes),calibrate=FALSE,verbose=TRUE,...)
 {
   axes <- CTMM$axes
 
@@ -284,13 +284,10 @@ ctmm.prepare <- function(data,CTMM,precompute=TRUE,tau=TRUE,DIM=length(CTMM$axes
   } # otherwise leave this alone, as could be a proper subset of data$class levels
   if(any(CTMM$error>0)) { CTMM$errors <- TRUE }
 
-  # evaluate mean function for this data set if no vector is provided
-  if(precompute && (is.null(CTMM$mean.vec) || is.null(CTMM$error.mat) || is.null(CTMM$class.mat)))
+  # evaluate mean function for this data set if no vector is provided or vector can change
+  if(precompute && (is.null(CTMM$mean.vec) || length(drift.pars(CTMM))))
   {
-    CTMM$class.mat <- get.class.mat(data)
-
-    drift <- get(CTMM$mean)
-    U <- drift(data$t,CTMM)
+    U <- drift.mean(CTMM,data$t,verbose=verbose)
     CTMM$mean.vec <- U
 
     range <- CTMM$range
@@ -305,8 +302,14 @@ ctmm.prepare <- function(data,CTMM,precompute=TRUE,tau=TRUE,DIM=length(CTMM$axes
       UU <- t(U) %*% U
       if(!range) { UU[1,1] <- 0 } # zero stationary contribution (remove below)
       CTMM$UU <- UU
-      CTMM$REML.loglike <- AXES/2*log(det(UU[-1,-1])) # extra term for REML likelihood
+      CTMM$REML.loglike <- AXES/2*PDlogdet(UU[-1,-1]) # extra term for REML likelihood
     }
+  }
+
+  # evaluate error stuff
+  if(precompute && (is.null(CTMM$error.mat) || is.null(CTMM$class.mat)))
+  {
+    CTMM$class.mat <- get.class.mat(data)
 
     # construct error matrix, if UERE is unknown construct error matrix @ RMS UERE=1 for relative variances
     # ERROR <- CTMM

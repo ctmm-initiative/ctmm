@@ -293,8 +293,7 @@ unit.ctmm <- function(CTMM,length=1,time=1)
   if("mu" %in% names(CTMM))
   {
     CTMM$mu <- CTMM$mu/length
-    drift <- get(CTMM$mean)
-    CTMM <- drift@scale(CTMM,time)
+    CTMM <- drift.scale(CTMM,time)
   }
 
   if(!is.null(CTMM$timelink.cycle))

@@ -109,10 +109,9 @@ svf.func <- function(CTMM,moment=FALSE)
   # }
 
   if(moment)
-  { drift <- get(CTMM$mean) }
+  { MEAN <- drift.svf(CTMM) }
   else
-  { drift <- stationary }
-  MEAN <- drift@svf(CTMM)
+  { MEAN <- stationary.svf(CTMM) }
 
 #  SVF <- function(t,error=0) { svf(t) + err.svf(t,error=error) + MEAN$EST(t) }
   SVF <- function(t) { svf(t) + MEAN$EST(t) }

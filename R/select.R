@@ -248,7 +248,6 @@ ctmm.iterate <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="positio
     for(i in 1:AXES) { if(CTMM$sigma@par[i]>.Machine$double.eps) { VAR[i] <<- CTMM$sigma@par[i] } }
   }
 
-  drift <- get(CTMM$mean)
   if(CTMM$mean=="periodic")
   {
     Nyquist <- CTMM$period/stats::median(diff(data$t))/2
@@ -271,7 +270,7 @@ ctmm.iterate <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="positio
     REFINE <- REFINE[!(names(REFINE) %in% TRYS)]
 
     # copy over best initial parameter guess for refined drops
-    if(!drift@is.stationary(CTMM) && length(DROP))
+    if(!drift.is.stationary(CTMM) && length(DROP))
     {
       for(i in 1:length(DROP))
       {
@@ -614,8 +613,7 @@ name.ctmm <- function(CTMM,whole=TRUE)
   if(link$name!="identity") { NAME <- c(NAME,paste0(link$name,"-link")) }
 
   # mean
-  drift <- get(CTMM$mean)
-  DNAME <- drift@name(CTMM)
+  DNAME <- drift.name(CTMM)
 
   NAME <- paste(NAME,sep="",collapse=" ")
 

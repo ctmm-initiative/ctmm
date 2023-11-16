@@ -7,6 +7,23 @@ series <- function(x,coef)
 }
 
 
+# cos(x)-1
+cosm1 <- Vectorize( function(x)
+{
+  x <- (x+pi)%%(2*pi) - pi # (-pi,+pi)
+
+  if(x>0.2)
+  { x <- cos(x)-1 }
+  else
+  {
+    coef <- c( 0, 0, -(1/2), 0, 1/24, 0, -(1/720), 0, 1/40320, 0, -(1/3628800) )
+    x <- series(x,coef)
+  }
+
+  return(x)
+})
+
+
 # log(1+x)/x --- to machine precision (including small x)
 log1pxdx <- Vectorize( function(x)
 {
@@ -19,7 +36,7 @@ log1pxdx <- Vectorize( function(x)
     x <- 1/series(x,coef)
   }
   return(x)
-} )
+})
 
 
 # log(beta(a,b)) + a*log(b+a*x) --- to machine precision (including large b)

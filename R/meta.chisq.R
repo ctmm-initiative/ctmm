@@ -18,7 +18,7 @@ summary.meta.single <- function(object,...)
 
 
 # meta-analysis of chi^2 random variables with inverse-Gaussian prior
-meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='mle',boot=FALSE,iterate=FALSE,error=0.01,debias=TRUE,precision=1/2,...)
+meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='mle',boot=FALSE,iterate=FALSE,error=0.01,debias=TRUE,precision=1/2,CI.FN="chisq",...)
 {
   # discard null estimates
   ZERO <- dof<=.Machine$double.eps
@@ -497,6 +497,14 @@ meta.chisq <- function(s,dof,level=0.95,level.pop=0.95,IC="AICc",method='mle',bo
   rownames(CI) <- c("mean","inverse-mean","CoV\u00B2 (RVAR)","CoV  (RSTD)")
   colnames(CI) <- NAMES.CI
 
+  if(CI.FN=="beta")
+  {
+    for(i in c(1,3,4))
+    { CI[i,1:3] <- 100*sqrt(beta.ci(CI[i,2],CI.VAR[i],level=level)) }
+    CI[2,1:3] <- 1/(100*sqrt(beta.ci(1/CI[2,2],CI.VAR[2]/CI[2,2]^4,level=level)))
+    CI.VAR <- CI.VAR/2^2/CI[,2]
+  }
+
   R <- list(CI=CI,VAR=CI.VAR,dIC=dIC)
   return(R)
 }
@@ -517,7 +525,7 @@ meta <- function(x,variable="area",level=0.95,level.UD=0.95,method="MLE",IC="AIC
   method <- match.arg(method,c("mle","blue"))
 
   variable <- canonical.name(variable)
-  variable <- match.arg(variable,c("area","diffusion","speed","tauposition","tauvelocity","distance"))
+  variable <- match.arg(variable,c("area","diffusion","speed","tauposition","tauvelocity","distance","periodicity","cyclicity"))
 
   meta.uni(x=x,variable=variable,level=level,level.UD=level.UD,IC=IC,boot=boot,error=error,debias=debias,method=method,verbose=verbose,units=units,plot=plot,sort=sort,mean=mean,col=col,...)
 }
@@ -600,6 +608,18 @@ import.variable <- function(x,variable="area",level.UD=0.95,chi=FALSE)
           DOF[i] <- 2*E^2/x[[i]]$COV[P,P]
         }
       }
+      else if(variable=="periodicity")
+      {
+        R <- periodic.variances(x[[i]])$R
+        AREA[i] <- R$MLE
+        DOF[i] <- 2*R$MLE^2/R$VAR
+      }
+      else if(variable=="cyclicity")
+      {
+        R <- periodic.variances(x[[i]])$V
+        AREA[i] <- R$MLE
+        DOF[i] <- 2*R$MLE^2/R$VAR
+      }
     }
     else # UD or summary(UD) or speed()
     {
@@ -672,6 +692,11 @@ meta.uni <- function(x,variable="area",level=0.95,level.UD=0.95,level.pop=0.95,m
   else if(CLASS=="distance")
   { variable <- "distance" }
 
+  if(variable %in% c('periodicity','cyclicity'))
+  { CI.FN <- "beta" }
+  else
+  { CI.FN <- "chisq" }
+
   if(SUBPOP)
   {
     ID <- names(x)
@@ -686,10 +711,10 @@ meta.uni <- function(x,variable="area",level=0.95,level.UD=0.95,level.pop=0.95,m
       DOF[[i]] <- STUFF$DOF
 
       message(paste("* Sub-population",ID[i]))
-      RESULTS[[i]] <- meta.chisq(AREA[[i]],DOF[[i]],level=level,level.pop=level.pop,IC=IC,boot=boot,error=error,debias=debias,method=method,verbose=TRUE,units=FALSE)
+      RESULTS[[i]] <- meta.chisq(AREA[[i]],DOF[[i]],level=level,level.pop=level.pop,IC=IC,boot=boot,error=error,debias=debias,method=method,verbose=TRUE,units=FALSE,CI.FN=CI.FN)
     }
     message("* Joint population")
-    RESULTS[[N+1]] <- meta.chisq(unlist(AREA),unlist(DOF),level=level,level.pop=level.pop,IC=IC,boot=boot,error=error,debias=debias,method=method,verbose=TRUE,units=FALSE)
+    RESULTS[[N+1]] <- meta.chisq(unlist(AREA),unlist(DOF),level=level,level.pop=level.pop,IC=IC,boot=boot,error=error,debias=debias,method=method,verbose=TRUE,units=FALSE,CI.FN=CI.FN)
     names(RESULTS) <- ID
 
     message("* Joint population versus sub-populations (best models)")
@@ -713,12 +738,15 @@ meta.uni <- function(x,variable="area",level=0.95,level.UD=0.95,level.pop=0.95,m
     ID <- STUFF$ID
 
     # inverse-Gaussian population distribution
-    CI <- meta.chisq(AREA,DOF,level=level,level.pop=level.pop,IC=IC,boot=boot,error=error,debias=debias,method=method)
+    CI <- meta.chisq(AREA,DOF,level=level,level.pop=level.pop,IC=IC,boot=boot,error=error,debias=debias,method=method,CI.FN=CI.FN)
     CI.VAR <- CI$VAR
     CI <- CI$CI
 
     # basic forest plot
-    PLOT <- sapply(1:(N+1),function(i){chisq.ci(AREA[i],DOF=DOF[i],level=level)}) # [3,N+1]
+    if(CI.FN=="chisq")
+    { PLOT <- sapply(1:(N+1),function(i){chisq.ci(AREA[i],DOF=DOF[i],level=level)}) } # [3,N+1]
+    else if(CI.FN=="beta")
+    { PLOT <- sapply(1:(N+1),function(i){100*sqrt(beta.ci(AREA[i],2*AREA[i]^2/DOF[i],level=level))}) }
 
     ID[N+1] <- "mean"
     PLOT[,N+1] <- CI[1,1:3] # overwrite chi^2 CI with better

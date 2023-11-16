@@ -91,8 +91,7 @@ currence <- function(data,CTMM,H=0,variable="utilization",res.time=10,res.space=
   data <- data$data
 
   # calculate trend
-  drift <- get(CTMM0$mean)
-  drift <- drift(data$t,CTMM0) %*% CTMM0$mu
+  drift <- drift.mean(CTMM0,data$t) %*% CTMM0$mu
 
   # detrend for smoothing - retrend later
   z <- get.telemetry(data,axes=axes)

@@ -87,9 +87,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   # save original tau length
   K <- length(CTMM$tau)
   # prepare model for numerics
-  CTMM <- ctmm.prepare(data,CTMM)
-
-  # drift <- get(CTMM$mean)
+  CTMM <- ctmm.prepare(data,CTMM,verbose=verbose)
 
   range <- CTMM$range
   isotropic <- CTMM$isotropic
@@ -133,6 +131,8 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     isotropic <- TRUE
     CTMM$sigma <- COVM(0)
   }
+
+  # if(!drift.is.finite(CTMM,data)) { return(FAIL) }
 
   circle <- CTMM$circle
   if(circle && ECC.EXT) { return(FAIL) } # can't squeeze !!! need 2D Langevin code
@@ -400,7 +400,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     dim(COV.mu) <- c(2*M,2*M)
 
     logdetCOV <- KALMAN1$logdet + KALMAN2$logdet
-    logdetcov <- -log(det(KALMAN1$W)) - log(det(KALMAN2$W))
+    logdetcov <- -PDlogdet(KALMAN1$W) - PDlogdet(KALMAN2$W)
   }
   else ### 1x 1D or 2D Kalman filter ###
   {
@@ -580,7 +580,6 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
 
     CTMM <- ctmm.repair(CTMM,K=K)
 
-    # mu <- drift@shift(mu,mu.center) # translate back to origin from center
     CTMM$mu <- mu
     CTMM$COV.mu <- COV.mu
 
