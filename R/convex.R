@@ -40,7 +40,7 @@ convex <- function(UD,level=0.95,convex=TRUE)
       R <- M-level
     }
 
-    return(abs(R))
+    return(R^2)
   }
 
   # this is not a continuous function
@@ -49,7 +49,8 @@ convex <- function(UD,level=0.95,convex=TRUE)
 
   if(convex)
   {
-    RESULT <- stats::optimize(cost,c(0,1),tol = .Machine$double.eps^0.5)
+    p <- c(0,level)
+    RESULT <- stats::optimize(cost,p,tol = .Machine$double.eps^0.5)
     p <- RESULT$minimum
   }
   else
