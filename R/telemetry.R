@@ -889,7 +889,8 @@ as.telemetry.data.frame <- function(object,timeformat="auto",timezone="UTC",proj
   # converted to error ellipses from ...
   COL <- c("Argos.location.class","Argos.lc","lc")
   COL <- pull.column(object,COL,as.factor)
-  if(length(COL) && any(NAS)) # ARGOS location classes present, but no error ellipses
+  # ARGOS location classes present, but no error ellipses
+  if(length(COL) && any(NAS) && any(c(3:0,'A','B','Z')%in%levels(COL)))
   {
     # major axis always longitude
     DATA$COV.angle <- 90
