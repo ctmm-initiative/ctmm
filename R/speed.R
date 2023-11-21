@@ -33,9 +33,9 @@ speed.ctmm <- function(object,data=NULL,t=NULL,level=0.95,robust=FALSE,units=TRU
   { stop("Parametric boostrap cannot be performed without data.") }
 
   # analytically solvable cases
-  if(!robust && is.null(data) && object$mean=="stationary" && (!prior || fast))
+  if(!robust && is.null(data) && (!prior || fast))
   {
-    if(object$isotropic[1]) # chi_2 : circular velocity distribution
+    if(object$isotropic[1] && object$mean!="stationary") # chi_2 : circular velocity distribution
     {
       CI <- summary(object,level=level,units=FALSE)
       DOF <- CI$DOF['speed']
@@ -53,8 +53,8 @@ speed.ctmm <- function(object,data=NULL,t=NULL,level=0.95,robust=FALSE,units=TRU
 
       fn <- function(p)
       {
-        CTMM <- set.parameters(object,p)
-        speed_deterministic(CTMM)
+        object <- set.parameters(object,p)
+        speed_deterministic(object)
       }
 
       PAR <- get.parameters(object,NAMES)
@@ -68,6 +68,21 @@ speed.ctmm <- function(object,data=NULL,t=NULL,level=0.95,robust=FALSE,units=TRU
         { VAR <- c(GRAD %*% object$COV[NAMES,NAMES] %*% GRAD) } # emulate can lose features
         else
         { VAR <- Inf }
+
+        if(object$mean!="stationary")
+        {
+          fn <- function(p)
+          {
+            object$mu[] <- p
+            speed_deterministic(object)
+          }
+
+          GRAD <- genD(par=c(object$mu),fn=fn,Richardson=2,mc.cores=1)$grad
+          VAR2 <- aperm(object$COV.mu,c(2,1,3,4))
+          dim(VAR2) <- c(1,1)*length(GRAD)
+          VAR2 <- c(GRAD %*% VAR2 %*% GRAD)
+          VAR <- VAR + VAR2
+        }
 
         # propagate errors (chi)
         M2 <- VAR + MEAN^2
@@ -277,14 +292,24 @@ speed_rand <- function(CTMM,data=NULL,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NU
 # only for stationary processes
 speed_deterministic <- function(CTMM,sigma=CTMM$sigma)
 {
-  sigma <- eigenvalues.covm(sigma)
+  if(CTMM$range)
+  { sigma <- sigma/prod(CTMM$tau) } # OUF
+  else
+  { sigma <- sigma/CTMM$tau[2] } # IOU
+
+  if(CTMM$mean!="stationary") # this is approximate
+  {
+    E <- drift.energy(CTMM)$VV
+    E <- t(CTMM$mu) %*% E %*% CTMM$mu
+    sigma <- sigma + E
+  }
+
+  sigma <- eigen(sigma)$values
 
   if(CTMM$isotropic || sigma[1]==sigma[2])
   { v <- sqrt(sigma[1] * pi/2) }
   else
   { v <- sqrt(2/pi) * sqrt(sigma[1]) * pracma::ellipke(1-clamp(sigma[2]/sigma[1]))$e }
-
-  v <- v/sqrt(ifelse(CTMM$range,prod(CTMM$tau),CTMM$tau[2]))
 
   return(v)
 }

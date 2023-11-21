@@ -579,7 +579,7 @@ import.variable <- function(x,variable="area",level.UD=0.95,chi=FALSE)
       else if(variable=="tauposition")
       {
         E <- x[[i]]$tau[1]
-        if(is.na(E))
+        if(is.null(E) || is.na(E))
         {
           AREA[i] <- 0
           DOF[i] <- 0
@@ -595,7 +595,7 @@ import.variable <- function(x,variable="area",level.UD=0.95,chi=FALSE)
       else if(variable=="tauvelocity")
       {
         E <- x[[i]]$tau[2]
-        if(is.na(E))
+        if(is.null(E) || is.na(E))
         {
           AREA[i] <- 0
           DOF[i] <- 0
@@ -612,7 +612,7 @@ import.variable <- function(x,variable="area",level.UD=0.95,chi=FALSE)
       {
         R <- periodic.variances(x[[i]])$R
         AREA[i] <- R$MLE
-        DOF[i] <- 2*R$MLE^2/R$VAR
+        DOF[i] <- nant( 2*R$MLE^2/R$VAR, 0 )
       }
       else if(variable=="cyclicity")
       {
