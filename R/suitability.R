@@ -16,7 +16,11 @@ suitability <- function(data=NULL,CTMM=NULL,R=list(),level=0.95,grid=NULL,log=FA
 
   R <- expand.factors(R,CTMM$formula,fixed=TRUE)$R
 
-  proj <- CTMM@info$projection
+  # grid projection could be different
+  proj <- grid$projection
+  # default assumption
+  if(is.null(proj)) { proj <- projection(CTMM) }
+
   # calculate RASTERs on spatial grid
   R <- lapply(R,function(S){R.grid(r=grid$r,proj=proj,S)})
 

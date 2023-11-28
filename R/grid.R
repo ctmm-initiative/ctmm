@@ -185,7 +185,9 @@ format_grid <- function(grid,axes=c('x','y'))
     # grid locations (pixel centers)
     r <- list(x=raster::xFromCol(grid),y=rev(raster::yFromRow(grid)))
 
-    grid <- list(dr=dr,r=r)
+    PROJ <- projection(grid)
+
+    grid <- list(dr=dr,r=r,projection=PROJ)
   } # end raster
   else if(!is.null(grid$r)) ### grid fully pre-specified ###
   {
@@ -196,6 +198,9 @@ format_grid <- function(grid,axes=c('x','y'))
 
   # default resolution for multiple individuals with different resolutions
   if("dr.fn" %nin% names(grid)) { grid$dr.fn <- min }
+
+  # try to extract ctmm projection info
+  if(is.null(grid$projection)) { grid$projection <- attr(grid,"info")$projection }
 
   return(grid)
 }
