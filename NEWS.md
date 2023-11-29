@@ -13,9 +13,9 @@ ctmm 1.2.1 (2023-11-28)
 * improvement to optimizer() when initial guess is on a boundary and hessian is bad
 * bugfix in rsf.select with functions in formulas
 * bugfix in raster factor expansion with more than one raster factor
-* bugfix in mean.ctmm() potential endless loop
 * bugfix in normal meta-analysis REML correction
 * bugfix in suitability with grid in different projection
+* bugfixes in mean.ctmm() potential endless loop, ...
 
 ctmm 1.2.0 (2023-09-22)
 ================

@@ -66,7 +66,9 @@ meta.normal <- function(Y,SY=FALSE,X=FALSE,SX=FALSE,DSM=NULL,INT=TRUE,VARS=TRUE,
       SHIFT[i] <- stats::median(TEMP)
       SCALE[i] <- stats::mad(TEMP)
 
-      if(SCALE[i]<.Machine$double.eps) { SCALE[i] <- sqrt(stats::var(TEMP)) }
+      if(!is.na(SCALE[i]) && SCALE[i]<.Machine$double.eps) { SCALE[i] <- sqrt(stats::var(TEMP)) }
+
+      if(is.na(SHIFT[i])) { SHIFT[i] <- 0 }
       if(is.na(SCALE[i]) || SCALE[i]<.Machine$double.eps) { SCALE[i] <- 1 }
     }
   }
