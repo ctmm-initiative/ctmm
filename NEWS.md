@@ -1,4 +1,4 @@
-ctmm 1.2.1 (2023-11-28)
+ctmm 1.2.1 (2023-12-02)
 ================
 * periodic mean functions now estimate frequency
 * periodic mean summary now uses beta CIs
@@ -16,6 +16,7 @@ ctmm 1.2.1 (2023-11-28)
 * bugfix in normal meta-analysis REML correction
 * bugfix in suitability with grid in different projection
 * bugfixes in mean.ctmm() potential endless loop, ...
+* bugfix in contour exports with convex=TRUE
 
 ctmm 1.2.0 (2023-09-22)
 ================

@@ -1,4 +1,5 @@
 ** PRIORITY
+* mean.ctmm non-stationary mean averaging
 * periodicity frequency uncertainty propagation
 * export pd.solve()
 * plot(UD,data) doesn't work any more
