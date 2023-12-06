@@ -1,4 +1,4 @@
-ctmm 1.2.1 (2023-12-02)
+ctmm 1.2.1 (2023-12-05)
 ================
 * periodic mean functions now estimate frequency
 * periodic mean summary now uses beta CIs

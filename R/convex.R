@@ -93,7 +93,7 @@ convex <- function(UD,level=0.95,convex=TRUE,SP=TRUE,ID="ID")
   # SUB <- c(UD$CDF<=p)
   # xy <- xy[SUB,] # points within p
 
-  CL <- grDevices::contourLines(UD,levels=p)
+  CL <- contourLines(UD,levels=p)
   for(cl in CL) { xy <- rbind(xy, cbind(x=cl$x,y=cl$y) ) }
 
   if(convex)
