@@ -27,6 +27,11 @@ meta.normal <- function(Y,SY=FALSE,X=FALSE,SX=FALSE,DSM=NULL,INT=TRUE,VARS=TRUE,
     NAMES <- colnames(Y)
     N <- dim(Y)[1]
     DIM <- dim(Y)[2]
+    if(is.null(NAMES))
+    {
+      NAMES <- 1:DIM
+      colnames(Y) <- NAMES
+    }
   }
 
   if(is.null(weights))
@@ -220,7 +225,7 @@ meta.normal <- function(Y,SY=FALSE,X=FALSE,SX=FALSE,DSM=NULL,INT=TRUE,VARS=TRUE,
   # initial guess of sigma
   sigma <- diag(diag(VARS),nrow=DIM)
 
-  COV.mu <- array(0,c(1,1)*(DIM+MDIM))
+  COV.mu <- array(0,c(BDIM+MDIM,BDIM+MDIM))
 
   # potential unique sigma parameters
   TRI <- upper.tri(sigma,diag=TRUE)
@@ -305,7 +310,7 @@ meta.normal <- function(Y,SY=FALSE,X=FALSE,SX=FALSE,DSM=NULL,INT=TRUE,VARS=TRUE,
     return(list(BETA=BETA,sigma=sigma))
   }
 
-  INF <- list(loglike=-Inf,mu=mu,COV.mu=sigma,sigma=sigma,sigma.old=sigma,beta=beta,beta.old=beta)
+  INF <- list(loglike=-Inf,mu=mu[INT],COV.mu=sigma[INT,INT,drop=FALSE],sigma=sigma,sigma.old=sigma,beta=beta,beta.old=beta)
 
   # negative log-likelihood with mu (intercept) exactly profiled
   CONSTRAIN <- TRUE # constrain likelihood to positive definite
@@ -351,9 +356,9 @@ meta.normal <- function(Y,SY=FALSE,X=FALSE,SX=FALSE,DSM=NULL,INT=TRUE,VARS=TRUE,
     S <- P <- P.inf <- array(0,c(N,DIM,DIM))
     dimnames(S) <- dimnames(P) <- dimnames(P.inf) <- list(NULL,NAMES,NAMES)
     mu <- mi <- P.mi <- array(0,BDIM+MDIM) # combine mu <- c(beta,mu)
-    names(mu) <- names(mi) <- names(P.mi) <- c(XNAMES,NAMES)
+    names(mu) <- names(mi) <- names(P.mi) <- c(XNAMES,NAMES[INT])
     COV.mu <- P.mu <- array(0,c(BDIM+MDIM,BDIM+MDIM))
-    dimnames(P.mu) <- list(c(XNAMES,NAMES),c(XNAMES,NAMES))
+    dimnames(P.mu) <- list(c(XNAMES,NAMES[INT]),c(XNAMES,NAMES[INT]))
 
     for(i in 1:N)
     {
@@ -399,6 +404,7 @@ meta.normal <- function(Y,SY=FALSE,X=FALSE,SX=FALSE,DSM=NULL,INT=TRUE,VARS=TRUE,
     { COV.mu[MI,MI] <- PDsolve(P.mu[MI,MI],force=TRUE) }
     else # mu, beta | var
     { COV.mu <- PDsolve(P.mu,force=TRUE) }
+
     mu <- c(COV.mu %*% mu)
     if(beta.fixed)
     { mu[BI] <- par[BI] }
@@ -413,11 +419,17 @@ meta.normal <- function(Y,SY=FALSE,X=FALSE,SX=FALSE,DSM=NULL,INT=TRUE,VARS=TRUE,
     zero <- 2/N*(zero + (N*DIM-REML*(MDIM+BDIM))/2*log(2*pi) ) # for below
     loglike <- 0
     # REML correction # - DIM*(N-REML)/2*log(2*pi)
-    loglike <- loglike - REML/2*PDlogdet(P.mu) # approximate but complete
-    # loglike <- loglike - REML/2*PDlogdet(P.mu[MI,MI]) # incomplete but exact
+    loglike <- loglike - REML/2*PDlogdet(P.mu,force=TRUE) # approximate but complete
+    # loglike <- loglike - REML/2*PDlogdet(P.mu[MI,MI],force=TRUE) # incomplete but exact
 
+    # fill in missing
     MU <- numeric(DIM)
     MU[INT] <- mu[MI]
+
+    # COV.MU <- array(0,c(DIM,DIM))
+    # diag(COV.MU) <- Inf
+    # COV.MU[INT,INT] <- COV.mu[MI,MI]
+
     # updated BETA for residuals
     if(!beta.fixed)
     { BETA[iDSM] <- mu[BI] }
@@ -468,8 +480,8 @@ meta.normal <- function(Y,SY=FALSE,X=FALSE,SX=FALSE,DSM=NULL,INT=TRUE,VARS=TRUE,
 
       if(isotropic)
       {
-        LHS[VARS] <- mean(LHS[VARS])
-        RHS[VARS] <- mean(RHS[VARS])
+        LHS <- isotrope(LHS)
+        RHS <- isotrope(RHS)
       }
 
       # method 1 (faster)
@@ -481,7 +493,11 @@ meta.normal <- function(Y,SY=FALSE,X=FALSE,SX=FALSE,DSM=NULL,INT=TRUE,VARS=TRUE,
       sigma[vars,vars] <- K %*% RHS %*% t(K) # S
       sigma[!VARS] <- 0
 
-      if(isotropic) { sigma[VARS] <- mean(sigma[VARS]) }
+      if(isotropic)
+      {
+        sigma <- cbind(sigma)
+        diag(sigma)[vars] <- mean(sigma[VARS])
+      }
     }
 
     beta.old <- par[BI]
@@ -781,7 +797,7 @@ meta.normal <- function(Y,SY=FALSE,X=FALSE,SX=FALSE,DSM=NULL,INT=TRUE,VARS=TRUE,
 
   names(mu) <- NAMES[INT] # only non-zero intercepts
   if(BDIM) { names(beta) <- paste0(NAMES[BY],"/",XNAMES[BX]) }
-  CNAMES <- c(names(beta),names(mu))
+  CNAMES <- c(names(beta),names(mu[INT]))
   dimnames(COV.mu) <- list(CNAMES,CNAMES)
   dimnames(sigma) <- list(NAMES,NAMES) # all variances, including zero-variances
   dimnames(VARS) <- list(NAMES,NAMES)

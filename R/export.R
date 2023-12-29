@@ -60,7 +60,7 @@ inside <- function(A,B)
 
 
 ##############
-SpatialPolygonsDataFrame.UD <- function(object,convex=FALSE,level.UD=0.95,level=0.95,...)
+SpatialPolygonsDataFrame.UD <- function(object,level.UD=0.95,level=0.95,convex=FALSE,...)
 {
   UD <- object
 
@@ -137,15 +137,15 @@ SpatialPolygonsDataFrame.UD <- function(object,convex=FALSE,level.UD=0.95,level=
 
 
 ###########
-writeVector.UD <- function(x,filename,filetype="ESRI Shapefile",convex=FALSE,level.UD=0.95,level=0.95,...)
+writeVector.UD <- function(x,filename,filetype="ESRI Shapefile",level.UD=0.95,level=0.95,convex=FALSE,...)
 {
   if(missing(filename)) { filename <- attr(x,"info")$identity }
   x <- SpatialPolygonsDataFrame.UD(x,convex=convex,level.UD=level.UD,level=level)
   x <- terra::vect(x)
   terra::writeVector(x,filename,filetype=filetype,...)
 }
-methods::setMethod("writeVector",methods::signature(x="UD",filename="character"), function(x,filename,filetype="ESRI Shapefile",convex=FALSE,level.UD=0.95,level=0.95,...) writeVector.UD(x,filename,filetype=filetype,convex=convex,level.UD=level.UD,level=level,...) )
-methods::setMethod("writeVector",methods::signature(x="UD",filename="missing"), function(x,filename,filetype="ESRI Shapefile",convex=FALSE,level.UD=0.95,level=0.95,...) writeVector.UD(x,filename,filetype=filetype,convex=convex,level.UD=level.UD,level=level,...) )
+methods::setMethod("writeVector",methods::signature(x="UD",filename="character"), function(x,filename,filetype="ESRI Shapefile",level.UD=0.95,level=0.95,convex=FALSE,...) writeVector.UD(x,filename,filetype=filetype,convex=convex,level.UD=level.UD,level=level,...) )
+methods::setMethod("writeVector",methods::signature(x="UD",filename="missing"), function(x,filename,filetype="ESRI Shapefile",level.UD=0.95,level=0.95,convex=FALSE,...) writeVector.UD(x,filename,filetype=filetype,convex=convex,level.UD=level.UD,level=level,...) )
 
 
 ################

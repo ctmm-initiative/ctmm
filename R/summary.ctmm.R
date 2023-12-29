@@ -597,6 +597,8 @@ DOF.mean <- function(CTMM)
   else
   {
     sigma <- CTMM$POV.mu
+    if(length(dim(sigma))==4) { sigma <- sigma[,1,1,] } # take only stationary mean POV
+
     sigma <- sqrtm(sigma)
   }
 

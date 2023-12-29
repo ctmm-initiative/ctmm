@@ -165,7 +165,7 @@ plot.env <- new.env()
 #######################################
 plot.telemetry <- function(x,CTMM=NULL,UD=NULL,col.bg='white',
                            cex=NULL,col="red",lwd=1,pch=1,type='p',error=TRUE,transparency.error=0.25,velocity=FALSE,
-                           DF="CDF",col.UD="blue",col.grid="white",labels=NULL,convex=FALSE,level=0.95,level.UD=0.95,col.level="black",lwd.level=1,
+                           DF="CDF",col.UD="blue",col.grid="white",labels=NULL,level=0.95,level.UD=0.95,convex=FALSE,col.level="black",lwd.level=1,
                            SP=NULL,border.SP=TRUE,col.SP=NA,
                            R=NULL,col.R="green",legend=FALSE,
                            fraction=1,xlim=NULL,ylim=NULL,ext=NULL,units=TRUE,add=FALSE,...)
@@ -427,7 +427,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,col.bg='white',
 
 plot.ctmm <- function(x,data=NULL,UD=NULL,col.bg='white',
                            cex=NULL,col="red",lwd=1,pch=1,type='p',error=TRUE,transparency.error=0.25,velocity=FALSE,
-                           DF="CDF",col.UD="blue",col.grid="white",labels=NULL,convex=FALSE,level=0.95,level.UD=0.95,col.level="black",lwd.level=1,
+                           DF="CDF",col.UD="blue",col.grid="white",labels=NULL,level=0.95,level.UD=0.95,convex=FALSE,col.level="black",lwd.level=1,
                            SP=NULL,border.SP=TRUE,col.SP=NA,
                            R=NULL,col.R="green",legend=FALSE,
                            fraction=1,xlim=NULL,ylim=NULL,ext=NULL,units=TRUE,add=FALSE,...)
@@ -528,7 +528,7 @@ plot_SP <- function(SP=NULL,border.SP=TRUE,col.SP=NA,PROJ=NULL,...)
 
 
 ##############
-plot.UD <- function(x,col.bg="white",DF="CDF",col.UD="blue",col.grid="white",labels=NULL,convex=FALSE,level=0.95,level.UD=0.95,col.level="black",lwd.level=1,
+plot.UD <- function(x,col.bg="white",DF="CDF",col.UD="blue",col.grid="white",labels=NULL,level=0.95,level.UD=0.95,convex=FALSE,col.level="black",lwd.level=1,
                     SP=NULL,border.SP=TRUE,col.SP=NA,
                     R=NULL,col.R="green",legend=FALSE,
                     fraction=1,xlim=NULL,ylim=NULL,ext=NULL,units=TRUE,add=FALSE,...)
@@ -716,7 +716,7 @@ plot_kde <- function(kde,level=0.95,labels=round(level*100),col="black",convex=F
   {
     for(i in 1:length(level))
     {
-      SP <- convex(kde,level=level[i]) # now spatial polygons
+      SP <- convex(kde,level=level[i],convex=convex) # now spatial polygons
       sp::plot(SP,border=col,add=TRUE,...)
     }
   }

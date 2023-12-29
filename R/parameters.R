@@ -1,4 +1,4 @@
-POSITIVE.PARAMETERS <- c("major","minor","tau position","tau velocity","tau","omega","error")
+POSITIVE.PARAMETERS <- c("major","minor","tau position","tau velocity","tau","omega","error","period")
 
 
 # identify autocovariance parameters in ctmm object

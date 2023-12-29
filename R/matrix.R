@@ -6,6 +6,13 @@ tr <- function(x)
   return(x)
 }
 
+# diagonal average matrix
+isotrope <- function(x)
+{
+  x <- cbind(x)
+  diag( mean(diag(x)), nrow=nrow(x) )
+}
+
 
 # 2D rotation matrix
 rotate <- function(theta)

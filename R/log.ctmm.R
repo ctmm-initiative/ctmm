@@ -39,7 +39,7 @@ log_ctmm <- function(CTMM,debias=FALSE,...)
 
   ### log transform all positive parameters that haven't been logged
   # features to log transform
-  FEAT.ALL <- features[ features %in% POSITIVE.PARAMETERS | grepl("error",features) ]
+  FEAT.ALL <- features[ features %in% POSITIVE.PARAMETERS | grepl("error",features) | grepl("period",features) ]
   FEAT <- FEAT.ALL[FEAT.ALL %nin% SIGMA]
 
   if(length(FEAT))
@@ -97,7 +97,7 @@ log_ctmm <- function(CTMM,debias=FALSE,...)
 
 #####################
 # inverse transformation of above
-exp_ctmm <- function(CTMM,debias=FALSE,variance=TRUE)
+exp_ctmm <- function(CTMM,debias=FALSE,variance=TRUE,base=list())
 {
   SIGMA <- c("major","minor","angle")
   isotropic <- CTMM$isotropic
@@ -116,7 +116,7 @@ exp_ctmm <- function(CTMM,debias=FALSE,variance=TRUE)
   dimnames(JP) <- dimnames(COV)
 
   # log chi^2 bias correction
-  FEAT.ALL <- features[ features %in% POSITIVE.PARAMETERS | grepl("error",features) ]
+  FEAT.ALL <- features[ features %in% POSITIVE.PARAMETERS | grepl("error",features) | grepl("period",features) ]
   SUB <- features[features %in% c(FEAT.ALL,"angle")]
   if(debias && length(SUB))
   {
@@ -205,7 +205,7 @@ exp_ctmm <- function(CTMM,debias=FALSE,variance=TRUE)
 
   ### exp transform all positive parameters except sigma
   # features to log transform
-  FEAT <- features[features %in% POSITIVE.PARAMETERS]
+  FEAT <- features[features %in% POSITIVE.PARAMETERS| grepl("error",features) | grepl("period",features)]
   FEAT <- FEAT[FEAT %nin% SIGMA]
 
   if(length(FEAT))
@@ -276,6 +276,14 @@ exp_ctmm <- function(CTMM,debias=FALSE,variance=TRUE)
   CTMM$COV.POV <- COV.POV
 
   CTMM$par <- NULL
+
+  # copy to base object
+  for(s in names(CTMM)) { base[[s]] <- CTMM[[s]] }
+  CTMM <- base
+
+  # fix drift parameters for parameter assignment (harmonics)
+  CTMM <- drift.init(CTMM)
+
   CTMM <- set.parameters(CTMM,par)
 
   return(CTMM)

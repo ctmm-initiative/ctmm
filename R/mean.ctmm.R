@@ -44,7 +44,7 @@ quad2lin <- function(M,diag=FALSE)
 }
 
 #############
-mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",select="all",formula=FALSE,...)
+mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",select="all",formula=FALSE,base=list(),...)
 {
   if(is.null(weights))
   { weights <- rep(1,length(x)) }
@@ -640,90 +640,9 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
 
   # reverse log transformation
   # R <- set.parameters(R,par,linear.cov=TRUE)
-  R <- exp_ctmm(R,debias=debias,variance=VARS)
+  R <- exp_ctmm(R,debias=debias,variance=VARS,base=base)
 
   return(R)
-}
-
-
-##########
-mean.mu <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",...)
-{
-  if(is.null(weights))
-  { weights <- rep(1,length(x)) }
-
-  axes <- x[[1]]$axes
-  AXES <- length(axes)
-  N <- length(x)
-
-  # Gaussian-Gaussian in all cases
-  MU <- array(0,c(N,AXES))
-  SIGMA <- array(0,c(N,AXES,AXES))
-
-  colnames(MU) <- axes
-  dimnames(SIGMA) <- list(NULL,axes,axes)
-
-  for(i in 1:N)
-  {
-    MU[i,] <- x[[i]]$mu
-    SIGMA[i,,] <- x[[i]]$COV.mu
-
-    # TODO !!!
-    # fill in with zeroes for non-stationary means
-    # TODO !!!
-  }
-
-  # list of candidate models
-  MM <- list()
-
-  # no variance in mean location
-  S <- "Dirac-\u03B4(\u03BC)"
-  if(trace) { message("Fitting location-mean model ",S) }
-  MM[[S]] <- meta.normal(MU,SIGMA,VARS=FALSE,isotropic=TRUE,debias=debias,weights=weights,WARN=FALSE,...)
-  GUESS <- MM[[S]]
-
-  # symmetric mean distribution
-  if(2*N >= 2+1)
-  {
-    S <- "isotropic-\u03BC"
-    if(trace) { message("Fitting location-mean model ",S) }
-    MM[[S]] <- meta.normal(MU,SIGMA,isotropic=TRUE,debias=debias,weights=weights,GUESS=GUESS,WARN=FALSE,...)
-    GUESS <- MM[[S]]
-
-    # general distribution
-    if(2*N >= 2+3)
-    {
-      S <- "anisotropic-\u03BC"
-      if(trace) { message("Fitting location-mean model ",S) }
-      MM[[S]] <- meta.normal(MU,SIGMA,debias=debias,weights=weights,GUESS=GUESS,WARN=FALSE,...)
-    }
-  }
-
-  ICS <- sapply(MM,function(m){m[[IC]]})
-  names(ICS) <- names(MM)
-  i <- which.min(ICS)
-  i <- names(MM)[i]
-  MM <- MM[[i]]
-  MM$name <- i
-
-  # report model selection
-  if(trace)
-  {
-    i <- sort(ICS,index.return=TRUE)$ix
-    ICS <- ICS[i] # sorted
-    ICS <- ICS - ICS[1] # start at zero
-    ICS <- data.frame(ICS)
-    colnames(ICS) <- paste0("\u0394",IC)
-    message("* Model selection for location-mean \u03BC distribution.")
-    print(ICS)
-  }
-
-  # R$mu # population mean of mean locations
-  # R$COV.mu # uncertainty in mean of means estimate
-  names(MM)[ which(names(MM)=="sigma") ] <- "POV.mu" # dispersion of means
-  names(MM)[ which(names(MM)=="COV.sigma") ] <- "COV.POV.mu" # uncertainty in dispersion of means
-
-  return(MM)
 }
 
 
@@ -758,10 +677,11 @@ mean.ctmm <- function(x,formula=FALSE,weights=NULL,sample=TRUE,debias=TRUE,IC="A
     MM <- mean.mu(x,debias=debias,weights=weights,IC=IC,trace=trace,...)
     isotropic['mu'] <- MM$isotropic
 
-    FM <- mean.features(x,debias=debias,weights=weights,select=select,IC=IC,trace=trace,formula=formula,...)
+    FM <- mean.features(x,debias=debias,weights=weights,select=select,IC=IC,trace=trace,formula=formula,base=MM,...)
     isotropic['sigma'] <- FM$isotropic
 
-    x <- copy(from=FM,to=MM)
+    # x <- copy(from=FM,to=MM) # moved to base argument
+    x <- FM
     x$isotropic <- isotropic
 
     # STORE EVERYTHING
@@ -832,8 +752,6 @@ mean.ctmm <- function(x,formula=FALSE,weights=NULL,sample=TRUE,debias=TRUE,IC="A
   x$isotropic <- isotropic
   x$weights <- weights
 
-  # return final result
-  # x <- new.ctmm(x,info)
   return(x)
 }
 
@@ -841,6 +759,13 @@ mean.ctmm <- function(x,formula=FALSE,weights=NULL,sample=TRUE,debias=TRUE,IC="A
 ## population stationary distribution
 mean_pop <- function(CTMM)
 {
+  # take the stationary part for now
+  if(nrow(CTMM$mu)>1)
+  {
+    CTMM$mu <- CTMM$mu[1,,drop=FALSE]
+    CTMM$POV.mu <- CTMM$POV.mu[1,,1,] # [m,x,m,x]
+  }
+
   # spread (x,y)
   sigma <- CTMM$POV.mu + CTMM$sigma
   # uncertainty of spread (x-x,x-y,y-y)

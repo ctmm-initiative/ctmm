@@ -48,46 +48,47 @@ convex <- function(UD,level=0.95,convex=TRUE,SP=TRUE,ID="ID")
   # colnames(xy) <- c('x','y')
 
   xy <- NULL
-  cost <- function(p)
+
+  if(convex==1)
   {
-    if(p==0)
-    { R <- 0-level }
-    else if(p==1)
-    { R <- M-level }
-    else
+    cost <- function(p)
     {
-      # SUB <- c(UD$CDF<=p)
-      # xy <- xy[SUB,] # points within p
+      if(p==0)
+      { R <- 0-level }
+      else if(p==1)
+      { R <- M-level }
+      else
+      {
+        # SUB <- c(UD$CDF<=p)
+        # xy <- xy[SUB,] # points within p
 
-      CL <- contourLines(UD,levels=p)
-      for(cl in CL) { xy <- rbind(xy, cbind(x=cl$x,y=cl$y) ) }
+        CL <- contourLines(UD,levels=p)
+        for(cl in CL) { xy <- rbind(xy, cbind(x=cl$x,y=cl$y) ) }
 
-      SUB <- grDevices::chull(xy) # convex hull indices
-      xy <- xy[SUB,] # convex hull points
+        SUB <- grDevices::chull(xy) # convex hull indices
+        xy <- xy[SUB,] # convex hull points
 
-      xy <- sp::Polygon(xy) # convex hull
-      xy <- sp::Polygons(list(xy),ID="ID")
-      xy <- sp::SpatialPolygons(list(xy))
+        xy <- sp::Polygon(xy) # convex hull
+        xy <- sp::Polygons(list(xy),ID="ID")
+        xy <- sp::SpatialPolygons(list(xy))
 
-      PMF <- PMF * raster::rasterize(xy,PMF,background=0)
-      M <- raster::cellStats(PMF,stat='sum')
-      R <- M-level
+        PMF <- PMF * raster::rasterize(xy,PMF,background=0)
+        M <- raster::cellStats(PMF,stat='sum')
+        R <- M-level
+      }
+
+      return(R^2)
     }
 
-    return(R^2)
-  }
+    # this is not a continuous function
+    # RESULT <- optimizer(P,cost,lower=0,upper=1,parscale=0.1)
+    # p <- RESULT$par
 
-  # this is not a continuous function
-  # RESULT <- optimizer(P,cost,lower=0,upper=1,parscale=0.1)
-  # p <- RESULT$par
-
-  if(convex)
-  {
     p <- c(0,level)
     RESULT <- stats::optimize(cost,p,tol = .Machine$double.eps^0.5)
     p <- RESULT$minimum
   }
-  else
+  else # convex==2 or convex==FALSE
   { p <- level }
 
   # SUB <- c(UD$CDF<=p)

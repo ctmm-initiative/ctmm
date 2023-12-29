@@ -1,4 +1,4 @@
-ctmm 1.2.1 (2023-12-05)
+ctmm 1.2.1 (2023-12-19)
 ================
 * periodic mean functions now estimate frequency
 * periodic mean summary now uses beta CIs
@@ -6,6 +6,7 @@ ctmm 1.2.1 (2023-12-05)
 * new grid argument dr.fn in akde(), occurrence(), pkde()
 * as.telemetry() now imports ATLAS error ellipses
 * new ctmm.boot() argument clamp
+* new convex argument options
 * mean() of occurrence() now time weighted by default
 * new plot method: plot.ctmm()
 * plot() argument 'col.DF' renamed to 'col.UD'

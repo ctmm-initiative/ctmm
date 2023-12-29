@@ -34,7 +34,7 @@ SpatialPointsDataFrame.telemetry(object,...)
 SpatialPolygonsDataFrame.telemetry(object,level.UD=0.95,...)
 
 ## method for class 'UD'
-SpatialPolygonsDataFrame.UD(object,convex=FALSE,level.UD=0.95,level=0.95,...)
+SpatialPolygonsDataFrame.UD(object,level.UD=0.95,level=0.95,convex=FALSE,...)
 
 \S4method{writeRaster}{UD,character}(x,filename,format,DF="CDF",...)
 
@@ -46,10 +46,10 @@ SpatialPolygonsDataFrame.UD(object,convex=FALSE,level.UD=0.95,level=0.95,...)
 
 \S4method{writeVector}{telemetry,missing}(x,filename,filetype="ESRI Shapefile",error=TRUE,level.UD=0.95,...)
 
-\S4method{writeVector}{UD,character}(x,filename,filetype="ESRI Shapefile",convex=FALSE,level.UD=0.95,level=0.95,
+\S4method{writeVector}{UD,character}(x,filename,filetype="ESRI Shapefile",level.UD=0.95,level=0.95,convex=FALSE,
             ...)
 
-\S4method{writeVector}{UD,missing}(x,filename,filetype="ESRI Shapefile",convex=FALSE,level.UD=0.95,level=0.95,
+\S4method{writeVector}{UD,missing}(x,filename,filetype="ESRI Shapefile",level.UD=0.95,level=0.95,convex=FALSE,
             ...)
 }
 %- maybe also 'usage' for other objects documented here.
@@ -57,9 +57,9 @@ SpatialPolygonsDataFrame.UD(object,convex=FALSE,level.UD=0.95,level=0.95,...)
   \item{x}{ \code{telemetry} or \code{UD} object. }
   \item{error}{Export \code{telemetry} location error circles/ellipses as polygons if \code{TRUE}.}
   \item{object}{ \code{telemetry} or \code{UD} object. }
-  \item{convex}{Export convex coverage areas if \code{TRUE}. By default, the highest density regions (HDRs) are exported.}
   \item{level.UD}{ Coverage level of the UD area. I.e., the 50\% core home range would be given by \code{level.UD=0.50}.}
   \item{level}{ Confidence level for the magnitude of the above area. I.e., the 95\% CI of the core home range area. }
+  \item{convex}{Export convex coverage areas if \code{TRUE}. By default, the highest density regions (HDRs) are exported. \code{convex=1} will export the \code{level.UD} convex area, while \code{convex=2} will export the convex hull of the \code{level.UD} HDR coverage area.}
   \item{DF}{Rasterize the probability density function \code{"PDF"}, probability mass function \code{"PMF"}, or cumulative distribution function \code{"CDF"}.}
   \item{filename}{Character name of file for raster or vector file.}
   \item{format}{Output file type (see \code{\link[raster]{writeFormats}}). If this argument is not provided, it is inferred it from the filename extension. If that fails, the default \code{'raster'} format is used, which can be changed using \code{\link[raster]{rasterOptions}}.}

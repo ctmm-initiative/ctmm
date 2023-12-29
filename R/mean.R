@@ -63,10 +63,12 @@ stationary.init <- function(CTMM,data,...)
 
   u <- drift.mean(CTMM,data$t,...)
   # IID estimate for (error + 0 movement) || (movement + 0 error)
-  CTMM$mu <- PDsolve(t(u) %*% (w * u)) %*% (t(u) %*% (w * z))
+
+  if(is.null(CTMM$mu))
+  { CTMM$mu <- PDsolve(t(u) %*% (w * u)) %*% (t(u) %*% (w * z)) }
 
   # don't return variance if no variance
-  if(!CTMM$range) { return(CTMM) }
+  if(!CTMM$range || !is.null(CTMM$sigma)) { return(CTMM) }
 
   n <- length(data$t)
   z <- z - (u %*% CTMM$mu)
@@ -163,7 +165,7 @@ periodic.name <- function(CTMM,...)
 periodic.is.stationary <- function(CTMM,...) { !sum(CTMM$harmonic) }
 
 # guess parameters
-periodic.init <- function(CTMM,data,...)
+periodic.init <- function(CTMM,data=NULL,...)
 {
   # default period of 1 day
   if(is.null(CTMM$period)) { CTMM$period <- 1 %#% "day" }
@@ -172,6 +174,10 @@ periodic.init <- function(CTMM,data,...)
   if(is.null(CTMM$harmonic)) { CTMM$harmonic <- numeric(length(CTMM$period)) }
 
   if(is.null(CTMM$mu)) { CTMM <- stationary.init(CTMM,data,...) }
+
+  # in case of existing mean parameters
+  n <- (nrow(CTMM$mu)-1)/2
+  CTMM$harmonic <- pmax(CTMM$harmonic,floor(n/length(CTMM$harmonic)))
 
   # !!! maybe run generic drift here
 
@@ -507,7 +513,7 @@ periodic.variances <- function(CTMM,...)
   GRAD <- A
   COV.ROT <- c(GRAD %*% COV %*% GRAD)
 
-  if(CTMM$isotropic) { PARS <- c('major','major') } else { PARS <- c('major','minor') }
+  if(CTMM$isotropic[1]) { PARS <- c('major','major') } else { PARS <- c('major','minor') }
   COV.RAN <- CTMM$COV[PARS,PARS]
   GRAD <- c(1,1)
   COV.RAN <- c(GRAD %*% COV.RAN %*% GRAD)
