@@ -109,14 +109,7 @@ SpatialPolygonsDataFrame.UD <- function(object,level.UD=0.95,level=0.95,convex=F
     }
     else # if(convex)
     {
-      CL <- convex(UD,level=P[i],SP=FALSE,ID=ID[i])
-
-      # xy <- NULL
-      # for(cl in CL) { xy <- rbind(xy, cbind(x=cl$x,y=cl$y) ) }
-      # SUB <- grDevices::chull(xy) # convex hull indices
-      # xy <- xy[SUB,] # convex hull points
-      # # format like contourLines output
-      # CL <- list( list(level=P[i],x=xy[,'x'],y=xy[,'y']) )
+      CL <- convex(UD,level=P[i],SP=FALSE,ID=ID[i],convex=convex)
 
       polygons[[i]] <- CL
     }
