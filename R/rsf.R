@@ -958,7 +958,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
     COV[RVARS,] <- COV[RVARS,,drop=FALSE] / RSCALE
     COV[,RVARS] <- t( t(COV[,RVARS,drop=FALSE]) / RSCALE )
 
-    DAVE <- DAVE * RSCALE + RSHIFT
+    DAVE <- DAVE * RSCALE + RSHIFT[RVARS]
     DCOV <- DCOV * outer(RSCALE)
   }
 

@@ -1,4 +1,5 @@
 ** PRIORITY
+* implement explosive models (negative tau) -> implement unit root test
 * mean.ctmm non-stationary mean averaging
 * periodicity frequency uncertainty propagation
 * export pd.solve()
