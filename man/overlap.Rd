@@ -22,7 +22,7 @@
 
 \details{The default \code{method="Bhattacharyya"} estimates the standard overlap measure \eqn{\int\int \sqrt{p(x,y) \, q(x,y)} \, dx \, dy} between the distributions \eqn{p(x,y)} and \eqn{q(x,y)},
 while \code{method="encounter"} estimates the non-standard measure \eqn{\frac{\int\int p(x,y) \, q(x,y) \, dx \, dy}{\sqrt{\int\int p(x',y')^2 \, dx' dy' \int\int q(x'',y'')^2 \, dx'' dy''}}},
-which has a numerator proportional to the uncorrelated encounter probability.
+which has a numerator proportional to the uncorrelated encounter probability and UD overlap index (Tilberg and Dixon, 2022).
 Both measures lie between 0 and 1, where 0 indicates no shared support and 1 indicates identical distributions.
 }
 
@@ -33,6 +33,10 @@ Both measures lie between 0 and 1, where 0 indicates no shared support and 1 ind
 K. Winner, M. J. Noonan, C. H. Fleming, K. Olson, T. Mueller, D. Sheldon, J. M. Calabrese.
 ``Statistical inference for home range overlap'',
 Methods in Ecology and Evolution, 9:7, 1679-1691 (2018) \doi{10.1111/2041-210X.13027}.
+
+M. Tilberg, P. M. Dixon, ``Statistical inference for the utilization distribution overlap index (UDOI)'',
+Methods in Ecology and Evolution, 13:5, 1082-1092 (2022) \doi{10.1111/2041-210X.13813}.
+
 }
 
 \author{C. H. Fleming and K. Winner}

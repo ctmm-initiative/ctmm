@@ -45,8 +45,10 @@ zero.name <- function(CTMM,...) { "mean-zero" }
 stationary.is.stationary <- function(CTMM,...) { TRUE }
 
 # initialization for stationary (and similar structure) mean functions
-stationary.init <- function(CTMM,data,...)
+stationary.init <- function(CTMM,data=NULL,...)
 {
+  if(!is.null(CTMM$mu) && !is.null(CTMM$sigma)) { return(CTMM) }
+
   AXES <- length(CTMM$axes)
   z <- get.telemetry(data,CTMM$axes)
 
@@ -605,7 +607,7 @@ change.point.is.stationary <- function(CTMM,...)
 }
 
 # guess parameters
-change.point.init <- function(data,CTMM)
+change.point.init <- function(CTMM,data=NULL,...)
 {
   CP <- CTMM$change.point.mu # change points
   if(is.null(CP)) { CP <- CTMM$change.point } # default
@@ -821,7 +823,7 @@ uspline.name <- function(CTMM,...)
 uspline.is.stationary <- function(CTMM,...) { !sum(CTMM$knot) }
 
 # initialize default parameters
-uspline.init <- function(CTMM,data,...)
+uspline.init <- function(CTMM,data=NULL,...)
 {
   # degree of continuity: 1,2 - location,velocity
   if(is.null(CTMM$degree)) { CTMM$degree <- 1 }
@@ -830,7 +832,7 @@ uspline.init <- function(CTMM,data,...)
   # default domain of spline grid
   if(is.null(CTMM$domain)) { CTMM$domain <- c(data$t[1],last(data$t)) }
 
-  if(is.null(CTMM$mu)) { CTMM <- drift.init(data,CTMM) }
+  if(is.null(CTMM$mu)) { CTMM <- drift.init(CTMM,data,...) }
 
   return(CTMM)
 }
