@@ -51,7 +51,7 @@ meta.normal <- function(Y,SY=FALSE,X=FALSE,SX=FALSE,DSM=NULL,INT=TRUE,VARS=TRUE,
   dimnames(VARS) <- list(NAMES,NAMES)
 
   # finite observations
-  OBS <- t( apply(SY,1,function(s){diag(cbind(s))<Inf}) ) # [DIM,N]
+  OBS <- apply(SY,1,function(s){diag(cbind(s))<Inf}) # [DIM,N]
   dim(OBS) <- c(DIM,N) # R drops dimensions :(
   OBS <- t(OBS)
 
