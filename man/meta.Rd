@@ -27,7 +27,7 @@ funnel(x,y,variable="area",precision="t",level=0.95,level.UD=0.95,...)
   \item{boot}{Perform a parametric bootstrap for confidence intervals and first-order bias correction if \code{debias=TRUE}.}
   \item{error}{Relative error tolerance for parametric bootstrap.}
   \item{debias}{Apply Bessel's inverse-Gaussian correction and various other bias corrections if \code{method="MLE"}, REML if \code{method="BLUE"}, and an additional first-order correction if \code{boot=TRUE}.}
-  \item{verbose}{Return a list of both population and meta-population analyses if \code{TRUE} and \code{x} is a list of population lists.}
+  \item{verbose}{Return a list of both population and meta-population analyses if \code{TRUE} and \code{x} is a list of population lists. Also returns p-values and geometric mean ratios.}
   \item{units}{Convert result to natural units.}
   \item{plot}{Generate a meta-analysis forest plot.}
   \item{sort}{Sort individuals by their point estimates in forest plot.}
@@ -63,7 +63,7 @@ Methods in Ecology and Evolution 13:5 1027--1041 (2022) \doi{10.1111/2041-210X.1
 
 Confidence intervals depicted in the forest plot are \eqn{\chi^2} and may differ from the output of \code{summary()} in the case of mean speed and timescale parameters with small effective sample sizes.
 
-As mean ratio estimates are debiased, reciprocal estimates can differ slightly.
+As mean ratio estimates are debiased, reciprocal estimates can differ slightly with moderate-to-large effective sample sizes (or substantially with small effective sample sizes). \code{verbose=TRUE} will also return the geometric mean, which is symmetric, but biased outside of the logarithm.
 }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~

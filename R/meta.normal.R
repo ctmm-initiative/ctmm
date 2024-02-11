@@ -8,7 +8,8 @@
 # SX: predictor uncertainty variance
 # without X, slopes will not be estimated
 # D: design submatrix: Y = X %*% DSM %*% beta + ...
-meta.normal <- function(Y,SY=FALSE,X=FALSE,SX=FALSE,DSM=NULL,INT=TRUE,VARS=TRUE,isotropic=FALSE,GUESS=NULL,debias=TRUE,weights=NULL,precision=1/2,WARN=TRUE,...)
+# lazy.COV: above this dimensionality, do not compute Hessian with numDeriv
+meta.normal <- function(Y,SY=FALSE,X=FALSE,SX=FALSE,DSM=NULL,INT=TRUE,VARS=TRUE,isotropic=FALSE,GUESS=NULL,debias=TRUE,weights=NULL,precision=1/2,WARN=TRUE,lazy.COV=200,...)
 {
   tol <- .Machine$double.eps^precision
   REML <- debias
@@ -708,11 +709,12 @@ meta.normal <- function(Y,SY=FALSE,X=FALSE,SX=FALSE,DSM=NULL,INT=TRUE,VARS=TRUE,
     set.parscale()
     ## self-consistent - unbiased beta
     if(UNBIASED)
-    { SOL <- optimizer(par[VI],nloglike.nobeta,parscale=parscale[VI],lower=lower[VI],upper=upper[VI]) }
+    { SOL <- optimizer(par[VI],nloglike.nobeta,parscale=parscale[VI],lower=lower[VI],upper=upper[VI],...) }
     else
-    { SOL <- optimizer(par,nloglike.bfixed,parscale=parscale,lower=lower,upper=upper) }
+    { SOL <- optimizer(par,nloglike.bfixed,parscale=parscale,lower=lower,upper=upper,...) }
     par <- SOL$par
     loglike <- -SOL$value
+    COV.sigma <- SOL$covariance
 
     # needed for optimization and backtracking
     if(UNBIASED)
@@ -731,26 +733,30 @@ meta.normal <- function(Y,SY=FALSE,X=FALSE,SX=FALSE,DSM=NULL,INT=TRUE,VARS=TRUE,
     CONSTRAIN <- FALSE # numderiv doesn't deal well with boundaries
     par <- sigma2par(beta,sigma)
     set.parscale(TRUE) # more accurate parscale for numderiv
-    if(UNBIASED)
-    { DIFF <- genD(par[VI],nloglike.nobeta,parscale=parscale[VI],lower=lower[VI],upper=upper[VI]) }
-    else
-    { DIFF <- genD(par,nloglike.bfixed,parscale=parscale,lower=lower,upper=Inf) }
-    COV.sigma <- cov.loglike(DIFF$hessian,DIFF$gradient,WARN=WARN)
-    # HESS <- DIFF$hessian - outer(DIFF$gradient) # Hessian penalized by non-zero gradient
 
-    # correlation correction
-    if(BDIM && !UNBIASED)
+    if(nrow(COV.sigma)>lazy.COV)
     {
-      C <- stats::cov2cor( nloglike(par,verbose=TRUE)$COV.mu ) # approximate beta-mu correlations
-      VAR <- c( diag(COV.sigma)[BI], diag(COV.mu)[MI] )
-      SD <- sqrt(VAR)
-      BASE <- C * (SD %o% SD)
-      BASE[BI,BI] <- COV.sigma[BI,BI]
-      BASE[MI,MI] <- COV.mu[MI,MI]
-      COV.mu <- BASE
-      COV.sigma <- COV.sigma[-BI,-BI,drop=FALSE]
-    }
-  }
+      if(UNBIASED)
+      { DIFF <- genD(par[VI],nloglike.nobeta,parscale=parscale[VI],lower=lower[VI],upper=upper[VI]) }
+      else
+      { DIFF <- genD(par,nloglike.bfixed,parscale=parscale,lower=lower,upper=Inf) }
+      COV.sigma <- cov.loglike(DIFF$hessian,DIFF$gradient,WARN=WARN)
+      # HESS <- DIFF$hessian - outer(DIFF$gradient) # Hessian penalized by non-zero gradient
+
+      # correlation correction
+      if(BDIM && !UNBIASED)
+      {
+        C <- stats::cov2cor( nloglike(par,verbose=TRUE)$COV.mu ) # approximate beta-mu correlations
+        VAR <- c( diag(COV.sigma)[BI], diag(COV.mu)[MI] )
+        SD <- sqrt(VAR)
+        BASE <- C * (SD %o% SD)
+        BASE[BI,BI] <- COV.sigma[BI,BI]
+        BASE[MI,MI] <- COV.mu[MI,MI]
+        COV.mu <- BASE
+        COV.sigma <- COV.sigma[-BI,-BI,drop=FALSE]
+      } # end correlation correction
+    } # end numDeriv COV
+  } # end uncertainty estimation
   else
   { COV.sigma <- diag(0,DIM*(DIM+1)/2) }
 
