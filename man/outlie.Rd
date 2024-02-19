@@ -8,7 +8,7 @@
 \description{Produces a \code{data.frame} of speed and distance estimates to analyze, as well as a plot highlighting potential speed and distance outliers in \code{telemetry} data.
 }
 \usage{
-outlie(data,plot=TRUE,by='d',...)
+outlie(data,plot=TRUE,by='d',units=TRUE,...)
 
 \S3method{plot}{outlie}(x,level=0.95,units=TRUE,axes=c('d','v'),xlim=NULL,ylim=NULL,...)
 }
@@ -17,6 +17,7 @@ outlie(data,plot=TRUE,by='d',...)
   \item{data}{\code{telemetry} object.}
   \item{plot}{Output a plot highlighting high speeds (blue) and distant locations (red).}
   \item{by}{Color and size side-effect plot points by \code{'d'}, \code{'v'}, \code{'dz'}, \code{'vz'}, for distance from center, minimum speed, vertical distance from center, and minimum vertical speed.}
+  \item{units}{Convert axes to natural units.}
   \item{...}{Arguments passed to \code{plot}.}
   \item{x}{\code{outlie} object to plot.}
   \item{level}{Confidence level for error bars.}

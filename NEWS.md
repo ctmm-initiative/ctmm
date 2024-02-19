@@ -1,22 +1,23 @@
-ctmm 1.2.1 (2023-02-11)
+ctmm 1.2.1 (2023-02-18)
 ================
 * periodic mean functions now estimate frequency
 * periodic mean summary now uses beta CIs
-* new mean.ctmm() argument formula for functional response estimation
+* new mean.ctmm() argument 'formula' for functional response estimation
 * new grid argument dr.fn in akde(), occurrence(), pkde()
 * as.telemetry() now imports ATLAS error ellipses
-* new ctmm.boot() argument clamp
-* new convex argument options
+* new ctmm.boot() argument 'clamp'
+* new convex argument 'options'
 * new geometric mean ratio estimates in meta() and improvements for small DOFs
 * mean() of occurrence() now time weighted by default
 * new plot method: plot.ctmm()
+* new outlie() argument 'units'
 * plot() argument 'col.DF' renamed to 'col.UD'
 * improvements DOF[area] calculations in mean() and pkde()
 * improvement to optimizer() when initial guess is on a boundary and hessian is bad
 * bugfix in rsf.select with functions in formulas
 * bugfix in raster factor expansion with more than one raster factor
 * bugfix in normal meta-analysis REML correction
-* bugfix in suitability with grid in different projection
+* bugfixes in suitability with grid projection, NA raster values, and categorical variables
 * bugfixes in mean.ctmm()
 * bugfix in contour exports with convex=TRUE
 

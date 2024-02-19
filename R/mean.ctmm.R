@@ -523,7 +523,7 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
     dimnames(JJ) <- dimnames(R$COV.POV)
     R$COV.POV <- JJ %*% R$COV.POV %*% t(JJ)
 
-    EXTRA <- length(formula)
+    EXTRA <- sum(formula)
     if(EXTRA)
     {
       BASE <- diag(EXTRA+nrow(J))

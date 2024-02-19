@@ -89,19 +89,21 @@ R.suit <- function(R,CTMM,data=NULL,log=FALSE,VAR=FALSE)
 
   for(D in DVARS) { R[[D]] <- as.numeric(data[[D]])[1] } # model.matrix will rename otherwise; only use first data row
 
-  # working subset that model.matrix will return (NA will be skipped)
-  SUB <- apply(R,1,function(x){!any(is.na(x))})
-  # model.matrix - NA have been skipped
+  # skip most NA calculations (and work around model.matrix weirdness)
+  R <- stats::model.frame(formula,data=R,na.action=na.pass)
   R <- stats::model.matrix(formula,data=R)
 
   TERMS <- colnames(R)
   TERMS <- TERMS[TERMS!="(Intercept)"]
   R <- R[,TERMS,drop=FALSE]
 
+  SUB <- !apply(is.na(R),1,any)
+  R <- R[SUB,]
+
   if(VAR)
   {
     COV <- CTMM$COV[TERMS,TERMS,drop=FALSE]
-    COV <- sapply(1:nrow(R),function(i){R[i,] %*% COV %*% R[i,]})
+    COV <- sapply(1:nrow(R),function(i){R[i,] %*% COV %*% R[i,]}) # now a variance
 
     if("POV" %in% names(CTMM))
     {
@@ -144,13 +146,12 @@ R.suit <- function(R,CTMM,data=NULL,log=FALSE,VAR=FALSE)
     if(VAR) { COV <- OFFSET * COV }
   }
 
-  # NA default
   if(log)
-  { FULL <- array(-Inf,DIM) }
+  { REPLACE <- -Inf }
   else
-  { FULL <- array(0,DIM) }
+  { REPLACE <- 0 }
 
-  # copy over non-NA values
+  FULL <- array(REPLACE,DIM)
   FULL[SUB] <- R
   R <- FULL
 
@@ -158,7 +159,6 @@ R.suit <- function(R,CTMM,data=NULL,log=FALSE,VAR=FALSE)
   {
     # NA default
     FULL <- array(0,DIM)
-
     FULL[SUB] <- COV
     COV <- FULL
 

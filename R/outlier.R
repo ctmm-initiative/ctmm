@@ -2,7 +2,7 @@
 BESSEL_LIMIT <- 2^16
 
 # estimate and assign speeds to times
-outlie <- function(data,plot=TRUE,by='d',...)
+outlie <- function(data,plot=TRUE,by='d',units=TRUE,...)
 {
   if(class(data)[1]=="list")
   { return( lapply(1:length(data), function(i){OUT <- outlie(data[[i]],plot=plot,by=by); if(plot){ graphics::title(names(data)[i]) }; OUT} ) ) }
@@ -67,7 +67,7 @@ outlie <- function(data,plot=TRUE,by='d',...)
   if(plot)
   {
     # bounding box
-    new.plot(data,...)
+    new.plot(data,units=units,...)
     # convert units on telemetry object to match base plot
     data <- unit.telemetry(data,length=get("x.scale",pos=plot.env))
 

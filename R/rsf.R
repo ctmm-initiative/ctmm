@@ -1078,7 +1078,7 @@ expand.factors <- function(R,formula,reference="auto",data=NULL,DVARS=NULL,fixed
         # REF <- strsplit(REF,"/",fixed=TRUE)[[1]][2] # ref]*
         REF <- strsplit(REF,"_",fixed=TRUE)[[1]][2] # ref]*
         # REF <- strsplit(REF,"]",fixed=TRUE)[[1]][1] # ref
-        REF <- which(LEVELS==REF)
+        # REF <- which(LEVELS==REF)
       }
       else if(reference[NAME]=="auto") # fix base layer
       {
