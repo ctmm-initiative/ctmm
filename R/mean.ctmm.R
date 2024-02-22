@@ -105,8 +105,11 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
   { formula <- all.vars(formula) } # now character
   if(class(formula)[1]=="character")
   { formula <- BETA[BETA %in% formula] }
-  else
-  { formula <- array(formula,length(BETA)) }
+  else # logical
+  {
+    formula <- array(formula,length(BETA))
+    formula <- BETA[formula]
+  }
 
   if(length(formula)) # get predictors for model-II regression - linear response function
   {
