@@ -90,7 +90,7 @@ R.suit <- function(R,CTMM,data=NULL,log=FALSE,VAR=FALSE)
   for(D in DVARS) { R[[D]] <- as.numeric(data[[D]])[1] } # model.matrix will rename otherwise; only use first data row
 
   # skip most NA calculations (and work around model.matrix weirdness)
-  R <- stats::model.frame(formula,data=R,na.action=na.pass)
+  R <- stats::model.frame(formula,data=R,na.action=stats::na.pass)
   R <- stats::model.matrix(formula,data=R)
 
   TERMS <- colnames(R)

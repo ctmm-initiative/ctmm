@@ -766,7 +766,17 @@ mean_pop <- function(CTMM)
   if(nrow(CTMM$mu)>1)
   {
     CTMM$mu <- CTMM$mu[1,,drop=FALSE]
-    CTMM$POV.mu <- CTMM$POV.mu[1,,1,] # [m,x,m,x]
+    CTMM$POV.mu <- CTMM$POV.mu[,1,1,] # [x,m,m,x]
+    if(CTMM$isotropic['mu'])
+    { CTMM$COV.POV.mu <- CTMM$COV.POV.mu[1,1] }
+    else
+    {
+      P <- c(1,length(CTMM$mu)/2+1) # (x,y)
+      P <- rownames(CTMM$COV.mu)[P]
+      P <- outer(P,P,function(p,q){paste(p,q,sep="-")}) # (x-x,x-y,y-x,y-y)
+      P <- P[c(1,2,4)] # (x-x,x-y,y-y)
+      CTMM$COV.POV.mu <- CTMM$COV.POV.mu[P,P]
+    }
   }
 
   # spread (x,y)

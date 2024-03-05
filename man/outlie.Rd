@@ -21,7 +21,6 @@ outlie(data,plot=TRUE,by='d',units=TRUE,...)
   \item{...}{Arguments passed to \code{plot}.}
   \item{x}{\code{outlie} object to plot.}
   \item{level}{Confidence level for error bars.}
-  \item{units}{Convert axes to natural units.}
   \item{axes}{\eqn{x}-\eqn{y} axes to plot. Can be any of \code{'t'}, \code{'d'}, \code{'v'}, \code{'dz'}, \code{'vz'}, for time, distance from center, minimum speed, vertical distance from center, and minimum vertical speed.}
   \item{xlim}{\eqn{x}-axis plotting range in SI units.}
   \item{ylim}{\eqn{y}-axis plotting range in SI units.}

@@ -1117,7 +1117,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
 
             SEQ <- seq(M1,M,length.out=n)
           }
-        }
+        } # if((MIN==1 && M<=0) || (MIN==length(fn.all) && M>=0))
         else # interpolation search
         {
           LINE.TYPE <- "1D Newton-Raphson refinement"
@@ -1195,8 +1195,8 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
 
           n <- mc.min(2,cores)
 
-          M1 <- sqrt(sum((par-par.all[,MIN-1])^2))
-          M2 <- sqrt(sum((par-par.all[,MIN+1])^2))
+          M1 <- sqrt(sum(( par-par.all[,max(MIN-1,1)] )^2))
+          M2 <- sqrt(sum(( par-par.all[,min(MIN+1,length(fn.all))] )^2))
 
           n1 <- nant(M1/(M1+M2),1/2)*(n+2) - 1
           n1 <- clamp(n1,1,n-1)
