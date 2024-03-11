@@ -26,9 +26,9 @@ log_ctmm <- function(CTMM,debias=FALSE,...)
 
   # convert log(eigen) to log(xy) in COV
   PARS <- SIGMA[SIGMA %in% features]
-  if(isotropic)
+  if(isotropic[1])
   { par[PARS] <- sigma@par[PARS] }
-  if(!isotropic)
+  if(!isotropic[1])
   {
     par[PARS] <- sigma[c(1,4,2)]  # log 'xx', 'yy', 'xy'
 
@@ -66,7 +66,7 @@ log_ctmm <- function(CTMM,debias=FALSE,...)
     names(EIGEN$values) <- SUB
 
     # fix signs
-    if(isotropic) { PARS <- "major" } else { PARS <- c("major","minor") }
+    if(isotropic[1]) { PARS <- "major" } else { PARS <- c("major","minor") }
     # VAR goes in log numerator for chi^2 variates: variance, diffusion, MS speed, ...
     for(i in 1:ncol(EIGEN$vectors)) { if(sum(EIGEN$vectors[PARS,i])<0) { EIGEN$vectors[,i] <- -EIGEN$vectors[,i] } }
 

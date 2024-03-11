@@ -52,7 +52,7 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
   N <- length(x)
   axes <- x[[1]]$axes
 
-  ISO <- sapply(x,function(y){y$isotropic})
+  ISO <- sapply(x,function(y){y$isotropic[1]})
   ISO <- all(ISO)
 
   # only want biological parameters
@@ -526,7 +526,7 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
     dimnames(JJ) <- dimnames(R$COV.POV)
     R$COV.POV <- JJ %*% R$COV.POV %*% t(JJ)
 
-    EXTRA <- sum(formula)
+    EXTRA <- length(formula)
     if(EXTRA)
     {
       BASE <- diag(EXTRA+nrow(J))
