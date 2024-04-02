@@ -26,10 +26,11 @@ If summary is called with a single \code{ctmm} object output from \code{\link{ct
 \item{\code{tau}}{The autocorrelation timescales. \code{tau position} is also the home-range crossing timescale.}
 \item{\code{area}}{The Gaussian home-range area, where the point estimate has a significance level of \code{level.UD}. I.e., the core home range is where the animal is located 50\% of the time with \code{level.UD=0.50}.
 This point estimate itself is subject to uncertainty, and is given confidence intervals derived from \code{level}.
-
 This Gaussian estimate differs from the kernel density estimate of \code{\link{summary.UD}}. The Gaussian estimate has more statistical efficiency, but is less related to space use for non-Gaussian processes.}
 \item{\code{speed}}{The Gaussian root-mean-square (RMS) velocity, which is a convenient measure of average speed but not the conventional measure of average speed (see \code{\link{speed}}).}
 }
+Furthermore, if summary is called on a population-level model, then population-level standard deviations (\code{SD}) and coefficients of variation (\code{CoV}) are also returned.
+
 If summary is called on a list of \code{ctmm} objects output from \code{\link{ctmm.select}}, then a table is returned with the model names and IC differences for comparison across autocovariance structures. The mean square prediction error (MSPE) is also returned for comparison across trend structures (with autocovariance structure fixed). For the model names, "IID" denotes the uncorrelated bi-variate Gaussian model, "OU" denotes the continuous-position Ornstein-Uhlenbeck model, "OUF" denotes the continuous-velocity Ornstein-Uhlenbeck-F model, "OUf" denotes the OUF model where the two autocorrelation timescales cannot be statistically distinguished.
 }
 

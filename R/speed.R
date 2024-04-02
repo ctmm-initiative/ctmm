@@ -43,46 +43,12 @@ speed.ctmm <- function(object,data=NULL,t=NULL,level=0.95,robust=FALSE,units=TRU
     }
     else # elliptical velocity distribution
     {
-      # propagate error uncertainty
-      UERE.FIT <- object$error>0 & ( paste("error",names(object$error)) %in% dimnames(object)[[1]] )
-      STUFF <- id.parameters(object,profile=FALSE,linear=FALSE,UERE.FIT=UERE.FIT)
-      NAMES <- STUFF$NAMES
-      parscale <- STUFF$parscale
-      lower <- STUFF$lower
-      upper <- STUFF$upper
-
-      fn <- function(p)
-      {
-        object <- set.parameters(object,p)
-        speed_deterministic(object)
-      }
-
-      PAR <- get.parameters(object,NAMES)
-      MEAN <- fn(PAR)
+      MEAN <- speed_deterministic(object,finish=FALSE)
 
       if(prior && fast)
       {
-        GRAD <- genD(par=PAR,fn=fn,lower=lower,upper=upper,parscale=parscale,Richardson=2,mc.cores=1)$grad
-        # GRAD <- numDeriv::grad(fn,PAR) # don't step outside of (0,1)
-        if("COV" %in% names(object))
-        { VAR <- c(GRAD %*% object$COV[NAMES,NAMES] %*% GRAD) } # emulate can lose features
-        else
-        { VAR <- Inf }
-
-        if(object$mean!="stationary")
-        {
-          fn <- function(p)
-          {
-            object$mu[] <- p
-            speed_deterministic(object)
-          }
-
-          GRAD <- genD(par=c(object$mu),fn=fn,Richardson=2,mc.cores=1)$grad
-          VAR2 <- aperm(object$COV.mu,c(2,1,3,4))
-          dim(VAR2) <- c(1,1)*length(GRAD)
-          VAR2 <- c(GRAD %*% VAR2 %*% GRAD)
-          VAR <- VAR + VAR2
-        }
+        STUFF <- speed_variance(object,MEAN=MEAN)
+        VAR <- STUFF$VAR
 
         # propagate errors (chi)
         M2 <- VAR + MEAN^2
@@ -97,7 +63,7 @@ speed.ctmm <- function(object,data=NULL,t=NULL,level=0.95,robust=FALSE,units=TRU
         names(CI) <- NAMES.CI
         DOF <- 0
       }
-    }
+    } # end elliptical velocity distribution
   }
   else # simulation based evaluation
   {
@@ -312,4 +278,50 @@ speed_deterministic <- function(CTMM,sigma=CTMM$sigma)
   { v <- sqrt(2/pi) * sqrt(sigma[1]) * pracma::ellipke(1-clamp(sigma[2]/sigma[1]))$e }
 
   return(v)
+}
+
+
+speed_variance <- function(object,MEAN=NULL)
+{
+  # propagate error uncertainty
+  UERE.FIT <- object$error>0 & ( paste("error",names(object$error)) %in% dimnames(object)[[1]] )
+  STUFF <- id.parameters(object,profile=FALSE,linear=FALSE,UERE.FIT=UERE.FIT)
+  NAMES <- STUFF$NAMES
+  parscale <- STUFF$parscale
+  lower <- STUFF$lower
+  upper <- STUFF$upper
+
+  fn <- function(p)
+  {
+    object <- set.parameters(object,p)
+    speed_deterministic(object)
+  }
+
+  PAR <- get.parameters(object,NAMES)
+  if(is.null(MEAN)) { MEAN <- fn(PAR) }
+
+  GRAD <- genD(par=PAR,fn=fn,lower=lower,upper=upper,parscale=parscale,Richardson=2,mc.cores=1)$grad
+  # GRAD <- numDeriv::grad(fn,PAR) # don't step outside of (0,1)
+  if("COV" %in% names(object))
+  { VAR <- c(GRAD %*% object$COV[NAMES,NAMES] %*% GRAD) } # emulate can lose features
+  else
+  { VAR <- Inf }
+
+  if(object$mean!="stationary")
+  {
+    fn <- function(p)
+    {
+      object$mu[] <- p
+      speed_deterministic(object)
+    }
+
+    GRAD <- genD(par=c(object$mu),fn=fn,Richardson=2,mc.cores=1)$grad
+    VAR2 <- aperm(object$COV.mu,c(2,1,3,4))
+    dim(VAR2) <- c(1,1)*length(GRAD)
+    VAR2 <- c(GRAD %*% VAR2 %*% GRAD)
+    VAR <- VAR + VAR2
+  }
+
+  R <- list(MEAN=MEAN,VAR=VAR,J=GRAD)
+  return(R)
 }

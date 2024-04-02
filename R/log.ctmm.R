@@ -67,11 +67,11 @@ log_ctmm <- function(CTMM,debias=FALSE,...)
 
     # fix signs
     if(isotropic[1]) { PARS <- "major" } else { PARS <- c("major","minor") }
-    # VAR goes in log numerator for chi^2 variates: variance, diffusion, MS speed, ...
+    # VAR goes in log numerator for unbiased chi^2 estimates: variance, diffusion, MS speed, ...
     for(i in 1:ncol(EIGEN$vectors)) { if(sum(EIGEN$vectors[PARS,i])<0) { EIGEN$vectors[,i] <- -EIGEN$vectors[,i] } }
 
     # transform to diagonalized basis with VARs in log numerator
-    par[SUB] <- t(EIGEN$vectors) %*% par[SUB] # diagonalize parameters
+    par[SUB] <- t(EIGEN$vectors) %*% par[SUB] # diagonalize log parameters
     DOF <- 2/EIGEN$values # log-chi^2 VAR-DOF relation
     BIAS <- log_chi2_bias(DOF) # negative bias for log(chi^2) variates
     BIAS <- pmax(BIAS,log_chi2_bias(1)) # clamp to 1 DOF

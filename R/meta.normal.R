@@ -259,7 +259,7 @@ meta.normal <- function(Y,SY=FALSE,X=FALSE,SX=FALSE,DSM=NULL,INT=TRUE,VARS=TRUE,
       if(COR)
       {
         D <- diag(sigma)
-        d <- sqrt(D)
+        d <- sqrt(abs(D))
         d[!vars | d<=.Machine$double.eps] <- 1
         d <- d %o% d
         sigma <- sigma/d
