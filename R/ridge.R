@@ -272,10 +272,11 @@ ridges.UD <- function(object,...)
 {
   # if(all(c('grad','hess') %nin% names(object))) { stop("Please run akde() with grad=TRUE") }
 
-  PDF <- object$PDF
-  PDF <- log(PDF) # log transform
-  # COST <- array(Inf,dim(PDF))
-  POINT <- array(0,dim(PDF))
+  LOG <- log(object$PDF) # log transform
+  # COST <- array(Inf,dim(LOG))
+  POINT <- array(0,dim(LOG))
+  CURVE <- POINT
+
   dx <- object$dr['x']
   dy <- object$dr['y']
   dx2 <- dx^2
@@ -283,17 +284,17 @@ ridges.UD <- function(object,...)
   dr2 <- dx^2+dy^2
   dxdydr2 <- dx*dy/dr2
 
-  ROWS <- 2:(nrow(PDF)-1)
-  # ROWS <- 1:nrow(PDF)
+  ROWS <- 2:(nrow(LOG)-1)
+  # ROWS <- 1:nrow(LOG)
   for(i in ROWS)
   {
-    COLS <- 2:(ncol(PDF)-1)
-    # COLS <- 1:ncol(PDF)
+    COLS <- 2:(ncol(LOG)-1)
+    # COLS <- 1:ncol(LOG)
     for(j in COLS)
     {
-      SUB <- PDF[i+(-1):1,j+(-1):1]
+      SUB <- LOG[i+(-1):1,j+(-1):1]
       TEST <- all(SUB>-Inf)
-      # TEST <- PDF[i,j]>0
+      # TEST <- LOG[i,j]>0
       if(TEST) # non-zero density (under logarithm)
       {
         # GRAD <- object$grad[i,j,]
@@ -347,9 +348,16 @@ ridges.UD <- function(object,...)
 
               POINT <- anti.alias(ip+u[1],jp+u[2],POINT,1/2)
               POINT <- anti.alias(ip-u[1],jp-u[2],POINT,1/2)
+
+              CURVE <- anti.alias(ip+u[1],jp+u[2],CURVE,-EIGEN$values[2]/2)
+              CURVE <- anti.alias(ip-u[1],jp-u[2],CURVE,-EIGEN$values[2]/2)
             } # point is in this pixel
             else # point is in adjacent pixel
-            { POINT <- anti.alias(ip,jp,POINT,1/8) }
+            {
+              POINT <- anti.alias(ip,jp,POINT,1/8)
+
+              CURVE <- anti.alias(ip,jp,CURVE,-EIGEN$values[2]/8)
+            }
           } # point is in nearby pixel
         } # end ridge exists
       } # end if non-zero density
@@ -358,12 +366,25 @@ ridges.UD <- function(object,...)
 
   # CTMM <- object@CTMM
   # DOF <- DOF.mean(CTMM)
-  # COST <- object$PDF * COST # cancel 1/p term
+  # COST <- PDF * COST # cancel 1/p term
   # COST <- DOF* COST # now like grad^2/std.err^2 ~ F
 
-  POINT <- POINT/(1+2/2+6/8)
-  POINT[POINT>1] <- 1
-  return(POINT)
+  # normalize all rasters
+  MAX <- 1+2/2+6/8
+  POINT <- POINT/MAX
+  CURVE <- CURVE/MAX
+
+  MAX <- pmax(POINT,1)
+  POINT <- POINT/MAX
+  CURVE <- CURVE/MAX
+
+  # average ridge curvature
+  CURVE <- sum(CURVE * object$PDF) / sum(POINT * object$PDF)
+  # average ridge width
+  WIDTH <- 1/sqrt(CURVE)
+
+  RETURN <- list(Indicator=POINT,Ave.Width=WIDTH)
+  return(RETURN)
 }
 
 
