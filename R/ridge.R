@@ -273,9 +273,9 @@ ridges.UD <- function(object,...)
   # if(all(c('grad','hess') %nin% names(object))) { stop("Please run akde() with grad=TRUE") }
 
   LOG <- log(object$PDF) # log transform
-  # COST <- array(Inf,dim(LOG))
   POINT <- array(0,dim(LOG))
-  CURVE <- POINT
+  CURVE <- array(0,dim(LOG))
+  #COST <- array(Inf,dim(LOG))
 
   dx <- object$dr['x']
   dy <- object$dr['y']
@@ -308,11 +308,11 @@ ridges.UD <- function(object,...)
         EIGEN <- eigen(HESS)
         if(EIGEN$values[2]<0) # most negative eigenvalue is negative # a ridge exists somewhere
         {
-          # COST[i,j] <- (GRAD %*% EIGEN$vectors[,2])^2 / EIGEN$values[2]
+          # COST[i,j] <- (GRAD %*% EIGEN$vectors[,2])^2 / ( -EIGEN$values[2] )
           # if(EIGEN$values[2]>0) { COST[i,j] <- COST[i,j] + EIGEN$values[1]/EIGEN$values[2] }
 
           # ridge constraint
-          # (GRAD + HESS %*% DL ) %*% EIGEN$vectors[,1] == 0
+          # (GRAD + HESS %*% DL ) %*% EIGEN$vectors[,2] == 0
 
           # 1. Lagrangian (minimal distance)
           # L == 1/2 * DL %*% DL - lambda * (GRAD + HESS %*% DL ) %*% EIGEN$vectors[,2]
@@ -379,9 +379,14 @@ ridges.UD <- function(object,...)
   CURVE <- CURVE/MAX
 
   # average ridge curvature
-  CURVE <- sum(CURVE * object$PDF) / sum(POINT * object$PDF)
+  SUB <- CURVE>0
+  WIDTH <- sum(CURVE[SUB] * object$PDF[SUB]) / sum(object$PDF[SUB])
   # average ridge width
-  WIDTH <- 1/sqrt(CURVE)
+  WIDTH <- 1/sqrt(WIDTH)
+
+  # curvature -> width
+  #CURVE[SUB] <- 1/sqrt(CURVE[SUB])
+  #CURVE[!SUB] <- 0
 
   RETURN <- list(Indicator=POINT,Ave.Width=WIDTH)
   return(RETURN)

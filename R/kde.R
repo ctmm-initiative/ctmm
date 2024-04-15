@@ -284,7 +284,7 @@ prepare.H <- function(H,n,axes=c('x','y'))
 # construct my own KDE objects
 # was using ks-package but it has some bugs
 # alpha is the error goal in my total probability
-kde <- function(data,H,axes=c("x","y"),CTMM=list(),SP=NULL,SP.in=TRUE,RASTER=list(),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr=NULL,grid=NULL,variable=NA,normalize=TRUE,trace=FALSE,grad=FALSE,...)
+kde <- function(data,H,axes=c("x","y"),CTMM=list(),SP=NULL,SP.in=TRUE,RASTER=list(),bias=FALSE,W=NULL,alpha=0.001,res=NULL,dr=NULL,grid=NULL,variable=NA,normalize=TRUE,trace=FALSE,grad=FALSE,truncate=TRUE,...)
 {
   DIM <- length(axes)
 
@@ -411,18 +411,21 @@ kde <- function(data,H,axes=c("x","y"),CTMM=list(),SP=NULL,SP.in=TRUE,RASTER=lis
   if(trace) { pb <- utils::txtProgressBar(style=3) } # time loops
   for(i in 1:n)
   {
-    # sub-grid lower/upper bound indices
-    i1 <- floor((r[i,]-dH[i,]-R0)/dr) + 1
-    i2 <- ceiling((r[i,]+dH[i,]-R0)/dr) + 1
+    if(truncate)
+    {
+      # sub-grid lower/upper bound indices
+      i1 <- floor((r[i,]-dH[i,]-R0)/dr) + 1
+      i2 <- ceiling((r[i,]+dH[i,]-R0)/dr) + 1
 
-    # constrain to within grid
-    i1 <- pmax(i1,1)
-    i2 <- pmin(i2,dim(PMF))
+      # constrain to within grid
+      i1 <- pmax(i1,1)
+      i2 <- pmin(i2,dim(PMF))
 
-    CHECK <- i2>=i1
-    if(any(!CHECK)) { stop("Grid incompatible with data.") }
+      CHECK <- i2>=i1
+      if(any(!CHECK)) { stop("Grid incompatible with data.") }
 
-    SUB <- lapply(1:length(i1),function(d){ i1[d]:i2[d] })
+      SUB <- lapply(1:length(i1),function(d){ i1[d]:i2[d] })
+    }
 
     # I can't figure out how to do these cases in one line?
     if(DIM==1) # 1D
