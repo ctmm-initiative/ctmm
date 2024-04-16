@@ -43,7 +43,7 @@ speed.ctmm <- function(object,data=NULL,t=NULL,level=0.95,robust=FALSE,units=TRU
     }
     else # elliptical velocity distribution
     {
-      MEAN <- speed_deterministic(object,finish=FALSE)
+      MEAN <- speed_deterministic(object)
 
       if(prior && fast)
       {
