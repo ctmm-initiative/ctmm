@@ -1,4 +1,7 @@
 ** PRIORITY
+* summary mean periodicity
+* summary(RSF,standardize=TRUE)
+* check cov.loglike warning off for rsf.select
 * mean of list of list of models needs an informative error message
 * settings to switch to BFGS and !numDeriv when the number of parameters is large
 * identify best effect size ratio from meta for user reporting

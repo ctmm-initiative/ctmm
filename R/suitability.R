@@ -98,7 +98,7 @@ R.suit <- function(R,CTMM,data=NULL,log=FALSE,VAR=FALSE)
   R <- R[,TERMS,drop=FALSE]
 
   SUB <- !apply(is.na(R),1,any)
-  R <- R[SUB,]
+  R <- R[SUB,,drop=FALSE]
 
   if(VAR)
   {

@@ -1,3 +1,6 @@
+OPTIM <- list()
+OPTIM$n.algo <- 10^5 # if length(par) is too large, switch to simpler optimizer
+
 ###################################
 # make a wrapper that applies optim then afterwards numDeriv, possibly on a boundary with one-sided derivatives if necessary
 optimizer <- function(par,fn,...,method="pNewton",lower=-Inf,upper=Inf,period=FALSE,reset=identity,control=list())

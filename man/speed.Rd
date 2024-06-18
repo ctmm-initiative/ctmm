@@ -53,7 +53,7 @@ The \code{cor.min} or \code{dt.max} arguments are used to constrain the estimate
 If data quality is poor and velocity can barely be resolved, then the sampling distribution may occassionally include impersistent motion and its mean will be infinite. In these cases \code{robust=TRUE} can be used to report the sampling distribution's median rather than its mean. The time average of \code{speed}, in either case, is still the mean average of times and the resulting quantity is still proportional to distance traveled. Furthermore, note that medians should be compared to medians and means to means, so the \code{robust} option should be the same for all compared individuals.
 }
 
-\value{ Returns the estimated mean speed of the sampled trajectory with CIs by default. If \code{level=NULL}, then the ensemble of mean speeds is returned instead. }
+\value{ Returns the estimated mean speed of the sampled trajectory with CIs by default. The \code{DOF} slot corresponds to a scaled-\eqn{\chi} sampling distribution. If \code{level=NULL}, then the ensemble of mean speeds is returned instead. }
 
 \references{
 M. J. Noonan, C. H. Fleming, T. S. Akre, J. Drescher-Lehman, E. Gurarie, A.-L. Harrison, R. Kays, Justin Calabrese,

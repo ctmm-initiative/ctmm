@@ -198,21 +198,19 @@ periodic.mean <- function(CTMM,t,verbose=TRUE,...)
   omega <- periodic.omega(CTMM)
   if(length(omega))
   {
-    omega <- nant(t %o% omega,0)
-    U <- cbind( U , cos(omega) , sin(omega) )
+    Omega <- nant(t %o% omega,0)
+    U <- cbind( U , riffle(sin(Omega),cos(Omega)) )
   }
 
-  # short periods cause colinearity, replace with taylor series
+  # short periods cause colinearity, replace with Taylor series
   dt <- last(t)-first(t)
-  BAD <- period > 2*pi*dt*10
+  BAD <- omega*dt < 1/10
   if(!verbose && any(BAD))
   {
-    BADS <- lapply(1:length(period),function(i){rep(BAD[i],harmonic[i])})
-    BADS <- c(FALSE,unlist(BADS))
-
-    BADS <- which(BADS)
-    for(i in 1%:%length(BADS))
-    { U[,BADS[i]] <- t^i }
+    BAD <- viffle(BAD,BAD)
+    t <- omega*t
+    BAD <- which(BAD)
+    U[,1+BAD] <- outer(t,1:length(BAD),"^")
   }
 
   return(U)
@@ -231,7 +229,7 @@ periodic.velocity <- function(CTMM,t,...)
   if(length(omega))
   {
     theta <- omega %o% t # backwards for multiplication by first dimension
-    U <- cbind( U , -t(omega*sin(theta)) , t(omega*cos(theta)) )
+    U <- cbind( U , riffle( t(omega*cos(theta)) , -t(omega*sin(theta)) ) )
   }
 
   return(U)
@@ -464,6 +462,7 @@ periodic.omega <- function(CTMM)
 # useful info from periodic mean function parameters
 periodic.stuff <- function(CTMM)
 {
+  AXES <- length(CTMM$axes)
   harmonic <- CTMM$harmonic
   period <- CTMM$period
   omega <- periodic.omega(CTMM)
@@ -478,7 +477,7 @@ periodic.stuff <- function(CTMM)
   # default uncertainty of none
   if(is.null(COV)) { COV <- 0 }
   # default structure
-  COV <- array(COV,c(2,2*k+1,2*k+1,2))
+  COV <- array(COV,c(AXES,2*k+1,2*k+1,AXES))
 
   # delete stationary coefficients
   A <- A[-1,,drop=FALSE]
@@ -486,15 +485,15 @@ periodic.stuff <- function(CTMM)
   COV <- COV[,,-1,,drop=FALSE]
 
   # structure omega like A
-  omega <- c(omega,omega)
-  omega <- cbind(omega,omega)
+  omega <- viffle(omega,omega) # riffle(sin,cos)
+  omega <- cbind(omega,omega) # cbind(x,y)
   # this is now (2k)*2
 
   # flatten block-vectors and block-matrices
-  A <- array(A,(2*k)*2)
-  omega <- array(omega,(2*k)*2)
+  A <- array(A,(2*k)*AXES)
+  omega <- array(omega,(2*k)*AXES)
   COV <- aperm(COV,c(2,1,3,4))
-  COV <- array(COV,c((2*k)*2,(2*k)*2))
+  COV <- array(COV,c((2*k)*AXES,(2*k)*AXES))
 
   return(list(A=A,COV=COV,omega=omega))
 }

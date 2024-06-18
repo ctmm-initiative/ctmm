@@ -119,14 +119,34 @@ outer <- function(X,Y=X,FUN="*",...) { base::outer(X,Y,FUN=FUN,...) }
 
 
 # riffle columns of two matrices
-riffle <- function(u,v,by=1)
+# riffle <- function(u,v,by=1)
+# {
+#   DIM <- dim(u) # (row,col)
+#   SUB <- 0:(by-1)
+#   u <- vapply(seq(1,DIM[2],by),function(i){cbind(u[,i+SUB],v[,i+SUB])},array(0,c(DIM[1],2*by))) # (row,2*by,col/by)
+#   dim(u) <- c(DIM[1],2*DIM[2])
+#   return(u)
+# }
+
+# riffle columns of matrices
+riffle <- function(...)
 {
-  DIM <- dim(u) # (row,col)
-  SUB <- 0:(by-1)
-  u <- vapply(seq(1,DIM[2],by),function(i){cbind(u[,i+SUB],v[,i+SUB])},array(0,c(DIM[1],2*by))) # (row,2*by,col/by)
-  dim(u) <- c(DIM[1],2*DIM[2])
-  return(u)
+  args <- list(...)
+  # make vectors into matrices
+  args <- lapply(args,cbind)
+
+  DIM <- dim(args[[1]])
+  DIM[2] <- DIM[2] * length(args)
+
+  args <- do.call(rbind,args)
+  dim(args) <- DIM
+
+  return(args)
 }
+
+# riffle entries of vectors
+viffle <- function(...)
+{ c( rbind( ... ) ) }
 
 
 # adjoint of matrix

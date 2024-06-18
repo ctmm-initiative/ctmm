@@ -32,6 +32,7 @@ mean.mu <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",...)
   # Gaussian-Gaussian in all cases
   MU <- array(0,c(N,AXES*M))
   SIGMA <- array(0,c(N,AXES*M,AXES*M))
+  INF <- array(TRUE,c(N,AXES*M)) # missing data
 
   if(M==1)
   {
@@ -51,7 +52,9 @@ mean.mu <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",...)
 
     MU[i,SUB] <- c(x[[i]]$mu)
     SIGMA[i,SUB,SUB] <- flatten.cov.mu(x[[i]]$COV.mu)
+    INF[i,SUB] <- FALSE
   }
+  DOF <- colSums(!INF) # amount of data per mode
 
   # list of candidate models
   MM <- list()
@@ -62,22 +65,59 @@ mean.mu <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",...)
   MM[[S]] <- meta.normal(MU,SIGMA,VARS=FALSE,isotropic=TRUE,debias=debias,weights=weights,WARN=FALSE,...)
   GUESS <- MM[[S]]
 
-  # symmetric mean distribution
-  if(AXES*M*N >= AXES*M+1)
+  if(M==1) # stationary
   {
-    S <- "isotropic-\u03BC"
-    if(trace) { message("Fitting location-mean model ",S) }
-    MM[[S]] <- meta.normal(MU,SIGMA,isotropic=TRUE,debias=debias,weights=weights,GUESS=GUESS,WARN=FALSE,...)
-    GUESS <- MM[[S]]
-
-    # general distribution
-    if(AXES*M*N >= AXES*M+(AXES*M*(AXES*M+1))/2)
+    DOF <- sum(DOF)
+    if(DOF > AXES*M) # can support a variance
     {
-      S <- "anisotropic-\u03BC"
+      # symmetric mean distribution
+      S <- "isotropic-\u03BC"
       if(trace) { message("Fitting location-mean model ",S) }
-      MM[[S]] <- meta.normal(MU,SIGMA,debias=debias,weights=weights,GUESS=GUESS,WARN=FALSE,...)
+      MM[[S]] <- meta.normal(MU,SIGMA,isotropic=TRUE,debias=debias,weights=weights,GUESS=GUESS,WARN=FALSE,...)
+      GUESS <- MM[[S]]
+
+      # can support a covariance
+      if(DOF > AXES*M + (AXES*M*(AXES*M+1))/2)
+      {
+        S <- "anisotropic-\u03BC"
+        if(trace) { message("Fitting location-mean model ",S) }
+        MM[[S]] <- meta.normal(MU,SIGMA,debias=debias,weights=weights,GUESS=GUESS,WARN=FALSE,...)
+      }
+    } # end if sum(DOF) > AXES*M
+  } # end if M==1 stationary
+  else # non-stationary
+  {
+    VAR <- DOF>1
+    if(any(VAR))
+    {
+      # truncated block diagonal
+      VARS <- diag(VAR)
+      S <- "VAR[\u03BC]"
+      if(trace) { message("Fitting location-mean model ",S) }
+      MM[[S]] <- meta.normal(MU,SIGMA,VARS=VARS,debias=debias,weights=weights,GUESS=GUESS,WARN=FALSE,...)
+      GUESS <- MM[[S]]
+
+      dofs <- sort(unique(DOF),decreasing=TRUE)
+      dofs <- dofs[dofs>1]
+      # build up correlations
+      for(d in dofs)
+      {
+        SUB <- DOF>=d
+        VARS[SUB,SUB] <- TRUE
+        if(sum(VARS) <= sum(DOF[diag(VARS)]))
+        {
+          # truncated unstructured
+          VARS <- diag(VAR)
+          S <- paste0("COV[\u03BC] ",sum(SUB),"/",length(SUB))
+          if(trace) { message("Fitting location-mean model ",S) }
+          MM[[S]] <- meta.normal(MU,SIGMA,VARS=VARS,debias=debias,weights=weights,GUESS=GUESS,WARN=FALSE,...)
+          GUESS <- MM[[S]]
+        }
+        else # ran out of data
+        { break }
+      } # end correlation build up
     }
-  }
+  } # end non-stationary
 
   ICS <- sapply(MM,function(m){m[[IC]]})
   names(ICS) <- names(MM)
