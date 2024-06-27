@@ -110,7 +110,7 @@ SpatialPolygonsDataFrame.UD <- function(object,level.UD=0.95,level=0.95,convex=F
         }
 
         CHANGE <- FALSE
-        for(j in 1:nrow(MINS))
+        for(j in 1:nrow(MATCH))
         {
           k <- MATCH[j]
           if(seg.id(j)!=seg.id(k))
