@@ -53,12 +53,12 @@ sdm.integrate <- function(biased=NULL,bias=NULL,unbiased=NULL)
     PAR <- names(biased.beta)
     biased.COV <- biased$COV[PAR,PAR]
     # precision matrix
-    biased.PRE <- PDsolve(biased.COV)
+    biased.PRE <- pd.solve(biased.COV)
 
     bias.beta <- bias$beta
     PAR <- names(bias.beta)
     bias.COV <- bias$COV[PAR,PAR]
-    bias.PRE <- PDsolve(bias.COV)
+    bias.PRE <- pd.solve(bias.COV)
 
     PAR <- unique(c(names(biased.beta),names(bias.beta)))
     biased.beta <- copy.beta(biased.beta)
@@ -71,7 +71,7 @@ sdm.integrate <- function(biased=NULL,bias=NULL,unbiased=NULL)
 
     # just in case this is everything
     beta <- debiased.beta
-    COV <- PDsolve(debiased.PRE)
+    COV <- pd.solve(debiased.PRE)
   }
   else
   {
@@ -90,7 +90,7 @@ sdm.integrate <- function(biased=NULL,bias=NULL,unbiased=NULL)
     unbiased.beta <- unbiased$beta
     PAR <- names(unbiased.beta)
     unbiased.COV <- unbiased$COV[PAR,PAR]
-    unbiased.PRE <- PDsolve(unbiased.COV)
+    unbiased.PRE <- pd.solve(unbiased.COV)
 
     PAR <- unique(c(names(debiased.beta),names(bias.beta)))
     debiased.beta <- copy.beta(debiased.beta)
@@ -99,7 +99,7 @@ sdm.integrate <- function(biased=NULL,bias=NULL,unbiased=NULL)
     unbiased.PRE <- copy.PRE(unbiased.PRE)
 
     PRE <- debiased.PRE + unbiased.PRE
-    COV <- PDsolve(PRE)
+    COV <- pd.solve(PRE)
     beta <- c( debiased.PRE %*% COV %*% debiased.beta + unbiased.PRE %*% COV %*% unbiased.beta )
     names(beta) <- PAR
   }

@@ -156,7 +156,7 @@ genD.mcDeriv <- function(par,fn,zero=0,lower=-Inf,upper=Inf,PERIOD=F,step=NULL,c
     covariance[!BOX,BOX] <- 0
   }
   stddev <- sqrtm(covariance)
-  stdize <- PDsolve(stddev)
+  stdize <- pd.solve(stddev)
 
   # initialize gradient and hessian
   grad <- array(0,DIM)

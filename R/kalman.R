@@ -194,6 +194,7 @@ Langevin <- function(t,dt=c(Inf,diff(t)),CTMM,DIM=1)
     for(i in 1:n)
     {
       # does the time lag change values? Then update the propagators.
+      # TODO unique time calculation for stationary models
       if(i==1 || dt[i] != dt[i-1])
       { LANGEVIN <- langevin(dt=dt[i],CTMM=CTMM,DIM=DIM) }
 
@@ -318,7 +319,7 @@ kalman <- function(z,u,t=NULL,dt=c(Inf,diff(t)),CTMM,error=NULL,DIM=1,smooth=FAL
       # forecast residuals
       zRes[i,,] <- zRes[i,,] - (t(P) %*% zFor[i,,]) # (OBS*DIM,VEC) # zRes is initially just z
 
-      Gain <- sForP %*% PDsolve(sRes[i,,]) # (K*DIM,OBS*DIM) # updated to invert Inf uncertainty to 0
+      Gain <- sForP %*% pd.solve(sRes[i,,]) # (K*DIM,OBS*DIM) # updated to invert Inf uncertainty to 0
       # 0/0 NaN have Gain of 1 (P) # # Inf*epsilon have Gain of 1 (P)
       INF <- is.nan(Gain) | (Gain==Inf)
       if(any(INF)) { Gain[INF] <- P[INF] }
@@ -389,7 +390,7 @@ kalman <- function(z,u,t=NULL,dt=c(Inf,diff(t)),CTMM,error=NULL,DIM=1,smooth=FAL
         rm(u)
       }
 
-      isRes <- vapply(1:n,function(i){PDsolve(sRes[i,,])},diag(OBS*DIM)) # (OBS*DIM,OBS*DIM,n)
+      isRes <- vapply(1:n,function(i){pd.solve(sRes[i,,])},diag(OBS*DIM)) # (OBS*DIM,OBS*DIM,n)
       dim(isRes) <- c(OBS*DIM,OBS*DIM,n) # R arrays are awful
       uisRes <- vapply(1:n,function(i){isRes[,,i] %*% zRes[i,,MEAN]},array(0,c(OBS*DIM,length(MEAN)))) # (OBS*DIM,MEAN,n) - dont need data terms
       dim(uisRes) <- c(OBS*DIM,length(MEAN),n) # R arrays are awful
@@ -407,8 +408,8 @@ kalman <- function(z,u,t=NULL,dt=c(Inf,diff(t)),CTMM,error=NULL,DIM=1,smooth=FAL
       {
         D <- as.matrix(uisRes %*% zRes[,DATA]) # (MEAN,DATA) quadratic terms
         W <- as.matrix(uisRes %*% zRes[,MEAN]) # (MEAN,MEAN)
-        # iW <- PDsolve(W) # (MEAN,MEAN)
-        iW <- PDsolve(W,force=TRUE) # (MEAN,MEAN)
+        # iW <- pd.solve(W) # (MEAN,MEAN)
+        iW <- pd.solve(W,semi=FALSE) # (MEAN,MEAN)
 
         M.MEAN <- MEAN
         M.DATA <- DATA
@@ -432,7 +433,7 @@ kalman <- function(z,u,t=NULL,dt=c(Inf,diff(t)),CTMM,error=NULL,DIM=1,smooth=FAL
         SUB1 <- seq(1,length(M.MEAN),2) # x,x terms
         SUB2 <- seq(2,length(M.MEAN),2) # y,y terms
         W[SUB1,SUB1] <- W[SUB2,SUB2] <- (uisRes[SUB1,] %*% zRes[,length(M.DATA)+SUB1]) # x,x==y,y  &&  x,y=0
-        iW[SUB1,SUB1] <- iW[SUB2,SUB2] <- PDsolve(W[SUB1,SUB1])
+        iW[SUB1,SUB1] <- iW[SUB2,SUB2] <- pd.solve(W[SUB1,SUB1])
       }
       # if DIM==1, dim(D)==c(M,2), else dim(D)==c(2*M,1) - reversed order
       rm(uisRes)
@@ -554,7 +555,7 @@ kalman <- function(z,u,t=NULL,dt=c(Inf,diff(t)),CTMM,error=NULL,DIM=1,smooth=FAL
     {
       # Inf * 0 -> 0
       TL <- nant( sCon[i,,] %*% t(Green[i+1,,]) ,0)
-      INV <- PDsolve(sFor[i+1,,],force=TRUE,tol=0)
+      INV <- pd.solve(sFor[i+1,,],semi=FALSE)
       # 0/0 & Inf/Inf -> 1
       #NAN <- diag(TL)==0 & diag(INV)==Inf
       # Inf * 1 -> Inf # even though off-diagnals contribute Inf * 0

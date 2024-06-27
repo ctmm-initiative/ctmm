@@ -1,5 +1,6 @@
-ctmm 1.2.1 (2023-06-17)
+ctmm 1.2.1 (2023-06-26)
 ================
+* new functions pd.solve(), pd.logdet(), pd.sqrtm() for covariance matrix operations
 * periodic mean functions now estimate frequency
 * periodic mean summary now uses beta CIs
 * mean.ctmm() now works on periodic means
@@ -15,6 +16,7 @@ ctmm 1.2.1 (2023-06-17)
 * plot() argument 'col.DF' renamed to 'col.UD'
 * improvements DOF[area] calculations in mean() and pkde()
 * improvement to optimizer() when initial guess is on a boundary and hessian is bad
+* bugfix in polygon export from bad output from grDevices::contourLines()
 * bugfix in rsf.select with functions in formulas
 * bugfix in raster factor expansion with more than one raster factor
 * bugfix in normal meta-analysis REML correction

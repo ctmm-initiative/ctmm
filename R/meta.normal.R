@@ -365,7 +365,7 @@ meta.normal <- function(Y,SY=FALSE,X=FALSE,SX=FALSE,DSM=NULL,INT=TRUE,VARS=TRUE,
     {
       S[i,,] <- sigma + SY[i,,]
       if(BDIM) { S[i,,] <- S[i,,] + t(BETA) %*% SX[i,,] %*% BETA } # model-2 regression
-      P[i,,] <- PDsolve(S[i,,],force=TRUE) # finite and infinite weights
+      P[i,,] <- pd.solve(S[i,,],semi=FALSE) # finite and infinite weights
     }
     P.INF <- P==Inf # infinite weights
     P[P.INF] <- 0 # all finite weights now, will re-introduce Inf after to avoid NaNs
@@ -402,9 +402,9 @@ meta.normal <- function(Y,SY=FALSE,X=FALSE,SX=FALSE,DSM=NULL,INT=TRUE,VARS=TRUE,
     } # end for(i in 1:N)
 
     if(beta.fixed) # mu | beta, var
-    { COV.mu[MI,MI] <- PDsolve(P.mu[MI,MI],force=TRUE) }
+    { COV.mu[MI,MI] <- pd.solve(P.mu[MI,MI],semi=FALSE) }
     else # mu, beta | var
-    { COV.mu <- PDsolve(P.mu,force=TRUE) }
+    { COV.mu <- pd.solve(P.mu,semi=FALSE) }
 
     mu <- c(COV.mu %*% mu)
     if(beta.fixed)
@@ -420,8 +420,8 @@ meta.normal <- function(Y,SY=FALSE,X=FALSE,SX=FALSE,DSM=NULL,INT=TRUE,VARS=TRUE,
     zero <- 2/N*(zero + (N*DIM-REML*(MDIM+BDIM))/2*log(2*pi) ) # for below
     loglike <- 0
     # REML correction # - DIM*(N-REML)/2*log(2*pi)
-    loglike <- loglike - REML/2*PDlogdet(P.mu,force=TRUE) # approximate but complete
-    # loglike <- loglike - REML/2*PDlogdet(P.mu[MI,MI],force=TRUE) # incomplete but exact
+    loglike <- loglike - REML/2*pd.logdet(P.mu,semi=FALSE) # approximate but complete
+    # loglike <- loglike - REML/2*pd.logdet(P.mu[MI,MI],semi=FALSE) # incomplete but exact
 
     # fill in missing
     MU <- numeric(DIM)
@@ -443,7 +443,7 @@ meta.normal <- function(Y,SY=FALSE,X=FALSE,SX=FALSE,DSM=NULL,INT=TRUE,VARS=TRUE,
     for(i in 1:N)
     {
       # set aside infinite uncertainty measurements
-      loglike <- loglike - weights[i]/2*( PDlogdet(cbind(S[i,OBS[i,],OBS[i,]]),force=TRUE) + max(c(Y[i,] %*% P[i,,] %*% Y[i,]),0) + zero )
+      loglike <- loglike - weights[i]/2*( pd.logdet(cbind(S[i,OBS[i,],OBS[i,]]),semi=FALSE) + max(c(Y[i,] %*% P[i,,] %*% Y[i,]),0) + zero )
 
       # gradient with respect to sigma, under sum and trace
       if(verbose)
@@ -486,7 +486,7 @@ meta.normal <- function(Y,SY=FALSE,X=FALSE,SX=FALSE,DSM=NULL,INT=TRUE,VARS=TRUE,
       }
 
       # method 1 (faster)
-      # K <- PDsolve(LHS) # sigma
+      # K <- pd.solve(LHS) # sigma
 
       # method 2 (slower)
       K <- sqrtm(sigma[vars,vars],pseudo=TRUE) %*% PDfunc(LHS,function(m){1/sqrt(m)},pseudo=TRUE) # sigma
@@ -606,7 +606,7 @@ meta.normal <- function(Y,SY=FALSE,X=FALSE,SX=FALSE,DSM=NULL,INT=TRUE,VARS=TRUE,
       {
         E <- (NSOL$sigma - SOL$sigma)[vars,vars] # absolute error
         E <- E %*% E # square to make positive
-        K <- PDsolve(NSOL$sigma[vars,vars],pseudo=TRUE)
+        K <- pd.solve(NSOL$sigma[vars,vars],pseudo=TRUE)
         E <- K %*% E %*% K # standardize to make ~1 unitless
         ERROR <- sum(abs(diag(E)),na.rm=TRUE)
       }

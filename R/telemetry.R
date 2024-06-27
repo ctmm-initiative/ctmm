@@ -736,8 +736,13 @@ as.telemetry.data.frame <- function(object,timeformat="auto",timezone="UTC",proj
       # missing zone
       if(is.null(zone))
       {
-        message('UTM zone missing; assuming UTM zone="1 +north".')
-        zone <- rep("1 +north",nrow(XY))
+        message('UTM zone missing; assuming UTM zone="1N".')
+        zone <- rep("1",nrow(XY))
+      }
+      else
+      {
+        zone <- gsub("N","",zone)
+        zone <- gsub("S"," +south",zone)
       }
 
       # missing hemisphere / latitude

@@ -93,7 +93,7 @@ optimizer <- function(par,fn,...,method="pNewton",lower=-Inf,upper=Inf,period=FA
 
 ## search up to and and then along a boundary/period (recursively)
 # this is used by NR step only, not by line-search algorithm
-box.search <- function(p0,grad,hess,cov=PDsolve(hess),lower=-Inf,upper=Inf,period=F,period.max=1/2)
+box.search <- function(p0,grad,hess,cov=pd.solve(hess),lower=-Inf,upper=Inf,period=F,period.max=1/2)
 {
   # how far we can go before boundary
   n <- length(p0)
@@ -426,9 +426,9 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
   }
   # preconditioning is safe
   if(!is.null(covariance))
-  { hessian <- PDsolve(covariance) }
+  { hessian <- pd.solve(covariance) }
   else if(!is.null(hessian))
-  { covariance <- PDsolve(hessian) }
+  { covariance <- pd.solve(hessian) }
   else # use parscale to start
   {
     covariance <- diag(1,DIM) # inverse hessian
@@ -835,7 +835,7 @@ mc.optim <- function(par,fn,...,lower=-Inf,upper=Inf,period=FALSE,reset=identity
       {
         FREE <- !BOXED # now the free dimensions
 
-        if(any(BOXED) && any(FREE)) { COV <- PDsolve(hessian[FREE,FREE]) }
+        if(any(BOXED) && any(FREE)) { COV <- pd.solve(hessian[FREE,FREE]) }
         else { COV <- covariance } # avoid costly matrix inversion if possible
 
         if(!CG.RESET) # continue with preconditioned conjugate gradient

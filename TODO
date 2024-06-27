@@ -1,5 +1,9 @@
 ** PRIORITY
+* code predict and simulate and speeds to accept timestamps
+* Raster plot categoricals in different colors, and change default color gradient from yellow to green
+* hex sticker
 * summary mean periodicity
+* revisitation amounts
 * summary(RSF,standardize=TRUE)
 * check cov.loglike warning off for rsf.select
 * mean of list of list of models needs an informative error message

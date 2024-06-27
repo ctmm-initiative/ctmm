@@ -481,7 +481,7 @@ COV.covm <- function(sigma,n,k=1,REML=TRUE)
     # gradient matrix d sigma / d par
     grad <- J.sigma.par(par)
     # gradient matrix d par / d sigma via inverse function theorem
-    grad <- PDsolve(grad,sym=FALSE)
+    grad <- pd.solve(grad,sym=FALSE)
 
     COV <- (grad) %*% COV %*% t(grad)
     COV <- nant(COV,0) # 0/0 for inactive

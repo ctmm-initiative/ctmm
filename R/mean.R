@@ -67,7 +67,7 @@ stationary.init <- function(CTMM,data=NULL,...)
   # IID estimate for (error + 0 movement) || (movement + 0 error)
 
   if(is.null(CTMM$mu))
-  { CTMM$mu <- PDsolve(t(u) %*% (w * u)) %*% (t(u) %*% (w * z)) }
+  { CTMM$mu <- pd.solve(t(u) %*% (w * u)) %*% (t(u) %*% (w * z)) }
 
   # don't return variance if no variance
   if(!CTMM$range || !is.null(CTMM$sigma)) { return(CTMM) }

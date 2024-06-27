@@ -307,7 +307,7 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,AICc=FALSE,iterate=FALSE,robu
       {
         BIAS <- AVE - P0 # fixed for multiple iterations
         # ERROR <- sqrt(sum(BIAS^2/diag(COV))/length(NAMES)/N)
-        ERROR <- sqrt(c(BIAS %*% PDsolve(COV) %*% BIAS)/length(NAMES)/N)
+        ERROR <- sqrt(c(BIAS %*% pd.solve(COV) %*% BIAS)/length(NAMES)/N)
         if(is.nan(ERROR)) { ERROR <- Inf }
       }
 
@@ -318,7 +318,7 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,AICc=FALSE,iterate=FALSE,robu
 
     ## recalculate error & store best model
     ERROR <- AVE - EST # how far off were we?
-    ERROR <- sqrt(abs(c(ERROR %*% PDsolve(COV) %*% ERROR))/length(NAMES))
+    ERROR <- sqrt(abs(c(ERROR %*% pd.solve(COV) %*% ERROR))/length(NAMES))
     if(is.nan(ERROR)) { ERROR <- Inf }
 
     # check to make sure relative error is decreasing

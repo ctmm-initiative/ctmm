@@ -555,7 +555,7 @@ bandwidth.pop <- function(data,UD,kernel="individual",weights=FALSE,ref="Gaussia
         else if(kernel=="population")
         { SIG <- methods::getDataPart(CTMM[[i]]$sigma) + methods::getDataPart(CTMM[[j]]$sigma) + 2*H.M }
 
-        Q[i,j] <- Q[j,i] <- exp(-(MU %*% PDsolve(SIG) %*% MU)/2) / sqrt(det(SIG))
+        Q[i,j] <- Q[j,i] <- exp(-(MU %*% pd.solve(SIG) %*% MU)/2) / sqrt(det(SIG))
       }
     }
 
@@ -571,7 +571,7 @@ bandwidth.pop <- function(data,UD,kernel="individual",weights=FALSE,ref="Gaussia
       else if(kernel=="population")
       { SIG <- methods::getDataPart(MEAN$sigma) + methods::getDataPart(CTMM[[i]]$sigma) + H.M }
 
-      L[i] <- exp(-(MU %*% PDsolve(SIG) %*% MU)/2) / sqrt(det(SIG))
+      L[i] <- exp(-(MU %*% pd.solve(SIG) %*% MU)/2) / sqrt(det(SIG))
     }
 
     # correct non-Gaussian overlap
@@ -589,7 +589,7 @@ bandwidth.pop <- function(data,UD,kernel="individual",weights=FALSE,ref="Gaussia
       # # w = solve(Q).(L+lambda*1)
       # # 1 = 1.solve(Q).L + 1.solve(Q).1 * lambda
       # # lambda = (1-1.solve(Q).L)/(1.solve(Q).1)
-      # iQ <- PDsolve(Q)
+      # iQ <- pd.solve(Q)
       # lambda <- (1-sum(iQ%*%L))/sum(iQ)
       # w <- c( iQ %*% (L+lambda) )
 

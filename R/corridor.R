@@ -202,7 +202,7 @@ corridor <- function(data,CTMM,res.space=10,res.time=100,window=1%#%'day',grid=l
 
       # update location prediction
       if(E[[i]][t,1,1]+E[[i]][t,2,2] > 2*.Machine$double.eps)
-      { M[[i]][t,] <- mu + sigma %*% PDsolve(sigma+E[[i]][t,,]) %*% (M[[i]][t,]-mu) }
+      { M[[i]][t,] <- mu + sigma %*% pd.solve(sigma+E[[i]][t,,]) %*% (M[[i]][t,]-mu) }
 
       # conservative variance
       # VAR[t,i] <- sum(sapply(1:n,function(j){(X[[j]][t,]-M[[i]][t,])^2})) / (2*(n-1))

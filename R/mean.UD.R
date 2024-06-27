@@ -26,9 +26,9 @@ mean.UD <- function(x,weights=NULL,sample=TRUE,...)
 
   # harmonic mean bandwidth matrix
   H <- 0
-  for(i in 1:n) { H <- H + weights[i] * PDsolve(x[[i]]$H) }
+  for(i in 1:n) { H <- H + weights[i] * pd.solve(x[[i]]$H) }
   H <- H/WEIGHT
-  H <- PDsolve(H)
+  H <- pd.solve(H)
 
   info <- mean_info(x)
   type <- unique(sapply(x,function(y){attr(y,"type")}))

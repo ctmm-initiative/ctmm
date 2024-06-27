@@ -78,12 +78,59 @@ SpatialPolygonsDataFrame.UD <- function(object,level.UD=0.95,level=0.95,convex=F
   P <- c(P)
   ID <- c(ID)
 
+  seg.id <- function(id) { ifelse(id<=length(CL),id,id-length(CL)) }
+  seg.rv <- function(id) { id <- seg.id(id); CL[[id]]$x <<- rev(CL[[id]]$x) ; CL[[id]]$y <<- rev(CL[[id]]$y) }
+
   polygons <- list()
   for(i in 1:length(P))
   {
     if(!convex)
     {
+      options(max.contour.segments=.Machine$integer.max)
       CL <- contourLines(UD,levels=P[i])
+
+      CHANGE <- TRUE
+      while(CHANGE && length(CL)>1) # segment join loop
+      {
+        ## join contour segments ## contourLines can fail to join segments into complete polygons
+        DIST <- array(0,c(2*length(CL),2))
+        DIST[1:length(CL),] <- t( sapply(CL,function(cl){c(cl$x[1],cl$y[1])}) )
+        DIST[length(CL)+1:length(CL),] <- t( sapply(CL,function(cl){c(last(cl$x),last(cl$y))}) )
+        DIST <- outer(DIST[,1],FUN='-')^2 + outer(DIST[,2],FUN='-')^2
+        diag(DIST) <- Inf
+
+        MINS <- sort(DIST,index.return=TRUE)$ix
+        MINS <- arrayInd(MINS,dim(DIST))
+
+        MATCH <- array(0,2*length(CL))
+        for(j in nrow(MINS):1)
+        {
+          MATCH[MINS[j,1]] <- MINS[j,2]
+          MATCH[MINS[j,2]] <- MINS[j,1]
+        }
+
+        CHANGE <- FALSE
+        for(j in 1:nrow(MINS))
+        {
+          k <- MATCH[j]
+          if(seg.id(j)!=seg.id(k))
+          {
+            # connect to the tail of i
+            if(j<=seg.id(j)) { seg.rv(j) }
+            j <- seg.id(j)
+
+            # connect to the beginning of j
+            if(k>seg.id(k)) { seg.rv(k) }
+            k <- seg.id(k)
+
+            CL[[j]]$x <- c( CL[[j]]$x , CL[[k]]$x )
+            CL[[j]]$y <- c( CL[[j]]$y , CL[[k]]$y )
+            CL <- CL[-k]
+            CHANGE <- TRUE
+            break
+          } # made change and re-calculated distances
+        } # no changes made, consider next match
+      } # no more disconnected segments
 
       # create contour heirarchy matrix (half of it)
       H <- array(0,c(1,1)*length(CL))

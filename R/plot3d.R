@@ -119,7 +119,7 @@ mesh3d.UD <- function(UD,level.UD=0.95)
   #
   #   X <- t(M) %*% X
   #   M <- t(M) %*% M
-  #   M <- PDsolve(M)
+  #   M <- pd.solve(M)
   #   X <- M %*% X # this is now (x,y,z) for lambda
   #
   #   if(return.X) { return(X) }
@@ -165,7 +165,7 @@ mesh3d.UD <- function(UD,level.UD=0.95)
 
           V <- t(M) %*% V
           M <- t(M) %*% M
-          M <- PDsolve(M)
+          M <- pd.solve(M)
           V <- M %*% V # coefficients
 
           # minimize distance from center while constrained to surface

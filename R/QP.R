@@ -352,7 +352,7 @@ PQP.solve <- function(G,FLOOR=NULL,p=NULL,lag=NULL,error=.Machine$double.eps,PC=
   #   B <- sapply(V,sum)
   #
   #   # safe solver in case of colinearity
-  #   A <- PDsolve(M,pseudo=TRUE) %*% B
+  #   A <- pd.solve(M,pseudo=TRUE) %*% B
   #
   #   V <- lapply(1:k,function(i) { A[i] * V[[i]] })
   #   G.V <- lapply(1:k,function(i) { A[i] * G.V[[i]] })

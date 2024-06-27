@@ -63,7 +63,7 @@ DOF.wishart <- function(CTMM)
   EST <- SIGMA@par[PAR]
   DOF <- CTMM[['COV']][PAR,PAR]
   if(length(DOF)==length(PAR)^2)
-  { DOF <- (2/AXES) * c(EST %*% PDsolve(DOF) %*% EST) } # average multiple DOFs if not Wishart
+  { DOF <- (2/AXES) * c(EST %*% pd.solve(DOF) %*% EST) } # average multiple DOFs if not Wishart
   if(length(DOF)==0) { DOF <- 0 }
   return(DOF)
 }
@@ -136,7 +136,7 @@ overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,method="Bhattach
   n2 <- soft.clamp(n2,DIM)
 
   # expectation value of log det Wishart
-  ElogW <- function(s,n,add=TRUE) { add*PDlogdet(s) + mpsigamma(n/2,dim=DIM) - DIM*log(n/2) }
+  ElogW <- function(s,n,add=TRUE) { add*pd.logdet(s) + mpsigamma(n/2,dim=DIM) - DIM*log(n/2) }
 
   # inverse Wishart expectation value pre-factor
   BIAS <- nant( n0/(n0-DIM-1) ,1)
@@ -146,7 +146,7 @@ overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,method="Bhattach
   { BIAS <- BIAS - 1 } # subtractive rather than multiplicative treatment
 
   # mean terms
-  BIAS <- sum(diag((BIAS*outer(mu) + COV.mu) %*% PDsolve(sigma)))
+  BIAS <- sum(diag((BIAS*outer(mu) + COV.mu) %*% pd.solve(sigma)))
   if(method=="Bhattacharyya")
   {
     BIAS <- BIAS/8

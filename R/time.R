@@ -87,7 +87,7 @@ get.sundial <- function(object,CTMM=NULL,twilight="civil",dt.max=6 %#% 'hr')
     {
       M <- c( t[2]-t[1], t[3]-t[1] )
       M <- cbind(M,M^2)
-      M <- c(PDsolve(M) %*% c(a[2]-a[1],a[3]-a[1]))
+      M <- c(pd.solve(M) %*% c(a[2]-a[1],a[3]-a[1]))
       t <- object$t[i] - t[1]
       t <- c(t,t^2)
       angle[i] <- a[1] + sum(M * t)

@@ -8,7 +8,7 @@ BhattacharyyaD <- function(CTMM)
   sigma <- (CTMM1$sigma + CTMM2$sigma)/2
   mu <- CTMM1$mu[1,] - CTMM2$mu[1,]
 
-  D <- as.numeric(mu %*% PDsolve(sigma) %*% mu)/8 + log(det(sigma)/sqrt(det(CTMM1$sigma)*det(CTMM2$sigma)))/2
+  D <- as.numeric(mu %*% pd.solve(sigma) %*% mu)/8 + log(det(sigma)/sqrt(det(CTMM1$sigma)*det(CTMM2$sigma)))/2
 
   return(D)
 }
@@ -22,7 +22,7 @@ RateD <- function(CTMM)
   sigma <- (CTMM1$sigma + CTMM2$sigma)/2
   mu <- CTMM1$mu[1,] - CTMM2$mu[1,]
 
-  D <- as.numeric(mu %*% PDsolve(sigma) %*% mu)/4 + PDlogdet(sigma)/2 + nrow(sigma)/2*log(4*pi)
+  D <- as.numeric(mu %*% pd.solve(sigma) %*% mu)/4 + pd.logdet(sigma)/2 + nrow(sigma)/2*log(4*pi)
 
   return(D)
 }
@@ -36,7 +36,7 @@ EncounterD <- function(CTMM)
   sigma <- (CTMM1$sigma + CTMM2$sigma)/2
   mu <- CTMM1$mu[1,] - CTMM2$mu[1,]
 
-  D <- as.numeric(mu %*% PDsolve(sigma) %*% mu)/4 + log(det(sigma)/sqrt(det(CTMM1$sigma)*det(CTMM2$sigma)))/2
+  D <- as.numeric(mu %*% pd.solve(sigma) %*% mu)/4 + log(det(sigma)/sqrt(det(CTMM1$sigma)*det(CTMM2$sigma)))/2
 
   return(D)
 }
@@ -50,7 +50,7 @@ MahalanobisD <- function(CTMM)
   sigma <- (CTMM1$sigma + CTMM2$sigma)/2
   mu <- CTMM1$mu[1,] - CTMM2$mu[1,]
 
-  D <- as.numeric(mu %*% PDsolve(sigma) %*% mu)
+  D <- as.numeric(mu %*% pd.solve(sigma) %*% mu)
   # D <- sqrt(D)
 
   return(D)

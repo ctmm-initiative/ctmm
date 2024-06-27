@@ -150,7 +150,7 @@ ridges2.UD <- function(object,level.UD=0.95,precision=1/8,...)
     if(M.TEST)
     {
       MODE[i] <- TRUE
-      dr <- c(PDsolve(-H) %*% G)
+      dr <- c(pd.solve(-H) %*% G)
     }
     else
     {

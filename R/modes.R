@@ -127,7 +127,7 @@ modes.UD <- function(object,...)
         GRAD <- STUFF$GRAD
         HESS <- STUFF$HESS
         HESS <- HESS + (GRAD %o% GRAD) # logarithm correction
-        COV <- PDsolve(-HESS)
+        COV <- pd.solve(-HESS)
 
         # locate mode
         dr <- c(COV %*% GRAD)

@@ -400,7 +400,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     dim(COV.mu) <- c(2*M,2*M)
 
     logdetCOV <- KALMAN1$logdet + KALMAN2$logdet
-    logdetcov <- -PDlogdet(KALMAN1$W) - PDlogdet(KALMAN2$W)
+    logdetcov <- -pd.logdet(KALMAN1$W) - pd.logdet(KALMAN2$W)
   }
   else ### 1x 1D or 2D Kalman filter ###
   {
@@ -433,7 +433,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     {
       COV.mu <- KALMAN$iW # (2*M,2*M) from riffle
 
-      logdetcov <- -PDlogdet(KALMAN$W) # log cov[beta] absolute # PRO.VAR handled below
+      logdetcov <- -pd.logdet(KALMAN$W) # log cov[beta] absolute # PRO.VAR handled below
     }
     else # lower or 1D filter return - cases where we have one u(t) for all dimensions
     {
@@ -446,7 +446,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
       COV.mu <- aperm(COV.mu,c(3,1,4,2))
       dim(COV.mu) <- c(AXES*M,AXES*M)
 
-      logdetcov <- -AXES*PDlogdet(KALMAN$W) # log cov[beta] absolute
+      logdetcov <- -AXES*pd.logdet(KALMAN$W) # log cov[beta] absolute
     }
 
     logdetCOV <- (AXES/DIM)*KALMAN$logdet # log autocovariance / n
@@ -459,7 +459,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   if(UNIT)
   {
     if(UNIT==1) { log.det.sigma <- AXES*log(PRO.VAR) } # unit-max-variance adjustment
-    else if(UNIT==2) { log.det.sigma <- PDlogdet(M.sigma) } # unit-COV adjustment
+    else if(UNIT==2) { log.det.sigma <- pd.logdet(M.sigma) } # unit-COV adjustment
 
     logdetCOV <- logdetCOV + log.det.sigma # per n || n-1
     logdetcov <- logdetcov + M*log.det.sigma # absolute # !range handled below
@@ -467,7 +467,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
 
   # discard infinite prior uncertainty in stationary mean for BM/IOU
   if(!length(states) && !CTMM$range)
-  { logdetcov <- ifelse(M==1,0, -PDlogdet(COV.mu[-(1:AXES),-(1:AXES)]) ) }
+  { logdetcov <- ifelse(M==1,0, -pd.logdet(COV.mu[-(1:AXES),-(1:AXES)]) ) }
   else if(length(states))
   {
     offset <- 0
@@ -480,7 +480,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
       offset <- offset + nrow(CTMM[[s]]$mu)
     }
     if(any(IND))
-    { logdetcov <- -PDlogdet(COV.mu[IND,IND]) }
+    { logdetcov <- -pd.logdet(COV.mu[IND,IND]) }
     else
     { logdetcov <- 0 }
   }

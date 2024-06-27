@@ -43,8 +43,8 @@ change.point.iid <- function(data,axes=c('x','y'),IC="AICc")
   NLLU1 <- AXES*(N1*( rowSums( sapply(1:AXES,function(d){log(S1[,d,d])}) ) + 1 ) - 1 )
   NLLU2 <- AXES*(N2*( rowSums( sapply(1:AXES,function(d){log(S2[,d,d])}) ) + 1 ) - 1 )
   # correlated log-likelihoods
-  NLLC1 <- AXES*(N1*( sapply(1:n,function(i){PDlogdet(S1[i,,])}) + 1 ) - 1 )
-  NLLC2 <- AXES*(N2*( sapply(1:n,function(i){PDlogdet(S2[i,,])}) + 1 ) - 1 )
+  NLLC1 <- AXES*(N1*( sapply(1:n,function(i){pd.logdet(S1[i,,])}) + 1 ) - 1 )
+  NLLC2 <- AXES*(N2*( sapply(1:n,function(i){pd.logdet(S2[i,,])}) + 1 ) - 1 )
 
   # not enough data for parameters (uncorrelated case)
   NLLU1[1] <- NLLU2[n] <- Inf

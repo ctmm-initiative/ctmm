@@ -72,7 +72,7 @@ cde <- function(object,include=NULL,exclude=NULL,debias=FALSE,...)
     for(j in (i+1):length(UD))
     {
       IN <- IN + include[i,j]
-      H <- H + include[i,j] * PDsolve( PDsolve(UD[[i]]$H) + PDsolve(UD[[i]]$H) )
+      H <- H + include[i,j] * pd.solve( pd.solve(UD[[i]]$H) + pd.solve(UD[[i]]$H) )
     }
   }
   H <- H/IN
@@ -112,7 +112,7 @@ cde.ctmm <- function(CTMM,include=NULL,exclude=NULL,debias=FALSE,...)
   isotropic <- all(isotropic)
 
   # precision matrices
-  P <- lapply(CTMM,function(M){PDsolve(M$sigma)})
+  P <- lapply(CTMM,function(M){pd.solve(M$sigma)})
 
   # pairwise DOFs (asymptotic)
   dof <- matrix(0,length(DOF),length(DOF))
@@ -139,7 +139,7 @@ cde.ctmm <- function(CTMM,include=NULL,exclude=NULL,debias=FALSE,...)
     M2 <- matrix(0,AXES,AXES)
 
     # precision matrices # have to recalculate these for gradients
-    P <- lapply(CTMM,function(M){PDsolve(M$sigma)})
+    P <- lapply(CTMM,function(M){pd.solve(M$sigma)})
 
     for(i in 1:(length(CTMM)-1))
     {
@@ -153,7 +153,7 @@ cde.ctmm <- function(CTMM,include=NULL,exclude=NULL,debias=FALSE,...)
           Pj <- Pj * BIAS[j]
         }
         Pij <- Pi + Pj
-        sigma <- PDsolve(Pij)
+        sigma <- pd.solve(Pij)
 
         mu <- sigma %*% (Pi %*% CTMM[[i]]$mu[1,] + Pj %*% CTMM[[j]]$mu[1,])
         mu <- c(mu)

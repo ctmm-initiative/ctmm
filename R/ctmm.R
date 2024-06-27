@@ -302,7 +302,7 @@ ctmm.prepare <- function(data,CTMM,precompute=TRUE,tau=TRUE,DIM=length(CTMM$axes
       UU <- t(U) %*% U
       if(!range) { UU[1,1] <- 0 } # zero stationary contribution (remove below)
       CTMM$UU <- UU
-      CTMM$REML.loglike <- AXES/2*PDlogdet(UU[-1,-1]) # extra term for REML likelihood
+      CTMM$REML.loglike <- AXES/2*pd.logdet(UU[-1,-1]) # extra term for REML likelihood
     }
   }
 

@@ -491,7 +491,7 @@ kde <- function(data,H,axes=c("x","y"),CTMM=list(),SP=NULL,SP.in=TRUE,RASTER=lis
 
       if(grad)
       {
-        iH <- PDsolve(H[i,,])
+        iH <- pd.solve(H[i,,])
         DIM <- c(length(X),length(Y))
         G <- array(0,c(DIM,2))
         G[,,1] <- array(X,DIM)

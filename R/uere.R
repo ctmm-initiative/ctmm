@@ -530,7 +530,7 @@ residuals.calibration <- function(data,TYPES=get.dop.types(data),...)
       }
       else
       {
-        w <- vapply(1:n,function(j){PDsolve(ERROR[j,,])},diag(2)) # [x,x,t]
+        w <- vapply(1:n,function(j){pd.solve(ERROR[j,,])},diag(2)) # [x,x,t]
         dim(w) <- c(2,2,n)
         w <- aperm(w,c(3,1,2)) # [t,x,x]
         W <- apply(w,2:3,sum) # [x,y]
@@ -538,7 +538,7 @@ residuals.calibration <- function(data,TYPES=get.dop.types(data),...)
         # stationary mean
         mu <- vapply(1:n,function(j){w[j,,] %*% z[j,]},1:2) # [x,t]
         mu <- apply(mu,1,sum)
-        mu <- c(PDsolve(W) %*% mu)
+        mu <- c(pd.solve(W) %*% mu)
 
         # detrend the mean for error/residuals
         z <- t(t(z) - mu)

@@ -118,20 +118,12 @@ det2 <- function(x)
 outer <- function(X,Y=X,FUN="*",...) { base::outer(X,Y,FUN=FUN,...) }
 
 
-# riffle columns of two matrices
-# riffle <- function(u,v,by=1)
-# {
-#   DIM <- dim(u) # (row,col)
-#   SUB <- 0:(by-1)
-#   u <- vapply(seq(1,DIM[2],by),function(i){cbind(u[,i+SUB],v[,i+SUB])},array(0,c(DIM[1],2*by))) # (row,2*by,col/by)
-#   dim(u) <- c(DIM[1],2*DIM[2])
-#   return(u)
-# }
-
 # riffle columns of matrices
-riffle <- function(...)
+riffle <- function(...,by=1)
 {
+  if(by>1) { return(riffle.by(...,by=by)) }
   args <- list(...)
+
   # make vectors into matrices
   args <- lapply(args,cbind)
 
@@ -142,6 +134,18 @@ riffle <- function(...)
   dim(args) <- DIM
 
   return(args)
+}
+
+
+# riffle columns of two matrices
+# old code, because the above isn't coded for by>1
+riffle.by <- function(u,v,by=1)
+{
+  DIM <- dim(u) # (row,col)
+  SUB <- 0:(by-1)
+  u <- vapply(seq(1,DIM[2],by),function(i){cbind(u[,i+SUB],v[,i+SUB])},array(0,c(DIM[1],2*by))) # (row,2*by,col/by)
+  dim(u) <- c(DIM[1],2*DIM[2])
+  return(u)
 }
 
 # riffle entries of vectors
@@ -157,7 +161,7 @@ He <- function(M) { (M + Adj(M))/2 }
 
 
 # map function for real-valued PSD matrices
-PDfunc <-function(M,func=function(m){1/m},sym=TRUE,force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
+PDfunc <-function(M,func=function(m){1/m},sym=TRUE,semi=TRUE,pseudo=FALSE,tol=.Machine$double.eps,...)
 {
   DIM <- dim(M)[1]
   if(is.null(DIM))
@@ -193,7 +197,7 @@ PDfunc <-function(M,func=function(m){1/m},sym=TRUE,force=FALSE,pseudo=FALSE,tol=
 
     # regular inverse of remaining dimensions
     REM <- !(INF|ZERO)
-    if(any(REM)) { M[REM,REM] <- PDfunc(M[REM,REM,drop=FALSE],func=func,force=force,pseudo=pseudo) }
+    if(any(REM)) { M[REM,REM] <- PDfunc(M[REM,REM,drop=FALSE],func=func,semi=semi,pseudo=pseudo,tol=tol,...) }
 
     return(M)
   }
@@ -251,16 +255,13 @@ PDfunc <-function(M,func=function(m){1/m},sym=TRUE,force=FALSE,pseudo=FALSE,tol=
     }
   }
 
-  if(any(M<0) && !force && !pseudo) { stop("Matrix not positive definite.") }
-
   # negative eigenvalues indicate size of numerical error
   # MIN <- last(M)
   # if(MIN<0) { tol <- max(tol,2*abs(MIN)) }
 
   PSEUDO <- (M < tol)
-  # PSEUDO <- (abs(M) < tol) # why abs(M)?
 
-  if(force) { M <- eigen.extrapolate(M) }
+  if(!semi) { M <- eigen.extrapolate(M) }
   if(any(PSEUDO) && pseudo) { M[PSEUDO] <- 0 }
   M <- func(M)
   if(any(PSEUDO) && pseudo) { M[PSEUDO] <- 0 }
@@ -280,7 +281,7 @@ PDfunc <-function(M,func=function(m){1/m},sym=TRUE,force=FALSE,pseudo=FALSE,tol=
 
 
 # Positive definite solver
-PDsolve <- function(M,sym=TRUE,force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
+pd.solve <- function(M,sym=TRUE,semi=TRUE,...)
 {
   NAMES <- rev( dimnames(M) ) # dimnames for inverse matrix
   DIM <- dim(M)
@@ -308,13 +309,13 @@ PDsolve <- function(M,sym=TRUE,force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
 
     # regular inverse of remaining dimensions
     REM <- !(INF|ZERO)
-    if(any(REM)) { M[REM,REM] <- PDsolve(M[REM,REM,drop=FALSE],force=force,pseudo=pseudo,sym=sym) }
+    if(any(REM)) { M[REM,REM] <- pd.solve(M[REM,REM,drop=FALSE],sym=sym,semi=semi,...) }
 
     dimnames(M) <- NAMES
     return(M)
   }
 
-  if(!force && !pseudo)
+  if(semi)
   {
     if(DIM[1]==1)
     {
@@ -343,7 +344,7 @@ PDsolve <- function(M,sym=TRUE,force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
   # rescale
   W <- abs(diag(M))
   W <- sqrt(W)
-  ZERO <- W<=tol
+  ZERO <- W<=.Machine$double.eps
   if(any(ZERO)) # do not divide by zero or near zero
   {
     if(any(!ZERO))
@@ -362,7 +363,7 @@ PDsolve <- function(M,sym=TRUE,force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
   if( class(M.try)[1] == "matrix" && (!sym || all(diag(M.try>=0))) )
   { M <- M.try }
   else
-  { M <- PDfunc(M,func=function(m){1/m},sym=sym,force=force,pseudo=pseudo,tol=tol) }
+  { M <- PDfunc(M,func=function(m){1/m},sym=sym,semi=semi,...) }
 
   # back to covariance matrix
   M <- M/W
@@ -375,7 +376,7 @@ PDsolve <- function(M,sym=TRUE,force=FALSE,pseudo=FALSE,tol=.Machine$double.eps)
 }
 
 
-PDlogdet <- function(M,sym=TRUE,force=FALSE,tol=.Machine$double.eps,...)
+pd.logdet <- function(M,sym=TRUE,semi=TRUE,...)
 {
   DIM <- dim(M)
   if(is.null(DIM))
@@ -389,7 +390,7 @@ PDlogdet <- function(M,sym=TRUE,force=FALSE,tol=.Machine$double.eps,...)
   else if(DIM[1]==0)
   {
     M <- clamp(M,0,Inf)
-    if(force) { M <- eigen.extrapolate(M) }
+    if(!semi) { M <- eigen.extrapolate(M) }
     M <- log(M)
     return(M)
   }
@@ -405,7 +406,7 @@ PDlogdet <- function(M,sym=TRUE,force=FALSE,tol=.Machine$double.eps,...)
     # regular log.det of remaining dimensions
     REM <- !(INF|ZERO)
     if(any(REM))
-    { return( PDlogdet(M[REM,REM,drop=FALSE],force=force,sym=sym) ) }
+    { return( pd.logdet(M[REM,REM,drop=FALSE],semi=semi,sym=sym,...) ) }
     else
     { return(0) }
   }
@@ -416,21 +417,21 @@ PDlogdet <- function(M,sym=TRUE,force=FALSE,tol=.Machine$double.eps,...)
   M <- eigen(M)$values
   M <- clamp(M,0,Inf)
 
-  if(force) { M <- eigen.extrapolate(M) }
+  if(!semi) { M <- eigen.extrapolate(M) }
 
   M <- sum(log(M))
 
   return(M)
 }
 
-
-isqrtm <- function(M,force=FALSE,pseudo=FALSE)
+# standardization matrix - inverse of square root
+isqrtm <- function(M,semi=TRUE,...)
 {
   # TODO
 }
 
 # only for PSD matrices
-sqrtm <- function(M,force=FALSE,pseudo=FALSE)
+sqrtm <- function(M,semi=TRUE,...)
 {
   if(class(M)[1]=="covm")
   {
@@ -449,10 +450,7 @@ sqrtm <- function(M,force=FALSE,pseudo=FALSE)
     if(M>=0)
     { M <- sqrt(M) }
     else
-    {
-      if(force || pseudo) { M <- 0 } # round off error
-      else { stop("Matrix is not positive definite.") } # complex sqrt
-    }
+    { M <- 0 }
   }
   else if(DIM==2)
   {
@@ -460,12 +458,7 @@ sqrtm <- function(M,force=FALSE,pseudo=FALSE)
     DET <- M[1,1]*M[2,2] - M[1,2]*M[2,1]
 
     if(DET<0 || TR^2<4*DET || any(diag(M)<0))
-    {
-      if(force || pseudo)
-      { M <- PDfunc(M,func=sqrt,force=force,pseudo=pseudo) }
-      else
-      { stop("Matrix is not positive definite.") }
-    }
+    { M <- PDfunc(M,func=sqrt,semi=semi,...) }
     else
     {
       S <- sqrt(DET)
@@ -492,16 +485,12 @@ sqrtm <- function(M,force=FALSE,pseudo=FALSE)
       if(any(TEST)) { diag(M)[TEST] <- 0 }
     }
     else
-    {
-      if(force || pseudo)
-      { M <- PDfunc(M,func=sqrt,force=force,pseudo=pseudo) }
-      else
-      { stop("Matrix is not positive definite.") }
-    }
+    { M <- PDfunc(M,func=sqrt,semi=semi,...) }
   }
 
   return(M)
 }
+pd.sqrtm <- sqrtm
 
 # fix matrices with infinite variances
 fixInf <- function(M)

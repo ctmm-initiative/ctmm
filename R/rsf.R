@@ -863,7 +863,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
       else
       {
         sigma <- matrix(beta[c('xx','xy','xy','yy')],2,2)
-        sigma <- PDsolve(sigma)
+        sigma <- pd.solve(sigma)
 
         beta[c('xx','yy','xy')] <- covm(sigma)@par # (major,minor,angle)
 

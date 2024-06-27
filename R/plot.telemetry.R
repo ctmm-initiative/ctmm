@@ -265,7 +265,6 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,col.bg='white',
 
   #########################
   # PLOT TELEMETRY DATA
-
   col <- format_par(col,x)
   pch <- format_par(pch,x)
   lwd <- format_par(lwd,x)
