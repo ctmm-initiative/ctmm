@@ -15,6 +15,9 @@ test_that("check dexp2", {
   for(idx in 1:length(input)){
     expect_identical(dexp2(input[idx]), expected[idx], label = paste0('dexp2 of ', input[idx]))
   }
+  for(idx in 1:length(input)){
+    expect_identical(dexp2(input[idx], exp(-input[idx])), expected[idx], label = paste0('dexp2 of ', input[idx]))
+  }
 })
 test_that("check dexp1", {
   input <- c(100, 10, 1, .1, .01, 0, -.01, -.1, -10, -100)
@@ -32,5 +35,8 @@ test_that("check dexp1", {
   )
   for(idx in 1:length(input)){
     expect_identical(dexp1(input[idx]), expected[idx], label = paste0('dexp1 of ', input[idx]))
+  }
+  for(idx in 1:length(input)){
+    expect_identical(dexp1(input[idx], exp(-input[idx])), expected[idx], label = paste0('dexp1 of ', input[idx]))
   }
 })
