@@ -1,4 +1,5 @@
 \name{pd.solve}
+\alias{pd.solve}
 \alias{pd.logdet}
 \alias{pd.sqrtm}
 \encoding{UTF-8}
@@ -35,7 +36,7 @@ Infinite variances can be exactly handled, as long as they are not correlated wi
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
-\seealso{ \code{\link{qr.solve}} }
+\seealso{ \code{\link{qr.solve}}, \code{\link{det}} }
 
 %\examples{}
 

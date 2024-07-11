@@ -16,9 +16,9 @@ get.link <- function(CTMM)
   return(link)
 }
 
-ctmm.circulate <- function(CTMM,t,dt=diff(t))
+ctmm.circulate <- function(CTMM,t)
 {
-  dt <- c(0,dt)
+  dt <- CTMM$dt # from ctmm.prepare
   dynamics <- CTMM$dynamics
 
   if(is.null(dynamics) || dynamics==FALSE || dynamics=="stationary")
@@ -87,7 +87,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   # save original tau length
   K <- length(CTMM$tau)
   # prepare model for numerics
-  CTMM <- ctmm.prepare(data,CTMM,verbose=verbose)
+  CTMM <- ctmm.prepare(data,CTMM,verbose=verbose,dt=is.null(CTMM$dt))
 
   range <- CTMM$range
   isotropic <- CTMM$isotropic
@@ -140,7 +140,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   n <- length(data$t)
 
   t <- data$t
-  dt <- c(Inf,diff(t)) # time lags
+  dt <- CTMM$dt # time lags from ctmm.prepare
 
   if(range) # timescale constant for profiling
   { DT <- 1 }
@@ -264,7 +264,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   if(circle) ## COROTATING FRAME FOR circle=TRUE ##
   {
     # R <- circle*(t-t[1])
-    R <- ctmm.circulate(CTMM,t,dt) # circle * (t-t[1])
+    R <- ctmm.circulate(CTMM,t) # circle * (t-t[1])
     R <- rotates(-R) # rotation matrices
     u <- rotates.vec(cbind(z,u),R)
     z <- u[,1:2]
@@ -380,13 +380,13 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     fn <- function(sigma){ KMR*sigma[1] }
     CTMM <- sigma.apply(CTMM,fn,states)
     CTMM$sigma <- SIGMA[1] # should now be redundant
-    KALMAN1 <- kalman(cbind(z[,1]),u,t=t,dt=dt,CTMM=CTMM,error=error[,1,1,drop=FALSE]) # errors are relative to PRO.VAR if PROFILE
+    KALMAN1 <- kalman(cbind(z[,1]),u,t=t,CTMM=CTMM,error=error[,1,1,drop=FALSE]) # errors are relative to PRO.VAR if PROFILE
 
     # minor axis likelihood
     fn <- function(sigma){ KMR*sigma[4] }
     CTMM <- sigma.apply(CTMM,fn,states)
     CTMM$sigma <- SIGMA[2] # should now be redundant
-    KALMAN2 <- kalman(cbind(z[,2]),u,t=t,dt=dt,CTMM=CTMM,error=error[,2,2,drop=FALSE]) # errors are relative to PRO.VAR if PROFILE
+    KALMAN2 <- kalman(cbind(z[,2]),u,t=t,CTMM=CTMM,error=error[,2,2,drop=FALSE]) # errors are relative to PRO.VAR if PROFILE
 
     mu <- cbind(KALMAN1$mu,KALMAN2$mu)
 
@@ -420,7 +420,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
 
     if(DIM==1) { error <- error[,1,1,drop=FALSE] } # isotropic && UERE redundant error information
 
-    KALMAN <- kalman(z,u,t=t,dt=dt,CTMM=CTMM,error=error,DIM=DIM)
+    KALMAN <- kalman(z,u,t=t,CTMM=CTMM,error=error,DIM=DIM)
 
     mu <- KALMAN$mu
 

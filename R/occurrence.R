@@ -79,7 +79,7 @@ currence <- function(data,CTMM,H=0,variable="utilization",res.time=10,res.space=
 
   info <- attr(data,"info")
   SIGMA <- CTMM$sigma # diffusion matrix for later
-  CTMM <- ctmm.prepare(data,CTMM,precompute=FALSE) # not the final t for calculating u
+  CTMM <- ctmm.prepare(data,CTMM,precompute=FALSE,dt=FALSE) # not the final t for calculating u and dt
   error <- get.error(data,CTMM,circle=TRUE)
   MIN.ERR <- min(error) # Fix something here?
 
@@ -89,6 +89,7 @@ currence <- function(data,CTMM,H=0,variable="utilization",res.time=10,res.space=
   dt.grid <- data$dt.grid
   w.grid <- data$w.grid
   data <- data$data
+  CTMM <- ctmm.prepare(data,CTMM,precompute=FALSE) # final t for calculating u and dt
 
   # calculate trend
   drift <- drift.mean(CTMM0,data$t) %*% CTMM0$mu

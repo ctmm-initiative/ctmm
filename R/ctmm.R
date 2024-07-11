@@ -241,7 +241,7 @@ pars_tauv <- function(tau,tauc=tau)
 
 
 ###########################
-ctmm.prepare <- function(data,CTMM,precompute=TRUE,tau=TRUE,DIM=length(CTMM$axes),calibrate=FALSE,verbose=TRUE,...)
+ctmm.prepare <- function(data,CTMM,precompute=TRUE,tau=TRUE,dt=TRUE,DIM=length(CTMM$axes),calibrate=FALSE,verbose=TRUE,...)
 {
   axes <- CTMM$axes
 
@@ -318,20 +318,35 @@ ctmm.prepare <- function(data,CTMM,precompute=TRUE,tau=TRUE,DIM=length(CTMM$axes
     # this is more of an error structure matrix (modulo variance)
   } # end precomputed matrices
 
+  # pre calculation of time-lag information
+  if(dt && (is.null(CTMM$dt) || is.null(CTMM$dtl) || is.null(CTMM$dti)))
+  {
+    CTMM$dt <- c(Inf,diff(data$t))
+    dti <- sort(CTMM$dt,index.return=TRUE)
+    CTMM$dtl <- unique(dti$x) # dt levels
+    CTMM$dti <- dti$ix # sort indices
+  }
+
   return(CTMM)
 }
 
 # undo the above
-ctmm.repair <- function(CTMM,K=length(CTMM$tau))
+ctmm.repair <- function(CTMM,K=length(CTMM$tau),NAMES=CTMM$features)
 {
   # repair dropped zero timescales
-  if(K && length(CTMM$tau)) { CTMM$tau <- replace(numeric(K),1:length(CTMM$tau),CTMM$tau) }
+  if(K && length(CTMM$tau))
+  {
+    CTMM$tau <- replace(numeric(K),1:length(CTMM$tau),CTMM$tau)
+
+    if(is.null(NAMES)) { NAMES <- names(CTMM$tau) }
+    NAMES <- NAMES[grepl("tau",NAMES)]
+    NAMES <- substr(NAMES,5,nchar(NAMES))
+    names(CTMM$tau) <- NAMES
+  }
   else if(K) { CTMM$tau <- numeric(K) }
 
   if(FALSE && !CTMM$range) # no longer needed
-  {
-    K <- length(CTMM$tau) # why do I need this now?
-  }
+  { K <- length(CTMM$tau) } # why do I need this now?
   CTMM$K <- NULL
 
   # erase evaluated mean vector from ctmm.prepare
@@ -340,6 +355,11 @@ ctmm.repair <- function(CTMM,K=length(CTMM$tau))
   CTMM$UU <- NULL
   CTMM$REML.loglike <- NULL # deleted in ctmm.fit
   CTMM$error.mat <- NULL
+
+  # erase time-lag information from ctmm.prepare
+  CTMM$dt <- NULL
+  CTMM$dtl <- NULL # dt levels
+  CTMM$dti <- NULL # sort indices
 
   return(CTMM)
 }

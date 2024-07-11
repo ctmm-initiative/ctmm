@@ -83,6 +83,11 @@ mlog_ctmms <- function(x,variable="area",debias=TRUE,level.UD=0.95,...)
     COV <- t(COV / par) / par
     par <- log(par)
 
+    # all possible features
+    features <- lapply(x,function(y){y$features})
+    features <- unlist(features)
+    features <- unique(features)
+
     # debiasing
     if(debias)
     {

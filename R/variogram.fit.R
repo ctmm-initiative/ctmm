@@ -5,7 +5,7 @@ variogram.guess <- function(variogram,CTMM=ctmm())
 {
   # make sure formatting is correct
   CTMM$axes <- attr(variogram,"info")$axes
-  CTMM <- ctmm.prepare(variogram,CTMM,precompute=FALSE,tau=FALSE)
+  CTMM <- ctmm.prepare(variogram,CTMM,precompute=FALSE,tau=FALSE,dt=FALSE)
 
   # guess at some missing parameters
   n <- length(variogram$lag)

@@ -10,8 +10,7 @@ smoother <- function(data,CTMM,precompute=FALSE,sample=FALSE,residual=FALSE,...)
   AXES <- length(CTMM$axes)
 
   t <- data$t
-
-  dt <- c(Inf,diff(t))
+  dt <- CTMM$dt
   n <- length(t)
 
   isotropic <- CTMM$isotropic
@@ -133,10 +132,10 @@ smoother <- function(data,CTMM,precompute=FALSE,sample=FALSE,residual=FALSE,...)
   {
     # major axis likelihood
     CTMM$sigma <- SIGMA[1]
-    KALMAN1 <- kalman(z[,1,drop=FALSE],u=NULL,t=t,dt=dt,CTMM=CTMM,error=error[,1,1,drop=FALSE],precompute=precompute,sample=sample,residual=residual,...)
+    KALMAN1 <- kalman(z[,1,drop=FALSE],u=NULL,t=t,CTMM=CTMM,error=error[,1,1,drop=FALSE],precompute=precompute,sample=sample,residual=residual,...)
     # minor axis likelihood
     CTMM$sigma <- SIGMA[2]
-    KALMAN2 <- kalman(z[,2,drop=FALSE],u=NULL,t=t,dt=dt,CTMM=CTMM,error=error[,2,2,drop=FALSE],precompute=precompute,sample=sample,residual=residual,...)
+    KALMAN2 <- kalman(z[,2,drop=FALSE],u=NULL,t=t,CTMM=CTMM,error=error[,2,2,drop=FALSE],precompute=precompute,sample=sample,residual=residual,...)
 
     if(residual) { return(cbind(KALMAN1,KALMAN2)) }
 
@@ -166,7 +165,7 @@ smoother <- function(data,CTMM,precompute=FALSE,sample=FALSE,residual=FALSE,...)
       error <- error[,1,1,drop=FALSE] # isotropic && UERE redundant error information
     }
 
-    KALMAN <- kalman(z,u=NULL,t=t,dt=dt,CTMM=CTMM,error=error,DIM=DIM,precompute=precompute,sample=sample,residual=residual,...)
+    KALMAN <- kalman(z,u=NULL,t=t,CTMM=CTMM,error=error,DIM=DIM,precompute=precompute,sample=sample,residual=residual,...)
     # point estimates will be correct but eccentricity is missing from variances
 
     if(residual) { return(KALMAN) }
@@ -471,8 +470,9 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,VMM=NULL,t=NULL,dt=N
     STUFF <- c('object','data','drift','velocity')
     if(precompute>=0) # prepare model and data frame
     {
-      object <- ctmm.prepare(data,object,precompute=FALSE) # u calculated here with unfilled t
+      object <- ctmm.prepare(data,object,precompute=FALSE,dt=FALSE) # u calculated here with unfilled t - why did I need this?
       data <- fill.data(data,CTMM=object,t=t,dt=dt,res=res,...)
+      object <- ctmm.prepare(data,object,precompute=FALSE) # u calculated here with filled t
       # object$error <- TRUE # avoids unit variance algorithm - data contains fixed errors from fill.data
 
       # calculate trend
@@ -545,7 +545,10 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,VMM=NULL,t=NULL,dt=N
 
         K <- length(tau)
 
-        dt <- c(Inf,diff(t)) # time lags
+        # time lags information from ctmm.prepare
+        dt <- object$dt
+        dti <- object$dti
+        dtl <- object$dtl
 
         # where we will store the data
         z <- array(0,c(n,AXES))
@@ -556,13 +559,23 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,VMM=NULL,t=NULL,dt=N
 
         object$sigma <- 1
         object <- get.taus(object) # pre-compute stuff for Langevin equation solutions
-        for(i in 1:n)
+
+        j <- 1 # sorted index
+        for(i in 1:length(dtl)) # level index
         {
-          # tabulate propagators if necessary
-          if((i==1)||(dt[i]!=dt[i-1])) { Langevin <- langevin(dt=dt[i],CTMM=object) }
-          Green[i,,] <- Langevin$Green
-          Sigma[i,,] <- Langevin$Sigma
-        }
+          LANGEVIN <- langevin(dt=dtl[i],CTMM=object)
+
+          k <- dti[j] # time index
+          while(dt[k]==dtl[i])
+          {
+            Green[k,,] <- LANGEVIN$Green # (K*DIM,K*DIM)
+            Sigma[k,,] <- LANGEVIN$Sigma # (K*DIM,K*DIM)
+
+            j <- j + 1 # sorted index
+            if(j>length(dti)) { break }
+            k <- dti[j] # time index
+          } # end same time-lags
+        } # end all time-lag levels
         if(!object$range) { Sigma[1,,] <- 0 } # start at first point instead of random point on Earth
 
         # Sigma is now standardization matrix
@@ -759,9 +772,9 @@ predict.ctmm <- function(object,data=NULL,VMM=NULL,t=NULL,dt=NULL,res=1,complete
   }
   else # condition off of the data
   {
-    # object <- ctmm.prepare(data,object) # mean.vec here is calculated with pre-filled t
     K <- length(object$tau)
     data <- fill.data(data,CTMM=object,t=t,dt=dt,res=res)
+    object <- ctmm.prepare(data,object) # is there any reason not to do this here?
     # object$error <- TRUE # avoids unit variance algorithm
 
     # calculate trend

@@ -7,13 +7,14 @@
 \description{Methods for log transforming individual parameter estimates and their uncertainty estimates for use in meta-analytic regression, and then back-transforming mean-log parameter estimates back to mean parameter estimates.
 }
 \usage{
-Log(x,variable="area",debias=TRUE,...)
+Log(CTMM,EST=NULL,variable="area",debias=TRUE,...)
 
 Exp(est,VAR.est=0,VAR=0,VAR.VAR=0,variable="area",debias=TRUE,level=0.95,units=TRUE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{x}{A list of \code{UD} objects, \code{UD} \code{summary} objects, or \code{speed} objects.}
+  \item{CTMM}{A list of \code{ctmm} objects, \code{UD} objects, \code{UD} \code{summary} objects, or \code{speed} objects.}
+  \item{EST}{For future use.}
   \item{variable}{Can be \code{"area"}, \code{"diffusion"}, \code{"speed"}, \code{"tau position"}, or \code{"tau velocity"}.}
   \item{debias}{Apply \eqn{\log\chi^2} and \eqn{\log\chi} bias corrections if \code{TRUE}.}
   \item{...}{Further arguments passed.}

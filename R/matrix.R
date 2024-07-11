@@ -358,7 +358,7 @@ pd.solve <- function(M,sym=TRUE,semi=TRUE,...)
   M <- M/W
 
   # try ordinary inverse
-  M.try <- try(qr.solve(M,tol=tol),silent=TRUE)
+  M.try <- try(qr.solve(M,tol=0),silent=TRUE)
   # fall back on decomposition
   if( class(M.try)[1] == "matrix" && (!sym || all(diag(M.try>=0))) )
   { M <- M.try }

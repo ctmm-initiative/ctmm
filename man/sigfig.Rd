@@ -17,7 +17,7 @@ sigfig(est,VAR=NULL,SD=NULL,level=0.95,digits=2,...)
   \item{data}{A numerical vector of dimensionful quantities represented in SI units.}
   \item{dimension}{One of \code{"length"}, \code{"area"}, \code{"time"}, \code{"frequency"}, \code{"speed"}, \code{"diffusion"}, or \code{"mass"}.}
   \item{thresh}{Threshold quantity for switching between units. E.g., 100 cm is represented as 1 m only if \code{thresh>=1}.}
-  \item{est}{Can be either confidence-interval estimates with rows {(lower-limit,point-estimate,upper-limit)} or point estimates (with \code{VAR} or \code{SD} also specified).}
+  \item{est}{Can be either confidence-interval estimates with rows (lower-limit,point-estimate,upper-limit) or point estimates (with \code{VAR} or \code{SD} also specified).}
   \item{VAR}{Variance in the sampling distribution of \code{x}.}
   \item{SD}{Standard deviation in the sampling distribution of \code{x}.}
   \item{level}{Confidence level for designating the numerical precision of the significant digits.}

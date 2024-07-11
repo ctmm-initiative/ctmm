@@ -176,8 +176,13 @@ langevin <- function(dt,CTMM,DIM=1)
 }
 
 
-Langevin <- function(t,dt=c(Inf,diff(t)),CTMM,DIM=1)
+Langevin <- function(t,CTMM,DIM=1)
 {
+  # time-lag information from ctmm.prepare
+  dt <- CTMM$dt
+  dti <- CTMM$dti
+  dtl <- CTMM$dtl
+
   n <- length(dt)
   tau <- CTMM$tau
   K <- max(1,length(tau))  # dimension of hidden state per spatial dimension
@@ -191,10 +196,26 @@ Langevin <- function(t,dt=c(Inf,diff(t)),CTMM,DIM=1)
   # default stationary process
   if(is.null(dynamics) || dynamics==FALSE || dynamics=="stationary")
   {
+    j <- 1 # sorted index
+    for(i in 1:length(dtl)) # level index
+    {
+      LANGEVIN <- langevin(dt=dtl[i],CTMM=CTMM,DIM=DIM)
+
+      k <- dti[j] # time index
+      while(dt[k]==dtl[i])
+      {
+        Green[k,,] <- LANGEVIN$Green # (K*DIM,K*DIM)
+        Sigma[k,,] <- LANGEVIN$Sigma # (K*DIM,K*DIM)
+
+        j <- j + 1 # sorted index
+        if(j>length(dti)) { break }
+        k <- dti[j] # time index
+      } # end same time-lags
+    } # end all time-lag levels
+
     for(i in 1:n)
     {
       # does the time lag change values? Then update the propagators.
-      # TODO unique time calculation for stationary models
       if(i==1 || dt[i] != dt[i-1])
       { LANGEVIN <- langevin(dt=dt[i],CTMM=CTMM,DIM=DIM) }
 
@@ -254,8 +275,11 @@ Langevin <- function(t,dt=c(Inf,diff(t)),CTMM,DIM=1)
 # # FALSE: don't assume or return computed glob
 # # +1: store a computed glob in the environment
 # # -1: use a computed glob from the environment
-kalman <- function(z,u,t=NULL,dt=c(Inf,diff(t)),CTMM,error=NULL,DIM=1,smooth=FALSE,sample=FALSE,residual=FALSE,precompute=FALSE)
+kalman <- function(z,u,t=NULL,CTMM,error=NULL,DIM=1,smooth=FALSE,sample=FALSE,residual=FALSE,precompute=FALSE)
 {
+  # time-lag information from ctmm.prepare
+  dt <- CTMM$dt
+
   # STUFF THAT CAN BE PRECOMPUTED IF DOING MULTIPLE SIMULATIONS
   if(precompute>=0)
   {
@@ -301,7 +325,7 @@ kalman <- function(z,u,t=NULL,dt=c(Inf,diff(t)),CTMM,error=NULL,DIM=1,smooth=FAL
     sRes <- array(0,c(n,OBS*DIM,OBS*DIM))
 
     # Propagators from Langevin equation
-    LANGEVIN <- Langevin(t=t,dt=dt,CTMM=CTMM,DIM=DIM)
+    LANGEVIN <- Langevin(t=t,CTMM=CTMM,DIM=DIM)
     Green <- LANGEVIN$Green
     Sigma <- LANGEVIN$Sigma
 

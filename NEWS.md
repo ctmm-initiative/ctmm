@@ -14,6 +14,7 @@ ctmm 1.2.1 (2023-06-27)
 * new plot method: plot.ctmm()
 * new outlie() argument 'units'
 * plot() argument 'col.DF' renamed to 'col.UD'
+* speedups in Kalman filter for irregularly sampled 
 * improvements DOF[area] calculations in mean() and pkde()
 * improvement to optimizer() when initial guess is on a boundary and hessian is bad
 * bugfix in polygon export from bad output from grDevices::contourLines()
