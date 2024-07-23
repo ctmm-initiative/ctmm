@@ -180,8 +180,8 @@ Langevin <- function(t,CTMM,DIM=1)
 {
   # time-lag information from ctmm.prepare
   dt <- CTMM$dt
-  dti <- CTMM$dti
   dtl <- CTMM$dtl
+  dti <- match(dt, dtl)
 
   n <- length(dt)
   tau <- CTMM$tau
@@ -196,31 +196,21 @@ Langevin <- function(t,CTMM,DIM=1)
   # default stationary process
   if(is.null(dynamics) || dynamics==FALSE || dynamics=="stationary")
   {
-    j <- 1 # sorted index
-    for(i in 1:length(dtl)) # level index
+    nl <- length(dtl)
+    Greenl <- array(0,c(nl,K*DIM,K*DIM))
+    Sigmal <- array(0,c(nl,K*DIM,K*DIM))
+
+    for(l in 1:nl) # level index
     {
-      LANGEVIN <- langevin(dt=dtl[i],CTMM=CTMM,DIM=DIM)
-
-      k <- dti[j] # time index
-      while(dt[k]==dtl[i])
-      {
-        Green[k,,] <- LANGEVIN$Green # (K*DIM,K*DIM)
-        Sigma[k,,] <- LANGEVIN$Sigma # (K*DIM,K*DIM)
-
-        j <- j + 1 # sorted index
-        if(j>length(dti)) { break }
-        k <- dti[j] # time index
-      } # end same time-lags
+      LANGEVIN <- langevin(dt=dtl[l],CTMM=CTMM,DIM=DIM)
+      Greenl[l,,] <- LANGEVIN$Green # (K*DIM,K*DIM)
+      Sigmal[l,,] <- LANGEVIN$Sigma # (K*DIM,K*DIM)
     } # end all time-lag levels
 
     for(i in 1:n)
     {
-      # does the time lag change values? Then update the propagators.
-      if(i==1 || dt[i] != dt[i-1])
-      { LANGEVIN <- langevin(dt=dt[i],CTMM=CTMM,DIM=DIM) }
-
-      Green[i,,] <- LANGEVIN$Green # (K*DIM,K*DIM)
-      Sigma[i,,] <- LANGEVIN$Sigma # (K*DIM,K*DIM)
+      Green[i,,] <- Greenl[dti[i],,]
+      Sigma[i,,] <- Sigmal[dti[i],,]
     }
   }
   else if(dynamics=="change.point")
