@@ -24,7 +24,7 @@ Authors@R: c(person(c("Christen","H."),"Fleming",email="flemingc@si.edu",role=c(
 URL: https://github.com/ctmm-initiative/ctmm, https://groups.google.com/g/ctmm-user
 Depends: R (>= 3.5.0)
 Imports: Bessel, data.table, digest, expm, fasttime, Gmedian, graphics, grDevices, gsl, manipulate, MASS, methods, numDeriv, parsedate, pbivnorm, pracma, raster, shape, sf, sp, statmod, stats, terra, utils
-Suggests: animation, bit64, dplyr, fftw, knitr, move, parallel, quadprog, rmarkdown, suncalc
+Suggests: animation, bit64, dplyr, fftw, knitr, move, parallel, quadprog, rmarkdown, suncalc, testthat (>= 3.0.0)
 Description: Functions for identifying, fitting, and applying continuous-space, continuous-time stochastic-process movement models to animal tracking data.
   The package is described in Calabrese et al (2016) <doi:10.1111/2041-210X.12559>, with models and methods based on those introduced and detailed in
   Fleming & Calabrese et al (2014) <doi:10.1086/675504>,
@@ -49,3 +49,4 @@ License: GPL-3
 VignetteBuilder: knitr
 NeedsCompilation: no
 RoxygenNote: 6.1.1
+Config/testthat/edition: 3
