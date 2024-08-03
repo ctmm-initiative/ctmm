@@ -1,4 +1,4 @@
-ctmm 1.2.1 (2023-06-27)
+ctmm 1.2.1 (2024-08-01)
 ================
 * new functions pd.solve(), pd.logdet(), pd.sqrtm() for covariance matrix operations
 * periodic mean functions now estimate frequency
@@ -11,6 +11,7 @@ ctmm 1.2.1 (2023-06-27)
 * new convex argument 'options'
 * new geometric mean ratio estimates in meta() and improvements for small DOFs
 * mean() of occurrence() now time weighted by default
+* mean() can now accept non-stationary mean models
 * new plot method: plot.ctmm()
 * new outlie() argument 'units'
 * plot() argument 'col.DF' renamed to 'col.UD'

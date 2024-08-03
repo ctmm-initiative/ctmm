@@ -82,7 +82,8 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   if(length(CTMM$timelink.par)) { data$t <- linktime(data,CTMM) }
 
   n <- length(data$t)
-  AXES <- length(CTMM$axes)
+  axes <- CTMM$axes
+  AXES <- length(axes)
 
   # save original tau length
   K <- length(CTMM$tau)
@@ -108,7 +109,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
       SUB <- c(2,3)
       x[SUB] <- nant(x[SUB],0)
     }
-    covm(x,isotropic=CTMM$isotropic,axes=CTMM$axes)
+    covm(x,isotropic=CTMM$isotropic,axes=axes)
   }
 
   # sigma is current estimate and M.sigma is what we compute the Kalman filter with
@@ -156,7 +157,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   }
 
   # data z and mean vector u
-  z <- get.telemetry(data,CTMM$axes)
+  z <- get.telemetry(data,axes)
   u <- CTMM$mean.vec
   M <- ncol(u) # number of linear parameters per spatial dimension
 
@@ -171,7 +172,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   class <- CTMM$class.mat
   ELLIPSE <- attr(error,"ellipse") # do we need error ellipses?
   # are we fitting the error?, then the above is not yet normalized
-  TYPE <- DOP.match(CTMM$axes)
+  TYPE <- DOP.match(axes)
   if(TYPE!="unknown")
   {
     UERE.RMS <- attr(data,"UERE")$UERE[,TYPE]
@@ -578,6 +579,14 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
 
     if(TYPE!="unknown") { CTMM$UERE <- attr(data,"UERE")$UERE[,TYPE] }
 
+    # mean component names
+    NAMES <- rownames(CTMM$UU)
+    if(is.null(NAMES)) { NAMES <- 1:nrow(CTMM$UU) }
+
+    rownames(mu) <- NAMES
+    if(length(dim(COV.mu))==4) { dimnames(COV.mu) <- list(axes,NAMES,NAMES,axes) }
+    else { dimnames(COV.mu) <- list(axes,axes) }
+
     CTMM <- ctmm.repair(CTMM,K=K)
 
     CTMM$mu <- mu
@@ -589,7 +598,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     {
       IND <- offset + 1:nrow(CTMM[[s]]$mu)
       CTMM[[s]]$mu <- CTMM$mu[IND,]
-      CTMM[[s]]$COV.mu <- CTMM$COV.mu[,IND,,IND]
+      CTMM[[s]]$COV.mu <- CTMM$COV.mu[,IND,IND,]
       offset <- offset + nrow(CTMM[[s]]$mu)
     }
 

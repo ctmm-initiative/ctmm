@@ -548,7 +548,7 @@ bandwidth.pop <- function(data,UD,kernel="individual",weights=FALSE,ref="Gaussia
     {
       for(j in (i+1)%:%length(data))
       {
-        MU <- c( CTMM[[i]]$mu - CTMM[[j]]$mu )
+        MU <- c( CTMM[[i]]$mu[1,] - CTMM[[j]]$mu[1,] )
 
         if(kernel=="individual")
         { SIG <- (1+H)*(methods::getDataPart(CTMM[[i]]$sigma) + methods::getDataPart(CTMM[[j]]$sigma)) }
@@ -564,7 +564,7 @@ bandwidth.pop <- function(data,UD,kernel="individual",weights=FALSE,ref="Gaussia
     L <- rep(0,length(data))
     for(i in 1:length(data))
     {
-      MU <- c( CTMM[[i]]$mu - MEAN$mu )
+      MU <- c( CTMM[[i]]$mu[1,] - MEAN$mu[1,] )
 
       if(kernel=="individual")
       { SIG <- methods::getDataPart(MEAN$sigma) + (1+H)*methods::getDataPart(CTMM[[i]]$sigma) }
@@ -655,7 +655,7 @@ bandwidth.pop <- function(data,UD,kernel="individual",weights=FALSE,ref="Gaussia
   M1 <- M2 <- 0
   for(i in 1:length(UD))
   {
-    MU <- c( CTMM[[i]]$mu - MEAN$mu )
+    MU <- c( CTMM[[i]]$mu[1,] - MEAN$mu[1,] )
     M1 <- M1 + weights[i] * MU
     if(kernel=="individual")
     { M2 <- M2 + weights[i] * ( UD[[i]]$COV + H*CTMM[[i]]$sigma + outer(MU) ) }

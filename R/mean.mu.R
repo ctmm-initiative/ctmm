@@ -35,10 +35,15 @@ mean.mu <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",...)
   INF <- array(TRUE,c(N,AXES*M)) # missing data
 
   if(M==1)
+  { CNAMES <- axes }
+  else
   {
-    colnames(MU) <- axes
-    dimnames(SIGMA) <- list(NULL,axes,axes)
+    NAMES <- which(m==M)[1] # index of most detailed mean
+    NAMES <- rownames(x[[NAMES]]$mu)
+    CNAMES <- c( outer(NAMES,axes,function(s1,s2){paste(s1,s2,sep="-")}) )
   }
+  colnames(MU) <- CNAMES
+  dimnames(SIGMA) <- list(NULL,CNAMES,CNAMES)
 
   for(i in 1:N)
   {
@@ -146,13 +151,32 @@ mean.mu <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",...)
   if(M>1)
   {
     MM$mu <- array(MM$mu,c(M,AXES))
+    dimnames(MM$mu) <- list(NAMES,axes)
 
     dim(MM$COV.mu) <- c(M,AXES,M,AXES)
     MM$COV.mu <- aperm(MM$COV.mu,c(2,1,3,4))
+    dimnames(MM$COV.mu) <- list(axes,NAMES,NAMES,axes)
 
     dim(MM$POV.mu) <- c(M,AXES,M,AXES)
     MM$POV.mu <- aperm(MM$POV.mu,c(2,1,3,4))
+    dimnames(MM$POV.mu) <- list(axes,NAMES,NAMES,axes)
+
+    CNAMES <- outer(NAMES,axes,function(s1,s2){paste(s1,s2,sep="-")})
   }
+  else
+  {
+    MM$mu <- rbind(MM$mu)
+    colnames(MM$mu) <- axes
+
+    dimnames(MM$COV.mu) <- list(axes,axes)
+    dimnames(MM$POV.mu) <- list(axes,axes)
+
+    CNAMES <- outer(axes,axes,function(s1,s2){paste(s1,s2,sep="-")})
+  }
+  CNAMES <- c(CNAMES)
+  CNAMES <- outer(CNAMES,CNAMES,function(s1,s2){paste(s1,s2,sep="-")})
+  CNAMES <- CNAMES[upper.tri(CNAMES,diag=TRUE)]
+  dimnames(MM$COV.POV.mu) <- list(CNAMES,CNAMES)
 
   MM$mean <- mean
 

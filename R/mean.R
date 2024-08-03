@@ -186,6 +186,17 @@ periodic.init <- function(CTMM,data=NULL,...)
   return(CTMM)
 }
 
+
+# come up with generic name of mean vector components
+periodic.namer <- function(CTMM)
+{
+  NAME <- 1%:%sum(CTMM$harmonic)
+  if(length(NAME))
+  { NAME <- c(rbind( paste0("Sin.",NAME) , paste0("Cos.",NAME) )) }
+  NAME <- c("1",NAME)
+  return(NAME)
+}
+
 # periodic location mean
 periodic.mean <- function(CTMM,t,verbose=TRUE,...)
 {
@@ -201,6 +212,8 @@ periodic.mean <- function(CTMM,t,verbose=TRUE,...)
     Omega <- nant(t %o% omega,0)
     U <- cbind( U , riffle(sin(Omega),cos(Omega)) )
   }
+
+  colnames(U) <- periodic.namer(CTMM)
 
   # short periods cause colinearity, replace with Taylor series
   dt <- last(t)-first(t)
@@ -231,6 +244,8 @@ periodic.velocity <- function(CTMM,t,...)
     theta <- omega %o% t # backwards for multiplication by first dimension
     U <- cbind( U , riffle( t(omega*cos(theta)) , -t(omega*sin(theta)) ) )
   }
+
+  colnames(U) <- periodic.namer(CTMM)
 
   return(U)
 }

@@ -63,7 +63,7 @@ tbind(...)
 If no projection argument is specified, a two-point equidistant projection is calculated that should be good for most range resident and migratory species.
 Global migrations that are not along one geodesic (locally straight line) will probably suffer distortion.
 
-\code{as.telemetry()} assumes \href{https://www.movebank.org/node/2381}{Movebank naming conventions}.
+\code{as.telemetry()} assumes \href{https://www.movebank.org/cms/movebank-content/movebank-attribute-dictionary}{Movebank naming conventions}.
 Sufficient MoveBank columns include \code{individual.local.identifier} (or \code{tag.local.identifier}), \code{timestamp}, \code{location.long} and \code{location.lat}, while the optional Movebank columns include (e-obs) \code{eobs.horizontal.accuracy.estimate}, (Telonics) \code{GPS.Horizontal.Error}, \code{GPS.HDOP}, (Argos) \code{Argos.orientation}, \code{Argos.semi.minor} and \code{Argos.semi.major} or \code{Argos.location.class}, etc..
 To have all columns detected and not overwrite eachother's information, \bold{it is best to have only one tracking device model per file imported}.
 Multiple deployments on a single individual can be merged afterwards, using \code{tbind()}.

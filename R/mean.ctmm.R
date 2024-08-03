@@ -762,21 +762,28 @@ mean.ctmm <- function(x,formula=FALSE,weights=NULL,sample=TRUE,debias=TRUE,IC="A
 ## population stationary distribution
 mean_pop <- function(CTMM)
 {
+  axes <- CTMM$axes
+
   # take the stationary part for now
   if(nrow(CTMM$mu)>1)
   {
-    CTMM$mu <- CTMM$mu[1,,drop=FALSE]
-    CTMM$POV.mu <- CTMM$POV.mu[,1,1,] # [x,m,m,x]
     if(CTMM$isotropic['mu'])
     { CTMM$COV.POV.mu <- CTMM$COV.POV.mu[1,1] }
     else
     {
-      P <- c(1,length(CTMM$mu)/2+1) # (x,y)
-      P <- rownames(CTMM$COV.mu)[P]
+      P <- rownames(CTMM$mu)[1]
+      P <- paste(P,CTMM$axes,sep="-")
       P <- outer(P,P,function(p,q){paste(p,q,sep="-")}) # (x-x,x-y,y-x,y-y)
-      P <- P[c(1,2,4)] # (x-x,x-y,y-y)
+      P <- P[c(1,3,4)] # (x-x,x-y,y-y)
       CTMM$COV.POV.mu <- CTMM$COV.POV.mu[P,P]
+
+      P <- outer(axes,axes,function(p,q){paste(p,q,sep="-")}) # (x-x,x-y,y-x,y-y)
+      P <- P[c(1,3,4)] # (x-x,x-y,y-y)
+      dimnames(CTMM$COV.POV.mu) <- list(P,P)
     }
+
+    CTMM$mu <- CTMM$mu[1,,drop=FALSE]
+    CTMM$POV.mu <- CTMM$POV.mu[,1,1,] # [x,m,m,x]
   }
 
   # spread (x,y)

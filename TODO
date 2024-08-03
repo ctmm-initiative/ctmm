@@ -1,4 +1,5 @@
 ** PRIORITY
+* distance, encounters in 3D
 * study on globe plot
 * ctmm.select and rsf.select option to save to disc incrementally
 * code predict and simulate and speeds to accept timestamps
