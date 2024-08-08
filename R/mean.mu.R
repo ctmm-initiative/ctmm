@@ -171,7 +171,7 @@ mean.mu <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",...)
     dimnames(MM$COV.mu) <- list(axes,axes)
     dimnames(MM$POV.mu) <- list(axes,axes)
 
-    CNAMES <- outer(axes,axes,function(s1,s2){paste(s1,s2,sep="-")})
+    CNAMES <- axes
   }
   CNAMES <- c(CNAMES)
   CNAMES <- outer(CNAMES,CNAMES,function(s1,s2){paste(s1,s2,sep="-")})
