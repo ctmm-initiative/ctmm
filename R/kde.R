@@ -492,10 +492,10 @@ kde <- function(data,H,axes=c("x","y"),CTMM=list(),SP=NULL,SP.in=TRUE,RASTER=lis
       if(grad)
       {
         iH <- pd.solve(H[i,,])
-        DIM <- c(length(X),length(Y))
-        G <- array(0,c(DIM,2))
-        G[,,1] <- array(X,DIM)
-        G[,,2] <- t( array(Y,rev(DIM)) )
+        RES <- c(length(X),length(Y))
+        G <- array(0,c(RES,2))
+        G[,,1] <- array(X,RES)
+        G[,,2] <- t( array(Y,rev(RES)) )
         G <- G %.% iH
 
         dG <- G
@@ -504,7 +504,7 @@ kde <- function(data,H,axes=c("x","y"),CTMM=list(),SP=NULL,SP.in=TRUE,RASTER=lis
 
         GRAD[SUB[[1]],SUB[[2]],] <- GRAD[SUB[[1]],SUB[[2]],] - dG
 
-        GG <- array(G,c(DIM,2,2))
+        GG <- array(G,c(RES,2,2))
         GG[,,1,1] <- dPMF * G[,,1] * G[,,1]
         GG[,,1,2] <- dPMF * G[,,1] * G[,,2]
         GG[,,2,1] <- dPMF * G[,,2] * G[,,1]

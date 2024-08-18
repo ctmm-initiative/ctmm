@@ -1,4 +1,4 @@
-ctmm 1.2.1 (2024-08-08)
+ctmm 1.2.1 (2024-08-17)
 ================
 * new functions pd.solve(), pd.logdet(), pd.sqrtm() for covariance matrix operations
 * periodic mean functions now estimate frequency

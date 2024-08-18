@@ -4,7 +4,7 @@
 difference <- function(data,CTMM,t=NULL,...) { combine(data,CTMM,t=t,method="diff",...) }
 midpoint <- function(data,CTMM,t=NULL,complete=FALSE,...) { combine(data,CTMM,t=t,complete=complete,method="mean",...) }
 
-combine <- function(data,CTMM,t=NULL,complete=FALSE,method="diff",...)
+combine <- function(data,CTMM,t=NULL,complete=FALSE,method="diff",uniform=FALSE,res.time=1,...)
 {
   check.projections(data)
   INFO <- mean_info(data)
@@ -25,13 +25,30 @@ combine <- function(data,CTMM,t=NULL,complete=FALSE,method="diff",...)
     t2 <- t[2]
 
     # shared times
-    t <- c( data[[1]]$t , data[[2]]$t )
-    t <- t[t>=t1]
-    t <- t[t<=t2]
-    t <- sort(t)
-    t <- unique(t)
+    if(!uniform)
+    {
+      t <- c( data[[1]]$t , data[[2]]$t )
+      t <- t[t>=t1]
+      t <- t[t<=t2]
+      t <- sort(t)
+      t <- unique(t)
+    }
+    else
+    {
+      dt1 <- diff(data[[1]]$t)
+      dt1 <- dt1[dt1>0]
+      dt1 <- stats::median(dt1)
 
-    if(!length(t))
+      dt2 <- diff(data[[2]]$t)
+      dt2 <- dt2[dt2>0]
+      dt2 <- stats::median(dt2)
+
+      dt <- min(dt1,dt2)
+      n <- ceiling((t2-t1)/dt)
+      t <- seq(t1,t2,length.out=n)
+    }
+
+    if(t1>=t2 || !length(t))
     {
       warning("No overlapping times.")
       data <- data.frame(t=numeric(),x=numeric(),y=numeric())
