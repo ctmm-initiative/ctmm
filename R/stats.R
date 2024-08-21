@@ -318,7 +318,6 @@ qfbinom <- function(p,size,prob)
 }
 
 
-
 # robust central tendency & dispersal estimates with high breakdown threshold
 # nstart should probably be increased from default of 1
 rcov <- function(x,...)

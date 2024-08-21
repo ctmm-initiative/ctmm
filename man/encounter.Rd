@@ -8,16 +8,20 @@
 
 \title{Encounter statistics}
 
-\description{Functions to calculate encounter probabilities and the conditional location distribution of where encounters take place (conditional on said encounters taking place), as described in Noonan et al (2021).}
+\description{Functions to calculate encounter probabilities [IN DEVELOPMENT] and the conditional location distribution of where encounters take place (conditional on said encounters taking place), as described in Noonan et al (2021).}
 
-\usage{encounter(object,debias=FALSE,level=0.95,normalize=FALSE,self=TRUE,...)
+\usage{encounter(data,UD,method="ECDF",debias=TRUE,level=0.95,r=NULL,res.time=1,normalize=FALSE,self=TRUE,...)
 
 cde(object,include=NULL,exclude=NULL,debias=FALSE,...) }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{object}{A \code{list} of aligned \code{UD} objects.}
-  \item{debias}{Approximate bias corrections [IN DEVELOPMENT].}
+  \item{data}{A \code{list} of \code{telemetry} objects.}
+  \item{UD}{A \code{list} of aligned \code{UD} objects.}
+  \item{method}{Encounter probability calculation method: trajectory based (\code{"ECDF"}) or distribution based (\code{"PDF"}).}
+  \item{debias}{Approximate bias corrections.}
   \item{level}{Confidence level for relative encounter rates.}
+  \item{r}{Grid of distances for ECDF calculation.}
+  \item{res.time}{Relative time-grid resolution for predicting ECDF distances.}
   \item{normalize}{Normalize relative encounter rates by the average uncorrelated self-encounter rate.}
   \item{self}{Fix the self-interaction rate appropriately.}
   \item{include}{A matrix of interactions to include in the calculation (see Details below).}
@@ -26,7 +30,7 @@ cde(object,include=NULL,exclude=NULL,debias=FALSE,...) }
 }
 
 \details{
-Encounter probabilities are standardized to 1 meter, and must be multiplied by the square encounter radius (in meters), to obtain other values. If \code{normalize=FALSE}, the relative encounter rates have units of \eqn{1/m^2} and tend to be very small numbers for very large home-range areas. If \code{normalize=TRUE}, the relative encounter rates are normalized by the average uncorrelated self-encounter rate, which is an arbitrary value that provides a convenient scaling.
+[OUTDATED] Encounter probabilities are standardized to 1 meter, and must be multiplied by the square encounter radius (in meters), to obtain other values. If \code{normalize=FALSE}, the relative encounter rates have units of \eqn{1/m^2} and tend to be very small numbers for very large home-range areas. If \code{normalize=TRUE}, the relative encounter rates are normalized by the average uncorrelated self-encounter rate, which is an arbitrary value that provides a convenient scaling.
 
 The \code{include} argument is a matrix that indicates which interactions are considered in the calculation.
 By default, \code{include = 1 - diag(length(object))}, which implies that all interactions are considered aside from self-interactions. Alternatively, \code{exclude = 1 - include} can be specified, and is by-default \code{exclude = diag(length(object))}, which implies that only self-encounters are excluded.

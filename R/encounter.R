@@ -1,37 +1,87 @@
 # relative encounter rates (trajectory based)
-encounter.ecdf <- function(data,CTMM,debias=TRUE,res.time=1,...)
+encounter.ecdf <- function(data,UD,level=0.95,debias=TRUE,res.time=1,r=NULL,...)
 {
+  if(class(UD[[1]])[1]=="UD")
+  { CTMM <- lapply(UD,function(ud){ud@CTMM}) }
+  else
+  { CTMM <- UD }
+
   DIFF <- difference(data,CTMM,uniform=TRUE,res.time=1,...)
   # prediction information
   R2 <- DIFF$x^2+DIFF$y^2
   VAR <- 2*DIFF$VAR.xy
   # worst/null prediction
-  VAR.0 <- sum((CTMM[[1]]$mu-CTMM[[2]]$mu)^2) + var.covm(CTMM[[1]]$sigma) + var.covm(CTMM[[2]]$sigma)
+  VAR0 <- sum((CTMM[[1]]$mu-CTMM[[2]]$mu)^2) + var.covm(CTMM[[1]]$sigma) + var.covm(CTMM[[2]]$sigma)
   # added information
-  DOF <- VAR.0/VAR - 1
+  DOF <- VAR0/VAR - 1
   DOF <- clamp(DOF,0,Inf)
   # uncertainty of added information
-  VAR <- VAR.0/DOF
+  VAR <- VAR0/DOF
   # natural weights
-  w <- VAR.0/(VAR.0+VAR)
-  # chi^2 DOF
+  w <- VAR0/(VAR0+VAR)
+  w <- w/sum(w)
 
+  if(is.null(r)) # default grid (roughly 1% increments)
+  {
+    dr <- sqrt(stats::median(R2))/50
+    r <- (1:100)*dr
+  }
+  # cumulative probability
+  P <- array(0,length(r))
+
+  # smoothed estimate
+  R <- sqrt(R2)
+  for(i in 1:length(R))
+  {
+    j <- r>=R[i]
+    P[j] <- P[j] + w[i]
+  }
+
+  if(debias)
+  {
+    # varying estimate
+    P2 <- array(0,length(r))
+    VAR <- 2*DIFF$VAR.xy
+    DOF <- 2*VAR0/VAR
+    r2 <- r^2
+
+    for(i in 1:length(R2))
+    {
+      X2 <- r2/R2[i] # reduced X^2
+      X2 <- X2 * DOF[i] # X^2
+      P2 <- P2 + w[i] * stats::pchisq(X2,DOF[i])
+    }
+
+    BIAS <- P2/P
+    BIAS <- nant(BIAS,1)
+    P <- P/BIAS
+  }
+
+  # PDF-based calculation
+  DOF <- encounter(data,CTMM,debias=FALSE,method="PDF")$DOF[1,2]
+
+  R <- data.frame(r=r,P=P,P=P,P=P)
+  names(R) <- c('r',NAMES.CI)
+  alpha <- 1-level
+  # binomial CIs
+  for(i in 1:length(P)) { R[i,NAMES.CI] <-  beta.ci(P[i],2*P[i]^2/DOF,level=level) }
+
+  # class(R) <- "ECDF"
+
+  return(R)
 }
 
 
 # relative encounter rates (UD based)
-encounter <- function(data,UD,debias=FALSE,level=0.95,method="ECDF",normalize=FALSE,self=TRUE,...)
+encounter <- function(data,UD,method="ECDF",debias=TRUE,level=0.95,r=NULL,res.time=1,normalize=FALSE,self=TRUE,...)
 {
   units <- FALSE
-  method <- match.arg(method,c("DF","ECDF"))
+  method <- match.arg(method,c("PDF","ECDF"))
 
   if(method=="ECDF")
-  {
-    CTMM <- lapply(UD,function(ud){ud@CTMM})
-    return(encounter.ecdf(data,CTMM,debias=debias,...))
-  }
+  { return(encounter.ecdf(data,UD,debias=debias,r=r,res.time=res.time,...)) }
 
-  if(class(data[[1]])=="UD")
+  if(class(data[[1]])[1]=="UD")
   {
     UD <- data
     rm(data)

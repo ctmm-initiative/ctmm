@@ -1,6 +1,7 @@
-ctmm 1.2.1 (2024-08-17)
+ctmm 1.2.1 (2024-08-20)
 ================
 * new functions pd.solve(), pd.logdet(), pd.sqrtm() for covariance matrix operations
+* new default method "ECDF" for function encounter()
 * periodic mean functions now estimate frequency
 * periodic mean summary now uses beta CIs
 * mean.ctmm() now works on periodic means
