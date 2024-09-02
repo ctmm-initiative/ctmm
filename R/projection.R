@@ -75,6 +75,54 @@ setMethod('projection<-', signature(x='list'), `projection<-.list`)
 
 
 # change the projection of one telemetry object
+"projection<-.ctmm" <- function(x,value)
+{
+  # convert to PROJ4 format if location
+  value <- format_projection(value)
+
+  # from projection
+  PROJ <- projection(x)
+
+  # mean location
+  X <- x$mu[1,,drop=FALSE]
+  Y <- project(X,from=PROJ,to=value)
+
+  # long-lat
+  L <- project(X,from=PROJ)
+  colnames(L) <- c("longitude","latitude")
+
+  # initial northing angle
+  TELE <- data.frame(cbind(L,X))
+  INFO <- attr(x,"info")
+  TELE <- new.telemetry(TELE,info=INFO)
+  N1 <- northing(TELE,proj=PROJ,angle=TRUE)
+
+  # final northing angle
+  TELE <- data.frame(cbind(L,Y))
+  INFO$projection <- value
+  TELE <- new.telemetry(TELE,info=INFO)
+  N2 <- northing(TELE,proj=value,angle=TRUE)
+
+  # rotation angle
+  theta <- (N2-N1)/360*(2*pi)
+
+  # rotate differences from mean
+  x$mu[] <- rotate.vec(x$mu,theta)
+
+  # fix mean location
+  x$mu[1,] <- Y
+
+  # rotate the covariance matrix
+  x$sigma <- rotate.covm(x$sigma,theta)
+
+  attr(x,"info")$projection <- value
+
+  return(x)
+}
+setMethod('projection<-', signature(x='ctmm'), `projection<-.ctmm`)
+
+
+# change the projection of one telemetry object
 "projection<-.telemetry" <- function(x,value)
 {
   # delete projection information

@@ -3,6 +3,7 @@
 \alias{projection,telemetry-method}
 \alias{projection<-,telemetry-method}
 \alias{projection,ctmm-method}
+\alias{projection<-,ctmm-method}
 \alias{projection,UD-method}
 \alias{projection,list-method}
 \alias{projection<-,list-method}
@@ -27,6 +28,8 @@
 \S4method{projection}{NULL}(x,asText=TRUE)
 
 \S4method{projection}{telemetry}(x) <- value
+
+\S4method{projection}{ctmm}(x) <- value
 
 \S4method{projection}{list}(x) <- value
 

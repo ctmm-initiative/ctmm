@@ -1,5 +1,6 @@
-ctmm 1.2.1 (2024-08-20)
+ctmm 1.2.1 (2024-09-01)
 ================
+* new dispatch method projection()<- for ctmm class objects
 * new functions pd.solve(), pd.logdet(), pd.sqrtm() for covariance matrix operations
 * new default method "ECDF" for function encounter()
 * periodic mean functions now estimate frequency

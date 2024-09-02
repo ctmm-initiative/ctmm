@@ -1,4 +1,6 @@
 ** PRIORITY
+* ids()<- function
+* replace special characters in column names on import
 * distance, encounters in 3D
 * study on globe plot
 * ctmm.select and rsf.select option to save to disc incrementally
@@ -243,7 +245,6 @@ PROJECTION
 * project()<- ignores simulated/predicted velocities & covariances without headings & magnitudes
 * error as.telemetry if user attempts lon-lat projection
 * check latlon projection stop code against KT's input
-* document projection projection<- dispatch methods
 
 PARALLELIZATION
 * parallelize akde.list & document overlap
@@ -324,10 +325,8 @@ LOW HANGING FRUIT & Nagging issues
 * rainbow.telemetry
 * plot telemetry/UD with reverse axes (preserve x&y orientation)s
 * give writeShapefile a default folder name, maybe also separate layers into different files
-* compass plot
 * unit Environment on plots for points()
 * individualized projections
-* 1-point azimuthal equidistant projection quick option
 * overload covm * / to apply to area & matrix
 * str.ctmm, str.telemetry (show, print too?)
 * points methods units environment
@@ -399,16 +398,10 @@ AKDE vignette: DOF.H, DOF.mu
 plot options: cex, type, abrv
 
 AKDE with errors, weights
-akde with user-specified grid (and projection)
-
-residual acf versus data acf with correct confidence intervals for no autocorrelation null hypothesis
+akde with user-specified projection
 
 multi-scale variogram bias correction
 variogram & periodogram: coarsening window method to avoid all bias
-
-population fitting without correlation
-population fit of list
-population akde of lists
 
 Lapack GE solve -> Lapack PO/SY solve.
 
