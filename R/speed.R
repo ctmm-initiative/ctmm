@@ -197,6 +197,8 @@ speed_rand <- function(CTMM,data=NULL,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NU
 {
   # capture model uncertainty
   if(prior) { CTMM <- emulate(CTMM,data=data,fast=fast,...) }
+  #DEBUG <<- list(CTMM=CTMM,data=data,prior=FALSE,fast=fast,cor.min=cor.min,dt.max=dt.max,error=error,precompute=precompute,DT=DT,TP=TP,DOF=DOF,...)
+
   # fail state for fractal process
   if(length(CTMM$tau)<2 || CTMM$tau[2]<=.Machine$double.eps) { return(Inf) }
   if(CTMM$tau[2]==Inf) { return(0) }
@@ -225,7 +227,7 @@ speed_rand <- function(CTMM,data=NULL,prior=TRUE,fast=TRUE,cor.min=0.5,dt.max=NU
         # finally check if the simulated distance would be much greater than sampled net displacement
         FAKE <- CTMM
         FAKE$mean <- "stationary"
-        SPD <- speed(FAKE,prior=FALSE)[2]
+        SPD <- speed(FAKE,prior=FALSE,units=FALSE)$CI[2]
         FRAC <- sqrt(diff(data$x)^2+diff(data$y)^2)/DT / SPD
         if(all(FRAC<error)) { return(SPD) }
       }
