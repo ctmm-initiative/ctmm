@@ -50,21 +50,15 @@ legendre <- function(n,x)
 }
 
 # sinc functions
-sinc <- Vectorize( function(x,SIN=sin(x))
+sinc <- function(x,SIN=sin(x))
 {
-  if(x==0)
-  { return(1) }
-  else
-  { return(SIN/x) }
-} )
+  return(ifelse(x==0, 1, SIN/x))
+}
 
-sinch <- Vectorize( function(x,SINH=sinh(x))
+sinch <- function(x,SINH=sinh(x))
 {
-  if(x==0)
-  { return(1) }
-  else
-  { return(SINH/x) }
-} )
+  return(ifelse(x==0, 1, SINH/x))
+}
 
 
 # multivariate polygamma function
