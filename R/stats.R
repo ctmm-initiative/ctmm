@@ -261,15 +261,20 @@ beta.ci <- function(MLE,VAR,level=0.95,alpha=1-level)
 {
   MLE <- nant(MLE,0)
   VAR <- nant(VAR,Inf)
-  n <- MLE*(1-MLE)/VAR - 1
-  if(n<=0)
-  { CI <- c(0,MLE,1) }
-  else
-  {
-    a <- n * MLE
-    b <- n * (1-MLE)
-    CI <- stats::qbeta(c(alpha/2,0.5,1-alpha/2),a,b)
-    CI[2] <- MLE # replace median with mean
+  if(VAR == 0) {
+    # handle the degenerate case (the beta distribution becomes a delta)
+    CI <- c(MLE, MLE, MLE)
+  } else {
+    n <- MLE*(1-MLE)/VAR - 1
+    if(n<=0)
+    { CI <- c(0,MLE,1) }
+    else
+    {
+      a <- n * MLE
+      b <- n * (1-MLE)
+      CI <- stats::qbeta(c(alpha/2,0.5,1-alpha/2),a,b)
+      CI[2] <- MLE # replace median with mean
+    }
   }
   names(CI) <- NAMES.CI
   return(CI)
