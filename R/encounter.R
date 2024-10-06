@@ -6,6 +6,12 @@ encounter.ecdf <- function(data,UD,level=0.95,debias=TRUE,res.time=1,r=NULL,...)
   else
   { CTMM <- UD }
 
+  t1 <- c(data[[1]]$t[1],data[[2]]$t[1])
+  t2 <- c(last(data[[1]]$t),last(data[[2]]$t))
+  OVER <- ( min(t2)-max(t1) ) / ( max(t2)-min(t1) )
+
+  if(OVER<=0) { stop("No overlapping times.") }
+
   DIFF <- difference(data,CTMM,uniform=TRUE,res.time=1,...)
   # prediction information
   R2 <- DIFF$x^2+DIFF$y^2
@@ -59,6 +65,7 @@ encounter.ecdf <- function(data,UD,level=0.95,debias=TRUE,res.time=1,r=NULL,...)
 
   # PDF-based calculation
   DOF <- encounter(data,CTMM,debias=FALSE,method="PDF")$DOF[1,2]
+  DOF <- DOF * OVER # correction for partial temporal overlap
 
   R <- data.frame(r=r,P=P,P=P,P=P)
   names(R) <- c('r',NAMES.CI)
