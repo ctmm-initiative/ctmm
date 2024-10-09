@@ -1,4 +1,5 @@
 ** PRIORITY
+* make speed() work on model guess objects
 * ctmm.boot ctmmlearn script: Error in checkForRemoteErrors(val) :5 nodes produced errors; first error: object 'Green' not found
 * ids()<- function
 * replace special characters in column names on import

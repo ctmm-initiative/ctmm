@@ -18,7 +18,7 @@ speed.ctmm <- function(object,data=NULL,t=NULL,level=0.95,robust=FALSE,units=TRU
     return(INF)
   }
 
-  if(prior && fast)
+  if(prior && fast && "COV" %in% names(object))
   {
     TEST <- try(any(eigen(object$COV)$values<=.Machine$double.eps),silent=TRUE)
     TEST <- class(TEST)[1]!="logical" || TEST
@@ -55,6 +55,7 @@ speed.ctmm <- function(object,data=NULL,t=NULL,level=0.95,robust=FALSE,units=TRU
         DOF <- chi.dof(MEAN,M2) # chi DOF
         CI <- sqrt(chisq.ci(M2,DOF=DOF,alpha=1-level)) # chi=sqrt(chi^2) CI
         CI <- CI / chi.bias(DOF)
+        CI[1] <- nant(CI[1],0) # 0/0
         CI[2] <- MEAN # shouldn't be necessary?
       }
       else # ! prior
