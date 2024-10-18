@@ -1,4 +1,4 @@
-ctmm 1.2.1 (2024-10-09)
+ctmm 1.2.1 (2024-10-17)
 ================
 * new dispatch method projection()<- for ctmm class objects
 * new functions pd.solve(), pd.logdet(), pd.sqrtm() for covariance matrix operations

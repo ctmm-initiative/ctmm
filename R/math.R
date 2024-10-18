@@ -72,3 +72,12 @@ mpsigamma <- function(x,deriv=0,dim=1)
   PSI <- sum(PSI)
   return(PSI)
 }
+
+
+logit <- function(p)
+{
+  p <- clamp(p,0,1)
+  log(p/(1-p))
+}
+
+ilogit <- function(z) { 1/(1+exp(-z)) }

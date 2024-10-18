@@ -45,22 +45,44 @@ encounter.ecdf <- function(data,UD,level=0.95,debias=TRUE,res.time=1,r=NULL,...)
 
   if(debias)
   {
-    # varying estimate
-    P2 <- array(0,length(r))
+    # 1x variance CDF
+    P1 <- array(0,length(r))
     VAR <- 2*DIFF$VAR.xy
-    DOF <- 2*VAR0/VAR
+    DOF <- 2*R2/VAR
     r2 <- r^2
 
+    # +variance calculation
+    for(i in 1:length(R2))
+    {
+      X2 <- r2/R2[i] # reduced X^2
+      X2 <- X2 * DOF[i] # X^2
+      P1 <- P1 + w[i] * stats::pchisq(X2,DOF[i])
+    }
+    P1 <- clamp(P1,0,1)
+
+    # 2x variance CDF
+    P2 <- array(0,length(r))
+    R2 <- R2 + VAR
+    VAR <- 2 * VAR
+    DOF <- 2*R2/VAR
+
+    # ++variance calculation
     for(i in 1:length(R2))
     {
       X2 <- r2/R2[i] # reduced X^2
       X2 <- X2 * DOF[i] # X^2
       P2 <- P2 + w[i] * stats::pchisq(X2,DOF[i])
     }
+    P2 <- clamp(P2,0,1)
 
-    BIAS <- P2/P
-    BIAS <- nant(BIAS,1)
-    P <- P/BIAS
+    P <- logit(P)
+    P1 <- logit(P1)
+    P2 <- logit(P2)
+
+    BIAS <- P2-P1
+    P <- P-BIAS
+
+    P <- ilogit(P)
   }
 
   # PDF-based calculation
