@@ -1,5 +1,6 @@
-ctmm 1.2.1 (2024-10-17)
+ctmm 1.2.1 (2024-10-18)
 ================
+* sdm.fit() and sdm.select() now support camera-trap and other count data
 * new dispatch method projection()<- for ctmm class objects
 * new functions pd.solve(), pd.logdet(), pd.sqrtm() for covariance matrix operations
 * new default method "ECDF" for function encounter()

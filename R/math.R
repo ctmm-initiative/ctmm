@@ -81,3 +81,7 @@ logit <- function(p)
 }
 
 ilogit <- function(z) { 1/(1+exp(-z)) }
+
+binom <- function(x,y) { 1/(x+1)/beta(y+1,x-y+1) }
+
+lbinom <- function(x,y) { -log(x+1) - lbeta(y+1,x-y+1) }

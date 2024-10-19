@@ -13,8 +13,9 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
   if(trace) { control$trace <- trace-1 }
 
   CALC <- integrated || length(R) # anything to calculate?
+  COUNT <- "count" %in% names(data) # not presence-only data
 
-  if(!integrated) # prepare available region polygon
+  if(!integrated && !COUNT) # prepare available region polygon
   {
     if(class(level.UD)[1]=="numeric")
     {
@@ -66,6 +67,15 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
   # extract weights
   W <- mean(UD$DOF.area) # +1 for mean not being detrended accounted for
   w <- UD$weights * W
+
+  # setup camera-trap data type
+  if(COUNT)
+  {
+    count <- data$count
+    success <- 1 # negative-binomial success rate
+    w[] <- 1
+    W <- sum(w)
+  }
 
   R <- listify(R)
   TEST <- sapply(R,raster::inMemory)
@@ -380,10 +390,13 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
   # minimal assignment
   beta.null <- numeric(length(TERMS))
   names(beta.null) <- TERMS
-  if(isotropic)
-  { beta.null['rr'] <- 1 }
-  else
-  { beta.null[c('xx','yy')] <- c(1,1) }
+  if(integrated)
+  {
+    if(isotropic)
+    { beta.null['rr'] <- 1 }
+    else
+    { beta.null[c('xx','yy')] <- c(1,1) }
+  }
 
   # initial estimates
   beta <- beta.null
@@ -452,358 +465,416 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
     }
   } # end if(integrated)
 
-  WDAVE <- c(w %*% DATA[,TERMS])
-  DAVE <- WDAVE / W
-  DCOV <- vapply(1:length(w),function(i){w[i]*outer(DATA[i,TERMS]-DAVE)},outer(DAVE)) # [TERMS,TERMS,TIMES]
-  DCOV <- apply(DCOV,1:2,sum) / sum(w)
-  dimnames(DCOV) <- list(TERMS,TERMS)
-  names(DAVE) <- names(WDAVE) <- TERMS
-  NAS <- is.na(WDAVE)
-  if(any(NAS))
+  if(COUNT) # camera-trap and count data
   {
-    VARS <- paste0(VARS[NAS],collapse=",")
-
-    IND <- rowSums(is.na(DATA))
-    IND <- which(IND>0)
-    HEAD <- head(IND)
-    if(length(HEAD)<length(IND))
-    { HEAD <- paste0(c(HEAD,"..."),collapse=",") }
-    else
-    { HEAD <- paste0(HEAD,collapse=",") }
-
-    STOP <- paste0("NA values in sampled variables ",VARS," at points ",HEAD)
-    stop(STOP)
-  }
-
-  SATA <- array(0,c(0,dim(DATA))) # simulated data [track,time,vars]
-  dimnames(SATA)[[3]] <- VARS
-
-  nloglike <- function(beta,zero=0,verbose=FALSE)
-  {
-    SAMP <- SATA[,,TERMS,drop=FALSE] %.% beta # [track,time]
-
-    # SHIFT <- stats::median(SAMP,na.rm=TRUE)
-    # SHIFT <- nant(SHIFT,0)
-
-    SHIFT <- max(SAMP,na.rm=TRUE)
-    if(abs(SHIFT)==Inf) { SHIFT <- 0 }
-
-    SAMP <- SAMP - SHIFT
-    SAMP <- exp(SAMP) # + exp(SHIFT)
-    SAMP[] <- nant(SAMP,0) # treat NA as inaccessible region
-
-    if(length(OFFSET))
+    nloglike <- function(beta,zero=0,verbose=FALSE)
     {
-      # ONE <- rep(TRUE,nrow(SATA))
-      ONE <- evaluate(OFFSET,SATA,offset=TRUE)
-      dim(ONE) <- dim(ONE)[1:2]
-      SAMP <- ONE * SAMP
-    }
+      DAV <- c(DATA[,TERMS,drop=FALSE] %*% beta)
+      cntDAV <- count*DAV
+      lfcount <- lfactorial(count)
+      expDAV <- exp(DAV)
 
-    nll <- -c(WDAVE %*% beta)
-
-    if(STATIONARY)
-    {
-      SAMP <- c(SAMP)
-
-      if(integrator=="MonteCarlo")
-      { MEAN <- mean(SAMP) }
-      else # Newton integration
-      { MEAN <- sum(SAMP*dA) }
-
-      log.MEAN <- log(MEAN) + SHIFT
-
-      if(integrator=="MonteCarlo")
+      # unknown success rate
+      nll <- function(par,zero=0)
       {
-        if(debias || verbose) # numerical error variance (per W^2)
+        # nuissance parameters
+        success <- par[1]
+        b0 <- par[2]
+
+        if(success==0)
+        { NLL <- Inf } # I think this is right
+        if(success==1) # Poisson
+        { NLL <- -cntDAV-b0 + expDAV*exp(b0) + lfcount }
+        else # negative binomial
         {
-          VAR.log <- stats::var(SAMP)/length(SAMP) /MEAN^2
-
-          # MEAN-log != log-MEAN bias for small N (per W)
-          if(debias) { log.MEAN <- log.MEAN + W/2*VAR.log } # +1/2 from Taylor series
+          rate <- (success/(1-success)) * expDAV*exp(b0)
+          NLL <- -lbinom(count+rate-1,count) - count*log(1-success) - rate*log(success)
         }
-      }
-      else
-      { VAR.log <- 0 }
+        NLL <- NLL - zero/length(count)
+        NLL <- sum(NLL)
+        return(NLL)
+      } # nll
 
-      nll <- W *(nll/W + log.MEAN - zero/W)
+      lower <- c(0,-Inf)
+      upper <- c(1,Inf)
+      parscale <- c(1,1)
 
-      if(verbose) { VAR.log <- W^2 * VAR.log }
-    }
-    else # !STATIONARY
-    {
-      MEAN <- apply(SAMP,2,mean) # [time]
-      log.MEAN <- log(MEAN) + SHIFT
+      # initial guess
+      b0 <- -mean(log(expDAV)) # Poisson solution
+      success <- mean(count)/var(count) # method of moments
+      success <- clamp(success,0,1)
+      par <- c(success,b0)
 
-      if(debias || verbose) # numerical error variance (per w^2)
-      { VAR.log <- apply(SAMP,2,stats::var)/dim(SAMP)[1] /MEAN^2 }
-      if(debias) # MEAN-log != log-MEAN bias for small N (per w)
-      { log.MEAN <- log.MEAN + w/2*VAR.log } # +1/2 from Taylor series
+      RESULT <- optimizer(par,nll,lower=lower,upper=upper,control=list(parscale=parscale))
+      # par <- RESULT$par
+      # success <<- par[1]
+      # b0 <<- par[2]
 
-      nll <- sum(nll/n + w*log.MEAN - zero/n) # can't divide by w
-
-      if(verbose) { VAR.log <- sum(w^2 * VAR.log) }
-    }
-
-    nll <- c(nll)
-    nll <- nant(nll,Inf)
-
-    if(verbose)
-    {
-      RET <- list(loglike=-nll,Z=log.MEAN,VAR.loglike=VAR.log)
-      return(RET)
-    }
-    else
-    { return(nll) }
-  }
-
-  N <- ifelse(STATIONARY,1,8) # starting value, will increase iteratively
-  N.OLD <- 0
-  loglike <- -Inf
-  STDloglike <- Inf
-  beta.init <- beta
-
-  if(CALC)
-  { ERROR.BIG <- TRUE }
-  else # nothing to calculate below
-  {
-    ERROR.BIG <- FALSE
-    loglike <- 0 # log(1/AREA) later
-    VAR.loglike <- 0
-  }
-
-  while(ERROR.BIG)
-  {
-    # double the random sample
-    if(integrator=="MonteCarlo")
-    {
-      if(integrated)
-      {
-        SIM <- simulate(IID,t=1:(N*nrow(data)),complete=TRUE)
-        SIM <- data.frame(SIM)
-      }
-      else
-      {
-        ## sf::st_sample is waaaay toooo slooooow
-        # SIM <- sf::st_sample(level.UD,size=N*nrow(data),type="random",exact=TRUE)
-        # SIM <- sf::st_transform(SIM,sf::st_crs(DATUM))
-        # SIM <- sf::st_coordinates(SIM)
-        SIM <- sp::spsample(level.UD,n=N*nrow(data),type="random")
-        SIM <- SIM@coords
-        SIM <- project(SIM,from=projection(data),to=DATUM)
-        colnames(SIM) <- GEO
-      }
-
-      SATA <- fbind(SATA,array(0,c(N,nrow(data),length(VARS))))
-    }
-    else # deterministic quadrature grid
-    {
-      if(CONSISTENT) #
-      {
-        if(integrated) # sample as far out as necessary
-        {
-          z <- qmvnorm(1-error,dim=2)
-          z2 <- z^2 * chisq.ci(1,DOF=DOF.area(CTMM),level=1-error)[3]
-          # could do this slightly better with math
-          AVAIL <- ellipsograph(mu=CTMM$mu,sigma=z2*methods::getDataPart(CTMM$sigma),PLOT=FALSE)
-        }
-        else # only sample within available area
-        { AVAIL <- level.UD@Polygons[[1]]@coords }
-        colnames(AVAIL) <- c('x','y')
-
-        # switch to raster projection
-        AVAIL <- project(AVAIL,from=projection(CTMM),to=PROJ[1])
-
-        # raster grid locations
-        XG <- X[[1]]
-        XG <- XG[XG>=min(AVAIL[,'x'])]
-        XG <- XG[XG<=max(AVAIL[,'x'])]
-
-        YG <- Y[[1]]
-        YG <- YG[YG>=min(AVAIL[,'y'])]
-        YG <- YG[YG<=max(AVAIL[,'y'])]
-
-        DIM <- c(length(XG),length(YG))
-        xy <- array(0,c(DIM,2))
-        xy[,,1] <- XG
-        xy <- aperm(xy,c(2,1,3))
-        xy[,,2] <- YG
-        xy <- aperm(xy,c(2,1,3))
-        dim(xy) <- c(prod(DIM),2)
-        colnames(xy) <- c('x','y')
-        SIM <- project(xy,from=PROJ[1],to=projection(CTMM))
-
-        # subset of working points in area
-        if(integrated)
-        {
-          SUB <- t(SIM) - c(CTMM$mu) # [2,n]
-          SUB <- mpow.covm(CTMM$sigma,-1/2) %*% SUB # [2,n]
-          SUB <- SUB['x',]^2 + SUB['y',]^2 # [n]
-          SUB <- (SUB <= z2)
-        }
-        else # arbitrary contour
-        {
-          SUB <- sp::point.in.polygon(xy[,'x'],xy[,'y'],AVAIL[,'x'],AVAIL[,'y'])
-          SUB <- as.logical(SUB)
-        }
-
-        SIM <- SIM[SUB,] # in CTMM projection
-        xy <- xy[SUB,] # in raster projection
-
-        if(length(R))
-        { dA <- raster::extract(dA,xy,method="bilinear") }
-        else
-        { dA <- array(prod(UD$dr),nrow(xy)) }
-
-        N <- nrow(xy)
-      }
-      else # elliptical grid
-      { stop('Inconsistent grids not yet supported when method!="MonteCarlo".') }
-
-      if(STATIONARY)
-      { SATA <- array(0,c(N,1,length(VARS))) }
-      else
-      { SATA <- array(0,c(N,nrow(data),length(VARS))) }
-    } # end quadrature points
-
-    dimnames(SATA)[[3]] <- VARS
-    SUB <- N.OLD+1:N # new indices
-
-    # store simulation-sampled raster covariates
-    for(i in 1%:%length(RVARS))
-    {
-      r <- RVARS[i]
-
-      # store data-sampled covariates
-      if(integrator=="MonteCarlo")
-      {
-        if(i==1 || PROJ[i]!=PROJ[i-1])
-        {
-          if(integrated)
-          { xy <- get.telemetry(SIM,GEO) }
-          else
-          { xy <- SIM }
-
-          xy <- project(xy,to=PROJ[i])
-        }
-      }
-      else if(!CONSISTENT) # CONSISTENT case done above
-      { stop() }
-      # !CONSISTENT UNFINISHED !!!!!!!!!!!!!!!
-
-      DIM <- dim(R[[i]])
-      if(DIM[3]==1)
-      { SATA[SUB,,r] <- raster::extract(R[[i]],xy,method=interpolate[i]) }
-      else
-      {
-        XY <- xy
-        XY[,'x'] <- (XY[,'x'] - X[[i]][1])/dX[i] + 1
-        XY[,'y'] <- (XY[,'y'] - Y[[i]][1])/dY[i] + 1
-
-        XY <- cbind(XY,rep(data$t,N))
-        SATA[SUB,,r] <- tint(R[[i]],t(xy))
-      }
-    }
-
-    SATA[SUB,,CVARS] <- evaluate(CVARS,SATA[SUB,,,drop=FALSE])
-
-    if(integrated)
-    {
-      # de-trend
-      SATA[SUB,,'x'] <- SIM[,'x'] - mu['x']
-      SATA[SUB,,'y'] <- SIM[,'y'] - mu['y']
-
-      # rotate -theta
-      if(!isotropic) { SATA[SUB,,axes] <- SATA[SUB,,axes] %.% ROT }
-
-      # standardize
-      SATA[SUB,,'x'] <- SATA[SUB,,'x']/std['x']
-      SATA[SUB,,'y'] <- SATA[SUB,,'y']/std['y']
-
-      # variance/covariance terms
-      if(isotropic)
-      { SATA[SUB,,'rr'] <- -( SATA[SUB,,'x']^2 + SATA[SUB,,'y']^2 )/2 }
-      else
-      {
-        SATA[SUB,,'xx'] <- -SATA[SUB,,'x']^2/2
-        SATA[SUB,,'yy'] <- -SATA[SUB,,'y']^2/2
-        SATA[SUB,,'xy'] <- -SATA[SUB,,'x']*SATA[SUB,,'y']
-      }
-    }
-
-    # update SIM count
-    N <- nrow(SATA)
-
-    # adaptive precision - error target is for parameters or sqrt(STDloglike)
-    if(integrator=="MonteCarlo")
-    {
-      if(trace) { message("Maximizing likelihood @ n=",N,"\u00D7",nrow(data),'=',N*nrow(data)) }
-
-      precision <- clamp(STDloglike,0,1)/sqrt(2) # expected STD[loglike] this round
-      precision <- max(precision,error) # no point in exceeding threshold error
-      precision <- precision^2 # improve over Monte-Carlo error
-      precision <- log(precision)/log(.Machine$double.eps) # relative to machine error
-      precision <- clamp(precision,1/8,1/2)
-      control$precision <- precision
-    }
-    else # STATIONARY ONLY FOR NOW !!!!!!!!!
-    { if(trace) { message("Maximizing likelihood @ n=",N) } }
-
-    NLL <- nloglike(beta)
-
-    # fix bad prior model
-    if(any(beta!=beta.null))
-    {
-      if(nloglike(beta.null)<=NLL)
-      { beta <- beta.null }
-    }
-
-    # fix bad early runs
-    if(any(beta!=beta.init))
-    {
-      if(nloglike(beta.init)<=NLL)
-      { beta <- beta.init }
-    }
+      return(RESULT$value)
+    } # nloglike
 
     RESULT <- optimizer(beta,nloglike,parscale=parscale,lower=lower,upper=upper,control=control)
-    beta.OLD <- beta
     beta <- RESULT$par
-    loglike.OLD <- loglike
     loglike <- -RESULT$value
     COV <- RESULT$covariance
-
-    if(integrator!="MonteCarlo")
+    VAR.loglike <- 0
+    integrator <- NULL
+  }
+  else # PO and tracking data
+  {
+    WDAVE <- c(w %*% DATA[,TERMS])
+    DAVE <- WDAVE / W
+    DCOV <- vapply(1:length(w),function(i){w[i]*outer(DATA[i,TERMS]-DAVE)},outer(DAVE)) # [TERMS,TERMS,TIMES]
+    DCOV <- apply(DCOV,1:2,sum) / sum(w)
+    dimnames(DCOV) <- list(TERMS,TERMS)
+    names(DAVE) <- names(WDAVE) <- TERMS
+    NAS <- is.na(WDAVE)
+    if(any(NAS))
     {
+      VARS <- paste0(VARS[NAS],collapse=",")
+
+      IND <- rowSums(is.na(DATA))
+      IND <- which(IND>0)
+      HEAD <- head(IND)
+      if(length(HEAD)<length(IND))
+      { HEAD <- paste0(c(HEAD,"..."),collapse=",") }
+      else
+      { HEAD <- paste0(HEAD,collapse=",") }
+
+      STOP <- paste0("NA values in sampled variables ",VARS," at points ",HEAD)
+      stop(STOP)
+    }
+
+    SATA <- array(0,c(0,dim(DATA))) # simulated data [track,time,vars]
+    dimnames(SATA)[[3]] <- VARS
+
+    nloglike <- function(beta,zero=0,verbose=FALSE)
+    {
+      SAMP <- SATA[,,TERMS,drop=FALSE] %.% beta # [track,time]
+
+      # SHIFT <- stats::median(SAMP,na.rm=TRUE)
+      # SHIFT <- nant(SHIFT,0)
+
+      SHIFT <- max(SAMP,na.rm=TRUE)
+      if(abs(SHIFT)==Inf) { SHIFT <- 0 }
+
+      SAMP <- SAMP - SHIFT
+      SAMP <- exp(SAMP) # + exp(SHIFT)
+      SAMP[] <- nant(SAMP,0) # treat NA as inaccessible region
+
+      if(length(OFFSET))
+      {
+        # ONE <- rep(TRUE,nrow(SATA))
+        ONE <- evaluate(OFFSET,SATA,offset=TRUE)
+        dim(ONE) <- dim(ONE)[1:2]
+        SAMP <- ONE * SAMP
+      }
+
+      nll <- -c(WDAVE %*% beta)
+
+      if(STATIONARY)
+      {
+        SAMP <- c(SAMP)
+
+        if(integrator=="MonteCarlo")
+        { MEAN <- mean(SAMP) }
+        else # Newton integration
+        { MEAN <- sum(SAMP*dA) }
+
+        log.MEAN <- log(MEAN) + SHIFT
+
+        if(integrator=="MonteCarlo")
+        {
+          if(debias || verbose) # numerical error variance (per W^2)
+          {
+            VAR.log <- stats::var(SAMP)/length(SAMP) /MEAN^2
+
+            # MEAN-log != log-MEAN bias for small N (per W)
+            if(debias) { log.MEAN <- log.MEAN + W/2*VAR.log } # +1/2 from Taylor series
+          }
+        }
+        else
+        { VAR.log <- 0 }
+
+        nll <- W *(nll/W + log.MEAN - zero/W)
+
+        if(verbose) { VAR.log <- W^2 * VAR.log }
+      }
+      else # !STATIONARY
+      {
+        MEAN <- apply(SAMP,2,mean) # [time]
+        log.MEAN <- log(MEAN) + SHIFT
+
+        if(debias || verbose) # numerical error variance (per w^2)
+        { VAR.log <- apply(SAMP,2,stats::var)/dim(SAMP)[1] /MEAN^2 }
+        if(debias) # MEAN-log != log-MEAN bias for small N (per w)
+        { log.MEAN <- log.MEAN + w/2*VAR.log } # +1/2 from Taylor series
+
+        nll <- sum(nll/n + w*log.MEAN - zero/n) # can't divide by w
+
+        if(verbose) { VAR.log <- sum(w^2 * VAR.log) }
+      }
+
+      nll <- c(nll)
+      nll <- nant(nll,Inf)
+
+      if(verbose)
+      {
+        RET <- list(loglike=-nll,Z=log.MEAN,VAR.loglike=VAR.log)
+        return(RET)
+      }
+      else
+      { return(nll) }
+    } # nloglike
+
+    N <- ifelse(STATIONARY,1,8) # starting value, will increase iteratively
+    N.OLD <- 0
+    loglike <- -Inf
+    STDloglike <- Inf
+    beta.init <- beta
+
+    if(CALC)
+    { ERROR.BIG <- TRUE }
+    else # nothing to calculate below
+    {
+      ERROR.BIG <- FALSE
+      loglike <- 0 # log(1/AREA) later
       VAR.loglike <- 0
-      break
     }
 
-    STUFF <- nloglike(beta,zero=-loglike,verbose=TRUE)
-    VAR.loglike <- STUFF$VAR.loglike
-    STDloglike <- sqrt(VAR.loglike)
-    STDbeta <- (beta-beta.OLD)/sqrt(diag(COV))
-    if(trace)
+    while(ERROR.BIG)
     {
-      message(" SD[log(\u2113)] = ",STDloglike)
-      message(" \u0394log(\u2113) = ",loglike-loglike.OLD)
-      message(" \u0394\u03B2/SD[\u03B2] = ",paste(STDbeta,collapse=' '))
-    }
+      # double the random sample
+      if(integrator=="MonteCarlo")
+      {
+        if(integrated)
+        {
+          SIM <- simulate(IID,t=1:(N*nrow(data)),complete=TRUE)
+          SIM <- data.frame(SIM)
+        }
+        else
+        {
+          ## sf::st_sample is waaaay toooo slooooow
+          # SIM <- sf::st_sample(level.UD,size=N*nrow(data),type="random",exact=TRUE)
+          # SIM <- sf::st_transform(SIM,sf::st_crs(DATUM))
+          # SIM <- sf::st_coordinates(SIM)
+          SIM <- sp::spsample(level.UD,n=N*nrow(data),type="random")
+          SIM <- SIM@coords
+          SIM <- project(SIM,from=projection(data),to=DATUM)
+          colnames(SIM) <- GEO
+        }
 
-    # numbers for next iteration
-    N.OLD <- N
+        SATA <- fbind(SATA,array(0,c(N,nrow(data),length(VARS))))
+      }
+      else # deterministic quadrature grid
+      {
+        if(CONSISTENT) #
+        {
+          if(integrated) # sample as far out as necessary
+          {
+            z <- qmvnorm(1-error,dim=2)
+            z2 <- z^2 * chisq.ci(1,DOF=DOF.area(CTMM),level=1-error)[3]
+            # could do this slightly better with math
+            AVAIL <- ellipsograph(mu=CTMM$mu,sigma=z2*methods::getDataPart(CTMM$sigma),PLOT=FALSE)
+          }
+          else # only sample within available area
+          { AVAIL <- level.UD@Polygons[[1]]@coords }
+          colnames(AVAIL) <- c('x','y')
 
-    # estimated errors for this round
-    ERROR.BIG <- c(STDloglike,abs(c(loglike-loglike.OLD,STDbeta))/sqrt(2)) > error
-    ERROR.BIG <- any(ERROR.BIG)
+          # switch to raster projection
+          AVAIL <- project(AVAIL,from=projection(CTMM),to=PROJ[1])
 
-    SIZE <- 2*utils::object.size(SATA)
-    if(SIZE[1]>max.mem)
-    {
-      SIZE <- format(SIZE,units="auto")
-      warning("Calculation stopped before ",SIZE," allocation.")
-      break
-    }
-  } # while(ERROR.BIG)
+          # raster grid locations
+          XG <- X[[1]]
+          XG <- XG[XG>=min(AVAIL[,'x'])]
+          XG <- XG[XG<=max(AVAIL[,'x'])]
+
+          YG <- Y[[1]]
+          YG <- YG[YG>=min(AVAIL[,'y'])]
+          YG <- YG[YG<=max(AVAIL[,'y'])]
+
+          DIM <- c(length(XG),length(YG))
+          xy <- array(0,c(DIM,2))
+          xy[,,1] <- XG
+          xy <- aperm(xy,c(2,1,3))
+          xy[,,2] <- YG
+          xy <- aperm(xy,c(2,1,3))
+          dim(xy) <- c(prod(DIM),2)
+          colnames(xy) <- c('x','y')
+          SIM <- project(xy,from=PROJ[1],to=projection(CTMM))
+
+          # subset of working points in area
+          if(integrated)
+          {
+            SUB <- t(SIM) - c(CTMM$mu) # [2,n]
+            SUB <- mpow.covm(CTMM$sigma,-1/2) %*% SUB # [2,n]
+            SUB <- SUB['x',]^2 + SUB['y',]^2 # [n]
+            SUB <- (SUB <= z2)
+          }
+          else # arbitrary contour
+          {
+            SUB <- sp::point.in.polygon(xy[,'x'],xy[,'y'],AVAIL[,'x'],AVAIL[,'y'])
+            SUB <- as.logical(SUB)
+          }
+
+          SIM <- SIM[SUB,] # in CTMM projection
+          xy <- xy[SUB,] # in raster projection
+
+          if(length(R))
+          { dA <- raster::extract(dA,xy,method="bilinear") }
+          else
+          { dA <- array(prod(UD$dr),nrow(xy)) }
+
+          N <- nrow(xy)
+        }
+        else # elliptical grid
+        { stop('Inconsistent grids not yet supported when method!="MonteCarlo".') }
+
+        if(STATIONARY)
+        { SATA <- array(0,c(N,1,length(VARS))) }
+        else
+        { SATA <- array(0,c(N,nrow(data),length(VARS))) }
+      } # end quadrature points
+
+      dimnames(SATA)[[3]] <- VARS
+      SUB <- N.OLD+1:N # new indices
+
+      # store simulation-sampled raster covariates
+      for(i in 1%:%length(RVARS))
+      {
+        r <- RVARS[i]
+
+        # store data-sampled covariates
+        if(integrator=="MonteCarlo")
+        {
+          if(i==1 || PROJ[i]!=PROJ[i-1])
+          {
+            if(integrated)
+            { xy <- get.telemetry(SIM,GEO) }
+            else
+            { xy <- SIM }
+
+            xy <- project(xy,to=PROJ[i])
+          }
+        }
+        else if(!CONSISTENT) # CONSISTENT case done above
+        { stop() }
+        # !CONSISTENT UNFINISHED !!!!!!!!!!!!!!!
+
+        DIM <- dim(R[[i]])
+        if(DIM[3]==1)
+        { SATA[SUB,,r] <- raster::extract(R[[i]],xy,method=interpolate[i]) }
+        else
+        {
+          XY <- xy
+          XY[,'x'] <- (XY[,'x'] - X[[i]][1])/dX[i] + 1
+          XY[,'y'] <- (XY[,'y'] - Y[[i]][1])/dY[i] + 1
+
+          XY <- cbind(XY,rep(data$t,N))
+          SATA[SUB,,r] <- tint(R[[i]],t(xy))
+        }
+      }
+
+      SATA[SUB,,CVARS] <- evaluate(CVARS,SATA[SUB,,,drop=FALSE])
+
+      if(integrated)
+      {
+        # de-trend
+        SATA[SUB,,'x'] <- SIM[,'x'] - mu['x']
+        SATA[SUB,,'y'] <- SIM[,'y'] - mu['y']
+
+        # rotate -theta
+        if(!isotropic) { SATA[SUB,,axes] <- SATA[SUB,,axes] %.% ROT }
+
+        # standardize
+        SATA[SUB,,'x'] <- SATA[SUB,,'x']/std['x']
+        SATA[SUB,,'y'] <- SATA[SUB,,'y']/std['y']
+
+        # variance/covariance terms
+        if(isotropic)
+        { SATA[SUB,,'rr'] <- -( SATA[SUB,,'x']^2 + SATA[SUB,,'y']^2 )/2 }
+        else
+        {
+          SATA[SUB,,'xx'] <- -SATA[SUB,,'x']^2/2
+          SATA[SUB,,'yy'] <- -SATA[SUB,,'y']^2/2
+          SATA[SUB,,'xy'] <- -SATA[SUB,,'x']*SATA[SUB,,'y']
+        }
+      }
+
+      # update SIM count
+      N <- nrow(SATA)
+
+      # adaptive precision - error target is for parameters or sqrt(STDloglike)
+      if(integrator=="MonteCarlo")
+      {
+        if(trace) { message("Maximizing likelihood @ n=",N,"\u00D7",nrow(data),'=',N*nrow(data)) }
+
+        precision <- clamp(STDloglike,0,1)/sqrt(2) # expected STD[loglike] this round
+        precision <- max(precision,error) # no point in exceeding threshold error
+        precision <- precision^2 # improve over Monte-Carlo error
+        precision <- log(precision)/log(.Machine$double.eps) # relative to machine error
+        precision <- clamp(precision,1/8,1/2)
+        control$precision <- precision
+      }
+      else # STATIONARY ONLY FOR NOW !!!!!!!!!
+      { if(trace) { message("Maximizing likelihood @ n=",N) } }
+
+      NLL <- nloglike(beta)
+
+      # fix bad prior model
+      if(any(beta!=beta.null))
+      {
+        if(nloglike(beta.null)<=NLL)
+        { beta <- beta.null }
+      }
+
+      # fix bad early runs
+      if(any(beta!=beta.init))
+      {
+        if(nloglike(beta.init)<=NLL)
+        { beta <- beta.init }
+      }
+
+      RESULT <- optimizer(beta,nloglike,parscale=parscale,lower=lower,upper=upper,control=control)
+      beta.OLD <- beta
+      beta <- RESULT$par
+      loglike.OLD <- loglike
+      loglike <- -RESULT$value
+      COV <- RESULT$covariance
+
+      if(integrator!="MonteCarlo")
+      {
+        VAR.loglike <- 0
+        break
+      }
+
+      STUFF <- nloglike(beta,zero=-loglike,verbose=TRUE)
+      VAR.loglike <- STUFF$VAR.loglike
+      STDloglike <- sqrt(VAR.loglike)
+      STDbeta <- (beta-beta.OLD)/sqrt(diag(COV))
+      if(trace)
+      {
+        message(" SD[log(\u2113)] = ",STDloglike)
+        message(" \u0394log(\u2113) = ",loglike-loglike.OLD)
+        message(" \u0394\u03B2/SD[\u03B2] = ",paste(STDbeta,collapse=' '))
+      }
+
+      # numbers for next iteration
+      N.OLD <- N
+
+      # estimated errors for this round
+      ERROR.BIG <- c(STDloglike,abs(c(loglike-loglike.OLD,STDbeta))/sqrt(2)) > error
+      ERROR.BIG <- any(ERROR.BIG)
+
+      SIZE <- 2*utils::object.size(SATA)
+      if(SIZE[1]>max.mem)
+      {
+        SIZE <- format(SIZE,units="auto")
+        warning("Calculation stopped before ",SIZE," allocation.")
+        break
+      }
+    } # while(ERROR.BIG)
+  }
 
   # compute hessian
   if(CALC)
@@ -817,9 +888,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
     dimnames(COV) <- list(TERMS,TERMS)
   }
   else # no parameters
-  {
-    COV <- matrix(0,0,0)
-  }
+  { COV <- matrix(0,0,0) }
 
   if(integrated)
   {
@@ -896,7 +965,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
   } # end if(integrated)
   else
   {
-    if(integrator=="MonteCarlo")
+    if(integrator=="MonteCarlo" && !COUNT)
     { loglike <- loglike - W*log(AREA) }
   }
 
@@ -958,8 +1027,11 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
     COV[RVARS,] <- COV[RVARS,,drop=FALSE] / RSCALE
     COV[,RVARS] <- t( t(COV[,RVARS,drop=FALSE]) / RSCALE )
 
-    DAVE <- DAVE * RSCALE + RSHIFT[RVARS]
-    DCOV <- DCOV * outer(RSCALE)
+    if(!COUNT)
+    {
+      DAVE <- DAVE * RSCALE + RSHIFT[RVARS]
+      DCOV <- DCOV * outer(RSCALE)
+    }
   }
 
   # package results and return
@@ -972,8 +1044,11 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
   RSF$integrator <- integrator
   RSF$formula <- formula
   if(!integrated) { RSF$level.UD <- level.UD }
-  RSF$used.mean <- DAVE
-  RSF$used.cov <- DCOV
+  if(!COUNT)
+  {
+    RSF$used.mean <- DAVE
+    RSF$used.cov <- DCOV
+  }
 
   # copy over autocorrelation information in a reasonable way
   if(integrated)
@@ -1013,7 +1088,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
   }
 
   # check if some data fell outside of polygon
-  if(!integrated)
+  if(!integrated && !COUNT)
   {
     # if any data isn't inside polygon then loglike = -Inf
     AVAIL <- level.UD@Polygons[[1]]@coords

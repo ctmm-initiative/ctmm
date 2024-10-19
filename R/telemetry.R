@@ -11,6 +11,7 @@ ATTRIBUTE$id <- c("animal.ID","individual.local.identifier","local.identifier","
                   "tag.local.identifier","tag.ID","band.number","band.num","device.info.serial","Device.ID","collar.id","Logger","Logger.ID",
                   "Deployment","deployment.ID","track.ID")
 ATTRIBUTE$taxa <- c("verbatim.Scientific.Name")
+ATTRIBUTE$count <- c("individual.Count","Count")
 ATTRIBUTE$long <- c("location.longitude","location.long","Longitude","longitude.WGS84","Longitude.deg","long","lon","lng","GPS.Longitude","\u7D4C\u5EA6","decimal.Longitude")
 ATTRIBUTE$lat <- c("location.latitude","location.lat","Latitude","latitude.WGS84","Latitude.deg","latt","lat","GPS.Latitude","\u7DEF\u5EA6","decimal.Latitude")
 ATTRIBUTE$zone <- c("GPS.UTM.zone","UTM.zone","zone")
@@ -702,6 +703,12 @@ as.telemetry.data.frame <- function(object,timeformat="auto",timezone="UTC",proj
   }
   DATA$id <- COL
 
+  # camera-trap / survey / occurrence count
+  COL <- ATTRIBUTE$count
+  COL <- pull.column(object,COL)
+  DATA$count <- COL
+
+  # locations
   COL <- ATTRIBUTE$long
   COL <- pull.column(object,COL)
   DATA$longitude <- COL

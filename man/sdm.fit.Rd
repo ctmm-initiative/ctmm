@@ -37,7 +37,11 @@ sdm.integrate(biased=NULL,bias=NULL,unbiased=NULL)
 }
 
 \details{
-Instead of specifying a number of ``available'' points to sample and having an unknown amount of numerical error to contend with, \code{rsf.fit} specifies an estimation target \code{error} and the number of ``available'' points is increased until this target is met. Moreover, the output log-likelihood is that of the continuous Poisson point process, which does not depend on the number of ``available'' points that were sampled, though the numerical variance estimate is recorded in the \code{VAR.loglike} slot of the fit object.
+If \code{data} does not contain a \code{count} column, then a presence-only inhomogeneous Poisson point process (iPPP) model is fit to the data.
+Whereas, if \code{data} contains a \code{count} column, then a gamma-mixture Poisson (negative binomial) model is fit to the data.
+In either case, the \code{formula} object corresponds to \eqn{\log(\lambda)}, where \eqn{\lambda(x,y)} is the intensity function and expected density.
+
+Instead of specifying a number of ``available'' points to sample and having an unknown amount of numerical error to contend with, \code{sdm.fit} specifies an estimation target \code{error} and the number of ``available'' points is increased until this target is met. Moreover, the output log-likelihood is that of the continuous Poisson point process, which does not depend on the number of ``available'' points that were sampled, though the numerical variance estimate is recorded in the \code{VAR.loglike} slot of the fit object.
 
 When \code{trace=TRUE}, a number of convergence estimates are reported, including the standard deviation of the numerical error of the log-likelihood, SD[\eqn{\log(\ell)}], the most recent log-likelihood update, d\eqn{\log(\ell)}, and the most recent (relative) parameter estimate updates d\eqn{\hat{\beta}/}SD[\eqn{\hat{\beta}}].
 

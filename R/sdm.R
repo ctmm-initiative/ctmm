@@ -1,15 +1,17 @@
 sdm.fit <- function(data,R=list(),formula=NULL,area=NULL,reference="auto",standardize=TRUE,integrator="MonteCarlo",error=0.01,max.mem="1 Gb",interpolate=TRUE,trace=TRUE,...)
 {
   UD <- sdm.UD(data)
+  integrated <- is.null(area) && "count" %nin% names(data)
 
-  rsf.fit(data,UD=UD,R=R,fomula=formula,integrated=is.null(area),level.UD=area,reference=reference,smooth=FALSE,standardize=standardize,integrator=integrator,error=error,max.mem=max.mem,interpolate=interpolate,trace=trace,...)
+  rsf.fit(data,UD=UD,R=R,fomula=formula,integrated=integrated,level.UD=area,reference=reference,smooth=FALSE,standardize=standardize,integrator=integrator,error=error,max.mem=max.mem,interpolate=interpolate,trace=trace,...)
 }
 
 sdm.select <- function(data,R=list(),formula=NULL,area=NULL,verbose=FALSE,IC="AICc",trace=TRUE,...)
 {
   UD <- sdm.UD(data)
+  integrated <- is.null(area) && "count" %nin% names(data)
 
-  rsf.select(data,UD=UD,R=R,formula=formula,integrated=is.null(area),level.UD=area,verbose=verbose,IC=IC,trace=trace,smooth=FALSE,...)
+  rsf.select(data,UD=UD,R=R,formula=formula,integrated=integrated,level.UD=area,verbose=verbose,IC=IC,trace=trace,smooth=FALSE,...)
 }
 
 sdm.UD <- function(data,res=10)
