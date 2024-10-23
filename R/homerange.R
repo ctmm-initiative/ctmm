@@ -89,7 +89,11 @@ agde <- function(data=NULL,CTMM=NULL,R=list(),variable="utilization",error=0.001
 
     if(length(R))
     {
-      R <- expand.factors(R,CTMM$formula,fixed=TRUE)
+      STUFF <- expand.factors(R,CTMM$formula,fixed=TRUE)
+      R <- STUFF$R
+      formula <- STUFF$formula
+      data <- STUFF$data
+      rm(STUFF)
 
       # calculate RASTERs on spatial grid
       R <- lapply(R,function(RAS){R.grid(r,proj=proj,RAS)})

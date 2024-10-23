@@ -29,6 +29,7 @@ ctmm 1.2.1 (2024-10-18)
 * bugfixes in suitability with grid projection, NA raster values, and categorical variables
 * bugfixes in mean.ctmm()
 * bugfix in contour exports with convex=TRUE
+* bugfix in transition()
 
 ctmm 1.2.0 (2023-09-22)
 ================

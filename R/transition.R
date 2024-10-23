@@ -5,6 +5,11 @@ transition <- function(data,n=3,filename="transition",height=2160,...)
   TEMP <- data
   data$x <- -TEMP$y
   data$y <- TEMP$x
+  if("COV.x.x" %in% names(data))
+  {
+    data$COV.x.x <- data$COV.y.y
+    data$COV.y.y <- data$COV.x.x
+  }
   rm(TEMP)
 
   EXT <- extent(data)[,c('x','y')]
@@ -18,7 +23,7 @@ transition <- function(data,n=3,filename="transition",height=2160,...)
   grDevices::png(FILE,width=width,height=height)
   mar <- graphics::par("mar")
   graphics::par(mar=c(0,0,0,0))
-  plot(data,col=COL,bty="n",axes=FALSE,xaxt='n',ann=FALSE,yaxt='n',bty="n",lty="blank",...)
+  plot(data,col=COL,bty="n",axes=FALSE,xaxt='n',ann=FALSE,yaxt='n',bty="n",...)
   grDevices::dev.off()
 
   P <- diff(range(data$t))
@@ -37,7 +42,7 @@ transition <- function(data,n=3,filename="transition",height=2160,...)
     FILE <- paste0(filename,"-",i,".",n,".png")
     grDevices::png(FILE,width=width,height=height)
     graphics::par(mar=c(0,0,0,0))
-    plot(data,col=col,bty="n",axes=FALSE,xaxt='n',ann=FALSE,yaxt='n',bty="n",lty="blank",...)
+    plot(data,col=col,bty="n",axes=FALSE,xaxt='n',ann=FALSE,yaxt='n',bty="n",...)
 
     grDevices::dev.off()
   }

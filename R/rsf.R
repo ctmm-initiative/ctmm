@@ -525,6 +525,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
     WDAVE <- c(w %*% DATA[,TERMS])
     DAVE <- WDAVE / W
     DCOV <- vapply(1:length(w),function(i){w[i]*outer(DATA[i,TERMS]-DAVE)},outer(DAVE)) # [TERMS,TERMS,TIMES]
+    dim(DCOV) <- c(dim(outer(DAVE)),n) # R drops dimensions regardless :(
     DCOV <- apply(DCOV,1:2,sum) / sum(w)
     dimnames(DCOV) <- list(TERMS,TERMS)
     names(DAVE) <- names(WDAVE) <- TERMS
