@@ -137,9 +137,10 @@ ctmm.reduce <- function(CTMM)
 ctmm.boot <- function(data,CTMM,method=CTMM$method,AICc=FALSE,iterate=FALSE,robust=FALSE,error=0.01,clamp=0.001,cores=1,trace=TRUE,...)
 {
   if("COV" %nin% names(CTMM)) { stop("CTMM needs to be output from ctmm.select or ctmm.fit.") }
+  if(!length(CTMM$COV)) { return(CTMM) } # nothing to do
+  if((!length(CTMM$tau) || all(!CTMM$tau)) && all(!CTMM$error)) { return(CTMM) } # already MVU
 
   CTMM <- ctmm.reduce(CTMM) # remove zero parameters
-  if(!length(CTMM$COV)) { return(CTMM) } # nothing to do
 
   # parameters to extract & debias
   NAMES <- dimnames(CTMM$COV)[[1]]

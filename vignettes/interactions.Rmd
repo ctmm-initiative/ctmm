@@ -229,10 +229,10 @@ plot(N ~ enc_rad,
 
 As an additional caveat, if a pair of individuals encounter one another, a single encounter event may persist for some time. Depending on how finely sampled the data may be, there is thus the potential for double counting encounter events (or more). Care should therefore be taken when performing such an analysis.
 
-Another metric of encounter rates is available from the `encounter()` function, which estimates the __relative__ encounter rates between individuals.
+Another metric of encounter rates is available from the `encounter()` function, which estimates the probability of encounter between individuals per square meter.
 
 ```{r}
-RATES <- encounter(AKDES)
+RATES <- encounter(buffalo,AKDES,method="DF")
 ```
 
 This is an overlap class object with all of the same structure as defined above. Looking at the points estimates we can see these relative encounter rates.
@@ -241,5 +241,5 @@ This is an overlap class object with all of the same structure as defined above.
 RATES$CI[,,"est"]
 ```
 
-From this matrix we can see that Cilla and Mvubu tend to encounter to one another ca. three times as often at Toni and Pepper. Note: these are unitless measures of encounter rates.
+From this matrix we can see that Cilla and Mvubu tend to encounter to one another ca. three times as often at Toni and Pepper.
 

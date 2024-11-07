@@ -404,8 +404,13 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
       linear.cov <- TRUE
       setup.parameters(CTMM,profile=FALSE)
 
+      # clamp inverse-Hessian contribution of pREML correction to DOF=1
+      Cov <- eigen(CTMM$COV)
+      Cov$values <- pmin( Cov$values , 2*c(t(Cov$vectors) %*% pars)^2 )
+      Cov <- Cov$vectors %*% diag(Cov$values,nrow=length(Cov$values)) %*% t(Cov$vectors)
+
       # calculate linear parameter correction
-      d.pars <- -c(J %*% CTMM$COV %*% DIFF$gradient)
+      d.pars <- -c(J %*% Cov %*% DIFF$gradient)
       # Jacobians cancel out between inverse Hessian and gradient
 
       # gradient or something else was bad

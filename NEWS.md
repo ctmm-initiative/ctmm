@@ -1,4 +1,4 @@
-ctmm 1.2.1 (2024-10-18)
+ctmm 1.2.1 (2024-11-07)
 ================
 * sdm.fit() and sdm.select() now support camera-trap and other count data
 * new dispatch method projection()<- for ctmm class objects
@@ -19,6 +19,7 @@ ctmm 1.2.1 (2024-10-18)
 * new outlie() argument 'units'
 * plot() argument 'col.DF' renamed to 'col.UD'
 * speedups in Kalman filter for irregularly sampled 
+* improvements in ctmm.fit() method="pREML" on unsupported parameters
 * improvements DOF[area] calculations in mean() and pkde()
 * improvement to optimizer() when initial guess is on a boundary and hessian is bad
 * bugfix in speed() for nearly fractal movement models

@@ -632,7 +632,8 @@ as.telemetry.data.frame <- function(object,timeformat="auto",timezone="UTC",proj
   # ATLAS have error-ellipse estimates in x-y
   ARGOS <- ATLAS <- FALSE
 
-  if(grepl("+datum=",datum,fixed=TRUE))
+  datum <- as.character(datum)[1] # in case of CRS argument
+  if(grepl("+datum=",datum,fixed=TRUE)) # in case of PROJ argument
   {
     datum <- strsplit(datum,'+datum=',fixed=TRUE)[[1]][2]
     datum <- strsplit(datum,' +',fixed=TRUE)[[1]][1]
