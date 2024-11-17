@@ -24,7 +24,7 @@ encounter.ecdf <- function(data,UD,level=0.95,debias=TRUE,res.time=1,r=NULL,...)
   # uncertainty of added information
   VAR <- VAR0/DOF
   # natural weights
-  w <- VAR0/(VAR0+VAR)
+  w <- ifelse(DOF>1,VAR0/(VAR0+VAR),0)
   w <- w/sum(w)
 
   if(is.null(r)) # default grid (roughly 1% increments)
@@ -62,9 +62,7 @@ encounter.ecdf <- function(data,UD,level=0.95,debias=TRUE,res.time=1,r=NULL,...)
 
     # 2x variance CDF
     P2 <- array(0,length(r))
-    R2 <- R2 + VAR
-    VAR <- 2 * VAR
-    DOF <- 2*R2/VAR
+    DOF <- DOF/2
 
     # ++variance calculation
     for(i in 1:length(R2))
