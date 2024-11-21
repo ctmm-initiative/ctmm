@@ -272,8 +272,10 @@ beta.ci <- function(MLE,VAR,level=0.95,alpha=1-level)
     {
       a <- n * MLE
       b <- n * (1-MLE)
-      CI <- stats::qbeta(c(alpha/2,0.5,1-alpha/2),a,b)
-      CI[2] <- MLE # replace median with mean
+      CI <- c(0, MLE, 1)
+      aux <- stats::qbeta(c(alpha/2, 1-alpha/2), a, b, ncp=0)
+      CI[1] <- aux[1]
+      CI[3] <- aux[2]
     }
   }
   names(CI) <- NAMES.CI
