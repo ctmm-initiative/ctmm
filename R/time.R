@@ -365,14 +365,17 @@ switch.timelink.parinfo <- function(CTMM)
 }
 
 switch.timelink.clean <- function(par)
-{ clamp(par,0,1) }
+{ clamp(par,-1,1) }
 
+# dt_internal/dt_clock
 switch.timelink.rate <- function(data,CTMM)
 {
   par <- CTMM$timelink.par
   ifelse(data$light,1+par,1-par)
 }
 
+# rate = dt_internal/dt_clock
+# drate/dpar
 switch.timelink.fn <- function(par)
 {
   R <- list()
@@ -385,15 +388,17 @@ switch.timelink.fn <- function(par)
 
 switch.timelink.complexify <- function(object)
 {
-  if(length(object$timelink.par)==0)
-  { object$timelink.par <- c(object$timelink.par,0) }
+  # if(length(object$timelink.par)==0)
+  # { object$timelink.par <- c(object$timelink.par,0) }
+  object$timelink.par <- 0
   return(object)
 }
 
 switch.timelink.simplify <- function(object)
 {
-  n <- length(object$timelink.par)
-  object$timelink.par <- object$timelink.par[-n]
+  # n <- length(object$timelink.par)
+  # object$timelink.par <- object$timelink.par[-n]
+  object$timelink.par <- NULL
   return(object)
 }
 

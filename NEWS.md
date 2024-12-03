@@ -1,4 +1,4 @@
-ctmm 1.2.1 (2024-11-16)
+ctmm 1.2.1 (2024-12-03)
 ================
 * sdm.fit() and sdm.select() now support camera-trap and other count data
 * new dispatch method projection()<- for ctmm class objects
@@ -22,6 +22,7 @@ ctmm 1.2.1 (2024-11-16)
 * improvements in ctmm.fit() method="pREML" on unsupported parameters
 * improvements DOF[area] calculations in mean() and pkde()
 * improvement to optimizer() when initial guess is on a boundary and hessian is bad
+* improvements to Argos-GPS importing in as.telemetry()
 * bugfix in speed() for nearly fractal movement models
 * bugfix in polygon export from bad output from grDevices::contourLines()
 * bugfix in rsf.select with functions in formulas

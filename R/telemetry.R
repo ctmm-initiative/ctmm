@@ -7,7 +7,7 @@ ATTRIBUTE$timestamp <- c('timestamp','timestamp.of.fix','Acquisition.Time',
                          'Time.GMT','GMT.Time','Local.Time','time',"\u6642\u523B",
                          'Date.Time','Date.GMT','Date','Date.Local',"\u65E5\u4ED8",
                          't','t_dat','use_date',"event.Date","observation.Date")
-ATTRIBUTE$id <- c("animal.ID","individual.local.identifier","local.identifier","individual.ID","Name","ID","ID.Names","Animal","Full.ID",
+ATTRIBUTE$id <- c("animal.ID","AID","individual.local.identifier","local.identifier","individual.ID","Name","ID","ID.Names","Animal","Full.ID",
                   "tag.local.identifier","tag.ID","band.number","band.num","device.info.serial","Device.ID","collar.id","Logger","Logger.ID",
                   "Deployment","deployment.ID","track.ID")
 ATTRIBUTE$taxa <- c("verbatim.Scientific.Name")
@@ -28,7 +28,7 @@ ATTRIBUTE$DOP <- c("GPS.DOP","DOP","GPS.Dilution","Dilution","Dil")
 ATTRIBUTE$PDOP <- c("GPS.PDOP","PDOP","Position.DOP","GPS.Position.Dilution","Position.Dilution","Pos.Dil","Pos.DOP")
 ATTRIBUTE$GDOP <- c("GPS.GDOP","GDOP","Geometric.DOP","GPS.Geometric.Dilution","Geometric.Dilution","Geo.Dil","Geo.DOP")
 ATTRIBUTE$VDOP <- c("GPS.VDOP","VDOP","Vertical.DOP","GPS.Vertical.Dilusion","Vertical.Dilution","Ver.Dil","Ver.DOP","elevation.Accuracy","depth.Accuracy")
-ATTRIBUTE$nsat <- c("GPS.satellite.count","satellite.count","Sat.Count","Number.of.Sats","Num.Sats","Nr.Sat","NSat","NSats","Sat.Num","satellites.used","Satellites","Sats","SVs.in.use") # Counts? Messages?
+ATTRIBUTE$nsat <- c("GPS.satellite.count","satellite.count","Sat.Count","Number.of.Sats","Num.Sats","Nr.Sat","NSat","NSats","Sat.Num","satellites.used","Satellites","Sats","SVs.in.use","quality") # Counts? Messages?
 ATTRIBUTE$FIX <- c("GPS.fix.type","GPS.fix.type.raw","fix.type","type.of.fix","e.obs.type.of.fix","Fix.Attempt","GPS.Fix.Attempt","Telonics.Fix.Attempt","Fix.Status","sensor.type","Fix","eobs.type.of.fix","2D/3D","X3.equals.3dfix.2.equals.2dfix","Nav","Validated","VALID")
 ATTRIBUTE$TTF <- c("GPS.time.to.fix","time.to.fix","time.to.GPS.fix","time.to.GPS.fix.s","GPS.TTF","TTF","GPS.fix.time","fix.time","time.to.get.fix","used.time.to.get.fix","e.obs.used.time.to.get.fix","Duration","GPS.navigation.time","navigation.time","Time.On","Searching.Time")
 ATTRIBUTE$z <- c("height.above.ellipsoid","height.above.elipsoid","height.above.ellipsoid.m","height.above.elipsoid.m","height.above.msl","height.above.mean.sea.level","height.raw","height","height.m","barometric.height","altimeter","altimeter.m","Argos.altitude","GPS.Altitude","MSL_altitude_m","altitude","altitude.m","Alt","barometric.depth","depth","elevation","elevation.m","elev")
@@ -884,13 +884,14 @@ as.telemetry.data.frame <- function(object,timeformat="auto",timezone="UTC",proj
     # according to ARGOS, the following can be missing on <4 message data... but it seems present regardless
     DATA$COV.major <- pull.column(object,ATTRIBUTE$COV.major)^2/2
     DATA$COV.minor <- pull.column(object,ATTRIBUTE$COV.minor)^2/2
+    # mean variance
+    DATA[[DOP.LIST$horizontal$VAR]] <- pull.column(object,ATTRIBUTE$COV.mean)^2/2
+    NAS <- is.na(DATA[[DOP.LIST$horizontal$VAR]])
+    if(any(NAS))
+    { DATA[[DOP.LIST$horizontal$VAR]][NAS] <- (DATA$COV.minor[NAS] + DATA$COV.major[NAS])/2 }
+    DATA$HDOP <- sqrt(2*DATA[[DOP.LIST$horizontal$VAR]])
 
-    if(DOP.LIST$horizontal$VAR %in% names(object))
-    { DATA[[DOP.LIST$horizontal$VAR]] <- pull.column(object,ATTRIBUTE$COV.mean)^2/2 }
-    else
-    { DATA[[DOP.LIST$horizontal$VAR]] <- (DATA$COV.minor + DATA$COV.major)/2 }
-
-    ARGOS <- TRUE
+    ARGOS <- 1
     NAS <- is.na(COL) # missing error ellipse rows
     ERROR[!NAS] <- TRUE # Argos KF calibrated
     CAL[!NAS] <- Inf
@@ -916,8 +917,10 @@ as.telemetry.data.frame <- function(object,timeformat="auto",timezone="UTC",proj
     # error radii (average variance)
     ARGOS.radii <- (ARGOS.major+ARGOS.minor)/2
 
-    message(sum(NAS)," ARGOS error ellipses missing. Using location class estimates from Vincent et al (2002).")
     COL <- as.character(COL) # factors are weird
+    NAS <- NAS & COL!="NA" # do not overwrite GPS data
+
+    message(sum(NAS)," ARGOS error ellipses missing. Using location class estimates from Vincent et al (2002).")
 
     DATA$COV.minor[NAS] <- ARGOS.minor[COL][NAS]
     DATA$COV.major[NAS] <- ARGOS.major[COL][NAS]
@@ -925,7 +928,7 @@ as.telemetry.data.frame <- function(object,timeformat="auto",timezone="UTC",proj
     DATA$HDOP[NAS] <- sqrt(2*ARGOS.radii)[COL][NAS]
 
     # classify Kalman filtered locations separately
-    if(any(!NAS)) { COL[!NAS] <- "KF" }
+    COL[!NAS & COL!="NA"] <- "KF"
 
     DATA$class <- as.factor(COL)
 
@@ -934,7 +937,7 @@ as.telemetry.data.frame <- function(object,timeformat="auto",timezone="UTC",proj
     object <- object[SUB,]
     DATA <- DATA[SUB,]
 
-    ARGOS <- TRUE
+    ARGOS <- 1
 
     COL <- NAS & !is.na(DATA$COV.major) # !KF and LC
     ERROR[COL] <- TRUE # Argos LC calibrated
@@ -944,13 +947,13 @@ as.telemetry.data.frame <- function(object,timeformat="auto",timezone="UTC",proj
   # get dop values, but don't overwrite ARGOS GDOP if also present in ARGOS/GPS data
   try.dop <- function(DOPS,MESS=NULL,FN=identity,UERE=10)
   {
-    if(ARGOS || !("HDOP" %in% names(DATA)))
+    if(ARGOS>0 || !("HDOP" %in% names(DATA)))
     {
       COL <- pull.column(object,DOPS)
       if(length(COL))
       {
         # HDOPS to assign
-        if(ARGOS) { NAS <- is.na(DATA$HDOP) }
+        if(ARGOS>0) { NAS <- is.na(DATA$HDOP) }
         else { NAS <- rep(TRUE,length(COL)) }
 
         # don't overwrite ARGOS GDOPs
@@ -960,10 +963,16 @@ as.telemetry.data.frame <- function(object,timeformat="auto",timezone="UTC",proj
           DATA$HDOP[NAS] <<- FN(COL[NAS])
           ERROR[NAS] <<- UERE # assign error scale
           CAL[NAS] <<- 0 # assign degrees of freedom for above estimate
+
+          if(ARGOS>0) # missing error ellipses would be GPS data here
+          {
+            NAS <- levels(DATA$class)=="NA"
+            levels(DATA$class)[NAS] <<- "GPS"
+          }
         }
 
         # don't make ARGOS exception again (2 DOP types)
-        ARGOS <<- FALSE
+        ARGOS <<- -1
       }
     }
   }
@@ -1167,6 +1176,11 @@ as.telemetry.data.frame <- function(object,timeformat="auto",timezone="UTC",proj
       if(COL %nin% keep)
       {
         BAD <- is.na(telist[[i]][[COL]])
+
+        # exclude GPS missing error ellispes
+        if(COL %in% c("COV.angle","COV.major","COV.minor","VAR.xy"))
+        { BAD <- BAD & (telist[[i]]$class %in% c(3:0,"A","B","KF")) }
+
         if(all(BAD) || (na.rm=="col" && any(BAD))) { telist[[i]][[COL]] <- NULL } # delete the whole column
         else if(na.rm=="row" && any(BAD)) { telist[[i]] <- telist[[i]][!BAD,] } # only delete the rows
       }
