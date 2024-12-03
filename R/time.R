@@ -404,7 +404,7 @@ switch.timelink.simplify <- function(object)
 
 switch.timelink.name <- function(object)
 {
-  return("switch-timelink")
+  return("diel-switch")
 }
 
 switch.timelink.summary <- function(object,level=0.95)

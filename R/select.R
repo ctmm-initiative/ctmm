@@ -610,7 +610,7 @@ name.ctmm <- function(CTMM,whole=TRUE)
 
   # data link
   link <- get.link(CTMM)
-  if(link$name!="identity") { NAME <- c(NAME,paste0(link$name,"-link")) }
+  if(link$name!="identity") { NAME <- c(NAME,link$name) }
 
   # mean
   DNAME <- drift.name(CTMM)

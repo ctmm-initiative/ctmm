@@ -319,7 +319,7 @@ ctmm.prepare <- function(data,CTMM,precompute=TRUE,tau=TRUE,dt=TRUE,DIM=length(C
   } # end precomputed matrices
 
   # pre calculation of time-lag information
-  if(dt && (is.null(CTMM$dt) || is.null(CTMM$dtl) || is.null(CTMM$dti)))
+  if(dt && !length(CTMM$timelink.par) && (is.null(CTMM$dt) || is.null(CTMM$dtl) || is.null(CTMM$dti)))
   {
     CTMM$dt <- c(Inf,diff(data$t))
     dti <- sort(CTMM$dt,index.return=TRUE)

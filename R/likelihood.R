@@ -79,7 +79,14 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   { FAIL <- -Inf }
 
   # employ link function on time
-  if(length(CTMM$timelink.par)) { data$t <- linktime(data,CTMM) }
+  if(length(CTMM$timelink.par))
+  {
+    data$t <- linktime(data,CTMM)
+    # prepare dt information
+    CTMM$dt <- c(Inf,diff(data$t))
+    dti <- sort(CTMM$dt,index.return=TRUE)
+    CTMM$dtl <- unique(dti$x) # dt levels
+  }
 
   n <- length(data$t)
   axes <- CTMM$axes
