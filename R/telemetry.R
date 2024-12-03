@@ -650,7 +650,7 @@ as.telemetry.data.frame <- function(object,timeformat="auto",timezone="UTC",proj
   COL <- pull.column(object,COL)
   if(length(COL)) { object$speed <- COL * (1000/60^2) }
 
-  na.rm <- match.arg(na.rm,c("row","col"))
+  #na.rm <- match.arg(na.rm,c("row","col","none"))
 
   # make column names canonicalish
   # names(object) <- tolower(names(object))
