@@ -35,10 +35,11 @@ ATTRIBUTE$z <- c("height.above.ellipsoid","height.above.elipsoid","height.above.
 ATTRIBUTE$v <- c("ground.speed",'speed.over.ground','speed.over.ground.m.s',"speed","GPS.speed")
 ATTRIBUTE$heading <- c("heading","heading.degree","heading.degrees","GPS.heading","Course","direction","direction.deg")
 ATTRIBUTE$outliers <- c("manually.marked.outlier","algorithm.marked.outlier","import.marked.outlier","marked.outlier","outlier")
-ATTRIBUTE$COV.angle <- c("Argos.orientation","Error.ellipse.orientation","Ellipse.orientation")
-ATTRIBUTE$COV.major <- c("Argos.semi.major","Error.semi-major.axis","Semi-major.axis")
-ATTRIBUTE$COV.minor <- c("Argos.semi.minor","Error.semi-minor.axis","Semi-minor.axis")
+ATTRIBUTE$COV.angle <- c("Argos.orientation","Error.ellipse.orientation","Ellipse.orientation","Orientation")
+ATTRIBUTE$COV.major <- c("Argos.semi.major","Error.semi-major.axis","Semi-major.axis","Semi-major")
+ATTRIBUTE$COV.minor <- c("Argos.semi.minor","Error.semi-minor.axis","Semi-minor.axis","Semi-minor")
 ATTRIBUTE$COV.mean <- c("Argos.error.radius","Error.radius")
+ATTRIBUTE$COV.class <- c("Argos.location.class","Argos.lc","LC","LQ")
 ATTRIBUTE$COV.xx <- c("VAR.x","COV.xx")
 ATTRIBUTE$COV.yy <- c("VAR.y","COV.yy")
 ATTRIBUTE$COV.xy <- c("COV.xy")
@@ -901,7 +902,7 @@ as.telemetry.data.frame <- function(object,timeformat="auto",timezone="UTC",proj
 
   # ARGOS error categories (older ARGOS data <2011)
   # converted to error ellipses from ...
-  COL <- c("Argos.location.class","Argos.lc","lc")
+  COL <- ATTRIBUTE$COV.class
   COL <- pull.column(object,COL,as.factor)
   # ARGOS location classes present, but no error ellipses
   if(length(COL) && any(NAS) && any(c(3:0,'A','B','Z')%in%levels(COL)))
@@ -943,6 +944,8 @@ as.telemetry.data.frame <- function(object,timeformat="auto",timezone="UTC",proj
     ERROR[COL] <- TRUE # Argos LC calibrated
     CAL[COL] <- Inf
   }
+  else if(length(COL))
+  { DATA$class <- as.factor(COL) }
 
   # get dop values, but don't overwrite ARGOS GDOP if also present in ARGOS/GPS data
   try.dop <- function(DOPS,MESS=NULL,FN=identity,UERE=10)
