@@ -239,9 +239,13 @@ rotate.north <- function(u,heading)
 # put projection into character format
 format_projection <- function(proj,datum="WGS84")
 {
-  if(class(proj)[1]=="CRS")
+  if(class(proj)[1]=="numeric" && length(proj)==1) # EPSG
+  { proj <- paste0("EPSG:",proj) }
+  else if(class(proj)[1]=="CRS") # PROJ4
   { proj <- as.character(proj) }
-  else if(class(proj)[1] != "character")
+  else if(class(proj)[1]=="crs") # PROJ6
+  { proj <- sf::st_crs(proj)$proj4string }
+  else if(class(proj)[1] != "character") # else assume rows of long-lat foci
   {
     # pull out geodesic coordinates and format into matrix
     proj <- as.matrix(rbind(proj)[,c("longitude","latitude")])

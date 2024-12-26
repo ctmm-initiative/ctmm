@@ -232,7 +232,7 @@ As an additional caveat, if a pair of individuals encounter one another, a singl
 Another metric of encounter rates is available from the `encounter()` function, which estimates the probability of encounter between individuals per square meter.
 
 ```{r}
-RATES <- encounter(buffalo,AKDES,method="DF")
+RATES <- encounter(buffalo,AKDES,method="PDF")
 ```
 
 This is an overlap class object with all of the same structure as defined above. Looking at the points estimates we can see these relative encounter rates.

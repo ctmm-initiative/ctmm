@@ -1,8 +1,10 @@
 ** PRIORITY
+* draw a random individual from a population
 * code encounter() to a specific distance and make "DF" the default
 * make speed() work on model guess objects
 * ctmm.boot ctmmlearn script: Error in checkForRemoteErrors(val) :5 nodes produced errors; first error: object 'Green' not found
 * ids()<- function
+* projection check on anonymized data fails
 * replace special characters in column names on import
 * distance, encounters in 3D
 * study on globe plot

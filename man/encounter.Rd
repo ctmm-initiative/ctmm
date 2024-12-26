@@ -66,7 +66,7 @@ names(FITS) <- names(buffalo[1:2])
 UDS <- akde(buffalo[1:2],FITS)
 
 # calculate 100-meter encounter probabilities
-P <- encounter(buffalo,UDS,method="DF")
+P <- encounter(buffalo,UDS,method="PDF")
 P$CI * 100^2
 
 # calculate CDE

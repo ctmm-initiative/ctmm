@@ -510,6 +510,18 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,VMM=NULL,t=NULL,dt=N
   } # conditional simulation
   else # Gaussian simulation not conditioned off of any data
   {
+    # POPULATION SIMULATION
+    if(length(object$isotropic)>1)
+    {
+      object$COV.mu <- object$POV.mu
+      object$COV <- object$POV
+      object$POV.mu <- object$POV <- NULL
+      object$isotropic <- object$isotropic["sigma"]
+      object <- emulate(object,fast=TRUE)
+      return(object)
+    }
+
+    # INDIVIDUAL SIMULATION
     STUFF <- c('Green','Sigma','error','ELLIPSE','object','mu','Lambda','n','K','z','v','circle','R')
     if(precompute>=0)
     {

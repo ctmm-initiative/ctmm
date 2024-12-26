@@ -51,7 +51,8 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utiliz
 
   if(length(projection(data))>1) { stop("Data not in the same coordinate system.") }
   if(length(projection(CTMM))>1) { stop("Models not in the same coordinate system.") }
-  if(projection(data)!=projection(CTMM)) { stop("Data and models not in the same coordinate system.") }
+  TEST <- projection(data)!=projection(CTMM)
+  if(length(TEST) && TEST) { stop("Data and models not in the same coordinate system.") }
   validate.grid(data,grid)
 
   # if called by pakde
