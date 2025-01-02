@@ -1,7 +1,7 @@
 # generalized covariance from negative-log-likelihood derivatives
 cov.loglike <- function(hess,grad=rep(0,sqrt(length(hess))),tol=.Machine$double.eps,WARN=TRUE)
 {
-  EXCLUDE <- c("ctmm.boot","cv.like","ctmm.select")
+  EXCLUDE <- c("ctmm.boot","cv.like","ctmm.select","rsf.select")
 
   # in case of bad derivatives, use worst-case numbers
   grad <- nant(grad,Inf)

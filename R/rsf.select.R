@@ -98,6 +98,9 @@ rsf.select <- function(data,UD,R=list(),formula=NULL,verbose=FALSE,IC="AICc",tra
     NAMES <- NAMES[SUB]
     FORM <- FORM[SUB]
 
+    # no more left
+    if(!length(NAMES)) { break }
+
     # fit all
     NEW <- list()
     for(i in 1%:%length(NAMES))
@@ -136,6 +139,9 @@ rsf.select <- function(data,UD,R=list(),formula=NULL,verbose=FALSE,IC="AICc",tra
     SUB <- NAMES %nin% names(M)
     NEW.NAMES <- NAMES[SUB]
     FORM <- FORM[SUB]
+
+    # no more left
+    if(!length(NEW.NAMES)) { break }
 
     # fit all
     NEW <- list()

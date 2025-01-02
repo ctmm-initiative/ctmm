@@ -1,4 +1,5 @@
 ** PRIORITY
+* zero-inflated negative-binomial for SDM
 * draw a random individual from a population
 * code encounter() to a specific distance and make "DF" the default
 * make speed() work on model guess objects
