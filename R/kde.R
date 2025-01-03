@@ -422,10 +422,10 @@ kde <- function(data,H,axes=c("x","y"),CTMM=list(),SP=NULL,SP.in=TRUE,RASTER=lis
 
       # constrain to within grid
       i1 <- pmax(i1,1)
-      i2 <- pmin(i2,dim(PMF))
+      i2 <- pmax(i2,1)
 
-      CHECK <- i2>=i1
-      if(any(!CHECK)) { stop("Grid incompatible with data.") }
+      i1 <- pmin(i1,dim(PMF))
+      i2 <- pmin(i2,dim(PMF))
 
       SUB <- lapply(1:length(i1),function(d){ i1[d]:i2[d] })
     }
@@ -882,9 +882,9 @@ NewtonCotes <- function(X,Y,sigma,W,dx=mean(diff(X)),dy=mean(diff(Y)))
 
   # coarsen grid
   # index order is (x,y)
-  cdf <- vapply(1:length(X)-1,function(i){colSums(cdf[1:n+m*i,])},rep(0,length(y)))
+  cdf <- vapply(1:length(X)-1,function(i){colSums(cdf[1:n+m*i,,drop=FALSE])},rep(0,length(y)))
   # index order is (y,X)
-  cdf <- vapply(1:length(Y)-1,function(i){colSums(cdf[1:n+m*i,])},rep(0,length(X)))
+  cdf <- vapply(1:length(Y)-1,function(i){colSums(cdf[1:n+m*i,,drop=FALSE])},rep(0,length(X)))
   # index order is (X,Y)
 
   return(cdf)

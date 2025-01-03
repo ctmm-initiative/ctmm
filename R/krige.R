@@ -373,11 +373,7 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,VMM=NULL,t=NULL,dt=N
 {
   T.SPECIFIED <- !is.null(t)
 
-  info <- attr(object,"info")
-  if(!is.null(data)) { info$identity <- glue( attr(data,'info')$identity , info$identity ) }
-
-  # have to do this becaues simulate is an S3 with 3 fixed arguments
-
+  # I have to do this because simulate is an S3 method with 3 fixed arguments
   if(class(object)[1] %in% c("data.frame","telemetry"))
   {
     TEMP <- data
@@ -412,6 +408,9 @@ simulate.ctmm <- function(object,nsim=1,seed=NULL,data=NULL,VMM=NULL,t=NULL,dt=N
     object <- seed
     seed <- TEMP
   }
+
+  info <- attr(object,"info")
+  if(!is.null(data)) { info$identity <- glue( attr(data,'info')$identity , info$identity ) }
 
   if(is.null(nsim)) { nsim <- 1 }
 

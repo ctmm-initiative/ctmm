@@ -10,7 +10,8 @@
 
 \description{Functions to calculate encounter probabilities [IN DEVELOPMENT] and the conditional location distribution of where encounters take place (conditional on said encounters taking place), as described in Noonan et al (2021).}
 
-\usage{encounter(data,UD,method="ECDF",debias=TRUE,level=0.95,r=NULL,res.time=1,normalize=FALSE,self=TRUE,...)
+\usage{encounter(data,UD,method="ECDF",debias=TRUE,level=0.95,r=NULL,res.time=1,normalize=FALSE,
+          self=TRUE,...)
 
 cde(object,include=NULL,exclude=NULL,debias=FALSE,...) }
 %- maybe also 'usage' for other objects documented here.
