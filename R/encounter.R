@@ -91,7 +91,7 @@ encounter.ecdf <- function(data,UD,level=0.95,debias=TRUE,res.time=1,r=NULL,...)
   names(R) <- c('r',NAMES.CI)
   alpha <- 1-level
   # binomial CIs
-  for(i in 1:length(P)) { R[i,NAMES.CI] <-  beta.ci(P[i],2*P[i]^2/DOF,level=level) }
+  for(i in 1:length(P)) { R[i,NAMES.CI] <-  beta.ci(P[i],P[i]*(1-P[i])/DOF,level=level) }
 
   # class(R) <- "ECDF"
 
