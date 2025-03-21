@@ -1,4 +1,6 @@
 ** PRIORITY
+* export Log population mean
+* plot.telemetry xlab ylab exposed is.missing()
 * zero-inflated negative-binomial for SDM
 * draw a random individual from a population
 * code encounter() to a specific distance and make "DF" the default
