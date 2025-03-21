@@ -391,6 +391,7 @@ plot.telemetry <- function(x,CTMM=NULL,UD=NULL,col.bg='white',
       # calculate kernels
       UD <- kde(r,ERROR,grid=GRID)
       UD <- new.UD(UD,info=list())
+      UD$scaled <- TRUE # don't let plot.UD rescale from meters
       # plot kernels
       plot.UD(UD,level.UD=NA,level=NA,DF='PDF',col.UD=col[[i]],col.level=NA,col.grid=NA,add=TRUE,...)
     } # end kernel plot
@@ -581,7 +582,8 @@ plot.UD <- function(x,col.bg="white",DF="CDF",col.UD="blue",col.grid="white",lab
   for(i in 1:length(x))
   {
     # unit conversion
-    x[[i]] <- unit.UD(x[[i]],length=dist$scale)
+    if(is.null(x[[i]]$scaled))
+    { x[[i]] <- unit.UD(x[[i]],length=dist$scale) }
 
     # ML DENSITY PLOTS
     plot_df(x[[i]],DF=DF,col=col.UD[[i]],...)
