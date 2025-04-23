@@ -38,30 +38,22 @@ get.sundial <- function(object,CTMM=NULL,twilight="civil",dt.max=6 %#% 'hr')
   # R data.frames are supposed to keep class information like Date...?
   TODAY$date <- as.Date(TODAY$date,origin=EPOCH)
 
-  YESTERDAY <- TODAY
-  YESTERDAY$date <- YESTERDAY$date - 1
+  days <- 2 # buffer of days to run suncalc, because its behavior is unpredictable
+  TIMES <- lapply((-days):days,function(d){
+    TODAY$date <- TODAY$dat + d;
+    TODAY <- suncalc::getSunlightTimes(data=TODAY,keep=keep,tz="UTC")[,keep]
+    })
+  TIMES <- do.call(cbind,TIMES)
 
-  TOMORROW <- TODAY
-  TOMORROW$date <- TOMORROW$date + 1
+  # so annoying that as.numeric does not work on data.frames
+  TIMES <- sapply(1:ncol(TIMES),function(col){as.numeric(TIMES[[col]])})
 
-  YESTERDAY <- suncalc::getSunlightTimes(data=YESTERDAY,keep=keep,tz="UTC")
-  TODAY <- suncalc::getSunlightTimes(data=TODAY,keep=keep,tz="UTC")
-  TOMORROW <- suncalc::getSunlightTimes(data=TOMORROW,keep=keep,tz="UTC")
-
-  TIMES <- cbind(YESTERDAY[,keep],TODAY[,keep],TOMORROW[,keep])
-  rm(YESTERDAY,TODAY,TOMORROW)
-
-  # R is incapable of converting a data.frame to numeric values...
-  # TIMES <- as.numeric(TIMES[,keep])
-
-  TIMES <- sapply(1:12,function(i){as.numeric(TIMES[[i]])})
   # corresponding circular variables
-  ANGLE <- rep(c(0,pi/2,pi,3*pi/2),3)
+  ANGLE <- rep(c(0,pi/2,pi,3*pi/2),2*days+1)
 
   # convert data time into circular variable
   angle <- rep(0,n)
-  day <- rep(1,n) # TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! SOMETHING CONSISTENT WITH DAWN INTERPOLATION
-  # TODO !!! track last dawn (interpolated)
+  day <- rep(1,n)
   dawn <- dusk <- array(0,c(n,2)) # previous and next
   for(i in 1:n)
   {
@@ -70,29 +62,24 @@ get.sundial <- function(object,CTMM=NULL,twilight="civil",dt.max=6 %#% 'hr')
     times <- TIMES[i,IND]
     theta <- ANGLE[IND]
 
-    # closest 3 knots
-    IND <- which.min(abs(times-object$t[i])) + (-1):1
+    # encapsulating 2 knots
+    IND <- which.min(abs(times-object$t[i]))
+    if(object$t[i] < times[IND])
+    { IND <- c(IND-1,IND) }
+    else
+    { IND <- c(IND,IND+1) }
+
     t <- times[IND]
     a <- theta[IND]
 
     # sort circular variable for interpolation
-    if(a[2]<a[1]) { a[2:3] <- a[2:3] + 2*pi }
-    if(a[3]<a[2]) { a[3] <- a[3] + 2*pi }
+    while(a[1]>a[2]) { a[2] <- a[2] + 2*pi }
 
     if(t[2]==object$t[i]) # exact match
-    {
-      angle[i] <- a[2]
-    }
+    { angle[i] <- a[2] }
     else # interpolate
-    {
-      M <- c( t[2]-t[1], t[3]-t[1] )
-      M <- cbind(M,M^2)
-      M <- c(pd.solve(M) %*% c(a[2]-a[1],a[3]-a[1]))
-      t <- object$t[i] - t[1]
-      t <- c(t,t^2)
-      angle[i] <- a[1] + sum(M * t)
-      angle[i] <- angle[i] %% (2*pi)
-    }
+    { angle[i] <- a[1] + (object$t[i]-t[1])/diff(t)*diff(a) }
+    angle[i] <- angle[i] %% (2*pi)
 
     # previous dawn
     d <- which(theta==0 & times<=object$t[i])
@@ -118,7 +105,7 @@ get.sundial <- function(object,CTMM=NULL,twilight="civil",dt.max=6 %#% 'hr')
     dark[i] <- dark[i-1]
 
     dt <- object$t[i]-object$t[i-1]
-    da <- (angle[i]-angle[i-1]) %% (2*pi)
+    # da <- (angle[i]-angle[i-1]) %% (2*pi)
 
     if(angle[i]<pi) # -to-light
     {
@@ -130,11 +117,11 @@ get.sundial <- function(object,CTMM=NULL,twilight="civil",dt.max=6 %#% 'hr')
       {
         w <- c( dawn[i-1,2]-object$t[i-1] , object$t[i]-dawn[i,1] )
         w <- w/sum(w)
-        # linearly interpolated dawn
-        t <- w[1]*dawn[i-1,2] + w[2]*dawn[i,1]
+        # linearly interpolated local dawn time
+        t <- w[2]*dawn[i-1,2] + w[1]*dawn[i,1] # reciprocal weighting
         # partition accumulated times
-        light[i] <- light[i] + (t-object$t[i-1])
-        dark[i] <- dark[i] + (object$t[i]-t)
+        dark[i] <- dark[i] + (t-object$t[i-1])
+        light[i] <- light[i] + (object$t[i]-t)
       }
     } # end -to-light
     else # -to-dark
@@ -147,8 +134,8 @@ get.sundial <- function(object,CTMM=NULL,twilight="civil",dt.max=6 %#% 'hr')
       {
         w <- c( dusk[i-1,2]-object$t[i-1] , object$t[i]-dusk[i,1] )
         w <- w/sum(w)
-        # linearly interpolated dusk
-        t <- w[1]*dusk[i-1,2] + w[2]*dusk[i,1]
+        # linearly interpolated local dusk time
+        t <- w[2]*dusk[i-1,2] + w[1]*dusk[i,1] # reciprocal weighting
         # partition accumulated times
         dark[i] <- dark[i] + (t-object$t[i-1])
         light[i] <- light[i] + (object$t[i]-t)

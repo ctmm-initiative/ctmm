@@ -1,5 +1,5 @@
 # second attempt
-ridges2.UD <- function(object,level.UD=0.95,precision=1/8,...)
+ridges2.UD <- function(object,precision=1/8,...)
 {
   tol <- .Machine$double.eps^precision
   VOTE.MIN <- 2
@@ -21,6 +21,7 @@ ridges2.UD <- function(object,level.UD=0.95,precision=1/8,...)
   X <- object$r$x
   Y <- object$r$y
   dR <- c(dx,dy)
+  dK <- 1/dR
 
   if(all(c('grad','hess') %in% names(object)))
   {
@@ -54,135 +55,24 @@ ridges2.UD <- function(object,level.UD=0.95,precision=1/8,...)
     } # end row loop
   }
 
-  dim(HESS) <- c(DIM,4)
-  HESS <- HESS[,,c(1,2,4)] # xx, xy, yy
+  # where to store ridge metric
+  RIDGE <- array(NA,dim(PDF))
 
-  IND <- sort(object$CDF,decreasing=FALSE,index.return=TRUE)
-  CDF <- IND$x
-  i <- 0
-  while(CDF[i+1]<=level.UD) { i <- i + 1 }
-  rm(CDF)
-  IND <- IND$ix[1:i]
-  IND <- arrayInd(IND,DIM) # [sort,(row,col)]
-
-  # ridge coordinates
-  RIDGE <- matrix(0,nrow(IND),2)
-  # is a mode
-  MODE <- array(FALSE,nrow(IND))
-  # CURV <- array(0,nrow(IND))
-
-  pixels <- function(dr,DIR)
+  ROWS <- 2:(nrow(PDF)-1)
+  for(i in ROWS)
   {
-    SIDE <- rbind(right=dr,left=dr,top=dr,bottom=dr)
-    colnames(SIDE) <- c('x','y')
-
-    # right solution
-    dir <- DIR/sign(DIR[1])
-    dir <- nant(dir,0)
-    t <- ( +dx/2 - dr[1] ) / dir[1]
-    SIDE['right',] <- dr + t*dir
-
-    # left solution
-    dir <- -dir
-    t <- ( -dx/2 - dr[1] ) / dir[1]
-    SIDE['left',] <- dr + t*dir
-
-    # top solution
-    dir <- DIR/sign(DIR[2])
-    dir <- nant(dir,0)
-    t <- ( +dy/2 - dr[2] ) / dir[2]
-    SIDE['top',] <- dr + t*dir
-
-    # bottom solution
-    dir <- -dir
-    t <- ( -dy/2 - dr[2] ) / dir[2]
-    SIDE['bottom',] <- dr + t*dir
-
-    SIDE <- t(t(SIDE)/dR*2)
-
-    # first intersections
-    PIX <- matrix(FALSE,3,3)
-
-    if(all(abs(dr)<=dR/2))
-    { PIX[2,2] <- TRUE }
-    else
-    { return(PIX) }
-
-    if(abs(SIDE['left','y'])<1) { PIX[1,2] <- TRUE }
-    else if(SIDE['left','y']==+1) { PIX[1,3] <- TRUE }
-    else if(SIDE['left','y']==-1) { PIX[1,1] <- TRUE }
-
-    if(abs(SIDE['right','y'])<1) { PIX[3,2] <- TRUE }
-    else if(SIDE['right','y']==+1) { PIX[3,1] <- TRUE }
-    else if(SIDE['right','y']==-1) { PIX[3,3] <- TRUE }
-
-    if(abs(SIDE['bottom','x'])<1) { PIX[2,1] <- TRUE }
-    if(abs(SIDE['top','x'])<1) { PIX[2,3] <- TRUE }
-
-    # does cross the middle pixel
-    if(!PIX[2,2] && sum(apply(PIX,1,any))>1 && sum(apply(PIX,2,any))) { PIX[2,2] <- TRUE }
-
-    return(PIX)
-  }
-
-  pb <- utils::txtProgressBar(style=3)
-  for(i in 1:nrow(IND))
-  {
-    if(any(IND[i,]==1) || any(IND[i,]==DIM)) { next }
-
-    SUB.x <- IND[i,1]+(-1):1
-    SUB.y <- IND[i,2]+(-1):1
-    SUB <- PDF[SUB.x,SUB.y]
-
-    M.TEST <- all(SUB[5] > SUB[-5]) # SUB[5] == P[i,j] # mode
-    R.TEST <- min(SUB[-5]) < SUB[5] && SUB[5] <= max(SUB[-5]) # possible ridge
-
-    if(!M.TEST && !R.TEST) { next }
-
-    G <- GRAD[IND[i,1],IND[i,2],]
-    H <- matrix(HESS[IND[i,1],IND[i,2],c(1,2,2,3)],2,2)
-    EIGEN <- eigen(H)
-    DIR <- EIGEN$vectors[,1]
-
-    r <- c(X[IND[i,1]],Y[IND[i,2]])
-
-    # first step without interpolation
-    if(M.TEST)
+    COLS <- 2:(ncol(PDF)-1)
+    for(j in COLS)
     {
-      MODE[i] <- TRUE
-      dr <- c(pd.solve(-H) %*% G)
-    }
-    else
-    {
+      if(PDF[i,j] == -Inf) { next }
+      EIGEN <- eigen(HESS[i,j,,])
       if(EIGEN$values[2]>=0) { next }
+      # number of cells to ridge
+      RIDGE[i,j] <- sqrt(sum((-(dK%*%EIGEN$vectors[,2])/EIGEN$values[2]*(GRAD[i,j,]%*%EIGEN$vectors[,2]))^2))
+    } # end col loop
+  } # end row loop
 
-      # closest ridge point
-      dr <- -c(G %*% EIGEN$vectors[,2])/EIGEN$values[2]
-      dr <- dr * EIGEN$vectors[,2]
-    }
-    if(any(abs(dr)>1.5*dR)) { next } # no ridge in vicinity
-
-    PIX <- pixels(dr,DIR)
-    VOTE[SUB.x,SUB.y] <- VOTE[SUB.x,SUB.y] + PIX
-    # VOTE[IND[i,,drop=FALSE]] <- 1
-
-    # store results
-    r <- r + dr
-    RIDGE[i,] <- r
-
-    G <- G + H %*% dr
-    # CURV[i] <- -EIGEN$values[2]/max(-EIGEN$values[1],0)
-
-    utils::setTxtProgressBar(pb,i/nrow(IND))
-  } # end loop over IND
-
-  colnames(RIDGE) <- c('x','y')
-  VOTE <- VOTE[IND]
-  rm(IND)
-  VOTE <- (VOTE>=VOTE.MIN | MODE)
-  MODE <- MODE[VOTE]
-  RIDGE <- RIDGE[VOTE,,drop=FALSE]
-  rm(VOTE)
+  return(RIDGE)
 
   ## connect ridge points from top to bottom ##
   # TODO !!! enforce minimum connection length - or make new branch !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
