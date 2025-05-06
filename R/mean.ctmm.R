@@ -127,8 +127,9 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
     if(length(formula) && length(x[[i]]$used.mean))
     {
       NAMES <- names(x[[i]]$used.mean)
-      X[i,NAMES] <- x[[i]]$used.mean
-      SX[i,NAMES,NAMES] <- x[[i]]$used.cov
+      NAMES <- NAMES[NAMES %in% TERMS]
+      X[i,NAMES] <- x[[i]]$used.mean[NAMES]
+      SX[i,NAMES,NAMES] <- x[[i]]$used.cov[NAMES,NAMES]
     }
 
     x[[i]] <- log_ctmm(x[[i]],debias=debias)

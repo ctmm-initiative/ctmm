@@ -1,4 +1,5 @@
 ** PRIORITY
+* double check akde() for error if data and ctmm projection not the same
 * export Log population mean
 * plot.telemetry xlab ylab exposed is.missing()
 * zero-inflated negative-binomial for SDM
