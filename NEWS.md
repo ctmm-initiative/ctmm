@@ -1,4 +1,4 @@
-ctmm 1.2.1 (2025-04-23)
+ctmm 1.2.1 (2025-05-05)
 ================
 * sdm.fit() and sdm.select() now support camera-trap and other count data
 * new dispatch method projection()<- for ctmm class objects
