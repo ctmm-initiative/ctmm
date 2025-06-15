@@ -407,8 +407,8 @@ meta.normal <- function(Y,SY=FALSE,X=FALSE,SX=FALSE,DSM=NULL,INT=TRUE,VARS=TRUE,
     { COV.mu <- pd.solve(P.mu,semi=FALSE) }
 
     mu <- c(COV.mu %*% mu)
-    if(beta.fixed)
-    { mu[BI] <- par[BI] }
+    mu <- nant(mu,0)
+    if(beta.fixed) { mu[BI] <- par[BI] }
 
     # now handle infinite weight part
     SUB <- (P.mi>0)
@@ -526,8 +526,13 @@ meta.normal <- function(Y,SY=FALSE,X=FALSE,SX=FALSE,DSM=NULL,INT=TRUE,VARS=TRUE,
         E <- (NSOL$beta - SOL$beta)^2 / pmax( NSOL$beta^2 , diag(cbind(NSOL$COV.mu))[BI], 1 )
         ERROR <- sum(E,na.rm=TRUE)
 
-        SOL <- NSOL
-        count <- count + 1
+        if(NSOL$loglike>SOL$loglike)
+        {
+          SOL <- NSOL
+          count <- count + 1
+        }
+        else
+        { break }
       } # end while
 
       if(!verbose) { SOL <- -SOL$loglike }

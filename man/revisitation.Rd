@@ -7,20 +7,20 @@
 This function estimates the distribution of revisitations from \code{telemetry} data and a continuous-time movement model.
 }
 \usage{
-revisitation(data,UD,debias=TRUE,error=0.001,...)
+revisitation(data,UD,error=0.001,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{data}{ 2D timeseries telemetry data represented as a \code{telemetry} object or list of objects. }
   \item{UD}{A \code{UD} object from the output of \code{\link{akde}}.}
-  \item{debias}{Correct for oversmoothing.}
+%  \item{debias}{Correct for oversmoothing.}
   \item{error}{Target probability error.}
   \item{...}{Arguments passed to \code{\link{akde}}.}
 }
 
 %\details{}
 
-\value{Returns a \code{UD} object.}
+\value{Returns a \code{UD} object. A \code{rates} slot is included, which corresponds to the mean revisitation rate per radial meter.}
 
 %\references{}
 

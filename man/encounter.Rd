@@ -18,6 +18,7 @@ cde(object,include=NULL,exclude=NULL,debias=FALSE,...) }
 \arguments{
   \item{data}{A \code{list} of \code{telemetry} objects.}
   \item{UD}{A \code{list} of aligned \code{UD} objects.}
+  \item{object}{A \code{list} of aligned \code{UD} objects or \code{telemetry} objects, depending on the \code{method}.}
   \item{method}{Encounter probability calculation method: trajectory based (\code{"ECDF"}) or distribution based (\code{"PDF"}).}
   \item{debias}{Approximate bias corrections.}
   \item{level}{Confidence level for relative encounter rates.}

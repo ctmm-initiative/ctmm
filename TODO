@@ -1,4 +1,6 @@
 ** PRIORITY
+* restructure CTMM,VMM,VM into a nested list object of some kind
+* Pass ... to CTMM argument in ctmm.guess()
 * double check akde() for error if data and ctmm projection not the same
 * export Log population mean
 * plot.telemetry xlab ylab exposed is.missing()

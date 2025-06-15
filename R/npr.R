@@ -1,10 +1,9 @@
-revisitation <- function(data,UD,debias=TRUE,error=0.001,...)
-{ npr(data,UD,variable="revisitation",normalize=TRUE,debias=debias,error=error,...) }
+revisitation <- function(data,UD,error=0.001,...)
+{ npr(data,UD,variable="revisitation",normalize=TRUE,error=error,...) }
 
 
 # TODO Occurrence NPRs ##
-# TODO NPR debias
-npr <- function(data,UD,variable="speed",normalize=FALSE,debias=TRUE,error=0.001,...)
+npr <- function(data,UD,variable="speed",normalize=FALSE,error=0.001,...)
 {
   # arbitrary variables allowed
   # variable <- match.arg(variable,c('revisitation','speed'))
@@ -14,19 +13,23 @@ npr <- function(data,UD,variable="speed",normalize=FALSE,debias=TRUE,error=0.001
 
   CTMM <- UD@CTMM
   axes <- CTMM$axes
-  res <- 10
+  # res <- 10
 
   if(length(CTMM$tau)<2)
   {
     if(variable=='revisitation')
     {
       warning("Revisitation estimation requires a continuous-velocity model.")
-      return(UD)
+      if(normalize)
+      { return(UD) }
+      else
+      { stop("Unnormalized revisitation rate cannot be estimated.") }
     }
     else if(variable=='speed')
     { stop("Speed estimation requires a continuous-velocity model.") }
   }
 
+  # !!! FIX THIS
   if(type=="occurrence")
   { return(occurrence(data,CTMM,variable=variable,error=error,grid=UD,...)) }
 
@@ -51,35 +54,31 @@ npr <- function(data,UD,variable="speed",normalize=FALSE,debias=TRUE,error=0.001
   weights <- UD$weights
   UD <- as.list(UD)
 
-  if(debias)
-  { bias <- UD$bias } # consider recalculating for normalize=TRUE
-  else
-  { bias <- FALSE }
-
-  if(normalize) # generate a new disribution
+  if(variable=="revisitation") # weighted distribution
   {
-    if(variable=="revisitation")
-    { weights <- weights * data$speed }
-    else
-    { weights <- weights * data[[variable]] }
-    # total weight for means
+    weights <- pi * weights * data$speed
     weight <- sum(weights)
 
-    UD$PDF <- UD$CDF <- UD$MISE <- NULL
-    UD$axes <- UD$r <- UD$dr <- NULL
+    NEW <- kde(data=data,H=UD$H,W=weights,alpha=error,grid=GRID) # normalized UD object
 
-    UD <- c(UD,kde(data=data,H=UD$H,W=weights,alpha=error,grid=GRID,bias=bias))
+    UD$weight <- weight # total weight for means
+    UD$rate <- weight * sum(UD$PDF*NEW$PDF) * prod(NEW$dr) # <dF/dR>
 
-    UD$weight <- weight # needed for averaging over individuals
-    UD <- new.UD(UD,info=info,type='range',variable=variable,CTMM=CTMM)
+    UD$PDF <- NEW$PDF
+    UD$CDF <- NEW$CDF
   }
-  else # append to current distribution
+  else  # NR regression surface
   {
-    UD[[variable]] <- kde(data=data,H=UD$H,W=weights,alpha=error,grid=GRID,variable=variable,normalize=FALSE)
+    NEW <- kde(data=data,H=UD$H,W=weights,alpha=error,grid=GRID,variable=variable,normalize=normalize)
 
-    #NAMES <- names(UD) # why is this being erased?
-    #UD <- new.RS(UD,info=attr(data,"info"),type='range',variable=variable,CTMM=CTMM)
-    #names(UD) <- NAMES # why is this necessary?
+    if(normalize) # generated a new distribution
+    {
+      UD$PDF <- NEW$NPR * (NEW$P/sum(NEW$NPR)) # normalize surface
+      UD$CDF <- pmf2cdf(UD$PDF)
+      UD$PDF <- UD$PDF / prod(NEW$dr)
+    }
+    else # append expectation layer to current object
+    { UD[[variable]] <- NEW$NPR }
   }
 
   return(UD)

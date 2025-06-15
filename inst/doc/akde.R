@@ -12,15 +12,15 @@ AKDE <- akde(Pepper,M.OUF) # AKDE
 wAKDE <- akde(Pepper,M.OUF,weights=TRUE) # weighted AKDE
 
 ## ----fig.show='hold', results = "hide", eval=FALSE----------------------------
-#  # calculate one extent for all UDs
-#  EXT <- extent(list(KDE,AKDE,wAKDE),level=0.95)
-#  
-#  plot(Pepper,UD=KDE,xlim=EXT$x,ylim=EXT$y)
-#  title(expression("IID KDE"["C"]))
-#  plot(Pepper,UD=AKDE,xlim=EXT$x,ylim=EXT$y)
-#  title(expression("OUF AKDE"["C"]))
-#  plot(Pepper,UD=wAKDE,xlim=EXT$x,ylim=EXT$y)
-#  title(expression("weighted OUF AKDE"["C"]))
+# # calculate one extent for all UDs
+# EXT <- extent(list(KDE,AKDE,wAKDE),level=0.95)
+# 
+# plot(Pepper,UD=KDE,xlim=EXT$x,ylim=EXT$y)
+# title(expression("IID KDE"["C"]))
+# plot(Pepper,UD=AKDE,xlim=EXT$x,ylim=EXT$y)
+# title(expression("OUF AKDE"["C"]))
+# plot(Pepper,UD=wAKDE,xlim=EXT$x,ylim=EXT$y)
+# title(expression("weighted OUF AKDE"["C"]))
 
 ## ----fig.show='hold', results = "hide", echo=FALSE----------------------------
 # calculate one extent for all UDs

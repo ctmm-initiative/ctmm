@@ -44,7 +44,7 @@ When feeding in lists of \code{telemetry} and \code{ctmm} objects, all UDs will 
 If a \code{UD} or \code{raster} object is supplied in the \code{grid} argument, then the estimate will be calculated on the same grid. Alternatively, a list of grid arguments can be supplied, with any of the following components:
 \describe{
 \item{\code{r}}{A list with vectors \code{x} and \code{y} that define the grid-cell midpoints.}
-\item{\code{dr}}{A vector setting the \code{x} and \code{y} cell widths in meters. Equivalent to \code{\link{res}} for \code{raster} objects.}
+\item{\code{dr}}{A vector setting the \code{x} and \code{y} cell widths in meters. Equivalent to \code{\link[raster]{res}} for \code{raster} objects.}
 \item{\code{dr.fn}}{A function for determining the joint cell size, \code{dr}, from individual cell sizes. Examples include \code{min}, \code{median}, \code{mean}, \code{max}, with \code{min} being the default, but also the most memory intensive. \bold{If you run out of RAM with multiple individuals, then consider a coarser resolution with \code{median}, \code{mean}, or \code{max}.}}
 \item{\code{extent}}{The \eqn{x}-\eqn{y} extent of the grid cells, formatted as from the output of \code{\link{extent}}.}
 \item{\code{align.to.origin}}{Logical value indicating that cell midpoint locations are aligned to be an integer number of \code{dr} steps from the projection origin.}
