@@ -868,7 +868,7 @@ meta.uni <- function(x,variable="area",level=0.95,level.UD=0.95,level.pop=0.95,m
         PV[i,j] <- stats::pf(NUM[i]/NUM[j],dof[i],dof[j],lower.tail=NUM[i]<NUM[j])
 
         # symmetric estimates (biased)
-        log.CI[i,j,] <- exp(log.F.CI(NUM[i],NVAR[i],NUM[j],NVAR[j],level=level))
+        log.CI[i,j,] <- exp(Log.F.CI(NUM[i],NVAR[i],NUM[j],NVAR[j],level=level))
       }
     }
 

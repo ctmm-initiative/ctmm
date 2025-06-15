@@ -659,7 +659,7 @@ F.CI <- function(E1,VAR1,E2,VAR2,level=0.95)
 # VAR1 == VAR[numerator]
 # E2 == E[denominator]
 # VAR2 == VAR[denominator]
-log.F.CI <- function(E1,VAR1,E2,VAR2,level=0.95)
+Log.F.CI <- function(E1,VAR1,E2,VAR2,level=0.95)
 {
   N1 <- 2*E1^2/VAR1 # chi^2 DOF
   N2 <- 2*E2^2/VAR2 # chi^2 DOF

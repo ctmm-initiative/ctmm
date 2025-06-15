@@ -520,6 +520,9 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
   names(R)[ which(names(R)=="sigma") ] <- "POV" # population dispersion of features (under log)
   names(R)[ which(names(R)=="COV.sigma") ] <- "COV.POV" # uncertainty in population dispersion of features (under log)
 
+  # new variables from functional response
+  NEW <- names(R$beta)
+
   # transform from diagonal-ish basis for covariance model
   if(any(VARS))
   {
@@ -527,14 +530,14 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
     dimnames(JJ) <- dimnames(R$COV.POV)
     R$COV.POV <- JJ %*% R$COV.POV %*% t(JJ)
 
+    # functional response code
     EXTRA <- length(formula)
     if(EXTRA)
     {
-      BASE <- diag(EXTRA+nrow(J))
-      dimnames(BASE) <- dimnames(R$COV)
-      SUB <- EXTRA+1:nrow(J)
-      BASE[SUB,SUB] <- J
-      J <- BASE
+      padnames <- rownames(R$COV)[1:length(NEW)]
+      J <- mpad(J,diff=length(NEW),side=-1,padname=padnames)
+      diag(J)[1:length(NEW)] <- 1
+      R$POV <- mpad(R$POV,diff=length(NEW),side=-1,padname=padnames)
     }
 
     J <- solve(J)
@@ -550,7 +553,6 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
   BETA <- BETA[BETA %in% FEATURES]
 
   # fix names
-  NEW <- names(R$beta)
   if(length(NEW))
   {
     # implement linear response
@@ -595,8 +597,8 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
 
     NEW <- names(R$beta) # new slope of slopes
 
-    # add new population variances
-    R$POV <- mpad(R$POV,diff=length(NEW),side=-1,padname=NEW)
+    # add new population variances # this is now done back with Jacobian J
+    # R$POV <- mpad(R$POV,diff=length(NEW),side=-1,padname=NEW)
     # add their uncertainties
     ADD <- outer(NEW,NEW,function(a,b){paste0(a,'-',b)})
     ADD <- ADD[ upper.tri(ADD,diag=TRUE) ] # unique terms

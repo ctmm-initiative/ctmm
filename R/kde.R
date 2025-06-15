@@ -293,7 +293,9 @@ kde <- function(data,H,axes=c("x","y"),CTMM=list(),SP=NULL,SP.in=TRUE,RASTER=lis
 
   if(!is.na(variable))
   {
-    if(variable %in% c("revisitation"))
+    if(variable=="utilization")
+    { variable <- NA }
+    else if(variable %in% c("revisitation"))
     { VARIABLE <- "speed" }
     else # data column better have the name given
     { VARIABLE <- variable }
@@ -523,7 +525,12 @@ kde <- function(data,H,axes=c("x","y"),CTMM=list(),SP=NULL,SP.in=TRUE,RASTER=lis
   } # end time loop
 
   if(!is.na(variable)) # revisitation is treated separately
-  { return(NUM/PMF) } # E[variable|data]
+  {
+    R <- list()
+    R$NPR <- NUM/PMF # E[variable|data]
+    R$P <- sum(PMF)
+    return(R)
+  }
 
   if(sum(bias)) # debias area/volume
   {

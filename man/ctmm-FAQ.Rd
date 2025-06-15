@@ -62,11 +62,11 @@ Namespace collision can occur between \code{raster} and \code{ctmm}. Either rest
 
 Maximize the plot window and/or increase your screen resolution.
 
-\bold{\code{manipulate} panel does not popup in \code{\link{ctmm.guess}} or \code{\link{zoom}}}
+\bold{\code{manipulate} panel does not popup in \code{\link{ctmm.guess}} or \code{\link{zoom,variogram-method}}}
 
 Click the gear icon in the upper-left corner of the plot window.
 
-\bold{Gear icon missing in \code{\link{ctmm.guess}} or \code{\link{zoom}}}
+\bold{Gear icon missing in \code{\link{ctmm.guess}} or \code{\link{zoom,variogram-method}}}
 
 Recent versions of \code{manipulate} and/or RStudio seem to have some issues. Sometimes the gear icon does not render unless you re-run the function 2-5 times.
 

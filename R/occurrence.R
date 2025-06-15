@@ -45,7 +45,7 @@ occurrence <- function(data,CTMM,R=list(),SP=NULL,SP.in=TRUE,H=0,variable="utili
   for(i in 1:n)
   {
     # using the same data format as AKDE, but with only the ML estimate (alpha=1)
-    KDE[[i]]  <- kde(KDE[[i]]$data,CTMM=CTMM[[i]],H=KDE[[i]]$H,W=KDE[[i]]$W,dr=dr,grid=grid,SP=SP,SP.in=SP.in,RASTER=R)
+    KDE[[i]]  <- kde(KDE[[i]]$data,CTMM=CTMM[[i]],H=KDE[[i]]$H,W=KDE[[i]]$W,dr=dr,grid=grid,SP=SP,SP.in=SP.in,RASTER=R,variable=variable)
     KDE[[i]]$H <- diag(0,2)
     dimnames(KDE[[i]]$H) <- list(axes,axes)
     KDE[[i]]$W <- W[i]
@@ -58,7 +58,7 @@ occurrence <- function(data,CTMM,R=list(),SP=NULL,SP.in=TRUE,H=0,variable="utili
 }
 
 # occurrence for single indviduals
-currence <- function(data,CTMM,H=0,variable="utilization",res.time=10,res.space=10,grid=NULL,cor.min=0.05,dt.max=NULL,buffer=TRUE,...)
+currence <- function(data,CTMM,H=0,variable="utilization",VMM=NULL,res.time=10,res.space=10,grid=NULL,cor.min=0.05,dt.max=NULL,buffer=TRUE,...)
 {
   if(length(CTMM$tau)<2)
   {
@@ -84,6 +84,7 @@ currence <- function(data,CTMM,H=0,variable="utilization",res.time=10,res.space=
   MIN.ERR <- min(error) # Fix something here?
 
   # format data to be relatively evenly spaced with missing observations
+  raw.data <- data
   data <- fill.data(data,CTMM,verbose=TRUE,res=res.time,cor.min=cor.min,dt.max=dt.max,buffer=buffer)
   t.grid <- data$t.grid
   dt.grid <- data$dt.grid
@@ -100,6 +101,20 @@ currence <- function(data,CTMM,H=0,variable="utilization",res.time=10,res.space=
 
   # smooth mean-zero data # run through smoother to get
   state <- smoother(data,CTMM,smooth=TRUE)
+
+  # smooth & predict annotated variables
+  if(variable != "utilization")
+  {
+    # Brownian motion null model - straight-line interpolation
+    if(is.null(VMM))
+    {
+      VMM <- ctmm(axes=variable,tau=Inf,range=FALSE)
+      VMM <- ctmm.loglike(data,VMM,verbose=TRUE)
+    }
+
+    data[[variable]] <- predict(raw.data,VMM,t=data$t)
+  }
+  rm(raw.data)
 
   # skip repeated timestamps in data (full information retained)
   KEEP <- !data$skip

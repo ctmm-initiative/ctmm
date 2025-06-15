@@ -501,7 +501,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
 
       # initial guess
       b0 <- -mean(log(expDAV)) # Poisson solution
-      success <- mean(count)/var(count) # method of moments
+      success <- mean(count)/stats::var(count) # method of moments
       success <- clamp(success,0,1)
       par <- c(success,b0)
 

@@ -6,7 +6,7 @@
 \description{
 This function estimates the mean value of an annotated covariate as a function of location, using non-parametric regression.}
 \usage{
-npr(data,UD,variable="speed",normalize=FALSE,debias=TRUE,error=0.001,...)
+npr(data,UD,variable="speed",normalize=FALSE,error=0.001,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -14,7 +14,7 @@ npr(data,UD,variable="speed",normalize=FALSE,debias=TRUE,error=0.001,...)
   \item{UD}{A \code{UD} object from the output of \code{\link{akde}}.}
   \item{variable}{Variable for mean estimation. Can be a column of \code{data}.}
   \item{normalize}{Consider \code{variable} as providing a weighted probability distribution.}
-  \item{debias}{Correct for oversmoothing if \code{normalize=TRUE}.}
+%  \item{debias}{Correct for oversmoothing if \code{normalize=TRUE}.}
   \item{error}{Target probability error.}
   \item{...}{Arguments passed to \code{\link{akde}}.}
 }

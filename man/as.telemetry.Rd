@@ -53,7 +53,7 @@ tbind(...)
   \item{mark.rm}{Delete Movebank manually marked outliers. Also see \code{\link{outlie}}.}
   \item{keep}{Retain additonal columns after coercion. \code{keep=TRUE} retains all columns, while individual columns to retain can be specified by name.}
   \item{drop}{Only return a \code{telemetry} object for one individual if \code{TRUE}. Always return a \code{list} of telemetry objects if \code{FALSE}.}
-  \item{...}{\code{telemetry} objects or a list of such objects, for \code{tbind()}. Optional arguments to be fed to \code{\link{fread}} or \code{\link{read.csv}}, in the case of compressed files, for \code{as.telemetry()}.}
+  \item{...}{\code{telemetry} objects or a list of such objects, for \code{tbind()}. Optional arguments to be fed to \code{\link[fread]{fread}} or \code{\link{read.csv}}, in the case of compressed files, for \code{as.telemetry()}.}
   \item{x}{\code{telemetry} object.}
   \item{n}{Number of rows to return, if positive, or number of rows to omit, if negative.}
 }

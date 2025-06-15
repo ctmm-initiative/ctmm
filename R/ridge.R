@@ -77,6 +77,7 @@ ridges2.UD <- function(object,precision=1/8,...)
   ## connect ridge points from top to bottom ##
   # TODO !!! enforce minimum connection length - or make new branch !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   LINE <- list()
+  MODE <- NULL # fix this
   for(i in 1:nrow(RIDGE))
   {
     if(MODE[i]>0) # start new ridge-line from mode
@@ -153,7 +154,7 @@ ridges2.UD <- function(object,precision=1/8,...)
 
   LINE <- lapply(LINE,function(L){new.telemetry(data.frame(cbind(L,t=1:nrow(L))))})
 
-  close(pb)
+  # close(pb)
   return(LINE)
 }
 
