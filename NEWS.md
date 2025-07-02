@@ -1,7 +1,8 @@
-ctmm 1.2.1 (2025-06-12)
+ctmm 1.2.1 (2025-07-02)
 ================
 * new revisitation() mean revisitation rate estimate
 * sdm.fit() and sdm.select() now support camera-trap and other count data
+* emulate() and simulate() can now draw individual ctmms from an estimated population
 * new dispatch method projection()<- for ctmm class objects
 * new functions pd.solve(), pd.logdet(), pd.sqrtm() for covariance matrix operations
 * new default method "ECDF" for function encounter()

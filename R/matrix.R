@@ -644,3 +644,21 @@ eigen.extrapolate <- function(M)
 
   return(M)
 }
+
+
+mvrnorm <- function(Mu,Sigma)
+{
+  Mu <- c(Mu)
+
+  Scale <- sqrt(abs(diag(Sigma)))
+  # don't divide by zero
+  TEST <- Scale <= .Machine$double.eps
+  if(any(TEST)) { Scale[TEST] <- 1 }
+  # re-scale
+  Sigma <- Sigma / (Scale %o% Scale)
+  # diagonalize
+  Sigma <- sqrtm(Sigma)
+
+  R <- Mu + Scale * c(Sigma %*% stats::rnorm(length(Mu)))
+  return(R)
+}

@@ -12,7 +12,7 @@
 
 <meta name="author" content="Christen H. Fleming" />
 
-<meta name="date" content="2025-06-14" />
+<meta name="date" content="2025-07-02" />
 
 <title>Telemetry error</title>
 
@@ -340,7 +340,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Telemetry error</h1>
 <h4 class="author">Christen H. Fleming</h4>
-<h4 class="date">2025-06-14</h4>
+<h4 class="date">2025-07-02</h4>
 
 
 
@@ -526,15 +526,15 @@ model guess to fit with telemetry error accounted for.</p>
 ## 
 ## $DOF
 ##      mean      area diffusion     speed 
-##  13.90250  23.94127 194.84084   0.00000 
+##  13.90252  23.94156 194.84070   0.00000 
 ## 
 ## $CI
 ##                                       low         est        high
-## area (hectares)                 13.619553   21.269584   30.597399
-## τ[position] (days)               3.561602    5.684248    9.071950
-## diffusion (square meters/day) 4663.863921 5394.810724 6178.188237
-## error 2D (meters)               18.539413   21.885555   25.225792
-## error 3D (meters)                6.590228    7.063689    7.536727</code></pre>
+## area (hectares)                 13.619542   21.269506   30.597227
+## τ[position] (days)               3.561605    5.684241    9.071921
+## diffusion (square meters/day) 4663.851801 5394.796992 6178.172796
+## error 2D (meters)               18.539420   21.885565   25.225805
+## error 3D (meters)                6.590236    7.063699    7.536739</code></pre>
 <p><code>trace=TRUE</code> allows us to see the models considered.
 <code>verbose=TRUE</code> would save each model. Since we started with a
 finite amount of calibration data, the location-error parameter
@@ -573,15 +573,15 @@ the RMS UERE. Otherwise, the steps are the same.</p>
 ## 
 ## $DOF
 ##      mean      area diffusion     speed 
-##  12.85423  21.90114 140.47101   0.00000 
+##  14.34025  31.87423 142.60198   0.00000 
 ## 
 ## $CI
-##                                       low         est       high
-## area (hectares)                 13.034814   20.823824   30.40795
-## τ[position] (days)               3.734212    6.186520   10.24929
-## diffusion (square meters/day) 4229.459918 5026.256654 5890.79962
-## error 2D (meters)                7.750765   10.815952   13.87597
-## error 3D (meters)                6.940371    8.749011   10.55403</code></pre>
+##                                       low         est        high
+## area (hectares)                 12.885475   18.853899   25.940266
+## τ[position] (days)               3.661109    5.494873    8.247127
+## diffusion (square meters/day) 4308.883347 5113.731371 5986.475189
+## error 2D (meters)                7.713593   10.782181   13.845635
+## error 3D (meters)                6.821454    8.630654   10.436227</code></pre>
 <p>Here, fitting the RMS UERE simultaneously with the movement model
 produced a largely consistent result. This will not always be the
 case.</p>
@@ -647,15 +647,15 @@ relevant.</p>
 ## 
 ## $DOF
 ##      mean      area diffusion     speed 
-##  12.70942  21.64703 143.50520   0.00000 
+##  13.08431  24.11754 144.12666   0.00000 
 ## 
 ## $CI
 ##                                       low         est       high
-## area (hectares)                 12.966261   20.777959   30.40177
-## τ[position] (days)               3.773825    6.262938   10.39380
-## diffusion (square meters/day) 4197.631962 4978.895089 5825.84791
-## error 2D (meters)                9.462797   12.388775   15.30895
-## error 3D (meters)                7.186922    8.889061   10.58785</code></pre>
+## area (hectares)                 12.972627   20.222544   29.05603
+## τ[position] (days)               3.770347    6.067955    9.76570
+## diffusion (square meters/day) 4216.557443 4999.421445 5847.96169
+## error 2D (meters)                9.458205   12.384413   15.30481
+## error 3D (meters)                7.162208    8.863106   10.56066</code></pre>
 <p>This method is still being developed and so this material is subject
 to change.</p>
 </div>
