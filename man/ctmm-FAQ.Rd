@@ -18,7 +18,6 @@
 \item{Upgrade \code{R} to the latest version and update all of your packages.}
 \item{The development build can be installed via \code{remotes::install_github("ctmm-initiative/ctmm")}.}
 \item{Sometimes installing from Github can silently fail to overwrite old files, requiring the package to be manually uninstalled, and then re-installed after restarting.}
-\item{Stable beta releases between the CRAN release are published \href{http://www2.physics.umd.edu/~hfleming/}{here} on request.}
 \item{The \href{https://groups.google.com/g/ctmm-user}{\code{ctmm} user's group} is a good place to find and ask for help.}
 \item{Bug reports and feature requests can be raised at the \href{https://github.com/ctmm-initiative/ctmm}{Github project page}.}
 }
@@ -27,7 +26,7 @@
 
 These are the packages I needed in Ubuntu:
 
-\code{sudo apt install ffmpeg fftw3 libfftw3-dev libgdal-dev libgeos-dev libgit2-dev libgmp-dev libgsl-dev libmpfr-dev libproj-dev libnode-dev libudunits2-dev r-base-core}
+\code{sudo apt install cmake ffmpeg fftw3 libfftw3-dev libgdal-dev libgeos-dev libgit2-dev libgmp-dev libgsl-dev libmpfr-dev libproj-dev libnode-dev libudunits2-dev r-base-core}
 
 \bold{\code{as.telemetry} reports abnormal sampling intervals and speeds}
 
