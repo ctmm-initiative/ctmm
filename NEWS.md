@@ -1,4 +1,4 @@
-ctmm 1.2.1 (2025-07-02)
+ctmm 1.3.0 (2025-07-23)
 ================
 * new revisitation() mean revisitation rate estimate
 * sdm.fit() and sdm.select() now support camera-trap and other count data

@@ -62,10 +62,13 @@ emulate.ctmm <- function(object,data=NULL,fast=FALSE,...)
   }
 
   # variances should be comparable after transformation --- better condition number
-  # TEST <- any( diag(COV) <= .Machine$double.eps ) # first test
-  # TEST <- TEST || any( eigen(COV)$values <= .Machine$double.eps ) # only run eigen() if first passes
-  # if(any(TEST)) { stop("Hessian not negative semidefinite. Try fast=FALSE.") }
-  # par <- MASS::mvrnorm(mu=par,Sigma=COV)
+  if(!is.null(data))
+  {
+    TEST <- any( diag(COV) <= .Machine$double.eps ) # first test
+    TEST <- TEST || any( eigen(COV)$values <= .Machine$double.eps ) # only run eigen() if first passes
+    if(any(TEST)) { warning("Hessian not negative semidefinite. Consider fast=FALSE.") }
+    # par <- MASS::mvrnorm(mu=par,Sigma=COV)
+  }
   par <- mvrnorm(par,COV) # safe for small eigen-values
 
   # transform log back to positive parameters

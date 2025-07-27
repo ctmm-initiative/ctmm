@@ -1,4 +1,5 @@
 ** PRIORITY
+* import error ellipses in any projection
 * restructure CTMM,VMM,VM into a nested list object of some kind
 * Pass ... to CTMM argument in ctmm.guess()
 * double check akde() for error if data and ctmm projection not the same

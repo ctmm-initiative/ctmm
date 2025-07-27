@@ -63,7 +63,7 @@ SpatialPolygonsDataFrame.UD(object,level.UD=0.95,level=0.95,convex=FALSE,...)
   \item{DF}{Rasterize the probability density function \code{"PDF"}, probability mass function \code{"PMF"}, or cumulative distribution function \code{"CDF"}.}
   \item{filename}{Character name of file for raster or vector file.}
   \item{format}{Output file type (see \code{\link[raster]{writeFormats}}). If this argument is not provided, it is inferred it from the filename extension. If that fails, the default \code{'raster'} format is used, which can be changed using \code{\link[raster]{rasterOptions}}.}
-  \item{filetype}{A file format associated with a GDAL "driver". See \code{gdal(drivers=TRUE)} or the \href{https://gdal.org/drivers/vector/index.html}{GDAL docs}. If \code{filetype=NULL}, the filetype is inferred from the filename extension.}
+  \item{filetype}{A file format associated with a GDAL "driver". See \code{gdal(drivers=TRUE)} or the \href{https://gdal.org/en/stable/drivers/vector/index.html}{GDAL docs}. If \code{filetype=NULL}, the filetype is inferred from the filename extension.}
   \item{...}{ Optional arguments passed to \code{\link[raster]{writeRaster}}, \code{\link[terra]{writeVector}}, etc..}
 }
 
