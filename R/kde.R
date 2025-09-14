@@ -229,6 +229,8 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utiliz
   # loop over individuals
   for(i in 1:n)
   {
+    KDE[[i]]$error <- error
+
     if(is.null(VMM))
     { EXT <- CTMM[[i]] }
     else

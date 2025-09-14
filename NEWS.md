@@ -1,3 +1,7 @@
+ctmm 1.3.1 (2025-09-14)
+================
+* preliminary home-range-index code
+
 ctmm 1.3.0 (2025-07-23)
 ================
 * new revisitation() mean revisitation rate estimate
