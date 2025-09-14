@@ -259,6 +259,24 @@ sqrtm.covm <- function(sigma)
   return(sigma)
 }
 
+
+# invert covariance matrix
+isqrtm.covm <- function(sigma,pseudo=FALSE)
+{
+  isotropic <- sigma@isotropic
+  axes <- colnames(sigma)
+
+  sigma <- attr(sigma,"par")
+  PARS <- 1:min(2,length(sigma)) # major, (minor)
+  sigma[PARS] <- rev(1/sqrt(sigma[PARS])) # order matters
+  if(length(sigma)>1) { sigma['angle'] <- sigma['angle'] + pi/2 } # reverse ordered
+
+  sigma <- covm(sigma,isotropic=isotropic,axes=axes)
+
+  return(sigma)
+}
+
+
 # matrix power
 fn.covm <- function(sigma,fn)
 {

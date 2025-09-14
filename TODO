@@ -1,4 +1,6 @@
 ** PRIORITY
+* diagonalized sensitivity gradients rasters in UD calculation
+* mean.ctmm() BM/IOU
 * import error ellipses in any projection
 * restructure CTMM,VMM,VM into a nested list object of some kind
 * Pass ... to CTMM argument in ctmm.guess()

@@ -728,8 +728,8 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
 
           N <- nrow(xy)
         }
-        else # elliptical grid
-        { stop('Inconsistent grids not yet supported when method!="MonteCarlo".') }
+        else # ellipsoidal grid
+        { stop('Inconsistent and ellipsoidal grids not yet supported when method!="MonteCarlo".') }
 
         if(STATIONARY)
         { SATA <- array(0,c(N,1,length(VARS))) }
