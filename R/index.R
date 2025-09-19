@@ -5,7 +5,7 @@ index <- function(x,R,...)
   I <- index.UD(x,R,...)
   error <- x$error
   if(is.null(error)) { error <- 0.001 } # default numerical error in UD for old objects
-  if(I >= 1/error/2) # calculation is probably not good somewhere around this amount
+  if(exp(-I^2) <= 1/error/2) # calculation is probably not good somewhere around this amount
   { I <- index.ctmm(UD@CTMM,R,...) }
   return(I)
 }
