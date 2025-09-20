@@ -1,21 +1,28 @@
-corridor <- function(data,CTMM,res.space=10,res.time=100,window=1%#%'day',grid=list(),...)
+corridor <- function(data,CTMM,res.space=10,res.time=1,window=1%#%'day',grid=list(),...)
 {
   debug <- FALSE
   axes <- CTMM[[1]]$axes
   info <- mean_info(data)
   # window <- 1 %#% 'day' # minimum window for greedy search
   n <- length(data)
+
+  # target temporal resolution
+  DT <- sapply(data,function(d){stats::median(diff(d$t))})
+  TD <- sapply(data,function(d){last(d$t)-d$t[1]})
+  N <- ceiling(TD/DT * res.time) + 1
+  N <- max(N)
+
   W <- list()
   dt <- array(0,n)
   for(i in 1:n)
   {
-    t <- seq(data[[i]]$t[1],last(data[[i]]$t),length.out=res.time)
+    t <- seq(data[[i]]$t[1],last(data[[i]]$t),length.out=N)
     dt[i] <- stats::median(diff(t))
     # use instantaneous speeds as weights for effective distance sampling
     W[[i]] <- speeds(data[[i]],CTMM[[i]],t=t)[,'est']
     # total weight == total distance
     W[[i]] <- W[[i]]*dt[i]
-    # W[[i]] <- rep(1,res.time)
+    W[[i]] <- W[[i]]/sum(W[[i]])
     # regularize data
     data[[i]] <- predict(data[[i]],CTMM[[i]],t=t)
   }
@@ -23,8 +30,8 @@ corridor <- function(data,CTMM,res.space=10,res.time=100,window=1%#%'day',grid=l
   # convert from time to index
   window <- ceiling(window/dt)
 
-  END <- 1:res.time
-  DNE <- res.time:1
+  END <- c(1,N)
+  DNE <- c(N,1)
 
   ## orient all tracks in the same direction for NN search
   # forward variance minus reverse variance
@@ -45,13 +52,13 @@ corridor <- function(data,CTMM,res.space=10,res.time=100,window=1%#%'day',grid=l
     MIN <- -min(VFB[i,]) # best
     if(MAX>MIN) # worst is worse than best
     {
-      data[[i]] <- data[[i]][res.time:1,]
+      data[[i]] <- data[[i]][N:1,]
       VFB[i,] <- VFB[,i] <- -VFB[i,]
     }
   }
 
-  NN <- array(1,c(res.time,n,n)) # nearest neighbor
-  DIST <- array(0,c(res.time,n,n)) # NN pairwise distances^2
+  NN <- array(1,c(N,n,n)) # nearest neighbor
+  DIST <- array(0,c(N,n,n)) # NN pairwise distances^2
 
   # greedy search algorithm
   search <- function(t,i,j,WIN=NULL)
@@ -68,7 +75,7 @@ corridor <- function(data,CTMM,res.space=10,res.time=100,window=1%#%'day',grid=l
       # initial search point
       s <- NN[t,i,j]
       # one-day window
-      WIN <- max(s-window[j],1):min(s+window[j],res.time)
+      WIN <- max(s-window[j],1):min(s+window[j],N)
     }
     # all distances^2 in window
     D <- (data[[i]]$x[t]-data[[j]]$x[WIN])^2 + (data[[i]]$y[t]-data[[j]]$y[WIN])^2
@@ -99,7 +106,7 @@ corridor <- function(data,CTMM,res.space=10,res.time=100,window=1%#%'day',grid=l
     }
 
     ## greedy search forwards
-    while(LAST && s<res.time)
+    while(LAST && s<N)
     {
       s <- s+1
       D <- (data[[i]]$x[t]-data[[j]]$x[s])^2 + (data[[i]]$y[t]-data[[j]]$y[s])^2
@@ -116,12 +123,12 @@ corridor <- function(data,CTMM,res.space=10,res.time=100,window=1%#%'day',grid=l
   } # search()
 
   ## greedy search forward
-  for(t in 1:res.time)
+  for(t in 1:N)
   {
     for(i in 1:n) { for(j in 1:n) { search(t,i,j) } }
 
     # copy to next
-    if(t<res.time)
+    if(t<N)
     {
       NN[t+1,,] <- NN[t,,]
       DIST[t+1,,] <- DIST[t,,]
@@ -134,8 +141,8 @@ corridor <- function(data,CTMM,res.space=10,res.time=100,window=1%#%'day',grid=l
 
   ## greedy search backwards
   # reset starting point
-  NN <- array(res.time,c(res.time,n,n)) # nearest neighbor
-  for(t in res.time:1)
+  NN <- array(N,c(N,n,n)) # nearest neighbor
+  for(t in N:1)
   {
     for(i in 1:n) { for(j in 1:n) { search(t,i,j) } }
 
@@ -166,7 +173,7 @@ corridor <- function(data,CTMM,res.space=10,res.time=100,window=1%#%'day',grid=l
   rm(NN.0,DIST.0)
 
   # calculate NN variances
-  VAR <- array(0,c(res.time,n))
+  VAR <- array(0,c(N,n))
   VAR <- apply(DIST,1:2,sum) / (4*(n-1))
   rm(DIST)
 
@@ -181,7 +188,7 @@ corridor <- function(data,CTMM,res.space=10,res.time=100,window=1%#%'day',grid=l
 
   MU <- array(0,c(n,2))
   SIGMA <- array(0,c(n,2,2))
-  for(t in 1:res.time)
+  for(t in 1:N)
   {
     for(i in 1:n)
     {
@@ -219,6 +226,7 @@ corridor <- function(data,CTMM,res.space=10,res.time=100,window=1%#%'day',grid=l
 
   H <- list()
   h <- (4/3/n)^(1/5) # Silverman
+  HV.MAX <- 0
   for(i in 1:n)
   {
     H[[i]] <- h^2 * VAR[,i] %o% diag(2)
@@ -230,9 +238,17 @@ corridor <- function(data,CTMM,res.space=10,res.time=100,window=1%#%'day',grid=l
       v <- get.telemetry(data[[i]],axes=v)
       v <- vapply(1:nrow(data[[i]]),function(t){v[t,] %o% v[t,]},diag(2))
       v <- aperm(v,c(3,1,2))
-      H[[i]] <- H[[i]] + dt[i]^2/12 * v
+      v <- dt[i]^2/12 * v
+      HV.MAX <- max(HV.MAX, tr(v)/tr(H[[i]]) )
+      H[[i]] <- H[[i]] + v
     }
   } # for(i in 1:n)
+
+  if(HV.MAX>1)
+  {
+    HV.MAX <- ceiling(sqrt(HV.MAX) * res.time)
+    warning("Suggest res.time \u00bb ", HV.MAX)
+  }
 
   W <- unlist(W)
 
