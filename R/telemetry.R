@@ -885,9 +885,17 @@ as.telemetry.data.frame <- function(object,timeformat="auto",timezone="UTC",proj
     # according to ARGOS, the following can be missing on <4 message data... but it seems present regardless
     DATA$COV.major <- pull.column(object,ATTRIBUTE$COV.major)^2/2
     DATA$COV.minor <- pull.column(object,ATTRIBUTE$COV.minor)^2/2
+
     # mean variance
-    DATA[[DOP.LIST$horizontal$VAR]] <- pull.column(object,ATTRIBUTE$COV.mean)^2/2
-    NAS <- is.na(DATA[[DOP.LIST$horizontal$VAR]])
+    DATA[[DOP.LIST$horizontal$VAR]] <- pull.column(object,ATTRIBUTE$COV.mean)
+    if(length(DATA[[DOP.LIST$horizontal$VAR]]))
+    {
+      DATA[[DOP.LIST$horizontal$VAR]] <- DATA[[DOP.LIST$horizontal$VAR]]^2/2
+      NAS <- is.na(DATA[[DOP.LIST$horizontal$VAR]])
+    }
+    else # all missing
+    { NAS <- 1:nrow(DATA) }
+
     if(any(NAS))
     { DATA[[DOP.LIST$horizontal$VAR]][NAS] <- (DATA$COV.minor[NAS] + DATA$COV.major[NAS])/2 }
     DATA$HDOP <- sqrt(2*DATA[[DOP.LIST$horizontal$VAR]])
