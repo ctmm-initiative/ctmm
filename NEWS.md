@@ -1,6 +1,8 @@
-ctmm 1.3.1 (2025-09-20)
+ctmm 1.3.1 (2025-09-21)
 ================
+
 * preliminary home-range-index code
+* as.telemetry() no longer requires strict Argos formatting
 
 ctmm 1.3.0 (2025-07-23)
 ================
