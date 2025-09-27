@@ -1,4 +1,4 @@
-ctmm 1.3.1 (2025-09-21)
+ctmm 1.3.1 (2025-09-26)
 ================
 
 * preliminary home-range-index code

@@ -9,7 +9,7 @@ ATTRIBUTE$timestamp <- c('timestamp','timestamp.of.fix','Acquisition.Time',
                          't','t_dat','use_date',"event.Date","observation.Date")
 ATTRIBUTE$id <- c("animal.ID","AID","individual.local.identifier","local.identifier","individual.ID","Name","ID","ID.Names","Animal","Full.ID",
                   "tag.local.identifier","tag.ID","band.number","band.num","device.info.serial","Device.ID","collar.id","Logger","Logger.ID",
-                  "Deployment","deployment.ID","track.ID")
+                  "Deployment","deployment.ID","track.ID","DeployID","PTT")
 ATTRIBUTE$taxa <- c("verbatim.Scientific.Name")
 ATTRIBUTE$count <- c("individual.Count","Count")
 ATTRIBUTE$long <- c("location.longitude","location.long","Longitude","longitude.WGS84","Longitude.deg","long","lon","lng","GPS.Longitude","\u7D4C\u5EA6","decimal.Longitude")
@@ -39,7 +39,7 @@ ATTRIBUTE$COV.angle <- c("Argos.orientation","Error.ellipse.orientation","Ellips
 ATTRIBUTE$COV.major <- c("Argos.semi.major","Error.semi-major.axis","Semi-major.axis","Semi-major")
 ATTRIBUTE$COV.minor <- c("Argos.semi.minor","Error.semi-minor.axis","Semi-minor.axis","Semi-minor")
 ATTRIBUTE$COV.mean <- c("Argos.error.radius","Error.radius")
-ATTRIBUTE$COV.class <- c("Argos.location.class","Argos.lc","LC","LQ")
+ATTRIBUTE$COV.class <- c("Argos.location.class","Argos.lc","LC","LQ","Quality")
 ATTRIBUTE$COV.xx <- c("VAR.x","COV.xx")
 ATTRIBUTE$COV.yy <- c("VAR.y","COV.yy")
 ATTRIBUTE$COV.xy <- c("COV.xy")
