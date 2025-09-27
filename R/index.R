@@ -7,7 +7,7 @@ index <- function(x,R,...)
   if(is.null(error)) { error <- 0.001 } # default numerical error in UD for old objects
   # SWITCH TO INTERPOLATION FOR SMOOTHNESS
   if(exp(-I^2) <= 2*error) # calculation is probably not good somewhere around this amount
-  { I <- index.ctmm(UD@CTMM,R,...) }
+  { I <- index.ctmm(x@CTMM,R,...) }
   return(I)
 }
 
