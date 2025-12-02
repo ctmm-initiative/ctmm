@@ -841,6 +841,15 @@ as.telemetry.data.frame <- function(object,timeformat="auto",timezone="UTC",proj
 
   DATA$t <- as.numeric(DATA$timestamp)
 
+  # fix missing Argos sensor column
+  COL <- ATTRIBUTE$COV.class
+  COL <- pull.column(object,COL,as.factor)
+  if(length(COL) && 'G'%in%levels(COL) && "sensor.type" %nin% names(object))
+  {
+    object$sensor.type <- "argos"
+    object$sensor.type[COL=="G"] <- "gps"
+  }
+
   #################################
   # ESTABLISH BASE LOCATION CLASSES BEFORE MISSINGNESS CLASSES
   ###########################
@@ -927,9 +936,10 @@ as.telemetry.data.frame <- function(object,timeformat="auto",timezone="UTC",proj
     ARGOS.radii <- (ARGOS.major+ARGOS.minor)/2
 
     COL <- as.character(COL) # factors are weird
-    NAS <- NAS & COL!="NA" # do not overwrite GPS data
+    NAS <- NAS & COL!="NA" & COL!="G" # do not overwrite GPS data
 
-    message(sum(NAS)," ARGOS error ellipses missing. Using location class estimates from Vincent et al (2002).")
+    TEST <- sum(NAS)
+    if(TEST>0) { message(TEST," ARGOS error ellipses missing. Using location class estimates from Vincent et al (2002).") }
 
     DATA$COV.minor[NAS] <- ARGOS.minor[COL][NAS]
     DATA$COV.major[NAS] <- ARGOS.major[COL][NAS]
@@ -937,9 +947,12 @@ as.telemetry.data.frame <- function(object,timeformat="auto",timezone="UTC",proj
     DATA$HDOP[NAS] <- sqrt(2*ARGOS.radii)[COL][NAS]
 
     # classify Kalman filtered locations separately
-    COL[!NAS & COL!="NA"] <- "KF"
+    SUB <- !NAS & COL!="NA" & COL!="G"
+    COL[SUB] <- "KF"
 
-    DATA$class <- as.factor(COL)
+    SUB <- NAS & !is.na(DATA$COV.major) & COL!="G" # !KF LC
+    ERROR[SUB] <- TRUE # Argos LC calibrated
+    CAL[SUB] <- Inf
 
     # remove Z class (no calibration data)
     SUB <- (NAS & COL!="Z") | !NAS
@@ -947,10 +960,6 @@ as.telemetry.data.frame <- function(object,timeformat="auto",timezone="UTC",proj
     DATA <- DATA[SUB,]
 
     ARGOS <- 1
-
-    COL <- NAS & !is.na(DATA$COV.major) # !KF and LC
-    ERROR[COL] <- TRUE # Argos LC calibrated
-    CAL[COL] <- Inf
   }
   else if(length(COL))
   { DATA$class <- as.factor(COL) }
