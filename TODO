@@ -1,4 +1,5 @@
 ** PRIORITY
+* summary() option to return nocturnality (not diurnality)
 * diagonalized sensitivity gradients rasters in UD calculation
 * mean.ctmm() BM/IOU
 * import error ellipses in any projection
