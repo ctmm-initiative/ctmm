@@ -43,7 +43,10 @@ ATTRIBUTE$COV.class <- c("Argos.location.class","Argos.lc","LC","LQ","Quality")
 ATTRIBUTE$COV.xx <- c("VAR.x","COV.xx")
 ATTRIBUTE$COV.yy <- c("VAR.y","COV.yy")
 ATTRIBUTE$COV.xy <- c("COV.xy")
-
+ATTRIBUTE$SD.long <- c("SD.lon","SD.long","SD.longitude","STDEV.lon","STDEV.long","STDEV.longitude","SE.lon","SE.long","SE.longitude",
+                       "lon.SD","long.SD","longitude.SD","lon.STDEV","long.STDEV","longitude.STDEV","lon.SE","long.SE","longitude.SE")
+ATTRIBUTE$SD.lat <- c("SD.lat","SD.latt","SD.latitude","STDEV.lat","STDEV.latt","STDEV.latitude","SE.lat","SE.latt","SE.latitude",
+                      "lat.SD","latt.SD","latitude.SD","lat.STDEV","latt.STDEV","latitude.STDEV","lat.SE","latt.SE","latitude.SE")
 
 subset.telemetry <- function(x,...)
 {
@@ -883,6 +886,26 @@ as.telemetry.data.frame <- function(object,timeformat="auto",timezone="UTC",proj
   }
 
   ##################################
+  # GLS data with long-lat based error ellipse
+  # put into Argos format, because its already in long-lat
+  COL <- ATTRIBUTE$SD.long
+  COL <- pull.column(object,COL)
+  if(length(COL))
+  {
+    R2 <- ( DATA.EARTH$R.EQ*cos(DATA$latitude) )^2
+    object$Argos.semi.major <- pi/180 * sqrt(2*R2) * COL
+
+    COL <- ATTRIBUTE$SD.lat
+    COL <- pull.column(object,COL)
+    R2 <- R2 + ( DATA.EARTH$R.PL*sin(DATA$latitude) )^2
+    object$Argos.semi.minor <- pi/180 * sqrt(2*R2) * COL
+
+    rm(R2)
+
+    object$Argos.orientation <- 90
+  }
+
+  ##################################
   # ARGOS error ellipse/circle (newer ARGOS data >2011)
   COL <- ATTRIBUTE$COV.angle
   COL <- pull.column(object,COL)
@@ -1198,7 +1221,7 @@ as.telemetry.data.frame <- function(object,timeformat="auto",timezone="UTC",proj
         BAD <- is.na(telist[[i]][[COL]])
 
         # exclude GPS missing error ellispes
-        if(COL %in% c("COV.angle","COV.major","COV.minor","VAR.xy"))
+        if(COL %in% c("COV.angle","COV.major","COV.minor","VAR.xy") && "class" %in% names(telist[[i]]))
         { BAD <- BAD & (telist[[i]]$class %in% c(3:0,"A","B","KF")) }
 
         if(all(BAD) || (na.rm=="col" && any(BAD))) { telist[[i]][[COL]] <- NULL } # delete the whole column
