@@ -1,7 +1,8 @@
-ctmm 1.3.1 (2025-12-02)
+ctmm 1.3.1 (2025-12-05)
 ================
 
 * preliminary home-range-index code
+* as.telemetry() can now import light-level geolocator error ellipses
 * as.telemetry() no longer requires strict Argos formatting
 
 ctmm 1.3.0 (2025-07-23)

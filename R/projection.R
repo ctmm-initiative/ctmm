@@ -1,5 +1,6 @@
 # global variable
 DATA.EARTH <- list(R.EQ=6378137,R.PL=6356752.3142) # equatorial & polar radii
+DATA.EARTH$ecc <- sqrt( DATA.EARTH$R.EQ^2 - DATA.EARTH$R.PL^2 )/DATA.EARTH$R.EQ
 
 #setGeneric("projection", function(x,...) { standardGeneric("projection") }, signature='x')
 #setGeneric("projection<-", function(x,value,...) { standardGeneric("projection<-") }, signature='x')
