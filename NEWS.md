@@ -1,7 +1,9 @@
-ctmm 1.3.1 (2025-12-05)
+ctmm 1.3.1 (2025-12-10)
 ================
 
+* intensity code IN DEVELOPMENT
 * preliminary home-range-index code
+* pkde() can now take fixed weights
 * as.telemetry() can now import light-level geolocator error ellipses
 * as.telemetry() no longer requires strict Argos formatting
 

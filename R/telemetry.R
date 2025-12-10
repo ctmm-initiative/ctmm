@@ -3,7 +3,7 @@ DATUM <- "+proj=longlat +datum=WGS84"
 ATTRIBUTE <- list()
 ATTRIBUTE$timestamp <- c('timestamp','timestamp.of.fix','Acquisition.Time',
                          'Date.Time','Date.Time.GMT','UTC.Date.Time',"DT.TM",'Ser.Local','GPS_YYYY.MM.DD_HH.MM.SS',
-                         'Acquisition.Start.Time','start.timestamp',
+                         'Acquisition.Start.Time','start.timestamp','GPS.time',
                          'Time.GMT','GMT.Time','Local.Time','time',"\u6642\u523B",
                          'Date.Time','Date.GMT','Date','Date.Local',"\u65E5\u4ED8",
                          't','t_dat','use_date',"event.Date","observation.Date")
@@ -43,10 +43,12 @@ ATTRIBUTE$COV.class <- c("Argos.location.class","Argos.lc","LC","LQ","Quality")
 ATTRIBUTE$COV.xx <- c("VAR.x","COV.xx")
 ATTRIBUTE$COV.yy <- c("VAR.y","COV.yy")
 ATTRIBUTE$COV.xy <- c("COV.xy")
-ATTRIBUTE$SD.long <- c("SD.lon","SD.long","SD.longitude","STDEV.lon","STDEV.long","STDEV.longitude","SE.lon","SE.long","SE.longitude",
-                       "lon.SD","long.SD","longitude.SD","lon.STDEV","long.STDEV","longitude.STDEV","lon.SE","long.SE","longitude.SE")
-ATTRIBUTE$SD.lat <- c("SD.lat","SD.latt","SD.latitude","STDEV.lat","STDEV.latt","STDEV.latitude","SE.lat","SE.latt","SE.latitude",
-                      "lat.SD","latt.SD","latitude.SD","lat.STDEV","latt.STDEV","latitude.STDEV","lat.SE","latt.SE","latitude.SE")
+ATTRIBUTE$COV.lon.lon <- c("VAR.lon","VAR.long","VAR.longitude",
+                           "COV.lon.lon","COV.long.long","COV.longitude.longitude")
+ATTRIBUTE$COV.lat.lat <- c("VAR.lat","VAR.latt","VAR.latitude",
+                           "COV.lat.lat","COV.latt.latt","COV.latitude.latitude")
+ATTRIBUTE$COV.lon.lat <- c("COV.lon.lat","COV.long.latt","COV.longitude.latitude",
+                           "COV.lat.lon","COV.latt.long","COV.latitude.longitude")
 
 subset.telemetry <- function(x,...)
 {
@@ -888,21 +890,37 @@ as.telemetry.data.frame <- function(object,timeformat="auto",timezone="UTC",proj
   ##################################
   # GLS data with long-lat based error ellipse
   # put into Argos format, because its already in long-lat
-  COL <- ATTRIBUTE$SD.long
-  COL <- pull.column(object,COL)
-  if(length(COL))
+  COL1 <- ATTRIBUTE$COV.lon.lon
+  COL1 <- pull.column(object,COL1)
+  if(length(COL1))
   {
-    R2 <- ( DATA.EARTH$R.EQ*cos(DATA$latitude) )^2
-    object$Argos.semi.major <- pi/180 * sqrt(2*R2) * COL
+    COL2 <- ATTRIBUTE$COV.lat.lat
+    COL2 <- pull.column(object,COL2)
+    COL3 <- ATTRIBUTE$COV.lon.lat
+    COL3 <- pull.column(object,COL2)
 
-    COL <- ATTRIBUTE$SD.lat
-    COL <- pull.column(object,COL)
-    R2 <- R2 + ( DATA.EARTH$R.PL*sin(DATA$latitude) )^2
-    object$Argos.semi.minor <- pi/180 * sqrt(2*R2) * COL
+    # square radii
+    J.lon <- ( DATA.EARTH$R.EQ*cos(DATA$latitude) )^2
+    J.lat <- J.lon + ( DATA.EARTH$R.PL*sin(DATA$latitude) )^2
+    # conversion constants (linear scale)
+    J.lon <- pi/180 * sqrt(2*J.lon)
+    J.lat <- pi/180 * sqrt(2*J.lat)
 
-    rm(R2)
+    object$Argos.semi.major <- object$Argos.semi.minor <- object$Argos.orientation <- NA
+    for(i in 1:nrow(object))
+    {
+      COV <- matrix(c(COL1[i],COL3[i],COL3[i],COL2[i]),2,2)
+      COV[1,] <- COV[1,] * J.lon[i]
+      COV[2,] <- COV[2,] * J.lat[i]
+      COV[,1] <- COV[,1] * J.lon[i]
+      COV[,2] <- COV[,2] * J.lat[i]
+      COV <- eigen(COV)
+      object$Argos.semi.major <- clamp(COV$values[1],0,Inf)
+      object$Argos.semi.minor <- clamp(COV$values[2],0,Inf)
+      object$Argos.orientation <- 180/pi * atan2(COV$vectors[2,1],COV$vectors[1,1]) - 90
+    }
 
-    object$Argos.orientation <- 90
+    rm(J.lon,J.lat,COL1,COL2,COL3)
   }
 
   ##################################

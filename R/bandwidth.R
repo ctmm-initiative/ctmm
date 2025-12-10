@@ -457,7 +457,7 @@ bandwidth.pop <- function(data,UD,kernel="individual",weights=FALSE,ref="Gaussia
   axes <- MEAN$axes
   n <- length(data)
 
-  W.OPT <- all(weights==TRUE) # optimize weights
+  W.OPT <- length(weights)==1 && all(weights) # optimize weights
   w <- unlist(weights)
   if(all(weights==FALSE)) # uniform (across individuals) weights
   { w <- rep(1/n,n) }
