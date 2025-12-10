@@ -27,7 +27,7 @@ pkde(data,UD,kernel="individual",weights=FALSE,ref="Gaussian",...)
   \item{variable}{Not yet supported.}
   \item{debias}{Debias the distribution for area estimation (AKDEc).}
   \item{smooth}{"Smooth" out errors from the data.}
-  \item{weights}{Optimally weight the data to account for sampling bias (See \code{\link{bandwidth}} for \code{akde} details).}
+  \item{weights}{Optimally weight the data to account for sampling bias if \code{TRUE} (See \code{\link{bandwidth}} for \code{akde} details), or supply a fixed vector of numerical weights per time (\code{akde}) or individual (\code{pkde}).}
   \item{error}{Target probability error.}
   \item{res}{Number of grid points along each axis, relative to the bandwidth.}
   \item{grid}{Optional grid specification via \code{raster}, \code{UD}, or list of arguments (See `Details' below).}

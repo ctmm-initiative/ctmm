@@ -28,6 +28,48 @@ intensity <- function(data,UD,RSF,R=list(),variable=NULL,empirical=FALSE,level=0
     }
   }
 
+  ### USED #############################
+  axes <- variable
+  w <- UD$weights
+  w <- w / sum(w)
+  error <- 0.001
+  res <- 10
+  n <- UD$DOF.H[1]
+  w2d <- 1/n
+  w2o <- (n-1)/n
+  MISE <- function(h) { w2d/sqrt(2*h^2) + w2o/sqrt(2+2*h^2) - 2/sqrt(2+h^2) + 1/sqrt(2) }
+  # silverman's rule of thumb
+  DIM <- 1
+  h <- (4/(DIM+2)/n)^(1/(DIM+4))
+  # find 1D bandwidth for same n
+  control <- list(precision=.Machine$double.eps^(1/4))
+  h <- optimizer(h,MISE,lower=0,control=control)$par
+  # find bias for same h
+  bias <- 1 - 1/n + h^2
+  # integral K^2
+  RK2 <- 1/sqrt(4*pi)
+  RFIT <- ctmm.fit(data,ctmm(axes=axes))
+  H <- h^2 * methods::getDataPart(RFIT$sigma)
+  EXT <- extent(RFIT,level=1-error)[,axes,drop=FALSE] # Gaussian extent (includes uncertainty)
+  dr <- c(sqrt(H)/res)
+  grid <- format_grid(grid,axes=axes)
+  grid <- kde.grid(data,H=H,axes=axes,alpha=error,res=res,dr=dr,grid=grid,EXT.min=EXT)
+  KDE <- kde(data,H=H,axes=axes,CTMM=RFIT,bias=bias,W=w,alpha=error,dr=dr,grid=grid,...)
+
+  ### AVAILABLE ########################
+  VARIABLE <- R[[variable]]
+  # zero out variable of interest for partial effect plot
+  values(R[[variable]]) <- 0
+  if(projection(data)==raster::projection(VARIABLE))
+  { grid <- VARIABLE }
+  else
+  { grid <- NULL }
+  # code this to return PDF CIs
+  AGDE <- agde(data,RSF,R=R,grid=grid)
+
+  # extract variable availability
+
+
   weights <- UD$weights
 
   # evaluate raster data
@@ -63,46 +105,8 @@ intensity <- function(data,UD,RSF,R=list(),variable=NULL,empirical=FALSE,level=0
   VARS <- VARS[VARS %nin% RM] # only vars to condition on
   if(length(VARS)) { log.p <- log.p + c(MODEL[,VARS,drop=FALSE] %*% RSF$beta[VARS]) }
   p <- exp(log.p)
-
-  axes <- variable
   w <- weights * p # WHY??????????
-  w <- w / sum(w)
-  error <- 0.001
-  res <- 10
-  n <- UD$DOF.H[1]
-  w2d <- 1/n
-  w2o <- (n-1)/n
-  MISE <- function(h) { w2d/sqrt(2*h^2) + w2o/sqrt(2+2*h^2) - 2/sqrt(2+h^2) + 1/sqrt(2) }
-  # silverman's rule of thumb
-  DIM <- 1
-  h <- (4/(DIM+2)/n)^(1/(DIM+4))
-  # find 1D bandwidth for same n
-  control <- list(precision=.Machine$double.eps^(1/4))
-  h <- optimizer(h,MISE,lower=0,control=control)$par
-  # find bias for same h
-  bias <- 1 - 1/n + h^2
-  # integral K^2
-  RK2 <- 1/sqrt(4*pi)
-  RFIT <- ctmm.fit(data,ctmm(axes=axes))
-  H <- h^2 * methods::getDataPart(RFIT$sigma)
-  EXT <- extent(RFIT,level=1-error)[,axes,drop=FALSE] # Gaussian extent (includes uncertainty)
-  dr <- c(sqrt(H)/res)
-  # if(!is.null(rlim))
-  # {
-  #   # fix dr to fit in rlim
-  #   RANGE <- diff(rlim)
-  #   dr <- RANGE/ceiling(RANGE/dr)
-  #   # format extent to include margin
-  #   rlim <- cbind(rlim)
-  #   colnames(rlim) <- variable
-  #   rownames(rlim) <- c('min','max')
-  #   grid <- list(extent=rlim)
-  # }
-  # else
-  { grid <- NULL }
-  grid <- format_grid(grid,axes=axes)
-  grid <- kde.grid(data,H=H,axes=axes,alpha=error,res=res,dr=dr,grid=grid,EXT.min=EXT)
-  KDE <- kde(data,H=H,axes=axes,CTMM=RFIT,bias=bias,W=w,alpha=error,dr=dr,grid=grid,...)
+
 
   alpha <- 1 - level
   z <- stats::qnorm(1-alpha/2)
