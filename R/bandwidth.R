@@ -452,7 +452,7 @@ bandwidth.pop <- function(data,UD,kernel="individual",weights=FALSE,ref="Gaussia
   ref <- match.arg(ref,c("Gaussian","AKDE"))
 
   CTMM <- lapply(UD,function(ud){ud@CTMM})
-  MEAN <- mean(CTMM,...)
+  MEAN <- mean(CTMM,weights=weights,...)
   MEAN <- mean_pop(MEAN)
   axes <- MEAN$axes
   n <- length(data)

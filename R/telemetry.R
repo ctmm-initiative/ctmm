@@ -890,14 +890,17 @@ as.telemetry.data.frame <- function(object,timeformat="auto",timezone="UTC",proj
   ##################################
   # GLS data with long-lat based error ellipse
   # put into Argos format, because its already in long-lat
-  COL1 <- ATTRIBUTE$COV.lon.lon
-  COL1 <- pull.column(object,COL1)
-  if(length(COL1))
+  COL.xx <- ATTRIBUTE$COV.lon.lon
+  COL.xx <- pull.column(object,COL.xx)
+  if(length(COL.xx))
   {
-    COL2 <- ATTRIBUTE$COV.lat.lat
-    COL2 <- pull.column(object,COL2)
-    COL3 <- ATTRIBUTE$COV.lon.lat
-    COL3 <- pull.column(object,COL2)
+    COL.yy <- ATTRIBUTE$COV.lat.lat
+    COL.yy <- pull.column(object,COL.yy)
+    COL.xy <- ATTRIBUTE$COV.lon.lat
+    COL.xy <- pull.column(object,COL.xy)
+    MAX <- sqrt(COL.xx*COL.yy)
+    COL.xy <- clamp(COL.xy,-MAX,+MAX)
+    rm(MAX)
 
     # square radii
     J.lon <- ( DATA.EARTH$R.EQ*cos(DATA$latitude) )^2
@@ -909,7 +912,7 @@ as.telemetry.data.frame <- function(object,timeformat="auto",timezone="UTC",proj
     object$Argos.semi.major <- object$Argos.semi.minor <- object$Argos.orientation <- NA
     for(i in 1:nrow(object))
     {
-      COV <- matrix(c(COL1[i],COL3[i],COL3[i],COL2[i]),2,2)
+      COV <- matrix(c(COL.xx[i],COL.xy[i],COL.xy[i],COL.yy[i]),2,2)
       COV[1,] <- COV[1,] * J.lon[i]
       COV[2,] <- COV[2,] * J.lat[i]
       COV[,1] <- COV[,1] * J.lon[i]
@@ -920,7 +923,7 @@ as.telemetry.data.frame <- function(object,timeformat="auto",timezone="UTC",proj
       object$Argos.orientation <- 180/pi * atan2(COV$vectors[2,1],COV$vectors[1,1]) - 90
     }
 
-    rm(J.lon,J.lat,COL1,COL2,COL3)
+    rm(J.lon,J.lat,COL.xx,COL.yy,COL.xy)
   }
 
   ##################################
