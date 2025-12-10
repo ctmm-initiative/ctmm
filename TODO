@@ -1,4 +1,5 @@
 ** PRIORITY
+* pkde weights -> mean()
 * make sure pkde fixed weights work
 * summary() option to return nocturnality (not diurnality)
 * diagonalized sensitivity gradients rasters in UD calculation

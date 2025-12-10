@@ -90,14 +90,14 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utiliz
   AXES <- length(axes)
 
   n <- length(data)
-  if(class(weights)[1]!="list")
-  {
-    # assume numerical or boolean / by individual or by time
-    if(length(weights)==1 || length(weights)==n) # by individual
-    { weights <- as.list(array(weights,n)) }
-    else # by time
-    { weights <- list(weights) }
-  }
+  # if(class(weights)[1]!="list")
+  # {
+  #   # assume numerical or boolean / by individual or by time
+  #   if(length(weights)==1 || length(weights)==n) # by individual
+  #   { weights <- as.list(array(weights,n)) }
+  #   else # by time
+  #   { weights <- list(weights) }
+  # }
 
   # loop over individuals for bandwidth optimization
   CTMM0 <- VMM0 <- list()
