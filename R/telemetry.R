@@ -918,9 +918,10 @@ as.telemetry.data.frame <- function(object,timeformat="auto",timezone="UTC",proj
       COV[,1] <- COV[,1] * J.lon[i]
       COV[,2] <- COV[,2] * J.lat[i]
       COV <- eigen(COV)
-      object$Argos.semi.major <- clamp(COV$values[1],0,Inf)
-      object$Argos.semi.minor <- clamp(COV$values[2],0,Inf)
-      object$Argos.orientation <- 180/pi * atan2(COV$vectors[2,1],COV$vectors[1,1]) - 90
+      COV$values <- sqrt( clamp(COV$values,0,Inf) )
+      object$Argos.semi.major[i] <- COV$values[1]
+      object$Argos.semi.minor[i] <- COV$values[2]
+      object$Argos.orientation[i] <- 180/pi * atan2(COV$vectors[2,1],COV$vectors[1,1]) - 90
     }
 
     rm(J.lon,J.lat,COL.xx,COL.yy,COL.xy)

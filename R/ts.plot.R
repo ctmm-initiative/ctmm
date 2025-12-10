@@ -1,4 +1,4 @@
-ts.plot <- function(data,col='black',ylab="",...)
+ts.plot <- function(data,col='black',ylab="",ylim=NULL,...)
 {
   if('timestamp' %in% names(data))
   {
@@ -10,7 +10,7 @@ ts.plot <- function(data,col='black',ylab="",...)
     t <- data$t
     t <- t-t[1]
     UNITS <- unit(t,"time")
-    # ...
+    xlab <- "Time"
   }
 
   CI <- data[,NAMES.CI]
@@ -18,12 +18,11 @@ ts.plot <- function(data,col='black',ylab="",...)
   MAX <- max(CI[,'est'])
   MIN <- min(CI[,'est'])
   DIFF <- MAX-MIN
-  ylim <- c( max(MIN-DIFF,min(CI[,'low'])) , min(MAX+DIFF,max(CI[,'high'])) )
+  if(is.null(ylim)) { ylim <- c( max(MIN-DIFF,min(CI[,'low'])) , min(MAX+DIFF,max(CI[,'high'])) ) }
 
-  graphics::plot(t,CI[,'est'],type="l",col=col,ylim=ylim,xlab=xlab,ylab=ylab,...)
-  graphics::points(t,CI[,'low'],type="l",col=malpha(col,alpha=0.1),...)
-  graphics::points(t,CI[,'high'],type="l",col=malpha(col,alpha=0.1),...)
-  #graphics::polygon(c(t,rev(t)),c(CI[,'low'],CI[,'high']),col=malpha(col,alpha=0.1),border=NA,...)
+  graphics::plot(range(t),range(CI[,c('low','high')]),col=rgb(1,1,1,0),ylim=ylim,xlab=xlab,ylab=ylab,...)
+  graphics::polygon(c(t,rev(t),t[1]),c(CI[,'low'],CI[,'high'],CI[1,'low']),col=malpha(col,alpha=0.25),border=NA,...)
+  graphics::points(t,CI[,'est'],type="l",col=col,...)
 
   # ERROR BAR PLOT
   # plot(t,CI[,2],pch=19,...)
