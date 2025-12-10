@@ -667,7 +667,7 @@ mean.ctmm <- function(x,formula=FALSE,weights=NULL,sample=TRUE,debias=TRUE,IC="A
   info <- mean_info(x)
   axes <- x[[1]]$axes
 
-  if(is.null(weights))
+  if(length(weights)<2)
   { weights <- rep(1,n) }
   else
   { weights <- weights/max(weights) }
