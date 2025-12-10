@@ -458,7 +458,7 @@ bandwidth.pop <- function(data,UD,kernel="individual",weights=FALSE,ref="Gaussia
   n <- length(data)
 
   W.OPT <- length(weights)==1 && all(weights) # optimize weights
-  w <- unlist(weights)
+  #w <- unlist(weights)
   if(all(weights==FALSE)) # uniform (across individuals) weights
   { w <- rep(1/n,n) }
   else if(!W.OPT) # individual weights

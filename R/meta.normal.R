@@ -35,7 +35,7 @@ meta.normal <- function(Y,SY=FALSE,X=FALSE,SX=FALSE,DSM=NULL,INT=TRUE,VARS=TRUE,
     }
   }
 
-  if(is.null(weights))
+  if(length(weights)<2)
   { weights <- rep(1,N) }
   else
   { weights <- weights/mean(weights) }
