@@ -31,7 +31,7 @@ Alston & Fleming et al (2023) <doi:10.1111/2041-210X.14025>.
 Package: \tab ctmm\cr
 Type: \tab Package\cr
 Version: \tab 1.3.1 \cr
-Date: \tab 2025-12-10 \cr
+Date: \tab 2025-12-12 \cr
 License: \tab GPL-3 \cr
 }
 

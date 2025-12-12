@@ -186,7 +186,19 @@ proximity <- function(data,CTMM,t=NULL,GUESS=ctmm(error=TRUE),debias=TRUE,level=
   }
   # numerator-denominator covariance missing
 
-  F.CI(SIG.diff,VAR.SIG.diff,DEN,VAR.DEN,level=level)
+  #F.CI(SIG.diff,VAR.SIG.diff,DEN,VAR.DEN,level=level)
+
+  # (0,2) with 1 as the null
+  EST <- SIG.diff*DEN
+  VAR <- VAR.SIG.diff*DEN^2 + SIG.diff*VAR.DEN
+  # (0,1) with 1/2 as the null
+  EST <- EST/2
+  VAR <- VAR/4
+  EST <- beta.ci(EST,VAR,level=level)
+  # (0,2) with 1 as the null
+  EST <- EST*2
+
+  return(EST)
 }
 
 

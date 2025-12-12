@@ -451,6 +451,7 @@ bandwidth.pop <- function(data,UD,kernel="individual",weights=FALSE,ref="Gaussia
   kernel <- match.arg(kernel,c("individual","population"))
   ref <- match.arg(ref,c("Gaussian","AKDE"))
 
+  w <- unlist(weights)
   CTMM <- lapply(UD,function(ud){ud@CTMM})
   MEAN <- mean(CTMM,weights=weights,...)
   MEAN <- mean_pop(MEAN)
@@ -458,7 +459,6 @@ bandwidth.pop <- function(data,UD,kernel="individual",weights=FALSE,ref="Gaussia
   n <- length(data)
 
   W.OPT <- length(weights)==1 && all(weights) # optimize weights
-  #w <- unlist(weights)
   if(all(weights==FALSE)) # uniform (across individuals) weights
   { w <- rep(1/n,n) }
   else if(!W.OPT) # individual weights
