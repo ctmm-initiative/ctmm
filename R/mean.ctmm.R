@@ -670,7 +670,7 @@ mean.ctmm <- function(x,formula=FALSE,weights=NULL,sample=TRUE,debias=TRUE,IC="A
   if(length(weights)<2)
   { weights <- rep(1,n) }
   else
-  { weights <- weights/max(weights) }
+  { weights <- nant(weights/max(weights),1) }
   names(weights) <- names(x)
 
   isotropic <- c(TRUE,TRUE)

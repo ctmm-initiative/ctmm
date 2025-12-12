@@ -55,7 +55,7 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utiliz
   if(length(TEST) && TEST) { stop("Data and models not in the same coordinate system.") }
   validate.grid(data,grid)
 
-  # if called by pakde
+  # if called by pkde
   if(class(CTMM)[1]=="list" && class(CTMM[[1]])[1]=="UD")
   {
     UD <- CTMM
@@ -90,14 +90,14 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utiliz
   AXES <- length(axes)
 
   n <- length(data)
-  # if(class(weights)[1]!="list")
-  # {
-  #   # assume numerical or boolean / by individual or by time
-  #   if(length(weights)==1 || length(weights)==n) # by individual
-  #   { weights <- as.list(array(weights,n)) }
-  #   else # by time
-  #   { weights <- list(weights) }
-  # }
+  if(class(weights)[1]!="list")
+  {
+    # assume numerical or boolean / by individual or by time
+    if(length(weights)==1 || length(weights)==n) # by individual
+    { weights <- as.list(array(weights,n)) }
+    else # by time
+    { weights <- list(weights) }
+  }
 
   # loop over individuals for bandwidth optimization
   CTMM0 <- VMM0 <- list()
@@ -160,6 +160,7 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utiliz
   {
     i <- 1 # one population
     # weights and bandwidth
+    weights <- unlist(weights) # per-time weights would be inside the individual UD objects
     KDE[[i]] <- bandwidth.pop(data,UD,weights=weights,...)
     kernel <- list(...)$kernel
     if(is.null(kernel)) { kernel <- "individual" }
@@ -244,7 +245,7 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utiliz
     {
       # KDE[[i]]$H <- KDE[[i]]$h^2
       KDE[[i]]$H <- NULL
-      KDE[[i]]$weights <- weights
+      KDE[[i]]$weights <- weights # unlisted already
     }
 
     KDE[[i]] <- new.UD(KDE[[i]],info=attr(data[[i]],"info"),type='range',variable="utilization",CTMM=ctmm())
