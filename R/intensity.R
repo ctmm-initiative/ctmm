@@ -55,6 +55,11 @@ intensity <- function(data,UD,RSF,R=list(),variable=NULL,empirical=FALSE,level=0
   grid <- format_grid(grid,axes=axes)
   grid <- kde.grid(data,H=H,axes=axes,alpha=error,res=res,dr=dr,grid=grid,EXT.min=EXT)
   KDE <- kde(data,H=H,axes=axes,CTMM=RFIT,bias=bias,W=w,alpha=error,dr=dr,grid=grid,...)
+  rm(grid)
+
+
+
+
 
   ### AVAILABLE ########################
   VARIABLE <- R[[variable]]
@@ -64,78 +69,53 @@ intensity <- function(data,UD,RSF,R=list(),variable=NULL,empirical=FALSE,level=0
   { grid <- VARIABLE }
   else
   { grid <- NULL }
-  # code this to return PDF CIs
   AGDE <- agde(data,RSF,R=R,grid=grid)
+  rm(R,grid)
+
+  # evaluate raster on AGDE grid
+  VARIABLE <- R.grid(AGDE$r,projecton(AGDE),VARIABLE)
 
   # extract variable availability
+  R <- KDE$r[[axes]] # resource axis
+  dR <- KDE$dr
+  R1 <- R[1]
+  P <- array(0,length(R)) # probability mass axis
 
+  # flatten arrays
+  AGDE <- c(AGDE$PDF)
+  VARIABLE <- c(VARIABLE)
 
-  weights <- UD$weights
-
-  # evaluate raster data
-  for(r in names(R))
+  # get indices
+  VARIABLE <- (VARIABLE-R1)/dR
+  FLOOR <- floor(VARIABLE)
+  w <- 1-(VARIABLE-FLOOR)
+  SUB <- which(FLOOR>=1 & FLOOR<=length(R))
+  for(i in SUB)
   {
-    xy <- get.telemetry(data,GEO)
-    PROJ <- raster::projection(R[[r]])
-    xy <- project(xy,to=PROJ)
-    data[[r]] <- raster::extract(R[[r]],xy,method=interpolate[r])
+    I <- FLOOR[i]
+    P[I] <- P[I] + w[i]*AGDE[i]
   }
-  rm(xy)
+  rm(FLOOR)
 
-  VARS <- all.vars(formula)
-  DVARS <- VARS[ VARS %nin% RVARS ]
-  for(D in DVARS) { data[[D]] <- as.numeric(data[[D]]) } # model.matrix will rename otherwise
-
-  DATA <- data.frame(data)
-  DATA$x <- DATA$x - RSF$mu[1]
-  DATA$y <- DATA$y - RSF$mu[2]
-  log.p <- -(DATA$x^2+DATA$y^2)/(2*RSF$sigma@par['major']) # isotropic
-
-  MODEL <- stats::model.matrix(formula,data=DATA)
-  # but what terms change with 'variable'?
-  DATA[[variable]] <- 0
-  RM <- stats::model.matrix(formula,data=DATA)
-  RM <- abs(RM-MODEL)
-  RM <- apply(RM,2,max)
-  RM <- RM>.Machine$double.eps
-  RM <- colnames(MODEL)[RM] # these terms all change with 'variable'
-  # there isn't an easier way to do this?
-
-  VARS <- names(RSF$beta)
-  VARS <- VARS[VARS %nin% RM] # only vars to condition on
-  if(length(VARS)) { log.p <- log.p + c(MODEL[,VARS,drop=FALSE] %*% RSF$beta[VARS]) }
-  p <- exp(log.p)
-  w <- weights * p # WHY??????????
-
-
-  alpha <- 1 - level
-  z <- stats::qnorm(1-alpha/2)
-
-  R <- data[[variable]]
-  if(length(variable))
+  CEIL <- ceiling(VARIABLE)
+  w <- CEIL-VARIABLE
+  SUB <- which(CEIL>=1 & CEIL<=length(R))
+  for(i in SUB)
   {
-    IND <- sort(R,index.return=TRUE)$ix
-    R <- R[IND]
-    MODEL <- MODEL[IND,]
-    weights <- weights[IND]
-
-    VARS <- names(RSF$beta)
-    for(V in VARS)
-    {
-      # derived from normalization and MLE
-      AVE <- c(weights %*% MODEL[,V])
-      MODEL[,V] <- MODEL[,V] - AVE
-    }
-
-    EST <- c(MODEL[,VARS,drop=FALSE] %*% RSF$beta[VARS])
-    VAR <- sapply(1:nrow(MODEL),function(i){ MODEL[i,VARS,drop=FALSE] %*% RSF$COV[VARS,VARS,drop=FALSE] %*% t(MODEL[i,VARS,drop=FALSE]) })
-    SE <- z*sqrt(VAR)
-
-    # location of minimum uncertainty
-    MIN <- which.min(SE)
-    EST <- EST - EST[MIN]
+    I <- CEIL[i]
+    P[I] <- P[I] + w[i]*AGDE[i]
   }
+  rm(CEIL,VARIABLE)
 
+  # normalize the same as used
+  P <- (sum(KDE$PDF)/sum(P))*P
+
+
+
+  # Propagate Available uncertainty with GRF approximation
+
+
+  ######## OLD CODE #############
   RANGE <- range(data[[variable]])
   r <- KDE$r[[1]]
   dr <- KDE$dr

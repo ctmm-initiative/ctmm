@@ -104,7 +104,7 @@ overlap.ctmm <- function(object,level=0.95,debias=TRUE,COV=TRUE,method="Bhattach
   # approximate debiasing, correct for IID, equal covariance, REML
   ########################
   mu <- CTMM1$mu[1,] - CTMM2$mu[1,]
-  COV.mu <- CTMM1$COV.mu + CTMM2$COV.mu
+  COV.mu <- COV.mu.stationary(CTMM1) + COV.mu.stationary(CTMM1)
 
   if(method=="Euclidean") { sigma <- diag(1,DIM) }
   else { sigma <- (CTMM1$sigma + CTMM2$sigma)/2 }

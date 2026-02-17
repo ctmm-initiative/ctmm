@@ -1,12 +1,13 @@
-ctmm 1.3.1 (2025-12-12)
+ctmm 1.3.1 (2026-02-16)
 ================
-
 * intensity code is IN DEVELOPMENT
 * preliminary home-range-index code
 * pkde() can now take fixed weights
 * as.telemetry() can now import light-level geolocator error ellipses
 * as.telemetry() no longer requires strict Argos formatting
 * proximity() CIs improved from F to beta sampling distribution
+* pkde() weights now passed to mean.ctmm()
+* overlap() can now take non-stationary mean models
 
 ctmm 1.3.0 (2025-07-23)
 ================

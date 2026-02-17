@@ -1314,6 +1314,9 @@ R.extract <- function(xy,proj,R,X,Y,Z=NULL,PROJ,dX,dY,dZ=NULL)
 }
 
 # Evaluate raster on new spatial grid
+# evaluation grid 'r' [UD]
+# with projection 'proj'
+# original raster 'R' [raster]
 R.grid <- function(r,proj,R,interpolate='bilinear')
 {
   DIM <- c(length(r$x),length(r$y))
