@@ -1,5 +1,8 @@
 ** PRIORITY
+* record numerical error in AIC/AICc/BIC and make function for z-test
+* rsf.fit() optimizer challenge
 * finish rewriting intensity()
+* 3-point acceleration estimate for outlie()
 * export CI functions
 * dt.plot() scale for multiple units when the next unit isn't met
 * dt.plot() argument sort=TRUE

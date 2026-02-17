@@ -72,10 +72,7 @@ gauss.comp <- function(fn,CTMM,COV=TRUE,...)
     for(i in 1:length(CTMM))
     {
       I <- j + 1:AXES
-      if(length(dim(CTMM[[i]]$COV.mu))>AXES)
-      { COV[I,I] <- CTMM[[i]]$COV.mu[,0,0,] }
-      else
-      { COV[I,I] <- CTMM[[i]]$COV.mu }
+      COV[I,I] <- COV.mu.stationary(CTMM[[i]])
       j <- j + AXES
       isotropic <- CTMM[[i]]$isotropic[1]
       if(isotropic)
@@ -100,4 +97,15 @@ gauss.comp <- function(fn,CTMM,COV=TRUE,...)
   { COV <- diag(0,length(MLE)) }
 
   return(list(MLE=MLE,COV=COV))
+}
+
+
+COV.mu.stationary <- function(CTMM)
+{
+  AXES <- length(CTMM$axes)
+  if(length(dim(CTMM$COV.mu))>AXES)
+  { COV.mu <- CTMM$COV.mu[,1,1,] }
+  else
+  { COV.mu <- CTMM$COV.mu }
+  return(COV.mu)
 }
