@@ -6,32 +6,33 @@
 \description{
 Functions for identifying, fitting, and applying continuous-space, continuous-time stochastic-process movement models to animal tracking data.
 The package is described in Calabrese & Fleming (2016) <doi:10.1111/2041-210X.12559> and its models and methods are based on those introduced and detailed in
-Fleming & Calabrese et al (2014) <doi:10.1086/675504>,
-Fleming et al (2014) <doi:10.1111/2041-210X.12176>,
-Fleming et al (2015) <doi:10.1103/PhysRevE.91.032107>,
-Fleming et al (2015) <doi:10.1890/14-2010.1>,
-Fleming et al (2016) <doi:10.1890/15-1607>,
-Péron & Fleming et al (2016) <doi:10.1186/s40462-016-0084-7>,
+Fleming & Calabrese et al. (2014) <doi:10.1086/675504>,
+Fleming et al. (2014) <doi:10.1111/2041-210X.12176>,
+Fleming et al. (2015) <doi:10.1103/PhysRevE.91.032107>,
+Fleming et al. (2015) <doi:10.1890/14-2010.1>,
+Fleming et al. (2016) <doi:10.1890/15-1607>,
+Péron & Fleming et al. (2016) <doi:10.1186/s40462-016-0084-7>,
 Fleming & Calabrese (2017) <doi:10.1111/2041-210X.12673>,
-Péron et al (2017) <doi:10.1002/ecm.1260>,
-Fleming et al (2017) <doi:10.1016/j.ecoinf.2017.04.008>,
-Fleming et al (2018) <doi:10.1002/eap.1704>,
-Winner & Noonan et al (2018) <doi:10.1111/2041-210X.13027>,
-Fleming et al (2019) <doi:10.1111/2041-210X.13270>,
-Noonan & Fleming et al (2019) <doi:10.1186/s40462-019-0177-1>,
-Fleming et al (2020) <doi:10.1101/2020.06.12.130195>,
-Noonan et al (2021) <doi:10.1111/2041-210X.13597>,
-Fleming et al (2022) <doi:10.1111/2041-210X.13815>,
-Silva et al (2022) <doi:10.1111/2041-210X.13786>,
+Péron et al. (2017) <doi:10.1002/ecm.1260>,
+Fleming et al. (2017) <doi:10.1016/j.ecoinf.2017.04.008>,
+Fleming et al. (2018) <doi:10.1002/eap.1704>,
+Winner & Noonan et al. (2018) <doi:10.1111/2041-210X.13027>,
+Fleming et al. (2019) <doi:10.1111/2041-210X.13270>,
+Noonan & Fleming et al. (2019) <doi:10.1186/s40462-019-0177-1>,
+Fleming et al. (2020) <doi:10.1101/2020.06.12.130195>,
+Noonan et al. (2021) <doi:10.1111/2041-210X.13597>,
+Fleming et al. (2022) <doi:10.1111/2041-210X.13815>,
+Silva et al. (2022) <doi:10.1111/2041-210X.13786>,
+Alston & Fleming et al. (2023) <doi:10.1111/2041-210X.14025>,
 and
-Alston & Fleming et al (2023) <doi:10.1111/2041-210X.14025>.
+Hollins et al. (2025) <doi:10.1111/2041-210X.70082>.
 }
 \details{
 \tabular{ll}{
 Package: \tab ctmm\cr
 Type: \tab Package\cr
 Version: \tab 1.3.1 \cr
-Date: \tab 2026-02-16 \cr
+Date: \tab 2026-03-01 \cr
 License: \tab GPL-3 \cr
 }
 
@@ -112,7 +113,7 @@ Movement Ecology 7:35 (2019) \doi{10.1186/s40462-019-0177-1}.
 
 C. H. Fleming et al, ``A comprehensive framework for handling location error in animal tracking data'', bioRxiv (2020) \doi{10.1101/2020.06.12.130195}.
 
-M. J. Noonan R. Martinez-Garcia, G. H. Davis, M. C. Crofoot, R. Kays, B. T. Hirsch, D. Caillaud, E. Payne, A. Sihm, D. L. Sinn, O. Spiegel, W. F. Fagan, C. H. Fleming, J. M. Calabrese, ``Estimating encounter location distributions from animal tracking data'', Methods in Ecology and Evolution 12:7 1158-1173 (2021) \doi{10.1111/2041-210X.13597}.
+M. J. Noonan, R. Martinez-Garcia, G. H. Davis, M. C. Crofoot, R. Kays, B. T. Hirsch, D. Caillaud, E. Payne, A. Sihm, D. L. Sinn, O. Spiegel, W. F. Fagan, C. H. Fleming, J. M. Calabrese, ``Estimating encounter location distributions from animal tracking data'', Methods in Ecology and Evolution 12:7 1158-1173 (2021) \doi{10.1111/2041-210X.13597}.
 
 C. H. Fleming, I. Deznabi, S. Alavi, M. C. Crofoot, B. T. Hirsch, E. P. Medici, M. J. Noonan, R. Kays, W. F. Fagan, D. Sheldon, J. M. Calabrese,
 ``Population-level inference for home-range areas'',
@@ -121,6 +122,10 @@ Methods in Ecology and Evolution 13:5 1027-1041 (2022) \doi{10.1111/2041-210X.13
 I. Silva, C. H. Fleming, M. J. Noonan, J. Alston, C. Folta, W. F. Fagan, J. M. Calabrese. ``Autocorrelation-informed home range estimation: A review and practical guide'', Methods in Ecology and Evolution 13:3 534-544 (2022) \doi{10.1111/2041-210X.13786}.
 
 J. M. Alston, C. H. Fleming, R. Kays, J. P. Streicher, C. T. Downs, T. Ramesh, B. Reineking, & J. M. Calabrese, ``Mitigating pseudoreplication and bias in resource selection functions with autocorrelation-informed weighting'', Methods in Ecology and Evolution 14:2  643--654 (2023) \doi{10.1111/2041-210X.14025}.
+
+J. P. W. Hollins, C. H. Fleming, J. M. Calabrese, L. N. Harris, J. Sebastien Moore, B. K. Malley, M. J. Noonan, W. F. Fagan, J. M. Alston, N. E. Hussey,
+``Home-range spillover in habitats with impassable boundaries: Causes, biases and corrections using autocorrelated kernel density estimation''
+Methods in Ecology and Evolution, 16:12, 2945--2959 (2025) \doi{10.1111/2041-210X.70082}.
 }
 
 %~~ Optionally other standard keywords, one per line, from file KEYWORDS in ~~

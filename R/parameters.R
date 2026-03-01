@@ -455,12 +455,19 @@ set.parameters <- function(CTMM,par,profile=FALSE,linear.cov=FALSE)
   timelink <- par[grepl("timelink",NAMES)]
   if(length(timelink)) { CTMM$timelink.par <- timelink }
 
-  NAME <- "tau position"; if(NAME %in% NAMES) { CTMM$tau[1] <- par[NAME] ; names(CTMM$tau)[1] <- 'position' }
-  NAME <- "tau velocity"; if(NAME %in% NAMES) { CTMM$tau[2] <- par[NAME] ; names(CTMM$tau)[2] <- 'velocity' }
-  NAME <- "tau"; if(NAME %in% NAMES) { CTMM$tau <- c(1,1)*par[NAME] ; names(CTMM$tau) <- c('position','velocity') } # identical timescales
-  NAME <- "omega"; if(NAME %in% NAMES) { CTMM$omega <- par[NAME] }
+  if(!CTMM$range)
+  { CTMM$tau[1] <- Inf ; names(CTMM$tau)[1] <- 'position' }
 
-  NAME <- "circle"; if(NAME %in% NAMES) { CTMM[[NAME]] <- par[NAME] }
+  NAME <- "tau position"
+  if(NAME %in% NAMES) { CTMM$tau[1] <- par[NAME] ; names(CTMM$tau)[1] <- 'position' }
+  NAME <- "tau velocity"
+  if(NAME %in% NAMES) { CTMM$tau[2] <- par[NAME] ; names(CTMM$tau)[2] <- 'velocity' }
+  NAME <- "tau"
+  if(NAME %in% NAMES) { CTMM$tau <- c(1,1)*par[NAME] ; names(CTMM$tau) <- c('position','velocity') } # identical timescales
+  NAME <- "omega"
+  if(NAME %in% NAMES) { CTMM$omega <- par[NAME] }
+  NAME <- "circle"
+  if(NAME %in% NAMES) { CTMM[[NAME]] <- par[NAME] }
 
   return(CTMM)
 }

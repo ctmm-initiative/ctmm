@@ -90,7 +90,7 @@ log_ctmm <- function(CTMM,debias=FALSE,...)
     COV <- nant(COV,0)
   }
 
-  RETURN <- list(par=par,COV=COV,isotropic=isotropic)
+  RETURN <- list(par=par,COV=COV,isotropic=isotropic,range=CTMM$range)
   return(RETURN)
 }
 

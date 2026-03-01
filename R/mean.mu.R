@@ -61,6 +61,21 @@ mean.mu <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",...)
   }
   DOF <- colSums(!INF) # amount of data per mode
 
+  # no range residence
+  range <- sapply(x,function(y){y$range})
+  if(all(!range))
+  {
+    MM <- list()
+    MM$mu <- rbind( colMeans(MU) )
+    colnames(MM$mu) <- axes
+    MM$COV.mu <- diag(Inf,nrow=AXES)
+    dimnames(MM$COV.mu) <- list(axes,axes)
+    MM$POV.mu <- MM$COV.mu
+    MM$isotropic <- TRUE
+    MM$AIC <- MM$AICc <- MM$BIC <- MM$loglike <- 0
+    return(MM)
+  }
+
   # list of candidate models
   MM <- list()
 
