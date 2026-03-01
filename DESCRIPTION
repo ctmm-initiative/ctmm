@@ -17,6 +17,7 @@ Authors@R: c(person(c("Christen","H."),"Fleming",email="flemingc@si.edu",role=c(
              person(c("Chad","J."),"Wilhite",role="ctb"),
              person("Eliezer","Gurarie",role="ctb"),
              person("Kamran","Safi",role="ctb"),
+             person("Katrina","Brock",role="ctb"),
              person(c("Rafael","Santos"),"Menezes",role="ctb"),
              person(c("Paul","C."),"Cross",role="dtc"),
              person("Thomas","Mueller",role="dtc"),
