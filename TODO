@@ -1,4 +1,6 @@
 ** PRIORITY
+* mean(occurrence)
+* parallelize pkde
 * record numerical error in AIC/AICc/BIC and make function for z-test
 * rsf.fit() optimizer challenge
 * finish rewriting intensity()

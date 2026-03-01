@@ -38,6 +38,11 @@ npr <- function(data,UD,variable="speed",normalize=FALSE,error=0.001,...)
 
   if(variable %in% c("revisitation","speed")) # append a debiased speed column
   { data <- speeds_fast(data,append=TRUE) }
+  else if(variable %in% c("velocity","route"))
+  {
+    data$velocity <- data$vx + 1i*data$vy
+    if(variable=="route") { data$route <- data$velocity^2/abs(data$velocity) }
+  }
   else
   {
     data[[variable]] <- VAR
@@ -70,6 +75,9 @@ npr <- function(data,UD,variable="speed",normalize=FALSE,error=0.001,...)
   else  # NR regression surface
   {
     NEW <- kde(data=data,H=UD$H,W=weights,alpha=error,grid=GRID,variable=variable,normalize=normalize)
+
+    if(variable %in% c("velocity","route"))
+    { NEW$NPR <- abs(NEW$NPR) }
 
     if(normalize) # generated a new distribution
     {

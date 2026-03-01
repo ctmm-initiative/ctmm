@@ -67,6 +67,10 @@ C. H. Fleming, D. Sheldon, W. F. Fagan, P. Leimgruber, T. Mueller, D. Nandintset
 ``Correcting for missing and irregular data in home-range estimation'',
 Ecological Applications, 28:4, 1003-1010 (2018) \doi{10.1002/eap.1704}.
 
+J. P. W. Hollins, C. H. Fleming, J. M. Calabrese, L. N. Harris, J. Sebastien Moore, B. K. Malley, M. J. Noonan, W. F. Fagan, J. M. Alston, N. E. Hussey,
+``Home-range spillover in habitats with impassable boundaries: Causes, biases and corrections using autocorrelated kernel density estimation''
+Methods in Ecology and Evolution, 16:12, 2945--2959 (2025) \doi{10.1111/2041-210X.70082}.
+
 %D. Marcotte. (1996). Fast variogram computation with FFT. \emph{Computers and Geosciences} 22(10), 1175-1186.
 }
 

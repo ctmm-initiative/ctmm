@@ -21,7 +21,7 @@ confint.ctmm <- function(model,alpha=0.05,UNICODE=FALSE)
   par <- NULL
   NAMES <- NULL
 
-  if("sigma" %in% names(model))
+  if(model$range && "sigma" %in% names(model))
   {
     # standard area uncertainty: chi-square
     NAMES <- c(NAMES,"area")
@@ -51,7 +51,7 @@ confint.ctmm <- function(model,alpha=0.05,UNICODE=FALSE)
         # dArea/dpar
         J0 <- 1/2 * AREA / sigma@par[P]
         # CoV^2
-        PAR <- c(J0 %*% POV[P,P] %*% J0)/AREA^2
+        PAR <- c(J0 %*% PDclamp(POV[P,P]) %*% J0)/AREA^2
         # Jacobian for VAR[Area]
         J[P,P] <- J0
       }
@@ -92,7 +92,7 @@ confint.ctmm <- function(model,alpha=0.05,UNICODE=FALSE)
     {
       if(UNICODE) { LABEL <- "\u03C4" }
     } # end OUf
-    else if(tau[1]==Inf) # IOU
+    else if("tau velocity" %in% VARS && "tau position" %nin% VARS) # IOU
     {
       if(UNICODE) { LABEL <- paste0("\u03C4[velocity]") }
     } # end IOU
@@ -296,7 +296,7 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
     dimnames(object$COV.mu) <- dimnames(object$DOF.mu) <- list(axes,axes)
   }
 
-  ### AREA
+  ### AREA & TAU
   par <- confint.ctmm(object,alpha=alpha,UNICODE=TRUE)
   # where to store unit information
   K <- max(nrow(par),0)
@@ -316,8 +316,8 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
   }
 
   # pretty time units
-  I <- !grepl("CoV",rownames(par),fixed=TRUE)
-  I <- which(I)[-1] # all but area
+  I <- !grepl("CoV",rownames(par),fixed=TRUE) & !grepl("area",rownames(par),fixed=TRUE)
+  I <- which(I)
   for(i in I)
   {
     # set scale by upper CI if point estimate is zero
@@ -519,8 +519,6 @@ summary.ctmm.single <- function(object, level=0.95, level.UD=0.95, units=TRUE, .
   # affix units if given units
   DO <- name!=""
   rownames(par)[DO] <- paste(rownames(par)[DO]," (",name[DO],")",sep="")
-
-  if(!range) { par <- par[-1,,drop=FALSE] } # delete off "area" (really diffusion)... stop R drop :(
 
   # anything interesting from the timelink function
   par <- rbind(timelink.summary(object,level=level),par)

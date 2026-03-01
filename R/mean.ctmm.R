@@ -55,6 +55,9 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
   ISO <- sapply(x,function(y){y$isotropic[1]})
   ISO <- all(ISO)
 
+  range <- sapply(x,function(y){y$range})
+  range <- any(range)
+
   # only want biological parameters
   for(i in 1:length(x))
   {
@@ -198,20 +201,29 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
     { J["tau position",c("major","tau position")] <- c(1,-1) } # D
   }
 
-  # if("tau velocity" %in% FEATURES)
-  # { J["tau velocity",c("major","tau position","tau velocity")] <- c(1,-1,-1) } # MSV correlates with D
+  # Jacobian for combining range=FALSE with range=TRUE
+  # where sigma is already divided by tau[position]
+  JALT <- J
+  if("minor" %in% FEATURES)
+  {
+    JALT["major",c("major","minor")] <- c(0,0) # average variance
 
-  # if("omega" %in% FEATURES) # MSV - delta-MSV # sigma cancels out
-  # {
-  #   if("tau" %in% FEATURES) # OUf
-  #   { J["omega",c("tau","omega")] <- c(1,-1) }
-  #   else if(all(c("tau position","tau velocity") %in% FEATURES)) # OUF
-  #   { J["omega",c("tau position","tau velocity","omega")] <- c(1,1,-2) }
-  #   else if("tau velocity" %in% FEATURES) # IOU
-  #   { J["omega",c("tau velocity","omega")] <- c(1,-1) }
-  #   else if("tau position" %in% FEATURES) # OU
-  #   { J["omega",c("tau position","omega")] <- c(1,-1) }
-  # }
+    if("tau" %in% FEATURES)
+    { JALT["tau",c("major","minor","tau")] <- c(1/2,1/2,0) } # D
+
+    if("tau position" %in% FEATURES)
+    { JALT["tau position",c("major","minor","tau position")] <- c(1/2,1/2,0) } # D
+  }
+  else
+  {
+    JALT["major","major"] <- 0 # average variance
+
+    if("tau" %in% FEATURES)
+    { JALT["tau",c("major","tau")] <- c(1,0) } # D
+
+    if("tau position" %in% FEATURES)
+    { JALT["tau position",c("major","tau position")] <- c(1,0) } # D
+  }
 
   # missing data / infinite uncertainties
   INF <- apply(SIGMA,1,function(M){diag(M)==Inf}) # [par,ind]
@@ -220,26 +232,53 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
   colnames(INF) <- colnames(SIGMA)
 
   tJ <- t(J)
+  tJALT <- t(JALT)
   MU[INF] <- 0 # zero out infinite uncertainties (point estimates could be infinite after log transform)
-  MU <- MU %*% tJ
 
-  SIGMA <- SIGMA %.% tJ
-  for(i in 1:nrow(SIGMA)) { for(j in 1:ncol(SIGMA)) { if(INF[i,j]) { SIGMA[i,j,] <- SIGMA[i,,j] <- 0; SIGMA[i,j,j] <- Inf } } }
-  SIGMA <- aperm(SIGMA,c(1,3,2))
-  SIGMA <- SIGMA %.% tJ
-  for(i in 1:nrow(SIGMA)) { for(j in 1:ncol(SIGMA)) { if(INF[i,j]) { SIGMA[i,j,] <- SIGMA[i,,j] <- 0; SIGMA[i,j,j] <- Inf } } }
+  for(i in 1:length(x))
+  {
+    if(range && !x[[i]]$range)
+    {
+      MU[i,] <- MU[i,] %*% tJALT
+      SIGMA[i,,] <- SIGMA[i,,] %.% tJALT
+    }
+    else
+    {
+      MU[i,] <- MU[i,] %*% tJ
+      SIGMA[i,,] <- SIGMA[i,,] %.% tJ
+    }
+
+    for(j in 1:ncol(SIGMA)) { if(INF[i,j]) { SIGMA[i,j,] <- SIGMA[i,,j] <- 0; SIGMA[i,j,j] <- Inf } }
+    SIGMA <- aperm(SIGMA,c(1,3,2))
+
+    if(range && !x[[i]]$range)
+    { SIGMA[i,,] <- SIGMA[i,,] %.% tJALT }
+    else
+    { SIGMA[i,,] <- SIGMA[i,,] %.% tJ }
+
+    for(j in 1:ncol(SIGMA)) { if(INF[i,j]) { SIGMA[i,j,] <- SIGMA[i,,j] <- 0; SIGMA[i,j,j] <- Inf } }
+  }
   dimnames(SIGMA) <- list(NULL,FEATURES,FEATURES)
 
   # can't make this infinite before or will mess up above calculations
-  P <- c("minor","angle")
   for(i in 1:length(x))
   {
+    P <- c("minor","angle")
     if(!ISO && x[[i]]$isotropic)
     {
       INF[i,P] <- TRUE
       SIGMA[i,P,] <- 0
       SIGMA[i,,P] <- 0
       SIGMA[i,P,P] <- diag(Inf,2)
+    }
+
+    P <- "major"
+    if(range && !x[[i]]$range)
+    {
+      INF[i,P] <- TRUE
+      SIGMA[i,P,] <- 0
+      SIGMA[i,,P] <- 0
+      SIGMA[i,P,P] <- Inf
     }
   }
 
@@ -622,6 +661,7 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
   { R$formula <- stats::as.formula(paste("~",paste(names(beta),collapse=" + "))) }
 
   R$features <- FEATURES
+  R$range <- range
 
   # information for fitting that we no longer use
   NEW <- rep(TRUE,length(NEW))
