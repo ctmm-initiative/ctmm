@@ -65,20 +65,23 @@ cde <- function(object,include=NULL,exclude=NULL,debias=FALSE,...)
   object$weight <- GAMMA # store overall weight for future averaging
 
   # resolution (add up like covariance?)
-  IN <- 0
-  H <- matrix(0,AXES,AXES)
-  for(i in 1:(length(UD)-1))
+  if(all(sapply(UD,function(ud){"H" %in% names(ud)})))
   {
-    for(j in (i+1):length(UD))
+    IN <- 0
+    H <- matrix(0,AXES,AXES)
+    for(i in 1:(length(UD)-1))
     {
-      IN <- IN + include[i,j]
-      H <- H + include[i,j] * pd.solve( pd.solve(UD[[i]]$H) + pd.solve(UD[[i]]$H) )
+      for(j in (i+1):length(UD))
+      {
+        IN <- IN + include[i,j]
+        H <- H + include[i,j] * pd.solve( pd.solve(UD[[i]]$H) + pd.solve(UD[[j]]$H) )
+      }
     }
+    H <- H/IN
+    dimnames(H) <- list(axes,axes)
+    object$H <- H
   }
-  H <- H/IN
-  dimnames(H) <- list(axes,axes)
 
-  object$H <- H
   object$DOF.area <- DOF.area
 
   info <- mean_info(UD)
