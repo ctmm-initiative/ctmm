@@ -1,6 +1,6 @@
 ###################
 # average aligned UDs
-mean.UD <- function(x,weights=NULL,sample=TRUE,...)
+mean.UD <- function(x,weights=NULL,sample=FALSE,...)
 {
   n <- length(x)
   axes <- x[[1]]$axes
@@ -24,15 +24,19 @@ mean.UD <- function(x,weights=NULL,sample=TRUE,...)
   # population stationary distribution
   if(sample) { CTMM <- mean_pop(CTMM) }
 
-  # harmonic mean bandwidth matrix
-  H <- 0
-  for(i in 1:n) { H <- H + weights[i] * pd.solve(x[[i]]$H) }
-  H <- H/WEIGHT
-  H <- pd.solve(H)
-
   info <- mean_info(x)
   type <- unique(sapply(x,function(y){attr(y,"type")}))
   if(length(type)>1) { stop("Distribution types ",type," differ.") }
+
+  # harmonic mean bandwidth matrix
+  if(all(sapply(x,function(y){"H" %in% names(y)})))
+  {
+    H <- 0
+    for(i in 1:n) { H <- H + weights[i] * pd.solve(x[[i]]$H) }
+    H <- H/WEIGHT
+    H <- pd.solve(H)
+  }
+
   dV <- prod(x[[1]]$dr)
 
   GRID <- grid.union(x) # r,dr of grid union
