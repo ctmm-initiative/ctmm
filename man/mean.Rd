@@ -9,7 +9,7 @@ These functions calculate population averages of continuous-time movement models
 \usage{
 \S3method{mean}{ctmm}(x,formula,weights=NULL,sample=TRUE,debias=TRUE,IC="AIC",trace=TRUE,...)
 
-\S3method{mean}{UD}(x,weights=NULL,sample=TRUE,...)
+\S3method{mean}{UD}(x,weights=NULL,sample=FALSE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
