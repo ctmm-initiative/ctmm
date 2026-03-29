@@ -77,13 +77,12 @@ index.ctmm <- function(CTMM,R,...)
   R <- raster::as.array(R)
   dim(R) <- dim(R)[1:2]
   R <- t(R)
-  MIN <- min( xy[R>0] )
-  SHIFT <- max(MIN,0)
+  SHIFT <- max( xy[R>0] + log(R[R>0]) )
   xy <- xy - SHIFT
   xy <- exp(xy)
 
   dim(R) <- prod(DIM)
-  R <- log(sum(R * xy * dA)) - (log(2*pi) + log(det.covm(COV))/2)
+  R <- log(sum(R*xy*dA,na.rm=TRUE)) - (log(2*pi) + log(det.covm(COV))/2)
   R <- R + SHIFT # add back minimum
 
   R <- sqrt(max(-R,0))

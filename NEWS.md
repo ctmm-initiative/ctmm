@@ -1,4 +1,4 @@
-ctmm 1.3.1 (2026-03-04)
+ctmm 1.3.1 (2026-03-29)
 ================
 * intensity code is IN DEVELOPMENT
 * preliminary home-range-index code
