@@ -1,4 +1,5 @@
 ** PRIORITY
+* profile likelihood for variance, habitat selection, ...
 * mean(occurrence)
 * parallelize pkde
 * record numerical error in AIC/AICc/BIC and make function for z-test

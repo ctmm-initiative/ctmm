@@ -310,7 +310,8 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
 
     if(CONSISTENT) # extract pixel areas for integration
     {
-      dA <- raster::area(R[[1]])
+      # raster complains if this isn't long-lat, but still calculates the area...
+      suppressWarnings(dA <- raster::area(R[[1]]))
       # raster outputs km^2 sometimes and m^2 others? WTF?
       if(grepl("longlat",projection(R[[1]]))) { dA <- dA * 1000^2 }
 
@@ -336,7 +337,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
   }
   else
   {
-    mu <- c(CTMM$mu)
+    mu <- c(CTMM$mu[1,])
     std <- sqrt(CTMM$sigma@par[c('major','minor')])
     names(std) <- names(mu) <- axes
 
@@ -676,7 +677,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
             z <- qmvnorm(1-error,dim=2)
             z2 <- z^2 * chisq.ci(1,DOF=DOF.area(CTMM),level=1-error)[3]
             # could do this slightly better with math
-            AVAIL <- ellipsograph(mu=CTMM$mu,sigma=z2*methods::getDataPart(CTMM$sigma),PLOT=FALSE)
+            AVAIL <- ellipsograph(mu=CTMM$mu[1,],sigma=z2*methods::getDataPart(CTMM$sigma),PLOT=FALSE)
           }
           else # only sample within available area
           { AVAIL <- level.UD@Polygons[[1]]@coords }
@@ -707,7 +708,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
           # subset of working points in area
           if(integrated)
           {
-            SUB <- t(SIM) - c(CTMM$mu) # [2,n]
+            SUB <- t(SIM) - c(CTMM$mu[1,]) # [2,n]
             SUB <- mpow.covm(CTMM$sigma,-1/2) %*% SUB # [2,n]
             SUB <- SUB['x',]^2 + SUB['y',]^2 # [n]
             SUB <- (SUB <= z2)
@@ -928,7 +929,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
         beta['rr'] <- 1/beta['rr']
 
         # beta[c('x','y')] is correction to precision*mu
-        beta[axes] <- beta['rr']*beta[axes] + c(CTMM$mu)
+        beta[axes] <- beta['rr']*beta[axes] + c(CTMM$mu[1,])
       }
       else
       {
@@ -938,7 +939,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
         beta[c('xx','yy','xy')] <- covm(sigma)@par # (major,minor,angle)
 
         # rotate +theta
-        beta[axes] <- c(ROT %*% sigma %*% beta[axes]) + c(CTMM$mu)
+        beta[axes] <- c(ROT %*% sigma %*% beta[axes]) + c(CTMM$mu[1,])
       }
 
       return(beta)

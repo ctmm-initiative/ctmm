@@ -6,9 +6,20 @@ flatten.cov.mu <- function(COV.mu)
     COV.mu <- aperm(COV.mu,c(2,1,3,4)) # [m,axes,m,axes]
     DIM <- dim(COV.mu)
     DIM <- prod(DIM[1:2])
-    dim(COV.mu) <- c(DIM,DIM) # [axes*m,axes*m]
+    dim(COV.mu) <- c(DIM,DIM) # [m*axes,m*axes]
   }
 
+  return(COV.mu)
+}
+
+# return to previous structure with index naming
+fold.cov.mu <- function(COV.mu,mu)
+{
+  DIM <- dim(mu) # [m,axes]
+  dim(COV.mu) <- c(DIM,DIM) # [m,axes,m,axes]
+  COV.mu <- aperm(COV.mu,c(2,1,3,4)) # [axes,m,m,axes]
+  NAMES <- dimnames(mu)
+  dimnames(COV.mu) <- c(rev(NAMES),NAMES)
   return(COV.mu)
 }
 
