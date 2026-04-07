@@ -1,7 +1,7 @@
-ctmm 1.3.1 (2026-03-29)
+ctmm 1.3.1 (2026-04-06)
 ================
 * intensity code is IN DEVELOPMENT
-* preliminary home-range-index code
+* new home-range index() function
 * mean() now works when range=FALSE
 * pkde() can now take fixed weights
 * as.telemetry() can now import light-level geolocator error ellipses

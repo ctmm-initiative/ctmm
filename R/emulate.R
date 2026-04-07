@@ -396,6 +396,7 @@ ctmm.boot <- function(data,CTMM,method=CTMM$method,AICc=FALSE,iterate=FALSE,robu
     DOF2 <- t(DOF2/P)/P
 
     R <- clamp*sqrt(N) # <= clamp/error
+    R <- R^2 # wouldn't this be more on the DOF scale?
 
     DOF <- ( DOF + R*DOF2 )/( 1 + R )
     CTMM$COV <- t(DOF*P)*P

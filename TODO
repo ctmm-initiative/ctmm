@@ -1,4 +1,5 @@
 ** PRIORITY
+* projection(UD) <- method
 * profile likelihood for variance, habitat selection, ...
 * mean(occurrence)
 * parallelize pkde

@@ -166,3 +166,7 @@ export(sigfig,dimfig)
 export(transition)
 
 export(pd.solve,pd.logdet,pd.sqrtm)
+
+export(index)
+#S3method(index,UD)
+#S3method(index,ctmm)
