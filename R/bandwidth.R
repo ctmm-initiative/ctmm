@@ -49,7 +49,7 @@ bandwidth <- function(data,CTMM,VMM=NULL,weights=FALSE,fast=NULL,dt=NULL,PC="Mar
   PC <- match.arg(PC,c("Markov","circulant","IID","direct"))
   trace2 <- ifelse(trace,trace-1,FALSE)
 
-  if(length(CTMM$tau)==0 || all(CTMM$tau==0) && length(weights)==1) { weights <- FALSE }
+  if((length(CTMM$tau)==0 || all(CTMM$tau==0)) && length(weights)==1) { weights <- FALSE }
 
   n <- length(data$t)
 

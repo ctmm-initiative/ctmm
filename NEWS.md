@@ -1,4 +1,4 @@
-ctmm 1.3.1 (2026-04-06)
+ctmm 1.3.1 (2026-04-11)
 ================
 * intensity code is IN DEVELOPMENT
 * new home-range index() function
@@ -9,6 +9,7 @@ ctmm 1.3.1 (2026-04-06)
 * proximity() CIs improved from F to beta sampling distribution
 * pkde() weights now passed to mean.ctmm()
 * overlap() can now take non-stationary mean models
+* bugfix in akde() for a list of fixed weights
 
 ctmm 1.3.0 (2025-07-23)
 ================

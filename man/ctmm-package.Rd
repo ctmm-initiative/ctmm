@@ -32,7 +32,7 @@ Hollins et al. (2025) <doi:10.1111/2041-210X.70082>.
 Package: \tab ctmm\cr
 Type: \tab Package\cr
 Version: \tab 1.3.1 \cr
-Date: \tab 2026-04-06 \cr
+Date: \tab 2026-04-11 \cr
 License: \tab GPL-3 \cr
 }
 
