@@ -171,40 +171,12 @@ linktime <- function(data,CTMM)
     par <- CTMM$timelink.par
     t <- data$light.time*(1+par) + data$dark.time*(1-par)
   }
-  else
+  else # activity functions that are on average zero
   {
-    R <- timelink.fn(CTMM)
-
-    # handle initial offset
-    if(data$sundial[1]<=pi) # counting time since previous sunrise
-    { data$light.time <- data$light.time + data$sundial[1]/pi*data$suntime[1] }
-    else # counting time since previous sunset
-    { data$dark.time <- data$dark.time + (data$sundial[1]-pi)/pi*data$suntime[1] }
-
-    n <- length(t)
-    t <- 0
-    for(i in 1:n)
-    {
-      if(data$sundial[i]<=pi)
-      {
-        # whole periods accumulated
-        t <- R$acc.dark * data$dark.time[i]
-        #
-        #
-      }
-      else
-      {
-        # whole periods accumulated
-        t <- R$acc.light * data$light.time[i]
-        #
-        #
-      }
-    }
-
-    # t <- t + int(data$sundial)/data$sundial.rate
-
+    int <- timelink.fn(CTMM)$int
+    # integral of 1 + rate function
+    t <- t + int(data$sundial)
   }
-  # TODO diurnal & nocturnal spline models
 
   return(t)
 }
@@ -219,7 +191,8 @@ timelink.parinfo <- function(CTMM)
   if(is.null(timelink) || timelink=="identity" || p==0)
   { return(list()) }
 
-  fn <- get(paste0(timelink,".timelink.parinfo"))
+  fn <- paste0(timelink,".timelink.parinfo")
+  fn <- get(fn)
   fn(CTMM)
 }
 
@@ -232,7 +205,8 @@ timelink.clean <- function(par,timelink="identity")
   if(is.null(timelink) || timelink=="identity" || p==0)
   { return(par) }
 
-  fn <- get(paste0(timelink,".timelink.clean"))
+  fn <- paste0(timelink,".timelink.clean")
+  fn <- get(fn)
   fn(par)
 }
 
@@ -274,7 +248,8 @@ timelink.fn <- function(CTMM)
   }
   else
   {
-    fn <- get(paste0(timelink,".timelink.fn"))
+    fn <- paste0(timelink,".timelink.fn")
+    fn <- get(fn)
     R <- fn(CTMM)
   }
 
@@ -290,7 +265,8 @@ timelink.complexify <- function(CTMM)
   if(is.null(timelink) || timelink=="identity")
   { return(CTMM) }
 
-  fn <- get(paste0(timelink,".timelink.complexify"))
+  fn <- paste0(timelink,".timelink.complexify")
+  fn <- get(fn)
   fn(CTMM)
 }
 
@@ -304,7 +280,8 @@ timelink.simplify <- function(CTMM)
   if(is.null(timelink) || timelink=="identity" || p==0)
   { return(CTMM) }
 
-  fn <- get(paste0(timelink,".timelink.simplify"))
+  fn <- paste0(timelink,".timelink.simplify")
+  fn <- get(fn)
   fn(CTMM)
 }
 
@@ -332,7 +309,8 @@ timelink.summary <- function(CTMM,level=0.95)
   if(is.null(timelink) || timelink=="identity" || p==0)
   { return(NULL) }
 
-  fn <- get(paste0(timelink,".timelink.summary"))
+  fn <- paste0(timelink,".timelink.summary")
+  fn <- get(fn)
   fn(CTMM,level=level)
 }
 
@@ -776,6 +754,23 @@ fourier.timelink.name <- function(object)
 fourier.timelink.summary <- function(object,level=0.95)
 { return(NULL) }
 
+fourier.timelink.parinfo <- function(CTMM)
+{
+  p0 <- length(CTMM$timelink.par)
+
+  R <- list()
+  R$lower <- array(-Inf,p0) # seems like this should be constrained to -1
+  R$upper <- array(+Inf,p0) # seems like this should be constrained to +1
+  R$parscale <- array(1,p0)
+
+  p <- p0/2
+  R$names <- c(rbind( paste0("Cos-",1:p) , paste0("Sin-",1:p) ))
+
+  return(R)
+}
+
+fourier.timelink.clean <- function(par)
+{ par }
 
 #############################
 # generic periodic function that is only a function of light level (symmetric/cosine w.r.t. noon/nadir)

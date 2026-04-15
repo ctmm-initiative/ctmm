@@ -151,11 +151,13 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE.F
     if(TIMELINK)
     {
       TLI <- timelink.parinfo(CTMM)
+      p0 <- length(CTMM$timelink.par)
+      par <- paste0("timelink-",1:p0)
 
-      parscale <- c(parscale,rep(TLI$parscale,TIMELINK))
-      lower <- c(lower,rep(TLI$lower,TIMELINK))
-      upper <- c(upper,rep(TLI$upper,TIMELINK))
-      period <- c(period,rep(FALSE,TIMELINK))
+      parscale[par] <- TLI$parscale
+      lower[par] <- TLI$lower
+      upper[par] <- TLI$upper
+      period[par] <- FALSE
     }
 
     if(length(TAU))
@@ -268,9 +270,9 @@ get.parameters <- function(CTMM,NAMES,profile=FALSE,linear.cov=FALSE)
     par[DPARS] <- DRIFT[DPARS]
   }
 
-  timelink <- CTMM$timelink.par
+  timelink.par <- CTMM$timelink.par
   TIMELINK <- which(grepl("timelink",NAMES))
-  if(length(timelink) && length(TIMELINK)) { par[TIMELINK] <- timelink }
+  if(length(timelink.par) && length(TIMELINK)) { par[TIMELINK] <- timelink.par }
 
   tau <- CTMM$tau
   getter("tau position",if(length(tau)>0) { tau[1] } else { 0 })
@@ -452,8 +454,8 @@ set.parameters <- function(CTMM,par,profile=FALSE,linear.cov=FALSE)
     CTMM <- drift.assign(CTMM,DRIFT)
   }
 
-  timelink <- par[grepl("timelink",NAMES)]
-  if(length(timelink)) { CTMM$timelink.par <- timelink }
+  timelink.par <- par[grepl("timelink",NAMES)]
+  if(length(timelink.par)) { CTMM$timelink.par <- timelink.par }
 
   if(!CTMM$range)
   { CTMM$tau[1] <- Inf ; names(CTMM$tau)[1] <- 'position' }
