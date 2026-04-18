@@ -175,7 +175,7 @@ linktime <- function(data,CTMM)
   {
     int <- timelink.fn(CTMM)$int
     # integral of 1 + rate function
-    t <- t + int(data$sundial)
+    t <- t + int(data)
   }
 
   return(t)
@@ -228,7 +228,7 @@ timelink.rate <- function(data,CTMM)
   else
   {
     R <- timelink.fn(CTMM)
-    r <- R$fn(data$sundial)
+    r <- R$fn(data)
   }
   return(r)
 }
@@ -341,8 +341,9 @@ switch.timelink.rate <- function(data,CTMM)
 
 # rate = dt_internal/dt_clock
 # drate/dpar
-switch.timelink.fn <- function(par)
+switch.timelink.fn <- function(CTMM)
 {
+  par <- CTMM$timelink.par
   R <- list()
 
   R$fn <- function(angle) { ifelse(0<=angle & angle<pi,1+par,1-par) }
@@ -687,43 +688,50 @@ fourier.timelink.fn <- function(CTMM)
   R <- list()
 
   # rate
-  R$fn <- function(sundial)
+  R$fn <- function(theta)
   {
+    # theta <- data$sundial
+
     r <- 1
     for(i in 1%:%p)
     {
       if(is.odd(i)) # symmetric              # anti-symmetric
-      { r <- r + par[2*i-1]*sin(i*sundial) + par[2*i]*cos(i*sundial) }
+      { r <- r + (par[2*i-1]*sin(i*theta) + par[2*i]*cos(i*theta)) }
       else          # symmetric              # anti-symmetric
-      { r <- r + par[2*i-1]*cos(i*sundial) + par[2*i]*sin(i*sundial) }
+      { r <- r + (par[2*i-1]*cos(i*theta) + par[2*i]*sin(i*theta)) }
     }
     return(r)
   }
 
-  # gradient of rate
-  R$grad <- function(sundial)
+  # gradient of rate w.r.t. parameters
+  R$grad <- function(theta)
   {
+    # theta <- data$sundial
+
     r <- NULL
     for(i in 1%:%p)
     {
       if(is.odd(i))
-      { r <- c(r,sin(i*sundial),cos(i*sundial)) }
+      { r <- c(r,sin(i*theta),cos(i*theta)) }
       else
-      { r <- c(r,cos(i*sundial),sin(i*sundial)) }
+      { r <- c(r,cos(i*theta),sin(i*theta)) }
     }
     return(r)
   }
 
-  # angular integral
-  R$int <- function(sundial)
+  # angular integral for time link
+  R$int <- function(data)
   {
+    theta <- data$sundial
+    omega <- pi/data$suntime
+
     r <- 0
     for(i in 1%:%p)
     {
       if(is.odd(i))
-      { r <- r - par[2*i-1]/i*cos(i*sundial) + par[2*i]/i*sin(i*sundial) }
+      { r <- r - (par[2*i-1]*cos(i*theta) + par[2*i]*sin(i*theta))/i/omega }
       else
-      { r <- r + par[2*i-1]/i*sin(i*sundial) - par[2*i]/i*cos(i*sundial) }
+      { r <- r + (par[2*i-1]*sin(i*theta) - par[2*i]*cos(i*theta))/i/omega }
     }
     return(r)
   }
@@ -759,8 +767,8 @@ fourier.timelink.parinfo <- function(CTMM)
   p0 <- length(CTMM$timelink.par)
 
   R <- list()
-  R$lower <- array(-Inf,p0) # seems like this should be constrained to -1
-  R$upper <- array(+Inf,p0) # seems like this should be constrained to +1
+  R$lower <- array(-1,p0) # seems like this should be constrained to -1
+  R$upper <- array(+1,p0) # seems like this should be constrained to +1
   R$parscale <- array(1,p0)
 
   p <- p0/2
@@ -845,7 +853,7 @@ cosine.timelink.summary <- function(object,level=0.95)
 
 
 #################
-circadian <- function(CTMM,level=0.95,n=100,...)
+circadian <- function(CTMM,level=0.95,n=1000,...)
 {
   FACT <- 1
   # HFACT <- 1 + (FACT-1)/2
@@ -868,48 +876,67 @@ circadian <- function(CTMM,level=0.95,n=100,...)
 
   CI <- sapply(1:n,function(i){lognorm.ci(R[i],VAR[i],level=level)})
 
-  MAX <- max(CI[3,])
-  xlim <- c(-MAX,MAX) * FACT
-  ylim <- c(-MAX,MAX) * FACT
-
-  plot(0,0,xlim=xlim,ylim=ylim,xlab=NA,ylab=NA,asp=1,col=c(0,0,0,0),...)
-  # lim <- par("usr")
-  # xlim <- lim[1:2]
-  # ylim <- lim[3:4]
-  # X <- c(xlim,rev(xlim))
-  # Y <- c(0,0,ylim[2],ylim[2])
-  # polygon(X,Y,border=NA,col=rgb(1,1,0,0.1)) # day shade
-  # Y <- c(0,0,ylim[1],ylim[1])
-  # polygon(X,Y,border=NA,col=rgb(0,0,1,0.1)) # night shade
+  MAX <- max(CI[3,]) * FACT
+  xlim <- c(-MAX,MAX)
+  ylim <- c(-MAX,MAX)
 
   COS <- cos(theta)
   SIN <- sin(theta)
 
-  # point estimate - 100% circle - colored
-  X <- c( (CI[2,]*COS)[DAY] , rev(COS[DAY]) )
-  Y <- c( (CI[2,]*SIN)[DAY] , rev(SIN[DAY]) )
-  graphics::polygon(X,Y,border=NA,col=grDevices::rgb(1,1,0,1/2),...)
-  X <- c( (CI[2,]*COS)[NIT] , rev(COS[NIT]) )
-  Y <- c( (CI[2,]*SIN)[NIT] , rev(SIN[NIT]) )
-  graphics::polygon(X,Y,border=NA,col=grDevices::rgb(0,0,1,1/2),...)
+  # ticks
+  alpha <- 1/8
+  plot(0,0,xlim=xlim,ylim=ylim,xlab=NA,ylab=NA,asp=1,col=c(0,0,0,0),xaxt='n',yaxt='n',...)
+  ticker <- function(R,labels,alpha)
+  { for(i in 1:4) { axis(side=i,at=R,labels=labels,col.axis=grDevices::rgb(0,0,0,alpha),col.ticks=grDevices::rgb(0,0,0,alpha),...) } }
+  MAX <- ceiling(MAX)
+  ticker(-MAX:MAX,TRUE,alpha)
+  MAX <- MAX + 0.5
+  ticker(-MAX:MAX,FALSE,alpha/4)
 
-  # CIs
-  X <- c(CI[1,]*COS,rev(CI[3,]*COS))
-  Y <- c(CI[1,]*SIN,rev(CI[3,]*SIN))
-  graphics::polygon(X,Y,border=NA,col=grDevices::rgb(0,0,0,1/4),...)
+  # normal circle
+  R <- 1:(2*ceiling(MAX))
+  for(r in R)
+  {
+    shape::plotcircle(r=r-1/2,lcol=rgb(0,0,0,alpha/4),lwd=1)
+    shape::plotcircle(r=r,lcol=rgb(0,0,0,alpha),lwd=1)
+  }
+  graphics::abline(h=0,col=grDevices::rgb(0,0,0,alpha))
+  graphics::abline(v=0,col=grDevices::rgb(0,0,0,alpha))
+  graphics::polygon(2*c(xlim,rev(xlim)),2*c(ylim[1],ylim[1],0,0),col=grDevices::rgb(0,0,0,alpha/8))
+
+  # 0 - lower limit filled
+  i <- 1
+  alpha <- 1/2
+  X <- c( (CI[i,]*COS)[DAY] , (CI[i,]*COS)[1] )
+  Y <- c( (CI[i,]*SIN)[DAY] , (CI[i,]*SIN)[1] )
+  graphics::polygon(X,Y,border=NA,col=grDevices::rgb(1,1,0,alpha),...)
+  X <- c( (CI[i,]*COS)[NIT] , (CI[i,]*COS)[1] )
+  Y <- c( (CI[i,]*SIN)[NIT] , (CI[i,]*SIN)[1] )
+  graphics::polygon(X,Y,border=NA,col=grDevices::rgb(0,0,1,alpha),...)
+
+  # lower - upper limit filled
+  i <- 1
+  j <- 3
+  alpha <- 1/4
+  X <- c( (CI[i,]*COS)[DAY] , rev((CI[j,]*COS)[DAY]) )
+  Y <- c( (CI[i,]*SIN)[DAY] , rev((CI[j,]*SIN)[DAY]) )
+  graphics::polygon(X,Y,border=NA,col=grDevices::rgb(1,1,0,alpha),...)
+  X <- c( (CI[i,]*COS)[NIT] , rev((CI[j,]*COS)[NIT]) )
+  Y <- c( (CI[i,]*SIN)[NIT] , rev((CI[j,]*SIN)[NIT]) )
+  graphics::polygon(X,Y,border=NA,col=grDevices::rgb(0,0,1,alpha),...)
 
   # point estimates
   X <- CI[2,]*COS
   Y <- CI[2,]*SIN
-  graphics::lines(X[DAY],Y[DAY],...)
-  graphics::lines(X[NIT],Y[NIT],...)
+  graphics::lines(X[DAY],Y[DAY],col=grDevices::rgb(1,3/4,0),...)
+  graphics::lines(X[NIT],Y[NIT],col=grDevices::rgb(1/2,0,1),...)
 
-  # normal circle
-  #shape::plotcircle(r=1,lcol=rgb(0,0,0,1/4),lwd=1)
-  #shape::plotcircle(r=1/2,lcol=rgb(0,0,0,1/4),lwd=1)
-  #shape::plotcircle(r=3/2,lcol=rgb(0,0,0,1/4),lwd=1)
-  graphics::abline(h=0,col=grDevices::rgb(0,0,0,1/4))
-  graphics::abline(v=0,col=grDevices::rgb(0,0,0,1/4))
+  alpha <- 1/8
+  Y <- max(graphics::strheight(c("dawn","dusk")))
+  X <- graphics::grconvertX(0,"npc","user") + graphics::strwidth("dusk")/2 + Y/2
+  graphics::text(X,Y,"dusk",col=grDevices::rgb(0,0,0,alpha),...)
+  X <- graphics::grconvertX(1,"npc","user") - graphics::strwidth("dawn")/2 - Y/2
+  graphics::text(X,Y,"dawn",col=grDevices::rgb(0,0,0,alpha),...)
 
   # sun "\u2600"
   # text(0,FACT*MAX,labels="\u2600",cex=2)

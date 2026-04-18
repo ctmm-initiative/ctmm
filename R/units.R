@@ -256,6 +256,7 @@ unit.telemetry <- function(data,length=1,time=1,axes=c('x','y'))
   convert('t',time)
   convert('light.time',time)
   convert('dark.time',time)
+  convert('suntime',time)
   convert('sundial.rate',1/time)
 
   if(any(axes %in% c('x','y','z')))
