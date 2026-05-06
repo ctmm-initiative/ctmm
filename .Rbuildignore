@@ -10,3 +10,5 @@
 _pkgdown.yml
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^\.positai$
+^\.claude$

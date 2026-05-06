@@ -995,6 +995,7 @@ CI.UD <- function(object,level.UD=0.95,level=0.95,P=FALSE,convex=FALSE)
   P[2] <- level.UD
 
   # fix upper bound to not overflow
+  P[3] <- nant(P[3],1)
   P <- pmin(P,1)
   if(P[3]==1) { warning("Outer contour extends beyond raster.") }
 

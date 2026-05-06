@@ -769,24 +769,29 @@ mean.ctmm <- function(x,formula=FALSE,weights=NULL,sample=TRUE,debias=TRUE,IC="A
       for(j in (i+1)%:%n) { COV.COV <- COV.COV - w[i]^2*w[j]^2*cov.off(x[[i]]$COV.mu,x[[j]]$COV.mu) }
     }
     COV <- COV - outer(c(MU)) # M2 - M1^2
-    rownames(COV.MU) <- colnames(COV.MU) <- axes
+    if(length(COV.MU)) { rownames(COV.MU) <- colnames(COV.MU) <- axes }
 
     isotropic['mu'] <- FALSE
     if(!all(sapply(x,function(y){y$isotropic[1]}))) { isotropic['sigma'] <- FALSE }
 
     sigma <- covm(COV,axes=axes,isotropic=isotropic['sigma'])
-    if(isotropic['sigma'])
+    if(length(COV.COV))
     {
-      COV <- COV.COV[1,1,drop=FALSE]
-      rownames(COV) <- colnames(COV) <- 'major'
-      features <- 'major'
+      if(isotropic['sigma'])
+      {
+        COV <- COV.COV[1,1,drop=FALSE]
+        rownames(COV) <- colnames(COV) <- 'major'
+        features <- 'major'
+      }
+      else
+      {
+        J <- J.par.sigma(sigma[c(1,4,2)])
+        COV <- J %*% COV.COV %*% t(J)
+        features <- c('major','minor','angle')
+      }
     }
     else
-    {
-      J <- J.par.sigma(sigma[c(1,4,2)])
-      COV <- J %*% COV.COV %*% t(J)
-      features <- c('major','minor','angle')
-    }
+    { features <- NULL }
 
     x <- ctmm(mu=MU,COV.mu=COV.MU,sigma=sigma,COV=COV,features=features)
     # TODO non-sigma features

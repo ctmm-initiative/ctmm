@@ -1,9 +1,10 @@
-ctmm 1.3.1 (2026-04-14)
+ctmm 1.3.1 (2026-05-06)
 ================
 * intensity code is IN DEVELOPMENT
 * new home-range index() function
 * mean() now works when range=FALSE
 * pkde() can now take fixed weights
+* agde() now works on multiple individuals
 * as.telemetry() can now import light-level geolocator error ellipses
 * as.telemetry() no longer requires strict Argos formatting
 * proximity() CIs improved from F to beta sampling distribution

@@ -213,7 +213,7 @@ format_grid <- function(grid,axes=c('x','y'))
 kde.grid <- function(data,H,axes=c("x","y"),alpha=0.001,res=NULL,dr=NULL,EXT=NULL,EXT.min=NULL,grid=NULL)
 {
   DIM <- length(axes)
-  H <- prepare.H(H,n=length(data$t),axes=axes) # (times,dim,dim)
+  H <- prepare.H(H,n=length(data[[axes[1]]]),axes=axes) # (times,dim,dim)
 
   # how far to extend range from data as to ensure alpha significance in total probability
   z <- qmvnorm(1-alpha,DIM)

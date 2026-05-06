@@ -77,6 +77,8 @@ sigma.construct <- function(pars)
     v <- c(-sin(theta),cos(theta))
 
     sigma <- major*(u%o%u) + minor*(v%o%v)
+
+    sigma <- nant(sigma,diag(Inf,nrow=2))
   }
 
   return(sigma)
@@ -395,20 +397,25 @@ J.sigma.par <- function(par)
 # get linear COV[sigma] from ctmm object
 sigma.COV <- function(CTMM)
 {
-  if(CTMM$isotropic[1])
+  if(length(CTMM$COV))
   {
-    VAR <- CTMM$COV['major','major']
-    COV <- diag(c(VAR,VAR,0))
-    rownames(COV) <- colnames(COV) <- c('xx','yy','xy')
-    COV['xx','yy'] <- COV['yy','xx'] <- VAR
+    if(CTMM$isotropic[1])
+    {
+      VAR <- CTMM$COV['major','major']
+      COV <- diag(c(VAR,VAR,0))
+      rownames(COV) <- colnames(COV) <- c('xx','yy','xy')
+      COV['xx','yy'] <- COV['yy','xx'] <- VAR
+    }
+    else
+    {
+      P <- c('major','minor','angle')
+      COV <- CTMM$COV[P,P]
+      J <- J.sigma.par(CTMM$sigma@par)
+      COV <- J %*% COV %*% t(J)
+    }
   }
   else
-  {
-    P <- c('major','minor','angle')
-    COV <- CTMM$COV[P,P]
-    J <- J.sigma.par(CTMM$sigma@par)
-    COV <- J %*% COV %*% t(J)
-  }
+  { COV <- NULL }
 
   return(COV)
 }
