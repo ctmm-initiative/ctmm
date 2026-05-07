@@ -176,6 +176,17 @@ scale.covm <- function(sigma,value=1/var.covm(sigma,ave=TRUE))
   return(sigma)
 }
 
+scale.ctmm <- function(CTMM,value=1)
+{
+  P <- c("major","minor")
+  P <- P[P %in% CTMM$features]
+
+  CTMM$sigma <- scale.covm(CTMM$sigma,value)
+  CTMM$COV[P,] <- CTMM$COV[P,] * value
+  CTMM$COV[,P] <- CTMM$COV[,P] * value
+
+  return(CTMM)
+}
 
 # squeeze factor and squeezability
 squeezable.covm <- function(CTMM)

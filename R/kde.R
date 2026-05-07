@@ -33,11 +33,11 @@ akde.bias <- function(CTMM,H,lag,DOF,weights)
 
 
 # population AKDE
-pkde <- function(data,UD,kernel="individual",weights=FALSE,ref="Gaussian",...)
+pkde <- function(data,UD,kernel="individual",weights=FALSE,ref="Gaussian",population=Inf,...)
 {
   CLASS <- class(UD[[1]])[1]
   if(CLASS!="UD") { stop("UD class is ",CLASS) }
-  akde(data,CTMM=UD,kernel=kernel,weights=weights,ref=ref,...)
+  akde(data,CTMM=UD,kernel=kernel,weights=weights,ref=ref,population=population,...)
 }
 
 
@@ -156,6 +156,7 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utiliz
   grid <- format_grid(grid,axes=axes)
   COL <- length(axes)
 
+  # PKDE
   if(!is.null(UD)) # format population KDE as an individual # then set resolution
   {
     i <- 1 # one population
@@ -205,14 +206,23 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utiliz
     data <- do.call(rbind,data)
     data <- list(data)
     dr <- sapply(1:n,function(j){sqrt(min(1,H)*diag(CTMM[[j]]$sigma))/res})
-    dim(dr) <- c(COL,n)
 
     # population GRF
     CTMM0 <- CTMM <- list(KDE[[i]]$CTMM)
+    KDE[[i]]$CTMM <- NULL
 
     n <- 1 # one population
     DROP <- TRUE
-  }
+
+    pop <- list(...)$population # number of individuals in population
+    if(pop<Inf)
+    {
+      dr <- grid$dr <- UD[[1]]$dr
+      grid$align.to.origin <- TRUE
+    }
+
+    dim(dr) <- c(COL,n)
+  } # end PKDE
   else
   {
     # determine desired (absolute) resolution from smallest of all individual bandwidths
@@ -241,18 +251,38 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utiliz
 
     KDE[[i]] <- c(KDE[[i]],kde(data[[i]],H=KDE[[i]]$H,axes=axes,CTMM=CTMM0[[i]],SP=SP,SP.in=SP.in,RASTER=R,bias=DEBIAS[[i]],W=KDE[[i]]$weights,alpha=error,dr=dr,grid=GRID,...))
 
+    # PKDE
     if(!is.null(UD))
     {
       # KDE[[i]]$H <- KDE[[i]]$h^2
       KDE[[i]]$H <- NULL
       KDE[[i]]$weights <- weights # unlisted already
-    }
 
-    KDE[[i]] <- new.UD(KDE[[i]],info=attr(data[[i]],"info"),type='range',variable="utilization",CTMM=ctmm())
-    # in case bandwidth is pre-calculated...
-    if(class(CTMM0[[i]])[1]=="ctmm") { attr(KDE[[i]],"CTMM") <- CTMM0[[i]] }
-    if(!is.null(VMM)) { KDE[[i]]$VMM <- VMM0[[i]] }
-  }
+      # finite population correction
+      if(pop<Inf)
+      {
+        # finite population correction to density
+        s <- length(UD)
+        w <- s/pop
+        w <- c(w,1-w)
+        UD <- mean(UD,sample=FALSE)
+        KDE[[i]] <- new.UD(KDE[[i]],info=attr(data[[i]],"info"),type='range',variable="utilization",CTMM=CTMM0[[i]])
+        KDE[[i]] <- mean(list(UD,KDE[[i]]),weights=w,sample=FALSE)
+
+        # finite population correction to variance
+        # w <- sum( w * c((s-1)/s,1) )
+        # attr(KDE[[i]],"CTMM") <- scale.ctmm(CTMM0[[i]],w)
+        attr(KDE[[i]],"CTMM") <- CTMM0[[i]]
+      } # end finite population correction
+    } # end PKDE
+    else
+    {
+      KDE[[i]] <- new.UD(KDE[[i]],info=attr(data[[i]],"info"),type='range',variable="utilization",CTMM=ctmm())
+      # in case bandwidth is pre-calculated...
+      if(class(CTMM0[[i]])[1]=="ctmm") { attr(KDE[[i]],"CTMM") <- CTMM0[[i]] }
+      if(!is.null(VMM)) { KDE[[i]]$VMM <- VMM0[[i]] }
+    }
+  } # end loop over individuals
 
   names(KDE) <- names(data)
   if(DROP) { KDE <- KDE[[1]] }

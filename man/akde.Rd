@@ -13,7 +13,7 @@ These functions calculate individual and population-level autocorrelated kernel 
 akde(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utilization",debias=TRUE,
      weights=FALSE,smooth=TRUE,error=0.001,res=10,grid=NULL,...)
 
-pkde(data,UD,kernel="individual",weights=FALSE,ref="Gaussian",...)
+pkde(data,UD,kernel="individual",weights=FALSE,ref="Gaussian",population=Inf,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -35,6 +35,7 @@ pkde(data,UD,kernel="individual",weights=FALSE,ref="Gaussian",...)
   \item{UD}{A list of individual \code{UD} objects corresponding to \code{data}.}
   \item{kernel}{Bandwidths are proportional to the individual covariances if \code{kernel="individual"} or to the population covariance if \code{kernel="population"}.}
   \item{ref}{Include non-Gaussian overlap corrections if \code{ref="AKDE"} and \code{weights=TRUE}.}
+  \item{population}{Include finite population correction if \code{population<Inf} (see Details).}
 }
 
 \details{For weighted AKDE, please note additional \code{...} arguments passed to \code{\link{bandwidth}}, which can have a large impact on computation time in certain cases.
@@ -49,6 +50,9 @@ If a \code{UD} or \code{raster} object is supplied in the \code{grid} argument, 
 \item{\code{extent}}{The \eqn{x}-\eqn{y} extent of the grid cells, formatted as from the output of \code{\link{extent}}.}
 \item{\code{align.to.origin}}{Logical value indicating that cell midpoint locations are aligned to be an integer number of \code{dr} steps from the projection origin.}
 }
+
+If \code{population<Inf}, \code{pkde} will estimate the current finite-population ranging area, however,
+the long-term space use of the population, over many generations, is estimated by \code{population=Inf}.
 }
 
 \value{Returns a \code{UD} object: a list with the sampled grid line locations \code{r$x} and \code{r$y}, the extent of each grid cell \code{dr}, the probability density and cumulative distribution functions evaluated on the sampled grid locations \code{PDF} & \code{CDF}, the optimal bandwidth matrix \code{H}, and the effective sample size of the data in \code{DOF.H}.
