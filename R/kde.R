@@ -206,6 +206,7 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utiliz
     data <- do.call(rbind,data)
     data <- list(data)
     dr <- sapply(1:n,function(j){sqrt(min(1,H)*diag(CTMM[[j]]$sigma))/res})
+    dim(dr) <- c(COL,n)
 
     # population GRF
     CTMM0 <- CTMM <- list(KDE[[i]]$CTMM)
@@ -218,10 +219,9 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utiliz
     if(pop<Inf)
     {
       dr <- grid$dr <- UD[[1]]$dr
+      dim(dr) <- c(COL,n)
       grid$align.to.origin <- TRUE
     }
-
-    dim(dr) <- c(COL,n)
   } # end PKDE
   else
   {
@@ -274,6 +274,8 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utiliz
         # attr(KDE[[i]],"CTMM") <- scale.ctmm(CTMM0[[i]],w)
         attr(KDE[[i]],"CTMM") <- CTMM0[[i]]
       } # end finite population correction
+      else
+      { KDE[[i]] <- new.UD(KDE[[i]],info=attr(data[[i]],"info"),type='range',variable="utilization",CTMM=CTMM0[[i]]) }
     } # end PKDE
     else
     {
