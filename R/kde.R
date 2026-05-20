@@ -199,6 +199,7 @@ akde <- function(data,CTMM,VMM=NULL,R=list(),SP=NULL,SP.in=TRUE,variable="utiliz
     # assemble weights # weights * weights
     weights <- KDE[[i]]$weights
     KDE[[i]]$weights <- lapply(1:n,function(j){KDE[[i]]$weights[j]*UD[[j]]$weights})
+    KDE[[i]]$w.list <- KDE[[i]]$weights
     KDE[[i]]$weights <- unlist(KDE[[i]]$weights)
 
     # assemble data

@@ -12,8 +12,9 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
   # pass trace argument (demoted)
   if(trace) { control$trace <- trace-1 }
 
+  data <- listify(data)
   CALC <- integrated || length(R) # anything to calculate?
-  COUNT <- "count" %in% names(data) # not presence-only data
+  COUNT <- "count" %in% names(data[[1]]) # not presence-only data
 
   if(!integrated && !COUNT) # prepare available region polygon
   {
@@ -38,35 +39,68 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
     AREA <- level.UD@area
   }
 
-  if(!CTMM$isotropic)
+  n <- length(data)
+  if(n==1)
+  { FIT <- list(CTMM) }
+  else
+  { FIT <- CTMM$CTMM }
+  for(i in 1:n)
   {
-    if("ISO" %in% names(CTMM))
-    { ISO <- CTMM$ISO }
-    else
+    # smooth the data, but don't drop
+    if(smooth && any(FIT[[i]]$error>0))
+    { data[[i]][,c(axes,GEO)] <- predict(data[[i]],CTMM=FIT[[i]],t=data[[i]]$t,complete=TRUE)[,c(axes,GEO)] }
+
+    if(!FIT[[i]]$isotropic)
     {
-      ISO <- simplify.ctmm(CTMM,'minor')
-      if(trace) { message("Fitting isotropic autocorrelation model.") }
-      ISO <- ctmm.fit(data,ISO,trace=max(trace-1,0))
-    }
-    CTMM <- ISO
-    UD@CTMM <- ISO
-    UD$DOF.area <- DOF.area(ISO)
+      message("Use isotropic=TRUE before rsf.fit")
+
+      if("ISO" %in% names(FIT[[i]]))
+      { ISO <- FIT[[i]]$ISO }
+      else
+      {
+        ISO <- simplify.ctmm(FIT[[i]],'minor')
+        if(trace) { message("Fitting isotropic autocorrelation model.") }
+        ISO <- ctmm.fit(data[[i]],ISO,trace=max(trace-1,0))
+      }
+      FIT[[i]] <- ISO
+
+      if(n==1)
+      {
+        CTMM <- ISO
+        UD@CTMM <- ISO
+        UD$DOF.area <- DOF.area(ISO)
+      }
+      else
+      {
+        CTMM$CTMM[[i]] <- ISO
+        if(i==n)
+        {
+          CTMM <- mean(CTMM$CTMM)
+          UD@CTMM <- CTMM
+          UD$DOF.area <- DOF.area(CTMM)
+        }
+      } # end pop ISO fix
+    } # end ISO fix
+  } # end data smoothing and iso fix
+
+  # extract weights and structure data
+  if(n==1)
+  {
+    w <- UD$weights
+
+    data <- data[[1]]
   }
+  else
+  {
+    w <- unlist(UD$w.list)
 
-  # smooth the data, but don't drop
-  if(smooth && any(CTMM$error>0))
-  { data[,c(axes,GEO)] <- predict(data,CTMM=CTMM,t=data$t,complete=TRUE)[,c(axes,GEO)] }
-  n <- nrow(data)
-
-  # for simulation - uncorrelated, error-less
-  IID <- CTMM
-  IID$tau <- NULL
-  IID$omega <- FALSE
-  IID$error <- FALSE
-
-  # extract weights
+    # data <- lapply(data,function(d){d[,c('t',axes)]})
+    data <- do.call(rbind,data)
+  }
   W <- mean(UD$DOF.area) # +1 for mean not being detrended accounted for
-  w <- UD$weights * W
+  w <- w * W
+
+  n <- nrow(data)
 
   # setup camera-trap data type
   if(COUNT)
@@ -76,6 +110,12 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
     w[] <- 1
     W <- sum(w)
   }
+
+  # for simulation - uncorrelated, error-less
+  IID <- CTMM
+  IID$tau <- NULL
+  IID$omega <- FALSE
+  IID$error <- FALSE
 
   R <- listify(R)
   TEST <- sapply(R,raster::inMemory)

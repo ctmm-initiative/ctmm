@@ -1,7 +1,8 @@
-ctmm 1.3.1 (2026-05-06)
+ctmm 1.3.1 (2026-05-20)
 ================
 * intensity code is IN DEVELOPMENT
 * new home-range index() function
+* rsf.fit() and rsf.select() now work on pkde() population weights
 * mean() now works when range=FALSE
 * pkde() can now take fixed weights
 * pkde() now has a finite population correction argument

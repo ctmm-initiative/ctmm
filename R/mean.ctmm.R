@@ -696,6 +696,7 @@ mean.features <- function(x,debias=TRUE,weights=NULL,trace=FALSE,IC="AICc",selec
 mean.ctmm <- function(x,formula=FALSE,weights=NULL,sample=TRUE,debias=TRUE,IC="AIC",trace=TRUE,...)
 {
   select <- "all"
+  CTMM <- x
 
   # if(length(x)==1)
   # {
@@ -720,9 +721,19 @@ mean.ctmm <- function(x,formula=FALSE,weights=NULL,sample=TRUE,debias=TRUE,IC="A
   # average of mean locations
   if(sample)
   {
+    # mean of mean locations
     MM <- mean.mu(x,debias=debias,weights=weights,IC=IC,trace=trace,...)
     isotropic['mu'] <- MM$isotropic
 
+    # # DOFs for population-RSF # Part 2: variance in the means
+    # Sigma <- Sigma + tr(MM$POV.mu)
+    # for(i in 1:length(x))
+    # {
+    #   VAR.Sigma[i] <- VAR.Sigma[i] + 0
+    # }
+    # More complicated and should be almost the same as the above
+
+    # mean of covariance parameters
     FM <- mean.features(x,debias=debias,weights=weights,select=select,IC=IC,trace=trace,formula=formula,base=MM,...)
     isotropic['sigma'] <- FM$isotropic
 
@@ -735,6 +746,10 @@ mean.ctmm <- function(x,formula=FALSE,weights=NULL,sample=TRUE,debias=TRUE,IC="A
     x$AIC <- MM$AIC + FM$AIC
     x$AICc <- MM$AICc + FM$AICc
     x$BIC <- MM$BIC + FM$BIC
+    if(debias)
+    { x$method <- "REML" }
+    else
+    { x$method <- "ML" }
   } # end sample
   else # !sample
   {
@@ -802,6 +817,7 @@ mean.ctmm <- function(x,formula=FALSE,weights=NULL,sample=TRUE,debias=TRUE,IC="A
 
   x$isotropic <- isotropic
   x$weights <- weights
+  x$CTMM <- CTMM
 
   return(x)
 }
