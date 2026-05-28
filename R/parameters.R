@@ -38,7 +38,7 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE.F
     sigma <- attr(CTMM$sigma,"par")
     if(!profile || any(STRUCT$error & !UERE.FIT)) # must fit all 1-3 covariance parameters - not profiling or fixed errors
     { if(STRUCT$isotropic) { NAMES <- c(NAMES,"major") } else { NAMES <- c(NAMES,names(sigma)) } }
-    else if(any(UERE.FIT) || STRUCT$circle) # must fit shape, but overall scale/var can be profiled for free - circulation or relative errors
+    else if(any(UERE.FIT) || STRUCT$circle || (STRUCT$symmetry && !STRUCT$isotropic && length(STRUCT$tau))) # must fit shape, but overall scale/var can be profiled for free - circulation or relative errors
     { if(!STRUCT$isotropic) { NAMES <- c(NAMES,names(sigma[2:3])) } }
   }
 
@@ -92,13 +92,20 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE.F
       period <- c(period,FALSE)
     }
 
-    # minor and angle
     if("minor" %in% NAMES)
     {
-      parscale <- c(parscale,MAX,pi/2)
-      lower <- c(lower,0,-Inf)
-      upper <- c(upper,Inf,Inf)
-      period <- c(period,FALSE,pi)
+      parscale <- c(parscale,MAX)
+      lower <- c(lower,0)
+      upper <- c(upper,Inf)
+      period <- c(period,FALSE)
+    }
+
+    if("angle" %in% NAMES)
+    {
+      parscale <- c(parscale,pi/2)
+      lower <- c(lower,-Inf)
+      upper <- c(upper,Inf)
+      period <- c(period,pi)
     }
 
     # RMS UERE - error parameters
@@ -120,12 +127,20 @@ id.parameters <- function(CTMM,profile=TRUE,linear=FALSE,linear.cov=FALSE,UERE.F
       period <- c(period,FALSE)
     }
 
-    if("minor" %in% NAMES) # yy & xy
+    if("minor" %in% NAMES) # yy
     {
-      parscale <- c(parscale,MAX,MAX)
-      lower <- c(lower,0,-Inf)
-      upper <- c(upper,Inf,Inf)
-      period <- c(period,FALSE,FALSE)
+      parscale <- c(parscale,MAX)
+      lower <- c(lower,0)
+      upper <- c(upper,Inf)
+      period <- c(period,FALSE)
+    }
+
+    if("angle" %in% NAMES) # xy
+    {
+      parscale <- c(parscale,MAX)
+      lower <- c(lower,-Inf)
+      upper <- c(upper,Inf)
+      period <- c(period,FALSE)
     }
 
     # MS UERE - error parameters

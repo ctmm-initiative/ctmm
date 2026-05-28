@@ -5,7 +5,49 @@ langevin <- function(dt,CTMM,DIM=1)
 {
   K <- CTMM$K
   tau <- CTMM$tau
-  sigma <- methods::getDataPart(CTMM$sigma)
+
+  if(CTMM$symmetry && !CTMM$isotropic && DIM==2 && K>0)
+  {
+    scale <- squeezable.covm(CTMM)$fact # ratio of major axis to geometric mean axis
+    sigma <- CTMM$sigma@par
+
+    # run each axis and return the combined result
+    CTMM1 <- unit.ctmm(CTMM,time=1/scale)
+    CTMM1$sigma <- sigma['major']
+    L1 <- langevin(dt,CTMM1,DIM=1)
+
+    CTMM2 <- unit.ctmm(CTMM,time=scale)
+    CTMM2$sigma <- sigma['minor']
+    L2 <- langevin(dt,CTMM2,DIM=1)
+
+    K <- max(1,K)
+    Sigma <- Green <- array(0,c(K,K,DIM,DIM)) # (k,k,d,d)
+    Sigma[,,1,1] <- L1$Sigma
+    Green[,,1,1] <- L1$Green
+    Sigma[,,2,2] <- L2$Sigma
+    Green[,,2,2] <- L2$Green
+
+    # R <- rotate(+sigma["angle"])
+    tR <- rotate(-sigma["angle"])
+
+    Sigma <- Sigma %.% tR # (k,k,d,d')
+    Green <- Green %.% tR # (k,k,d,d')
+
+    Sigma <- aperm(Sigma,c(1,4,2,3)) # (k,d',k,d)
+    Green <- aperm(Green,c(1,4,2,3)) # (k,d',k,d)
+
+    Sigma <- Sigma %.% tR # (k,d',k,d')
+    Green <- Green %.% tR # (k,d',k,d')
+
+    dim(Sigma) <- c(K*DIM,K*DIM)
+    dim(Green) <- c(K*DIM,K*DIM)
+
+    # BM/IOU prior fix
+    NAN <- is.nan(Sigma)
+    if(any(NAN)) { Sigma[NAN] <- 0 }
+
+    return(list(Green=Green, Sigma=Sigma))
+  }
 
   if(K<=1) # IID-BM-OU
   {
@@ -145,6 +187,7 @@ langevin <- function(dt,CTMM,DIM=1)
   }
 
   # fix the dimension of the filter
+  sigma <- methods::getDataPart(CTMM$sigma)
   if(DIM==1) # 1D filter
   { Sigma <- sigma * Sigma }
   else # 2D filter
@@ -154,16 +197,17 @@ langevin <- function(dt,CTMM,DIM=1)
     K <- max(1,K)
 
     Sigma <- outer(Sigma,sigma) # (k,k,d,d)
+    Green <- outer(Green,diag(DIM)) # (k,k,d,d)
+
     Sigma <- aperm(Sigma,c(1,3,2,4)) # (k,k,d,d) -> (k,d,k,d)
+    Green <- aperm(Green,c(1,3,2,4)) # (k,d,k,d)
+
     dim(Sigma) <- c(K*DIM,K*DIM)
+    dim(Green) <- c(K*DIM,K*DIM)
 
     # BM/IOU prior fix
     NAN <- is.nan(Sigma)
     if(any(NAN)) { Sigma[NAN] <- 0 }
-
-    Green <- outer(Green,diag(DIM)) # (k,k,d,d)
-    Green <- aperm(Green,c(1,3,2,4)) # (k,d,k,d)
-    dim(Green) <- c(K*DIM,K*DIM)
   }
 
   return(list(Green=Green, Sigma=Sigma))

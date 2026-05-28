@@ -5,9 +5,15 @@
 genD <- function(par,fn,zero=FALSE,lower=-Inf,upper=Inf,step=NULL,precision=1/2,parscale=NULL,mc.cores=detectCores(),Richardson=2,order=2,drop=TRUE,control=list(),...)
 {
   NAMES <- names(par)
+  zero <- numeric(length(par))
+  names(zero) <- NAMES
 
-  if(is.null(parscale)) { parscale <- pmin(abs(par),abs(par-lower),abs(upper-par)) }
-  if(any(parscale==0)) { parscale[parscale==0] <- 1 }
+  parscale <- rbind(parscale,abs(par),abs(par-lower),abs(upper-par))
+  SUB <- parscale==0
+  if(any(SUB)) { parscale[SUB] <- NA }
+  parscale <- apply(parscale,2,function(row){min(row,na.rm=TRUE)})
+  SUB <- parscale<=0
+  if(any(SUB)) { parscale[SUB] <- 1 }
 
   if(is.null(step)) { step <- sqrt(2*.Machine$double.eps^precision) }
 
@@ -16,16 +22,20 @@ genD <- function(par,fn,zero=FALSE,lower=-Inf,upper=Inf,step=NULL,precision=1/2,
 
   # convert to natural units - prevents confusion with zero tolerance (bacterium)
   par <- par/parscale
-  func <- function(par)
+  lower <- lower/parscale
+  upper <- upper/parscale
+
+  func <- function(dpar) # parscaled deviation from par
   {
-    RETURN <- try(fn(parscale*par))
+    par <- parscale*(par+dpar)
+    RETURN <- try(fn(par))
     if(class(RETURN)[1]!="numeric")
     {
       # debugging bad likelihoods
       if(DEBUG)
       {
         debug(fn)
-        try(fn(parscale*par))
+        try(fn(par))
         undebug(fn)
       }
       RETURN <- Inf
@@ -44,7 +54,7 @@ genD <- function(par,fn,zero=FALSE,lower=-Inf,upper=Inf,step=NULL,precision=1/2,
   if(order==2)
   {
     method.args <- list(eps=1e-4,d=d,zero.tol=zero.tol,r=Richardson,v=2,show.details=FALSE)
-    STUFF <- numDeriv::genD(func,par,method.args=method.args,...)
+    STUFF <- numDeriv::genD(func,zero,method.args=method.args,...)
     D <- STUFF$D
 
     grad <- D[1:n]
@@ -96,7 +106,7 @@ genD <- function(par,fn,zero=FALSE,lower=-Inf,upper=Inf,step=NULL,precision=1/2,
   if(any(!is.na(side)) || order==1)
   {
     method.args <- list(eps=1e-4,d=0.0001,zero.tol=zero.tol,r=Richardson,v=2,show.details=FALSE)
-    grad <- numDeriv::jacobian(func,par,side=side,method.args=method.args,...)
+    grad <- numDeriv::jacobian(func,zero,side=side,method.args=method.args,...)
   }
 
   # convert back from natural units

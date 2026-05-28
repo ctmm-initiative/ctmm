@@ -75,6 +75,9 @@ ctmm <- function(tau=NULL,omega=FALSE,isotropic=FALSE,range=TRUE,circle=FALSE,er
   # default dynamics model
   if(is.null(List$dynamics)) { List$dynamics <- "stationary" }
 
+  # default dynamical symmetry
+  if(is.null(List$symmetry)) { List$symmetry <- FALSE }
+
   # FIX THIS
   #if(!is.null(List$COV.mu)) { dimnames(List$COV.mu) <- list(axes,axes) }
 

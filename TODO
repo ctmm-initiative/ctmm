@@ -1,4 +1,5 @@
 ** PRIORITY
+* 2D KF with symmetry
 * projection(UD) <- method
 * profile likelihood for variance, habitat selection, ...
 * mean(occurrence)

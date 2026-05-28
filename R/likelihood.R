@@ -99,6 +99,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
 
   range <- CTMM$range
   isotropic <- CTMM$isotropic
+  symmetry <- CTMM$symmetry
   ERROR <- CTMM$error
   commute <- is.null(CTMM$commute) || ctmm.commute(CTMM)
   dynamics <- CTMM$dynamics
@@ -107,9 +108,16 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   COVM <- function(x)  # clean and enforce model structure
   {
     # 0/0 == Identity
-    if(length(x)==1)
+    if(length(x)==1) # (major)
     { x <- nant(x,1) }
-    else # length-4
+    else if(length(x)==3) # (major,minor,theta)
+    {
+      SUB <- 1:2
+      x[SUB] <- nant(x[SUB],1)
+      SUB <- 3
+      x[SUB] <- nant(x[SUB],0)
+    }
+    else if(length(x)==4) # matrix
     {
       SUB <- c(1,4)
       x[SUB] <- nant(x[SUB],1)
@@ -208,8 +216,11 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   UERE.FIX <- (CTMM$error) & (is.na(UERE.DOF) | UERE.DOF==Inf) # are there fixed error parameters
 
   ### what kind of profiling is possible
-  if(commute && (!any(CTMM$error>0) && !(circle && !isotropic)) || (!any(UERE.FIX) && isotropic)) # can profile full covariance matrix all at once
-  { PROFILE <- 2 }
+  if(commute && (!any(CTMM$error>0) && !(circle && !isotropic)) || (!any(UERE.FIX) && isotropic))
+  {
+    if(!symmetry || isotropic || K==0) { PROFILE <- 2 } # can profile full covariance matrix all at once
+    else { PROFILE <- 1.5 } # can profile eigen variances, but not angle
+  }
   else if(!any(UERE.FIX)) # can profile (max) variance with fixed-eccentricity 2D or 2x1D filters
   { PROFILE <- TRUE }
   else # no profiling possible - need exact-covariance filter (e.g. ELLIPSE FIXED)
@@ -220,11 +231,14 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   { DIM <- 1.5 }
   else if(!commute || ELLIPSE || (circle && !isotropic && any(CTMM$error>0)) || (ECC.EXT && AXES>1)) # full 2D filter necessary
   { DIM <- 2 }
+  else if(symmetry && !isotropic && K>0) # still need to break into 2x1D Kalman filters
+  { DIM <- 1.5 }
   else # can run 1x1D Kalman filter
   { DIM <- 1 }
 
   # orient the data along the major & minor axes of sigma to run 2x1D filters - or to do basic circulation transformation after squeezing
   ROTATE <- commute && !isotropic && (circle || (any(CTMM$error>0) && !ELLIPSE) && !ECC.EXT)
+  ROTATE <- ROTATE || (symmetry && DIM<2)
   if(ROTATE)
   {
     R <- rotate(-theta)
@@ -295,6 +309,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     scale.vars <- function(COV)
     {
       COV <- VAR.MULT*COV
+      if(length(COV)==2) { COV <- diag(COV,nrow=2) }
       if(profile)
       {
         fn <- function(sigma) { COVM(COV*sigma) }
@@ -319,6 +334,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     # arg COV contains ML PRO.VAR estimate
     scale.vars <- function(COV) # update PRO.VAR
     {
+      if(length(COV)==2) { COV <- diag(COV,nrow=2) }
       COV <- mean(diag(cbind(COV))) # diag is annoying
       # relative in ratio to PRO.VAR
       if(any(UERE.FIT))
@@ -385,20 +401,28 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     SIGMA <- eigenvalues.covm(K.sigma) # (relative to PRO.VAR)
 
     # major axis likelihood
-    fn <- function(sigma){ KMR*sigma[1] }
-    CTMM <- sigma.apply(CTMM,fn,states)
-    CTMM$sigma <- SIGMA[1] # should now be redundant
-    KALMAN1 <- kalman(cbind(z[,1]),u,t=t,CTMM=CTMM,error=error[,1,1,drop=FALSE]) # errors are relative to PRO.VAR if PROFILE
+    if(symmetry) { CTMM1 <- unit.ctmm(CTMM,time=1/smgm) }
+    if(UNIT==1)
+    {
+      fn <- function(sigma){ KMR*sigma[1] }
+      CTMM1 <- sigma.apply(CTMM1,fn,states)
+    }
+    CTMM1$sigma <- SIGMA[1] # should now be redundant
+    KALMAN1 <- kalman(cbind(z[,1]),u,t=t,CTMM=CTMM1,error=error[,1,1,drop=FALSE]) # errors are relative to PRO.VAR if PROFILE
 
     # minor axis likelihood
-    fn <- function(sigma){ KMR*sigma[4] }
-    CTMM <- sigma.apply(CTMM,fn,states)
-    CTMM$sigma <- SIGMA[2] # should now be redundant
-    KALMAN2 <- kalman(cbind(z[,2]),u,t=t,CTMM=CTMM,error=error[,2,2,drop=FALSE]) # errors are relative to PRO.VAR if PROFILE
+    if(symmetry) { CTMM2 <- unit.ctmm(CTMM,time=smgm) }
+    if(UNIT==1)
+    {
+      fn <- function(sigma){ KMR*sigma[4] }
+      CTMM2 <- sigma.apply(CTMM2,fn,states)
+    }
+    CTMM2$sigma <- SIGMA[2] # should now be redundant
+    KALMAN2 <- kalman(cbind(z[,2]),u,t=t,CTMM=CTMM2,error=error[,2,2,drop=FALSE]) # errors are relative to PRO.VAR if PROFILE
 
     mu <- cbind(KALMAN1$mu,KALMAN2$mu)
 
-    R.sigma <- c(KALMAN1$sigma + KALMAN2$sigma)/2 # residual variance (relative to M.sigma)
+    R.sigma <- mean(c(KALMAN1$sigma,KALMAN2$sigma)) # residual variance (relative to M.sigma)
     if(profile) { scale.vars(R.sigma) } # update VARs before COV.mu!
 
     # combine uncorrelated estimates
@@ -413,7 +437,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   else ### 1x 1D or 2D Kalman filter ###
   {
     # prepare variance/covariance of 1D/2D Kalman filters
-    if(PROFILE==2 || DIM==1) # could be rotated & squeezed
+    if(PROFILE>1 || DIM==1) # could be rotated & squeezed
     {
       fn <- function(sigma) { var.covm(KMR*sigma,ave=TRUE) }
       CTMM <- sigma.apply(CTMM,fn,states)
@@ -466,8 +490,8 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   # missing variances/covariances from profiling
   if(UNIT)
   {
-    if(UNIT==1) { log.det.sigma <- AXES*log(PRO.VAR) } # unit-max-variance adjustment
-    else if(UNIT==2) { log.det.sigma <- pd.logdet(M.sigma) } # unit-COV adjustment
+    if(UNIT==2) { log.det.sigma <- pd.logdet(M.sigma) } # unit-COV adjustment
+    else if(UNIT==1) { log.det.sigma <- AXES*log(PRO.VAR) } # unit-max-variance adjustment
 
     logdetCOV <- logdetCOV + log.det.sigma # per n || n-1
     logdetcov <- logdetcov + M*log.det.sigma # absolute # !range handled below
@@ -542,6 +566,8 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   # re-write all of this to calculate constant, divide constant by n || (n-1), and then subtract off from sum term by term?
   # likelihood constant/n: 2pi from det second term from variance-profiled quadratic term (which we will subtract if variance is not profiled)
   LL.CONST <- -AXES/2*log(2*pi) - AXES/2/VAR.MULT # why was VAR.MULT previously in the first term here?
+
+  if(length(R.sigma)==2) { R.sigma <- c(R.sigma,theta) } # (major,minor)
 
   ## quadratic terms of log-likelihood
   if(profile && UNIT==2)

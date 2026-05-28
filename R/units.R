@@ -286,6 +286,9 @@ unit.telemetry <- function(data,length=1,time=1,axes=c('x','y'))
 ## rescale the units of dimensionful parameters
 unit.ctmm <- function(CTMM,length=1,time=1)
 {
+  states <- get.states(CTMM)
+  for(s in states) { CTMM[[s]] <- unit.ctmm(CTMM[[s]],length=length,time=time) }
+
   if(length(CTMM$tau)){ CTMM$tau <- CTMM$tau/time }
   CTMM$omega <- CTMM$omega * time
   CTMM$circle <- CTMM$circle * time
