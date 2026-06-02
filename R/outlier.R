@@ -395,43 +395,48 @@ distanceMLE <- function(dr,error,axes=c('x','y'),return.VAR=FALSE)
 {
   if(length(dim(error))==3) # error ellipse
   {
-    dr <- sapply(1:nrow(dr),function(i){ abs_bivar(dr[i,],error[i,,],return.VAR=TRUE) })
-    dr <- t(dr) #
-  }
-  else # error circle or interval
+    # dr <- sapply(1:nrow(dr),function(i){ abs_bivar(dr[i,],error[i,,],return.VAR=TRUE) })
+    # dr <- t(dr)
+
+    DR <- rowSums(dr^2)
+    error <- vapply(1:nrow(dr),function(i){(dr[i,] %*% error[i,,] %*% dr[i,]) / DR[i]},1)
+    dr <- sqrt(DR)
+    error <- nant(error,0)
+  } # end error ellipse
+
+  # error circle or interval
+  AXES <- length(axes)
+  DR <- dr
+  SUB <- dr>0 & error>0
+
+  if(any(SUB))
   {
-    AXES <- length(axes)
-    DR <- dr
-    SUB <- dr>0 & error>0
-
-    if(any(SUB))
+    if(AXES==2) # error circle
     {
-      if(AXES==2) # error circle
-      {
-        # coefficient in transcendental Bessel equation
-        # x I0(x) == y I1(x)
-        y <- DR[SUB]^2/error[SUB]
-        x <- BesselSolver(y)
-        # x = DR*dR/error
+      # coefficient in transcendental Bessel equation
+      # x I0(x) == y I1(x)
+      y <- DR[SUB]^2/error[SUB]
+      x <- BesselSolver(y)
+      # x = DR*dR/error
 
-        # fixed for Inf error
-        DR[SUB] <- ifelse(error[SUB]<Inf,error[SUB]/DR[SUB]*x,0)
-      }
-      else if(AXES==1) # error interval
-      {
-        error[SUB] <- sqrt(error[SUB]) # now standard deviation
+      # fixed for Inf error
+      DR[SUB] <- ifelse(error[SUB]<Inf,error[SUB]/DR[SUB]*x,0)
+    }
+    else if(AXES==1) # error interval
+    {
+      error[SUB] <- sqrt(error[SUB]) # now standard deviation
 
-        # x = y tanh(x y)
-        y <- DR[SUB]/error[SUB]
-        x <- TanhSolver(y)
+      # x = y tanh(x y)
+      y <- DR[SUB]/error[SUB]
+      x <- TanhSolver(y)
 
-        DR[SUB] <- ifelse(error[SUB]<Inf,error[SUB]*x,0)
-      } # end error interval
-    } # end SUB
+      DR[SUB] <- ifelse(error[SUB]<Inf,error[SUB]*x,0)
+    } # end error interval
+  } # end SUB
 
-    VAR <- error/(AXES-(dr^2-DR^2)/error)
-    dr <- cbind(DR,VAR)
-  } # end error circle or error interval
+  VAR <- error/(AXES-(dr^2-DR^2)/error)
+  dr <- cbind(DR,VAR)
+  # end error circle or error interval
 
   if(!return.VAR) { dr <- dr[,1] }
   return(dr)
