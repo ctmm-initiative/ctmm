@@ -27,7 +27,8 @@ Multilaterize(data, RSSIpar, Start = NULL, precision = 1/2, max_iter = 1e+05, ..
  }
  \item{RSSIpar}{
   A data frame containing a range of RSSI measurements and the corresponding Gamma
-  distribution parameters. The data frame must contain the following columns:
+  distribution parameters. The data frame is generated using \code{RSSI.parameters} function
+  and contain the following columns:
 
   \describe{
     \item{\code{RSSI}}{Integer RSSI value.}
