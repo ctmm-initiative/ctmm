@@ -511,27 +511,27 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
     nloglike <- function(beta,zero=0,verbose=FALSE)
     {
       DAV <- c(DATA[,TERMS,drop=FALSE] %*% beta)
-      cntDAV <- count*DAV
       lfcount <- lfactorial(count)
-      expDAV <- exp(DAV)
+      ZERO <- zero # rename to pass to nll()
 
       # unknown success rate
       nll <- function(par,zero=0)
       {
         # nuissance parameters
-        success <- par[1]
-        b0 <- par[2]
+        success <- par[1] # dispersion parameter
+        b0 <- par[2] # missing intercept
+        DAV <- DAV + b0
 
         if(success==0)
         { NLL <- Inf } # I think this is right
         if(success==1) # Poisson
-        { NLL <- -cntDAV-b0 + expDAV*exp(b0) + lfcount }
+        { NLL <- -count*DAV + exp(DAV) + lfcount }
         else # negative binomial
         {
-          rate <- (success/(1-success)) * expDAV*exp(b0)
+          rate <- (success/(1-success)) * exp(DAV)
           NLL <- -lbinom(count+rate-1,count) - count*log(1-success) - rate*log(success)
         }
-        NLL <- NLL - zero/length(count)
+        NLL <- NLL - (ZERO+zero)/length(count)
         NLL <- sum(NLL)
         return(NLL)
       } # nll
@@ -541,7 +541,8 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
       parscale <- c(1,1)
 
       # initial guess
-      b0 <- -mean(log(expDAV)) # Poisson solution
+      b0 <- log(mean(count)/mean(exp(DAV))) # Poisson regression solution
+      b0 <- nant(b0,0)
       success <- mean(count)/stats::var(count) # method of moments
       success <- clamp(success,0,1)
       par <- c(success,b0)

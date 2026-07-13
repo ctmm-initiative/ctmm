@@ -1,4 +1,7 @@
 ** PRIORITY
+* plot.UD ability to turn CI labels off completely
+* export CI functions
+* color() with KDE - do Gaussian solution first, then iterate with KDE
 * 2D KF with symmetry
 * projection(UD) <- method
 * profile likelihood for variance, habitat selection, ...
