@@ -1,4 +1,5 @@
 ** PRIORITY
+* summary() area estimate when integrated=FALSE
 * plot.UD ability to turn CI labels off completely
 * export CI functions
 * color() with KDE - do Gaussian solution first, then iterate with KDE

@@ -555,10 +555,18 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
       return(RESULT$value)
     } # nloglike
 
-    RESULT <- optimizer(beta,nloglike,parscale=parscale,lower=lower,upper=upper,control=control)
-    beta <- RESULT$par
-    loglike <- -RESULT$value
-    COV <- RESULT$covariance
+    if(length(beta))
+    {
+      RESULT <- optimizer(beta,nloglike,parscale=parscale,lower=lower,upper=upper,control=control)
+      beta <- RESULT$par
+      loglike <- -RESULT$value
+      COV <- RESULT$covariance
+    }
+    else
+    {
+      loglike <- -nloglike(beta)
+      COV <- array(0,c(0,0))
+    }
     VAR.loglike <- 0
     integrator <- NULL
   }
@@ -920,7 +928,7 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
   }
 
   # compute hessian
-  if(CALC)
+  if(CALC && length(beta))
   {
     if(trace) { message("Calculating Hessian") }
     DIFF <- genD(par=beta,fn=nloglike,zero=-loglike,parscale=parscale,lower=lower,upper=upper,Richardson=2,mc.cores=1)

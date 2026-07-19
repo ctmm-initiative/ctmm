@@ -1,4 +1,4 @@
-ctmm 1.3.1 (2026-07-13)
+ctmm 1.3.1 (2026-07-19)
 ================
 * intensity code is IN DEVELOPMENT
 * new home-range index() function
@@ -15,6 +15,7 @@ ctmm 1.3.1 (2026-07-13)
 * bugfix in akde() for a list of fixed weights
 * bugfix in outlie() for error ellipses
 * bugfixes in sdm.fit() for camera-trap and count data
+* bugfixes in sdm.select()
 
 ctmm 1.3.0 (2025-07-23)
 ================
