@@ -1179,125 +1179,136 @@ get.offset <- function(formula,variable=TRUE)
 # expand raster factors into
 expand.factors <- function(R,formula,reference="auto",data=NULL,DVARS=NULL,fixed=FALSE)
 {
-  FACT <- sapply(R,raster::is.factor)
-  reference <- array(reference,sum(FACT))
-  names(reference) <- names(R)[FACT]
+  FACT1 <- sapply(R,raster::is.factor)
+  FACT2 <- sapply(as.list(data[DVARS]),is.factor)
+  N1 <- sum(FACT1)
+  N2 <- sum(FACT2)
 
-  for(NAME in names(R))
+  if(N1)
   {
-    if(raster::is.factor(R[[NAME]]))
+    for(NAME in names(R))
     {
-      FACT <- R[[NAME]]
-      R <- R[names(R)!=NAME]
-      REF <- reference[NAME]
-
-      LEVELS <- raster::levels(FACT)[[1]]$ID # assuming one layer
-
-      if(fixed)
+      if(raster::is.factor(R[[NAME]]))
       {
-        TERMS <- attr(stats::terms(formula),"term.labels")
-        # I am not good with regexp
-        # HEAD <- paste0(NAME,"[")
-        HEAD <- paste0(NAME,".")
-        REF <- TERMS[grepl(HEAD,TERMS,fixed=TRUE)][1] # *NAME[#/ref]*
-        REF <- strsplit(REF,HEAD,fixed=TRUE)[[1]][2] # #/ref]*
-        # REF <- strsplit(REF,"/",fixed=TRUE)[[1]][2] # ref]*
-        REF <- strsplit(REF,"_",fixed=TRUE)[[1]][2] # ref]*
-        # REF <- strsplit(REF,"]",fixed=TRUE)[[1]][1] # ref
-        # REF <- which(LEVELS==REF)
-      }
-      else if(reference[NAME]=="auto") # fix base layer
-      {
-        PROJ <- raster::projection(FACT)
-        XY <- get.telemetry(data,c("longitude","latitude"))
-        colnames(XY) <- c('x','y')
-        XY <- project(XY,to=PROJ)
-        XY <- raster::extract(FACT,XY) # don't interpolate
-        UNIQUE <- unique(XY) # may be missing some levels
-        XY <- tabulate(match(XY,UNIQUE)) # tallies
-        REF <- UNIQUE[which.max(XY)]
-        message(NAME," reference category set to ",REF,".")
-      }
-      # else the reference category is specified by `reference`
+        FACT <- R[[NAME]]
+        R <- R[names(R)!=NAME]
+        REF <- reference[reference %in% levels(FACT)][1]
+        if(is.na(REF)|| !length(REF)) { REF <- "auto" }
 
-      REF <- REF[REF %in% LEVELS]
-      DIFF <- LEVELS %nin% REF
-      FACT <- lapply(LEVELS[DIFF],function(l){FACT==l})
-      # I cannot figure out how to use deratify...
-      # FACT <- raster::deratify(FACT) # creates a single layer for each level?
-      LEVELS <- paste0(NAME,".",LEVELS,"_",REF)[DIFF]
-      names(FACT) <- LEVELS
+        LEVELS <- raster::levels(FACT)[[1]]$ID # assuming one layer
 
-      reference[NAME] <- REF
-      R <- c(R,FACT)
-      rm(FACT)
+        if(fixed)
+        {
+          TERMS <- attr(stats::terms(formula),"term.labels")
+          # I am not good with regexp
+          # HEAD <- paste0(NAME,"[")
+          HEAD <- paste0(NAME,".")
+          REF <- TERMS[grepl(HEAD,TERMS,fixed=TRUE)][1] # *NAME[#/ref]*
+          REF <- strsplit(REF,HEAD,fixed=TRUE)[[1]][2] # #/ref]*
+          # REF <- strsplit(REF,"/",fixed=TRUE)[[1]][2] # ref]*
+          REF <- strsplit(REF,"_",fixed=TRUE)[[1]][2] # ref]*
+          # REF <- strsplit(REF,"]",fixed=TRUE)[[1]][1] # ref
+          # REF <- which(LEVELS==REF)
+        }
+        else if(REF=="auto") # fix base layer
+        {
+          PROJ <- raster::projection(FACT)
+          XY <- get.telemetry(data,c("longitude","latitude"))
+          colnames(XY) <- c('x','y')
+          XY <- project(XY,to=PROJ)
+          XY <- raster::extract(FACT,XY) # don't interpolate
+          UNIQUE <- unique(XY) # may be missing some levels
+          XY <- tabulate(match(XY,UNIQUE)) # tallies
+          REF <- UNIQUE[which.max(XY)]
+          message(NAME," reference category set to ",REF,".")
+        }
+        # else the reference category is specified by `reference`
 
-      # expand terms
-      if(!fixed && !is.null(formula))
-      {
-        formula <- as.character(formula)[2]
-        formula <- sapply(LEVELS,function(l){gsub(NAME,l,formula,fixed=TRUE)})
-        formula <- paste(formula,collapse="+")
-        formula <- paste("~",formula)
-        formula <- eval(parse(text=formula))
-        formula <- simplify.formula(formula)
-      }
-    } # end if factor
-  } # end raster expansion
+        REF <- REF[REF %in% LEVELS]
+        DIFF <- LEVELS %nin% REF
+        FACT <- lapply(LEVELS[DIFF],function(l){FACT==l})
+        # I cannot figure out how to use deratify...
+        # FACT <- raster::deratify(FACT) # creates a single layer for each level?
+        LEVELS <- paste0(NAME,".",LEVELS,"_",REF)[DIFF]
+        names(FACT) <- LEVELS
 
-  for(NAME in DVARS)
+        R <- c(R,FACT)
+        rm(FACT)
+
+        # expand terms
+        if(!fixed && !is.null(formula))
+        {
+          formula <- as.character(formula)[2]
+          formula <- sapply(LEVELS,function(l){gsub(NAME,l,formula,fixed=TRUE)})
+          formula <- paste(formula,collapse="+")
+          formula <- paste("~",formula)
+          formula <- eval(parse(text=formula))
+          formula <- simplify.formula(formula)
+        }
+      } # end if factor
+    } # end raster expansion
+  } # end N1
+
+  if(N2)
   {
-    if(is.factor(data[[NAME]]))
+    info <- data@info
+    UERE <- data@UERE
+
+    for(NAME in DVARS)
     {
-      FACT <- data[[NAME]]
-      KEEP <-
-      data <- data[names(data)!=NAME]
-
-      LEVELS <- levels(FACT) # assuming one layer
-
-      if(fixed)
+      if(is.factor(data[[NAME]]))
       {
-        TERMS <- attr(stats::terms(formula),"term.labels")
-        # I am not good with regexp
-        # HEAD <- paste0(NAME,"[")
-        HEAD <- paste0(NAME,".")
-        reference <- TERMS[grepl(HEAD,TERMS,fixed=TRUE)][1] # *NAME[#/ref]*
-        reference <- strsplit(reference,HEAD,fixed=TRUE)[[1]][2] # #/ref]*
-        # reference <- strsplit(reference,"/",fixed=TRUE)[[1]][2] # ref]*
-        reference <- strsplit(reference,"_",fixed=TRUE)[[1]][2] # ref]*
-        # reference <- strsplit(reference,"]",fixed=TRUE)[[1]][1] # ref
-        reference <- which(LEVELS==reference)
-      }
-      else if(reference=="auto") # fix base layer
-      {
-        UNIQUE <- unique(FACT) # may be missing some levels
-        XY <- tabulate(match(FACT,UNIQUE)) # tallies
-        reference <- UNIQUE[which.max(XY)]
-        message(NAME," reference category set to ",reference,".")
-      }
-      # else the reference category is specified by `reference`
+        FACT <- data[[NAME]]
+        data <- data[names(data)!=NAME]
+        REF <- reference[reference %in% levels(FACT)][1]
+        if(is.na(REF)|| !length(REF)) { REF <- "auto" }
 
-      REF <- reference[reference %in% LEVELS]
-      DIFF <- LEVELS %nin% reference
-      FACT <- lapply(LEVELS[DIFF],function(l){FACT==l})
-      # LEVELS <- paste0(NAME,"[",LEVELS,"/",LEVELS[reference],"]")[DIFF]
-      LEVELS <- paste0(NAME,".",LEVELS,"_",REF)[DIFF]
-      names(FACT) <- LEVELS
+        LEVELS <- levels(FACT) # assuming one layer
 
-      data[LEVELS] <- FACT
+        if(fixed)
+        {
+          TERMS <- attr(stats::terms(formula),"term.labels")
+          # I am not good with regexp
+          # HEAD <- paste0(NAME,"[")
+          HEAD <- paste0(NAME,".")
+          REF <- TERMS[grepl(HEAD,TERMS,fixed=TRUE)][1] # *NAME[#/ref]*
+          REF <- strsplit(REF,HEAD,fixed=TRUE)[[1]][2] # #/ref]*
+          # REF <- strsplit(REF,"/",fixed=TRUE)[[1]][2] # ref]*
+          REF <- strsplit(REF,"_",fixed=TRUE)[[1]][2] # ref]*
+          # REF <- strsplit(REF,"]",fixed=TRUE)[[1]][1] # ref
+          # REF <- which(LEVELS==REF)
+        }
+        else if(REF=="auto") # fix base layer
+        {
+          UNIQUE <- unique(FACT) # may be missing some levels
+          XY <- tabulate(match(FACT,UNIQUE)) # tallies
+          REF <- UNIQUE[which.max(XY)]
+          message(NAME," reference category set to ",REF,".")
+        }
+        # else the reference category is specified by `reference`
 
-      # expand terms
-      if(!fixed && !is.null(formula))
-      {
-        formula <- as.character(formula)[2]
-        formula <- sapply(LEVELS,function(l){gsub(NAME,l,formula,fixed=TRUE)})
-        formula <- paste(formula,collapse="+")
-        formula <- paste("~",formula)
-        formula <- eval(parse(text=formula))
-        formula <- simplify.formula(formula)
+        REF <- REF[REF %in% LEVELS]
+        DIFF <- LEVELS %nin% REF
+        FACT <- lapply(LEVELS[DIFF],function(l){FACT==l})
+        # LEVELS <- paste0(NAME,"[",LEVELS,"/",LEVELS[reference],"]")[DIFF]
+        LEVELS <- paste0(NAME,".",LEVELS,"_",REF)[DIFF]
+        names(FACT) <- LEVELS
+        data[LEVELS] <- FACT
+
+        # expand terms
+        if(!fixed && !is.null(formula))
+        {
+          formula <- as.character(formula)[2]
+          formula <- sapply(LEVELS,function(l){gsub(NAME,l,formula,fixed=TRUE)})
+          formula <- paste(formula,collapse="+")
+          formula <- paste("~",formula)
+          formula <- eval(parse(text=formula))
+          formula <- simplify.formula(formula)
+        }
       }
-    }
-  } # end telemetry expansion
+    } # end telemetry expansion
+    data <- new.telemetry( data, info=info, UERE=UERE )
+  } # end N2
 
   if(!is.null(formula)){ environment(formula) <- globalenv() }
   RETURN <- list(data=data,R=R,formula=formula)
