@@ -1180,7 +1180,7 @@ get.offset <- function(formula,variable=TRUE)
 expand.factors <- function(R,formula,reference="auto",data=NULL,DVARS=NULL,fixed=FALSE)
 {
   FACT1 <- sapply(R,raster::is.factor)
-  FACT2 <- sapply(as.list(data[DVARS]),is.factor)
+  if(length(DVARS)) { FACT2 <- sapply(as.list(data[DVARS]),is.factor) } else { FACT2 <- logical(0) }
   N1 <- sum(FACT1)
   N2 <- sum(FACT2)
 
