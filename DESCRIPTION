@@ -54,5 +54,5 @@ Description: Functions for identifying, fitting, and applying continuous-space, 
 License: GPL-3
 VignetteBuilder: knitr
 NeedsCompilation: no
-RoxygenNote: 6.1.1
 Config/testthat/edition: 3
+Config/roxygen2/version: 8.0.0
