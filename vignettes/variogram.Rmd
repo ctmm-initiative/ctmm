@@ -53,7 +53,7 @@ title("5 Buffalo")
 ```
 
 Looking at the raw movement tracks is a good way to pick out any obvious migratory behaviors.
-In the future, we will have migration models to select, but for now all of our models are range resident and so only those portions of the data should be selected.
+In the future, we will have migration timing models to select, but for now all of our models are either range resident or dispersive and so only those segments of the data should be selected.
 These buffalo all look fairly range resident, and so we can move on to variograms.
 
 # Variograms
