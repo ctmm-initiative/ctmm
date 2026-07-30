@@ -8,7 +8,7 @@ ATTRIBUTE$timestamp <- c('timestamp','timestamp.of.fix','Acquisition.Time',
                          'Date.Time','Date.GMT','Date','Date.Local',"\u65E5\u4ED8",
                          't','t_dat','use_date',"event.Date","observation.Date")
 ATTRIBUTE$id <- c("animal.ID","AID","individual.local.identifier","local.identifier","individual.ID","Name","ID","ID.Names","Animal","Full.ID",
-                  "tag.local.identifier","tag.ID","band.number","band.num","device.info.serial","Device.ID","collar.id","Logger","Logger.ID",
+                  "tag.local.identifier","tag.ID","band.number","band.num","device.info.serial","Device.ID","collar.id","Logger","Logger.ID","UIUID",
                   "Deployment","deployment.ID","track.ID","DeployID","PTT")
 ATTRIBUTE$taxa <- c("verbatim.Scientific.Name")
 ATTRIBUTE$count <- c("individual.Count","Count")
@@ -20,7 +20,7 @@ ATTRIBUTE$north <- c("GPS.UTM.Northing","GPS.UTM.North","GPS.UTM.y","UTM.Northin
 ATTRIBUTE$error <- c("eobs.horizontal.accuracy.estimate","eobs.horizontal.accuracy.estimate.m","eobs.horizontal.accuracy",
                      "gps.horizontal.accuracy.estimate","gps.horizontal.accuracy.estimate.m","gps.horizontal.accuracy",
                      "horizontal.accuracy.estimate","horizontal.accuracy.estimate.m","horizontal.accuracy",
-                     "error","error.m","3D.error.m","location.error","location.error.m","HEPE","EPE","EHPE",
+                     "error","error.m","error.radius","3D.error.m","location.error","location.error.m","HEPE","EPE","EHPE",
                      "\u8AA4\u5DEE","\u8AA4\u5DEE.m","\u8AA4\u5DEE\uFF08m\uFF09","coordinate.Uncertainty.In.Meters")
 ATTRIBUTE$Telonics <- c("Horizontal.Error","GPS.Horizontal.Error","Telonics.Horizontal.Error")
 ATTRIBUTE$HDOP <- c("GPS.HDOP","HDOP","Horizontal.DOP","GPS.Horizontal.Dilution","Horizontal.Dilution","Hor.Dil","Hor.DOP","HPE","coordinate.Precision")

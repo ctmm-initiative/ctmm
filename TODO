@@ -1,7 +1,8 @@
 ** PRIORITY
+* summary() ballistic length scale
+* intensity() with formula objects (e.g., interactions)
 * summary() area estimate when integrated=FALSE
 * plot.UD ability to turn CI labels off completely
-* export CI functions
 * color() with KDE - do Gaussian solution first, then iterate with KDE
 * 2D KF with symmetry
 * projection(UD) <- method
@@ -10,14 +11,11 @@
 * parallelize pkde
 * record numerical error in AIC/AICc/BIC and make function for z-test
 * rsf.fit() optimizer challenge
-* finish rewriting intensity()
 * 3-point acceleration estimate for outlie()
-* export CI functions
 * dt.plot() scale for multiple units when the next unit isn't met
 * dt.plot() argument sort=TRUE
 * summary() option to return nocturnality (not diurnality)
 * diagonalized sensitivity gradients rasters in UD calculation
-* mean.ctmm() BM/IOU
 * import error ellipses in any projection
 * restructure CTMM,VMM,VM into a nested list object of some kind
 * Pass ... to CTMM argument in ctmm.guess()
@@ -31,15 +29,11 @@
 * ctmm.boot ctmmlearn script: Error in checkForRemoteErrors(val) :5 nodes produced errors; first error: object 'Green' not found
 * ids()<- function
 * projection check on anonymized data fails
-* replace special characters in column names on import
 * distance, encounters in 3D
-* study on globe plot
 * ctmm.select and rsf.select option to save to disc incrementally
 * code predict and simulate and speeds to accept timestamps
 * Raster plot categoricals in different colors, and change default color gradient from yellow to green
 * hex sticker
-* summary mean periodicity
-* revisitation amounts
 * summary(RSF,standardize=TRUE)
 * check cov.loglike warning off for rsf.select
 * mean of list of list of models needs an informative error message
@@ -48,10 +42,6 @@
 * implement explosive models (negative tau) -> implement unit root test
 * mean.ctmm non-stationary mean averaging
 * periodicity frequency uncertainty propagation
-* export pd.solve()
-* plot(UD,data) doesn't work any more
-* make pkde remove ctmms with DOF<<1
-* make ctmm.boot update the original uncertainty estimates rather than overwrite them
 * rsf.select require quadratic model over linear model (require even order polynomial)
 * clip raster before rsf.fit calculation
 * composite resolutions in gridding
@@ -59,10 +49,7 @@
 * EPSG interpreter for projection warnings/errors
 * pkde error on individual object arguments
 * plot.overlap from ctmmweb
-* intensity() needs kernel regression for interactions
-* uere()<- documentation RMS standard deviation note
 * change default mean.OD/mean.UD to weight by sampling period (as an option)
-* time change point model
 ** state model preps
 ** mean function for state dynamics models
 ** change.point.guess check for repeated states
@@ -70,27 +57,15 @@
 ** get, set parameters for state dynamics models
 ** selection: mean, speed, diffusion, ...
 ** mean.svf is a function of mixture weights
-* variogram.fit error on wrong class
-* uere<- warning message when location classes do not intersect
-* as.telemetry example
 * rsf.fit ~=0 exact weighted Gaussian fit (!SP && !NA)
 * population averaging of non-stationary mean functions
-* rsf.fit: categorical modifiers -> categorical normalizations
 ** optimize integrator="Riemann" for categorical modifiers -> categorical integrals
-* rsf.fit: Riemann integrator can be to coarse
 * units="unit string"
-* update all one-pass mean/var calculations to numerically stable d=x-mu, mu=mu+d/i, s=...
-* export sundial
 * plot.rsf method
 * plot.overlap method
-* add ctmmlearn to FAQ
-* RShiny zoom() and variogram.fit()
 * color data in data example man files
 * convenience functions like dof()<- for UERE models
-* update R.suit to use matrix.model
-* shift normalize suitability()
 * proximity with multiple individuals
-* user raster::project() in agde, akde, ...
 * predict() individual from population ctmm
 * posterior model predictions
 * pkde weights choice, bandwidth choice, RSF choice - wouldn't be necessary with posterior model predictions
@@ -98,10 +73,7 @@
 * rsf.fit covariate integrator long-lat fix
 * rsf.fit HREML correction after variance fit
 * averaging individuals with different reference categories
-* include dt.plot diagnostic in bandwidth with weights=TRUE by default?
-** add some quick calculation messages when dt is automated
 * error message for as.telemetry on zero rows
-* fit periodicity frequencies for Bill
 * check for consistent projections in rsf.fit
 * remove bad UD returns (ctmm objects) from functions like mean and overlap
 * DDIM natural resolution option
@@ -114,39 +86,29 @@
 * export list of objects
 * profile upper speed CI?
 * meta - plot distribution when data are sorted in plot
-* parameter table creation code
 * weighting times in ocurrence distributions by?
-* plot.telemetry raster backgrounds
-* color -> weight telemetry data by time, by individual?
 * make QPQ.solve() work without environment (for other packages)
 * ctmm.select(...,IC="BCV",block=1 %#% 'day')
-* plot(telemetry,ctmm) fails for plain vector ctmm$mu
-* akde on fit with DOF=0 error()
-* overlap VAR
+* overlap COV
 
 ** mean.ctmm
 * subtract prior from location-error posteriors before averaging and then add back at the end
 
 ** RSF
-* Riemann sum / Simpson integration method
-* AIC for sum of individuals and for population meta-analysis
 * distinguish between temporal stacks and height stacks
 * precompute option for formula (with no annotations)
 * RSF AGDE non-stationary needs times
 * non-integrated RSFs need to switch autocorrelation model to BM/IOU?
 * RSF habitat suitability calculation
-* timelink upgrade to use periodic splinefun with deriv argument
 * rsf.fit variable scaling option
 * rsf.fit simulate, predict
 * rsf.fit record availiable points sampled and numerical error estimate
 * RSF: model selection re-using available sample and beta
-* RSF: model selction: trace=(x^2+y^2), x^2-y^2, x*y
 * RSF: lower bound for parameter corrections: -1<trace
 * timeseries annotate tool
 
 ** timelink
 * periodic splines with derivatives
-* timelink par upper-lower function
 * circadian plot, animate with sundial
 * periodic sundial rates, periodic predict, speeds, AKDE weights
 * timelink simulate and predict
@@ -159,8 +121,6 @@
 * plot of overlap, area, mean distance versus time (relative to reference)
 
 ** location error
-* error - IID Gaussian mean weights
-* update the turtle vignette example to talk about location classes
 * track updating for elliptical errors (additive errors or overall update?)
 
 ** NPR
@@ -172,76 +132,26 @@
 * BHHH (empirical Fisher) approximation for first step of optimizer to initialize Hessian
 * optimizer compare par to par/parscale==1 for scale parameters and reset Hessian if far away
 
-* zoom needs CTMM argument named? No gear comes up then?
-* consistent grids with different resolutions (power of 2 relation; padding; etc.)
-* automatic timeformat (non-default argument)
-* errors on 0-1 locations -> initial functions: ctmm.guess, ctmm.fit, variogram, ...
-* 3D plots of 2D UDs
 * optimize REML correction?
 * 2-point !isotropic fits linear COV; 1-point fits zero-COV
-* cluster: inverse-chi^2 -> inverse-Gaussian
-* speed meta-analysis (chi)
-** CTMM, speed.summary
-* overlap meta-analysis (beta?)
-* updated speed/speeds to use dof.chisq(median,IQR) when robust=TRUE
-* chi^2 copula sampling distribution approximation
 * plot axis lables override default
 * uncalibrate coati
 * tplot: plot(...,axes=c('t','...'x')) or plot(...,axes=c('x','t')), possibly with 2 axes?, '-x'?
 * lasso + outlie
 * uere()<- ctmm calibrate with simultaneously fit RMS UERE
-* p-value function for outlie() return object using v_max or CTMM object
-* diffusion calculation with CIs (in summary)
-  * check diffusion code  circulation + OU, OUF, OUO, OUf
-  * diffusion units
-  * integrate into summary()
-* default: pHREML with range-resident models and REML with non-stationary models ?
 * merge dt==0 times (and shrink errors) for variogram/correlogram
-* mode.UD
 * as.telemetry.telemetry (do nothing)
-* bandwidth weights=TRUE dt>min(diff(t)) probably not subsetting data correctly (Pepper), need to "regularize" data for large dt, maybe this just happens with no error in model?
-* summary.list needs to descend into lists recursively for uere objects
 * simulate.telemetry with no CTMM object to simulate error only 2D/3D
 * update optimizer to pracma::randortho
-* check that the zero argument of optimizer is being used appropriately
-* weighted mean() of UDs (Nina)
 * overlap on mean()s of UDs (Ellie)
-* likelihood error in Animove error turtle example
-* mean method for ctmm objects
 * residuals in vignette 'variogram' and 'error'
 * precompute environments not carried over in Windows socket parallelization
-* area/error CI when MLE=0 (min of normal upper from VAR)
-* mode methods for ctmm and UD object (start with generic) (Erin?)
-* akde on data.frame objects
 * 1D ctmm summary doesn't make sense
-* plotting GPS/ARGOS hybrid data without calibration makes GPS data invisible (VAR==0)
-* ctmm.select run OUf.isotropic before OUf.anisotropic with OU/OUF.anisotropic + OUf.isotropic parameters
-* ctmm.select optimize f of OUf in isolation first?
-* ctmm.select optimize Omega of OUO in isolation first?
-* prediction COV should be called VAR if length(axes)==1 or call everything COV
-* optimize: was rank-1 update correlation preserving? was it local?
 * 2D/3D fix argument for as.telemetry from number of satellites?
 * variogram() error on lists
-* error vignette should specify that tracking and calibration data have same location classes
-* distribute cores from ctmm.select -> ctmm.fit optimizer
-* mean, mode, median for ctmm and UD objects
-* mean ctmm object
-* fast plot of GPS-ARGOS hybrid data
-* as.telemetry tibble->data.frame
-* update buffalo data
 * expose cex, lty, ... in plot.variogram
-* combine two telemetry objects for same animal but different device (dyadic UEREs, match columns)
 * compass speed plot -- or cycle argument for speeds()
-* ctmm.fit -> id.parameters : force.error argument for when error is estimated to be 0
-* error vignette - check back on variogram, correlogram
 * reference Guillaume's paper at the beginning of the periodogram vignette
-
-META ANALYSIS
-* Wishart - Inverse Wishart
-  * this is all we need for the range residence paper
-* Wishart - Log-Normal
-* investigate Log-Wishart off-diagonal distribution
-* Exp-Log-Chi^2 + Exp-Log-? - Log-Normal
 
 OPTIMIZER
 * wrap !DEBUG in try() with data.table() and set() each time its improved?
@@ -258,13 +168,10 @@ OPTIMIZER
 * exact NR Hessian option, or if queue allows space
 
 ERROR PAPER
-* include error calibration uncertainty in ctmm.fit
 * how does error change variogram DOF calculation?
 * exact 4x4 matrix inverse relations in PDsolve()
-* UERE error propagation from calibration (do not use as prior!)
 * kGcluster with tpeqd projection suggestion
 * predict can return VAR.xy for isotropic with UERE<4
-* propagation of error uncertainty
 
 OVERLAP
 * overlap needs to return DOFs in an overlap object - and then define a summary function for the overlap object
@@ -274,7 +181,6 @@ PROJECTION
 * check projection same for plot.telemetry
 * projection() <- on all plottable objects + plot option
 * project()<- ignores simulated/predicted velocities & covariances without headings & magnitudes
-* error as.telemetry if user attempts lon-lat projection
 * check latlon projection stop code against KT's input
 
 PARALLELIZATION
@@ -286,28 +192,15 @@ PARALLELIZATION
 MISC WORK
 * should standardization be moved to ctmm.select?
 * writeRaster, ... with lists of ctmm objects (when appropriate)
-* when ctmm.fit estimates error==0 exactly, the uncertainty isn't propagated because error==FALSE
 * simulate with emulate=TRUE
-* significant digits function (MLE+CI) for summary functions
 * akde/occurrence grid=UD/raster
 * p-value test for trend terms using variance of mu_alt-mu_null
 * significant digits argument to summary()
 * functionalize detrend & retrend in simulate/predict
-* predict.ctmm cov
 * spline velocity mean function
 * variogram discrepancy rank function
-* color array -> spatial segregation
 * plot axes=c('x','y') by default or axes=c('t','z')
 * catch optimizer failure (last best) in global variable and finish optimize() with warning
-* specify grid partially/totally in akde/occurrence
-* pre-standardize length data in ctmm.fit & ctmm.loglike (if not already) - ctmm.prepare?
-* times can be pre-standardized according to tau_velocity as well?
-* opacity option for plot
-* predict isotropic VAR.xy output
-* SpatialPolygonsDataFrame.ctmm
-* writeShapefile.ctmm
-* define print.ctmm and see if that works
-* simulate prior=FALSE
 * remove mean from kalman smoother - detrend, then add back
 * change all sapply to vapply
 * make sure terms of kalman filter are sorted by |magnitude|

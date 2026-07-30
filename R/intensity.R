@@ -1,6 +1,5 @@
-intensity <- function(data,UD,RSF,R=list(),variable=NULL,empirical=FALSE,level=0.95,ticks=TRUE,smooth=TRUE,interpolate=TRUE,...)
+intensity <- function(data,UD,RSF,R=list(),variable=NULL,empirical=TRUE,theoretical=TRUE,level=0.95,ticks=TRUE,smooth=TRUE,interpolate=TRUE,xlim=NULL,ylim=NULL,...)
 {
-  # rlim=NULL
   # how to sample rasters
   interpolate <- rep(interpolate,length(R))
   interpolate <- ifelse(interpolate,"bilinear","simple")
@@ -48,23 +47,34 @@ intensity <- function(data,UD,RSF,R=list(),variable=NULL,empirical=FALSE,level=0
   bias <- 1 - 1/n + h^2
   # integral K^2
   RK2 <- 1/sqrt(4*pi)
+
+  # annotate data with variable of interest
+  VARIABLE <- R[[variable]]
+  PROJ <- raster::projection(VARIABLE)
+  xy <- get.telemetry(data,GEO)
+  xy <- project(xy,to=PROJ)
+  data[,variable] <- raster::extract(VARIABLE,xy,method=interpolate[variable])
+
+  # RFIT <- ctmm.guess(data,ctmm(axes=axes),interactive=FALSE)
+  # RFIT <- ctmm.select(data,RFIT)
   RFIT <- ctmm.fit(data,ctmm(axes=axes))
   H <- h^2 * methods::getDataPart(RFIT$sigma)
   EXT <- extent(RFIT,level=1-error)[,axes,drop=FALSE] # Gaussian extent (includes uncertainty)
   dr <- c(sqrt(H)/res)
-  grid <- format_grid(grid,axes=axes)
+  grid <- format_grid(NULL,axes=axes) # grid not defined
   grid <- kde.grid(data,H=H,axes=axes,alpha=error,res=res,dr=dr,grid=grid,EXT.min=EXT)
   KDE <- kde(data,H=H,axes=axes,CTMM=RFIT,bias=bias,W=w,alpha=error,dr=dr,grid=grid,...)
   rm(grid)
 
-
-
-
+  log.PDF <- log(KDE$PDF)
+  VAR.log.PDF <- c(RK2/n/sqrt(H)) / KDE$PDF
+  alpha <- 1-level
+  z <- qnorm(1-alpha/2)
+  SE.log.PDF <- z * sqrt(VAR.log.PDF)
 
   ### AVAILABLE ########################
-  VARIABLE <- R[[variable]]
   # zero out variable of interest for partial effect plot
-  values(R[[variable]]) <- 0
+  raster::values(R[[variable]]) <- 0 # interaction terms remain - variable could be an interaction
   if(projection(data)==raster::projection(VARIABLE))
   { grid <- VARIABLE }
   else
@@ -73,7 +83,7 @@ intensity <- function(data,UD,RSF,R=list(),variable=NULL,empirical=FALSE,level=0
   rm(R,grid)
 
   # evaluate raster on AGDE grid
-  VARIABLE <- R.grid(AGDE$r,projecton(AGDE),VARIABLE)
+  VARIABLE <- R.grid(AGDE$r,projection(AGDE),VARIABLE)
 
   # extract variable availability
   R <- KDE$r[[axes]] # resource axis
@@ -109,59 +119,49 @@ intensity <- function(data,UD,RSF,R=list(),variable=NULL,empirical=FALSE,level=0
 
   # normalize the same as used
   P <- (sum(KDE$PDF)/sum(P))*P
+  # this also fixes the density units (after log difference)
+  log.P <- log(P)
 
+  # Propagate Available uncertainty ?
 
+  # combine everything
+  SUB <- KDE$PDF>.Machine$double.eps & P>.Machine$double.eps
+  R <- R[SUB]
+  log.PDF <- log.PDF[SUB]
+  SE.log.PDF <- SE.log.PDF[SUB]
+  log.P <- log.P[SUB]
+  log.UA <- log.PDF - log.P
 
-  # Propagate Available uncertainty with GRF approximation
-
-
-  ######## OLD CODE #############
-  RANGE <- range(data[[variable]])
-  r <- KDE$r[[1]]
-  dr <- KDE$dr
-  SUB <- r>=RANGE[1]-dr & r<=RANGE[2]+dr
-  r <- r[SUB]
-  PDF <- KDE$PDF[SUB]
-  log.PDF <- log(PDF)
-  # matches below for linear model
-  if(length(variable)) { ZERO <- stats::approx(r,log.PDF,R[MIN],rule=2,ties=mean)$y }
-  # the above can fail with no PDF support at R[MIN]
-  if(!length(variable) || is.na(ZERO))
+  if(is.null(xlim)) { xlim <- range(R) }
+  ylab <- '\u2206log(\u03BB)'
+  if(is.null(ylim))
   {
-    MIN <- which.max(PDF) # min PDF uncertainty
-    ZERO <- log.PDF[MIN]
+    ylim <- c(min(log.UA),max(log.UA))
+    dy <- ylim[2]-ylim[1]
+    ylim <- c(max(ylim[1]-1.5*dy,min(log.UA-SE.log.PDF)) , min(ylim[2]+1.5*dy,max(log.UA+SE.log.PDF)))
   }
-  log.PDF <- log.PDF - ZERO
-  VAR.log.PDF <- c(RK2/n/sqrt(H)) / PDF
-  SE.log.PDF <- z * sqrt(VAR.log.PDF)
-
-  lRANGE <- NULL
   if(empirical)
   {
-    lRANGE <- c(pmax(log.PDF-SE.log.PDF,ifelse(log.PDF<0,2*log.PDF,-log.PDF)),pmin(log.PDF+SE.log.PDF,ifelse(log.PDF>0,2*log.PDF,-log.PDF)))
-    lRANGE <- lRANGE[abs(lRANGE)<Inf]
-    lRANGE <- range(lRANGE,na.rm=TRUE)
-  }
-  if(length(variable))
-  {
-    lRANGE <- range(lRANGE,pmin(EST-SE,ifelse(EST<0,2*EST,-EST)),pmin(EST+SE,ifelse(EST>0,2*EST,-EST)))
-    lRANGE <- range(lRANGE,na.rm=TRUE)
-  }
-  ylab <- paste0("log(\u03BB)")
-  plot(RANGE,lRANGE,xlab=variable,ylab=ylab,col=grDevices::rgb(1,1,1,0))
-
-  if(empirical)
-  {
-    graphics::points(r,log.PDF,type='l',lwd=2)
-    graphics::polygon(c(r,rev(r)),c(log.PDF-SE.log.PDF,rev(log.PDF+SE.log.PDF)),border=NA,col=malpha('black',0.25))
+    graphics::plot(R,log.UA,col='black',type='l',lwd=2,xlim=xlim,ylim=ylim,xlab=variable,ylab=ylab,...)
+    graphics::polygon(c(R,rev(R)),c(log.UA-SE.log.PDF,rev(log.UA+SE.log.PDF)),border=NA,col=malpha('black',0.25))
   }
 
-  if(length(variable))
+  if(theoretical)
   {
-    graphics::points(R,EST,col='red',type='l',lwd=2)
+    if(empirical)
+    { plot <- graphics::points }
+    else
+    { plot <- graphics::plot }
+
+    # choose best intercept for data
+    I <- which.min(SE.log.PDF)
+
+    EST <- RSF$beta[variable]*(R-R[I])+log.UA[I]
+    plot(R,EST,col='red',type='l',lwd=2,xlab=variable,ylab=ylab,xlim=xlim,ylim=ylim,...)
+    SE <- sqrt(RSF$COV[variable,variable])*abs(R-R[I])
     graphics::polygon(c(R,rev(R)),c(EST-SE,rev(EST+SE)),border=NA,col=malpha('red',0.25))
   }
 
   # ticks at top corresponding to sampled resource values?
-  if(ticks) { graphics::axis(side=3,at=R,labels=FALSE,col=malpha('black',0.5)) }
+  if(ticks) { graphics::axis(side=3,at=data[[variable]],labels=FALSE,col=malpha('blue',0.5)) }
 }

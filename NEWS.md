@@ -1,7 +1,8 @@
-ctmm 1.3.1 (2026-07-20)
+ctmm 1.3.1 (2026-07-30)
 ================
-* intensity code is IN DEVELOPMENT
 * new home-range index() function
+* new confidence-interval functions ci.beta(), ci.chisq(), ci.invgauss(), ci.lognorm(), ci.norm()
+* intensity() function now has empirical and theoretical intensity curves
 * rsf.fit() and rsf.select() now work on pkde() population weights
 * mean() now works when range=FALSE
 * pkde() can now take fixed weights

@@ -217,8 +217,13 @@ ctmm.iterate <- function(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="positio
   if(CAND) { names(MODELS) <- sapply(MODELS,name.ctmm) }
 
   TYPE <- DOP.match(CTMM$axes)
-  UERE.DOF <- attr(data,"UERE")$DOF[,TYPE]
-  names(UERE.DOF) <- rownames(attr(data,"UERE")$DOF)
+  if(TYPE %in% colnames(attr(data,"UERE")$DOF))
+  {
+    UERE.DOF <- attr(data,"UERE")$DOF[,TYPE]
+    names(UERE.DOF) <- rownames(attr(data,"UERE")$DOF)
+  }
+  else
+  { UERE.DOF <- 0 }
   UERE.FIT <- CTMM$error & !is.na(UERE.DOF) & UERE.DOF<Inf # will we be fitting any error parameters?
 
   # best non-zero variance estimates -- avoid zero collapse in intermediate model propagating to best model
