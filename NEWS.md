@@ -1,4 +1,4 @@
-ctmm 1.3.1 (2026-07-30)
+ctmm 1.3.1 (2026-08-01)
 ================
 * new home-range index() function
 * new confidence-interval functions ci.beta(), ci.chisq(), ci.invgauss(), ci.lognorm(), ci.norm()

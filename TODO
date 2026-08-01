@@ -201,145 +201,29 @@ MISC WORK
 * variogram discrepancy rank function
 * plot axes=c('x','y') by default or axes=c('t','z')
 * catch optimizer failure (last best) in global variable and finish optimize() with warning
-* remove mean from kalman smoother - detrend, then add back
-* change all sapply to vapply
-* make sure terms of kalman filter are sorted by |magnitude|
-* resort all arrays to put time in last index
-* FAQ entry on automated time format reading in as.telemetry breaking with R update
-* non-range resident in vignette
-* default labels not working for UD contours
-* occurrence error option
-* boundry warning in help(ctmm.fit)
-* standardize x,y prior to likelihood calculation
-* plot3D of 2D UD
-* ltraj export
-* export ellipse drawing function
-* effective DOF for diffusion rate?
 
 PERIODIC
-* estimate periodicities in optimizer
 * calculate explicit time link for periodicity? or estimate frequency?
-* DOF[mean] should just be the stationary mean
 * variogram on mean detrended data with CTMM argument
-* simulate.telemetry (not pure ctmm)
-* smoother (non-uniform u(t) and velocity vector)
 * akde... slow exact and fast approximation or block toeplitz matrix (stationary Laplace approximation?)
 * plot ctmm (fall back on kde code)
-* vignette: periodogram, ctmm.select
-
-VIGNETTES & EXAMPLES
-* explain effective sample sizes (DOF of summary)
-
-Aligned Krige UDs
-pregridder composite dimension?
 
 LOW HANGING FRUIT & Nagging issues
 * add acf of calibration residuals to uere diagnostic
-* sort.ctmm by IC argument
 * simulate conditionally with t=t returns data and t times. predict does not. (lots of low-level changes here)
-* move object coordinate x1,x2 lat-lon
-* Bayesian=FALSE argument for simulate() leveraging emulate()
-* project(telemetry) <- function
-* check IID AICc formula for isotropic case
-* change default gap skip in occurrence?
-* rbind on telemetry objects
-* grid fix regression - weight to coarse scale when appropriate
-* detrend mean in correlogram function
-* plot errors with HDOP & error model in CTMM
-* rainbow.telemetry
-* plot telemetry/UD with reverse axes (preserve x&y orientation)s
-* give writeShapefile a default folder name, maybe also separate layers into different files
-* unit Environment on plots for points()
-* individualized projections
-* overload covm * / to apply to area & matrix
-* str.ctmm, str.telemetry (show, print too?)
-* points methods units environment
-* have summary return a warning on occurrence distributions
-* variogram.list <- mean-lapply-variogram
-* occurrence.list
-  + need to choose/enforce the same time steps?
-  + weight by period of data?
-* mean.UD on occurrence objects; +1 DOF
 * simulate.UD
-* Bayesian simulate.ctmm models (not data)
-* krige velocities, activity plot
-* put overlap in vignette after publication
-* predict plot with transparency proportional to uncertainty (Google Earth?)
-* mean.ctmm: list -> iid
 
-generalize Gaussian area?
-  UDs for both mean and population
-  homerange(method=normal)
 time/tube plot
 periodic plot.ctmm
 
-level.UD of summary UD/ctmm return Inf
-  test p-value against sample size
-
-summary on z-axis ctmm.fit might be buggy
-
-sort.ctmm
-sort.list
-name.ctmm
-name.generic
-
 zoom.telemetry x,y offset clicker
-
-global variable for units of current plot?
-
-proj4: email about making north up
-plot N vector in corner
-
-dogleg splines
-  degree = 1,2?
-  migration = times?
-  settlement = times?
-
-model option vignette
-IID, OU, OUF, (an)isotropic table in vignette
 
 fixed circulation option?
 Fixed period parameters during fitting?
 
-3d periodogram, ctmm.fit, krige, kde
-
-simulate nsim in both unconditioned and conditionedb by storing all objects
-multiple conditional simulations loop
-More efficient sampler/smoother:
-store propagator results for all time-lags
-store forecast/concurrent estimates
-call vectorized RNG
-
-Include telemetry errors in unconditional simulation?
-krige -> predict
-
 cross variogram
 
-Newton-Raphson iteration at end of ctmm.fit for solution check on optim
-
-AKDE vignette: DOF.H, DOF.mu
-
-plot options: cex, type, abrv
-
-AKDE with errors, weights
-akde with user-specified projection
-
-multi-scale variogram bias correction
-variogram & periodogram: coarsening window method to avoid all bias
-
-Lapack GE solve -> Lapack PO/SY solve.
-
-profile CIs
-
 contour labels in plot ctmm
-
-Email ks author about inaccuracy
-
-Repeated times in variograms -- account for as error -- fix cap
-
-dplyr, rolling for loops
-
-fixed mean parameter for boundary issues
 
 HIERARCHICAL___________
 * stochastic gradient Langevin dynamics

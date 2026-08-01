@@ -405,7 +405,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     if(UNIT==1)
     {
       fn <- function(sigma){ KMR*sigma[1] }
-      CTMM1 <- sigma.apply(CTMM1,fn,states)
+      CTMM1 <- sigma.apply(CTMM,fn,states)
     }
     CTMM1$sigma <- SIGMA[1] # should now be redundant
     KALMAN1 <- kalman(cbind(z[,1]),u,t=t,CTMM=CTMM1,error=error[,1,1,drop=FALSE]) # errors are relative to PRO.VAR if PROFILE
@@ -415,7 +415,7 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
     if(UNIT==1)
     {
       fn <- function(sigma){ KMR*sigma[4] }
-      CTMM2 <- sigma.apply(CTMM2,fn,states)
+      CTMM2 <- sigma.apply(CTMM,fn,states)
     }
     CTMM2$sigma <- SIGMA[2] # should now be redundant
     KALMAN2 <- kalman(cbind(z[,2]),u,t=t,CTMM=CTMM2,error=error[,2,2,drop=FALSE]) # errors are relative to PRO.VAR if PROFILE
