@@ -13,6 +13,8 @@ ctmm 1.3.1 (2026-08-01)
 * proximity() CIs improved from F to beta sampling distribution
 * pkde() weights now passed to mean.ctmm()
 * overlap() can now take non-stationary mean models
+* bugfix in intensity() for multiple rasters — variable=NULL now plots every variable instead of erroring
+* bugfix in intensity() availability histogram — off-by-one bin shift and non-conserved interpolation mass
 * bugfix in akde() for a list of fixed weights
 * bugfix in outlie() for error ellipses
 * bugfixes in sdm.fit() for camera-trap and count data
