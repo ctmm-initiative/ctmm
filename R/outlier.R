@@ -75,11 +75,13 @@ outlie <- function(data,plot=TRUE,by='d',units=TRUE,...)
     lwd <- if(diff(range(lwd))) { lwd/max(lwd) } else { 0 }
     col <- grDevices::rgb(0,0,lwd,lwd)
     lwd <- 2*lwd
+    lwd_indicator <- c(0,lwd)
     n <- length(data$t)
     graphics::segments(x0=data$x[-n],y0=data$y[-n],x1=data$x[-1],y1=data$y[-1],col=col,lwd=lwd,asp=1,...)
 
     by <- get(by)
     cex <- if(diff(range(by))) { by/max(by) } else { 0 }
+    cex_indicator <- unname(cex)
     col <- grDevices::rgb(cex,0,0,cex)
     graphics::points(data$x,data$y,col=col,cex=cex,pch=20,...)
   }
@@ -92,7 +94,7 @@ outlie <- function(data,plot=TRUE,by='d',units=TRUE,...)
     VAR.dz <- nant(VAR.dz,0)
   }
 
-  R <- data.frame(t=data$t,distance=d,VAR.distance=VAR.d,speed=v,VAR.speed=VAR.v)
+  R <- data.frame(t=data$t,distance=d,VAR.distance=VAR.d,speed=v,VAR.speed=VAR.v, lwd=lwd_indicator, cex=cex_indicator)
   if('z' %in% names(data))
   {
     R$vertical.distance <- dz
