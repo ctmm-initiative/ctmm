@@ -732,6 +732,7 @@ predict.ctmm <- function(object,data=NULL,VMM=NULL,t=NULL,dt=NULL,res=1,complete
     attr(data,"UERE")$DOF[] <- Inf
     attr(data,"UERE")$N[] <- Inf
 
+    data@info$smoothed <- TRUE
     return(data)
   }
   # 1-2D below
@@ -862,6 +863,7 @@ predict.ctmm <- function(object,data=NULL,VMM=NULL,t=NULL,dt=NULL,res=1,complete
   attr(data,"UERE")$DOF[] <- Inf
   attr(data,"UERE")$N[] <- Inf
 
+  data@info$smoothed <- TRUE
   return(data)
 }
 

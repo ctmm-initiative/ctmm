@@ -1,0 +1,2 @@
+rasterize <- raster::rasterize
+

@@ -1,7 +1,8 @@
-ctmm 1.3.1 (2026-08-01)
+ctmm 1.3.1 (2026-09-29)
 ================
 * new home-range index() function
 * new confidence-interval functions ci.beta(), ci.chisq(), ci.invgauss(), ci.lognorm(), ci.norm()
+* new utility function grid.fit()
 * intensity() function now has empirical and theoretical intensity curves
 * rsf.fit() and rsf.select() now work on pkde() population weights
 * mean() now works when range=FALSE

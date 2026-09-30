@@ -13,6 +13,7 @@ export(plot)
 export(head,tail)
 export(extent,projection,"projection<-",raster,writeRaster,zoom)
 export(simulate,predict,median)
+export(grid.fit)
 export(writeVector)
 
 export(as.sf,cluster,compass,emulate,funnel,meta,speed,speeds,video)
@@ -171,4 +172,5 @@ export(index)
 #S3method(index,UD)
 #S3method(index,ctmm)
 
+# confidence intervals
 export(ci.beta,ci.chisq,ci.invgauss,ci.lognorm,ci.norm)

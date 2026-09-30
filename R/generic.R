@@ -27,8 +27,15 @@ match.arg <- function(arg,choices,...)
 
 
 # does this thing exist and, if so, is it true
-is.good <- function(x) { !is.null(x) & !is.na(x) & x }
-is.bad <- function(x) { is.null(x) | is.na(x) | !x }
+is.good <- function(x)
+{
+  x[is.null(x)] <- FALSE
+  x[is.na(x)] <- FALSE
+  return(x)
+}
+
+is.bad <- function(x)
+{ !is.good(x) }
 
 # not in #
 "%nin%" <- function(x, table) { match(x, table, nomatch = 0) == 0 }

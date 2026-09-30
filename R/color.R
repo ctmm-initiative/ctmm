@@ -190,7 +190,7 @@ grad.white <- function(col)
 ##############################
 # COLOR BY INDIVIDUAL
 # a greedy algorithm
-color.individual <- function(object,cores=1,...)
+color.individual <- function(object,cores=1,start=NULL,...)
 {
   object <- listify(object)
   n <- length(object)

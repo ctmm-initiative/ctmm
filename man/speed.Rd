@@ -58,7 +58,7 @@ If data quality is poor and velocity can barely be resolved, then the sampling d
 \references{
 M. J. Noonan, C. H. Fleming, T. S. Akre, J. Drescher-Lehman, E. Gurarie, A.-L. Harrison, R. Kays, Justin Calabrese,
 ``Scale-insensitive estimation of speed and distance traveled from animal tracking data'',
-\href{https://movementecologyjournal.biomedcentral.com/articles/10.1186/s40462-019-0177-1}{Movement Ecology, 7:35 (2019)}.
+\href{https://doi.org/10.1186/s40462-019-0177-1}{Movement Ecology, 7:35 (2019)}.
 }
 
 \author{ C. H. Fleming. }

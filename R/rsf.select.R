@@ -1,5 +1,10 @@
 rsf.select <- function(data,UD,R=list(),formula=NULL,verbose=FALSE,IC="AICc",trace=TRUE,...)
 {
+  STUFF <- pop2ind(data,UD,...)
+  data <- STUFF$data
+  UD <- STUFF$UD
+  rm(STUFF)
+
   CTMM <- UD@CTMM
   isotropic <- CTMM$isotropic
   SISO <- ifelse(isotropic,"isotropic","anisotropic")

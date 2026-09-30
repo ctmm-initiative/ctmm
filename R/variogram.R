@@ -147,23 +147,64 @@ variogram.dt <- function(data,dt=NULL,fast=NULL,res=1,CI="Markov",error=FALSE,ax
   return(SVF)
 }
 
+grid.fit <- function(t,dt=NULL,W=NULL,...)
+{
+  t.old <- t
+  if(is.null(dt)) { dt <- stats::median(diff(t)) }
+  t0 <- grid.init(t,dt=dt,W=W,...)
+  t <- t[c(1,length(t))]
+  t <- t - t0
+  t <- t/dt
+  t <- round(t)
+  t <- t[1]:t[2]
+  t <- t0 + dt*t
+
+  ## segment identification
+  # calculate indices
+  n <- length(t)
+  J <- round( (t.old-t[1])/dt + 1 )
+  rm(t.old)
+
+  # indicate record
+  I <- logical(n)
+  for(j in J)
+  { I[j] <- TRUE }
+  rm(J)
+
+  # enumerate segments
+  B <- numeric(n)
+  B[] <- NA
+  B[1] <- 1
+  B0 <- 1
+  for(i in 2:n)
+  {
+    if(I[i]) # segment
+    {
+      if(!I[i-1]) { B0 <- B0 + 1 } # new segment
+      B[i] <- B0
+    }
+  }
+
+  R <- data.frame(t=t,burst=B)
+  return(R)
+}
+
 ############################
 # best initial time for a uniform grid
-grid.init <- function(t,dt=stats::median(diff(t)),W=NULL)
+grid.init <- function(t,dt=NULL,W=NULL,...)
 {
+  if(is.null(dt)) { dt <- stats::median(diff(t)) }
   if(is.null(W)) { W <- array(1,length(t)) }
 
   # simple analytic periodic cost function
   # COST = sum_t w(t) sin^2(pi(t-t0)/dt)
-  # maximized anaytically
+  # maximized analytically
   theta <- (2*pi/dt)*t
   SIN <- c(W %*% sin(theta))
   COS <- c(W %*% cos(theta))
   t0 <- -dt/(2*pi)*atan(SIN/COS)
 
-  # not sure if necessary
   t0 <- -round((t0-t[1])/dt)*dt
-
   return(t0)
 }
 

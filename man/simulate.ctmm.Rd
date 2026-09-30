@@ -5,6 +5,7 @@
 \alias{simulate}
 \alias{simulate.ctmm}
 \alias{simulate.telemetry}
+\alias{grid.fit}
 \encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Predict or simulate from a continuous-time movement model}
@@ -25,6 +26,8 @@ simulate(object,nsim=1,seed=NULL,...)
 
 \S3method{simulate}{telemetry}(object,nsim=1,seed=NULL,CTMM=NULL,VMM=NULL,t=NULL,dt=NULL,res=1,complete=FALSE,
          precompute=FALSE,...)
+
+grid.fit(t,dt=NULL,W=NULL,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -32,13 +35,14 @@ simulate(object,nsim=1,seed=NULL,...)
   \item{data}{Optional \code{telemetry} object on which the prediction or simulation will be conditioned.}
   \item{CTMM}{A \code{ctmm} movement model in the same format as the output of \code{\link{ctmm.fit}} or \code{\link{variogram.fit}}.}
   \item{VMM}{An optional vertical \code{ctmm} movement model for 3D predictions and simulations.}
-  \item{t}{Optional array of numeric time values over which the process will be predicted or simulated.}
-  \item{dt}{Timestep to space the prediction or simulation over if \code{data} is specified.}
+  \item{t}{Optional array of numeric time values over which the process will be predicted or simulated, or an array of irregular times to fit a grid to.}
+  \item{dt}{Timestep to space the prediction or simulation over if \code{data} is specified, or grid spacing for \code{grid.fit}.}
   \item{res}{Average number of locations to predict or simulate per \code{data} time.}
   \item{complete}{Additionally calculate timestamps and geographic coordinates.}
   \item{nsim}{Generates a list of \code{nsim} simulations.}
   \item{seed}{Optional random seed to fix.}
   \item{precompute}{Precalculate matrices of the Kalman filter (see details).}
+  \item{W}{Weights for grid cost function.}
   \item{...}{Unused options.}
 }
 \details{
@@ -56,9 +60,14 @@ First run \code{simulate} with \code{precompute=TRUE} to calculate and store all
 A simulated \code{telemetry} object will be produced, as usual, and the precomputed objects are stored in the environment.
 Subsequent simulations with \code{precompute=-1} will then apply these precomputed matrices for a computational cost savings.
 If the sampling schedule is irregular, then this can result in faster simulations.
+
+\code{grid.fit} calculates the optimal grid with spacing \code{dt} for times \code{t} by minimizing the periodic cost function \eqn{\sum_t w(t) \, \sin^2\!\left( \frac{\pi (t-t_0)}{\Delta t} \right)} for the best initial alignment \eqn{t_0}.
+This function can be useful with \code{predict} and \code{simulate}, when regularizing tracking data for discrete-time analyses.
 }
 
-\value{ A simulated animal-tracking \code{telemetry} object with components \code{t}, \code{x}, and \code{y}, or a predicted \code{telemetry} object that also includes \code{x}-\code{y} covariances for the location point estimates \code{x} and \code{y}. }
+\value{ \code{simulate} outputs a simulated animal-tracking \code{telemetry} object with components \code{t}, \code{x}, and \code{y}.
+\code{predict} oututs predicted \code{telemetry} object that also includes \code{x}-\code{y} covariances for the location point estimates \code{x} and \code{y}.
+\code{grid.fit} outputs an evenly spaced grid that minimizes the periodic cost function.}
 
 \references{
 C. H. Fleming, J. M. Calabrese, T. Mueller, K.A. Olson, P. Leimgruber, W. F. Fagan,
