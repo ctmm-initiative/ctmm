@@ -6,7 +6,7 @@ langevin <- function(dt,CTMM,DIM=1)
   K <- CTMM$K
   tau <- CTMM$tau
 
-  if(CTMM$symmetry && !CTMM$isotropic && DIM==2 && K>0)
+  if(CTMM$symmetry && !CTMM$isotropic[1] && DIM==2 && K>0)
   {
     scale <- squeezable.covm(CTMM)$fact # ratio of major axis to geometric mean axis
     sigma <- CTMM$sigma@par

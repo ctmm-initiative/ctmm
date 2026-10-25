@@ -69,7 +69,7 @@ intensity <- function(data,UD,RSF,R=list(),variable=NULL,empirical=TRUE,theoreti
   log.PDF <- log(KDE$PDF)
   VAR.log.PDF <- c(RK2/n/sqrt(H)) / KDE$PDF
   alpha <- 1-level
-  z <- qnorm(1-alpha/2)
+  z <- stats::qnorm(1-alpha/2)
   SE.log.PDF <- z * sqrt(VAR.log.PDF)
 
   ### AVAILABLE ########################

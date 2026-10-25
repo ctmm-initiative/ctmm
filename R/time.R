@@ -887,7 +887,7 @@ circadian <- function(CTMM,level=0.95,n=1000,...)
   alpha <- 1/8
   plot(0,0,xlim=xlim,ylim=ylim,xlab=NA,ylab=NA,asp=1,col=c(0,0,0,0),xaxt='n',yaxt='n',...)
   ticker <- function(R,labels,alpha)
-  { for(i in 1:4) { axis(side=i,at=R,labels=labels,col.axis=grDevices::rgb(0,0,0,alpha),col.ticks=grDevices::rgb(0,0,0,alpha),...) } }
+  { for(i in 1:4) { graphics::axis(side=i,at=R,labels=labels,col.axis=grDevices::rgb(0,0,0,alpha),col.ticks=grDevices::rgb(0,0,0,alpha),...) } }
   MAX <- ceiling(MAX)
   ticker(-MAX:MAX,TRUE,alpha)
   MAX <- MAX + 0.5
@@ -897,8 +897,8 @@ circadian <- function(CTMM,level=0.95,n=1000,...)
   R <- 1:(2*ceiling(MAX))
   for(r in R)
   {
-    shape::plotcircle(r=r-1/2,lcol=rgb(0,0,0,alpha/4),lwd=1)
-    shape::plotcircle(r=r,lcol=rgb(0,0,0,alpha),lwd=1)
+    shape::plotcircle(r=r-1/2,lcol=grDevices::rgb(0,0,0,alpha/4),lwd=1)
+    shape::plotcircle(r=r,lcol=grDevices::rgb(0,0,0,alpha),lwd=1)
   }
   graphics::abline(h=0,col=grDevices::rgb(0,0,0,alpha))
   graphics::abline(v=0,col=grDevices::rgb(0,0,0,alpha))
