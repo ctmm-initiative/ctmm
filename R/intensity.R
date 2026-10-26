@@ -1,5 +1,19 @@
 intensity <- function(data,UD,RSF,R=list(),variable=NULL,empirical=TRUE,theoretical=TRUE,level=0.95,ticks=TRUE,smooth=TRUE,interpolate=TRUE,xlim=NULL,ylim=NULL,...)
 {
+  RVARS <- names(R)
+
+  if(is.null(variable))
+  {
+    if(length(RVARS)==1)
+    { variable <- RVARS[1] }
+    else
+    {
+      for(r in RVARS)
+      { intensity(data,UD=UD,RSF=RSF,R=R,variable=r,empirical=empirical,theoretical=theoretical,level=level,ticks=ticks,smooth=smooth,interpolate=interpolate,xlim=xlim,ylim=ylim,...) }
+      return(invisible())
+    }
+  }
+
   # how to sample rasters
   interpolate <- rep(interpolate,length(R))
   interpolate <- ifelse(interpolate,"bilinear","simple")
@@ -10,22 +24,7 @@ intensity <- function(data,UD,RSF,R=list(),variable=NULL,empirical=TRUE,theoreti
   CTMM <- UD@CTMM
   if(smooth && any(CTMM$error>0)) { data[,c(axes,GEO)] <- predict(data,CTMM=CTMM,t=data$t,complete=TRUE)[,c(axes,GEO)] }
 
-  RVARS <- names(R)
   formula <- RSF$formula
-
-  if(is.null(variable))
-  {
-    if(length(RVARS)==1)
-    { variable <- RVARS[1] }
-    else
-    {
-      for(r in RVARS)
-      {
-        intensity(data,UD=UD,RSF=RSF,R=R,variable=r,level=level,smooth=smooth,interpolate=interpolate,...)
-        return()
-      }
-    }
-  }
 
   ### USED #############################
   axes <- variable
@@ -95,27 +94,25 @@ intensity <- function(data,UD,RSF,R=list(),variable=NULL,empirical=TRUE,theoreti
   AGDE <- c(AGDE$PDF)
   VARIABLE <- c(VARIABLE)
 
-  # get indices
-  VARIABLE <- (VARIABLE-R1)/dR
+  # get (1-based) grid indices
+  VARIABLE <- (VARIABLE-R1)/dR + 1
   FLOOR <- floor(VARIABLE)
-  w <- 1-(VARIABLE-FLOOR)
+  FRAC <- VARIABLE-FLOOR
   SUB <- which(FLOOR>=1 & FLOOR<=length(R))
   for(i in SUB)
   {
     I <- FLOOR[i]
-    P[I] <- P[I] + w[i]*AGDE[i]
+    P[I] <- P[I] + (1-FRAC[i])*AGDE[i]
   }
-  rm(FLOOR)
 
-  CEIL <- ceiling(VARIABLE)
-  w <- CEIL-VARIABLE
-  SUB <- which(CEIL>=1 & CEIL<=length(R))
+  CEIL <- FLOOR + 1
+  SUB <- which(FRAC>0 & CEIL>=1 & CEIL<=length(R))
   for(i in SUB)
   {
     I <- CEIL[i]
-    P[I] <- P[I] + w[i]*AGDE[i]
+    P[I] <- P[I] + FRAC[i]*AGDE[i]
   }
-  rm(CEIL,VARIABLE)
+  rm(FLOOR,CEIL,FRAC,VARIABLE)
 
   # normalize the same as used
   P <- (sum(KDE$PDF)/sum(P))*P
