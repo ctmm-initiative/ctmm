@@ -206,24 +206,28 @@ periodic.mean <- function(CTMM,t,verbose=TRUE,...)
   # constant term
   U <- stationary.mean(CTMM,t,...)
 
+  # all periods, including harmonics
   omega <- periodic.omega(CTMM)
+
   if(length(omega))
   {
-    Omega <- nant(t %o% omega,0)
-    U <- cbind( U , riffle(sin(Omega),cos(Omega)) )
-  }
+    # short periods cause massive colinearity
+    # replace cos with cos-1
+    # time derivatives do not change
+    # higher-order harmonics will not be selected - don't fix those
+    DT <- last(t)-first(t)
+    BAD <- omega*DT < 1/10
 
-  colnames(U) <- periodic.namer(CTMM)
+    if(length(omega))
+    {
+      Omega <- COS <- nant(t %o% omega,0)
+      SIN <- sin(Omega)
+      if(any(!BAD)) { COS[,!BAD] <- cos(Omega) }
+      if(any(BAD)) { COS[,BAD] <- cosm1(Omega) } # replace cos with cos-1
+      U <- cbind( U , riffle(SIN,COS) )
+    }
 
-  # short periods cause colinearity, replace with Taylor series
-  dt <- last(t)-first(t)
-  BAD <- omega*dt < 1/10
-  if(!verbose && any(BAD))
-  {
-    BAD <- viffle(BAD,BAD)
-    t <- omega*t
-    BAD <- which(BAD)
-    U[,1+BAD] <- outer(t,1:length(BAD),"^")
+    colnames(U) <- periodic.namer(CTMM)
   }
 
   return(U)

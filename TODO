@@ -1,4 +1,6 @@
 ** PRIORITY
+* distances plotting function with null model of independence
+* overlap() warning on occurrence distributions
 * pkde() meta-analytic area estimation weights
 * summary() ballistic length scale
 * intensity() with formula objects (e.g., interactions)
