@@ -26,7 +26,7 @@ generate.units <- function()
 
   # TIME
   add(c("\u03BCs","microsecond","microseconds"),1E-6)
-  add(c("ms","milisecond","miliseconds"),1/1000)
+  add(c("ms","millisecond","milliseconds"),1/1000)
   add(c("s","sec","sec.","second","seconds"),1)
   add(c("min","minute","minutes"),60)
   add(c("h","hr","hour","hours"),60^2)
