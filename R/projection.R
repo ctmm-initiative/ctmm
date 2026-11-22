@@ -34,6 +34,19 @@ setMethod('projection', signature(x='UD'), projection.telemetry)
 #projection.RS <- projection.telemetry
 #setMethod('projection', signature(x='RS'), projection.telemetry)
 
+
+datum <- function(x)
+{
+  CRS <- projection(x)
+
+  ifelse(
+    grepl("\\+datum=", CRS),
+    sub(".*\\+datum=([^ ]+).*", "\\1", CRS),
+    DATUM
+  )
+}
+
+
 project <- function(x,from=DATUM,to=DATUM)
 {
   if(to==from) { return(x) }

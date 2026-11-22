@@ -10,12 +10,13 @@
 \usage{
 outlie(data,plot=TRUE,by='d',units=TRUE,...)
 
-\S3method{plot}{outlie}(x,level=0.95,units=TRUE,axes=c('d','v'),xlim=NULL,ylim=NULL,...)
+\S3method{plot}{outlie}(x,k=2,level=0.95,units=TRUE,axes=c('d','v'),xlim=NULL,ylim=NULL,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{data}{\code{telemetry} object.}
-  \item{plot}{Output a plot highlighting high speeds (blue) and distant locations (red).}
+  \item{k}{Number of location clusters to calculate geometric medians of. Can be `1` or `2`.}
+  \item{plot}{Output a plot highlighting high speeds (blue) and distant locations (red). If `plot==-1` then these plotting ingredients will be returned.}
   \item{by}{Color and size side-effect plot points by \code{'d'}, \code{'v'}, \code{'dz'}, \code{'vz'}, for distance from center, minimum speed, vertical distance from center, and minimum vertical speed.}
   \item{units}{Convert axes to natural units.}
   \item{...}{Arguments passed to \code{plot}.}
@@ -28,7 +29,7 @@ outlie(data,plot=TRUE,by='d',units=TRUE,...)
 
 \details{If \code{plot=TRUE} in \code{outlie()}, intervals of high speed are highlighted with blue segments, while distant locations are highlighted with red points.
 
-When plotting the \code{outlie} object itself, `median deviation' denotes distances from the geometric median, while `minimum speed' denotes the minimum speed required to explain the location estimate's displacement as straight-line motion. Both estimates account for telemetry error and condition on as few data points as possible. The speed estimates furthermore account for timestamp truncation and assign each timestep's speed to the most likely offending time, based on its other adjacent speed estimate.
+When plotting the \code{outlie} object itself, `median deviation' denotes distances from the geometric median(s), while `minimum speed' denotes the minimum speed required to explain the location estimate's displacement as straight-line motion. Both estimates account for telemetry error and condition on as few data points as possible. The speed estimates furthermore account for timestamp truncation and assign each timestep's speed to the most likely offending time, based on its other adjacent speed estimate.
 
 The output \code{outlie} object contains the above noted speed and distance estimates in a \code{data.frame}, with rows corresponding to those of the input \code{telemetry} object.
 }

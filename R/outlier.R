@@ -2,7 +2,7 @@
 BESSEL_LIMIT <- 2^16
 
 # estimate and assign speeds to times
-outlie <- function(data,plot=TRUE,by='d',units=TRUE,...)
+outlie <- function(data,k=2,plot=TRUE,by='d',units=TRUE,...)
 {
   if(class(data)[1]=="list")
   { return( lapply(1:length(data), function(i){OUT <- outlie(data[[i]],plot=plot,by=by); if(plot){ graphics::title(names(data)[i]) }; OUT} ) ) }
@@ -24,13 +24,27 @@ outlie <- function(data,plot=TRUE,by='d',units=TRUE,...)
   v <- Vs$v.t
   VAR.v <- Vs$VAR.t
 
-  mu <- median.telemetry(data)
   d <- get.telemetry(data,axes=c("x","y"))
-  mu <- get.telemetry(mu,axes=c("x","y"))
-  mu <- c(mu)
+
+  if(k==1)
+  {
+    mu <- median.telemetry(data)
+    mu <- get.telemetry(mu,axes=c("x","y"))
+    mu <- c(mu)
+  }
+  else # k==2
+  {
+    mu <- median_longlat(data,k=k)
+    mu <- project(mu,from=datum(data),to=projection(data))
+    d1 <- colSums(t(d) - mu[1,])
+    d2 <- colSums(t(d) - mu[2,])
+    mu <- mu[1+(d2<d1),]
+    mu <- t(mu)
+  }
 
   # detrend median
   d <- t(d) - mu
+
   # distances from median
   if(length(dim(error))==3)
   { d <- t(d) }
@@ -66,22 +80,34 @@ outlie <- function(data,plot=TRUE,by='d',units=TRUE,...)
 
   if(plot)
   {
-    # bounding box
-    new.plot(data,units=units,...)
-    # convert units on telemetry object to match base plot
-    data <- unit.telemetry(data,length=get("x.scale",pos=plot.env))
-
     lwd <- Vs$v.dt
     lwd <- if(diff(range(lwd))) { lwd/max(lwd) } else { 0 }
     col <- grDevices::rgb(0,0,lwd,lwd)
     lwd <- 2*lwd
     n <- length(data$t)
-    graphics::segments(x0=data$x[-n],y0=data$y[-n],x1=data$x[-1],y1=data$y[-1],col=col,lwd=lwd,asp=1,...)
 
     by <- get(by)
     cex <- if(diff(range(by))) { by/max(by) } else { 0 }
-    col <- grDevices::rgb(cex,0,0,cex)
-    graphics::points(data$x,data$y,col=col,cex=cex,pch=20,...)
+    col.pt <- grDevices::rgb(cex,0,0,cex)
+
+    if(plot==-1)
+    {
+      R <- list(points=list(),segments=list())
+      R$segments$col <- col
+      R$segments$lwd <- lwd
+      R$points$cex <- cex
+      R$points$col <- col.pt
+    }
+    else
+    {
+      # bounding box
+      new.plot(data,units=units,...)
+      # convert units on telemetry object to match base plot
+      data <- unit.telemetry(data,length=get("x.scale",pos=plot.env))
+
+      graphics::segments(x0=data$x[-n],y0=data$y[-n],x1=data$x[-1],y1=data$y[-1],col=col,lwd=lwd,asp=1,...)
+      graphics::points(data$x,data$y,col=col.pt,cex=cex,pch=20,...)
+    }
   }
 
   VAR.v <- nant(VAR.v,0)
@@ -92,15 +118,19 @@ outlie <- function(data,plot=TRUE,by='d',units=TRUE,...)
     VAR.dz <- nant(VAR.dz,0)
   }
 
-  R <- data.frame(t=data$t,distance=d,VAR.distance=VAR.d,speed=v,VAR.speed=VAR.v)
+  OUT <- data.frame(t=data$t,distance=d,VAR.distance=VAR.d,speed=v,VAR.speed=VAR.v)
   if('z' %in% names(data))
   {
-    R$vertical.distance <- dz
-    R$VAR.vertical.distance <- VAR.dz
-    R$vertical.speed <- vz
-    R$VAR.vertical.speed <- VAR.vz
+    OUT$vertical.distance <- dz
+    OUT$VAR.vertical.distance <- VAR.dz
+    OUT$vertical.speed <- vz
+    OUT$VAR.vertical.speed <- VAR.vz
   }
-  R <- new.outlie(R)
+  OUT <- new.outlie(OUT)
+  if(plot==-1)
+  { R$outlie <- OUT }
+  else
+  { R <- OUT }
   return(R)
 }
 
