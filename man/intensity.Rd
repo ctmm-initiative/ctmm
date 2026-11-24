@@ -29,10 +29,10 @@ intensity(data,UD,RSF,R=list(),variable=NULL,empirical=TRUE,theoretical=TRUE,lev
 
 \details{With resepct to the Poisson point process likelihood \eqn{L(\lambda)=\frac{\lambda(x,y)}{\iint \lambda(x',y') \, dx' dy'}},
 the \code{formula} object of a ctmm iRSF model corresponds to the covariate dependence of \eqn{\log(\lambda)},
-which is typically of the form \eqn{\boldsymbol{\beta} \cdot \mathbf{R}}.
+which is typically of the form \eqn{\boldsymbol{\beta} \cdot \mathbf{R}}, where \eqn{\mathbf{R}} denotes the spatial covariates and \eqn{\boldsymbol{\beta}} denotes their corresponding coefficients.
 \code{intensity} plots the empirical change in log-intensity \eqn{\log(\lambda)} as a function of the covariate \code{variable},
 which provides a visualization of what the true \code{formula} looks like and how the fitted model compares.
-The empirical estimate is semi-parametric, in that it assumes that \code{RSF} is correct for all variables other than \code{variable}.
+The empirical estimate is a semi-parametric estimate of the partial selection strength, in that it assumes that \code{RSF} is correct for all variables other than \code{variable}.
 These functions provide a more interpretable alternative to use-availability plots.
 }
 
@@ -46,7 +46,7 @@ These functions provide a more interpretable alternative to use-availability plo
 
 \note{
 \itemize{
-\item Interaction terms (partial effects) and functional responses are not yet supported.
+\item Interaction terms and time dependence are not yet supported.
 \item Only relative differences in \eqn{\log(\lambda)} are meaningful.
 }
 }

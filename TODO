@@ -1,4 +1,6 @@
 ** PRIORITY
+* The akde() bias correction assumes continuity across boundaries
+* non-parametric diffusion rate estimates analogous to speed
 * distances plotting function with null model of independence
 * overlap() warning on occurrence distributions
 * pkde() meta-analytic area estimation weights

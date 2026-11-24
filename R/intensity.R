@@ -16,7 +16,7 @@ intensity <- function(data,UD,RSF,R=list(),variable=NULL,empirical=TRUE,theoreti
   if(is.null(variable))
   {
     if(length(RVARS)==1)
-    { variable <- RVARS[1] }
+    { variable <- RVARS }
     else
     {
       for(r in RVARS)
@@ -62,7 +62,14 @@ intensity <- function(data,UD,RSF,R=list(),variable=NULL,empirical=TRUE,theoreti
   EXT <- extent(RFIT,level=1-error)[,axes,drop=FALSE] # Gaussian extent (includes uncertainty)
   dr <- c(sqrt(H)/res)
   grid <- format_grid(NULL,axes=axes) # grid not defined
-  grid <- kde.grid(data,H=H,axes=axes,alpha=error,res=res,dr=dr,grid=grid,EXT.min=EXT)
+  # grid <- kde.grid(data,H=H,axes=axes,alpha=error,res=res,dr=dr,grid=grid,EXT.min=EXT)
+  range <- raster::cellStats(VARIABLE,range)
+  DR <- diff(range)
+  dr <- DR/ceiling(DR/dr)
+  grid$dr <- dr
+  grid$r <- list(axes=seq(range[1],range[2],by=dr))
+  grid$align.to.origin=TRUE
+  grid <- kde.grid(data,H=H,axes=axes,alpha=error,r=r,dr=dr,grid=grid)
   KDE <- kde(data,H=H,axes=axes,CTMM=RFIT,bias=bias,W=w,alpha=error,dr=dr,grid=grid,...)
   rm(grid)
 
@@ -74,7 +81,9 @@ intensity <- function(data,UD,RSF,R=list(),variable=NULL,empirical=TRUE,theoreti
 
   ### AVAILABLE ########################
   # zero out variable of interest for partial effect plot
-  raster::values(R[[variable]]) <- 0 # interaction terms remain - variable could be an interaction
+  # PSF <- RSF
+  # PSF$beta[variable] <- 0
+  raster::values(R[[variable]]) <- 0
   if(projection(data)==raster::projection(VARIABLE))
   { grid <- VARIABLE }
   else
@@ -96,9 +105,9 @@ intensity <- function(data,UD,RSF,R=list(),variable=NULL,empirical=TRUE,theoreti
   VARIABLE <- c(VARIABLE)
 
   # get indices
-  VARIABLE <- (VARIABLE-R1)/dR
+  VARIABLE <- 1+(VARIABLE-R1)/dR
   FLOOR <- floor(VARIABLE)
-  w <- 1-(VARIABLE-FLOOR)
+  w <- 1-(VARIABLE-FLOOR) # %(floor) versus %(ceil)
   SUB <- which(FLOOR>=1 & FLOOR<=length(R))
   for(i in SUB)
   {
@@ -108,7 +117,7 @@ intensity <- function(data,UD,RSF,R=list(),variable=NULL,empirical=TRUE,theoreti
   rm(FLOOR)
 
   CEIL <- ceiling(VARIABLE)
-  w <- CEIL-VARIABLE
+  w <- 1-(CEIL-VARIABLE) # %(ceil) versus %(floor)
   SUB <- which(CEIL>=1 & CEIL<=length(R))
   for(i in SUB)
   {
@@ -121,29 +130,34 @@ intensity <- function(data,UD,RSF,R=list(),variable=NULL,empirical=TRUE,theoreti
   P <- (sum(KDE$PDF)/sum(P))*P
   # this also fixes the density units (after log difference)
   log.P <- log(P)
-
-  # Propagate Available uncertainty ?
+  # Propagate Available uncertainty ? Ignoring non-spatial covariates
+  VAR.log.P <- DOF.area(RSF)/2 # Gaussian average
+  SE.log.P <- z * sqrt(VAR.log.P)
 
   # combine everything
-  SUB <- KDE$PDF>.Machine$double.eps & P>.Machine$double.eps
+  SUB <- KDE$PDF/max(KDE$PDF)>.Machine$double.eps & P/max(P)>.Machine$double.eps
   R <- R[SUB]
   log.PDF <- log.PDF[SUB]
   SE.log.PDF <- SE.log.PDF[SUB]
   log.P <- log.P[SUB]
+  SE.log.UA <- pmin(SE.log.PDF,SE.log.P)*sqrt(2)
   log.UA <- log.PDF - log.P
+  # Choose origin
+  I <- which.min(SE.log.PDF)
+  log.UA <- log.UA - log.UA[I]
 
   if(is.null(xlim)) { xlim <- range(R) }
   ylab <- '\u2206log(\u03BB)'
   if(is.null(ylim))
   {
-    ylim <- c(min(log.UA),max(log.UA))
+    ylim <- range(log.UA)
     dy <- ylim[2]-ylim[1]
-    ylim <- c(max(ylim[1]-1.5*dy,min(log.UA-SE.log.PDF)) , min(ylim[2]+1.5*dy,max(log.UA+SE.log.PDF)))
+    ylim <- c(max(ylim[1]-1.5*dy,min(log.UA-SE.log.UA)) , min(ylim[2]+1.5*dy,max(log.UA+SE.log.UA)))
   }
   if(empirical)
   {
     graphics::plot(R,log.UA,col='black',type='l',lwd=2,xlim=xlim,ylim=ylim,xlab=variable,ylab=ylab,...)
-    graphics::polygon(c(R,rev(R)),c(log.UA-SE.log.PDF,rev(log.UA+SE.log.PDF)),border=NA,col=malpha('black',0.25))
+    graphics::polygon(c(R,rev(R)),c(log.UA-SE.log.UA,rev(log.UA+SE.log.UA)),border=NA,col=malpha('black',0.25))
   }
 
   if(theoretical)
@@ -153,12 +167,23 @@ intensity <- function(data,UD,RSF,R=list(),variable=NULL,empirical=TRUE,theoreti
     else
     { plot <- graphics::plot }
 
-    # choose best intercept for data
-    I <- which.min(SE.log.PDF)
+    ### THEORETICAL ################################
+    # partial effect of variable only
+    DF <- list()
+    for(r in RVARS) { DF[[r]] <- numeric(length(R)) }
+    DF <- data.frame(DF)
+    DF[[variable]] <- R
+    DM <- stats::model.matrix(formula,data=DF)[,-1,drop=FALSE]
+    EST <- DM %*% RSF$beta
 
-    EST <- RSF$beta[variable]*(R-R[I])+log.UA[I]
+    # choose best intercept for comparison
+    EST <- EST - EST[I]
+
+    P <- names(RSF$beta)
+    SE <- vapply(1:length(EST),function(i){(DM[i,]-DM[I,]) %*% RSF$COV[P,P,drop=FALSE] %*% (DM[i,]-DM[I,])},FUN.VALUE=1)
+    SE <- sqrt(SE)
+
     plot(R,EST,col='red',type='l',lwd=2,xlab=variable,ylab=ylab,xlim=xlim,ylim=ylim,...)
-    SE <- sqrt(RSF$COV[variable,variable])*abs(R-R[I])
     graphics::polygon(c(R,rev(R)),c(EST-SE,rev(EST+SE)),border=NA,col=malpha('red',0.25))
   }
 

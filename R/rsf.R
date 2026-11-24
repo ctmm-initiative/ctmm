@@ -1322,7 +1322,7 @@ R.extract <- function(xy,proj,R,X,Y,Z=NULL,PROJ,dX,dY,dZ=NULL)
   return(E)
 }
 
-# Evaluate raster on new spatial grid
+# Evaluate raster 'R' on new spatial grid 'r'
 # evaluation grid 'r' [UD]
 # with projection 'proj'
 # original raster 'R' [raster]

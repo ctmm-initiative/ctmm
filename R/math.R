@@ -80,6 +80,14 @@ logit <- function(p)
   log(p/(1-p))
 }
 
+
+logistic <- function(p)
+{
+  p <- clamp(p,0,1)
+  qnorm(p)
+}
+
+
 ilogit <- function(z) { 1/(1+exp(-z)) }
 
 binom <- function(x,y) { 1/(x+1)/beta(y+1,x-y+1) }

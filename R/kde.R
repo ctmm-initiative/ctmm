@@ -625,15 +625,18 @@ debias.volume <- function(PMF,bias=1)
   VOL <- 1:length(CDF)
 
   # extrapolation issue with bias<1
-  # introduce a NULL cell with 0 probability
-  VOL <- c(0,VOL)
-  CDF <- c(0,CDF)
+  # introduce a NULL cell with less probability
+  # VOL <- c(0,VOL)
+  # CDF <- c(0,CDF)
+  CDF <- logistic(CDF) # (-Inf,Inf)
 
   # evaluate the debiased cdf on the original volume grid
-  CDF <- stats::approx(x=VOL/bias,y=CDF,xout=VOL,yleft=0,yright=1)$y
+  # CDF <- stats::approx(x=VOL/bias,y=CDF,xout=VOL,yleft=0,yright=1)$y
+  CDF <- Hmisc::approxExtrap(x=VOL/bias,y=CDF,xout=VOL)$y
 
   # drop null cell
-  CDF <- CDF[-1]
+  # CDF <- CDF[-1]
+  CDF <- pnorm(CDF) # [0,1]
 
   # fix tiny numerical errors from ?roundoff?
   CDF <- sort(CDF)
