@@ -1,6 +1,6 @@
 ctmm 1.3.1 (2026-11-24)
 ================
-* new intensity() function with empirical and theoretical intensity curves
+* new intensity() function with empirical and theoretical log-intensity curves
 * new home-range index() function
 * new confidence-interval functions ci.beta(), ci.chisq(), ci.invgauss(), ci.lognorm(), ci.norm()
 * new utility function grid.fit()
@@ -20,6 +20,7 @@ ctmm 1.3.1 (2026-11-24)
 * bugfix in outlie() for error ellipses
 * bugfixes in sdm.fit() for camera-trap and count data
 * bugfixes in sdm.select()
+* bugfixes in rsf.select() and rsf.fit() trace options
 
 ctmm 1.3.0 (2025-07-23)
 ================

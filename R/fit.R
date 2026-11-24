@@ -47,7 +47,7 @@ get.loglike <- function(data)
 
 ###########################################################
 # FIT MODEL WITH LIKELIHOOD FUNCTION (convenience wrapper to optim)
-ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),trace=FALSE)
+ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,trace=FALSE,control=list(),...)
 {
   # check.class(data)
 
@@ -329,7 +329,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
     # control$covariance <- covariance() - parameter storage and optimization representations can differ
     control$parscale <- parscale
     control$zero <- TRUE
-    RESULT <- optimizer(par=pars,fn=fn,method=op.method,lower=lower,upper=upper,period=period,reset=reset,control=control)
+    RESULT <- optimizer(par=pars,fn=fn,method=op.method,lower=lower,upper=upper,period=period,reset=reset,control=control,...)
     pars <- clean.parameters(RESULT$par,profile=profile,timelink=CTMM$timelink)
     # copy over hessian from fit to COV.init ?
 
@@ -482,7 +482,7 @@ ctmm.fit <- function(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),tr
         control$parscale <- parscale
         control$zero <- TRUE
         CTMM <- ctmm.prepare(data,CTMM,tau=FALSE,calibrate=FALSE) # don't muck with taus, don't calibrate
-        RESULT <- optimizer(par=pars,fn=fn,method=op.method,lower=lower,upper=upper,period=period,reset=reset,control=control)
+        RESULT <- optimizer(par=pars,fn=fn,method=op.method,lower=lower,upper=upper,period=period,reset=reset,control=control,...)
         CTMM <- ctmm.repair(CTMM,NAMES=names(pars))
         pars <- clean.parameters(RESULT$par,timelink=CTMM$timelink)
       }

@@ -15,7 +15,7 @@ ctmm(tau=NULL,omega=FALSE,isotropic=FALSE,range=TRUE,circle=FALSE,error=FALSE,
 
 ctmm.loglike(data,CTMM,REML=FALSE,profile=TRUE,zero=0,verbose=FALSE,compute=TRUE,...)
 
-ctmm.fit(data,CTMM=ctmm(),method="pHREML",COV=TRUE,control=list(),trace=FALSE)
+ctmm.fit(data,CTMM=ctmm(),method="pHREML",COV=TRUE,trace=FALSE,control=list(),...)
 
 ctmm.select(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position",trace=FALSE,cores=1,
             ...)
@@ -44,7 +44,7 @@ ctmm.select(data,CTMM,verbose=FALSE,level=1,IC="AICc",MSPE="position",trace=FALS
   \item{IC}{Information criterion used for selection. Can be \code{"AICc"}, \code{"AIC"}, \code{"BIC"}, \code{"LOOCV"}, \code{"HSCV"}, or none (\code{NA}). AICc is approximate.}
   \item{MSPE}{Reject non-stationary features that increase the mean square predictive error of \code{"position"}, \code{"velocity"}, or not (\code{NA}).}
   \item{cores}{Maximum number of models to fit in parallel. cores=0 will use all cores, while cores<0 will reserve abs(cores).}
-  \item{...}{Further arguments passed to \code{ctmm.fit}.}
+  \item{...}{Further arguments passed to \code{ctmm.fit} or \code{optimizer}.}
 }
 
 \details{

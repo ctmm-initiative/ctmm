@@ -9,7 +9,7 @@
 \usage{
 rsf.fit(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
         reference="auto",debias=TRUE,smooth=TRUE,standardize=TRUE,integrator="MonteCarlo",
-        error=0.01,max.mem="1 Gb",interpolate=TRUE,trace=TRUE,...)
+        error=0.01,max.mem="1 Gb",interpolate=TRUE,trace=TRUE,control=list(),...)
 
 rsf.select(data,UD,R=list(),formula=NULL,verbose=FALSE,IC="AICc",trace=TRUE,...)
 }
@@ -31,6 +31,7 @@ rsf.select(data,UD,R=list(),formula=NULL,verbose=FALSE,IC="AICc",trace=TRUE,...)
   \item{max.mem}{Maximum amount of memory to allocate for availability sampling.}
   \item{interpolate}{Whether or not to interpolate raster values during extraction.}
   \item{trace}{Report progress on convergence (see Details).}
+  \item{control}{An optional argument list for \code{\link{optimizer}}.}
   \item{verbose}{Returns all candidate models if \code{TRUE}. Otherwise, only the \code{IC}-best model is returned.}
   \item{IC}{Model selection criterion. Can be AIC, AICc, or BIC.}
   \item{...}{Arguments passed to \code{rsf.fit} or \code{\link{optimizer}}.}

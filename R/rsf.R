@@ -1,4 +1,4 @@
-rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,reference="auto",debias=TRUE,smooth=TRUE,standardize=TRUE,integrator="MonteCarlo",error=0.01,max.mem="1 Gb",interpolate=TRUE,trace=TRUE,...)
+rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,reference="auto",debias=TRUE,smooth=TRUE,standardize=TRUE,integrator="MonteCarlo",error=0.01,max.mem="1 Gb",interpolate=TRUE,trace=TRUE,control=list(),...)
 {
   STUFF <- pop2ind(data,UD,smooth=smooth)
   data <- STUFF$data
@@ -11,10 +11,8 @@ rsf.fit <- function(data,UD,R=list(),formula=NULL,integrated=TRUE,level.UD=0.99,
   axes <- CTMM$axes
   max.mem <- ustring(max.mem)
 
-  # control list for optimizer
-  control <- list()
   # pass trace argument (demoted)
-  if(trace) { control$trace <- trace-1 }
+  if(is.null(control$trace) && trace) { control$trace <- trace-1 }
 
   data <- listify(data)
   CALC <- integrated || length(R) # anything to calculate?
