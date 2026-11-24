@@ -1,9 +1,11 @@
 ** PRIORITY
+* optimizer trace in rsf.fit not working
+* PKDE correct weights for one location per individual
+* pkde() meta-analytic area estimation weights
 * The akde() bias correction assumes continuity across boundaries
 * non-parametric diffusion rate estimates analogous to speed
 * distances plotting function with null model of independence
 * overlap() warning on occurrence distributions
-* pkde() meta-analytic area estimation weights
 * summary() ballistic length scale
 * intensity() with formula objects (e.g., interactions)
 * summary() area estimate when integrated=FALSE

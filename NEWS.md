@@ -11,6 +11,7 @@ ctmm 1.3.1 (2026-11-24)
 * pkde() now has a finite population correction argument
 * agde() now works on multiple individuals
 * as.telemetry() can now import light-level geolocator error ellipses
+* as.telemetry() can now import move2 objects
 * as.telemetry() no longer requires strict Argos formatting
 * proximity() CIs improved from F to beta sampling distribution
 * pkde() weights now passed to mean.ctmm()

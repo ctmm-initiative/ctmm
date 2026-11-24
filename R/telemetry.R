@@ -379,11 +379,12 @@ as.telemetry.MoveStack <- function(object,timeformat="auto",timezone="UTC",proje
 as.telemetry.Move <- function(object,timeformat="auto",timezone="UTC",projection=NULL,datum="WGS84",dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
 {
   # preserve Move object projection if possible
-  if(is.null(projection) && !raster::isLonLat(object)) { projection <- raster::projection(object) }
+  if(is.null(projection) && !raster::isLonLat(object))
+  { projection <- raster::projection(object) }
 
   DATA <- Move2CSV(object,timeformat=timeformat,timezone=timezone,projection=projection)
   # can now treat this as a MoveBank object
-  DATA <- as.telemetry.data.frame(DATA,timeformat=timeformat,timezone=timezone,projection=projection,dt.hot=dt.hot,timeout=timeout,na.rm=na.rm,mark.rm=mark.rm,keep=keep,drop=drop)
+  DATA <- as.telemetry.data.frame(DATA,timeformat=timeformat,timezone=timezone,projection=projection,dt.hot=dt.hot,timeout=timeout,na.rm=na.rm,mark.rm=mark.rm,keep=keep,drop=drop,...)
   return(DATA)
 }
 
@@ -428,8 +429,47 @@ Move2CSV <- function(object,timeformat="auto",timezone="UTC",projection=NULL,dat
 }
 
 
+# move2 objects (C) Anne Scharf & CHF [UNFINISHED]
+as.telemetry.move2 <- function(object,timeformat="auto",timezone="UTC",projection=NULL,datum="WGS84",dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
+{
+  # move2 example data set
+  # object <- move2::mt_read(move2::mt_example())
+
+  # preserve Move object projection if possible
+  if(is.null(projection) && !sf::st_is_longlat(object))
+  {
+    projection <- sf::st_crs(object)$proj4string
+    if(is.null(datum)) { datum <- datum(projection) }
+  }
+
+  if(is.null(timezone))
+  { timezone <- tz(move2::mt_time(object)) }
+
+  # get all data into one table
+  object <- move2::mt_as_event_attribute(object, names(move2::mt_track_data(object)))
+
+  # convert data to data.frame
+  DATA <- as.data.frame(object)
+  DATA$geometry <- NULL ## removing geometry column (sf coordinates column)
+  DATA$timestamp <- move2::mt_time(object)
+  DATA$individual.local.identifier <- move2::mt_track_id(object) # extract vector of track ids
+
+  if(sf::st_is_longlat(object)) # projection will be automated
+  {
+    DATA[,c('location.long','location.lat')] <- sf::st_coordinates(object)
+    if(is.null(projection)) { warning("Move objects in geographic coordinates are automatically projected.") }
+  }
+  else # projection is retained
+  { DATA[,c('location.long','location.lat')] <- sf::st_coordinates(sf::st_transform(object,sf::st_crs(DATUM))) }
+
+  # can now treat this as a MoveBank object
+  DATA <- as.telemetry.data.frame(DATA,timeformat=timeformat,timezone=timezone,projection=projection,dt.hot=dt.hot,timeout=timeout,na.rm=na.rm,mark.rm=mark.rm,keep=keep,drop=drop,...)
+  return(DATA)
+}
+
+
 # sf object (C) jfsmenezes & CHF [UNFINISHED]
-UNFINISHED.as.telemetry.sf = function(object,timeformat="auto",timezone="UTC",projection=NULL,datum="WGS84",dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
+UNFINISHED.as.telemetry.sf <- function(object,timeformat="auto",timezone="UTC",projection=NULL,datum="WGS84",dt.hot=NA,timeout=Inf,na.rm="row",mark.rm=FALSE,keep=FALSE,drop=TRUE,...)
 {
   if(sf::st_geometry_type(object,by_geometry=FALSE)!="POINT")
   { stop("only point features supported at the moment") }
