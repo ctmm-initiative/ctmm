@@ -53,6 +53,7 @@ methods::setGeneric("writeVector", getGeneric("writeVector", package="terra"))
 
 
 # new S3 generic functions
+extent <- function(object,...) UseMethod("extent")
 emulate <- function(object,...) UseMethod("emulate")
 AICc <- function(object,...) UseMethod("AICc")
 speed <- function(object,...) UseMethod("speed")

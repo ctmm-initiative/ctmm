@@ -741,7 +741,7 @@ plot_ctmm <- function(model,alpha=0.05,col="blue",bg=NA,...)
 ###################
 # mu - mean vector
 # sigma - covariance matrix
-ellipsograph <- function(mu,sigma,level=0.95,fg=graphics::par("col"),bg=NA,PLOT=TRUE,...)
+ellipsograph <- function(mu,sigma,level=0.95,n=100,fg=graphics::par("col"),bg=NA,PLOT=TRUE,...)
 {
   Eigen <- eigen(sigma)
   std <- Eigen$values
@@ -754,8 +754,8 @@ ellipsograph <- function(mu,sigma,level=0.95,fg=graphics::par("col"),bg=NA,PLOT=
   alpha <- 1 - level
   z <- sqrt(-2*log(alpha))
 
-  num <- 100 # number of plotted points
-  theta <- 2*pi*(0:num)/(num+1)
+  # n: number of plotted points
+  theta <- 2*pi*(0:n)/(n+1)
   Sin <- sin(theta)
   Cos <- cos(theta)
 

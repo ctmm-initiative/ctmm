@@ -1,4 +1,4 @@
-ctmm 1.3.1 (2026-11-24)
+ctmm 1.3.1 (2026-11-25)
 ================
 * new intensity() function with empirical and theoretical log-intensity curves
 * new home-range index() function
@@ -16,6 +16,7 @@ ctmm 1.3.1 (2026-11-24)
 * proximity() CIs improved from F to beta sampling distribution
 * pkde() weights now passed to mean.ctmm()
 * overlap() can now take non-stationary mean models
+* extent() is no longer based on raster::extent()
 * bugfix in akde() for a list of fixed weights
 * bugfix in outlie() for error ellipses
 * bugfixes in sdm.fit() for camera-trap and count data

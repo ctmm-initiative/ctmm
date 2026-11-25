@@ -13,7 +13,7 @@ quantile.longitude <- function(x,probs=c(0,1),na.rm=FALSE,...)
 
   angle <- sort(x)
   angle <- c(angle,angle[1]) # wrap around
-  delta <- diff(angle) %% 360 # gap widths
+  delta <- diff(angle) %% 360 # gap widths - wrap around
   MAX <- which.max(delta) # gap complement of the data # assuming no global outliers
   x <- angle[1:MAX]
   if(MAX<n) { x <- c(angle[(MAX+1):n],x) } # x is now compacted into a single interval (not yet manifest)

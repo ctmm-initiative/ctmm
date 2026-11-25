@@ -1,38 +1,35 @@
 \name{extent}
 \alias{extent}
-\alias{extent,telemetry-method}
-\alias{extent,ctmm-method}
-\alias{extent,UD-method}
-\alias{extent,variogram-method}
-\alias{extent,list-method}
-\alias{extent,data.frame-method}
-\alias{extent,matrix-method}
+\alias{extent.telemetry}
+\alias{extent.ctmm}
+\alias{extent.UD}
+\alias{extent.variogram}
+\alias{extent.list}
+\alias{extent.data.frame}
+\alias{extent.matrix}
 \encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Extent}
 \description{Functions to calculate the \eqn{(x,y)} plotting extent (or bounding box) of various ctmm objects or list of such objects, for use when plotting multiple ctmm objects.}
 
-\usage{%extent(x,...)
-\S4method{extent}{telemetry}(x,level=1,...)
+\usage{extent(x,...)
 
-\S4method{extent}{ctmm}(x,level=0.95,level.UD=0.95,...)
+\S3method{extent}{telemetry}(x,...)
 
-\S4method{extent}{UD}(x,level=0.95,level.UD=0.95,complete=FALSE,...)
+\S3method{extent}{ctmm}(x,level=0.95,level.UD=0.95,complete=FALSE,...)
 
-\S4method{extent}{variogram}(x,level=0.95,threshold=2,...)
+\S3method{extent}{UD}(x,level=0.95,level.UD=0.95,complete=FALSE,...)
 
-\S4method{extent}{list}(x,...)
+\S3method{extent}{variogram}(x,level=0.95,threshold=2,...)
 
-\S4method{extent}{data.frame}(x,level=1,...)
-
-\S4method{extent}{matrix}(x,level=1,...)
+\S3method{extent}{list}(x,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{A \code{telemetry}, \code{ctmm}, or \code{UD} object. }
-  \item{level}{ For \code{telemetry} objects, this is the fraction of locations bounded, according to two-sided quantiles. For \code{ctmm} and \code{UD} objects, this is confidence level for the magnitude of the utilization area circumscribed by \code{level.UD}. }
+  \item{level}{ For \code{ctmm} and \code{UD} objects, this is confidence level for the magnitude of the utilization area circumscribed by \code{level.UD}. }
   \item{level.UD}{ Coverage level of the UD area. I.e., the 50\% core home range would be given by \code{level.UD=0.50}. }
-  \item{complete}{ Also calculate longitude-latitude extent of \code{UD} objects. }
+  \item{complete}{ Also calculate longitude-latitude extent of \code{ctmm} and \code{UD} objects. }
   \item{threshold}{Limit \code{ylim} to \code{threshold} times the maximum semi-variance, even if the \code{level} confidence intervals exceed this amount.}
   \item{...}{ Optional arguments for future extensions.}
 }

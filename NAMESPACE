@@ -1,7 +1,7 @@
 #IMPORTED GENERIC FUNCTIONS TO OVERLOAD
 importFrom("graphics",plot)
 importFrom("methods",new)
-importFrom("raster",extent,projection,"projection<-",raster,writeRaster,zoom)
+importFrom("raster",projection,"projection<-",raster,writeRaster,zoom)
 importFrom("stats",median,predict,simulate)
 importFrom("terra",writeVector)
 importFrom("utils",head,tail)
@@ -11,12 +11,23 @@ importFrom("utils",head,tail)
 # non-base generics to export
 export(plot)
 export(head,tail)
-export(extent,projection,"projection<-",raster,writeRaster,zoom)
+export(projection,"projection<-",raster,writeRaster,zoom)
 export(simulate,predict,median)
 export(grid.fit)
 export(writeVector)
 
 export(as.sf,cluster,compass,emulate,funnel,meta,speed,speeds,video)
+
+# raster::extent and S4 have become too annoying to deal with
+export(extent)
+S3method(extent,default)
+S3method(extent,telemetry)
+S3method(extent,data.frame)
+S3method(extent,matrix)
+S3method(extent,list)
+S3method(extent,ctmm)
+S3method(extent,UD)
+S3method(extent,variogram)
 
 export(Log,Exp) # base R methods are not made to be generic
 #S3method(log,list) # this stuff doesn't work, but CRAN requires it?

@@ -1,6 +1,30 @@
-# 2D range of ctmm object
-# I can't get the raster generic to work?? It won't accept my classes?
-# extent <- function(x,...) UseMethod("extent")
+# raster::extent keeps working differently and S4 methods are impossible to debug
+
+# generic for matrix and data.frame
+extent.default <- function(x,...)
+{
+  x <- as.data.frame(x)
+  RANGE <- data.frame(row.names=c('min','max'))
+
+  for(COL in colnames(x))
+  {
+    if(class(x[[COL]])[1] %in% c("numeric","POSIXct"))
+    {
+      if(COL=="longitude") # use circular statistics
+      { RANGE[[COL]] <- quantile.longitude(x[[COL]],na.rm=TRUE) }
+      else
+      {
+        # RANGE[[COL]] <- stats::quantile(x[[COL]],probs=probs,na.rm=TRUE)
+        RANGE[[COL]] <- range(x[[COL]],na.rm=TRUE,finite=TRUE)
+      }
+    }
+  }
+
+  return(RANGE)
+}
+extent.telemetry <- extent.default
+extent.data.frame <- extent.default
+extent.matrix <- extent.default
 
 as.matrix.Extent <- function(x,...)
 {
@@ -41,50 +65,10 @@ extent.list <- function(x,...)
   # level has already been applied
   return(RANGE)
 }
-setMethod('extent', signature(x='list'), extent.list)
-
-
-# extent of telemetry data
-extent.telemetry <- function(x,level=1,...)
-{
-  level <- max(level)
-
-  alpha <- (1-level)/2
-  probs <- c(alpha,1-alpha)
-  RANGE <- data.frame(row.names=c('min','max'))
-
-  for(COL in colnames(x))
-  {
-    if(class(x[[COL]])[1]=="numeric")
-    {
-      if(COL=="longitude") # use circular statistics
-      { RANGE[[COL]] <- quantile.longitude(x[[COL]],probs=probs,na.rm=TRUE) }
-      else
-      { RANGE[[COL]] <- stats::quantile(x[[COL]],probs=probs,na.rm=TRUE) }
-    }
-  }
-
-  return(RANGE)
-}
-setMethod('extent', signature(x='telemetry'), extent.telemetry)
-setMethod('extent', signature(x='data.frame'), extent.telemetry)
-
-
-# extent of matrix/extent
-extent.matrix <- function(x,level=1,...)
-{
-  level <- max(level)
-
-  NAMES <- colnames(x)
-  x <- data.frame(x)
-  colnames(x) <- NAMES # preserve NULL
-  extent(x,level=level,...)
-}
-setMethod('extent', signature(x='matrix'), extent.matrix)
 
 
 # range of Gaussian contours
-extent.ctmm <- function(x,level=0.95,level.UD=0.95,...)
+extent.ctmm <- function(x,level=0.95,level.UD=0.95,complete=FALSE,...)
 {
   axes <- x$axes
 
@@ -110,30 +94,41 @@ extent.ctmm <- function(x,level=0.95,level.UD=0.95,...)
   if("COV" %in% names(x))
   {
     K <- length(x$tau)
-    const <- confint.ctmm(x,alpha)["area",3]/sqrt(det(sigma))
+    const <- confint.ctmm(x,alpha)["area",3]/ifelse(length(axes)==2,sqrt(det(sigma)),sigma)
   }
 
-  buff <- z*sqrt(const*diag(sigma))
-
-  if(length(axes)==2)
+  if(complete && length(axes)==2)
   {
-    X <- x$mu[1] + c(-1,1)*buff[1]
-    Y <- x$mu[2] + c(-1,1)*buff[2]
-
-    RANGE <- data.frame(x=X,y=Y)
+    sigma <- const*sigma@.Data
+    RANGE <- ellipsograph(x$mu,sigma,level=level.UD,PLOT=FALSE)
+    LL <- project(RANGE,from=projection(x))
+    colnames(LL) <- GEO
+    RANGE <- cbind(RANGE,LL)
+    RANGE <- extent(RANGE)
   }
-  else
+  else # x,y only - faster
   {
-    Z <- x$mu[1] + c(-1,1)*buff
+    buff <- z*sqrt(const*diag(sigma))
 
-    RANGE <- data.frame(Z)
-    colnames(RANGE) <- axes
+    if(length(axes)==2)
+    {
+      X <- x$mu[1] + c(-1,1)*buff[1]
+      Y <- x$mu[2] + c(-1,1)*buff[2]
+
+      RANGE <- data.frame(x=X,y=Y)
+    }
+    else
+    {
+      Z <- x$mu[1] + c(-1,1)*buff
+
+      RANGE <- data.frame(Z)
+      colnames(RANGE) <- axes
+    }
   }
 
   row.names(RANGE) <- c("min","max")
   return(RANGE)
 }
-setMethod('extent', signature(x='ctmm'), extent.ctmm)
 
 
 # range of UD contours
@@ -204,7 +199,6 @@ extent.UD <- function(x,level=0.95,level.UD=0.95,complete=FALSE,...)
 
   return(RANGE)
 }
-setMethod('extent', signature(x='UD'), extent.UD)
 
 
 # extent of a variogram object
@@ -236,7 +230,6 @@ extent.variogram <- function(x,level=0.95,threshold=2,...)
 
   return(EXT)
 }
-setMethod('extent', signature(x='variogram'), extent.variogram)
 
 
 # intersection of extents
