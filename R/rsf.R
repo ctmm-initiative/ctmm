@@ -1137,11 +1137,11 @@ expand.factors <- function(R,formula,reference="auto",data=NULL,DVARS=NULL,fixed
       if(raster::is.factor(R[[NAME]]))
       {
         FACT <- R[[NAME]]
-        R <- R[names(R)!=NAME]
-        REF <- reference[reference %in% levels(FACT)][1]
-        if(is.na(REF)|| !length(REF)) { REF <- "auto" }
-
         LEVELS <- raster::levels(FACT)[[1]]$ID # assuming one layer
+        REF <- reference[reference %in% LEVELS][1] # first match
+        if(is.na(REF)|| !length(REF)) { REF <- "auto" } # no match
+
+        R <- R[names(R)!=NAME]
 
         if(fixed)
         {

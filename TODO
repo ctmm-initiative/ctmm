@@ -1,5 +1,6 @@
 ** PRIORITY
-* optimizer trace in rsf.fit not working
+* pHREML -> PhREML
+* warning for factor levels not in homerange in rsf.fit
 * PKDE correct weights for one location per individual
 * pkde() meta-analytic area estimation weights
 * The akde() bias correction assumes continuity across boundaries
