@@ -1,4 +1,4 @@
-ctmm 1.3.1 (2026-11-25)
+ctmm 1.3.1 (2026-11-26)
 ================
 * new intensity() function with empirical and theoretical log-intensity curves
 * new home-range index() function

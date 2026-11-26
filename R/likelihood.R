@@ -399,23 +399,24 @@ ctmm.loglike <- function(data,CTMM=ctmm(),REML=FALSE,profile=TRUE,zero=0,verbose
   if(DIM==1.5) ### 2 separate 1D Kalman filters instead of 1 2D Kalman filter ###
   {
     SIGMA <- eigenvalues.covm(K.sigma) # (relative to PRO.VAR)
+    CTMM1 <- CTMM2 <- CTMM # not sure why this is needed
 
     # major axis likelihood
-    if(symmetry) { CTMM1 <- unit.ctmm(CTMM,time=1/smgm) }
+    if(symmetry) { CTMM1 <- unit.ctmm(CTMM1,time=1/smgm) }
     if(UNIT==1)
     {
       fn <- function(sigma){ KMR*sigma[1] }
-      CTMM1 <- sigma.apply(CTMM,fn,states)
+      CTMM1 <- sigma.apply(CTMM1,fn,states)
     }
     CTMM1$sigma <- SIGMA[1] # should now be redundant
     KALMAN1 <- kalman(cbind(z[,1]),u,t=t,CTMM=CTMM1,error=error[,1,1,drop=FALSE]) # errors are relative to PRO.VAR if PROFILE
 
     # minor axis likelihood
-    if(symmetry) { CTMM2 <- unit.ctmm(CTMM,time=smgm) }
+    if(symmetry) { CTMM2 <- unit.ctmm(CTMM2,time=smgm) }
     if(UNIT==1)
     {
       fn <- function(sigma){ KMR*sigma[4] }
-      CTMM2 <- sigma.apply(CTMM,fn,states)
+      CTMM2 <- sigma.apply(CTMM2,fn,states)
     }
     CTMM2$sigma <- SIGMA[2] # should now be redundant
     KALMAN2 <- kalman(cbind(z[,2]),u,t=t,CTMM=CTMM2,error=error[,2,2,drop=FALSE]) # errors are relative to PRO.VAR if PROFILE
